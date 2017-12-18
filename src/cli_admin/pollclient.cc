@@ -23,6 +23,7 @@
 #include "src/fredlib/poll/create_state_messages.h"
 #include "src/fredlib/poll/create_request_fee_info_messages.h"
 #include "src/corba/logger_client_impl.h"
+#include "src/fredlib/poll/message_type_set.h"
 
 #include "util/cfg/faked_args.h"
 #include "util/cfg/handle_corbanameservice_args.h"
@@ -46,16 +47,18 @@ PollClient::runMethod()
 void
 PollClient::create_state_changes()
 {
-    const std::string exceptTypes = poll_create_statechanges_params.poll_except_types.is_value_set()
-        ? poll_create_statechanges_params.poll_except_types.get_value()
-        : std::string();
+    const std::set<Fred::Poll::MessageType::Enum> except_types =
+        poll_create_statechanges_params.poll_except_types.is_value_set()
+        ? Conversion::Enums::Sets::from_config_string<Fred::Poll::MessageType>(
+                poll_create_statechanges_params.poll_except_types.get_value())
+        : std::set<Fred::Poll::MessageType::Enum>();
 
     const int limit = poll_create_statechanges_params.poll_limit.is_value_set()
         ? poll_create_statechanges_params.poll_limit.get_value()
         : 0;
 
     Fred::OperationContextCreator ctx;
-    Fred::Poll::CreateStateMessages(exceptTypes, limit).exec(ctx);
+    Fred::Poll::CreateStateMessages(except_types, limit).exec(ctx);
     ctx.commit_transaction();
 }
 

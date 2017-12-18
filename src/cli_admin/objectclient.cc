@@ -32,6 +32,7 @@
 #include "src/fredlib/object_states.h"
 #include "src/fredlib/poll/create_state_messages.h"
 #include "src/fredlib/poll/create_low_credit_messages.h"
+#include "src/fredlib/poll/message_type_set.h"
 
 namespace Admin {
 
@@ -376,14 +377,15 @@ ObjectClient::regular_procedure()
 
         registryMan->updateObjectStates();
         registryMan->updateObjectStates();
-        std::string pollExcept("");
+        std::set<Fred::Poll::MessageType::Enum> poll_except;
         if (object_regular_procedure_params.poll_except_types.is_value_set()//m_conf.hasOpt(OBJECT_POLL_EXCEPT_TYPES_NAME)
                 ) {
-            pollExcept = object_regular_procedure_params.poll_except_types.get_value();//m_conf.get<std::string>(OBJECT_POLL_EXCEPT_TYPES_NAME);
+            poll_except = Conversion::Enums::Sets::from_config_string<Fred::Poll::MessageType>(
+                    object_regular_procedure_params.poll_except_types.get_value());
         }
         {
             Fred::OperationContextCreator ctx;
-            Fred::Poll::CreateStateMessages(pollExcept, 0).exec(ctx);
+            Fred::Poll::CreateStateMessages(poll_except, 0).exec(ctx);
             ctx.commit_transaction();
         }
 

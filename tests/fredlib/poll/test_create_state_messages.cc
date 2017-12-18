@@ -20,6 +20,7 @@
 #include "src/fredlib/opcontext.h"
 #include "tests/setup/fixtures.h"
 #include "tests/setup/fixtures_utils.h"
+#include "src/fredlib/poll/message_type_set.h"
 
 #include <boost/test/unit_test.hpp>
 
@@ -47,7 +48,7 @@ struct PollStateMessages : Test::instantiate_db_template
         handle("expirationxazuxxaxxdxefxfxfuxeca.cz"),
         date(boost::posix_time::second_clock::local_time().date() - boost::gregorian::days(7))
     {
-        const Fred::Poll::CreateStateMessages preliminary_message_creator(std::string(), 0);
+        const Fred::Poll::CreateStateMessages preliminary_message_creator(std::set<Fred::Poll::MessageType::Enum>(), 0);
         BOOST_CHECK_NO_THROW(preliminary_message_creator.exec(ctx));
         const Test::registrar registrar(ctx);
         const Test::contact contact(ctx);
@@ -71,15 +72,18 @@ struct PollStateMessages : Test::instantiate_db_template
     {
         const unsigned long long start_message_count = get_number_of_poll_messages(ctx);
 
-        const Fred::Poll::CreateStateMessages blacklisted_message_creator(
-            "expiration,imp_expiration,validation,imp_validation,outzone,idle_delete_contact,"
-            "idle_delete_nsset,idle_delete_domain,idle_delete_keyset", 10);
+        std::set<Fred::Poll::MessageType::Enum> except_list =
+            Conversion::Enums::Sets::from_config_string<Fred::Poll::MessageType>(
+                    "expiration,imp_expiration,validation,imp_validation,outzone,idle_delete_contact,"
+                    "idle_delete_nsset,idle_delete_domain,idle_delete_keyset");
+
+        const Fred::Poll::CreateStateMessages blacklisted_message_creator(except_list, 10);
         BOOST_CHECK_NO_THROW(blacklisted_message_creator.exec(ctx));
 
         const unsigned long long after_the_first_query_message_count = get_number_of_poll_messages(ctx);
         BOOST_CHECK_EQUAL(after_the_first_query_message_count, start_message_count);
 
-        const Fred::Poll::CreateStateMessages real_message_creator(std::string(), 0);
+        const Fred::Poll::CreateStateMessages real_message_creator(std::set<Fred::Poll::MessageType::Enum>(), 0);
         BOOST_CHECK_NO_THROW(real_message_creator.exec(ctx));
 
         const unsigned long long after_the_second_query_message_count = get_number_of_poll_messages(ctx);

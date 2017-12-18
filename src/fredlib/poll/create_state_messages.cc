@@ -18,32 +18,44 @@
 
 #include "src/fredlib/poll/create_state_messages.h"
 #include "src/fredlib/opexception.h"
-#include "src/fredlib/poll/message_type.h"
 
-#include "boost/algorithm/string/join.hpp"
-#include "boost/algorithm/string/split.hpp"
-#include "boost/algorithm/string/classification.hpp"
+#include <sstream>
 
 namespace Fred {
 namespace Poll {
 
-CreateStateMessages::CreateStateMessages(const std::string& _except_list, int _limit) : limit_(_limit)
+CreateStateMessages::CreateStateMessages(std::set<Fred::Poll::MessageType::Enum> _except_list, int _limit)
+    : except_list_(std::move(_except_list)),
+      limit_(_limit)
 {
-    boost::split(except_list_, _except_list, boost::is_any_of(","));
-    for (std::vector<std::string>::const_iterator itr = except_list_.begin();
-        itr != except_list_.end();
-        ++itr)
-    {
-        if (!itr->empty())
-        {
-            Conversion::Enums::from_db_handle<Fred::Poll::MessageType>(*itr);
-        }
-    }
 }
 
 unsigned long long CreateStateMessages::exec(OperationContext& _ctx) const
 {
+    std::ostringstream argument_list_query_part;
+    std::ostringstream limit_query_part;
+
+    Database::query_param_list query_parameters;
+
+    std::size_t argument_count = 0;
+    for (const auto msg_type: except_list_)
+    {
+        query_parameters(Conversion::Enums::to_db_handle(msg_type));
+        argument_list_query_part << ++argument_count << "::TEXT";
+        if (except_list_.size() != argument_count)
+        {
+            argument_list_query_part << ",";
+        }
+    }
+
+    if (limit_ > 0)
+    {
+        query_parameters(limit_);
+        limit_query_part << "LIMIT " << ++argument_count << "::INT";
+    }
+
     const Database::Result sql_query_result = _ctx.get_conn().exec_params(
+             std::string(
              "WITH "
                   "pfilter(stateidname, registrytypename, msgtypename) AS "
                   "( "
@@ -62,7 +74,7 @@ unsigned long long CreateStateMessages::exec(OperationContext& _ctx) const
                   "( "
                       "SELECT stateidname, registrytypename, msgtypename "
                       "FROM pfilter "
-                      "WHERE msgtypename != ALL($1::varchar[]) "
+                      "WHERE msgtypename NOT IN ALL(") + argument_list_query_part.str() + std::string(") "
                   "), "
                   "tfilter AS "
                   "( "
@@ -81,8 +93,7 @@ unsigned long long CreateStateMessages::exec(OperationContext& _ctx) const
                       "JOIN tfilter f ON f.stateid=os.state_id AND (f.registrytype IS NULL OR f.registrytype=ob.type) "
                       "LEFT JOIN poll_statechange ps ON ps.stateid=os.id  "
                       "WHERE os.valid_to IS NULL AND ps.stateid IS NULL "
-                      "ORDER BY os.id "
-                      "LIMIT $2::int"
+                      "ORDER BY os.id ") + limit_query_part.str() + std::string(
                   "), "
                   "we_dont_care AS "
                   "( "
@@ -94,10 +105,7 @@ unsigned long long CreateStateMessages::exec(OperationContext& _ctx) const
              "INSERT INTO poll_statechange (msgid, stateid) "
              "SELECT id, stateid "
              "FROM tmp_table "
-             "ORDER BY stateid",
-             Database::query_param_list
-             (std::string("{") + boost::join(except_list_, ",") + std::string("}"))
-             (limit_ > 0 ? limit_ : Database::QPNull));
+             "ORDER BY stateid"), query_parameters);
 
     return sql_query_result.rows_affected();
 }
