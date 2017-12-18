@@ -53,9 +53,9 @@ PollClient::create_state_changes()
                 poll_create_statechanges_params.poll_except_types.get_value())
         : std::set<Fred::Poll::MessageType::Enum>();
 
-    const int limit = poll_create_statechanges_params.poll_limit.is_value_set()
+    const boost::optional<int> limit = poll_create_statechanges_params.poll_limit.is_value_set()
         ? poll_create_statechanges_params.poll_limit.get_value()
-        : 0;
+        : boost::optional<int>();
 
     Fred::OperationContextCreator ctx;
     Fred::Poll::CreateStateMessages(except_types, limit).exec(ctx);

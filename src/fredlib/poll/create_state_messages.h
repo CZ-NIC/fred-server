@@ -22,6 +22,8 @@
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/poll/message_type_set.h"
 
+#include <boost/optional.hpp>
+
 #include <set>
 #include <string>
 
@@ -31,11 +33,11 @@ namespace Poll {
 class CreateStateMessages
 {
 public:
-    CreateStateMessages(std::set<Fred::Poll::MessageType::Enum> _except_list, int _limit);
+    CreateStateMessages(const std::set<Fred::Poll::MessageType::Enum>& _except_list, const boost::optional<int>& _limit);
     unsigned long long exec(OperationContext& _ctx) const;
 private:
     std::set<Fred::Poll::MessageType::Enum> except_list_;
-    int limit_;
+    boost::optional<int> limit_;
 };
 
 } // namespace Fred::Poll

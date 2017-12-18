@@ -28,6 +28,7 @@
 #include <stdexcept>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/optional.hpp>
 
 #include "src/fredlib/object_states.h"
 #include "src/fredlib/poll/create_state_messages.h"
@@ -385,7 +386,7 @@ ObjectClient::regular_procedure()
         }
         {
             Fred::OperationContextCreator ctx;
-            Fred::Poll::CreateStateMessages(poll_except, 0).exec(ctx);
+            Fred::Poll::CreateStateMessages(poll_except, boost::optional<int>()).exec(ctx);
             ctx.commit_transaction();
         }
 
