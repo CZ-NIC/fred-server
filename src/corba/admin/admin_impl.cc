@@ -345,8 +345,8 @@ ccReg::Session_ptr ccReg_Admin_i::getSession(const char* _session_id)
 
 
 void ccReg_Admin_i::fillRegistrar(ccReg::AdminRegistrar& creg,
-                                  Fred::Registrar::Registrar *reg) {
-
+                                  Fred::Registrar::Registrar *reg)
+{
   creg.id = reg->getId();
   creg.name = DUPSTRFUN(reg->getName);
   creg.handle = DUPSTRFUN(reg->getHandle);
@@ -366,7 +366,7 @@ void ccReg_Admin_i::fillRegistrar(ccReg::AdminRegistrar& creg,
   creg.access.length(reg->getACLSize());
   for (unsigned i=0; i<reg->getACLSize(); i++) {
     creg.access[i].md5Cert = DUPSTRFUN(reg->getACL(i)->getCertificateMD5);
-    creg.access[i].password = DUPSTRFUN(reg->getACL(i)->getPassword);
+    creg.access[i].password = "no password available";
   }
   creg.hidden = reg->getHandle() == "REG-CZNIC" ? true : false;
 }

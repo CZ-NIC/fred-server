@@ -87,7 +87,7 @@ Fred::Registrar::Registrar::AutoPtr createTestRegistrarClass()
     registrar->setVat(true);
     Fred::Registrar::ACL* registrar_acl = registrar->newACL();
     registrar_acl->setCertificateMD5("");
-    registrar_acl->setPassword("");
+    registrar_acl->set_password("");
     registrar->save();
 
     //add registrar into zone
@@ -130,7 +130,7 @@ Fred::Registrar::Registrar::AutoPtr createTestRegistrarClassNoCz(const std::stri
     registrar->setVat(true);
     Fred::Registrar::ACL* registrar_acl = registrar->newACL();
     registrar_acl->setCertificateMD5("");
-    registrar_acl->setPassword("");
+    registrar_acl->set_password("");
     registrar->save();
 
     //add registrar into zone

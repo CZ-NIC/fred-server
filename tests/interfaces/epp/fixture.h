@@ -41,19 +41,13 @@ namespace Backend {
 namespace Epp {
 
 template <class T>
-struct supply_ctx
-    : autorollbacking_context,
-      T
+struct supply_ctx : autorollbacking_context, T
 {
-
-
     supply_ctx()
         : autorollbacking_context(),
           T(ctx)
     {
     }
-
-
 };
 
 struct DefaultSessionData : public ::Epp::SessionData
@@ -73,8 +67,6 @@ struct DefaultSessionData : public ::Epp::SessionData
 struct SessionData
     : ::Epp::SessionData
 {
-
-
     SessionData(const unsigned long long _registrar_id)
         : ::Epp::SessionData(
                   _registrar_id,
@@ -83,14 +75,11 @@ struct SessionData
                   boost::optional<unsigned long long>(0))
     {
     }
-
-
 };
 
 struct Session
 {
     SessionData data;
-
 
     Session(
             Fred::OperationContext& _ctx,
@@ -98,8 +87,6 @@ struct Session
         : data(_registrar_id)
     {
     }
-
-
 };
 
 struct SessionWithUnauthenticatedRegistrar
@@ -107,19 +94,15 @@ struct SessionWithUnauthenticatedRegistrar
 {
     static const unsigned long long unauthenticated_registrar_id = 0;
 
-
     SessionWithUnauthenticatedRegistrar(Fred::OperationContext& _ctx)
         : Session(_ctx, unauthenticated_registrar_id)
     {
     }
-
-
 };
 
 struct Registrar
 {
     Fred::InfoRegistrarData data;
-
 
     Registrar(
             Fred::OperationContext& _ctx,
@@ -149,14 +132,11 @@ struct Registrar
                 ("0.2.4.e164.arpa"));
         // clang-format on
     }
-
-
 };
 
 struct RegistrarNotInZone
 {
     Fred::InfoRegistrarData data;
-
 
     RegistrarNotInZone(Fred::OperationContext& _ctx)
     {
@@ -164,14 +144,11 @@ struct RegistrarNotInZone
         Fred::CreateRegistrar(registrar_handle).exec(_ctx);
         data = Fred::InfoRegistrarByHandle(registrar_handle).exec(_ctx).info_registrar_data;
     }
-
-
 };
 
 struct SystemRegistrar
 {
     Fred::InfoRegistrarData data;
-
 
     SystemRegistrar(Fred::OperationContext& _ctx)
     {
@@ -180,93 +157,66 @@ struct SystemRegistrar
         data = Fred::InfoRegistrarByHandle(registrar_handle).exec(_ctx).info_registrar_data;
         BOOST_REQUIRE(data.system.get_value_or(false));
     }
-
-
 };
 
 struct Fqdn
 {
     const std::string fqdn;
 
-
     Fqdn(const std::string& _fqdn)
         : fqdn(_fqdn)
     {
     }
-
-
 };
 
 struct ValidFqdn
     : Fqdn
 {
-
-
     ValidFqdn()
         : Fqdn("validfqdn.cz")
     {
     }
-
-
 };
 
 struct InvalidFqdn
     : Fqdn
 {
-
-
     InvalidFqdn()
         : Fqdn("invalid!fqdn.cz")
     {
     }
-
-
 };
 
 struct InvalidEnumFqdn
     : Fqdn
 {
-
-
     InvalidEnumFqdn()
         : Fqdn("5.1.3.5.0.2.4.e164.arpa")
     {
     }
-
-
 };
 
 struct NonexistentFqdn
     : Fqdn
 {
-
-
     NonexistentFqdn()
         : Fqdn("nonexistentdomain.cz")
     {
     }
-
-
 };
 
 struct NonexistentEnumFqdn
     : Fqdn
 {
-
-
     NonexistentEnumFqdn()
         : Fqdn("5.1.3.5.0.2.4.e164.arpa")
     {
     }
-
-
 };
 
 struct BlacklistedFqdn
     : Fqdn
 {
-
-
     BlacklistedFqdn(Fred::OperationContext& _ctx)
         : Fqdn("blacklistedfqdn.cz")
     {
@@ -275,63 +225,44 @@ struct BlacklistedFqdn
                 "VALUES ($1::text, NOW(), '')",
                 Database::query_param_list(fqdn));
     }
-
-
 };
 
 struct Handle
 {
     const std::string handle;
 
-
     Handle(const std::string& _handle)
         : handle(_handle)
     {
     }
-
-
 };
 
 struct ValidHandle
     : Handle
 {
-
-
     ValidHandle()
         : Handle("validhandle")
     {
     }
-
-
 };
 
 struct InvalidHandle
     : Handle
 {
-
-
     InvalidHandle()
         : Handle("invalid!handle")
     {
     }
-
-
 };
 
 struct NonexistentHandle
     : Handle
 {
-
-
     NonexistentHandle()
         : Handle("nonexistenthandle")
     {
     }
-
-
 };
-
-
 
 // fixtures
 
@@ -339,13 +270,10 @@ struct HasSessionWithUnauthenticatedRegistrar
 {
     SessionWithUnauthenticatedRegistrar session_with_unauthenticated_registrar;
 
-
     HasSessionWithUnauthenticatedRegistrar(Fred::OperationContext& _ctx)
         : session_with_unauthenticated_registrar(_ctx)
     {
     }
-
-
 };
 
 struct HasSessionWithAuthenticatedRegistrar
@@ -353,14 +281,11 @@ struct HasSessionWithAuthenticatedRegistrar
     Registrar registrar;
     SessionData session_data_with_authenticated_registrar;
 
-
     HasSessionWithAuthenticatedRegistrar(Fred::OperationContext& _ctx)
         : registrar(_ctx),
           session_data_with_authenticated_registrar(registrar.data.id)
     {
     }
-
-
 };
 
 struct HasRegistrarWithSession
@@ -368,14 +293,11 @@ struct HasRegistrarWithSession
     Registrar registrar;
     Session session;
 
-
     HasRegistrarWithSession(Fred::OperationContext& _ctx)
         : registrar(_ctx),
           session(_ctx, registrar.data.id)
     {
     }
-
-
 };
 
 struct HasSystemRegistrarWithSession
@@ -383,14 +305,11 @@ struct HasSystemRegistrarWithSession
     SystemRegistrar system_registrar;
     Session session;
 
-
     HasSystemRegistrarWithSession(Fred::OperationContext& _ctx)
         : system_registrar(_ctx),
           session(_ctx, system_registrar.data.id)
     {
     }
-
-
 };
 
 struct HasRegistrarNotInZoneWithSession
@@ -398,14 +317,11 @@ struct HasRegistrarNotInZoneWithSession
     RegistrarNotInZone registrar_not_in_zone;
     Session session;
 
-
     HasRegistrarNotInZoneWithSession(Fred::OperationContext& _ctx)
         : registrar_not_in_zone(_ctx),
           session(_ctx, registrar_not_in_zone.data.id)
     {
     }
-
-
 };
 
 struct HasRegistrarWithSessionAndNonexistentFqdn
@@ -414,16 +330,12 @@ struct HasRegistrarWithSessionAndNonexistentFqdn
     Session session;
     NonexistentFqdn nonexistent_fqdn;
 
-
     HasRegistrarWithSessionAndNonexistentFqdn(Fred::OperationContext& _ctx)
         : registrar(_ctx),
           session(_ctx, registrar.data.id),
           nonexistent_fqdn()
-
     {
     }
-
-
 };
 
 struct HasRegistrarWithSessionAndNonexistentEnumFqdn
@@ -432,16 +344,12 @@ struct HasRegistrarWithSessionAndNonexistentEnumFqdn
     Session session;
     NonexistentEnumFqdn nonexistent_enum_fqdn;
 
-
     HasRegistrarWithSessionAndNonexistentEnumFqdn(Fred::OperationContext& _ctx)
         : registrar(_ctx),
           session(_ctx, registrar.data.id),
           nonexistent_enum_fqdn()
-
     {
     }
-
-
 };
 
 struct HasRegistrarWithSessionAndBlacklistedFqdn
@@ -450,16 +358,12 @@ struct HasRegistrarWithSessionAndBlacklistedFqdn
     Session session;
     BlacklistedFqdn blacklisted_fqdn;
 
-
     HasRegistrarWithSessionAndBlacklistedFqdn(Fred::OperationContext& _ctx)
         : registrar(_ctx),
           session(_ctx, registrar.data.id),
           blacklisted_fqdn(_ctx)
-
     {
     }
-
-
 };
 
 struct HasSystemRegistrarWithSessionAndDifferentRegistrar
@@ -468,15 +372,12 @@ struct HasSystemRegistrarWithSessionAndDifferentRegistrar
     Session session;
     Registrar different_registrar;
 
-
     HasSystemRegistrarWithSessionAndDifferentRegistrar(Fred::OperationContext& _ctx)
         : system_registrar(_ctx),
           session(_ctx, system_registrar.data.id),
           different_registrar(_ctx, "REG-TEST2")
     {
     }
-
-
 };
 
 struct HasRegistrarWithSessionAndDifferentRegistrar
@@ -485,21 +386,16 @@ struct HasRegistrarWithSessionAndDifferentRegistrar
     Session session;
     Registrar different_registrar;
 
-
     HasRegistrarWithSessionAndDifferentRegistrar(Fred::OperationContext& _ctx)
         : registrar(_ctx),
           session(_ctx, registrar.data.id),
           different_registrar(_ctx, "REG-TEST2")
     {
     }
-
-
 };
 
 struct ObjectWithStatus
 {
-
-
     ObjectWithStatus(
             Fred::OperationContext& _ctx,
             unsigned long long _object_id,
@@ -530,8 +426,6 @@ struct ObjectWithStatus
                     object_states_before.end());
         }
     }
-
-
 };
 
 // move to cc file if needed
@@ -551,7 +445,6 @@ struct ObjectWithStatus
 //       }
 //   }
 //}
-
 
 } // namespace Test::Backend::Epp
 } // namespace Test::Backend

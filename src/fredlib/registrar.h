@@ -64,21 +64,18 @@ enum MemberType {
 
 
 /// Access control attributes of registrar
-class ACL {
-protected:
-  /// Protected destructor, object is managed by object Registrar
-  virtual ~ACL() {
-  }
+class ACL
+{
 public:
   /// Return MD5 of client SSL certificate for EPP communication
   virtual const std::string& getCertificateMD5() const = 0;
   /// Set MD5 of client SSL certificate for EPP communication
   virtual void setCertificateMD5(const std::string& newCertificateMD5) = 0;
-  /// Return password for EPP login command
-  virtual const std::string& getPassword() const = 0;
-  /// Set password for EPP login command
-  virtual void setPassword(const std::string& newPassword) = 0;
   virtual void setRegistrarId(const TID &_registrar_id) = 0;
+  virtual void set_password(const std::string& _plaintext_password) = 0;
+protected:
+  /// Protected destructor, object is managed by object Registrar
+  virtual ~ACL() { }
 };
 
 /// Registrar's active zone structure

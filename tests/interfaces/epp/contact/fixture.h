@@ -239,7 +239,6 @@ struct Contact
     Fred::InfoContactData data;
 };
 
-
 // fixtures
 
 struct HasRegistrarWithSessionAndContact

@@ -16,78 +16,79 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "src/old_utils/dbsql.h"
+#include "src/old_utils/util.h"
+#include "src/old_utils/log.h"
+#include "util/log/logger.h"
+#include "src/corba/epp/action.h"
+
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <sys/types.h>
 #include <math.h>
 #include <sstream>
 
-#include "dbsql.h"
-#include "util.h"
-#include "log.h"
-#include "log/logger.h"
-#include "src/corba/epp/action.h"
-
-#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
-using namespace boost::posix_time;
-
 
 // for invoice  type 
 #define INVOICE_FA  1 // normal invoice
 #define INVOICE_ZAL 0 // advance invoice 
 
-// constructor 
 DB::DB()
+    : memHandle(NULL),
+      svrTRID(NULL),
+      sqlBuffer(NULL),
+      historyID(0),
+      loginID(0),
+      enum_action(0)
 {
-  // set mem buffers 
-  svrTRID = NULL;
-  memHandle=NULL;
-  enum_action=0;
-  loginID = 0;
+}
+
+/* HACK! HACK! HACK! */
+DB::DB(Database::Connection &_conn)
+    : PQ(_conn.__getConn__()),
+      memHandle(NULL),
+      svrTRID(NULL),
+      sqlBuffer(NULL),
+      historyID(0),
+      loginID(0),
+      enum_action(0)
+{
 }
 
 // free memory buffers
 DB::~DB()
 {
-  if (svrTRID) {
-    LOG( NOTICE_LOG , "delete svrTRID");
-    delete[] svrTRID;
-  }
+    if (sqlBuffer != NULL)
+    {
+        try
+        {
+            LOG(NOTICE_LOG , "delete sqlBuffer");
+            delete[] sqlBuffer;
+        }
+        catch (...) { }
+    }
 
-  if (memHandle) {
-    LOG( NOTICE_LOG , "delete memHandle");
-    delete[] memHandle;
-  }
+    if (svrTRID != NULL)
+    {
+        try
+        {
+            LOG(NOTICE_LOG , "delete svrTRID");
+            delete[] svrTRID;
+        }
+        catch (...) { }
+    }
 
-}
-
-// test for login
-bool DB::TestRegistrarACL(
-  int regID, const char * pass, const char * cert)
-{
-  bool ret =false;
-
-  // snprintf( sqlString, sizeof(sqlString), 
-  //     "SELECT  registrarid FROM registraracl WHERE registrarid=%d and cert=\'%s\' and password=\'%s\'; ",
-  //     regID, cert, pass);
-
-  std::stringstream query;
-  query << "SELECT registrarid FROM registraracl"
-        << " WHERE registrarid = " << regID
-        << " AND cert = '" << Escape2(cert) << "'"
-        << " AND password = '" << Escape2(pass) << "'";
-
-  if (ExecSelect(query.str().c_str()) ) {
-
-    if (GetSelectRows() > 0)
-      ret = true;
-
-    FreeSelect();
-  }
-
-  return ret;
+    if (memHandle != NULL)
+    {
+        try
+        {
+            LOG(NOTICE_LOG , "delete memHandle");
+            delete[] memHandle;
+        }
+        catch (...) { }
+    }
 }
 
 // action 
@@ -1482,37 +1483,46 @@ void DB::SETBOOL(
 void DB::WHERE(
   const char *fname, const char * value)
 {
-  if (SQLTestEnd( ',') || SQLTestEnd( ';') ) {
+  if (SQLTestEnd(',') || SQLTestEnd(';'))
+  {
     SQLDelEnd(); //  delete last char 
 
-    SQLCat("  WHERE ");
+    SQLCat(" WHERE ");
     SQLCat(fname);
     SQLCat("='");
     SQLCatEscape(value);
     SQLCat("' ;");
-  } else
-    sqlBuffer[0] =0; // empty  SQL buffer
+  }
+  else
+  {
+    sqlBuffer[0] = '\0'; // empty  SQL buffer
+  }
 }
 
 void DB::OPERATOR(
   const char *op)
 {
-  if (SQLTestEnd( ',') || SQLTestEnd( ';') ) {
+  if (SQLTestEnd(',') || SQLTestEnd(';'))
+  {
     SQLDelEnd(); //   delete last char 
     SQLCat("  ");
     SQLCat(op); // op  AND OR LIKE
     SQLCat(" ");
-  } else
-    sqlBuffer[0] =0; // empty  SQL buffer
+  }
+  else
+  {
+    sqlBuffer[0] = '\0'; // empty  SQL buffer
+  }
 
 }
 
 void DB::WHEREOPP(
   const char *op, const char *fname, const char *p, const char * value)
 {
-  if (SQLTestEnd( ',') || SQLTestEnd( ';') )
+  if (SQLTestEnd(',') || SQLTestEnd(';'))
+  {
     SQLDelEnd();
-
+  }
   SQLCat("  ");
   SQLCat(op); // op AND OR LIKE
   SQLCat(" ");
@@ -1728,6 +1738,7 @@ bool DB::EXEC()
 
   // free mem 
   delete[] sqlBuffer;
+  sqlBuffer = NULL;
   // return if success of failed
   return ret;
 }
@@ -1742,6 +1753,7 @@ bool DB::SELECT()
 
   // free mem 
   delete[] sqlBuffer;
+  sqlBuffer = NULL;
   //  return if success of failed
   return ret;
 }

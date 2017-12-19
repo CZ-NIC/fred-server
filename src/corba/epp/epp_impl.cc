@@ -16,20 +16,6 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <fstream>
-#include <iostream>
-
-#include "boost/date_time/posix_time/posix_time.hpp"
-#include "boost/date_time/local_time_adjustor.hpp"
-#include "boost/date_time/c_local_time_adjustor.hpp"
-#include <boost/numeric/conversion/cast.hpp>
-#include <boost/algorithm/string.hpp>
-#include <boost/scoped_ptr.hpp>
-#include <boost/lexical_cast.hpp>
-
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
 #include "src/corba/EPP.hh"
 #include "src/corba/epp/epp_impl.h"
 
@@ -44,13 +30,12 @@
 // database functions
 #include "src/old_utils/dbsql.h"
 
-#include "action.h"    // code of the EPP operations
 // support function
 #include "src/old_utils/util.h"
 
-#include "src/corba/epp/action.h" // code of the EPP operations
-#include "response.h"  // errors code
-#include "reason.h"    // reason messages code
+#include "src/corba/epp/action.h"    // code of the EPP operations
+#include "src/corba/epp/response.h"  // errors code
+#include "src/corba/epp/reason.h"    // reason messages code
 
 #include "src/epp/epp_response_failure_localized.h"
 #include "src/epp/session_data.h"
@@ -68,7 +53,7 @@
 #include "src/fredlib/info_buffer.h"
 #include "src/fredlib/zone.h"
 #include "src/fredlib/invoicing/invoice.h"
-#include "tech_check.h"
+#include "src/corba/epp/tech_check.h"
 
 #include "src/fredlib/registrar/info_registrar.h"
 
@@ -127,6 +112,9 @@
 #include "src/epp/request_params.h"
 #include "src/epp/localization.h"
 #include "src/epp/impl/disclose_policy.h"
+
+#include "src/epp/impl/registraracl/authentic_registrar.hh"
+
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/object_state/object_has_state.h"
 #include "src/corba/epp/contact/contact_corba_conversions.h"
@@ -169,15 +157,12 @@
 #include "src/epp/nsset/transfer_nsset_config_data.h"
 #include "src/epp/nsset/update_nsset_config_data.h"
 
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-
-#include <vector>
-#include <memory>
-
-#include <fstream>
-#include <iostream>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/local_time_adjustor.hpp>
+#include <boost/date_time/c_local_time_adjustor.hpp>
+#include <boost/numeric/conversion/cast.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/scoped_ptr.hpp>
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/local_time_adjustor.hpp>
@@ -185,6 +170,17 @@
 #include <boost/numeric/conversion/cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/scoped_ptr.hpp>
+#include <boost/lexical_cast.hpp>
+
+#include <cstdlib>
+#include <cstring>
+#include <ctime>
+
+#include <vector>
+#include <memory>
+
+#include <fstream>
+#include <iostream>
 
 struct NotificationParams //for enqueue_notification call in ~EPPAction()
 {
@@ -207,18 +203,6 @@ struct NotificationParams //for enqueue_notification call in ~EPPAction()
 
 class EPPAction
 {
-  ccReg::Response_var ret;
-  ccReg::Errors_var errors;
-  ccReg_EPP_i *epp;
-  DBSharedPtr  db;
-  int regID;
-  unsigned long long clientID;
-  int code; ///< needed for destructor where Response is invalidated
-  Optional<NotificationParams> notification_params_ ;
-  std::string cltrid;
-  Database::Connection conn_;
-  std::unique_ptr<Database::Transaction> tx_;
-
 public:
   struct ACTION_START_ERROR
   {
@@ -251,7 +235,8 @@ public:
       epp->EppError(r->code, r->msg, r->svTRID, errors);
     }
 
-    code = ret->code = COMMAND_OK;
+    ret->code = COMMAND_OK;
+    code = ret->code;
 
     Logging::Context::push(str(boost::format("%1%") % db->GetsvTRID()));
   }
@@ -263,9 +248,8 @@ public:
         unsigned long long historyid = 0;
 
         if (tx_.get()) {
-            /* OMG: insane macro naming condition style */
-            if (CMD_FAILED(code)) {
-
+            if (is_command_successfully_done(code))
+            {
                 try
                 {
                     if(notification_params_.isset())
@@ -288,7 +272,8 @@ public:
                 }
                 tx_->commit();
             }
-            else {
+            else
+            {
                 tx_->rollback();
             }
         }
@@ -414,7 +399,18 @@ public:
   {
       notification_params_ = NotificationParams(id,request_type, disable_epp_notifier);
   }
-
+private:
+  ccReg::Response_var ret;
+  ccReg::Errors_var errors;
+  ccReg_EPP_i *epp;
+  DBSharedPtr  db;
+  int regID;
+  unsigned long long clientID;
+  int code; ///< needed for destructor where Response is invalidated
+  Optional<NotificationParams> notification_params_ ;
+  std::string cltrid;
+  Database::Connection conn_;
+  std::unique_ptr<Database::Transaction> tx_;
 };
 
 /// replace GetContactID
@@ -1522,7 +1518,7 @@ ccReg::Response *
 ccReg_EPP_i::ClientLogout(const ccReg::EppParams &params)
 {
     Logging::Context::clear();
-  Logging::Context ctx("rifd");
+    Logging::Context ctx("rifd");
     Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
     ConnectionReleaser releaser;
 
@@ -1535,126 +1531,164 @@ ccReg_EPP_i::ClientLogout(const ccReg::EppParams &params)
     return action.getRet()._retn();
 }
 
-ccReg::Response * ccReg_EPP_i::ClientLogin(
-  const char *ClID, const char *passwd, const char *newpass,
-  const char *clTRID, const char* XML,
-  CORBA::ULongLong & out_clientID,
-  ccReg::TID requestId,
-  const char *certID, ccReg::Languages lang)
+namespace {
+
+std::string hide(const char* secret_value)
 {
-  Logging::Context::clear();
-  Logging::Context ctx("rifd");
-  ConnectionReleaser releaser;
+    static const char substitute_char = '.';
+    const std::size_t length_of_faked_value = secret_value == NULL ? 0 : std::strlen(secret_value);
+    return std::string(length_of_faked_value, substitute_char);
+}
 
-  int regID=0;
-  int language=0;
-  ccReg::Response_var ret;
-  ret = new ccReg::Response;
+}//namespace {anonymous}
 
-  // default
-  ret->code = 0;
-  out_clientID = 0;
+ccReg::Response * ccReg_EPP_i::ClientLogin(
+        const char *ClID,
+        const char *passwd,
+        const char *newpass,
+        const char *clTRID,
+        const char* XML,
+        CORBA::ULongLong & out_clientID,
+        ccReg::TID requestId,
+        const char *certID,
+        ccReg::Languages lang)
+{
+    Logging::Context::clear();
+    Logging::Context ctx("rifd");
+    ConnectionReleaser releaser;
 
-  LOG( NOTICE_LOG, "ClientLogin: username-> [%s] clTRID [%s] passwd [%s]  newpass [%s] ", ClID, static_cast<const char*>(clTRID), passwd, newpass );
-  LOG( NOTICE_LOG, "ClientLogin:  certID  [%s] language  [%d] ", certID, lang );
+    ccReg::Response_var ret = new ccReg::Response;
 
-  Database::Connection conn = Database::Manager::acquire();
+    // default
+    ret->code = 0;
+    out_clientID = 0;
 
-   {
-    DBSharedPtr nodb;
-    DBSharedPtr DBsql (new DB(conn));
+    LOG(NOTICE_LOG, "ClientLogin: username-> [%s] clTRID [%s] passwd [%s] newpass [%s]",
+        ClID,
+        clTRID,
+        hide(passwd),
+        hide(newpass));
+    LOG(NOTICE_LOG, "ClientLogin: certID [%s] language [%d]", certID, lang);
 
-    std::unique_ptr<Fred::Registrar::Manager> regman(
-         Fred::Registrar::Manager::create(nodb));
-    try {
+    Database::Connection conn = Database::Manager::acquire();
+    DB DBsql(conn);
+    Database::Transaction tx(conn);
+
+    try
+    {
         // get ID of registrar by handle
-        if ((regID = DBsql->GetNumericFromTable("REGISTRAR", "id", "handle",
-                (char *) ClID)) == 0) {
+        const int regID = DBsql.GetNumericFromTable("REGISTRAR", "id", "handle", const_cast<char*>(ClID));
+        if (regID == 0)
+        {
             LOG(NOTICE_LOG, "bad username [%s]", ClID);
             // bad username
-            ret->code = COMMAND_AUTH_ERROR;
-        } else if (regman->isRegistrarBlocked(regID)) {
-            // registrar blocked
-            LOGGER(PACKAGE).notice((boost::format("Registrar %1% login attempt while blocked. ") % ClID).str());
-            ret->code = COMMAND_AUTOR_ERROR;
-        } else if ( !DBsql->TestRegistrarACL(regID, passwd, certID) ) {
-            // test password and certificate fingerprint in the table RegistrarACL
-            LOG( NOTICE_LOG, "password [%s]  or certID [%s]  not accept", passwd , certID );
             ret->code = COMMAND_AUTH_ERROR;
         }
         else
         {
-            //get db connection and start transaction
-            Database::Connection conn = Database::Manager::acquire();
-            Database::Transaction tx(conn);
-
-
-                // change language
-                if (lang == ccReg::CS) {
-                    LOG( NOTICE_LOG, "SET LANG to CS" );
-                    language=1;
-                    }
-
-                // change password if set new
-                if (strlen(newpass) ) {
-                    LOG( NOTICE_LOG, "change password  [%s]  to  newpass [%s] ", passwd, newpass );
-
-                    DBsql->UPDATE("REGISTRARACL");
-                    DBsql->SET("password", newpass);
-                    DBsql->WHERE("registrarid", regID);
-
-                    if (DBsql->EXEC() == false)
-                    ret->code = COMMAND_FAILED; // if failed
-                }
-
-                if (ret->code == 0) {
-                    try {
-                        out_clientID = epp_sessions_.login_session(regID, language);
-
-                        LOGGER(PACKAGE).notice(boost::format("ClientLogin: username %1%, regID %2%, clTRID %3%, lang %4% got clientID %5%")
-                                                    % ClID % regID % static_cast<const char*>(clTRID) % language % out_clientID);
-
-                        ret->code = COMMAND_OK;
-                    } catch (const NumberSessionLimit &ex) {
-
-                        LOGGER(PACKAGE).warning(boost::format("ClientLogin: username %1%, regID %2% clTRID %3%, lang %4% login FAILED, reason %5% ")
-                                                    % ClID % regID % static_cast<const char*>(clTRID) % language % ex.what());
-                        out_clientID=0; //  not login
-                        ret->code =COMMAND_MAX_SESSION_LIMIT; // maximal limit of connection sessions
-                    }
-                }
-
-            // end of transaction
-            if (CMD_FAILED((ret->code))) tx.commit();
-            //else rollback
+            DBSharedPtr nodb;
+            const std::unique_ptr<Fred::Registrar::Manager> regman(Fred::Registrar::Manager::create(nodb));
+            if (regman->isRegistrarBlocked(regID))
+            {
+                LOGGER(PACKAGE).notice((boost::format("Registrar %1% login attempt while blocked.") % ClID).str());
+                ret->code = COMMAND_AUTOR_ERROR;
+            }
         }
+        if (ret->code == 0)
+        {
+            const Epp::RegistrarAcl::AuthenticRegistrar authentic_registrar(conn, regID, certID, passwd);
+            const bool set_new_password = (newpass != NULL) && (*newpass != '\0');
+            if (set_new_password)
+            {
+                LOG(NOTICE_LOG, "change password [%s] to newpass [%s]", hide(passwd), hide(newpass));
+                authentic_registrar.set_password(newpass);
+            }
+            class Language
+            {
+            public:
+                explicit Language(ccReg::Languages _lang):lang_(_lang) { }
+                int to_int()const
+                {
+                    switch (lang_)
+                    {
+                        case ccReg::CS:
+                            LOG(NOTICE_LOG, "SET LANG to CS");
+                            return 1;
+                        case ccReg::EN:
+                            return 0;
+                    }
+                    throw std::runtime_error("unexpected language");
+                }
+            private:
+                const ccReg::Languages lang_;
+            };
+            const int language = Language(lang).to_int();
+            try
+            {
+                out_clientID = epp_sessions_.login_session(regID, language);
 
-    } catch(std::exception &ex) {
-        LOGGER(PACKAGE).error(boost::format("Exception in ccReg_EPP_i::ClientLogin: %1%") % ex.what());
+                LOGGER(PACKAGE).notice(
+                        boost::format("ClientLogin: username %1%, regID %2%, clTRID %3%, lang %4% got clientID %5%") %
+                        ClID %
+                        regID %
+                        clTRID %
+                        language %
+                        out_clientID);
+
+                ret->code = COMMAND_OK;
+            }
+            catch (const NumberSessionLimit& e)
+            {
+                LOGGER(PACKAGE).warning(
+                        boost::format("ClientLogin: username %1%, regID %2% clTRID %3%, lang %4% login FAILED, reason %5%") %
+                        ClID %
+                        regID %
+                        clTRID %
+                        language %
+                        e.what());
+                out_clientID = 0; //  not login
+                ret->code = COMMAND_MAX_SESSION_LIMIT; // maximal limit of connection sessions
+            }
+        }
+    }
+    catch (const Epp::RegistrarAcl::AuthenticRegistrar::AuthenticationFailed &e)
+    {
+        LOG(NOTICE_LOG, "password [%s] or certID [%s] not accept: %s", hide(passwd), certID, e.what());
+        ret->code = COMMAND_AUTH_ERROR;
+    }
+    catch (const std::exception &e)
+    {
+        LOGGER(PACKAGE).error(boost::format("Exception in ccReg_EPP_i::ClientLogin: %1%") % e.what());
         ret->code = COMMAND_FAILED;
-    } catch(...) {
+    }
+    catch (...)
+    {
         LOGGER(PACKAGE).error("Unknown exception in ccReg_EPP_i::ClientLogin");
     }
 
-    // write  to table action aand return  svTRID
-    if (DBsql->BeginAction(out_clientID, EPP_ClientLogin, static_cast<const char*>(clTRID), XML, requestId) ) {
-        ret->svTRID = CORBA::string_dup(DBsql->EndAction(ret->code) );
-
-        ret->msg =CORBA::string_dup(GetErrorMessage(ret->code,
-                        GetRegistrarLang(out_clientID) ) );
-    } else {
-        ServerInternalError("ClientLogin");
+    if (ret->code == 0)
+    {
+        this->ServerInternalError("ClientLogin");//throws
+    }
+    // write to table action and return svTRID
+    if (!DBsql.BeginAction(out_clientID, EPP_ClientLogin, static_cast<const char*>(clTRID), XML, requestId))
+    {
+        this->ServerInternalError("ClientLogin");//throws
+    }
+    ret->svTRID = CORBA::string_dup(DBsql.EndAction(ret->code));
+    ret->msg = CORBA::string_dup(GetErrorMessage(ret->code, GetRegistrarLang(out_clientID)));
+    // end of transaction
+    if (is_command_successfully_done(ret->code))
+    {
+        tx.commit();
     }
 
-  }
-
-  if (ret->code == 0)
-    ServerInternalError("ClientLogin");
-  ccReg::Errors_var errors = new ccReg::Errors;
-  if (ret->code > COMMAND_EXCEPTION)
-    EppError(ret->code, ret->msg, ret->svTRID, errors);
-
-  return ret._retn();
+    if (COMMAND_EXCEPTION < ret->code)
+    {
+        ccReg::Errors_var errors = new ccReg::Errors;
+        this->EppError(ret->code, ret->msg, ret->svTRID, errors);//throws
+    }
+    return ret._retn();
 }
 
 ccReg::Response* ccReg_EPP_i::ContactCheck(

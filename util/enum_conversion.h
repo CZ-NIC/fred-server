@@ -32,6 +32,16 @@ namespace Conversion {
 namespace Enums {
 
 /**
+ * Converts enum value to the corresponding database handle represented by string.
+ * @tparam ENUM_TYPE autodeducted enum type
+ * @param value an enum value which has to be converted to its string counterpart
+ * @return matching string counterpart
+ * @throw std::invalid_argument in case that conversion fails
+ */
+template <typename ENUM_TYPE>
+std::string to_db_handle(ENUM_TYPE value);
+
+/**
  * Converts database handle represented by string into its enum representation.
  * @tparam ENUM_HOST_TYPE type which hosts enum
  * @param db_handle string which has to be converted to its enum counterpart
@@ -39,7 +49,7 @@ namespace Enums {
  * @throw std::invalid_argument in case that conversion fails
  */
 template < typename ENUM_HOST_TYPE >
-inline typename ENUM_HOST_TYPE::Enum from_db_handle(const std::string &db_handle);
+typename ENUM_HOST_TYPE::Enum from_db_handle(const std::string &db_handle);
 
 /**
  * Helps to implement from_db_handle function using to_db_handle conversion function.
