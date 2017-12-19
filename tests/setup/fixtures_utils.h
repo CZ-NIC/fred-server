@@ -9,6 +9,8 @@
 #include "util/db/nullable.h"
 #include "util/optional_value.h"
 #include "util/random_data_generator.h"
+#include "util/tz/europe/prague.hh"
+#include "util/tz/get_psql_handle_of.hh"
 
 #include <fredlib/registrar.h>
 #include <fredlib/contact.h>
@@ -416,24 +418,24 @@ namespace Test {
     unsigned long long  get_cz_zone_id(Fred::OperationContext& ctx);
 
     // for use with temporary object - copying arguments - suboptimal but hopefully adequate enough
-    template<typename TCreateOper> typename util::InfoXData_type<TCreateOper>::type exec(TCreateOper create, Fred::OperationContext& ctx) {
+    template<typename TCreateOper> typename util::InfoXData_type<TCreateOper>::type exec(TCreateOper create, Fred::OperationContext& ctx, const std::string& timezone = Tz::get_psql_handle_of<Tz::Europe::Prague>()) {
         create.exec(ctx);
 
         typename util::InfoXData_type<TCreateOper>::type temp;
         util::copy_InfoXOutput_to_InfoXData(
             typename util::InfoXByHandle_type<TCreateOper>::type(
                 util::get_handle_from_CreateX<TCreateOper>(create)()
-            ).exec(ctx),
+                ).exec(ctx, timezone),
             temp
         );
 
         return temp;
     }
     // for use with temporary object - copying arguments - suboptimal but hopefully adequate enough
-    template<typename TCreateOper> std::vector<typename util::InfoXData_type<TCreateOper>::type> exec(boost::ptr_vector<TCreateOper> objects, Fred::OperationContext& ctx) {
+    template<typename TCreateOper> std::vector<typename util::InfoXData_type<TCreateOper>::type> exec(boost::ptr_vector<TCreateOper> objects, Fred::OperationContext& ctx, const std::string& timezone = Tz::get_psql_handle_of<Tz::Europe::Prague>()) {
         std::vector<typename util::InfoXData_type<TCreateOper>::type> result;
         BOOST_FOREACH(const TCreateOper& obj, objects) {
-            result.push_back(exec(obj, ctx));
+            result.push_back(exec(obj, ctx, timezone));
         }
 
         return result;
@@ -486,20 +488,21 @@ namespace Test {
     struct registrar {
         Fred::InfoRegistrarData info_data;
 
-        static Fred::InfoRegistrarData make(Fred::OperationContext& _ctx, Optional<std::string> _handle = Optional<std::string>() ) {
+        static Fred::InfoRegistrarData make(Fred::OperationContext& _ctx, Optional<std::string> _handle = Optional<std::string>(), const std::string& _timezone = Tz::get_psql_handle_of<Tz::Europe::Prague>()) {
             return exec(
                 CreateX_factory<Fred::CreateRegistrar>().make(_handle),
-                _ctx
+                _ctx,
+                _timezone
             );
         }
 
-        registrar(Fred::OperationContext& _ctx, Optional<std::string> _handle = Optional<std::string>()) {
-            info_data = make(_ctx, _handle);
+        registrar(Fred::OperationContext& _ctx, Optional<std::string> _handle = Optional<std::string>(), const std::string& _timezone = Tz::get_psql_handle_of<Tz::Europe::Prague>()) {
+            info_data = make(_ctx, _handle, _timezone);
         }
 
-        registrar(Optional<std::string> _handle = Optional<std::string>()) {
+        registrar(Optional<std::string> _handle = Optional<std::string>(), const std::string& _timezone = Tz::get_psql_handle_of<Tz::Europe::Prague>()) {
             Fred::OperationContextCreator ctx;
-            info_data = make(ctx, _handle);
+            info_data = make(ctx, _handle, _timezone);
             ctx.commit_transaction();
         }
     };
@@ -507,14 +510,15 @@ namespace Test {
     struct contact {
         Fred::InfoContactData info_data;
 
-        static Fred::InfoContactData make(Fred::OperationContext& _ctx, Optional<std::string> _handle = Optional<std::string>(), Optional<std::string> _registrar_handle = Optional<std::string>()) {
+        static Fred::InfoContactData make(Fred::OperationContext& _ctx, Optional<std::string> _handle = Optional<std::string>(), Optional<std::string> _registrar_handle = Optional<std::string>(), const std::string& _timezone = Tz::get_psql_handle_of<Tz::Europe::Prague>()) {
             if(_registrar_handle.isset()) {
                 return exec(
                     CreateX_factory<Fred::CreateContact>().make(
                         _registrar_handle.get_value_or_default(),
                         _handle
                     ),
-                    _ctx
+                    _ctx,
+                    _timezone
                 );
             } else {
                 return exec(
@@ -522,18 +526,19 @@ namespace Test {
                         registrar(_ctx).info_data.handle,
                         _handle
                     ),
-                    _ctx
+                    _ctx,
+                    _timezone
                 );
             }
         }
 
-        contact(Fred::OperationContext& _ctx, Optional<std::string> _handle = Optional<std::string>(), Optional<std::string> _registrar_handle = Optional<std::string>()) {
-            info_data = make(_ctx, _handle, _registrar_handle);
+        contact(Fred::OperationContext& _ctx, Optional<std::string> _handle = Optional<std::string>(), Optional<std::string> _registrar_handle = Optional<std::string>(), const std::string& _timezone = Tz::get_psql_handle_of<Tz::Europe::Prague>()) {
+            info_data = make(_ctx, _handle, _registrar_handle, _timezone);
         }
 
-        contact(Optional<std::string> _handle = Optional<std::string>(), Optional<std::string> _registrar_handle = Optional<std::string>()) {
+        contact(Optional<std::string> _handle = Optional<std::string>(), Optional<std::string> _registrar_handle = Optional<std::string>(), const std::string& _timezone = Tz::get_psql_handle_of<Tz::Europe::Prague>()) {
             Fred::OperationContextCreator ctx;
-            info_data = make(ctx, _handle, _registrar_handle);
+            info_data = make(ctx, _handle, _registrar_handle, _timezone);
             ctx.commit_transaction();
         }
     };
@@ -541,23 +546,24 @@ namespace Test {
     struct domain {
         Fred::InfoDomainData info_data;
 
-        static Fred::InfoDomainData make(Fred::OperationContext& _ctx) {
+        static Fred::InfoDomainData make(Fred::OperationContext& _ctx, const std::string& _timezone = Tz::get_psql_handle_of<Tz::Europe::Prague>()) {
             return exec(
                 CreateX_factory<Fred::CreateDomain>().make(
                     registrar(_ctx).info_data.handle,
                     contact(_ctx).info_data.handle
                 ),
-                _ctx
+                _ctx,
+                _timezone
             );
         }
 
-        domain(Fred::OperationContext& _ctx) {
-            info_data = make(_ctx);
+        domain(Fred::OperationContext& _ctx, const std::string& _timezone = Tz::get_psql_handle_of<Tz::Europe::Prague>()) {
+            info_data = make(_ctx, _timezone);
         }
 
-        domain() {
+        domain(const std::string& _timezone = Tz::get_psql_handle_of<Tz::Europe::Prague>()) {
             Fred::OperationContextCreator ctx;
-            info_data = make(ctx);
+            info_data = make(ctx, _timezone);
             ctx.commit_transaction();
         }
     };
@@ -565,14 +571,15 @@ namespace Test {
     struct nsset {
         Fred::InfoNssetData info_data;
 
-        static Fred::InfoNssetData make(Fred::OperationContext& _ctx, Optional<std::string> _handle = Optional<std::string>(), Optional<std::string> _registrar_handle = Optional<std::string>()) {
+        static Fred::InfoNssetData make(Fred::OperationContext& _ctx, Optional<std::string> _handle = Optional<std::string>(), Optional<std::string> _registrar_handle = Optional<std::string>(), const std::string& _timezone = Tz::get_psql_handle_of<Tz::Europe::Prague>()) {
             if(_registrar_handle.isset()) {
                 return exec(
                     CreateX_factory<Fred::CreateNsset>().make(
                         _registrar_handle.get_value_or_default(),
                         _handle
                     ),
-                    _ctx
+                    _ctx,
+                    _timezone
                 );
             } else {
                 return exec(
@@ -580,18 +587,19 @@ namespace Test {
                         registrar(_ctx).info_data.handle,
                         _handle
                     ),
-                    _ctx
+                    _ctx,
+                    _timezone
                 );
             }
         }
 
-        nsset(Fred::OperationContext& _ctx, Optional<std::string> _handle = Optional<std::string>(), Optional<std::string> _registrar_handle = Optional<std::string>()) {
-            info_data = make(_ctx, _handle, _registrar_handle);
+        nsset(Fred::OperationContext& _ctx, Optional<std::string> _handle = Optional<std::string>(), Optional<std::string> _registrar_handle = Optional<std::string>(), const std::string& _timezone = Tz::get_psql_handle_of<Tz::Europe::Prague>()) {
+            info_data = make(_ctx, _handle, _registrar_handle, _timezone);
         }
 
-        nsset(Optional<std::string> _handle = Optional<std::string>(), Optional<std::string> _registrar_handle = Optional<std::string>()) {
+        nsset(Optional<std::string> _handle = Optional<std::string>(), Optional<std::string> _registrar_handle = Optional<std::string>(), const std::string& _timezone = Tz::get_psql_handle_of<Tz::Europe::Prague>()) {
             Fred::OperationContextCreator ctx;
-            info_data = make(ctx, _handle, _registrar_handle);
+            info_data = make(ctx, _handle, _registrar_handle, _timezone);
             ctx.commit_transaction();
         }
     };
@@ -599,14 +607,15 @@ namespace Test {
     struct keyset {
         Fred::InfoKeysetData info_data;
 
-        static Fred::InfoKeysetData make(Fred::OperationContext& _ctx, Optional<std::string> _handle = Optional<std::string>(), Optional<std::string> _registrar_handle = Optional<std::string>()) {
+        static Fred::InfoKeysetData make(Fred::OperationContext& _ctx, Optional<std::string> _handle = Optional<std::string>(), Optional<std::string> _registrar_handle = Optional<std::string>(), const std::string& _timezone = Tz::get_psql_handle_of<Tz::Europe::Prague>()) {
             if(_registrar_handle.isset()) {
                 return exec(
                     CreateX_factory<Fred::CreateKeyset>().make(
                         _registrar_handle.get_value_or_default(),
                         _handle
                     ),
-                    _ctx
+                    _ctx,
+                    _timezone
                 );
             } else {
                 return exec(
@@ -614,18 +623,19 @@ namespace Test {
                         registrar(_ctx).info_data.handle,
                         _handle
                     ),
-                    _ctx
+                    _ctx,
+                    _timezone
                 );
             }
         }
 
-        keyset(Fred::OperationContext& _ctx, Optional<std::string> _handle = Optional<std::string>(), Optional<std::string> _registrar_handle = Optional<std::string>()) {
-            info_data = make(_ctx, _handle, _registrar_handle);
+        keyset(Fred::OperationContext& _ctx, Optional<std::string> _handle = Optional<std::string>(), Optional<std::string> _registrar_handle = Optional<std::string>(), const std::string& _timezone = Tz::get_psql_handle_of<Tz::Europe::Prague>()) {
+            info_data = make(_ctx, _handle, _registrar_handle, _timezone);
         }
 
-        keyset(Optional<std::string> _handle = Optional<std::string>(), Optional<std::string> _registrar_handle = Optional<std::string>()) {
+        keyset(Optional<std::string> _handle = Optional<std::string>(), Optional<std::string> _registrar_handle = Optional<std::string>(), const std::string& _timezone = Tz::get_psql_handle_of<Tz::Europe::Prague>()) {
             Fred::OperationContextCreator ctx;
-            info_data = make(ctx, _handle, _registrar_handle);
+            info_data = make(ctx, _handle, _registrar_handle, _timezone);
             ctx.commit_transaction();
         }
     };

@@ -2652,6 +2652,7 @@ tests_interfaces_test_admin_contact_verification_LDADD = \
 		util/log/liblog.a \
 		util/db/libdb.a \
 		util/libutil.a \
+		util/tz/libtimezones.a \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
@@ -2706,6 +2707,7 @@ tests_interfaces_test_admin_contact_automerge_LDADD = \
 		util/db/libdb.a \
 		src/old_utils/liboldutils.a \
 		util/libutil.a \
+		util/tz/libtimezones.a \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
@@ -2740,6 +2742,7 @@ tests_interfaces_test_admin_notification_LDADD = \
 		util/log/liblog.a \
 		util/db/libdb.a \
 		util/libutil.a \
+		util/tz/libtimezones.a \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
@@ -2877,6 +2880,7 @@ tests_interfaces_test_whois_LDADD = \
 		util/db/libdb.a \
 		src/old_utils/liboldutils.a \
 		util/libutil.a \
+		util/tz/libtimezones.a \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
@@ -3052,6 +3056,7 @@ tests_interfaces_test_public_request_LDADD = \
 		util/log/liblog.a \
 		util/db/libdb.a \
 		util/libutil.a \
+		util/tz/libtimezones.a \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(OMNIORB4_LIBS) \
 		$(BOOST_REGEX_LIB) \
@@ -3311,6 +3316,7 @@ tests_test_optys_LDADD = \
 		util/libutil.a \
 		util/log/liblog.a \
 		util/types/libtypes.a \
+		util/tz/libtimezones.a \
 		-lmpdec -lm -lrt \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
@@ -3352,6 +3358,7 @@ tests_test_corba_conversion_LDADD = \
 		src/fredlib/libfred.a \
 		util/libutil.a \
 		util/log/liblog.a \
+		util/tz/libtimezones.a \
 		-lmpdec -lm -lrt \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
@@ -3424,6 +3431,7 @@ tests_interfaces_test_automatic_keyset_management_LDADD = \
 		util/libutil.a \
 		util/log/liblog.a \
 		util/db/libdb.a \
+		util/tz/libtimezones.a \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \

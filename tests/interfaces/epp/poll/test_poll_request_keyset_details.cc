@@ -25,6 +25,9 @@
 #include "src/epp/epp_response_failure.h"
 #include "src/epp/epp_result_failure.h"
 #include "src/epp/epp_result_code.h"
+#include "util/tz/utc.hh"
+#include "util/tz/get_psql_handle_of.hh"
+#include "util/optional_value.h"
 
 #include <boost/test/unit_test.hpp>
 
@@ -83,7 +86,7 @@ struct HasKeysetUpdate : virtual Test::Backend::Epp::autorollbacking_context
         Test::mark_all_messages_as_seen(ctx);
         static const char new_passwd[] = "doesntmatter_38E166961BEE";
 
-        const Test::keyset keyset(ctx);
+        const Test::keyset keyset(ctx, Optional<std::string>(), Optional<std::string>(), Tz::get_psql_handle_of<Tz::UTC>());
         old_keyset_data = new_keyset_data = keyset.info_data;
 
         new_keyset_data.authinfopw = new_passwd;
