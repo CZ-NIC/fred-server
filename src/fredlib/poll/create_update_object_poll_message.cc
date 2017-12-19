@@ -32,8 +32,7 @@ void CreateUpdateObjectPollMessage::exec(Fred::OperationContext &_ctx, unsigned 
         {
             struct TooManyRows:InternalError
             {
-                TooManyRows():InternalError(std::string()) { }
-                const char* what()const noexcept { return "too many rows"; }
+                TooManyRows():InternalError("too many rows") { }
             };
             throw TooManyRows();
         }
@@ -58,8 +57,7 @@ void CreateUpdateObjectPollMessage::exec(Fred::OperationContext &_ctx, unsigned 
     }
     struct UnexpectedObjectType:InternalError
     {
-        UnexpectedObjectType():InternalError(std::string()) { }
-        const char* what()const noexcept { return "unexpected object type"; }
+        UnexpectedObjectType():InternalError("unexpected object type") { }
     };
     throw UnexpectedObjectType();
 }

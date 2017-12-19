@@ -805,8 +805,6 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/notify.cc \
 		src/fredlib/logger_client.h \
 		src/fredlib/epp_corba_client.h \
-		src/fredlib/poll.cc \
-		src/fredlib/poll.h \
 		src/fredlib/file_transferer.h \
 		src/fredlib/file.cc \
 		src/fredlib/file.h \
@@ -916,6 +914,16 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/poll/create_poll_message.cc \
 		src/fredlib/poll/create_update_object_poll_message.h \
 		src/fredlib/poll/create_update_object_poll_message.cc \
+		src/fredlib/poll/get_request_fee_message.h \
+		src/fredlib/poll/get_request_fee_message.cc \
+		src/fredlib/poll/create_request_fee_info_message.h \
+		src/fredlib/poll/create_request_fee_info_message.cc \
+		src/fredlib/poll/create_request_fee_info_messages.h \
+		src/fredlib/poll/create_request_fee_info_messages.cc \
+		src/fredlib/poll/create_low_credit_messages.h \
+		src/fredlib/poll/create_low_credit_messages.cc \
+		src/fredlib/poll/create_state_messages.h \
+		src/fredlib/poll/create_state_messages.cc \
 		src/fredlib/opexception.h \
 		src/fredlib/contact/copy_history_impl.h \
 		src/fredlib/contact/copy_history_impl.cc \
@@ -3202,6 +3210,8 @@ tests_test_fredlib_SOURCES = \
 		tests/fredlib/poll/test_create_delete_contact_poll_message.cc \
 		tests/fredlib/poll/test_create_delete_domain_poll_message.cc \
 		tests/fredlib/poll/test_create_update_object_poll_message.cc \
+		tests/fredlib/poll/test_get_request_fee_info_message.cc \
+		tests/fredlib/poll/test_create_state_messages.cc \
 		tests/fredlib/object/test_generate_authinfo_password.cc \
 		tests/fredlib/object/test_generated_authinfo_password.cc \
 		tests/fredlib/object/test_transfer_object.cc \

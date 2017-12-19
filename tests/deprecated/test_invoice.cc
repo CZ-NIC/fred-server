@@ -50,7 +50,6 @@
 //#include "src/fredlib/registrar.h"
 #include "src/fredlib/invoicing/invoice.h"
 
-#include "src/fredlib/poll.h"
 #include "time_clock.h"
 #include "src/fredlib/credit.h"
 #include "src/corba/file_manager_client.h"
@@ -1705,7 +1704,7 @@ BOOST_AUTO_TEST_CASE(test_charge_request_missing_poll)
     Database::ID zone_cz_id = get_zone_cz_id();
     // HARDCODED - requests are charged to zone_cz
     Money before = get_credit(reg_id, zone_cz_id);
-    BOOST_CHECK_EXCEPTION(default_charge_request_fee(invMan.get(), reg_id), std::runtime_error, check_dummy);
+    BOOST_CHECK_EXCEPTION(default_charge_request_fee(invMan.get(), reg_id), std::exception, check_dummy);
 
     Money after = get_credit(reg_id, zone_cz_id);
     BOOST_REQUIRE_MESSAGE(before == after, "Credit before and after unsuccessful operation has to match");

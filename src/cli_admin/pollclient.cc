@@ -20,13 +20,16 @@
 
 #include "commonclient.h"
 #include "pollclient.h"
-#include "src/fredlib/poll.h"
+#include "src/fredlib/poll/create_state_messages.h"
+#include "src/fredlib/poll/create_request_fee_info_messages.h"
 #include "src/corba/logger_client_impl.h"
+#include "src/fredlib/poll/message_type_set.h"
 
 #include "util/cfg/faked_args.h"
 #include "util/cfg/handle_corbanameservice_args.h"
 #include "util/cfg/config_handler_decl.h"
 
+#include <boost/optional.hpp>
 
 namespace Admin {
 
@@ -34,10 +37,7 @@ namespace Admin {
 void
 PollClient::runMethod()
 {
-    if (poll_list_all) {//POLL_LIST_ALL_NAME
-        list_all();
-    } else if (poll_create_statechanges //POLL_CREATE_STATE_CHANGES_NAME
-             ) {
+    if (poll_create_statechanges) { //POLL_CREATE_STATE_CHANGES_NAME
         create_state_changes();
     } else if (poll_create_request_fee_messages) {
         create_request_fee_messages();
@@ -45,66 +45,34 @@ PollClient::runMethod()
 }
 
 void
-PollClient::list_all()
-{
-
-    std::unique_ptr<Fred::Poll::Manager> pollMan(
-            Fred::Poll::Manager::create(
-                m_db)
-            );
-    std::unique_ptr<Fred::Poll::List> pmList(pollMan->createList());
-    if (poll_list_all_params.poll_type.is_value_set())//POLL_TYPE_NAME
-        pmList->setTypeFilter(poll_list_all_params.poll_type.get_value());
-    if (poll_list_all_params.registrar_id.is_value_set())//REGISTRAR_ID_NAME
-        pmList->setRegistrarFilter(poll_list_all_params.registrar_id.get_value());
-    if (poll_list_all_params.poll_nonseen)//POLL_NONSEEN_NAME
-        pmList->setNonSeenFilter(true);
-    if (poll_list_all_params.poll_nonex)//POLL_NONEX_NAME
-        pmList->setNonExpiredFilter(true);
-    pmList->reload();
-    for (unsigned int i = 0; i < pmList->getCount(); i++) {
-        Fred::Poll::Message *msg = pmList->getMessage(i);
-        if (msg) {
-            msg->textDump(std::cout);
-            std::cout << std::endl;
-        }
-    }
-    return;
-}
-
-void
 PollClient::create_state_changes()
 {
+    const std::set<Fred::Poll::MessageType::Enum> except_types =
+        poll_create_statechanges_params.poll_except_types.is_value_set()
+        ? Conversion::Enums::Sets::from_config_string<Fred::Poll::MessageType>(
+                poll_create_statechanges_params.poll_except_types.get_value())
+        : std::set<Fred::Poll::MessageType::Enum>();
 
-    std::unique_ptr<Fred::Poll::Manager> pollMan(
-            Fred::Poll::Manager::create(
-                m_db)
-            );
-    std::string exceptTypes("");
-    if (poll_create_statechanges_params.poll_except_types.is_value_set()) {//POLL_EXCEPT_TYPES_NAME
-        exceptTypes = poll_create_statechanges_params.poll_except_types.get_value();
-    }
-    int limit = 0;
-    if (poll_create_statechanges_params.poll_limit.is_value_set()) {//POLL_LIMIT_NAME
-        limit = poll_create_statechanges_params.poll_limit.get_value();
-    }
-    pollMan->createStateMessages(
-            exceptTypes, limit,
-            poll_create_statechanges_params.poll_debug ? &std::cout : NULL //POLL_DEBUG_NAME
-    );
-    return;
+    const boost::optional<int> limit = poll_create_statechanges_params.poll_limit.is_value_set()
+        ? poll_create_statechanges_params.poll_limit.get_value()
+        : boost::optional<int>();
+
+    Fred::OperationContextCreator ctx;
+    Fred::Poll::CreateStateMessages(except_types, limit).exec(ctx);
+    ctx.commit_transaction();
 }
 
 void
 PollClient::create_request_fee_messages()
 {
-    boost::gregorian::date period_to;
+    boost::optional<boost::gregorian::date> period_to;
     if(poll_create_request_fee_messages_params.poll_period_to.is_value_set()) {
         period_to = from_simple_string(
             poll_create_request_fee_messages_params.poll_period_to.get_value()
         );
 
-        if(period_to.is_special()) {
+        if (period_to->is_special())
+        {
             throw std::runtime_error("charge: Invalid poll_msg_period_to.");
         }
     }
@@ -120,15 +88,13 @@ PollClient::create_request_fee_messages()
            , ns_args_ptr->get_nameservice_port()
            , ns_args_ptr->get_nameservice_context());
 
-    std::unique_ptr<Fred::Logger::LoggerClient> cl(new Fred::Logger::LoggerCorbaClientImpl());
+    Fred::Logger::LoggerCorbaClientImpl cl;
 
-    std::unique_ptr<Fred::Poll::Manager> pollMan(
-            Fred::Poll::Manager::create(
-                m_db)
-            );
-
-    pollMan->createRequestFeeMessages(cl.get(), period_to);
-
+    // just to compile it for now
+    Fred::OperationContextCreator ctx;
+    const unsigned long long zone_id = 2; // bogus argument
+    Fred::Poll::create_request_fee_info_messages(ctx, cl, zone_id, period_to, "Europe/Prague");
+    ctx.commit_transaction();
 }
 
 } // namespace Admin;

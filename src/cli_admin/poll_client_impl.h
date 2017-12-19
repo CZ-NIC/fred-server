@@ -32,31 +32,6 @@
 
 
 /**
- * \class poll_list_all_impl
- * \brief admin client implementation of poll_list_all
- */
-struct poll_list_all_impl
-{
-  void operator()() const
-  {
-      Logging::Context ctx("poll_list_all_impl");
-      Admin::PollClient poll_client(
-      CfgArgGroups::instance()->get_handler_ptr_by_type<HandleDatabaseArgsGrp>()->get_conn_info()
-      , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_host_port()
-      , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_context()
-      , true //poll_list_all
-      , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientPollListAllArgsGrp>()->params //PollListAllArgs()
-      , false //poll_create_statechanges
-      , PollCreateStatechangesArgs()
-      , false
-      , PollCreateRequestFeeMessagesArgs()
-      );
-      poll_client.runMethod();
-      return ;
-  }
-};
-
-/**
  * \class poll_create_statechanges_impl
  * \brief admin client implementation of poll_create_statechanges
  */
@@ -69,8 +44,6 @@ struct poll_create_statechanges_impl
         CfgArgGroups::instance()->get_handler_ptr_by_type<HandleDatabaseArgsGrp>()->get_conn_info()
         , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_host_port()
         , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_context()
-        , false //poll_list_all
-        , PollListAllArgs()
         , true //poll_create_statechanges
         , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientPollCreateStatechangesArgsGrp>()->params //PollCreateStatechangesArgs()
         , false
@@ -96,8 +69,6 @@ struct poll_create_request_fee_messages_impl
           CfgArgGroups::instance()->get_handler_ptr_by_type<HandleDatabaseArgsGrp>()->get_conn_info()
           , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_host_port()
           , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_context()
-          , false //poll_list_all
-          , PollListAllArgs()
           , false //poll_create_statechanges
           , PollCreateStatechangesArgs()
           , true

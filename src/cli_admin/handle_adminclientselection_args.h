@@ -1056,51 +1056,6 @@ public:
 };//class HandleAdminClientBankAddAccountArgsGrp
 
 /**
- * \class HandleAdminClientPollListAllArgsGrp
- * \brief admin client poll_list_all options handler
- */
-class HandleAdminClientPollListAllArgsGrp : public HandleCommandGrpArgs
-{
-public:
-    PollListAllArgs params;
-    CommandDescription get_command_option()
-    {
-        return CommandDescription("poll_list_all");
-    }
-    std::shared_ptr<boost::program_options::options_description>
-    get_options_description()
-    {
-        std::shared_ptr<boost::program_options::options_description> cfg_opts(
-                new boost::program_options::options_description(
-                        std::string("poll_list_all options")));
-        cfg_opts->add_options()
-            ("poll_list_all", "list all poll messages")
-            ("poll_type", boost::program_options
-                ::value<Checked::ulong>()->notifier(save_optional_ulong(params.poll_type))
-                , "set filter for poll type")
-            ("registrar_id", boost::program_options
-                ::value<Checked::id>()->notifier(save_optional_id(params.registrar_id))
-                , "show only records with specific registrar id number")
-            ("poll_nonseen", boost::program_options
-                ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.poll_nonseen))
-                , "set filter for non seen messages")
-            ("poll_nonex", boost::program_options
-                ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.poll_nonex))
-                , "set filter for non expired messages")
-            ;
-        return cfg_opts;
-    }//get_options_description
-    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
-            , std::size_t option_group_index)
-    {
-        boost::program_options::variables_map vm;
-        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
-        return option_group_index;
-    }//handle
-};//class HandleAdminClientPollListAllArgsGrp
-
-
-/**
  * \class HandleAdminClientPollCreateStatechangesArgsGrp
  * \brief admin client poll_create_statechanges options handler
  */
