@@ -19,19 +19,17 @@
 #ifndef _OBJECTCLIENT_H_
 #define _OBJECTCLIENT_H_
 
-#include "src/corba/admin/admin_impl.h"
-#include "src/old_utils/dbsql.h"
-#include "src/fredlib/registry.h"
 #include "src/cli_admin/baseclient.h"
 #include "src/cli_admin/commonclient.h"
 #include "src/cli_admin/object_params.h"
 
-#include "util/cfg/handle_registry_args.h"
-
-#include <fstream>
-#include <iostream>
+#include "src/corba/admin/admin_impl.h"
+#include "src/old_utils/dbsql.h"
+#include "src/fredlib/registry.h"
 
 #include <boost/program_options.hpp>
+#include <fstream>
+#include <iostream>
 
 namespace Admin {
 
@@ -56,18 +54,27 @@ public:
             const ObjectRegularProcedureArgs& _object_regular_procedure_params,
             bool _object_delete_candidates,
             const DeleteObjectsArgs& _delete_objects_params);
-    ~ObjectClient();
+    ~ObjectClient()
+    { }
 
-    static const struct options *getOpts();
+    static const struct options* getOpts();
     static int getOptsCount();
     void runMethod();
 
+    void show_opts();
     void new_state_request_name();
+    void list();
     void update_states();
     void delete_candidates();
     void regular_procedure();
 private:
-    int deleteObjects(const std::string &typeList, CorbaClient &cc);
+    enum class DeleteObjectsResult
+    {
+        success,
+        failure
+    };
+    DeleteObjectsResult deleteObjects(const std::string& _type_list);
+
     DBSharedPtr m_db;
     ccReg::EPP_var m_epp;
 
@@ -86,9 +93,10 @@ private:
     ObjectRegularProcedureArgs object_regular_procedure_params;
     bool object_delete_candidates;
     DeleteObjectsArgs delete_objects_params;
+
+    static const struct options m_opts[];
 };
 
 }//namespace Admin
 
 #endif // _OBJECTCLIENT_H_
-

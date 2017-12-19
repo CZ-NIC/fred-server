@@ -16,10 +16,8 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//TODO: do not use macros, do not use macros, ...!
-#define RESOLVE_TRY 3
-
 #include "src/cli_admin/objectclient.h"
+
 #include "src/cli_admin/commonclient.h"
 #include "src/fredlib/registry.h"
 #include "src/fredlib/object_states.h"
@@ -27,13 +25,13 @@
 #include "src/fredlib/poll/create_state_messages.h"
 #include "src/fredlib/poll/create_low_credit_messages.h"
 #include "src/fredlib/poll/message_type_set.h"
+#include "src/cli_admin/remove_delete_candidates.hh"
 
 #include "util/log/logger.h"
-#include "src/corba/nameservice.h"
-
-#include <omniORB4/CORBA.h>
 
 #include <stdexcept>
+
+#include <omniORB4/CORBA.h>
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/algorithm/string.hpp>
@@ -88,24 +86,24 @@ ObjectClient::ObjectClient(
     m_db.reset(new DB(conn));
 }
 
-ObjectClient::~ObjectClient()
-{ }
-
 void
 ObjectClient::runMethod()
 {
-    if (object_new_state_request_name
-            ) {
-        new_state_request_name();
-    }   else if (object_update_states//m_conf.hasOpt(OBJECT_UPDATE_STATES_NAME)
-            ) {
-        update_states();
-    }   else if (object_regular_procedure//m_conf.hasOpt(OBJECT_REGULAR_PROCEDURE_NAME)
-            ) {
-        regular_procedure();
-    }   else if (object_delete_candidates//m_conf.hasOpt(OBJECT_DELETE_CANDIDATE)
-            ) {
-        delete_candidates();
+    if (object_new_state_request_name)
+    {
+        this->new_state_request_name();
+    }
+    else if (object_update_states)//m_conf.hasOpt(OBJECT_UPDATE_STATES_NAME)
+    {
+        this->update_states();
+    }
+    else if (object_regular_procedure)//m_conf.hasOpt(OBJECT_REGULAR_PROCEDURE_NAME)
+    {
+        this->regular_procedure();
+    }
+    else if (object_delete_candidates)//m_conf.hasOpt(OBJECT_DELETE_CANDIDATE)
+    {
+        this->delete_candidates();
     }
 }
 
@@ -113,12 +111,18 @@ void
 ObjectClient::new_state_request_name()
 {
     Fred::createObjectStateRequestName(
-        object_new_state_request_name_params.object_name,
-        object_new_state_request_name_params.object_type,
-        object_new_state_request_name_params.object_state_name,
-        object_new_state_request_name_params.valid_from,
-        object_new_state_request_name_params.valid_to,
-        object_new_state_request_name_params.update_object_state);
+            object_new_state_request_name_params.object_name,
+            object_new_state_request_name_params.object_type,
+            object_new_state_request_name_params.object_state_name,
+            object_new_state_request_name_params.valid_from,
+            object_new_state_request_name_params.valid_to,
+            object_new_state_request_name_params.update_object_state);
+}
+
+void
+ObjectClient::list()
+{
+    std::cout << "not implemented" << std::endl;
 }
 
 void
@@ -126,309 +130,132 @@ ObjectClient::update_states()
 {
     std::unique_ptr<Fred::Manager> regMan(
             Fred::Manager::create(
-                m_db,
-                restricted_handles//m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME)
-                )
-            );
-    unsigned long long id = 0;
-    if (object_update_states_params.object_id.is_value_set()//m_conf.hasOpt(OBJECT_ID_NAME)
-            ) {
-        id = object_update_states_params.object_id.get_value();//m_conf.get<unsigned long long>(OBJECT_ID_NAME);
-    }
-    Logging::Manager::instance_ref().get(PACKAGE).debug(std::string("regMan->updateObjectStates id: ")
-        +boost::lexical_cast<std::string>(id));
+                    m_db,
+                    restricted_handles));//m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME)
+    const unsigned long long id = object_update_states_params.object_id.is_value_set()
+            ? object_update_states_params.object_id.get_value()
+            : 0;
+    Logging::Manager::instance_ref().get(PACKAGE).debug(
+            "regMan->updateObjectStates id: " + boost::lexical_cast<std::string>(id));
     regMan->updateObjectStates(id);
-    return;
-
 }
 
 /// delete objects with status deleteCandidate
-/** \return 0=OK -1=SQL ERROR -2=no system registrar -3=login failed */
-
-int
-ObjectClient::deleteObjects(
-        const std::string& typeList, CorbaClient &cc)
+ObjectClient::DeleteObjectsResult
+ObjectClient::deleteObjects(const std::string& _of_given_types)
 {
     LOGGER("tracer").trace("ObjectClient::deleteObjects");
-
-    // before connection load all objects, zones are needed to
-    // put zone id into cltrid (used in statistics - need to fix)
-    std::ostringstream sql;
-    sql <<
-        "SELECT o.name, o.type, COALESCE(d.zone,0) "
-        "FROM object_state s "
-        "JOIN object_registry o ON ( "
-        " o.erdate ISNULL AND o.id=s.object_id "
-        " AND s.state_id=17 AND s.valid_to ISNULL) "
-        "LEFT JOIN domain d ON (d.id=o.id)";
-    if (!typeList.empty())
-        sql << "WHERE o.type IN (" << typeList << ") ";
-    sql << " ORDER BY CASE WHEN o.type = 3 THEN 1 ELSE 2 END ASC, random()";
-    unsigned int limit = 0;
-    if (delete_objects_params.object_delete_limit.is_value_set()//m_conf.hasOpt(OBJECT_DELETE_LIMIT_NAME)
-            ) {
-        limit = delete_objects_params.object_delete_limit.get_value();//m_conf.get<unsigned int>(OBJECT_DELETE_LIMIT_NAME);
-    }
-    unsigned int parts = 0;
-    if (delete_objects_params.object_delete_parts.is_value_set()
-            ) {
-        parts = delete_objects_params.object_delete_parts.get_value();
-    }
-    if (limit > 0)
-        sql << "LIMIT " << limit;
-    if (!m_db->ExecSelect(sql.str().c_str())) {
-        LOG(ERROR_LOG, "deleteObjects(): Error during ExecSelect");
-        return -1;
-    }
-    if (!m_db->GetSelectRows()) {
-        LOG(NOTICE_LOG, "deleteObjects(): No rows returned (2)");
-        return 0;
-    }
-
-    unsigned int totalCount = (unsigned int)m_db->GetSelectRows();
-    // limit number of object to just first part from total
-    // could be done by COUNT(*) and LIMIT in SQL but this would need to
-    // issue another SQL
-    if (0 < parts)
-    {
-        totalCount = totalCount / parts;
-    }
+    const auto object_types = construct_set_of_object_types_from_string(_of_given_types);
+    const boost::optional<unsigned> max_number_of_selected_candidates =
+            delete_objects_params.object_delete_limit.is_value_set() &&
+            (0 < delete_objects_params.object_delete_limit.get_value())
+        ? boost::optional<unsigned>(delete_objects_params.object_delete_limit.get_value())
+        : boost::none;
+    const int fraction = delete_objects_params.object_delete_parts.is_value_set()
+        ? delete_objects_params.object_delete_parts.get_value()
+        : 1;
+    const Seconds spread_deletion_in_time(
+            delete_objects_params.object_delete_spread_during_time.is_value_set()
+            ? static_cast<double>(delete_objects_params.object_delete_spread_during_time.get_value())
+            : 0.0);
     if (delete_objects_params.object_delete_debug)
     {
-        std::cout << "<objects>\n";
-        for (unsigned int i = 0; i < totalCount; i++) {
-            std::cout << "<object name='" << m_db->GetFieldValue(i, 0) << "'/>\n";
-        }
-        std::cout << "</objects>\n";
-        m_db->FreeSelect();
-        return 0;
+        delete_objects_marked_as_delete_candidate<Debug::on>(
+                fraction,
+                max_number_of_selected_candidates,
+                object_types,
+                spread_deletion_in_time);
+        return DeleteObjectsResult::success;
     }
+
     try
     {
-        ccReg::EPP_var epp = NULL;
-        CORBA::ULongLong clientId = 0;
-
-        const int max_attempts = RESOLVE_TRY;
-        for (int attempt = 0; attempt < max_attempts; ++attempt)
-        {
-            try
-            {
-                CORBA::Object_var o = cc.getNS()->resolve("EPP");
-                epp = ccReg::EPP::_narrow(o);
-                if (epp != NULL)
-                {
-                    break;
-                }
-            }
-            catch (const NameService::NOT_RUNNING&)
-            {
-                LOG(ERROR_LOG, "deleteObjects(): resolve attempt %d of %d catching NOT_RUNNING", attempt + 1, max_attempts);
-                return -1;
-            }
-            catch (const NameService::BAD_CONTEXT&)
-            {
-                LOG(ERROR_LOG, "deleteObjects(): resolve attempt %d of %d catching BAD_CONTEXT", attempt + 1, max_attempts);
-                return -1;
-            }
-            catch (const std::exception& e)
-            {
-    	        LOG(ERROR_LOG, "deleteObjects(): resolve attempt %d of %d catching %s", attempt + 1, max_attempts, e.what());
-    	        return -1;
-            }
-            catch (...)
-            {
-    	        LOG(ERROR_LOG, "deleteObjects(): resolve attempt catching unknown exception");
-    	        return -1;
-            }
-        }
-        {
-            const ccReg::Response_var result = epp->ClientLogin(
-                    "",
-                    "",
-                    "",
-                    "system_delete_login",
-                    "<system_delete_login/>",
-                    clientId,
-                    0,
-                    "",
-                    ccReg::EN);
-            if ((result->code != 1000) || (clientId == 0))
-            {
-                LOG(ERROR_LOG, "Cannot connect: %d", result->code);
-                std::cerr << "Cannot connect: " << result->code << std::endl;
-                throw -3;
-            }
-        }
-        for (unsigned int idx = 0; idx < totalCount; ++idx)
-        {
-            const std::string name = m_db->GetFieldValue(idx, 0);
-            /* we don't want to notify delete commands - add configured cltrid prefix */
-            std::string cltrid = "";
-            const std::string xml = "<name>" + name + "</name>";
-
-            ccReg::EppParams params;
-            params.loginID = clientId;
-            params.requestID = 0;
-            params.XML = xml.c_str();
-
-            try
-            {
-                const unsigned type_id = boost::lexical_cast<unsigned>(m_db->GetFieldValue(idx, 1));
-                ccReg::Response_var result;
-                switch (type_id)
-                {
-                    case 1:
-                        cltrid += "_delete_contact";
-                        params.clTRID = cltrid.c_str();
-                        result = epp->ContactDelete(name.c_str(), params);
-                        break;
-                    case 2:
-                        cltrid += "_delete_nsset";
-                        params.clTRID = cltrid.c_str();
-                        result = epp->NSSetDelete(name.c_str(), params);
-                        break;
-                    case 3:
-                        cltrid += "_delete_unpaid_zone_" + std::string(m_db->GetFieldValue(idx, 2));
-                        params.clTRID = cltrid.c_str();
-                        result = epp->DomainDelete(name.c_str(), params);
-                        break;
-                    case 4:
-                        cltrid += "_delete_keyset";
-                        params.clTRID = cltrid.c_str();
-                        result = epp->KeySetDelete(name.c_str(), params);
-                        break;
-                }
-                if (result->code != 1000)
-                {
-                    LOG(ERROR_LOG, "deleteObjects(): cannot %s: %s", cltrid.c_str(), name.c_str());
-                    std::cerr << "Cannot " << cltrid << ": " << name << " code: " << result->code << std::endl;
-                }
-                else
-                {
-                    std::cerr << cltrid << ": " << name << std::endl;
-                }
-            }
-            catch (...)
-            {
-                std::cerr << "Cannot " << cltrid << ": " << name << std::endl;
-                LOG(ERROR_LOG, "deleteObjects(): cannot %s: %s", cltrid.c_str(), name.c_str());
-                // proceed with next domain
-            }
-        }
-
-        ccReg::EppParams par_logout;
-        par_logout.clTRID = "system_delete_logout";
-        par_logout.XML = "<system_delete_logout/>";
-        par_logout.loginID = clientId;
-
-        epp->ClientLogout(par_logout);
-        m_db->FreeSelect();
-        return 0;
+        delete_objects_marked_as_delete_candidate<Debug::off>(
+                fraction,
+                max_number_of_selected_candidates,
+                object_types,
+                spread_deletion_in_time);
+        return DeleteObjectsResult::success;
     }
-    catch (int& i) {
-        LOG(ERROR_LOG, "deleteObjects(): Exception catched: %d", i);
-        m_db->FreeSelect();
-        return i;
+    catch (const std::exception& e)
+    {
+        LOG(ERROR_LOG, "deleteObjects(): Exception caught: %s", e.what());
+        return DeleteObjectsResult::failure;
     }
-    catch (CORBA::Exception& e) {
-        LOG(ERROR_LOG, "deleteObjects(): Exception catched: %s", e._name());
-        m_db->FreeSelect();
-        return -4;
-    }
-    catch (std::exception& e) {
-        LOG(ERROR_LOG, "deleteObjects(): Exception catched: %s", e.what());
-        m_db->FreeSelect();
-        return -4;
-    }
-    catch (...) {
-        LOG(ERROR_LOG, "deleteObjects(): Unknown exception catched");
-        m_db->FreeSelect();
-        return -4;
+    catch (...)
+    {
+        LOG(ERROR_LOG, "deleteObjects(): Unknown exception caught");
+        return DeleteObjectsResult::failure;
     }
 }
 
 void
 ObjectClient::regular_procedure()
 {
-    int i;
-    std::unique_ptr<CorbaClient> cc;
-    try {
+    try
+    {
         std::unique_ptr<Fred::Document::Manager> docMan(
                 Fred::Document::Manager::create(
-                    docgen_path.get_value()//m_conf.get<std::string>(REG_DOCGEN_PATH_NAME)
-                    ,docgen_template_path.get_value()//m_conf.get<std::string>(REG_DOCGEN_TEMPLATE_PATH_NAME)
-                    ,fileclient_path.get_value()//m_conf.get<std::string>(REG_FILECLIENT_PATH_NAME)
-                    ,m_nsAddr)
-                );
-        for (i = 0; i < RESOLVE_TRY; i++) {
-            try {
-                cc.reset(new CorbaClient(0, NULL, m_nsAddr, nameservice_context//m_conf.get<std::string>(NS_CONTEXT_NAME)
-                        ));
-                if (cc.get() != NULL) {
+                    docgen_path.get_value(),//m_conf.get<std::string>(REG_DOCGEN_PATH_NAME)
+                    docgen_template_path.get_value(),//m_conf.get<std::string>(REG_DOCGEN_TEMPLATE_PATH_NAME)
+                    fileclient_path.get_value(),//m_conf.get<std::string>(REG_FILECLIENT_PATH_NAME)
+                    m_nsAddr));
+        std::unique_ptr<CorbaClient> cc;
+        static const int resolve_tries = 3;
+        for (int idx = 0; idx < resolve_tries; ++idx)
+        {
+            try
+            {
+                cc.reset(new CorbaClient(0, NULL, m_nsAddr, nameservice_context));//m_conf.get<std::string>(NS_CONTEXT_NAME)
+                if (cc.get() != NULL)
+                {
                     break;
                 }
-            } catch (NameService::NOT_RUNNING) {
-                LOG(ERROR_LOG, "regular_procedure(): resolve attempt %d of %d catching NOT_RUNNING", i + 1, RESOLVE_TRY);
-            } catch (NameService::BAD_CONTEXT) {
-                LOG(ERROR_LOG, "regular_procedure(): resolve attempt %d of %d catching BAD_CONTEXT", i + 1, RESOLVE_TRY);
+            }
+            catch (NameService::NOT_RUNNING)
+            {
+                LOG(ERROR_LOG, "regular_procedure(): resolve attempt %d of %d catching NOT_RUNNING", idx + 1, resolve_tries);
+            }
+            catch (NameService::BAD_CONTEXT)
+            {
+                LOG(ERROR_LOG, "regular_procedure(): resolve attempt %d of %d catching BAD_CONTEXT", idx + 1, resolve_tries);
             }
         }
         MailerManager mailMan(cc->getNS());
 
-        std::unique_ptr<Fred::Zone::Manager> zoneMan(
-                Fred::Zone::Manager::create());
+        std::unique_ptr<Fred::Zone::Manager> zoneMan(Fred::Zone::Manager::create());
 
-        Fred::Messages::ManagerPtr msgMan
-            = Fred::Messages::create_manager();
+        Fred::Messages::ManagerPtr msgMan = Fred::Messages::create_manager();
 
 
-        std::unique_ptr<Fred::Domain::Manager> domMan(
-                Fred::Domain::Manager::create(m_db, zoneMan.get()));
+        std::unique_ptr<Fred::Domain::Manager> domMan(Fred::Domain::Manager::create(m_db, zoneMan.get()));
 
         std::unique_ptr<Fred::Contact::Manager> conMan(
-                Fred::Contact::Manager::create(
-                    m_db,
-                    restricted_handles//m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME)
-                    )
-                );
+                Fred::Contact::Manager::create(m_db, restricted_handles));//m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME)
         std::unique_ptr<Fred::Nsset::Manager> nssMan(
-                Fred::Nsset::Manager::create(
-                    m_db,
-                    zoneMan.get(),
-                    restricted_handles//m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME)
-                    )
-                );
+                Fred::Nsset::Manager::create(m_db, zoneMan.get(), restricted_handles));//m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME)
         std::unique_ptr<Fred::Keyset::Manager> keyMan(
-                Fred::Keyset::Manager::create(
-                    m_db,
-                    restricted_handles//m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME)
-                    )
-                );
+                Fred::Keyset::Manager::create(m_db, restricted_handles));//m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME)
         std::unique_ptr<Fred::Manager> registryMan(
-                Fred::Manager::create(
-                    m_db,
-                    restricted_handles//m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME)
-                    )
-                );
-        std::unique_ptr<Fred::Registrar::Manager> regMan(
-                Fred::Registrar::Manager::create(m_db));
+                Fred::Manager::create(m_db, restricted_handles));//m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME)
+        std::unique_ptr<Fred::Registrar::Manager> regMan(Fred::Registrar::Manager::create(m_db));
         std::unique_ptr<Fred::Notify::Manager> notifyMan(
                 Fred::Notify::Manager::create(
-                    m_db,
-                    &mailMan,
-                    conMan.get(),
-                    nssMan.get(),
-                    keyMan.get(),
-                    domMan.get(),
-                    docMan.get(),
-                    regMan.get(),
-                    msgMan));
+                        m_db,
+                        &mailMan,
+                        conMan.get(),
+                        nssMan.get(),
+                        keyMan.get(),
+                        domMan.get(),
+                        docMan.get(),
+                        regMan.get(),
+                        msgMan));
 
         registryMan->updateObjectStates();
         registryMan->updateObjectStates();
         std::set<Fred::Poll::MessageType::Enum> poll_except;
-        if (object_regular_procedure_params.poll_except_types.is_value_set()//m_conf.hasOpt(OBJECT_POLL_EXCEPT_TYPES_NAME)
-                ) {
+        if (object_regular_procedure_params.poll_except_types.is_value_set()) //m_conf.hasOpt(OBJECT_POLL_EXCEPT_TYPES_NAME)
+        {
             poll_except = Conversion::Enums::Sets::from_config_string<Fred::Poll::MessageType>(
                     object_regular_procedure_params.poll_except_types.get_value());
         }
@@ -438,21 +265,17 @@ ObjectClient::regular_procedure()
             ctx.commit_transaction();
         }
 
-        std::string deleteTypes("");
-        if (delete_objects_params.object_delete_types.is_value_set()//m_conf.hasOpt(OBJECT_DELETE_TYPES_NAME)
-                ) {
-            deleteTypes = delete_objects_params.object_delete_types.get_value();//m_conf.get<std::string>(OBJECT_DELETE_TYPES_NAME);
-        }
-        if ((i = deleteObjects(deleteTypes, *(cc.get()))) != 0) {
-            LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): Error has occured in deleteObject: %d", i);
+        const std::string deleteTypes = delete_objects_params.object_delete_types.is_value_set()
+            ? delete_objects_params.object_delete_types.get_value()
+            : std::string();
+        if (this->deleteObjects(deleteTypes) != DeleteObjectsResult::success)
+        {
+            LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): Error has occurred in deleteObject");
             return;
         }
-
-        std::string notifyExcept("");
-        if (object_regular_procedure_params.notify_except_types.is_value_set()//m_conf.hasOpt(OBJECT_NOTIFY_EXCEPT_TYPES_NAME)
-                ) {
-            notifyExcept = object_regular_procedure_params.notify_except_types.get_value();//m_conf.get<std::string>(OBJECT_NOTIFY_EXCEPT_TYPES_NAME);
-        }
+        const std::string notifyExcept = object_regular_procedure_params.notify_except_types.is_value_set()
+            ? object_regular_procedure_params.notify_except_types.get_value()
+            : std::string();
         notifyMan->notifyStateChanges(notifyExcept, 0, NULL);
 
         {
@@ -460,67 +283,65 @@ ObjectClient::regular_procedure()
             Fred::Poll::CreateLowCreditMessages().exec(ctx);
             ctx.commit_transaction();
         }
-        notifyMan->generateLetters(docgen_domain_count_limit//m_conf.get<unsigned>(REG_DOCGEN_DOMAIN_COUNT_LIMIT)
-                );
-    } catch (ccReg::Admin::SQL_ERROR) {
-        LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): SQL_ERROR catched");
-    } catch (NameService::NOT_RUNNING) {
-        LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): NOT_RUNNING catched");
-    } catch (NameService::BAD_CONTEXT) {
-        LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): BAD_CONTEXT catched");
-    } catch (CORBA::Exception &e) {
-        LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): CORBA exception catched");
-    } catch (...) {
-        LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): unknown exception catched");
+        notifyMan->generateLetters(docgen_domain_count_limit); //m_conf.get<unsigned>(REG_DOCGEN_DOMAIN_COUNT_LIMIT)
     }
-
-    return;
-} // ObjectClient::regular_procedure
+    catch (const ccReg::Admin::SQL_ERROR&)
+    {
+        LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): SQL_ERROR caught");
+    }
+    catch (const NameService::NOT_RUNNING&)
+    {
+        LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): NOT_RUNNING caught");
+    }
+    catch (const NameService::BAD_CONTEXT&)
+    {
+        LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): BAD_CONTEXT caught");
+    }
+    catch (const CORBA::Exception&)
+    {
+        LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): CORBA exception caught");
+    }
+    catch (...)
+    {
+        LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): unknown exception caught");
+    }
+}
 
 void
 ObjectClient::delete_candidates()
 {
-    int i;
-    std::unique_ptr<CorbaClient> cc;
-    try {
-        for (i = 0; i < RESOLVE_TRY; i++) {
-            try {
-                cc.reset(new CorbaClient(0, NULL, m_nsAddr, nameservice_context//m_conf.get<std::string>(NS_CONTEXT_NAME)
-                        ));
-                if (cc.get() != NULL) {
-                    break;
-                }
-            } catch (NameService::NOT_RUNNING) {
-                LOG(ERROR_LOG, "regular_procedure(): resolve attempt %d of %d catching NOT_RUNNING", i + 1, RESOLVE_TRY);
-            } catch (NameService::BAD_CONTEXT) {
-                LOG(ERROR_LOG, "regular_procedure(): resolve attempt %d of %d catching BAD_CONTEXT", i + 1, RESOLVE_TRY);
-            }
-        }
-        std::string deleteTypes("");
-        if (delete_objects_params.object_delete_types.is_value_set()//m_conf.hasOpt(OBJECT_DELETE_TYPES_NAME)
-                ) {
-            deleteTypes = delete_objects_params.object_delete_types.get_value();//m_conf.get<std::string>(OBJECT_DELETE_TYPES_NAME);
-        }
-        if ((i = deleteObjects(deleteTypes, *(cc.get()))) != 0) {
-            LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): Error has occured in deleteObject: %d", i);
+    try
+    {
+        const std::string deleteTypes = delete_objects_params.object_delete_types.is_value_set()
+            ? delete_objects_params.object_delete_types.get_value()
+            : std::string();
+        if (this->deleteObjects(deleteTypes) != DeleteObjectsResult::success)
+        {
+            LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): Error has occurred in deleteObject");
             return;
         }
 
-    } catch (ccReg::Admin::SQL_ERROR) {
-        LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): SQL_ERROR catched");
-    } catch (NameService::NOT_RUNNING) {
-        LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): NOT_RUNNING catched");
-    } catch (NameService::BAD_CONTEXT) {
-        LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): BAD_CONTEXT catched");
-    } catch (CORBA::Exception &e) {
-        LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): CORBA exception catched");
-    } catch (...) {
-        LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): unknown exception catched");
     }
+    catch (const ccReg::Admin::SQL_ERROR&)
+    {
+        LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): SQL_ERROR caught");
+    }
+    catch (const NameService::NOT_RUNNING&)
+    {
+        LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): NOT_RUNNING caught");
+    }
+    catch (const NameService::BAD_CONTEXT&)
+    {
+        LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): BAD_CONTEXT caught");
+    }
+    catch (const CORBA::Exception&)
+    {
+        LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): CORBA exception caught");
+    }
+    catch (...)
+    {
+        LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): unknown exception caught");
+    }
+}
 
-    return;
-} // ObjectClient::delete_candidates
-
-} // namespace Admin;
-
-
+}//namespace Admin
