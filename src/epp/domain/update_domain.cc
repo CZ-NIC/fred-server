@@ -47,6 +47,7 @@
 #include <boost/cast.hpp>
 #include <boost/date_time/gregorian/greg_date.hpp>
 #include <boost/mpl/assert.hpp>
+#include <boost/algorithm/string/case_conv.hpp>
 
 #include <set>
 #include <string>
@@ -57,29 +58,27 @@ namespace Domain {
 
 namespace {
 
+std::string to_upper(const std::string& mixed)
+{
+    return boost::algorithm::to_upper_copy(mixed);
+}
+
 template <class T>
 class MatchesHandle
 {
-    std::string upper_case_handle_;
-
 public:
-
-
     explicit MatchesHandle(const std::string& _handle)
-        : upper_case_handle_(boost::algorithm::to_upper_copy(_handle))
-    {
-    }
-
-
+        : upper_case_handle_(to_upper(_handle))
+    { }
     bool operator()(const T& item) const
     {
         return item.handle == upper_case_handle_;
     }
-
-
+private:
+    const std::string upper_case_handle_;
 };
 
-} // namespace Epp::Domain::{anonymous}
+}//namespace Epp::Domain::{anonymous}
 
 unsigned long long update_domain(
         Fred::OperationContext& _ctx,
@@ -378,12 +377,21 @@ unsigned long long update_domain(
         throw EppResponseFailure(parameter_value_policy_errors);
     }
 
-    const Optional<Nullable<std::string> >& keyset_chg =
-            (_update_domain_data.nsset_chg.isset() &&
-             !_update_domain_data.keyset_chg.isset() &&
-             _update_domain_config_data.rifd_epp_update_domain_keyset_clear)
-                    ? Optional<Nullable<std::string> >(Nullable<std::string>())
-                    : _update_domain_data.keyset_chg; // TODO if nsset set, but same as current one?
+    const bool change_nsset_to_different_handle_requested =
+            _update_domain_data.nsset_chg.isset() &&
+            !_update_domain_data.nsset_chg.get_value().isnull() &&
+            (info_domain_data_before_update.nsset.isnull() ||
+             (to_upper(_update_domain_data.nsset_chg.get_value().get_value()) !=
+              info_domain_data_before_update.nsset.get_value().handle));
+
+    const bool change_keyset_requested = _update_domain_data.keyset_chg.isset();
+
+    const Optional<Nullable<std::string>> keyset_chg =
+            (_update_domain_config_data.rifd_epp_update_domain_keyset_clear &&
+             change_nsset_to_different_handle_requested &&
+             !change_keyset_requested)
+                    ? Optional<Nullable<std::string>>(Nullable<std::string>())
+                    : _update_domain_data.keyset_chg;
 
     Fred::UpdateDomain update_domain =
             Fred::UpdateDomain(
@@ -404,11 +412,9 @@ unsigned long long update_domain(
     {
         const unsigned long long domain_new_history_id = update_domain.exec(_ctx);
         return domain_new_history_id;
-
     }
     catch (const Fred::UpdateDomain::Exception& e)
     {
-
         if (e.is_set_unknown_domain_fqdn())
         {
             throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
@@ -418,7 +424,6 @@ unsigned long long update_domain(
         {
             // TODO
         }
-
 
         if (e.is_set_invalid_expiration_date())
         {
@@ -430,9 +435,7 @@ unsigned long long update_domain(
         // in the improbable case that exception is incorrectly set
         throw;
     }
-
 }
 
-
-} // namespace Epp::Domain
-} // namespace Epp
+}//namespace Epp::Domain
+}//namespace Epp
