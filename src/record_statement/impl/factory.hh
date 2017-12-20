@@ -23,7 +23,7 @@
 
 #include <map>
 
-namespace Fred {
+namespace LibFred {
 namespace RecordStatement {
 namespace Impl {
 
@@ -31,13 +31,13 @@ class Factory
 {
 public:
     typedef boost::shared_ptr<Registry::RecordStatement::RecordStatementImpl::WithExternalContext> Product;
-    typedef Product (*Producer)(const boost::shared_ptr<Fred::Document::Manager>&,
-                                const boost::shared_ptr<Fred::Mailer::Manager>&);
+    typedef Product (*Producer)(const boost::shared_ptr<LibFred::Document::Manager>&,
+                                const boost::shared_ptr<LibFred::Mailer::Manager>&);
     static void register_producer(const std::string& _key, Producer _producer);
     static Product produce(
             const std::string& _handle_of_timezone,
-            const boost::shared_ptr<Fred::Document::Manager>& _doc_manager,
-            const boost::shared_ptr<Fred::Mailer::Manager>& _mailer_manager);
+            const boost::shared_ptr<LibFred::Document::Manager>& _doc_manager,
+            const boost::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager);
 private:
     Factory();
     Factory(const Factory&);
@@ -47,8 +47,8 @@ private:
     static RegisteredProducers& get_registered_producers();
 };
 
-}//namespace Fred::RecordStatement::Impl
-}//namespace Fred::RecordStatement
-}//namespace Fred
+} // namespace LibFred::RecordStatement::Impl
+} // namespace LibFred::RecordStatement
+} // namespace LibFred
 
 #endif//FACTORY_HH_4BFAD236EAC59AEF87FC6037F0106ABF

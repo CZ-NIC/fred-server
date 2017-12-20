@@ -31,7 +31,7 @@ struct Purpose
     };
 };
 
-}//namespace Registry::RecordStatement
-}//namespace Registry
+} // namespace Registry::RecordStatement
+} // namespace Registry
 
 #endif//PURPOSE_HH_F9C0DEF8A30E9FD48DF69B3AA5DE34F9

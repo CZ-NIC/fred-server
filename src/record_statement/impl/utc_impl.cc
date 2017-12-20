@@ -18,14 +18,14 @@
 
 #include "src/record_statement/record_statement.hh"
 #include "src/record_statement/impl/templates_impl.hh"
-#include "util/tz/utc.hh"
+#include "src/util/tz/utc.hh"
 
-namespace Fred {
+namespace LibFred {
 namespace RecordStatement {
 namespace Impl {
 
 template class InstanceOfNecessaryImpl<Tz::UTC>;
 
-}//namespace Fred::RecordStatement::Impl
-}//namespace Fred::RecordStatement
-}//namespace Fred
+} // namespace LibFred::RecordStatement::Impl
+} // namespace LibFred::RecordStatement
+} // namespace LibFred

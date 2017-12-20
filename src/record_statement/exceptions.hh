@@ -55,7 +55,7 @@ struct ObjectNotFound:std::exception
     const char* what()const noexcept;
 };
 
-}//namespace Registry::RecordStatement
-}//namespace Registry
+} // namespace Registry::RecordStatement
+} // namespace Registry
 
 #endif//EXCEPTIONS_HH_3EF08AD8037C49FAB1E9CDC31F63D540

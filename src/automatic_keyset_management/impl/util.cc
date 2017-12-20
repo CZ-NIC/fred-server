@@ -22,7 +22,7 @@
 
 #include <string>
 
-namespace Fred {
+namespace LibFred {
 namespace AutomaticKeysetManagement {
 namespace Impl {
 
@@ -35,7 +35,7 @@ std::string quote(int value) {
     return boost::lexical_cast<std::string>(value);
 }
 
-std::string to_string(const Fred::DnsKey& dnskey)
+std::string to_string(const LibFred::DnsKey& dnskey)
 {
     static const std::string delim = ", ";
     return "["
@@ -46,6 +46,6 @@ std::string to_string(const Fred::DnsKey& dnskey)
            "]";
 }
 
-} // namespace Fred::AutomaticKeysetManagement::Impl
-} // namespace Fred::AutomaticKeysetManagement
-} // namespace Fred
+} // namespace LibFred::AutomaticKeysetManagement::Impl
+} // namespace LibFred::AutomaticKeysetManagement
+} // namespace LibFred

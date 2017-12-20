@@ -21,12 +21,12 @@
 
 #include "src/automatic_keyset_management/impl/logger_request_object_type.hh"
 #include "src/automatic_keyset_management/impl/logger_request_property.hh"
-#include "src/fredlib/logger_client.h"
-#include "src/fredlib/requests/request.h"
+#include "src/libfred/logger_client.hh"
+#include "src/libfred/requests/request.hh"
 
 #include <string>
 
-namespace Fred {
+namespace LibFred {
 namespace AutomaticKeysetManagement {
 namespace Impl {
 
@@ -65,8 +65,8 @@ private:
     Logger::RequestProperties request_properties_;
 };
 
-} // namespace Fred::AutomaticKeysetManagement::Impl
-} // namespace Fred::AutomaticKeysetManagement
-} // namespace Fred
+} // namespace LibFred::AutomaticKeysetManagement::Impl
+} // namespace LibFred::AutomaticKeysetManagement
+} // namespace LibFred
 
 #endif

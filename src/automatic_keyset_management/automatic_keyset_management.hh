@@ -24,7 +24,7 @@
 #ifndef AUTOMATIC_KEYSET_MANAGEMENT_HH_E7D0CA5C7FDA4FF6A7217BE8252D99A1
 #define AUTOMATIC_KEYSET_MANAGEMENT_HH_E7D0CA5C7FDA4FF6A7217BE8252D99A1
 
-#include "src/fredlib/logger_client.h"
+#include "src/libfred/logger_client.hh"
 #include "src/automatic_keyset_management/keyset.hh"
 #include "src/automatic_keyset_management/nsset.hh"
 
@@ -34,7 +34,7 @@
 #include <string>
 #include <vector>
 
-namespace Fred {
+namespace LibFred {
 namespace AutomaticKeysetManagement {
 
 /**
@@ -216,7 +216,7 @@ public:
             const std::string& _automatically_managed_keyset_tech_contact,
             const std::set<std::string>& _automatically_managed_keyset_zones,
             bool _disable_notifier,
-            Fred::Logger::LoggerClient& _logger_client);
+            LibFred::Logger::LoggerClient& _logger_client);
 
     virtual ~AutomaticKeysetManagementImpl();
 
@@ -260,11 +260,11 @@ private:
     std::string automatically_managed_keyset_tech_contact_;
     std::set<std::string> automatically_managed_keyset_zones_;
     bool notifier_disabled_;
-    Fred::Logger::LoggerClient& logger_client_;
+    LibFred::Logger::LoggerClient& logger_client_;
 
 };
 
-} // namespace Fred::AutomaticKeysetManagement
-} // namespace Fred
+} // namespace LibFred::AutomaticKeysetManagement
+} // namespace LibFred
 
 #endif

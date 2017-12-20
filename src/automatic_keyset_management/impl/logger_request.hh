@@ -23,11 +23,11 @@
 #include "src/automatic_keyset_management/impl/logger_request_result.hh"
 #include "src/automatic_keyset_management/impl/logger_request_type.hh"
 #include "src/automatic_keyset_management/impl/logger_service_type.hh"
-#include "src/fredlib/logger_client.h"
+#include "src/libfred/logger_client.hh"
 
 #include <string>
 
-namespace Fred {
+namespace LibFred {
 namespace AutomaticKeysetManagement {
 namespace Impl {
 
@@ -37,7 +37,7 @@ class LoggerRequest
 {
 public:
     LoggerRequest(
-            Fred::Logger::LoggerClient& _logger_client,
+            LibFred::Logger::LoggerClient& _logger_client,
             const LoggerRequestData& _logger_request_data)
         : logger_client_(_logger_client),
           request_id_(
@@ -91,7 +91,7 @@ public:
 
 private:
     static unsigned long long create_request(
-            Fred::Logger::LoggerClient& _logger_client,
+            LibFred::Logger::LoggerClient& _logger_client,
             const Logger::RequestProperties& _properties,
             const Logger::ObjectReferences& _references)
     {
@@ -108,12 +108,12 @@ private:
                 no_session_id);
     }
 
-    Fred::Logger::LoggerClient& logger_client_;
+    LibFred::Logger::LoggerClient& logger_client_;
     const unsigned long long request_id_;
 };
 
-} // namespace Fred::AutomaticKeysetManagement::Impl
-} // namespace Fred::AutomaticKeysetManagement
-} // namespace Fred
+} // namespace LibFred::AutomaticKeysetManagement::Impl
+} // namespace LibFred::AutomaticKeysetManagement
+} // namespace LibFred
 
 #endif

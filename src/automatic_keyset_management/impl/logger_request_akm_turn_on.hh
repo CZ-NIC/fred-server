@@ -24,11 +24,11 @@
 #include "src/automatic_keyset_management/impl/logger_request_object_type.hh"
 #include "src/automatic_keyset_management/impl/logger_request_property.hh"
 #include "src/automatic_keyset_management/impl/logger_request_type.hh"
-#include "src/epp/keyset/dns_key.h"
-#include "src/fredlib/logger_client.h"
-#include "src/fredlib/object/object_id_handle_pair.h"
+#include "src/backend/epp/keyset/dns_key.hh"
+#include "src/libfred/logger_client.hh"
+#include "src/libfred/object/object_id_handle_pair.hh"
 
-namespace Fred {
+namespace LibFred {
 namespace AutomaticKeysetManagement {
 namespace Impl {
 
@@ -36,7 +36,7 @@ class LoggerRequestAkmTurnOn
 {
 public:
     LoggerRequestAkmTurnOn(
-            Fred::Logger::LoggerClient& _logger_client,
+            LibFred::Logger::LoggerClient& _logger_client,
             const ObjectIdHandlePair& _domain)
         : logger_request_(
                   _logger_client,
@@ -82,8 +82,8 @@ private:
     LoggerRequest<LoggerRequestType::akm_turn_on, LoggerServiceType::admin> logger_request_;
 };
 
-} // namespace Fred::AutomaticKeysetManagement::Impl
-} // namespace Fred::AutomaticKeysetManagement
-} // namespace Fred
+} // namespace LibFred::AutomaticKeysetManagement::Impl
+} // namespace LibFred::AutomaticKeysetManagement
+} // namespace LibFred
 
 #endif

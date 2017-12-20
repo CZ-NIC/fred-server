@@ -23,19 +23,19 @@
 #include "src/record_statement/impl/factory.hh"
 #include "src/record_statement/exceptions.hh"
 
-#include "src/fredlib/zone/zone.h"
+#include "src/libfred/zone/zone.hh"
 
-#include "util/tz/utc.hh"
+#include "src/util/tz/utc.hh"
 
 #include <boost/algorithm/string/join.hpp>
 
-namespace Fred {
+namespace LibFred {
 namespace RecordStatement {
 namespace Impl {
 
 template <typename LOCAL_TIMEZONE>
 Tz::LocalTimestamp convert_utc_timestamp_to_local(
-        Fred::OperationContext& ctx,
+        LibFred::OperationContext& ctx,
         const boost::posix_time::ptime& utc_timestamp)
 {
     const DbDateTimeArithmetic convertor(ctx);
@@ -44,13 +44,13 @@ Tz::LocalTimestamp convert_utc_timestamp_to_local(
 
 template <typename REGISTRY_TIMEZONE>
 std::string domain_printout_xml(
-        Fred::OperationContext& ctx,
-        const Fred::InfoDomainOutput& info,
+        LibFred::OperationContext& ctx,
+        const LibFred::InfoDomainOutput& info,
         const Tz::LocalTimestamp& valid_at,
         const Registry::RecordStatement::Purpose::Enum purpose,
-        const Fred::InfoContactOutput& registrant_info,
-        const std::vector<Fred::InfoContactOutput>& admin_contact_info,
-        const Fred::InfoRegistrarOutput& sponsoring_registrar_info,
+        const LibFred::InfoContactOutput& registrant_info,
+        const std::vector<LibFred::InfoContactOutput>& admin_contact_info,
+        const LibFred::InfoRegistrarOutput& sponsoring_registrar_info,
         const boost::optional<NssetPrintoutInputData>& nsset_data,
         const boost::optional<KeysetPrintoutInputData>& keyset_data,
         const std::set<std::string>& external_states)
@@ -65,7 +65,7 @@ std::string domain_printout_xml(
     std::vector<Util::XmlCallback> admin_contact_list;
     admin_contact_list.reserve(admin_contact_info.size());
 
-    for (std::vector<Fred::InfoContactOutput>::const_iterator itr = admin_contact_info.begin();
+    for (std::vector<LibFred::InfoContactOutput>::const_iterator itr = admin_contact_info.begin();
          itr != admin_contact_info.end(); ++itr)
     {
         admin_contact_list.push_back(
@@ -163,11 +163,11 @@ std::string domain_printout_xml(
 
 template <typename REGISTRY_TIMEZONE>
 std::string contact_printout_xml(
-        Fred::OperationContext& ctx,
-        const Fred::InfoContactOutput& info,
+        LibFred::OperationContext& ctx,
+        const LibFred::InfoContactOutput& info,
         const Tz::LocalTimestamp& valid_at,
         Registry::RecordStatement::Purpose::Enum purpose,
-        const Fred::InfoRegistrarOutput& sponsoring_registrar_info,
+        const LibFred::InfoRegistrarOutput& sponsoring_registrar_info,
         const std::set<std::string>& external_states)
 {
     const Tz::LocalTimestamp local_creation_time =
@@ -279,16 +279,16 @@ std::string contact_printout_xml(
 
 template <typename REGISTRY_TIMEZONE>
 XmlWithData domain_printout_xml_with_data(
-        Fred::OperationContext& ctx,
+        LibFred::OperationContext& ctx,
         const std::string& fqdn,
         Registry::RecordStatement::Purpose::Enum purpose)
 {
-    Fred::InfoDomainOutput info_domain_output;
+    LibFred::InfoDomainOutput info_domain_output;
     try
     {
-        info_domain_output = Fred::InfoDomainByFqdn(Fred::Zone::rem_trailing_dot(fqdn)).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
+        info_domain_output = LibFred::InfoDomainByFqdn(LibFred::Zone::rem_trailing_dot(fqdn)).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
     }
-    catch (const Fred::InfoDomainByFqdn::Exception& e)
+    catch (const LibFred::InfoDomainByFqdn::Exception& e)
     {
         if (e.is_set_unknown_fqdn())
         {
@@ -298,7 +298,7 @@ XmlWithData domain_printout_xml_with_data(
         throw;
     }
 
-    const Fred::InfoContactOutput info_registrant_output = Fred::InfoContactByHandle(
+    const LibFred::InfoContactOutput info_registrant_output = LibFred::InfoContactByHandle(
             info_domain_output.info_domain_data.registrant.handle).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
 
     XmlWithData retval;
@@ -307,19 +307,19 @@ XmlWithData domain_printout_xml_with_data(
         retval.email_out.insert(info_registrant_output.info_contact_data.email.get_value());
     }
 
-    const Fred::InfoRegistrarOutput info_sponsoring_registrar_output =
-            Fred::InfoRegistrarByHandle(
+    const LibFred::InfoRegistrarOutput info_sponsoring_registrar_output =
+            LibFred::InfoRegistrarByHandle(
                     info_domain_output.info_domain_data.sponsoring_registrar_handle).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
 
-    std::vector<Fred::InfoContactOutput> info_admin_contact_output;
+    std::vector<LibFred::InfoContactOutput> info_admin_contact_output;
     info_admin_contact_output.reserve(info_domain_output.info_domain_data.admin_contacts.size());
 
-    for (std::vector<Fred::ObjectIdHandlePair>::const_iterator itr =
+    for (std::vector<LibFred::ObjectIdHandlePair>::const_iterator itr =
             info_domain_output.info_domain_data.admin_contacts.begin();
          itr != info_domain_output.info_domain_data.admin_contacts.end(); ++itr)
     {
         info_admin_contact_output.push_back(
-                Fred::InfoContactByHandle(itr->handle).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()));
+                LibFred::InfoContactByHandle(itr->handle).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()));
     }
 
     const boost::optional<std::string> nsset_handle =
@@ -358,7 +358,7 @@ XmlWithData domain_printout_xml_with_data(
 
 template <typename REGISTRY_TIMEZONE>
 XmlWithData nsset_printout_xml_with_data(
-        Fred::OperationContext& ctx,
+        LibFred::OperationContext& ctx,
         const std::string& handle)
 {
     NssetPrintoutInputData nsset_data;
@@ -367,7 +367,7 @@ XmlWithData nsset_printout_xml_with_data(
     {
         nsset_data = *make_nsset_data(handle, ctx);
     }
-    catch (const Fred::InfoNssetByHandle::Exception& e)
+    catch (const LibFred::InfoNssetByHandle::Exception& e)
     {
         if (e.is_set_unknown_handle())
         {
@@ -378,7 +378,7 @@ XmlWithData nsset_printout_xml_with_data(
     }
 
     XmlWithData retval;
-    for (std::vector<Fred::InfoContactOutput>::const_iterator itr = nsset_data.tech_contact.begin();
+    for (std::vector<LibFred::InfoContactOutput>::const_iterator itr = nsset_data.tech_contact.begin();
          itr != nsset_data.tech_contact.end(); ++itr)
     {
         if (!itr->info_contact_data.email.isnull())
@@ -400,7 +400,7 @@ XmlWithData nsset_printout_xml_with_data(
 
 template <typename REGISTRY_TIMEZONE>
 XmlWithData keyset_printout_xml_with_data(
-        Fred::OperationContext& ctx,
+        LibFred::OperationContext& ctx,
         const std::string& handle)
 {
     KeysetPrintoutInputData keyset_data;
@@ -409,7 +409,7 @@ XmlWithData keyset_printout_xml_with_data(
     {
         keyset_data = *make_keyset_data(handle, ctx);
     }
-    catch (const Fred::InfoKeysetByHandle::Exception& e)
+    catch (const LibFred::InfoKeysetByHandle::Exception& e)
     {
         if (e.is_set_unknown_handle())
         {
@@ -420,7 +420,7 @@ XmlWithData keyset_printout_xml_with_data(
     }
 
     XmlWithData retval;
-    for (std::vector<Fred::InfoContactOutput>::const_iterator itr = keyset_data.tech_contact.begin();
+    for (std::vector<LibFred::InfoContactOutput>::const_iterator itr = keyset_data.tech_contact.begin();
          itr != keyset_data.tech_contact.end(); ++itr)
     {
         if (!itr->info_contact_data.email.isnull())
@@ -442,17 +442,17 @@ XmlWithData keyset_printout_xml_with_data(
 
 template <typename REGISTRY_TIMEZONE>
 XmlWithData contact_printout_xml_with_data(
-        Fred::OperationContext& ctx,
+        LibFred::OperationContext& ctx,
         const std::string& handle,
         Registry::RecordStatement::Purpose::Enum purpose)
 {
-    Fred::InfoContactOutput info_contact_output;
+    LibFred::InfoContactOutput info_contact_output;
 
     try
     {
-        info_contact_output = Fred::InfoContactByHandle(handle).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
+        info_contact_output = LibFred::InfoContactByHandle(handle).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
     }
-    catch (const Fred::InfoContactByHandle::Exception& e)
+    catch (const LibFred::InfoContactByHandle::Exception& e)
     {
         if (e.is_set_unknown_contact_handle())
         {
@@ -468,8 +468,8 @@ XmlWithData contact_printout_xml_with_data(
         retval.email_out.insert(info_contact_output.info_contact_data.email.get_value());
     }
 
-    const Fred::InfoRegistrarOutput info_sponsoring_registrar_output =
-            Fred::InfoRegistrarByHandle(
+    const LibFred::InfoRegistrarOutput info_sponsoring_registrar_output =
+            LibFred::InfoRegistrarByHandle(
                     info_contact_output.info_contact_data.sponsoring_registrar_handle).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
 
     retval.request_local_timestamp =
@@ -490,8 +490,8 @@ XmlWithData contact_printout_xml_with_data(
 
 template <typename T>
 ImplementationWithin<T>::ImplementationWithin(
-        const boost::shared_ptr<Fred::Document::Manager>& _doc_manager,
-        const boost::shared_ptr<Fred::Mailer::Manager>& _mailer_manager)
+        const boost::shared_ptr<LibFred::Document::Manager>& _doc_manager,
+        const boost::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager)
     : doc_manager_(_doc_manager),
       mailer_manager_(_mailer_manager)
 {
@@ -503,7 +503,7 @@ ImplementationWithin<T>::~ImplementationWithin()
 
 template <typename T>
 Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::domain_printout(
-        Fred::OperationContext& _ctx,
+        LibFred::OperationContext& _ctx,
         const std::string& _fqdn,
         Registry::RecordStatement::Purpose::Enum _purpose)const
 {
@@ -514,42 +514,42 @@ Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::domain_printou
             _purpose).xml;
 
     std::ostringstream pdf_document;
-    doc_manager_->generateDocument(Fred::Document::GT_RECORD_STATEMENT_DOMAIN, xml_document, pdf_document, "");
+    doc_manager_->generateDocument(LibFred::Document::GT_RECORD_STATEMENT_DOMAIN, xml_document, pdf_document, "");
 
     return Registry::RecordStatement::PdfBufferImpl(pdf_document.str());
 }
 
 template <typename T>
 Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::nsset_printout(
-        Fred::OperationContext& _ctx,
+        LibFred::OperationContext& _ctx,
         const std::string& _handle)const
 {
     std::stringstream xml_document;
     xml_document << nsset_printout_xml_with_data<RegistryTimeZone>(_ctx, _handle).xml;
 
     std::ostringstream pdf_document;
-    doc_manager_->generateDocument(Fred::Document::GT_RECORD_STATEMENT_NSSET, xml_document, pdf_document, "");
+    doc_manager_->generateDocument(LibFred::Document::GT_RECORD_STATEMENT_NSSET, xml_document, pdf_document, "");
 
     return Registry::RecordStatement::PdfBufferImpl(pdf_document.str());
 }
 
 template <typename T>
 Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::keyset_printout(
-        Fred::OperationContext& _ctx,
+        LibFred::OperationContext& _ctx,
         const std::string& _handle)const
 {
     std::stringstream xml_document;
     xml_document << keyset_printout_xml_with_data<RegistryTimeZone>(_ctx, _handle).xml;
 
     std::ostringstream pdf_document;
-    doc_manager_->generateDocument(Fred::Document::GT_RECORD_STATEMENT_KEYSET, xml_document, pdf_document, "");
+    doc_manager_->generateDocument(LibFred::Document::GT_RECORD_STATEMENT_KEYSET, xml_document, pdf_document, "");
 
     return Registry::RecordStatement::PdfBufferImpl(pdf_document.str());
 }
 
 template <typename T>
 Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::contact_printout(
-        Fred::OperationContext& _ctx,
+        LibFred::OperationContext& _ctx,
         const std::string& _handle,
         Registry::RecordStatement::Purpose::Enum _purpose)const
 {
@@ -560,47 +560,47 @@ Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::contact_printo
             _purpose).xml;
 
     std::ostringstream pdf_document;
-    doc_manager_->generateDocument(Fred::Document::GT_RECORD_STATEMENT_CONTACT, xml_document, pdf_document, "");
+    doc_manager_->generateDocument(LibFred::Document::GT_RECORD_STATEMENT_CONTACT, xml_document, pdf_document, "");
 
     return Registry::RecordStatement::PdfBufferImpl(pdf_document.str());
 }
 
 template <typename T>
 Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::historic_domain_printout(
-        Fred::OperationContext& _ctx,
+        LibFred::OperationContext& _ctx,
         const std::string& _fqdn,
         const Tz::LocalTimestamp& _valid_at)const
 {
-    const Fred::InfoDomainOutput info_domain_output =
-            Fred::InfoDomainHistoryByHistoryid(
-                    get_history_id_of<Fred::Object_Type::domain>(_fqdn, _valid_at, _ctx))
+    const LibFred::InfoDomainOutput info_domain_output =
+            LibFred::InfoDomainHistoryByHistoryid(
+                    get_history_id_of<LibFred::Object_Type::domain>(_fqdn, _valid_at, _ctx))
             .exec(_ctx, Tz::get_psql_handle_of<Tz::UTC>());
 
-    const Fred::InfoContactOutput info_registrant_output =
-            Fred::InfoContactHistoryByHistoryid(
-                    get_history_id_internal_of<Fred::Object_Type::contact>(
+    const LibFred::InfoContactOutput info_registrant_output =
+            LibFred::InfoContactHistoryByHistoryid(
+                    get_history_id_internal_of<LibFred::Object_Type::contact>(
                             info_domain_output.info_domain_data.registrant.handle, _valid_at, _ctx))
             .exec(_ctx, Tz::get_psql_handle_of<Tz::UTC>());
 
-    const Fred::InfoRegistrarOutput info_sponsoring_registrar_output =
-            Fred::InfoRegistrarByHandle(info_domain_output.info_domain_data.sponsoring_registrar_handle)
+    const LibFred::InfoRegistrarOutput info_sponsoring_registrar_output =
+            LibFred::InfoRegistrarByHandle(info_domain_output.info_domain_data.sponsoring_registrar_handle)
             .exec(_ctx, Tz::get_psql_handle_of<Tz::UTC>());
 
-    std::vector<Fred::InfoContactOutput> info_admin_contact_output;
+    std::vector<LibFred::InfoContactOutput> info_admin_contact_output;
 
-    for (std::vector<Fred::ObjectIdHandlePair>::const_iterator itr =
+    for (std::vector<LibFred::ObjectIdHandlePair>::const_iterator itr =
                  info_domain_output.info_domain_data.admin_contacts.begin();
          itr != info_domain_output.info_domain_data.admin_contacts.end(); ++itr)
     {
         info_admin_contact_output.push_back(
-                Fred::InfoContactHistoryByHistoryid(get_history_id_internal_of<Fred::Object_Type::contact>(
+                LibFred::InfoContactHistoryByHistoryid(get_history_id_internal_of<LibFred::Object_Type::contact>(
                         itr->handle, _valid_at, _ctx))
                 .exec(_ctx, Tz::get_psql_handle_of<Tz::UTC>()));
     }
 
     const boost::optional<unsigned long long> nsset_historyid = info_domain_output.info_domain_data.nsset.isnull()
         ? boost::optional<unsigned long long>()
-        : get_history_id_internal_of<Fred::Object_Type::nsset>(
+        : get_history_id_internal_of<LibFred::Object_Type::nsset>(
                 info_domain_output.info_domain_data.nsset.get_value().handle, _valid_at, _ctx);
 
     const boost::optional<NssetPrintoutInputData> nsset_data =
@@ -608,7 +608,7 @@ Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::historic_domai
 
     const boost::optional<unsigned long long> keyset_historyid = info_domain_output.info_domain_data.keyset.isnull()
         ? boost::optional<unsigned long long>()
-        : get_history_id_internal_of<Fred::Object_Type::keyset>(
+        : get_history_id_internal_of<LibFred::Object_Type::keyset>(
                 info_domain_output.info_domain_data.keyset.get_value().handle, _valid_at, _ctx);
 
     const boost::optional<KeysetPrintoutInputData> keyset_data =
@@ -632,8 +632,8 @@ Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::historic_domai
     _ctx.get_log().debug(xml_document);
 
     std::ostringstream pdf_document;
-    boost::shared_ptr<Fred::Document::Generator> doc_gen(
-        doc_manager_->createOutputGenerator(Fred::Document::GT_RECORD_STATEMENT_DOMAIN, pdf_document, "").release());
+    boost::shared_ptr<LibFred::Document::Generator> doc_gen(
+        doc_manager_->createOutputGenerator(LibFred::Document::GT_RECORD_STATEMENT_DOMAIN, pdf_document, "").release());
 
     doc_gen->getInput() << xml_document;
     doc_gen->closeInput();
@@ -643,13 +643,13 @@ Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::historic_domai
 
 template <typename T>
 Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::historic_nsset_printout(
-        Fred::OperationContext& _ctx,
+        LibFred::OperationContext& _ctx,
         const std::string& _handle,
         const Tz::LocalTimestamp& _valid_at)const
 {
     const NssetPrintoutInputData nsset_data =
             *make_historic_nsset_data(
-                    get_history_id_of<Fred::Object_Type::nsset>(_handle, _valid_at, _ctx),
+                    get_history_id_of<LibFred::Object_Type::nsset>(_handle, _valid_at, _ctx),
                     _valid_at,
                     _ctx);
 
@@ -664,9 +664,9 @@ Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::historic_nsset
     _ctx.get_log().debug(xml_document);
 
     std::ostringstream pdf_document;
-    boost::shared_ptr<Fred::Document::Generator> doc_gen(
+    boost::shared_ptr<LibFred::Document::Generator> doc_gen(
             doc_manager_->createOutputGenerator(
-                    Fred::Document::GT_RECORD_STATEMENT_NSSET, pdf_document, "").release());
+                    LibFred::Document::GT_RECORD_STATEMENT_NSSET, pdf_document, "").release());
 
     doc_gen->getInput() << xml_document;
     doc_gen->closeInput();
@@ -676,13 +676,13 @@ Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::historic_nsset
 
 template <typename T>
 Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::historic_keyset_printout(
-        Fred::OperationContext& _ctx,
+        LibFred::OperationContext& _ctx,
         const std::string& _handle,
         const Tz::LocalTimestamp& _valid_at)const
 {
     const KeysetPrintoutInputData keyset_data =
             *make_historic_keyset_data(
-                    get_history_id_of<Fred::Object_Type::keyset>(_handle, _valid_at, _ctx),
+                    get_history_id_of<LibFred::Object_Type::keyset>(_handle, _valid_at, _ctx),
                     _valid_at,
                     _ctx);
 
@@ -697,9 +697,9 @@ Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::historic_keyse
     _ctx.get_log().debug(xml_document);
 
     std::ostringstream pdf_document;
-    boost::shared_ptr< Fred::Document::Generator > doc_gen(
+    boost::shared_ptr< LibFred::Document::Generator > doc_gen(
             doc_manager_->createOutputGenerator(
-                    Fred::Document::GT_RECORD_STATEMENT_KEYSET, pdf_document, "").release());
+                    LibFred::Document::GT_RECORD_STATEMENT_KEYSET, pdf_document, "").release());
 
     doc_gen->getInput() << xml_document;
     doc_gen->closeInput();
@@ -709,17 +709,17 @@ Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::historic_keyse
 
 template <typename T>
 Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::historic_contact_printout(
-        Fred::OperationContext& _ctx,
+        LibFred::OperationContext& _ctx,
         const std::string& _handle,
         const Tz::LocalTimestamp& _valid_at)const
 {
-    const Fred::InfoContactOutput info_contact_output =
-            Fred::InfoContactHistoryByHistoryid(
-                    get_history_id_of<Fred::Object_Type::contact>(_handle, _valid_at, _ctx))
+    const LibFred::InfoContactOutput info_contact_output =
+            LibFred::InfoContactHistoryByHistoryid(
+                    get_history_id_of<LibFred::Object_Type::contact>(_handle, _valid_at, _ctx))
             .exec(_ctx, Tz::get_psql_handle_of<Tz::UTC>());
 
-    const Fred::InfoRegistrarOutput info_sponsoring_registrar_output =
-            Fred::InfoRegistrarByHandle(info_contact_output.info_contact_data.sponsoring_registrar_handle)
+    const LibFred::InfoRegistrarOutput info_sponsoring_registrar_output =
+            LibFred::InfoRegistrarByHandle(info_contact_output.info_contact_data.sponsoring_registrar_handle)
             .exec(_ctx, Tz::get_psql_handle_of<Tz::UTC>());
 
     const std::string xml_document = contact_printout_xml<RegistryTimeZone>(
@@ -734,9 +734,9 @@ Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::historic_conta
     _ctx.get_log().debug(xml_document);
 
     std::ostringstream pdf_document;
-    boost::shared_ptr< Fred::Document::Generator > doc_gen(
+    boost::shared_ptr< LibFred::Document::Generator > doc_gen(
             doc_manager_->createOutputGenerator(
-                    Fred::Document::GT_RECORD_STATEMENT_CONTACT, pdf_document, "").release());
+                    LibFred::Document::GT_RECORD_STATEMENT_CONTACT, pdf_document, "").release());
 
     doc_gen->getInput() << xml_document;
     doc_gen->closeInput();
@@ -746,7 +746,7 @@ Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::historic_conta
 
 template <typename T>
 void ImplementationWithin<T>::send_domain_printout(
-        Fred::OperationContext& _ctx,
+        LibFred::OperationContext& _ctx,
         const std::string& _fqdn,
         Registry::RecordStatement::Purpose::Enum _purpose)const
 {
@@ -760,7 +760,7 @@ void ImplementationWithin<T>::send_domain_printout(
 
     static const int record_statement_filetype = 11;
     const unsigned long long file_id = doc_manager_->generateDocumentAndSave(
-            Fred::Document::GT_RECORD_STATEMENT_DOMAIN,
+            LibFred::Document::GT_RECORD_STATEMENT_DOMAIN,
             xml_document,
             "registry_record_statement.pdf",
             record_statement_filetype,
@@ -770,7 +770,7 @@ void ImplementationWithin<T>::send_domain_printout(
         throw std::runtime_error("missing file_id");
     }
 
-    Fred::Mailer::Parameters params;
+    LibFred::Mailer::Parameters params;
     params["request_day"] = boost::lexical_cast<std::string>(
             static_cast<int>(printout_data.request_local_timestamp.get_local_time().date().day()));
     params["request_month"] = boost::lexical_cast<std::string>(
@@ -778,8 +778,8 @@ void ImplementationWithin<T>::send_domain_printout(
     params["request_year"] = boost::lexical_cast<std::string>(
             static_cast<int>(printout_data.request_local_timestamp.get_local_time().date().year()));
 
-    Fred::Mailer::Handles handles;
-    Fred::Mailer::Attachments attach;
+    LibFred::Mailer::Handles handles;
+    LibFred::Mailer::Attachments attach;
 
     attach.push_back(file_id);
 
@@ -803,7 +803,7 @@ void ImplementationWithin<T>::send_domain_printout(
 
 template <typename T>
 void ImplementationWithin<T>::send_nsset_printout(
-        Fred::OperationContext& _ctx,
+        LibFred::OperationContext& _ctx,
         const std::string& _handle)const
 {
     const XmlWithData printout_data =
@@ -815,7 +815,7 @@ void ImplementationWithin<T>::send_nsset_printout(
 
     static const int record_statement_filetype = 11;
     const unsigned long long file_id = doc_manager_->generateDocumentAndSave(
-            Fred::Document::GT_RECORD_STATEMENT_NSSET,
+            LibFred::Document::GT_RECORD_STATEMENT_NSSET,
             xml_document,
             "registry_record_statement.pdf",
             record_statement_filetype,
@@ -825,7 +825,7 @@ void ImplementationWithin<T>::send_nsset_printout(
         throw std::runtime_error("missing file_id");
     }
 
-    Fred::Mailer::Parameters params;
+    LibFred::Mailer::Parameters params;
     params["request_day"] = boost::lexical_cast<std::string>(
             static_cast<int>(printout_data.request_local_timestamp.get_local_time().date().day()));
     params["request_month"] = boost::lexical_cast<std::string>(
@@ -833,8 +833,8 @@ void ImplementationWithin<T>::send_nsset_printout(
     params["request_year"] = boost::lexical_cast<std::string>(
             static_cast<int>(printout_data.request_local_timestamp.get_local_time().date().year()));
 
-    Fred::Mailer::Handles handles;
-    Fred::Mailer::Attachments attach;
+    LibFred::Mailer::Handles handles;
+    LibFred::Mailer::Attachments attach;
 
     attach.push_back(file_id);
 
@@ -860,7 +860,7 @@ void ImplementationWithin<T>::send_nsset_printout(
 
 template <typename T>
 void ImplementationWithin<T>::send_keyset_printout(
-        Fred::OperationContext& _ctx,
+        LibFred::OperationContext& _ctx,
         const std::string& _handle)const
 {
     const XmlWithData printout_data =
@@ -872,7 +872,7 @@ void ImplementationWithin<T>::send_keyset_printout(
 
     static const int record_statement_filetype = 11;
     const unsigned long long file_id = doc_manager_->generateDocumentAndSave(
-            Fred::Document::GT_RECORD_STATEMENT_KEYSET,
+            LibFred::Document::GT_RECORD_STATEMENT_KEYSET,
             xml_document,
             "registry_record_statement.pdf",
             record_statement_filetype,
@@ -882,7 +882,7 @@ void ImplementationWithin<T>::send_keyset_printout(
         throw std::runtime_error("missing file_id");
     }
 
-    Fred::Mailer::Parameters params;
+    LibFred::Mailer::Parameters params;
     params["request_day"] = boost::lexical_cast<std::string>(
             static_cast<int>(printout_data.request_local_timestamp.get_local_time().date().day()));
     params["request_month"] = boost::lexical_cast<std::string>(
@@ -890,8 +890,8 @@ void ImplementationWithin<T>::send_keyset_printout(
     params["request_year"] = boost::lexical_cast<std::string>(
             static_cast<int>(printout_data.request_local_timestamp.get_local_time().date().year()));
 
-    Fred::Mailer::Handles handles;
-    Fred::Mailer::Attachments attach;
+    LibFred::Mailer::Handles handles;
+    LibFred::Mailer::Attachments attach;
 
     attach.push_back(file_id);
 
@@ -917,7 +917,7 @@ void ImplementationWithin<T>::send_keyset_printout(
 
 template <typename T>
 void ImplementationWithin<T>::send_contact_printout(
-        Fred::OperationContext& _ctx,
+        LibFred::OperationContext& _ctx,
         const std::string& _handle,
         Registry::RecordStatement::Purpose::Enum _purpose)const
 {
@@ -931,7 +931,7 @@ void ImplementationWithin<T>::send_contact_printout(
 
     static const int record_statement_filetype = 11;
     const unsigned long long file_id = doc_manager_->generateDocumentAndSave(
-            Fred::Document::GT_RECORD_STATEMENT_CONTACT,
+            LibFred::Document::GT_RECORD_STATEMENT_CONTACT,
             xml_document,
             "registry_record_statement.pdf",
             record_statement_filetype,
@@ -941,7 +941,7 @@ void ImplementationWithin<T>::send_contact_printout(
         throw std::runtime_error("missing file_id");
     }
 
-    Fred::Mailer::Parameters params;
+    LibFred::Mailer::Parameters params;
     params["request_day"] = boost::lexical_cast<std::string>(
             static_cast<int>(printout_data.request_local_timestamp.get_local_time().date().day()));
     params["request_month"] = boost::lexical_cast<std::string>(
@@ -949,8 +949,8 @@ void ImplementationWithin<T>::send_contact_printout(
     params["request_year"] = boost::lexical_cast<std::string>(
             static_cast<int>(printout_data.request_local_timestamp.get_local_time().date().year()));
 
-    Fred::Mailer::Handles handles;
-    Fred::Mailer::Attachments attach;
+    LibFred::Mailer::Handles handles;
+    LibFred::Mailer::Attachments attach;
     attach.push_back(file_id);
     const std::string email = printout_data.email_out.empty()
             ? std::string()
@@ -976,13 +976,13 @@ class InstanceOfNecessaryImpl
 {
 private:
     static std::string fake_domain_printout_xml(
-            Fred::OperationContext& ctx,
-            const Fred::InfoDomainOutput& info,
+            LibFred::OperationContext& ctx,
+            const LibFred::InfoDomainOutput& info,
             const Tz::LocalTimestamp& valid_at,
             const Registry::RecordStatement::Purpose::Enum purpose,
-            const Fred::InfoContactOutput& registrant_info,
-            const std::vector<Fred::InfoContactOutput>& admin_contact_info,
-            const Fred::InfoRegistrarOutput& sponsoring_registrar_info,
+            const LibFred::InfoContactOutput& registrant_info,
+            const std::vector<LibFred::InfoContactOutput>& admin_contact_info,
+            const LibFred::InfoRegistrarOutput& sponsoring_registrar_info,
             const boost::optional<NssetPrintoutInputData>& nsset_data,
             const boost::optional<KeysetPrintoutInputData>& keyset_data,
             const std::set<std::string>& external_states)
@@ -1000,11 +1000,11 @@ private:
                 external_states);
     }
     static std::string fake_contact_printout_xml(
-            Fred::OperationContext& ctx,
-            const Fred::InfoContactOutput& info,
+            LibFred::OperationContext& ctx,
+            const LibFred::InfoContactOutput& info,
             const Tz::LocalTimestamp& valid_at,
             Registry::RecordStatement::Purpose::Enum purpose,
-            const Fred::InfoRegistrarOutput& sponsoring_registrar_info,
+            const LibFred::InfoRegistrarOutput& sponsoring_registrar_info,
             const std::set<std::string>& external_states)
     {
         return contact_printout_xml<REGISTRY_TIMEZONE>(
@@ -1016,7 +1016,7 @@ private:
                 external_states);
     }
     static XmlWithData fake_domain_printout_xml_with_data(
-            Fred::OperationContext& ctx,
+            LibFred::OperationContext& ctx,
             const std::string& fqdn,
             Registry::RecordStatement::Purpose::Enum purpose)
     {
@@ -1026,7 +1026,7 @@ private:
                 purpose);
     }
     static XmlWithData fake_nsset_printout_xml_with_data(
-            Fred::OperationContext& ctx,
+            LibFred::OperationContext& ctx,
             const std::string& handle)
     {
         return nsset_printout_xml_with_data<REGISTRY_TIMEZONE>(
@@ -1034,7 +1034,7 @@ private:
                 handle);
     }
     static XmlWithData fake_keyset_printout_xml_with_data(
-            Fred::OperationContext& ctx,
+            LibFred::OperationContext& ctx,
             const std::string& handle)
     {
         return keyset_printout_xml_with_data<REGISTRY_TIMEZONE>(
@@ -1042,7 +1042,7 @@ private:
                 handle);
     }
     static XmlWithData fake_contact_printout_xml_with_data(
-            Fred::OperationContext& ctx,
+            LibFred::OperationContext& ctx,
             const std::string& handle,
             Registry::RecordStatement::Purpose::Enum purpose)
     {
@@ -1053,8 +1053,8 @@ private:
     }
 
     static Factory::Product producer(
-            const boost::shared_ptr<Fred::Document::Manager>& _doc_manager,
-            const boost::shared_ptr<Fred::Mailer::Manager>& _mailer_manager)
+            const boost::shared_ptr<LibFred::Document::Manager>& _doc_manager,
+            const boost::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager)
     {
         return Factory::Product(
                 new ImplementationWithin<REGISTRY_TIMEZONE>(_doc_manager, _mailer_manager));
@@ -1073,8 +1073,8 @@ private:
 template <typename T>
 const typename InstanceOfNecessaryImpl<T>::RegistryProducer InstanceOfNecessaryImpl<T>::auto_registry_producer;
 
-}//namespace Fred::RecordStatement::Impl
-}//namespace Fred::RecordStatement
-}//namespace Fred
+} // namespace LibFred::RecordStatement::Impl
+} // namespace LibFred::RecordStatement
+} // namespace LibFred
 
 #endif//TEMPLATES_IMPL_HH_1EE16A76AB7E51E0D04BA200F2C8BAFE

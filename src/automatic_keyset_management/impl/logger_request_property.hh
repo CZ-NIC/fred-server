@@ -21,7 +21,7 @@
 
 #include <string>
 
-namespace Fred {
+namespace LibFred {
 namespace AutomaticKeysetManagement {
 namespace Impl {
 
@@ -42,8 +42,8 @@ struct LoggerRequestProperty
 template <LoggerRequestProperty::Enum>
 std::string to_fred_logger_request_property_name();
 
-} // namespace Fred::AutomaticKeysetManagement::Impl
-} // namespace Fred::AutomaticKeysetManagement
-} // namespace Fred
+} // namespace LibFred::AutomaticKeysetManagement::Impl
+} // namespace LibFred::AutomaticKeysetManagement
+} // namespace LibFred
 
 #endif

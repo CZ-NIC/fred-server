@@ -36,5 +36,5 @@ const char* ObjectNotFound::what()const noexcept
     return "registry object with specified ID does not exist";
 }
 
-}//namespace Registry::RecordStatement
-}//namespace Registry
+} // namespace Registry::RecordStatement
+} // namespace Registry

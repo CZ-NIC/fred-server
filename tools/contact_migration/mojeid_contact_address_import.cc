@@ -1,9 +1,9 @@
-#include "util/db/nullable.h"
-#include "src/fredlib/contact/place_address.h"
-#include "src/fredlib/contact/info_contact.h"
-#include "src/fredlib/contact/info_contact_data.h"
-#include "src/fredlib/contact/update_contact.h"
-#include "src/fredlib/db_settings.h"
+#include "src/util/db/nullable.hh"
+#include "src/libfred/registrable_object/contact/place_address.hh"
+#include "src/libfred/registrable_object/contact/info_contact.hh"
+#include "src/libfred/registrable_object/contact/info_contact_data.hh"
+#include "src/libfred/registrable_object/contact/update_contact.hh"
+#include "src/libfred/db_settings.hh"
 
 #include <cstdlib>
 #include <iostream>
@@ -42,7 +42,7 @@ public:
     InvalidUtf8Character(const std::string &_msg):UnexpectedCharacter(_msg) { }
 };
 
-typedef std::map< Fred::ContactAddressType, Fred::ContactAddress > TypeToAddress;
+typedef std::map< LibFred::ContactAddressType, LibFred::ContactAddress > TypeToAddress;
 struct ContactId
 {
     ContactId(::uint64_t _id, const std::string &_handle):id(_id), handle(_handle) { }
@@ -55,7 +55,7 @@ typedef std::map< ContactId, TypeToAddress > ContactIdToAddresses;
 void get_contact_addresses(std::istream &_data_source, ContactIdToAddresses &_addresses);
 void import_contact_addresses(const ContactIdToAddresses &_addresses,
                               const std::string &_registrar,
-                              Fred::OperationContext &_ctx,
+                              LibFred::OperationContext &_ctx,
                               unsigned long long _logd_request_id);
 
 int main(int argc, char *argv[])
@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
         Database::Manager::init(new Database::ConnectionFactory(conn_info));
         ContactIdToAddresses addresses;
         get_contact_addresses(std::cin, addresses);
-        Fred::OperationContextCreator ctx;
+        LibFred::OperationContextCreator ctx;
         import_contact_addresses(addresses, registrar, ctx, logd_request_id);
         ctx.commit_transaction();
         return EXIT_SUCCESS;
@@ -103,7 +103,7 @@ typedef std::vector< Column > Row;
 Column get_column(const char *&_c, bool &_eol);
 Row get_row(const char *_c);
 std::string utf8_substr(const std::string &_s, ::size_t _length);
-bool is_mojeid_contact_in_fred_db(::uint64_t _contact_id, Fred::OperationContext &_ctx);
+bool is_mojeid_contact_in_fred_db(::uint64_t _contact_id, LibFred::OperationContext &_ctx);
 
 }
 
@@ -131,8 +131,8 @@ void get_contact_addresses(std::istream &_data_source, ContactIdToAddresses &_ad
         const ContactId contact_id(boost::lexical_cast< ::uint64_t >(row[0].get_value()),
                                    row[1].get_value());
         const std::string addr_type = row[2].get_value();
-        const Fred::ContactAddressType type(Fred::ContactAddressType::from_string(addr_type));
-        Fred::ContactAddress addr;
+        const LibFred::ContactAddressType type(LibFred::ContactAddressType::from_string(addr_type));
+        LibFred::ContactAddress addr;
         addr.street1 = row[3].get_value();
         if (!row[4].isnull() && !row[4].get_value().empty()) {
             addr.street2 = row[4].get_value();
@@ -156,7 +156,7 @@ void get_contact_addresses(std::istream &_data_source, ContactIdToAddresses &_ad
 
 void import_contact_addresses(const ContactIdToAddresses &_addresses,
                               const std::string &_registrar,
-                              Fred::OperationContext &_ctx,
+                              LibFred::OperationContext &_ctx,
                               unsigned long long _logd_request_id)
 {
     for (ContactIdToAddresses::const_iterator contact_ptr = _addresses.begin();
@@ -168,29 +168,29 @@ void import_contact_addresses(const ContactIdToAddresses &_addresses,
                          "doesn't found in fred" << std::endl;
             continue;
         }
-        Fred::UpdateContactById update_contact(contact.id, _registrar);
+        LibFred::UpdateContactById update_contact(contact.id, _registrar);
         std::ostringstream out;
         for (TypeToAddress::const_iterator type_ptr = contact_ptr->second.begin();
              type_ptr != contact_ptr->second.end(); ++type_ptr)
         {
             const std::string addr_type = type_ptr->first.to_string();
             out << contact.handle << "[" << addr_type << (addr_type.length() == 8 ? "] = " : "]  = ") << type_ptr->second << std::endl;
-            const Fred::ContactAddress &address = type_ptr->second;
+            const LibFred::ContactAddress &address = type_ptr->second;
             switch (type_ptr->first.value) {
-                case Fred::ContactAddressType::MAILING:
-                    update_contact.set_address< Fred::ContactAddressType::MAILING >(address);
+                case LibFred::ContactAddressType::MAILING:
+                    update_contact.set_address< LibFred::ContactAddressType::MAILING >(address);
                     break;
-                case Fred::ContactAddressType::BILLING:
-                    update_contact.set_address< Fred::ContactAddressType::BILLING >(address);
+                case LibFred::ContactAddressType::BILLING:
+                    update_contact.set_address< LibFred::ContactAddressType::BILLING >(address);
                     break;
-                case Fred::ContactAddressType::SHIPPING:
-                    update_contact.set_address< Fred::ContactAddressType::SHIPPING >(address);
+                case LibFred::ContactAddressType::SHIPPING:
+                    update_contact.set_address< LibFred::ContactAddressType::SHIPPING >(address);
                     break;
-                case Fred::ContactAddressType::SHIPPING_2:
-                    update_contact.set_address< Fred::ContactAddressType::SHIPPING_2 >(address);
+                case LibFred::ContactAddressType::SHIPPING_2:
+                    update_contact.set_address< LibFred::ContactAddressType::SHIPPING_2 >(address);
                     break;
-                case Fred::ContactAddressType::SHIPPING_3:
-                    update_contact.set_address< Fred::ContactAddressType::SHIPPING_3 >(address);
+                case LibFred::ContactAddressType::SHIPPING_3:
+                    update_contact.set_address< LibFred::ContactAddressType::SHIPPING_3 >(address);
                     break;
             }
         }
@@ -325,7 +325,7 @@ const char* next_utf8_character(const char *_c, const char *_e)
     return retval;
 }
 
-bool is_mojeid_contact_in_fred_db(::uint64_t _contact_id, Fred::OperationContext &_ctx)
+bool is_mojeid_contact_in_fred_db(::uint64_t _contact_id, LibFred::OperationContext &_ctx)
 {
     Database::Result result = _ctx.get_conn().exec_params(
         "SELECT 1 "

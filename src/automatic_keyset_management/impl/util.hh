@@ -19,11 +19,11 @@
 #ifndef UTIL_HH_4675308061E4499E93103CD4A942696F
 #define UTIL_HH_4675308061E4499E93103CD4A942696F
 
-#include "src/fredlib/keyset/keyset_dns_key.h"
+#include "src/libfred/registrable_object/keyset/keyset_dns_key.hh"
 
 #include <string>
 
-namespace Fred {
+namespace LibFred {
 namespace AutomaticKeysetManagement {
 namespace Impl {
 
@@ -31,10 +31,10 @@ std::string quote(const std::string& str);
 
 std::string quote(int value);
 
-std::string to_string(const Fred::DnsKey& dnskey);
+std::string to_string(const LibFred::DnsKey& dnskey);
 
-} // namespace Fred::AutomaticKeysetManagement::Impl
-} // namespace Fred::AutomaticKeysetManagement
-} // namespace Fred
+} // namespace LibFred::AutomaticKeysetManagement::Impl
+} // namespace LibFred::AutomaticKeysetManagement
+} // namespace LibFred
 
 #endif
