@@ -61,7 +61,7 @@ CheckResult Plaintext::check_password_correctness(
     }
 
     const std::string stored_password = alg_tag_start + std::strlen(plaintext_prefix);
-    throw_incorrect_password_exception_on_nonezero_value(_plaintext_password == stored_password);
+    throw_incorrect_password_exception_on_nonezero_value(_plaintext_password != stored_password);
     return CheckResult::password_is_correct;
 }
 
