@@ -27,6 +27,7 @@
 #include <cstring>
 
 #include <memory>
+#include <regex>
 #include <stdexcept>
 #include <sstream>
 #include <string>
@@ -36,7 +37,7 @@ namespace Impl {
 
 namespace {
 
-const char pbkdf2_prefix[] = "$pbkdf2$";
+const char pbkdf2_tag[] = "pbkdf2";
 
 const EVP_MD* call_hash_init_function(Pbkdf2::HashFunction hash_function)
 {
@@ -120,7 +121,7 @@ Pbkdf2::Pbkdf2(
 std::string Pbkdf2::get_prefix_and_parameters()const
 {
     std::ostringstream data;
-    data << pbkdf2_prefix << to_hash_function_tag(hash_function_) << "$" << number_of_iterations_ << "$";
+    data << "$" << pbkdf2_tag << "$" << to_hash_function_tag(hash_function_) << "$" << number_of_iterations_ << "$";
     return data.str();
 }
 
@@ -143,64 +144,64 @@ CheckResult Pbkdf2::check_password_correctness(
         const std::string& _plaintext_password,
         const PasswordData& _encrypted_password_data)//"$pbkdf2$<hashed_by>$<number_of_iterations>$<salt::base64>$<hash::base64>"
 {
-    const char* const alg_tag_start = _encrypted_password_data.get_value().c_str();
-    const bool prefix_matches = std::strncmp(alg_tag_start, pbkdf2_prefix, std::strlen(pbkdf2_prefix)) == 0;
-    if (!prefix_matches)
+    static const std::regex delimiter("\\$");// prevents '$' special meaning in regex
+    const std::string encrypted_password_data = _encrypted_password_data.get_value();
+    auto items_itr = std::sregex_token_iterator(
+            encrypted_password_data.begin(),
+            encrypted_password_data.end(),
+            delimiter,
+            -1);
+    const auto items_end = std::sregex_token_iterator();
+    if ((items_itr == items_end) ||
+        (items_itr->length() != 0))//std::sub_match does not have method empty()
+    {
+        throw std::runtime_error("corrupted data");
+    }
+
+    ++items_itr;
+    if (items_itr == items_end)
+    {
+        throw std::runtime_error("corrupted data");
+    }
+    if (*items_itr != pbkdf2_tag)
     {
         return CheckResult::algorithm_does_not_fit;
     }
 
-    const char* data = alg_tag_start + std::strlen(pbkdf2_prefix);
-    const char* const data_end = alg_tag_start + _encrypted_password_data.get_value().length();
-
-    const char* const hash_function_tag_start = data;
-    while ((data != data_end) && (*data != '$'))
-    {
-        ++data;
-    }
-    if (data == data_end)
+    ++items_itr;
+    if (items_itr == items_end)
     {
         throw std::runtime_error("corrupted data");
     }
-    const HashFunction hash_function = to_hash_function(std::string(hash_function_tag_start, data - hash_function_tag_start));
+    const HashFunction hash_function = to_hash_function(*items_itr);
     const int size_of_hash = get_size_of_hash(hash_function);
 
-    ++data;
-    if (data == data_end)
+    ++items_itr;
+    if (items_itr == items_end)
     {
         throw std::runtime_error("corrupted data");
     }
-    const char* const number_of_iterations_start = data;
-    while ((data != data_end) && (*data != '$'))
-    {
-        ++data;
-    }
-    if (data == data_end)
-    {
-        throw std::runtime_error("corrupted data");
-    }
-    const int number_of_iterations = std::stoi(
-            std::string(number_of_iterations_start, data - number_of_iterations_start), nullptr, 10);
+    const int number_of_iterations = std::stoi(*items_itr, nullptr, 10);
 
-    ++data;
-    if (data == data_end)
+    ++items_itr;
+    if (items_itr == items_end)
     {
         throw std::runtime_error("corrupted data");
     }
-    const char* const salt_start = data;
-    while ((data != data_end) && (*data != '$'))
-    {
-        ++data;
-    }
-    if (data == data_end)
-    {
-        throw std::runtime_error("corrupted data");
-    }
-    const BinaryData salt(Base64EncodedData::from_base64_encoded_string(std::string(salt_start, data - salt_start)));
+    const BinaryData salt(Base64EncodedData::from_base64_encoded_string(*items_itr));
 
-    ++data;
-    const char* const hash_start = data;
-    const BinaryData stored_hash(Base64EncodedData::from_base64_encoded_string(std::string(hash_start, data_end - hash_start)));
+    ++items_itr;
+    if (items_itr == items_end)
+    {
+        throw std::runtime_error("corrupted data");
+    }
+    const std::string base64_encoded_hash = *items_itr;
+    ++items_itr;
+    if (items_itr != items_end)
+    {
+        throw std::runtime_error("corrupted data");
+    }
+    const BinaryData stored_hash(Base64EncodedData::from_base64_encoded_string(base64_encoded_hash));
     if (stored_hash.get_size_of_raw_binary_data() != size_of_hash)
     {
         throw std::runtime_error("corrupted data");
