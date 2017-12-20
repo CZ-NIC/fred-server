@@ -22,8 +22,6 @@
  */
 
 #include "config.h"
-#include "src/bin/corba/Admin.hh"
-#include "src/bin/corba/admin/admin_impl.hh"
 #include "src/bin/corba/whois/whois_impl.hh"
 #include "src/bin/corba/whois/whois2_impl.hh"
 #include "src/bin/corba/public_request/server_i.hh"
@@ -43,7 +41,6 @@
 #include "src/util/cfg/handle_database_args.hh"
 #include "src/util/cfg/handle_registry_args.hh"
 #include "src/util/cfg/handle_corbanameservice_args.hh"
-#include "src/util/cfg/handle_adifd_args.hh"
 #include "src/util/cfg/handle_contactverification_args.hh"
 
 #include <iostream>
@@ -73,7 +70,6 @@ boost::assign::list_of
     (HandleArgsPtr(new HandleDatabaseArgs))
     (HandleArgsPtr(new HandleCorbaNameServiceArgs))
     (HandleArgsPtr(new HandleRegistryArgs))
-    (HandleArgsPtr(new HandleAdifdArgs))
     (HandleArgsPtr(new HandleContactVerificationArgs));
 
 int main(int argc, char *argv[])
@@ -106,21 +102,6 @@ int main(int argc, char *argv[])
             ->get_handler_ptr_by_type<HandleDatabaseArgs>();
         HandleRegistryArgs* registry_args_ptr = CfgArgs::instance()
             ->get_handler_ptr_by_type<HandleRegistryArgs>();
-        HandleAdifdArgs* adifd_args_ptr = CfgArgs::instance()
-            ->get_handler_ptr_by_type<HandleAdifdArgs>();
-
-        std::unique_ptr<ccReg_Admin_i> myccReg_Admin_i(new ccReg_Admin_i(
-                    db_args_ptr->get_conn_info(),
-                    CorbaContainer::get_instance()->getNS(),
-                    registry_args_ptr->restricted_handles,
-                    registry_args_ptr->docgen_path,
-                    registry_args_ptr->docgen_template_path,
-                    registry_args_ptr->docgen_domain_count_limit,
-                    registry_args_ptr->fileclient_path,
-                    adifd_args_ptr->adifd_session_max,
-                    adifd_args_ptr->adifd_session_timeout,
-                    adifd_args_ptr->adifd_session_garbage,
-                    false));
 
         std::unique_ptr<ccReg_Whois_i> myccReg_Whois_i(new ccReg_Whois_i(
                 db_args_ptr->get_conn_info(),
@@ -135,16 +116,7 @@ int main(int argc, char *argv[])
         std::unique_ptr<Registry::Contact::Verification::ContactVerification_i> contact_vrf_iface(
                 new Registry::Contact::Verification::ContactVerification_i("fred-pifd-cv"));
 
-            // create session use values from config
-            LOGGER(PACKAGE).info(boost::format(
-                    "sessions max: %1%; timeout: %2%")
-                    % adifd_args_ptr->adifd_session_max
-                    % adifd_args_ptr->adifd_session_timeout);
-
         //create server object with poa and nameservice registration
-        CorbaContainer::get_instance()
-            ->register_server(myccReg_Admin_i.release(), "WebWhois");
-
         CorbaContainer::get_instance()
             ->register_server(myccReg_Whois_i.release(), "Whois");
 

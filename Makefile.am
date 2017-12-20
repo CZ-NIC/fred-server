@@ -2072,21 +2072,21 @@ src_bin_corba_fred_pifd_SOURCES = \
 		src/bin/corba/public_request/server_i.hh \
 		src/util/corba_conversion.hh \
 		src/util/corba_conversion.cc \
+		src/bin/corba/admin/common.hh \
+		src/bin/corba/admin/common.cc \
 		src/bin/corba/fred-pifd.cc
 
 src_bin_corba_fred_pifd_LDADD = \
 		src/bin/corba/whois/libwhois_impl.a \
 		src/bin/corba/whois/libwhois2_impl.a \
-		src/bin/corba/admin/libadmin_impl.a \
 		src/bin/corba/libcorbawhois.a \
 		src/bin/corba/libcorbawhois2.a \
-		src/bin/corba/libcorbaadmin.a \
 		src/bin/corba/libcorbaregistry.a \
 		src/bin/corba/libcorbafilters.a \
-		src/bin/corba/libmailer.a \
 		src/bin/corba/libcorbadatatypes.a \
 		src/bin/corba/libcorba.a \
 		src/bin/corba/libcorbaepp.a \
+		src/bin/corba/libmailer.a \
 		src/bin/corba/libfilemanager.a \
 		src/bin/corba/libcorbalogger.a \
 		src/bin/corba/util/libcorbautil.a \
