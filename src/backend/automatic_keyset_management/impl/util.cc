@@ -16,47 +16,36 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/automatic_keyset_management/dns_key.hh"
+#include "src/backend/automatic_keyset_management/impl/util.hh"
 
-#include "src/automatic_keyset_management/impl/util.hh"
+#include <boost/lexical_cast.hpp>
 
 #include <string>
 
 namespace LibFred {
 namespace AutomaticKeysetManagement {
+namespace Impl {
 
 
-bool operator<(const DnsKey& lhs, const DnsKey& rhs)
-{
-    if (lhs.key != rhs.key) {
-        return lhs.key < rhs.key;
-    }
-    if (lhs.alg != rhs.alg) {
-        return lhs.alg < rhs.alg;
-    }
-    if (lhs.protocol != rhs.protocol) {
-        return lhs.protocol < rhs.protocol;
-    }
-    return lhs.flags < rhs.flags;
+std::string quote(const std::string& str) {
+    return "\"" + str + "\"";
 }
 
-
-bool operator==(const DnsKey& lhs, const DnsKey& rhs)
-{
-    return !(lhs < rhs || rhs < lhs);
+std::string quote(int value) {
+    return boost::lexical_cast<std::string>(value);
 }
 
-
-std::string to_string(const DnsKey& dnskey)
+std::string to_string(const LibFred::DnsKey& dnskey)
 {
     static const std::string delim = ", ";
-    return "[flags: " + Impl::quote(dnskey.flags) + delim +
-           "protocol: " + Impl::quote(dnskey.protocol) + delim +
-           "algorithm: " + Impl::quote(dnskey.alg) + delim +
-           "key: " + Impl::quote(dnskey.key) + "]";
+    return "["
+           "flags: " + quote(dnskey.get_flags()) + delim +
+           "protocol: " + quote(dnskey.get_protocol()) + delim +
+           "algorithm: " + quote(dnskey.get_alg()) + delim +
+           "key: " + quote(dnskey.get_key()) +
+           "]";
 }
 
-
+} // namespace LibFred::AutomaticKeysetManagement::Impl
 } // namespace LibFred::AutomaticKeysetManagement
 } // namespace LibFred
-

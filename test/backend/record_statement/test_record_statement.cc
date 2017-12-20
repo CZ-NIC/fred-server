@@ -24,9 +24,9 @@
 #include "test/backend/record_statement/util.hh"
 #include "test/backend/record_statement/fixture.hh"
 
-#include "src/record_statement/record_statement.hh"
+#include "src/backend/record_statement/record_statement.hh"
 
-#include "src/record_statement/impl/record_statement_xml.hh"
+#include "src/backend/record_statement/impl/record_statement_xml.hh"
 #include "src/libfred/object_state/get_object_states.hh"
 
 #include "src/util/subprocess.hh"

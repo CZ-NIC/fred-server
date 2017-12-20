@@ -21,10 +21,10 @@
  *  registry record statement implementation
  */
 
-#include "src/record_statement/record_statement.hh"
+#include "src/backend/record_statement/record_statement.hh"
 
-#include "src/record_statement/impl/record_statement_xml.hh"
-#include "src/record_statement/impl/factory.hh"
+#include "src/backend/record_statement/impl/record_statement_xml.hh"
+#include "src/backend/record_statement/impl/factory.hh"
 
 #include "src/libfred/opcontext.hh"
 #include "src/libfred/zone/zone.hh"

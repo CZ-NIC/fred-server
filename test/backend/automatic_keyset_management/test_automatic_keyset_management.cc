@@ -19,7 +19,7 @@
 #include "test/backend/automatic_keyset_management/util.hh"
 #include "test/backend/automatic_keyset_management/fixture.hh"
 
-#include "src/automatic_keyset_management/automatic_keyset_management.hh"
+#include "src/backend/automatic_keyset_management/automatic_keyset_management.hh"
 
 #include "src/libfred/object_state/get_object_states.hh"
 

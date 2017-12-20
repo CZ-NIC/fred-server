@@ -24,8 +24,8 @@
 #ifndef RECORD_STATEMENT_HH_72FF9604ED0747FAA4BC91F598728BBC
 #define RECORD_STATEMENT_HH_72FF9604ED0747FAA4BC91F598728BBC
 
-#include "src/record_statement/exceptions.hh"
-#include "src/record_statement/purpose.hh"
+#include "src/backend/record_statement/exceptions.hh"
+#include "src/backend/record_statement/purpose.hh"
 
 #include "src/libfred/documents.hh"
 #include "src/libfred/mailer.hh"

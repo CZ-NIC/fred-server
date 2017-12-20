@@ -32,7 +32,7 @@
 #include "src/util/cfg/handle_registry_args.hh"
 #include "src/util/cfg/handle_corbanameservice_args.hh"
 
-#include "src/automatic_keyset_management/automatic_keyset_management.hh"
+#include "src/backend/automatic_keyset_management/automatic_keyset_management.hh"
 
 
 #include <boost/date_time/gregorian/gregorian.hpp>

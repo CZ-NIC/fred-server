@@ -16,15 +16,14 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/record_statement/record_statement.hh"
-#include "src/record_statement/impl/templates_impl.hh"
-#include "src/util/tz/utc.hh"
+#include "src/backend/record_statement/impl/templates_impl.hh"
+#include "src/util/tz/europe/prague.hh"
 
 namespace LibFred {
 namespace RecordStatement {
 namespace Impl {
 
-template class InstanceOfNecessaryImpl<Tz::UTC>;
+template class InstanceOfNecessaryImpl<Tz::Europe::Prague>;
 
 } // namespace LibFred::RecordStatement::Impl
 } // namespace LibFred::RecordStatement

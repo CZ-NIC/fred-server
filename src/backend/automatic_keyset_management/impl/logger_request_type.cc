@@ -16,25 +16,31 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- *  registry record statement exceptions
- */
+#include "src/backend/automatic_keyset_management/impl/logger_request_type.hh"
 
-#include "src/record_statement/exceptions.hh"
+namespace LibFred {
+namespace AutomaticKeysetManagement {
+namespace Impl {
 
-namespace Registry {
-namespace RecordStatement {
-
-const char* InternalServerError::what()const noexcept
+template <>
+std::string to_fred_logger_request_type_name<LoggerRequestType::akm_turn_on>()
 {
-    return "internal server error";
+    return "AkmTurnOn";
 }
 
-const char* ObjectNotFound::what()const noexcept
+template <>
+std::string to_fred_logger_request_type_name<LoggerRequestType::akm_turn_off>()
 {
-    return "registry object with specified ID does not exist";
+    return "AkmTurnOff";
 }
 
-} // namespace Registry::RecordStatement
-} // namespace Registry
+template <>
+std::string to_fred_logger_request_type_name<LoggerRequestType::akm_rollover>()
+{
+    return "AkmRollover";
+}
+
+} // namespace LibFred::AutomaticKeysetManagement::Impl
+} // namespace LibFred::AutomaticKeysetManagement
+} // namespace LibFred
+

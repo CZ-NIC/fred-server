@@ -2323,29 +2323,29 @@ src_bin_corba_automatic_keyset_management_fred_akmd_SOURCES = \
 		src/bin/corba/logger_client_impl.cc \
 		src/util/dummy_logger.hh \
 		src/util/dummy_logger.cc \
-		src/automatic_keyset_management/automatic_keyset_management.cc \
-		src/automatic_keyset_management/automatic_keyset_management.hh \
-		src/automatic_keyset_management/keyset.hh \
-		src/automatic_keyset_management/nsset.hh \
-		src/automatic_keyset_management/dns_key.cc \
-		src/automatic_keyset_management/dns_key.hh \
-		src/automatic_keyset_management/impl/limits.hh \
-		src/automatic_keyset_management/impl/logger_request.hh \
-		src/automatic_keyset_management/impl/logger_request_akm_rollover.hh \
-		src/automatic_keyset_management/impl/logger_request_akm_turn_off.hh \
-		src/automatic_keyset_management/impl/logger_request_akm_turn_on.hh \
-		src/automatic_keyset_management/impl/logger_request_data.cc \
-		src/automatic_keyset_management/impl/logger_request_data.hh \
-		src/automatic_keyset_management/impl/logger_request_object_type.cc \
-		src/automatic_keyset_management/impl/logger_request_object_type.hh \
-		src/automatic_keyset_management/impl/logger_request_property.cc \
-		src/automatic_keyset_management/impl/logger_request_property.hh \
-		src/automatic_keyset_management/impl/logger_request_result.hh \
-		src/automatic_keyset_management/impl/logger_request_type.cc \
-		src/automatic_keyset_management/impl/logger_request_type.hh \
-		src/automatic_keyset_management/impl/logger_service_type.hh \
-		src/automatic_keyset_management/impl/util.cc \
-		src/automatic_keyset_management/impl/util.hh \
+		src/backend/automatic_keyset_management/automatic_keyset_management.cc \
+		src/backend/automatic_keyset_management/automatic_keyset_management.hh \
+		src/backend/automatic_keyset_management/keyset.hh \
+		src/backend/automatic_keyset_management/nsset.hh \
+		src/backend/automatic_keyset_management/dns_key.cc \
+		src/backend/automatic_keyset_management/dns_key.hh \
+		src/backend/automatic_keyset_management/impl/limits.hh \
+		src/backend/automatic_keyset_management/impl/logger_request.hh \
+		src/backend/automatic_keyset_management/impl/logger_request_akm_rollover.hh \
+		src/backend/automatic_keyset_management/impl/logger_request_akm_turn_off.hh \
+		src/backend/automatic_keyset_management/impl/logger_request_akm_turn_on.hh \
+		src/backend/automatic_keyset_management/impl/logger_request_data.cc \
+		src/backend/automatic_keyset_management/impl/logger_request_data.hh \
+		src/backend/automatic_keyset_management/impl/logger_request_object_type.cc \
+		src/backend/automatic_keyset_management/impl/logger_request_object_type.hh \
+		src/backend/automatic_keyset_management/impl/logger_request_property.cc \
+		src/backend/automatic_keyset_management/impl/logger_request_property.hh \
+		src/backend/automatic_keyset_management/impl/logger_request_result.hh \
+		src/backend/automatic_keyset_management/impl/logger_request_type.cc \
+		src/backend/automatic_keyset_management/impl/logger_request_type.hh \
+		src/backend/automatic_keyset_management/impl/logger_service_type.hh \
+		src/backend/automatic_keyset_management/impl/util.cc \
+		src/backend/automatic_keyset_management/impl/util.hh \
 		src/bin/corba/automatic_keyset_management/server_i.cc \
 		src/bin/corba/automatic_keyset_management/server_i.hh \
 		src/bin/corba/automatic_keyset_management/fred-akmd.cc
@@ -2386,18 +2386,18 @@ src_bin_corba_automatic_keyset_management_fred_akmd_LDADD = \
 # src/bin/corba/record_statement/fred-rsifd
 #
 src_bin_corba_record_statement_fred_rsifd_SOURCES = \
-		src/record_statement/record_statement.cc \
-		src/record_statement/record_statement.hh \
-		src/record_statement/purpose.hh \
-		src/record_statement/exceptions.cc \
-		src/record_statement/exceptions.hh \
-		src/record_statement/impl/record_statement_xml.cc \
-		src/record_statement/impl/record_statement_xml.hh \
-		src/record_statement/impl/templates_impl.hh \
-		src/record_statement/impl/factory.cc \
-		src/record_statement/impl/factory.hh \
-		src/record_statement/impl/utc_impl.cc \
-		src/record_statement/impl/europe_prague_impl.cc \
+		src/backend/record_statement/record_statement.cc \
+		src/backend/record_statement/record_statement.hh \
+		src/backend/record_statement/purpose.hh \
+		src/backend/record_statement/exceptions.cc \
+		src/backend/record_statement/exceptions.hh \
+		src/backend/record_statement/impl/record_statement_xml.cc \
+		src/backend/record_statement/impl/record_statement_xml.hh \
+		src/backend/record_statement/impl/templates_impl.hh \
+		src/backend/record_statement/impl/factory.cc \
+		src/backend/record_statement/impl/factory.hh \
+		src/backend/record_statement/impl/utc_impl.cc \
+		src/backend/record_statement/impl/europe_prague_impl.cc \
 		src/bin/corba/nameservice.cc \
 		src/bin/corba/record_statement/record_statement_i.cc \
 		src/bin/corba/record_statement/record_statement_i.hh \
@@ -3460,27 +3460,27 @@ test_backend_test_automatic_keyset_management_SOURCES = \
 		test/setup/fixtures.cc \
 		src/backend/epp/keyset/dns_key.cc \
 		src/backend/epp/keyset/dns_key.hh \
-		src/automatic_keyset_management/dns_key.cc \
-		src/automatic_keyset_management/dns_key.hh \
-		src/automatic_keyset_management/automatic_keyset_management.cc \
-		src/automatic_keyset_management/automatic_keyset_management.hh \
-		src/automatic_keyset_management/impl/limits.hh \
-		src/automatic_keyset_management/impl/logger_request.hh \
-		src/automatic_keyset_management/impl/logger_request_akm_rollover.hh \
-		src/automatic_keyset_management/impl/logger_request_akm_turn_off.hh \
-		src/automatic_keyset_management/impl/logger_request_akm_turn_on.hh \
-		src/automatic_keyset_management/impl/logger_request_data.cc \
-		src/automatic_keyset_management/impl/logger_request_data.hh \
-		src/automatic_keyset_management/impl/logger_request_object_type.cc \
-		src/automatic_keyset_management/impl/logger_request_object_type.hh \
-		src/automatic_keyset_management/impl/logger_request_property.cc \
-		src/automatic_keyset_management/impl/logger_request_property.hh \
-		src/automatic_keyset_management/impl/logger_request_result.hh \
-		src/automatic_keyset_management/impl/logger_request_type.cc \
-		src/automatic_keyset_management/impl/logger_request_type.hh \
-		src/automatic_keyset_management/impl/logger_service_type.hh \
-		src/automatic_keyset_management/impl/util.cc \
-		src/automatic_keyset_management/impl/util.hh \
+		src/backend/automatic_keyset_management/dns_key.cc \
+		src/backend/automatic_keyset_management/dns_key.hh \
+		src/backend/automatic_keyset_management/automatic_keyset_management.cc \
+		src/backend/automatic_keyset_management/automatic_keyset_management.hh \
+		src/backend/automatic_keyset_management/impl/limits.hh \
+		src/backend/automatic_keyset_management/impl/logger_request.hh \
+		src/backend/automatic_keyset_management/impl/logger_request_akm_rollover.hh \
+		src/backend/automatic_keyset_management/impl/logger_request_akm_turn_off.hh \
+		src/backend/automatic_keyset_management/impl/logger_request_akm_turn_on.hh \
+		src/backend/automatic_keyset_management/impl/logger_request_data.cc \
+		src/backend/automatic_keyset_management/impl/logger_request_data.hh \
+		src/backend/automatic_keyset_management/impl/logger_request_object_type.cc \
+		src/backend/automatic_keyset_management/impl/logger_request_object_type.hh \
+		src/backend/automatic_keyset_management/impl/logger_request_property.cc \
+		src/backend/automatic_keyset_management/impl/logger_request_property.hh \
+		src/backend/automatic_keyset_management/impl/logger_request_result.hh \
+		src/backend/automatic_keyset_management/impl/logger_request_type.cc \
+		src/backend/automatic_keyset_management/impl/logger_request_type.hh \
+		src/backend/automatic_keyset_management/impl/logger_service_type.hh \
+		src/backend/automatic_keyset_management/impl/util.cc \
+		src/backend/automatic_keyset_management/impl/util.hh \
 		test/backend/automatic_keyset_management/util.hh \
 		test/backend/automatic_keyset_management/fixture.hh \
 		test/backend/automatic_keyset_management/main.cc \
@@ -3520,18 +3520,18 @@ test_backend_test_automatic_keyset_management_LDADD = \
 # test/backend/test-record-statement
 #
 test_backend_test_record_statement_SOURCES = \
-		src/record_statement/record_statement.cc \
-		src/record_statement/record_statement.hh \
-		src/record_statement/purpose.hh \
-		src/record_statement/exceptions.cc \
-		src/record_statement/exceptions.hh \
-		src/record_statement/impl/record_statement_xml.cc \
-		src/record_statement/impl/record_statement_xml.hh \
-		src/record_statement/impl/templates_impl.hh \
-		src/record_statement/impl/factory.cc \
-		src/record_statement/impl/factory.hh \
-		src/record_statement/impl/utc_impl.cc \
-		src/record_statement/impl/europe_prague_impl.cc \
+		src/backend/record_statement/record_statement.cc \
+		src/backend/record_statement/record_statement.hh \
+		src/backend/record_statement/purpose.hh \
+		src/backend/record_statement/exceptions.cc \
+		src/backend/record_statement/exceptions.hh \
+		src/backend/record_statement/impl/record_statement_xml.cc \
+		src/backend/record_statement/impl/record_statement_xml.hh \
+		src/backend/record_statement/impl/templates_impl.hh \
+		src/backend/record_statement/impl/factory.cc \
+		src/backend/record_statement/impl/factory.hh \
+		src/backend/record_statement/impl/utc_impl.cc \
+		src/backend/record_statement/impl/europe_prague_impl.cc \
 		test/backend/record_statement/util.hh \
 		test/backend/record_statement/fixture.hh \
 		test/backend/record_statement/main.cc \

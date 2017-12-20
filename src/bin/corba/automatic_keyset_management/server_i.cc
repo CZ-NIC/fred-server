@@ -25,7 +25,7 @@
 
 #include "src/bin/corba/automatic_keyset_management/server_i.hh"
 
-#include "src/automatic_keyset_management/automatic_keyset_management.hh"
+#include "src/backend/automatic_keyset_management/automatic_keyset_management.hh"
 #include "src/bin/corba/automatic_keyset_management/corba_conversions.cc"
 #include "src/bin/corba/AutomaticKeysetManagement.hh"
 

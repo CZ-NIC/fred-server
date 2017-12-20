@@ -19,7 +19,7 @@
 #ifndef CORBA_CONVERSIONS_HH_46010069E4BD4FD5B4D951E9325C1AA0
 #define CORBA_CONVERSIONS_HH_46010069E4BD4FD5B4D951E9325C1AA0
 
-#include "src/automatic_keyset_management/automatic_keyset_management.hh"
+#include "src/backend/automatic_keyset_management/automatic_keyset_management.hh"
 #include "src/bin/corba/AutomaticKeysetManagement.hh"
 
 namespace LibFred {

@@ -25,8 +25,8 @@
 #define AUTOMATIC_KEYSET_MANAGEMENT_HH_E7D0CA5C7FDA4FF6A7217BE8252D99A1
 
 #include "src/libfred/logger_client.hh"
-#include "src/automatic_keyset_management/keyset.hh"
-#include "src/automatic_keyset_management/nsset.hh"
+#include "src/backend/automatic_keyset_management/keyset.hh"
+#include "src/backend/automatic_keyset_management/nsset.hh"
 
 #include <exception>
 #include <map>

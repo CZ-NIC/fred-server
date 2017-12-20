@@ -21,8 +21,8 @@
  *  registry record statement xml implementation
  */
 
-#include "src/record_statement/impl/record_statement_xml.hh"
-#include "src/record_statement/exceptions.hh"
+#include "src/backend/record_statement/impl/record_statement_xml.hh"
+#include "src/backend/record_statement/exceptions.hh"
 
 #include "src/util/log/context.hh"
 #include "src/util/util.hh"

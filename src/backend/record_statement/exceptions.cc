@@ -16,15 +16,25 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/record_statement/impl/templates_impl.hh"
-#include "src/util/tz/europe/prague.hh"
+/**
+ *  @file
+ *  registry record statement exceptions
+ */
 
-namespace LibFred {
+#include "src/backend/record_statement/exceptions.hh"
+
+namespace Registry {
 namespace RecordStatement {
-namespace Impl {
 
-template class InstanceOfNecessaryImpl<Tz::Europe::Prague>;
+const char* InternalServerError::what()const noexcept
+{
+    return "internal server error";
+}
 
-} // namespace LibFred::RecordStatement::Impl
-} // namespace LibFred::RecordStatement
-} // namespace LibFred
+const char* ObjectNotFound::what()const noexcept
+{
+    return "registry object with specified ID does not exist";
+}
+
+} // namespace Registry::RecordStatement
+} // namespace Registry
