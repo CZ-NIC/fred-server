@@ -38,8 +38,8 @@
 #include "src/util/cfg/handle_registry_args.hh"
 #include "src/util/cfg/handle_corbanameservice_args.hh"
 
-#include "src/record_statement/record_statement.hh"
-#include "src/record_statement/impl/factory.hh"
+#include "src/backend/record_statement/record_statement.hh"
+#include "src/backend/record_statement/impl/factory.hh"
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>

@@ -19,9 +19,9 @@
 #ifndef TEMPLATES_IMPL_HH_1EE16A76AB7E51E0D04BA200F2C8BAFE//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
 #define TEMPLATES_IMPL_HH_1EE16A76AB7E51E0D04BA200F2C8BAFE
 
-#include "src/record_statement/impl/record_statement_xml.hh"
-#include "src/record_statement/impl/factory.hh"
-#include "src/record_statement/exceptions.hh"
+#include "src/backend/record_statement/impl/record_statement_xml.hh"
+#include "src/backend/record_statement/impl/factory.hh"
+#include "src/backend/record_statement/exceptions.hh"
 
 #include "src/libfred/zone/zone.hh"
 

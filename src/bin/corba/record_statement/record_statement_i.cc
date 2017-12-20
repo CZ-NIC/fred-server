@@ -25,7 +25,7 @@
 
 #include "src/bin/corba/record_statement/record_statement_i.hh"
 
-#include "src/record_statement/record_statement.hh"
+#include "src/backend/record_statement/record_statement.hh"
 #include "src/bin/corba/util/corba_conversions_string.hh"
 #include "src/bin/corba/util/corba_conversions_datetime.hh"
 #include "src/bin/corba/util/corba_conversions_nullable_types.hh"

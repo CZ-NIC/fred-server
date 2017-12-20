@@ -16,7 +16,7 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/record_statement/impl/factory.hh"
+#include "src/backend/record_statement/impl/factory.hh"
 
 #include <stdexcept>
 

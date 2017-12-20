@@ -18,7 +18,7 @@
 
 #include "src/bin/corba/automatic_keyset_management/corba_conversions.hh"
 
-#include "src/automatic_keyset_management/automatic_keyset_management.hh"
+#include "src/backend/automatic_keyset_management/automatic_keyset_management.hh"
 #include "src/bin/corba/util/corba_conversions_int.hh"
 #include "src/bin/corba/util/corba_conversions_string.hh"
 

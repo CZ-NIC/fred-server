@@ -16,31 +16,22 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/automatic_keyset_management/impl/logger_request_type.hh"
+#ifndef KEYSET_HH_A8A67E66692040148C32B954A28423F7
+#define KEYSET_HH_A8A67E66692040148C32B954A28423F7
+
+#include "src/backend/automatic_keyset_management/dns_key.hh"
 
 namespace LibFred {
 namespace AutomaticKeysetManagement {
-namespace Impl {
 
-template <>
-std::string to_fred_logger_request_type_name<LoggerRequestType::akm_turn_on>()
+typedef std::set<DnsKey> DnsKeys;
+
+struct Keyset
 {
-    return "AkmTurnOn";
-}
+    DnsKeys dns_keys;
+};
 
-template <>
-std::string to_fred_logger_request_type_name<LoggerRequestType::akm_turn_off>()
-{
-    return "AkmTurnOff";
-}
-
-template <>
-std::string to_fred_logger_request_type_name<LoggerRequestType::akm_rollover>()
-{
-    return "AkmRollover";
-}
-
-} // namespace LibFred::AutomaticKeysetManagement::Impl
 } // namespace LibFred::AutomaticKeysetManagement
 } // namespace LibFred
 
+#endif

@@ -19,11 +19,11 @@
 #ifndef LOGGER_REQUEST_AKM_TURN_ON_HH_63B5F847808546D4A2FC3E8963CC16DF
 #define LOGGER_REQUEST_AKM_TURN_ON_HH_63B5F847808546D4A2FC3E8963CC16DF
 
-#include "src/automatic_keyset_management/dns_key.hh"
-#include "src/automatic_keyset_management/impl/logger_request_data.hh"
-#include "src/automatic_keyset_management/impl/logger_request_object_type.hh"
-#include "src/automatic_keyset_management/impl/logger_request_property.hh"
-#include "src/automatic_keyset_management/impl/logger_request_type.hh"
+#include "src/backend/automatic_keyset_management/dns_key.hh"
+#include "src/backend/automatic_keyset_management/impl/logger_request_data.hh"
+#include "src/backend/automatic_keyset_management/impl/logger_request_object_type.hh"
+#include "src/backend/automatic_keyset_management/impl/logger_request_property.hh"
+#include "src/backend/automatic_keyset_management/impl/logger_request_type.hh"
 #include "src/backend/epp/keyset/dns_key.hh"
 #include "src/libfred/logger_client.hh"
 #include "src/libfred/object/object_id_handle_pair.hh"

@@ -16,22 +16,16 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef KEYSET_HH_A8A67E66692040148C32B954A28423F7
-#define KEYSET_HH_A8A67E66692040148C32B954A28423F7
-
-#include "src/automatic_keyset_management/dns_key.hh"
+#include "src/backend/record_statement/record_statement.hh"
+#include "src/backend/record_statement/impl/templates_impl.hh"
+#include "src/util/tz/utc.hh"
 
 namespace LibFred {
-namespace AutomaticKeysetManagement {
+namespace RecordStatement {
+namespace Impl {
 
-typedef std::set<DnsKey> DnsKeys;
+template class InstanceOfNecessaryImpl<Tz::UTC>;
 
-struct Keyset
-{
-    DnsKeys dns_keys;
-};
-
-} // namespace LibFred::AutomaticKeysetManagement
+} // namespace LibFred::RecordStatement::Impl
+} // namespace LibFred::RecordStatement
 } // namespace LibFred
-
-#endif

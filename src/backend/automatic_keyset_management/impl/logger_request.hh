@@ -19,10 +19,10 @@
 #ifndef LOGGER_REQUEST_HH_642A390DFFAC4875AB0A57716CA9593F
 #define LOGGER_REQUEST_HH_642A390DFFAC4875AB0A57716CA9593F
 
-#include "src/automatic_keyset_management/impl/logger_request_data.hh"
-#include "src/automatic_keyset_management/impl/logger_request_result.hh"
-#include "src/automatic_keyset_management/impl/logger_request_type.hh"
-#include "src/automatic_keyset_management/impl/logger_service_type.hh"
+#include "src/backend/automatic_keyset_management/impl/logger_request_data.hh"
+#include "src/backend/automatic_keyset_management/impl/logger_request_result.hh"
+#include "src/backend/automatic_keyset_management/impl/logger_request_type.hh"
+#include "src/backend/automatic_keyset_management/impl/logger_service_type.hh"
 #include "src/libfred/logger_client.hh"
 
 #include <string>

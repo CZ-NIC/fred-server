@@ -36,7 +36,7 @@
 #include "src/libfred/registrable_object/keyset/info_keyset.hh"
 #include "src/libfred/registrar/info_registrar.hh"
 
-#include "src/record_statement/record_statement.hh"
+#include "src/backend/record_statement/record_statement.hh"
 
 #include "src/util/xmlgen.hh"
 #include "src/util/db/nullable.hh"

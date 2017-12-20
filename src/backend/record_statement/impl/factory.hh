@@ -19,7 +19,7 @@
 #ifndef FACTORY_HH_4BFAD236EAC59AEF87FC6037F0106ABF//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
 #define FACTORY_HH_4BFAD236EAC59AEF87FC6037F0106ABF
 
-#include "src/record_statement/record_statement.hh"
+#include "src/backend/record_statement/record_statement.hh"
 
 #include <map>
 

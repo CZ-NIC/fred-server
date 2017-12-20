@@ -19,12 +19,12 @@
 #ifndef LOGGER_REQUEST_AKM_ROLLOVER_HH_096FAB3789414D39BAF2DC4DE172E597
 #define LOGGER_REQUEST_AKM_ROLLOVER_HH_096FAB3789414D39BAF2DC4DE172E597
 
-#include "src/automatic_keyset_management/dns_key.hh"
-#include "src/automatic_keyset_management/keyset.hh"
-#include "src/automatic_keyset_management/impl/logger_request.hh"
-#include "src/automatic_keyset_management/impl/logger_request_data.hh"
-#include "src/automatic_keyset_management/impl/logger_request_property.hh"
-#include "src/automatic_keyset_management/impl/util.hh"
+#include "src/backend/automatic_keyset_management/dns_key.hh"
+#include "src/backend/automatic_keyset_management/keyset.hh"
+#include "src/backend/automatic_keyset_management/impl/logger_request.hh"
+#include "src/backend/automatic_keyset_management/impl/logger_request_data.hh"
+#include "src/backend/automatic_keyset_management/impl/logger_request_property.hh"
+#include "src/backend/automatic_keyset_management/impl/util.hh"
 #include "src/backend/epp/keyset/dns_key.hh"
 #include "src/libfred/registrable_object/keyset/keyset_dns_key.hh"
 #include "src/libfred/logger_client.hh"

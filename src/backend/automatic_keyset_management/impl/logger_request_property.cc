@@ -16,7 +16,7 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/automatic_keyset_management/impl/logger_request_property.hh"
+#include "src/backend/automatic_keyset_management/impl/logger_request_property.hh"
 
 namespace LibFred {
 namespace AutomaticKeysetManagement {

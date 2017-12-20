@@ -19,8 +19,8 @@
 #ifndef LOGGER_REQUEST_DATA_HH_BF2C07D1EDB944BF8D48EDDDF2A7BDC4
 #define LOGGER_REQUEST_DATA_HH_BF2C07D1EDB944BF8D48EDDDF2A7BDC4
 
-#include "src/automatic_keyset_management/impl/logger_request_object_type.hh"
-#include "src/automatic_keyset_management/impl/logger_request_property.hh"
+#include "src/backend/automatic_keyset_management/impl/logger_request_object_type.hh"
+#include "src/backend/automatic_keyset_management/impl/logger_request_property.hh"
 #include "src/libfred/logger_client.hh"
 #include "src/libfred/requests/request.hh"
 
