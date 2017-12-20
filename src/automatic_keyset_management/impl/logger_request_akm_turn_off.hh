@@ -19,11 +19,11 @@
 #ifndef LOGGER_REQUEST_AKM_TURN_OFF_HH_F202EBBD883D4D4B9A3AE01D0334D496
 #define LOGGER_REQUEST_AKM_TURN_OFF_HH_F202EBBD883D4D4B9A3AE01D0334D496
 
-#include "src/epp/keyset/dns_key.h"
-#include "src/fredlib/logger_client.h"
-#include "src/fredlib/object/object_id_handle_pair.h"
+#include "src/backend/epp/keyset/dns_key.hh"
+#include "src/libfred/logger_client.hh"
+#include "src/libfred/object/object_id_handle_pair.hh"
 
-namespace Fred {
+namespace LibFred {
 namespace AutomaticKeysetManagement {
 namespace Impl {
 
@@ -31,7 +31,7 @@ class LoggerRequestAkmTurnOff
 {
 public:
     LoggerRequestAkmTurnOff(
-            Fred::Logger::LoggerClient& _logger_client,
+            LibFred::Logger::LoggerClient& _logger_client,
             const ObjectIdHandlePair& _domain)
         : logger_request_(
                   _logger_client,
@@ -70,8 +70,8 @@ private:
     LoggerRequest<LoggerRequestType::akm_turn_off, LoggerServiceType::admin> logger_request_;
 };
 
-} // namespace Fred::AutomaticKeysetManagement::Impl
-} // namespace Fred::AutomaticKeysetManagement
-} // namespace Fred
+} // namespace LibFred::AutomaticKeysetManagement::Impl
+} // namespace LibFred::AutomaticKeysetManagement
+} // namespace LibFred
 
 #endif

@@ -1,0 +1,70 @@
+/*
+ *  Copyright (C) 2017  CZ.NIC, z.s.p.o.
+ *
+ *  This file is part of FRED.
+ *
+ *  FRED is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, version 2 of the License.
+ *
+ *  FRED is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include "src/backend/epp/keyset/info_keyset.hh"
+#include "src/backend/epp/keyset/impl/keyset_output.hh"
+
+#include "src/backend/epp/epp_response_failure.hh"
+#include "src/backend/epp/epp_result_code.hh"
+#include "src/backend/epp/epp_result_failure.hh"
+#include "src/backend/epp/exception.hh"
+#include "src/libfred/registrable_object/keyset/info_keyset.hh"
+#include "src/libfred/registrar/info_registrar.hh"
+
+#include <string>
+
+namespace Epp {
+namespace Keyset {
+
+InfoKeysetOutputData info_keyset(
+        LibFred::OperationContext& _ctx,
+        const std::string& _keyset_handle,
+        const InfoKeysetConfigData& _info_keyset_config_data,
+        const SessionData& _session_data)
+{
+    if (!is_session_registrar_valid(_session_data))
+    {
+        throw EppResponseFailure(EppResultFailure(
+                EppResultCode::authentication_error_server_closing_connection));
+    }
+
+    try
+    {
+        const LibFred::InfoKeysetData info_keyset_data =
+            LibFred::InfoKeysetByHandle(_keyset_handle).exec(_ctx, "UTC").info_keyset_data;
+
+        const std::string session_registrar_handle =
+            LibFred::InfoRegistrarById(_session_data.registrar_id).exec(_ctx).info_registrar_data.handle;
+        const bool info_is_for_sponsoring_registrar = info_keyset_data.sponsoring_registrar_handle == session_registrar_handle;
+
+        const std::vector<LibFred::ObjectStateData> keyset_states_data = LibFred::GetObjectStates(info_keyset_data.id).exec(_ctx);
+
+        return get_info_keyset_output(info_keyset_data, keyset_states_data, info_is_for_sponsoring_registrar);
+    }
+    catch (const LibFred::InfoKeysetByHandle::Exception& e)
+    {
+        if (e.is_set_unknown_handle())
+        {
+            throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
+        }
+        throw;
+    }
+}
+
+} // namespace Epp::Keyset
+} // namespace Epp

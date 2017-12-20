@@ -16,9 +16,9 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "logger_request_property.hh"
+#include "src/automatic_keyset_management/impl/logger_request_property.hh"
 
-namespace Fred {
+namespace LibFred {
 namespace AutomaticKeysetManagement {
 namespace Impl {
 
@@ -52,6 +52,6 @@ std::string to_fred_logger_request_property_name<LoggerRequestProperty::op_tr_id
     return "opTRID";
 }
 
-} // namespace Fred::AutomaticKeysetManagement::Impl
-} // namespace Fred::AutomaticKeysetManagement
-} // namespace Fred
+} // namespace LibFred::AutomaticKeysetManagement::Impl
+} // namespace LibFred::AutomaticKeysetManagement
+} // namespace LibFred

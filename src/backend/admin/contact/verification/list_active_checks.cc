@@ -1,0 +1,32 @@
+#include "src/backend/admin/contact/verification/list_active_checks.hh"
+
+#include "src/util/log/context.hh"
+
+#include <vector>
+#include <boost/assign/list_of.hpp>
+
+namespace  Admin {
+    std::vector<LibFred::ListChecksItem> list_active_checks(const Optional<std::string>& _testsuite_handle) {
+        Logging::Context log("list_active_checks");
+
+        std::vector<LibFred::ListChecksItem> result;
+
+        std::vector<std::string> awaiting_statuses = LibFred::ContactCheckStatus::get_not_yet_resolved();
+
+        LibFred::OperationContextCreator ctx;
+        std::vector<LibFred::ListChecksItem> temp_result;
+        for(std::vector<std::string>::const_iterator it = awaiting_statuses.begin();
+            it != awaiting_statuses.end();
+            ++it
+        ) {
+            temp_result = LibFred::ListContactChecks()
+                .set_status_handle( *it )
+                .exec(ctx);
+
+            result.reserve( result.size() + temp_result.size() );
+            result.insert( result.end(), temp_result.begin(), temp_result.end() );
+        }
+
+        return result;
+    }
+}

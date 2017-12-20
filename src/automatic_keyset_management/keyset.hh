@@ -21,7 +21,7 @@
 
 #include "src/automatic_keyset_management/dns_key.hh"
 
-namespace Fred {
+namespace LibFred {
 namespace AutomaticKeysetManagement {
 
 typedef std::set<DnsKey> DnsKeys;
@@ -31,7 +31,7 @@ struct Keyset
     DnsKeys dns_keys;
 };
 
-} // namespace Fred::AutomaticKeysetManagement
-} // namespace Fred
+} // namespace LibFred::AutomaticKeysetManagement
+} // namespace LibFred
 
 #endif

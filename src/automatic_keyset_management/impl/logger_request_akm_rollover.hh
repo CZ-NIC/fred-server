@@ -25,12 +25,12 @@
 #include "src/automatic_keyset_management/impl/logger_request_data.hh"
 #include "src/automatic_keyset_management/impl/logger_request_property.hh"
 #include "src/automatic_keyset_management/impl/util.hh"
-#include "src/epp/keyset/dns_key.h"
-#include "src/fredlib/keyset/keyset_dns_key.h"
-#include "src/fredlib/logger_client.h"
-#include "src/fredlib/object/object_id_handle_pair.h"
+#include "src/backend/epp/keyset/dns_key.hh"
+#include "src/libfred/registrable_object/keyset/keyset_dns_key.hh"
+#include "src/libfred/logger_client.hh"
+#include "src/libfred/object/object_id_handle_pair.hh"
 
-namespace Fred {
+namespace LibFred {
 namespace AutomaticKeysetManagement {
 namespace Impl {
 
@@ -38,7 +38,7 @@ class LoggerRequestAkmRollover
 {
 public:
     LoggerRequestAkmRollover(
-            Fred::Logger::LoggerClient& _logger_client,
+            LibFred::Logger::LoggerClient& _logger_client,
             const ObjectIdHandlePair& _domain)
         : logger_request_(
                   _logger_client,
@@ -51,7 +51,7 @@ public:
     void close_on_success(
             const ObjectIdHandlePair& _domain,
             const ObjectIdHandlePair& _keyset,
-            const std::vector<Fred::DnsKey>& _old_keyset,
+            const std::vector<LibFred::DnsKey>& _old_keyset,
             const Keyset& _new_keyset) const
     {
         LoggerRequestData logger_request_data;
@@ -60,7 +60,7 @@ public:
 
         logger_request_data.add<LoggerRequestProperty::name>(_domain.handle);
         logger_request_data.add<LoggerRequestProperty::keyset>(_keyset.handle);
-        for (std::vector<Fred::DnsKey>::const_iterator old_dns_key = _old_keyset.begin();
+        for (std::vector<LibFred::DnsKey>::const_iterator old_dns_key = _old_keyset.begin();
                 old_dns_key != _old_keyset.end();
                 ++old_dns_key)
         {
@@ -91,8 +91,8 @@ private:
     LoggerRequest<LoggerRequestType::akm_rollover, LoggerServiceType::admin> logger_request_;
 };
 
-} // namespace Fred::AutomaticKeysetManagement::Impl
-} // namespace Fred::AutomaticKeysetManagement
-} // namespace Fred
+} // namespace LibFred::AutomaticKeysetManagement::Impl
+} // namespace LibFred::AutomaticKeysetManagement
+} // namespace LibFred
 
 #endif

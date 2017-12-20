@@ -1,7 +1,7 @@
 #include <iostream>
-#include "src/fredlib/db_settings.h"
-#include "src/fredlib/contact/update_contact.h"
-#include "util/csv_parser.h"
+#include "src/libfred/db_settings.hh"
+#include "src/libfred/registrable_object/contact/update_contact.hh"
+#include "src/util/csv_parser.hh"
 
 
 int main(int argc, char *argv[])
@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
         typedef std::vector<std::vector<std::string> > Table;
         Table data = Util::CsvParser(file_content, ',').parse();
 
-        Fred::OperationContextCreator ctx;
+        LibFred::OperationContextCreator ctx;
         for (Table::const_iterator it = data.begin(); it != data.end(); ++it)
         {
             const unsigned long long contact_id = boost::lexical_cast<unsigned long long>(it->at(0));
@@ -98,9 +98,9 @@ int main(int argc, char *argv[])
             {
                 std::cout << "Updating '" << static_cast<std::string>(to_fix[0]["name"]) << "'" << std::endl;
 
-                Fred::UpdateContactById cu(contact_id, registrar_handle);
+                LibFred::UpdateContactById cu(contact_id, registrar_handle);
                 cu.set_logd_request_id(logd_request_id);
-                cu.set_personal_id(Fred::PersonalIdUnion::get_BIRTHDAY(ssn_birth_date));
+                cu.set_personal_id(LibFred::PersonalIdUnion::get_BIRTHDAY(ssn_birth_date));
                 cu.exec(ctx);
             }
         }

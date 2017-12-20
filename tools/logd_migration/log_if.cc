@@ -5,8 +5,8 @@
  *      Author: jvicenik
  */
 #include <string>
-#include "m_epp_parser.h"
-#include "migrate.h"
+#include "tools/logd_migration/m_epp_parser.hh"
+#include "tools/logd_migration/migrate.hh"
 
 /* strlen, strcpy */ 
 #include <string.h> 
@@ -43,14 +43,14 @@ char * wrap_str(const char *str)
  *
  * @returns			NULL in case of an allocation error, modified c_props otherwise
  */
-Fred::Logger::RequestProperties *epp_property_push(Fred::Logger::RequestProperties *c_props, const  char *name, const char *value, bool child)
+LibFred::Logger::RequestProperties *epp_property_push(LibFred::Logger::RequestProperties *c_props, const  char *name, const char *value, bool child)
 {
 	if(c_props == NULL) {
-		c_props = new Fred::Logger::RequestProperties();
+		c_props = new LibFred::Logger::RequestProperties();
 	}
 
 	if (value != NULL) {
-		Fred::Logger::RequestProperty p;
+		LibFred::Logger::RequestProperty p;
 
 		p.name =  name;
 		p.value = value;
@@ -76,9 +76,9 @@ Fred::Logger::RequestProperties *epp_property_push(Fred::Logger::RequestProperti
  *
  */
 
-Fred::Logger::RequestProperties *epp_property_push_qhead(Fred::Logger::RequestProperties *c_props, qhead *list, const char *list_name, bool child)
+LibFred::Logger::RequestProperties *epp_property_push_qhead(LibFred::Logger::RequestProperties *c_props, qhead *list, const char *list_name, bool child)
 {
-	Fred::Logger::RequestProperties *ret;
+	LibFred::Logger::RequestProperties *ret;
 
 	if (list->count == 0) {
 		return c_props;
@@ -105,13 +105,13 @@ Fred::Logger::RequestProperties *epp_property_push_qhead(Fred::Logger::RequestPr
  * @returns			NULL in case of an allocation error, modified c_props otherwise
  */
 
-Fred::Logger::RequestProperties *epp_property_push_int(Fred::Logger::RequestProperties *c_props, const char *name, int value)
+LibFred::Logger::RequestProperties *epp_property_push_int(LibFred::Logger::RequestProperties *c_props, const char *name, int value)
 {
-	Fred::Logger::RequestProperty p;
+	LibFred::Logger::RequestProperty p;
 	char str[12];
 
 	if(c_props == NULL) {
-		c_props = new Fred::Logger::RequestProperties;
+		c_props = new LibFred::Logger::RequestProperties;
 	}
 
 	snprintf(str, 12, "%i", value);
@@ -133,7 +133,7 @@ Fred::Logger::RequestProperties *epp_property_push_int(Fred::Logger::RequestProp
  *      *
  *       *  @returns 	log entry properties or NULL in case of an allocation error
  *        */
-Fred::Logger::RequestProperties *epp_log_postal_info(Fred::Logger::RequestProperties *p, epp_postalInfo *pi)
+LibFred::Logger::RequestProperties *epp_log_postal_info(LibFred::Logger::RequestProperties *p, epp_postalInfo *pi)
 {
 	if(pi == NULL) return p;
 
@@ -163,7 +163,7 @@ Fred::Logger::RequestProperties *epp_log_postal_info(Fred::Logger::RequestProper
  *      *
  *       *  @returns 	log entry properties or NULL in case of an allocation error
  *        */
-Fred::Logger::RequestProperties *epp_log_disclose_info(Fred::Logger::RequestProperties *p, epp_discl *ed)
+LibFred::Logger::RequestProperties *epp_log_disclose_info(LibFred::Logger::RequestProperties *p, epp_discl *ed)
 {
 	if(ed->flag == 1) {
 		p = epp_property_push(p, "discl.policy", "private", false);
@@ -209,7 +209,7 @@ Fred::Logger::RequestProperties *epp_log_disclose_info(Fred::Logger::RequestProp
  * @returns 		log entry properties or NULL in case of an allocation error
  *
  */
-Fred::Logger::RequestProperties *epp_property_push_ds(Fred::Logger::RequestProperties *c_props, qhead *list, const char *list_name)
+LibFred::Logger::RequestProperties *epp_property_push_ds(LibFred::Logger::RequestProperties *c_props, qhead *list, const char *list_name)
 {
 	char str[LOG_PROP_NAME_LENGTH]; /* property name */
 
@@ -267,7 +267,7 @@ Fred::Logger::RequestProperties *epp_property_push_ds(Fred::Logger::RequestPrope
  * @returns 		log entry properties or NULL in case of an allocation error
  *
  */
-Fred::Logger::RequestProperties *epp_property_push_valerr(Fred::Logger::RequestProperties *c_props, qhead *list, char *list_name)
+LibFred::Logger::RequestProperties *epp_property_push_valerr(LibFred::Logger::RequestProperties *c_props, qhead *list, char *list_name)
 {
 	char str[LOG_PROP_NAME_LENGTH]; /* property name */
 
@@ -307,7 +307,7 @@ Fred::Logger::RequestProperties *epp_property_push_valerr(Fred::Logger::RequestP
  * @returns 		log entry properties or NULL in case of an allocation error
  *
  */
-Fred::Logger::RequestProperties *epp_property_push_nsset(Fred::Logger::RequestProperties *c_props, qhead *list, const char *list_name)
+LibFred::Logger::RequestProperties *epp_property_push_nsset(LibFred::Logger::RequestProperties *c_props, qhead *list, const char *list_name)
 {
 	char str[LOG_PROP_NAME_LENGTH]; /* property name */
 
@@ -346,7 +346,7 @@ Fred::Logger::RequestProperties *epp_property_push_nsset(Fred::Logger::RequestPr
  * @returns 		log entry properties or NULL in case of an allocation error
  *
  */
-Fred::Logger::RequestProperties *epp_property_push_dnskey(Fred::Logger::RequestProperties *c_props, qhead *list, const char *list_name)
+LibFred::Logger::RequestProperties *epp_property_push_dnskey(LibFred::Logger::RequestProperties *c_props, qhead *list, const char *list_name)
 {
 	char str[LOG_PROP_NAME_LENGTH];
 	epp_dnskey *value;
@@ -396,7 +396,7 @@ Fred::Logger::RequestProperties *epp_property_push_dnskey(Fred::Logger::RequestP
  *
  * @return  status
  */
-unique_ptr<Fred::Logger::RequestProperties> log_epp_command(epp_command_data *cdata, epp_red_command_type cmdtype, int sessionid, epp_action_type *request_type_id)
+unique_ptr<LibFred::Logger::RequestProperties> log_epp_command(epp_command_data *cdata, epp_red_command_type cmdtype, int sessionid, epp_action_type *request_type_id)
 {
 #define PUSH_PROPERTY(seq, name, value)								\
 	seq = epp_property_push(seq, name, value, false);	\
@@ -419,7 +419,7 @@ unique_ptr<Fred::Logger::RequestProperties> log_epp_command(epp_command_data *cd
 	//int res;								/* response from corba call wrapper */
 												
 
-	Fred::Logger::RequestProperties *c_props = NULL;	/* properties to be sent to the log */
+	LibFred::Logger::RequestProperties *c_props = NULL;	/* properties to be sent to the log */
 	/* data structures for every command */
 	epps_sendAuthInfo *ai;
 	epps_create_contact *cc;
@@ -436,7 +436,7 @@ unique_ptr<Fred::Logger::RequestProperties> log_epp_command(epp_command_data *cd
 	epps_login *el;
 	epps_check *ec;
 
-	c_props = new Fred::Logger::RequestProperties;
+	c_props = new LibFred::Logger::RequestProperties;
 	
 
 	if(cdata->type == EPP_DUMMY) {
@@ -446,7 +446,7 @@ unique_ptr<Fred::Logger::RequestProperties> log_epp_command(epp_command_data *cd
 		PUSH_PROPERTY (c_props, "svTRID", cdata->svTRID);
 
 		// res = epp_log_new_message(request, c_props, &errmsg);
-		return unique_ptr<Fred::Logger::RequestProperties>(c_props);
+		return unique_ptr<LibFred::Logger::RequestProperties>(c_props);
 	}
 
 	switch(cmdtype) {
@@ -493,7 +493,7 @@ unique_ptr<Fred::Logger::RequestProperties> log_epp_command(epp_command_data *cd
 
 				PUSH_PROPERTY(c_props, "id", ai->id);
 
-				return unique_ptr<Fred::Logger::RequestProperties>(c_props);
+				return unique_ptr<LibFred::Logger::RequestProperties>(c_props);
 			}
 			break;
 
@@ -937,7 +937,7 @@ unique_ptr<Fred::Logger::RequestProperties> log_epp_command(epp_command_data *cd
 	PUSH_PROPERTY (c_props, "svTRID", cdata->svTRID);
 
 
-	return unique_ptr<Fred::Logger::RequestProperties>(c_props);
+	return unique_ptr<LibFred::Logger::RequestProperties>(c_props);
 	// res = epp_log_new_message(  request, c_props, &errmsg);
 
 #undef PUSH_PROPERTY

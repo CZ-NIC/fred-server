@@ -12,19 +12,19 @@
 #include <string>
 #include <signal.h>
 
-#include "migrate.h"
+#include "tools/logd_migration/migrate.hh"
 
 
 
 //#include "conf/manager.h"
 
-#include "src/old_utils/log.h"
+#include "src/deprecated/util/log.hh"
 
 
-#include "util.h"
-#include "src/fredlib/requests/request_manager.h"
+#include "src/util/util.hh"
+#include "src/libfred/requests/request_manager.hh"
 
-#include "m_epp_parser.h"
+#include "tools/logd_migration/m_epp_parser.hh"
 
 using namespace Database;
 
@@ -87,7 +87,7 @@ int main()
     try {
         Database::Manager::init(new Database::ConnectionFactory(CONNECTION_STRING));
 
-        Fred::Logger::ManagerImpl serv;
+        LibFred::Logger::ManagerImpl serv;
 
         cdata = NULL;
 
@@ -179,7 +179,7 @@ int main()
 
             // we don't care about the request_type_id - it's already in the request table
             epp_action_type request_type_id = UnknownAction;
-            std::unique_ptr<Fred::Logger::RequestProperties> props = log_epp_command(cdata, cmd_type, -1, &request_type_id);
+            std::unique_ptr<LibFred::Logger::RequestProperties> props = log_epp_command(cdata, cmd_type, -1, &request_type_id);
 
             time3 = clock();
             t_logcomm += time3 - time2;
@@ -200,7 +200,7 @@ int main()
         printf(" --------- REPORT: \n"
             " Parser:        %12i \n"
             " log_epp_command: %12i \n"
-            " Fred::Logger::ManagerImpl:        %12i \n",
+            " LibFred::Logger::ManagerImpl:        %12i \n",
             (int)(t_parser/ 1000),
             (int)(t_logcomm / 1000),
             (int)(t_backend / 1000));

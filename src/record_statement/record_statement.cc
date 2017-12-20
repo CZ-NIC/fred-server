@@ -26,19 +26,19 @@
 #include "src/record_statement/impl/record_statement_xml.hh"
 #include "src/record_statement/impl/factory.hh"
 
-#include "src/fredlib/opcontext.h"
-#include "src/fredlib/zone/zone.h"
-#include "src/fredlib/object/object_type.h"
-#include "src/fredlib/object_state/get_object_states.h"
-#include "src/fredlib/contact/info_contact.h"
-#include "src/fredlib/domain/info_domain.h"
-#include "src/fredlib/nsset/info_nsset.h"
-#include "src/fredlib/keyset/info_keyset.h"
-#include "src/fredlib/registrar/info_registrar.h"
-#include "util/log/context.h"
-#include "util/util.h"
-#include "util/subprocess.h"
-#include "util/random.h"
+#include "src/libfred/opcontext.hh"
+#include "src/libfred/zone/zone.hh"
+#include "src/libfred/object/object_type.hh"
+#include "src/libfred/object_state/get_object_states.hh"
+#include "src/libfred/registrable_object/contact/info_contact.hh"
+#include "src/libfred/registrable_object/domain/info_domain.hh"
+#include "src/libfred/registrable_object/nsset/info_nsset.hh"
+#include "src/libfred/registrable_object/keyset/info_keyset.hh"
+#include "src/libfred/registrar/info_registrar.hh"
+#include "src/util/log/context.hh"
+#include "src/util/util.hh"
+#include "src/util/subprocess.hh"
+#include "src/util/random.hh"
 
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
@@ -95,11 +95,11 @@ PdfBufferImpl::PdfBufferImpl(const std::string& s)
 
 RecordStatementImpl::RecordStatementImpl(
         const std::string &_server_name,
-        const boost::shared_ptr<Fred::Document::Manager>& _doc_manager,
-        const boost::shared_ptr<Fred::Mailer::Manager>& _mailer_manager,
+        const boost::shared_ptr<LibFred::Document::Manager>& _doc_manager,
+        const boost::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager,
         const std::string& _registry_timezone)
     : server_name_(_server_name),
-      impl_(Fred::RecordStatement::Impl::Factory::produce(
+      impl_(LibFred::RecordStatement::Impl::Factory::produce(
               _registry_timezone,
               _doc_manager,
               _mailer_manager))
@@ -120,7 +120,7 @@ PdfBufferImpl RecordStatementImpl::domain_printout(
     LOGGING_CONTEXT(log_ctx, *this);
     try
     {
-        Fred::OperationContextCreator ctx;
+        LibFred::OperationContextCreator ctx;
         return impl_->domain_printout(ctx, _fqdn, _purpose);
     }
     catch (const std::exception& e)
@@ -144,7 +144,7 @@ PdfBufferImpl RecordStatementImpl::nsset_printout(
     LOGGING_CONTEXT(log_ctx, *this);
     try
     {
-        Fred::OperationContextCreator ctx;
+        LibFred::OperationContextCreator ctx;
         return impl_->nsset_printout(ctx, _handle);
     }
     catch (const std::exception& e)
@@ -165,7 +165,7 @@ PdfBufferImpl RecordStatementImpl::keyset_printout(
     LOGGING_CONTEXT(log_ctx, *this);
     try
     {
-        Fred::OperationContextCreator ctx;
+        LibFred::OperationContextCreator ctx;
         return impl_->keyset_printout(ctx, _handle);
     }
     catch (const std::exception& e)
@@ -187,7 +187,7 @@ PdfBufferImpl RecordStatementImpl::contact_printout(
     LOGGING_CONTEXT(log_ctx, *this);
     try
     {
-        Fred::OperationContextCreator ctx;
+        LibFred::OperationContextCreator ctx;
         return impl_->contact_printout(ctx, _handle, _purpose);
     }
     catch (const std::exception& e)
@@ -212,7 +212,7 @@ PdfBufferImpl RecordStatementImpl::historic_domain_printout(
     LOGGING_CONTEXT(log_ctx, *this);
     try
     {
-        Fred::OperationContextCreator ctx;
+        LibFred::OperationContextCreator ctx;
         return impl_->historic_domain_printout(ctx, _fqdn, _valid_at);
     }
     catch (const std::exception& e)
@@ -234,7 +234,7 @@ PdfBufferImpl RecordStatementImpl::historic_nsset_printout(
     LOGGING_CONTEXT(log_ctx, *this);
     try
     {
-        Fred::OperationContextCreator ctx;
+        LibFred::OperationContextCreator ctx;
         return impl_->historic_nsset_printout(ctx, _handle, _valid_at);
     }
     catch (const std::exception& e)
@@ -256,7 +256,7 @@ PdfBufferImpl RecordStatementImpl::historic_keyset_printout(
     LOGGING_CONTEXT(log_ctx, *this);
     try
     {
-        Fred::OperationContextCreator ctx;
+        LibFred::OperationContextCreator ctx;
         return impl_->historic_keyset_printout(ctx, _handle, _valid_at);
     }
     catch (const std::exception& e)
@@ -278,7 +278,7 @@ PdfBufferImpl RecordStatementImpl::historic_contact_printout(
     LOGGING_CONTEXT(log_ctx, *this);
     try
     {
-        Fred::OperationContextCreator ctx;
+        LibFred::OperationContextCreator ctx;
         return impl_->historic_contact_printout(ctx, _handle, _valid_at);
     }
     catch (const std::exception& e)
@@ -300,7 +300,7 @@ void RecordStatementImpl::send_domain_printout(
     LOGGING_CONTEXT(log_ctx, *this);
     try
     {
-        Fred::OperationContextCreator ctx;
+        LibFred::OperationContextCreator ctx;
         impl_->send_domain_printout(ctx, _fqdn, _purpose);
     }
     catch (const std::exception& e)
@@ -324,7 +324,7 @@ void RecordStatementImpl::send_nsset_printout(
     LOGGING_CONTEXT(log_ctx, *this);
     try
     {
-        Fred::OperationContextCreator ctx;
+        LibFred::OperationContextCreator ctx;
         impl_->send_nsset_printout(ctx, _handle);
     }
     catch (const std::exception& e)
@@ -345,7 +345,7 @@ void RecordStatementImpl::send_keyset_printout(
     LOGGING_CONTEXT(log_ctx, *this);
     try
     {
-        Fred::OperationContextCreator ctx;
+        LibFred::OperationContextCreator ctx;
         impl_->send_keyset_printout(ctx, _handle);
     }
     catch (const std::exception& e)
@@ -367,7 +367,7 @@ void RecordStatementImpl::send_contact_printout(
     LOGGING_CONTEXT(log_ctx, *this);
     try
     {
-        Fred::OperationContextCreator ctx;
+        LibFred::OperationContextCreator ctx;
         impl_->send_contact_printout(ctx, _handle, _purpose);
     }
     catch (const std::exception& e)
@@ -385,5 +385,5 @@ void RecordStatementImpl::send_contact_printout(
 template void RecordStatementImpl::send_contact_printout<Purpose::private_printout>(const std::string&)const;
 template void RecordStatementImpl::send_contact_printout<Purpose::public_printout>(const std::string&)const;
 
-}//namespace Registry::RecordStatement
-}//namespace Registry
+} // namespace Registry::RecordStatement
+} // namespace Registry

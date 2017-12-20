@@ -18,7 +18,7 @@
 
 #include "src/automatic_keyset_management/impl/logger_request_data.hh"
 
-namespace Fred {
+namespace LibFred {
 namespace AutomaticKeysetManagement {
 namespace Impl {
 
@@ -95,6 +95,6 @@ LoggerRequestData& LoggerRequestData::add<LoggerRequestProperty::op_tr_id>(unsig
     return *this;
 }
 
-} // namespace Fred::AutomaticKeysetManagement::Impl
-} // namespace Fred::AutomaticKeysetManagement
-} // namespace Fred
+} // namespace LibFred::AutomaticKeysetManagement::Impl
+} // namespace LibFred::AutomaticKeysetManagement
+} // namespace LibFred

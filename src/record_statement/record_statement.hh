@@ -27,17 +27,17 @@
 #include "src/record_statement/exceptions.hh"
 #include "src/record_statement/purpose.hh"
 
-#include "src/fredlib/documents.h"
-#include "src/fredlib/mailer.h"
-#include "src/fredlib/opcontext.h"
-#include "src/fredlib/domain/enum_validation_extension.h"
-#include "src/fredlib/nsset/nsset_dns_host.h"
-#include "src/fredlib/contact/place_address.h"
-#include "util/db/nullable.h"
-#include "util/optional_value.h"
-#include "util/timezones.hh"
-#include "util/tz/get_psql_handle_of.hh"
-#include "util/tz/local_timestamp.hh"
+#include "src/libfred/documents.hh"
+#include "src/libfred/mailer.hh"
+#include "src/libfred/opcontext.hh"
+#include "src/libfred/registrable_object/domain/enum_validation_extension.hh"
+#include "src/libfred/registrable_object/nsset/nsset_dns_host.hh"
+#include "src/libfred/registrable_object/contact/place_address.hh"
+#include "src/util/db/nullable.hh"
+#include "src/util/optional_value.hh"
+#include "src/util/timezones.hh"
+#include "src/util/tz/get_psql_handle_of.hh"
+#include "src/util/tz/local_timestamp.hh"
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -60,8 +60,8 @@ class RecordStatementImpl
 public:
     RecordStatementImpl(
             const std::string& _server_name,
-            const boost::shared_ptr<Fred::Document::Manager>& _doc_manager,
-            const boost::shared_ptr<Fred::Mailer::Manager>& _mailer_manager,
+            const boost::shared_ptr<LibFred::Document::Manager>& _doc_manager,
+            const boost::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager,
             const std::string& _handle_of_registry_timezone);//"Europe/Prague" or "UTC"
     virtual ~RecordStatementImpl();
 
@@ -121,58 +121,58 @@ public:
         virtual ~WithExternalContext() { }
 
         virtual PdfBufferImpl domain_printout(
-                Fred::OperationContext& _ctx,
+                LibFred::OperationContext& _ctx,
                 const std::string& _fqdn,
                 Purpose::Enum _purpose)const = 0;
 
         virtual PdfBufferImpl nsset_printout(
-                Fred::OperationContext& _ctx,
+                LibFred::OperationContext& _ctx,
                 const std::string& _handle)const = 0;
 
         virtual PdfBufferImpl keyset_printout(
-                Fred::OperationContext& _ctx,
+                LibFred::OperationContext& _ctx,
                 const std::string& _handle)const = 0;
 
         virtual PdfBufferImpl contact_printout(
-                Fred::OperationContext& _ctx,
+                LibFred::OperationContext& _ctx,
                 const std::string& _handle,
                 Purpose::Enum _purpose)const = 0;
 
         virtual PdfBufferImpl historic_domain_printout(
-                Fred::OperationContext& _ctx,
+                LibFred::OperationContext& _ctx,
                 const std::string& _fqdn,
                 const Tz::LocalTimestamp& _valid_at)const = 0;
 
         virtual PdfBufferImpl historic_nsset_printout(
-                Fred::OperationContext& _ctx,
+                LibFred::OperationContext& _ctx,
                 const std::string& _handle,
                 const Tz::LocalTimestamp& _valid_at)const = 0;
 
         virtual PdfBufferImpl historic_keyset_printout(
-                Fred::OperationContext& _ctx,
+                LibFred::OperationContext& _ctx,
                 const std::string& _handle,
                 const Tz::LocalTimestamp& _valid_at)const = 0;
 
         virtual PdfBufferImpl historic_contact_printout(
-                Fred::OperationContext& _ctx,
+                LibFred::OperationContext& _ctx,
                 const std::string& _handle,
                 const Tz::LocalTimestamp& _valid_at)const = 0;
 
         virtual void send_domain_printout(
-                Fred::OperationContext& _ctx,
+                LibFred::OperationContext& _ctx,
                 const std::string& _fqdn,
                 Purpose::Enum _purpose)const = 0;
 
         virtual void send_nsset_printout(
-                Fred::OperationContext& _ctx,
+                LibFred::OperationContext& _ctx,
                 const std::string& _handle)const = 0;
 
         virtual void send_keyset_printout(
-                Fred::OperationContext& _ctx,
+                LibFred::OperationContext& _ctx,
                 const std::string& _handle)const = 0;
 
         virtual void send_contact_printout(
-                Fred::OperationContext& _ctx,
+                LibFred::OperationContext& _ctx,
                 const std::string& _handle,
                 Purpose::Enum _purpose)const = 0;
     };
@@ -181,7 +181,7 @@ private:
     boost::shared_ptr<WithExternalContext> impl_;
 };
 
-}//namespace Registry::RecordStatement
-}//namespace Registry
+} // namespace Registry::RecordStatement
+} // namespace Registry
 
 #endif

@@ -18,7 +18,7 @@
 
 #include "src/automatic_keyset_management/impl/logger_request_object_type.hh"
 
-namespace Fred {
+namespace LibFred {
 namespace AutomaticKeysetManagement {
 namespace Impl {
 
@@ -34,7 +34,7 @@ std::string to_fred_logger_request_object_type_name<LoggerRequestObjectType::dom
     return "domain";
 }
 
-} // namespace Fred::AutomaticKeysetManagement::Impl
-} // namespace Fred::AutomaticKeysetManagement
-} // namespace Fred
+} // namespace LibFred::AutomaticKeysetManagement::Impl
+} // namespace LibFred::AutomaticKeysetManagement
+} // namespace LibFred
 

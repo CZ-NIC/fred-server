@@ -24,18 +24,18 @@
 #include "src/record_statement/impl/record_statement_xml.hh"
 #include "src/record_statement/exceptions.hh"
 
-#include "util/log/context.h"
-#include "util/util.h"
-#include "util/xmlgen.h"
-#include "util/timezones.hh"
-#include "util/tz/get_psql_handle_of.hh"
-#include "src/fredlib/opcontext.h"
-#include "src/fredlib/zone/zone.h"
-#include "src/fredlib/contact/info_contact.h"
-#include "src/fredlib/domain/info_domain.h"
-#include "src/fredlib/nsset/info_nsset.h"
-#include "src/fredlib/keyset/info_keyset.h"
-#include "src/fredlib/object_state/get_object_states.h"
+#include "src/util/log/context.hh"
+#include "src/util/util.hh"
+#include "src/util/xmlgen.hh"
+#include "src/util/timezones.hh"
+#include "src/util/tz/get_psql_handle_of.hh"
+#include "src/libfred/opcontext.hh"
+#include "src/libfred/zone/zone.hh"
+#include "src/libfred/registrable_object/contact/info_contact.hh"
+#include "src/libfred/registrable_object/domain/info_domain.hh"
+#include "src/libfred/registrable_object/nsset/info_nsset.hh"
+#include "src/libfred/registrable_object/keyset/info_keyset.hh"
+#include "src/libfred/object_state/get_object_states.hh"
 
 #include <boost/lexical_cast.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -47,18 +47,18 @@
 #include <sstream>
 
 
-namespace Fred {
+namespace LibFred {
 namespace RecordStatement {
 namespace Impl {
 
 std::set<std::string> make_external_states(
         unsigned long long object_id,
-        Fred::OperationContext& ctx)
+        LibFred::OperationContext& ctx)
 {
     std::set<std::string> ret;
 
-    const std::vector<Fred::ObjectStateData> states = Fred::GetObjectStates(object_id).exec(ctx);
-    for (std::vector<Fred::ObjectStateData>::const_iterator states_itr = states.begin();
+    const std::vector<LibFred::ObjectStateData> states = LibFred::GetObjectStates(object_id).exec(ctx);
+    for (std::vector<LibFred::ObjectStateData>::const_iterator states_itr = states.begin();
          states_itr != states.end(); ++states_itr)
     {
         if (states_itr->is_external)
@@ -73,7 +73,7 @@ std::set<std::string> make_external_states(
 std::set<std::string> make_historic_external_states(
         const unsigned long long object_id,
         const Tz::LocalTimestamp& valid_at,
-        Fred::OperationContext& ctx)
+        LibFred::OperationContext& ctx)
 {
     const Database::Result db_res = ctx.get_conn().exec_params(
             "WITH valid_at AS ("
@@ -100,7 +100,7 @@ std::set<std::string> make_historic_external_states(
 
 boost::optional<NssetPrintoutInputData> make_nsset_data(
         const boost::optional<std::string>& nsset_handle,
-        Fred::OperationContext& ctx)
+        LibFred::OperationContext& ctx)
 {
     if (!static_cast<bool>(nsset_handle))
     {
@@ -108,16 +108,16 @@ boost::optional<NssetPrintoutInputData> make_nsset_data(
     }
 
     NssetPrintoutInputData retval;
-    retval.info = Fred::InfoNssetByHandle(*nsset_handle).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
+    retval.info = LibFred::InfoNssetByHandle(*nsset_handle).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
     retval.tech_contact.reserve(retval.info.info_nsset_data.tech_contacts.size());
 
-    for (std::vector<Fred::ObjectIdHandlePair>::const_iterator itr = retval.info.info_nsset_data.tech_contacts.begin();
+    for (std::vector<LibFred::ObjectIdHandlePair>::const_iterator itr = retval.info.info_nsset_data.tech_contacts.begin();
          itr != retval.info.info_nsset_data.tech_contacts.end(); ++itr)
     {
-        retval.tech_contact.push_back(Fred::InfoContactByHandle(itr->handle).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()));
+        retval.tech_contact.push_back(LibFred::InfoContactByHandle(itr->handle).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()));
     }
 
-    retval.sponsoring_registrar = Fred::InfoRegistrarByHandle(
+    retval.sponsoring_registrar = LibFred::InfoRegistrarByHandle(
             retval.info.info_nsset_data.sponsoring_registrar_handle).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
 
     retval.external_states = make_external_states(retval.info.info_nsset_data.id, ctx);
@@ -127,7 +127,7 @@ boost::optional<NssetPrintoutInputData> make_nsset_data(
 
 boost::optional<KeysetPrintoutInputData> make_keyset_data(
         const boost::optional<std::string>& keyset_handle,
-        Fred::OperationContext& ctx)
+        LibFred::OperationContext& ctx)
 {
     if (!static_cast<bool>(keyset_handle))
     {
@@ -135,23 +135,23 @@ boost::optional<KeysetPrintoutInputData> make_keyset_data(
     }
 
     KeysetPrintoutInputData retval;
-    retval.info = Fred::InfoKeysetByHandle(*keyset_handle).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
+    retval.info = LibFred::InfoKeysetByHandle(*keyset_handle).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
     retval.tech_contact.reserve(retval.info.info_keyset_data.tech_contacts.size());
 
-    for (std::vector<Fred::ObjectIdHandlePair>::const_iterator itr = retval.info.info_keyset_data.tech_contacts.begin();
+    for (std::vector<LibFred::ObjectIdHandlePair>::const_iterator itr = retval.info.info_keyset_data.tech_contacts.begin();
          itr != retval.info.info_keyset_data.tech_contacts.end(); ++itr)
     {
-        retval.tech_contact.push_back(Fred::InfoContactByHandle(itr->handle).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()));
+        retval.tech_contact.push_back(LibFred::InfoContactByHandle(itr->handle).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()));
     }
 
-    retval.sponsoring_registrar = Fred::InfoRegistrarByHandle(
+    retval.sponsoring_registrar = LibFred::InfoRegistrarByHandle(
             retval.info.info_keyset_data.sponsoring_registrar_handle).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
 
     retval.external_states = make_external_states(retval.info.info_keyset_data.id, ctx);
     return retval;
 }
 
-DbDateTimeArithmetic::DbDateTimeArithmetic(Fred::OperationContext& _ctx)
+DbDateTimeArithmetic::DbDateTimeArithmetic(LibFred::OperationContext& _ctx)
     : ctx_(_ctx)
 { }
 
@@ -193,7 +193,7 @@ Tz::LocalTimestamp DbDateTimeArithmetic::convert_into_other_timezone(
 
 template <>
 Tz::LocalTimestamp convert_utc_timestamp_to_local<Tz::UTC>(
-        Fred::OperationContext&,
+        LibFred::OperationContext&,
         const boost::posix_time::ptime& utc_timestamp)
 {
     return Tz::LocalTimestamp::within_utc(utc_timestamp);
@@ -221,7 +221,7 @@ std::vector<Util::XmlCallback> nsset_xml(const boost::optional<NssetPrintoutInpu
     std::vector<Util::XmlCallback> nameserver_list;
     nameserver_list.reserve(nsset_data->info.info_nsset_data.dns_hosts.size());
 
-    for (std::vector<Fred::DnsHost>::const_iterator itr = nsset_data->info.info_nsset_data.dns_hosts.begin();
+    for (std::vector<LibFred::DnsHost>::const_iterator itr = nsset_data->info.info_nsset_data.dns_hosts.begin();
          itr != nsset_data->info.info_nsset_data.dns_hosts.end(); ++itr)
     {
         std::vector<Util::XmlCallback> ip_list;
@@ -245,7 +245,7 @@ std::vector<Util::XmlCallback> nsset_xml(const boost::optional<NssetPrintoutInpu
     std::vector<Util::XmlCallback> tech_contact_list;
     tech_contact_list.reserve(nsset_data->tech_contact.size());
 
-    for (std::vector<Fred::InfoContactOutput>::const_iterator itr = nsset_data->tech_contact.begin();
+    for (std::vector<LibFred::InfoContactOutput>::const_iterator itr = nsset_data->tech_contact.begin();
          itr != nsset_data->tech_contact.end(); ++itr)
     {
         tech_contact_list.push_back(
@@ -299,7 +299,7 @@ std::vector<Util::XmlCallback> keyset_xml(const boost::optional<KeysetPrintoutIn
     std::vector<Util::XmlCallback> dns_key_list;
     dns_key_list.reserve(keyset_data->info.info_keyset_data.dns_keys.size());
 
-    for (std::vector<Fred::DnsKey>::const_iterator itr = keyset_data->info.info_keyset_data.dns_keys.begin();
+    for (std::vector<LibFred::DnsKey>::const_iterator itr = keyset_data->info.info_keyset_data.dns_keys.begin();
          itr != keyset_data->info.info_keyset_data.dns_keys.end(); ++itr)
     {
         dns_key_list.push_back(
@@ -313,7 +313,7 @@ std::vector<Util::XmlCallback> keyset_xml(const boost::optional<KeysetPrintoutIn
     std::vector<Util::XmlCallback> tech_contact_list;
     tech_contact_list.reserve(keyset_data->tech_contact.size());
 
-    for (std::vector<Fred::InfoContactOutput>::const_iterator itr = keyset_data->tech_contact.begin();
+    for (std::vector<LibFred::InfoContactOutput>::const_iterator itr = keyset_data->tech_contact.begin();
          itr != keyset_data->tech_contact.end(); ++itr)
     {
         tech_contact_list.push_back(
@@ -397,11 +397,11 @@ XmlWithData::XmlWithData()
       request_local_timestamp(Tz::LocalTimestamp::within_utc(boost::posix_time::ptime()))
 { }
 
-template <Fred::Object_Type::Enum object_type>
+template <LibFred::Object_Type::Enum object_type>
 unsigned long long get_history_id_of(
         const std::string& handle,
         const Tz::LocalTimestamp& valid_at,
-        Fred::OperationContext& ctx)
+        LibFred::OperationContext& ctx)
 {
     const Database::Result db_res = ctx.get_conn().exec_params(
             "WITH "
@@ -435,18 +435,18 @@ unsigned long long get_history_id_of(
     return static_cast<unsigned long long>(db_res[0][0]);
 }
 
-template unsigned long long get_history_id_of<Fred::Object_Type::contact>(
-        const std::string&, const Tz::LocalTimestamp&, Fred::OperationContext&);
-template unsigned long long get_history_id_of<Fred::Object_Type::keyset>(
-        const std::string&, const Tz::LocalTimestamp&, Fred::OperationContext&);
-template unsigned long long get_history_id_of<Fred::Object_Type::nsset>(
-        const std::string&, const Tz::LocalTimestamp&, Fred::OperationContext&);
+template unsigned long long get_history_id_of<LibFred::Object_Type::contact>(
+        const std::string&, const Tz::LocalTimestamp&, LibFred::OperationContext&);
+template unsigned long long get_history_id_of<LibFred::Object_Type::keyset>(
+        const std::string&, const Tz::LocalTimestamp&, LibFred::OperationContext&);
+template unsigned long long get_history_id_of<LibFred::Object_Type::nsset>(
+        const std::string&, const Tz::LocalTimestamp&, LibFred::OperationContext&);
 
 template <>
-unsigned long long get_history_id_of<Fred::Object_Type::domain>(
+unsigned long long get_history_id_of<LibFred::Object_Type::domain>(
         const std::string& fqdn,
         const Tz::LocalTimestamp& valid_at,
-        Fred::OperationContext& ctx)
+        LibFred::OperationContext& ctx)
 {
     const Database::Result db_res = ctx.get_conn().exec_params(
             "WITH "
@@ -469,7 +469,7 @@ unsigned long long get_history_id_of<Fred::Object_Type::domain>(
             "LIMIT 1",
             Database::query_param_list(boost::posix_time::to_iso_extended_string(valid_at.get_local_time()))
                                       (valid_at.get_timezone_offset_in_minutes())
-                                      (Conversion::Enums::to_db_handle(Fred::Object_Type::domain))
+                                      (Conversion::Enums::to_db_handle(LibFred::Object_Type::domain))
                                       (fqdn));
 
     if (db_res.size() == 0)
@@ -480,11 +480,11 @@ unsigned long long get_history_id_of<Fred::Object_Type::domain>(
     return static_cast<unsigned long long>(db_res[0][0]);
 }
 
-template <Fred::Object_Type::Enum object_type>
+template <LibFred::Object_Type::Enum object_type>
 unsigned long long get_history_id_internal_of(
         const std::string& object_name,
         const Tz::LocalTimestamp& valid_at,
-        Fred::OperationContext& ctx)
+        LibFred::OperationContext& ctx)
 {
     try
     {
@@ -496,42 +496,42 @@ unsigned long long get_history_id_internal_of(
     }
 }
 
-template unsigned long long get_history_id_internal_of<Fred::Object_Type::domain>(
-        const std::string&, const Tz::LocalTimestamp&, Fred::OperationContext&);
-template unsigned long long get_history_id_internal_of<Fred::Object_Type::contact>(
-        const std::string&, const Tz::LocalTimestamp&, Fred::OperationContext&);
-template unsigned long long get_history_id_internal_of<Fred::Object_Type::keyset>(
-        const std::string&, const Tz::LocalTimestamp&, Fred::OperationContext&);
-template unsigned long long get_history_id_internal_of<Fred::Object_Type::nsset>(
-        const std::string&, const Tz::LocalTimestamp&, Fred::OperationContext&);
+template unsigned long long get_history_id_internal_of<LibFred::Object_Type::domain>(
+        const std::string&, const Tz::LocalTimestamp&, LibFred::OperationContext&);
+template unsigned long long get_history_id_internal_of<LibFred::Object_Type::contact>(
+        const std::string&, const Tz::LocalTimestamp&, LibFred::OperationContext&);
+template unsigned long long get_history_id_internal_of<LibFred::Object_Type::keyset>(
+        const std::string&, const Tz::LocalTimestamp&, LibFred::OperationContext&);
+template unsigned long long get_history_id_internal_of<LibFred::Object_Type::nsset>(
+        const std::string&, const Tz::LocalTimestamp&, LibFred::OperationContext&);
 
 boost::optional<NssetPrintoutInputData> make_historic_nsset_data(
         const boost::optional<unsigned long long>& nsset_historyid,
         const Tz::LocalTimestamp& timestamp,
-        Fred::OperationContext& ctx)
+        LibFred::OperationContext& ctx)
 {
     if (!static_cast<bool>(nsset_historyid))
     {
         return boost::optional<NssetPrintoutInputData>();
     }
     NssetPrintoutInputData retval;
-    retval.info = Fred::InfoNssetHistoryByHistoryid(*nsset_historyid).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
+    retval.info = LibFred::InfoNssetHistoryByHistoryid(*nsset_historyid).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
 
-    for (std::vector<Fred::ObjectIdHandlePair>::const_iterator itr = retval.info.info_nsset_data.tech_contacts.begin();
+    for (std::vector<LibFred::ObjectIdHandlePair>::const_iterator itr = retval.info.info_nsset_data.tech_contacts.begin();
          itr != retval.info.info_nsset_data.tech_contacts.end(); ++itr)
     {
         retval.tech_contact.push_back(
-                Fred::InfoContactHistoryByHistoryid(
-                        get_history_id_internal_of<Fred::Object_Type::contact>(itr->handle, timestamp, ctx))
+                LibFred::InfoContactHistoryByHistoryid(
+                        get_history_id_internal_of<LibFred::Object_Type::contact>(itr->handle, timestamp, ctx))
                 .exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()));
     }
 
     retval.sponsoring_registrar =
-            Fred::InfoRegistrarByHandle(retval.info.info_nsset_data.sponsoring_registrar_handle)
+            LibFred::InfoRegistrarByHandle(retval.info.info_nsset_data.sponsoring_registrar_handle)
             .exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
 
     retval.external_states =
-            Fred::RecordStatement::Impl::make_historic_external_states(retval.info.info_nsset_data.id, timestamp, ctx);
+            LibFred::RecordStatement::Impl::make_historic_external_states(retval.info.info_nsset_data.id, timestamp, ctx);
 
     return retval;
 }
@@ -539,26 +539,26 @@ boost::optional<NssetPrintoutInputData> make_historic_nsset_data(
 boost::optional<KeysetPrintoutInputData> make_historic_keyset_data(
         const boost::optional<unsigned long long>& keyset_historyid,
         const Tz::LocalTimestamp& timestamp,
-        Fred::OperationContext& ctx)
+        LibFred::OperationContext& ctx)
 {
     if (!static_cast<bool>(keyset_historyid))
     {
         return boost::optional<KeysetPrintoutInputData>();
     }
     KeysetPrintoutInputData retval;
-    retval.info = Fred::InfoKeysetHistoryByHistoryid(*keyset_historyid).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
+    retval.info = LibFred::InfoKeysetHistoryByHistoryid(*keyset_historyid).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
 
-    for (std::vector<Fred::ObjectIdHandlePair>::const_iterator itr = retval.info.info_keyset_data.tech_contacts.begin();
+    for (std::vector<LibFred::ObjectIdHandlePair>::const_iterator itr = retval.info.info_keyset_data.tech_contacts.begin();
          itr != retval.info.info_keyset_data.tech_contacts.end(); ++itr)
     {
         retval.tech_contact.push_back(
-                Fred::InfoContactHistoryByHistoryid(
-                        get_history_id_internal_of<Fred::Object_Type::contact>(itr->handle, timestamp, ctx))
+                LibFred::InfoContactHistoryByHistoryid(
+                        get_history_id_internal_of<LibFred::Object_Type::contact>(itr->handle, timestamp, ctx))
                 .exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()));
     }
 
     retval.sponsoring_registrar =
-            Fred::InfoRegistrarByHandle(retval.info.info_keyset_data.sponsoring_registrar_handle)
+            LibFred::InfoRegistrarByHandle(retval.info.info_keyset_data.sponsoring_registrar_handle)
             .exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
 
     retval.external_states =
@@ -567,6 +567,6 @@ boost::optional<KeysetPrintoutInputData> make_historic_keyset_data(
     return retval;
 }
 
-}//namespace Fred::RecordStatement::Impl
-}//namespace Fred::RecordStatement
-}//namespace Fred
+} // namespace LibFred::RecordStatement::Impl
+} // namespace LibFred::RecordStatement
+} // namespace LibFred
