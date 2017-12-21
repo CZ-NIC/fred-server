@@ -33,6 +33,7 @@
 #include <chrono>
 #include <iostream>
 #include <random>
+#include <regex>
 #include <stdexcept>
 #include <string>
 #include <thread>
@@ -131,28 +132,12 @@ SetOfObjectTypes construct_set_of_object_types_from_string(const std::string& sr
 {
     SetOfObjectTypes set_of_object_types;
 
-    const char* const src_end = src.c_str() + src.length();
-    const char* name_begin = src.c_str();
-    while (name_begin != src_end)
+    static const std::regex delimiter(",");
+    for (auto object_types_itr = std::sregex_token_iterator(src.begin(), src.end(), delimiter, -1);
+         object_types_itr != std::sregex_token_iterator(); ++object_types_itr)
     {
-        const char* name_end = name_begin;
-        static const char names_delimiter = ',';
-        while ((name_end != src_end) && (*name_end != names_delimiter))
-        {
-            ++name_end;
-        }
-        const std::string name(name_begin, name_end - name_begin);
-        const ObjectType object_type = object_type_from_string(name);
+        const ObjectType object_type = object_type_from_string(*object_types_itr);
         set_of_object_types.insert(object_type);
-        if (name_end != src_end)
-        {
-            ++name_end;
-            if (name_end == src_end)
-            {
-                throw std::runtime_error("unable convert an empty string to object type");
-            }
-        }
-        name_begin = name_end;
     }
     return set_of_object_types;
 }
