@@ -1563,11 +1563,12 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
     ret->code = 0;
     out_clientID = 0;
 
-    LOG(NOTICE_LOG, "ClientLogin: username-> [%s] clTRID [%s] passwd [%s] newpass [%s]",
-        ClID,
-        clTRID,
-        hide(passwd),
-        hide(newpass));
+    LOGGER(PACKAGE).notice(
+            boost::format("ClientLogin: username-> [%1%] clTRID [%2%] passwd [%3%] newpass [%4%]") %
+            ClID %
+            clTRID %
+            hide(passwd) %
+            hide(newpass));
     LOG(NOTICE_LOG, "ClientLogin: certID [%s] language [%d]", certID, lang);
 
     Database::Connection conn = Database::Manager::acquire();
@@ -1600,7 +1601,10 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
             const bool set_new_password = (newpass != NULL) && (*newpass != '\0');
             if (set_new_password)
             {
-                LOG(NOTICE_LOG, "change password [%s] to newpass [%s]", hide(passwd), hide(newpass));
+                LOGGER(PACKAGE).notice(
+                            boost::format("change password [%1%] to newpass [%2%]") %
+                            hide(passwd) %
+                            hide(newpass));
                 authentic_registrar.set_password(newpass);
             }
             class Language
@@ -1653,7 +1657,11 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
     }
     catch (const Epp::RegistrarAcl::AuthenticRegistrar::AuthenticationFailed &e)
     {
-        LOG(NOTICE_LOG, "password [%s] or certID [%s] not accept: %s", hide(passwd), certID, e.what());
+        LOGGER(PACKAGE).notice(
+                    boost::format("password [%1%] or certID [%2%] not accept: %3%") %
+                    hide(passwd) %
+                    certID %
+                    e.what());
         ret->code = COMMAND_AUTH_ERROR;
     }
     catch (const std::exception &e)
