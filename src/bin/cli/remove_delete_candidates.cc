@@ -128,8 +128,13 @@ ObjectType object_type_from_string(const std::string& src)
     throw std::runtime_error("unable convert to object type");
 }
 
-SetOfObjectTypes construct_set_of_object_types_from_string(const std::string& src)
+boost::optional<SetOfObjectTypes> construct_set_of_object_types_from_string(const std::string& src)
 {
+    if (src.empty())
+    {
+        return boost::none;
+    }
+
     SetOfObjectTypes set_of_object_types;
 
     static const std::regex delimiter(",");
@@ -148,24 +153,10 @@ std::string object_types_into_sql(
         const SetOfObjectTypes& types,
         Database::query_param_list& params)
 {
-    if (types.empty())
-    {
-        SetOfObjectTypes all_types;
-        all_types.insert(ObjectType::contact);
-        all_types.insert(ObjectType::domain);
-        all_types.insert(ObjectType::keyset);
-        all_types.insert(ObjectType::nsset);
-        return object_types_into_sql(all_types, params);
-    }
     std::string sql;
-    bool first_item = true;
     for (const auto& object_type : types)
     {
-        if (first_item)
-        {
-            first_item = false;
-        }
-        else
+        if (!sql.empty())
         {
             sql += ",";
         }
@@ -246,22 +237,24 @@ struct NssetToDelete
 
 unsigned init_objects_to_delete(
         const boost::optional<unsigned>& max_number_of_selected_candidates,
-        const SetOfObjectTypes& types,
+        const boost::optional<SetOfObjectTypes>& types,
         std::vector<ContactToDelete>& contacts,
         std::vector<DomainToDelete>& domains,
         std::vector<KeysetToDelete>& keysets,
         std::vector<NssetToDelete>& nssets)
 {
-    Database::query_param_list params(Conversion::Enums::to_db_handle(LibFred::Object_State::delete_candidate));
+    Database::query_param_list params(Conversion::Enums::to_db_handle(LibFred::Object_State::delete_candidate));//$1
+    params(to_db_handle(ObjectType::domain).get_value());//$2
     const std::string sql =
         "SELECT eot.name,o.id,o.name,"
-               "CASE WHEN eot.name='domain' THEN (SELECT zone FROM domain WHERE id=o.id) ELSE NULL END "
+               "CASE WHEN eot.name=$2::TEXT THEN (SELECT zone FROM domain WHERE id=o.id) ELSE NULL END "
         "FROM object_registry o "
         "JOIN enum_object_type eot ON eot.id=o.type "
         "JOIN object_state s ON s.object_id=o.id "
         "JOIN enum_object_states eos ON eos.id=s.state_id "
-        "WHERE o.erdate IS NULL AND "
-              "eot.name IN (" + object_types_into_sql(types, params) + ") AND "
+        "WHERE o.erdate IS NULL AND " + (types != boost::none
+            ? "eot.name IN (" + object_types_into_sql(*types, params) + ") AND "
+            : std::string()) +
               "s.valid_to IS NULL AND "
               "eos.name=$1::TEXT";
     LibFred::OperationContextCreator ctx;
@@ -274,19 +267,19 @@ unsigned init_objects_to_delete(
     {
         return 0;
     }
-    if (types.find(ObjectType::contact) != types.end())
+    if ((types == boost::none) || (types->find(ObjectType::contact) != types->end()))
     {
         contacts.reserve(dbres.size());
     }
-    if (types.find(ObjectType::domain) != types.end())
+    if ((types == boost::none) || (types->find(ObjectType::domain) != types->end()))
     {
         domains.reserve(dbres.size());
     }
-    if (types.find(ObjectType::keyset) != types.end())
+    if ((types == boost::none) || (types->find(ObjectType::keyset) != types->end()))
     {
         keysets.reserve(dbres.size());
     }
-    if (types.find(ObjectType::nsset) != types.end())
+    if ((types == boost::none) || (types->find(ObjectType::nsset) != types->end()))
     {
         nssets.reserve(dbres.size());
     }
@@ -331,7 +324,7 @@ template <Debug d>
 void delete_objects_marked_as_delete_candidate(
         int fraction,
         const boost::optional<unsigned>& max_number_of_selected_candidates,
-        const SetOfObjectTypes& types,
+        const boost::optional<SetOfObjectTypes>& types,
         const Seconds& spread_deletion_in_time)
 {
     LOGGING_CONTEXT(log_ctx);
@@ -477,8 +470,8 @@ void delete_objects_marked_as_delete_candidate(
 }
 
 template void delete_objects_marked_as_delete_candidate<Debug::on>(
-        int, const boost::optional<unsigned>&, const SetOfObjectTypes&, const Seconds&);
+        int, const boost::optional<unsigned>&, const boost::optional<SetOfObjectTypes>&, const Seconds&);
 template void delete_objects_marked_as_delete_candidate<Debug::off>(
-        int, const boost::optional<unsigned>&, const SetOfObjectTypes&, const Seconds&);
+        int, const boost::optional<unsigned>&, const boost::optional<SetOfObjectTypes>&, const Seconds&);
 
 } // namespace Admin

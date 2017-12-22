@@ -201,24 +201,24 @@ ObjectClient::regular_procedure()
                     fileclient_path.get_value(),//m_conf.get<std::string>(REG_FILECLIENT_PATH_NAME)
                     m_nsAddr));
         std::unique_ptr<CorbaClient> cc;
-        static const int resolve_tries = 3;
-        for (int idx = 0; idx < resolve_tries; ++idx)
+        for (int attempt = 1; cc.get() == nullptr; ++attempt)
         {
+            static const int resolve_tries = 3;
+            if (resolve_tries < attempt)
+            {
+                throw std::runtime_error("Unable to create a CORBA client");
+            }
             try
             {
-                cc.reset(new CorbaClient(0, NULL, m_nsAddr, nameservice_context));//m_conf.get<std::string>(NS_CONTEXT_NAME)
-                if (cc.get() != NULL)
-                {
-                    break;
-                }
+                cc.reset(new CorbaClient(0, nullptr, m_nsAddr, nameservice_context));//m_conf.get<std::string>(NS_CONTEXT_NAME)
             }
-            catch (NameService::NOT_RUNNING)
+            catch (const NameService::NOT_RUNNING&)
             {
-                LOG(ERROR_LOG, "regular_procedure(): resolve attempt %d of %d catching NOT_RUNNING", idx + 1, resolve_tries);
+                LOG(ERROR_LOG, "regular_procedure(): resolve attempt %d of %d catching NOT_RUNNING", attempt, resolve_tries);
             }
-            catch (NameService::BAD_CONTEXT)
+            catch (const NameService::BAD_CONTEXT&)
             {
-                LOG(ERROR_LOG, "regular_procedure(): resolve attempt %d of %d catching BAD_CONTEXT", idx + 1, resolve_tries);
+                LOG(ERROR_LOG, "regular_procedure(): resolve attempt %d of %d catching BAD_CONTEXT", attempt, resolve_tries);
             }
         }
         MailerManager mailMan(cc->getNS());
@@ -301,6 +301,10 @@ ObjectClient::regular_procedure()
     {
         LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): CORBA exception caught");
     }
+    catch (const std::exception& e)
+    {
+        LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): std::exception(%s) caught", e.what());
+    }
     catch (...)
     {
         LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): unknown exception caught");
@@ -317,30 +321,33 @@ ObjectClient::delete_candidates()
             : std::string();
         if (this->deleteObjects(deleteTypes) != DeleteObjectsResult::success)
         {
-            LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): Error has occurred in deleteObject");
+            LOG(ERROR_LOG, "Admin::ObjectClient::delete_candidates(): Error has occurred in deleteObject");
             return;
         }
-
     }
     catch (const ccReg::Admin::SQL_ERROR&)
     {
-        LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): SQL_ERROR caught");
+        LOG(ERROR_LOG, "Admin::ObjectClient::delete_candidates(): SQL_ERROR caught");
     }
     catch (const NameService::NOT_RUNNING&)
     {
-        LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): NOT_RUNNING caught");
+        LOG(ERROR_LOG, "Admin::ObjectClient::delete_candidates(): NOT_RUNNING caught");
     }
     catch (const NameService::BAD_CONTEXT&)
     {
-        LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): BAD_CONTEXT caught");
+        LOG(ERROR_LOG, "Admin::ObjectClient::delete_candidates(): BAD_CONTEXT caught");
     }
     catch (const CORBA::Exception&)
     {
-        LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): CORBA exception caught");
+        LOG(ERROR_LOG, "Admin::ObjectClient::delete_candidates(): CORBA exception caught");
+    }
+    catch (const std::exception& e)
+    {
+        LOG(ERROR_LOG, "Admin::ObjectClient::delete_candidates(): std::exception(%s) caught", e.what());
     }
     catch (...)
     {
-        LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): unknown exception caught");
+        LOG(ERROR_LOG, "Admin::ObjectClient::delete_candidates(): unknown exception caught");
     }
 }
 

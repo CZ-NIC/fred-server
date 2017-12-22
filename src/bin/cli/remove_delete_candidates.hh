@@ -59,7 +59,7 @@ ObjectType object_type_from_string(const std::string& src);
 
 typedef std::set<ObjectType> SetOfObjectTypes;
 
-SetOfObjectTypes construct_set_of_object_types_from_string(const std::string& src);
+boost::optional<SetOfObjectTypes> construct_set_of_object_types_from_string(const std::string& src);
 
 typedef std::chrono::duration<double> Seconds;
 
@@ -73,7 +73,7 @@ template <Debug d>
 void delete_objects_marked_as_delete_candidate(
         int fraction,
         const boost::optional<unsigned>& max_number_of_selected_candidates,
-        const SetOfObjectTypes& types,
+        const boost::optional<SetOfObjectTypes>& types,
         const Seconds& spread_deletion_in_time);
 
 } // namespace Admin
