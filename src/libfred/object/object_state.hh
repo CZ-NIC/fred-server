@@ -20,8 +20,8 @@
 *  @file
 *  header of LibFred::Object_State class
 */
-#ifndef OBJECT_STATE_H_29361CB88732C16EBD1D73A1BE4BFD83//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define OBJECT_STATE_H_29361CB88732C16EBD1D73A1BE4BFD83
+#ifndef OBJECT_STATE_HH_A7838AEAF86D4E8D9E6B3269351FA976
+#define OBJECT_STATE_HH_A7838AEAF86D4E8D9E6B3269351FA976
 
 #include "src/util/enum_conversion.hh"
 
@@ -148,4 +148,4 @@ inline LibFred::Object_State::Enum from_db_handle< LibFred::Object_State >(const
 } // namespace Conversion::Enums
 } // namespace Conversion
 
-#endif//OBJECT_STATE_H_29361CB88732C16EBD1D73A1BE4BFD83
+#endif

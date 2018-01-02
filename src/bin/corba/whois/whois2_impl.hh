@@ -1,5 +1,5 @@
-#ifndef WHOIS2_IMPL_H_6545489794
-#define WHOIS2_IMPL_H_6545489794
+#ifndef WHOIS2_IMPL_HH_4FB0D9C852264D3F8B9706DFA7E2873E
+#define WHOIS2_IMPL_HH_4FB0D9C852264D3F8B9706DFA7E2873E
 
 #include "src/bin/corba/Whois2.hh"
 #include "src/backend/whois/whois.hh"

@@ -22,8 +22,8 @@
  */
 
 
-#ifndef MOCK_CONNECTION_H_
-#define MOCK_CONNECTION_H_
+#ifndef MOCK_CONNECTION_HH_519CF51C725E43728305C0470BFCDBDC
+#define MOCK_CONNECTION_HH_519CF51C725E43728305C0470BFCDBDC
 
 //mock #include <libpq-fe.h>
 #include "src/util/db/mock/mock_result.hh"

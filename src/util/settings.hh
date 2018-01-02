@@ -1,5 +1,5 @@
-#ifndef SETTINGS_H_
-#define SETTINGS_H_
+#ifndef SETTINGS_HH_2C2C96874AC44B308147B6B81E4DF6C2
+#define SETTINGS_HH_2C2C96874AC44B308147B6B81E4DF6C2
 
 #include <map>
 #include "src/util/singleton.hh"

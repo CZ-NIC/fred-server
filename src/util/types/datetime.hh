@@ -1,5 +1,5 @@
-#ifndef DATETIME_H_
-#define DATETIME_H_
+#ifndef DATETIME_HH_BBEDC537E27C4BABB5DEE0CF7E69FDB2
+#define DATETIME_HH_BBEDC537E27C4BABB5DEE0CF7E69FDB2
 
 #include <string>
 #include <boost/date_time/posix_time/posix_time.hpp>

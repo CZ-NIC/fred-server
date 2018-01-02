@@ -21,8 +21,8 @@
  *  common domain info data
  */
 
-#ifndef INFO_DOMAIN_DATA_H_
-#define INFO_DOMAIN_DATA_H_
+#ifndef INFO_DOMAIN_DATA_HH_01A2CF8365C944A6B77108D7667AD395
+#define INFO_DOMAIN_DATA_HH_01A2CF8365C944A6B77108D7667AD395
 
 #include <string>
 #include <vector>
@@ -89,4 +89,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif//INFO_DOMAIN_DATA_H_
+#endif

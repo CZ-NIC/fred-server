@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _CHARGE_PARAMS_
-#define _CHARGE_PARAMS_
+#ifndef CHARGE_PARAMS_HH_19B07055E7ED4C319CEAF9E34F7CCD28
+#define CHARGE_PARAMS_HH_19B07055E7ED4C319CEAF9E34F7CCD28
 
 #include "src/util/types/optional.hh"
 

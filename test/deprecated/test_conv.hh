@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TESTCONV_H_
-#define TESTCONV_H_
+#ifndef TEST_CONV_HH_4F3640CFF34E4F4CB2F40B42640A93FC
+#define TEST_CONV_HH_4F3640CFF34E4F4CB2F40B42640A93FC
 
 #include <memory>
 #include <iostream>
@@ -57,4 +57,4 @@
 #include "src/util/cfg/config_handler_decl.hh"
 #include <boost/test/unit_test.hpp>
 
-#endif // TESTCONV_H_
+#endif

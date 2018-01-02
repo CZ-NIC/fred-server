@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DNS_KEY_H_C09AC6C027EE4158BD3BFE2C58D9F3AF
-#define DNS_KEY_H_C09AC6C027EE4158BD3BFE2C58D9F3AF
+#ifndef DNS_KEY_HH_F64DF3F171154311BBCDDAC817805FF9
+#define DNS_KEY_HH_F64DF3F171154311BBCDDAC817805FF9
 
 #include "src/libfred/opcontext.hh"
 

@@ -21,8 +21,8 @@
  *  create contact test
  */
 
-#ifndef CONTACT_VERIFICATION_CREATE_TEST_51547658410_
-#define CONTACT_VERIFICATION_CREATE_TEST_51547658410_
+#ifndef CREATE_TEST_HH_C2D64B58513A456FB1831244EF9B8F44
+#define CREATE_TEST_HH_C2D64B58513A456FB1831244EF9B8F44
 
 #include "src/util/printable.hh"
 
@@ -82,4 +82,4 @@ namespace LibFred
         virtual std::string to_string() const;
     };
 }
-#endif // #include guard end
+#endif

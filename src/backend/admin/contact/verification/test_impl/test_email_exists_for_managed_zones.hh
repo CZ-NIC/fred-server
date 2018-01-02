@@ -21,8 +21,8 @@
  *  contact verification test for Czech postal address (defined in official set)
  */
 
-#ifndef CONTACT_VERIFICATION_TEST_EMAIL_EXISTS_FOR_MANAGED_ZONES_23545756763574_
-#define CONTACT_VERIFICATION_TEST_EMAIL_EXISTS_FOR_MANAGED_ZONES_23545756763574_
+#ifndef TEST_EMAIL_EXISTS_FOR_MANAGED_ZONES_HH_36BE471BD20E4BE4983CEADC3BC29814
+#define TEST_EMAIL_EXISTS_FOR_MANAGED_ZONES_HH_36BE471BD20E4BE4983CEADC3BC29814
 
 #include "src/backend/admin/contact/verification/test_impl/test_interface.hh"
 
@@ -63,4 +63,4 @@ namespace ContactVerification
 }
 }
 
-#endif // #include guard end
+#endif

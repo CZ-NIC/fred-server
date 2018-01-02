@@ -21,8 +21,8 @@
  *  check handlers
  */
 
-#ifndef CHECK_ARGS_H_
-#define CHECK_ARGS_H_
+#ifndef CHECK_ARGS_HH_C08EF7DC882149AF8D4B0395D718C149
+#define CHECK_ARGS_HH_C08EF7DC882149AF8D4B0395D718C149
 
 #include <iostream>
 #include <stdexcept>
@@ -106,4 +106,4 @@ public:
     }//handle
 };//class HandleCheckArgsRecognitionGrp
 
-#endif //CHECK_ARGS_H_
+#endif

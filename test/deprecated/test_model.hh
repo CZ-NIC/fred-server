@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TESTMODEL_H_
-#define TESTMODEL_H_
+#ifndef TEST_MODEL_HH_78BB108CAE8346658F10976BEEF8F5E6
+#define TEST_MODEL_HH_78BB108CAE8346658F10976BEEF8F5E6
 
 #include <memory>
 #include <iostream>
@@ -500,4 +500,4 @@ bool check_std_exception_nodatafound(std::exception const & ex)
     return (ex_msg.find(std::string("No data found")) != std::string::npos);
 }
 
-#endif // TESTMODEL_H_
+#endif

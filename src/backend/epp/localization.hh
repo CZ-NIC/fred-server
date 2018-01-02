@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LOCALIZATION_H_6BA4B6A62A5D41F0A69D20DE5B507D2E
-#define LOCALIZATION_H_6BA4B6A62A5D41F0A69D20DE5B507D2E
+#ifndef LOCALIZATION_HH_0C448DBDBB9043D39BD1BE736A402EB1
+#define LOCALIZATION_HH_0C448DBDBB9043D39BD1BE736A402EB1
 
 #include "src/backend/epp/contact/status_value.hh"
 #include "src/backend/epp/domain/status_value.hh"

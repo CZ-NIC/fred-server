@@ -21,8 +21,8 @@
  *  declaration for Registry::MojeIDImplData namespace
  */
 
-#ifndef MOJEID_IMPL_DATA_H_7C7FD17C00D041F4BDAF5CE5A8CE5337//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define MOJEID_IMPL_DATA_H_7C7FD17C00D041F4BDAF5CE5A8CE5337
+#ifndef MOJEID_IMPL_DATA_HH_6021A798220F424AAA6327B3E2F0C458
+#define MOJEID_IMPL_DATA_HH_6021A798220F424AAA6327B3E2F0C458
 
 #include "src/util/db/nullable.hh"
 #include <sstream>
@@ -400,4 +400,4 @@ struct ValidationAlreadyProcessed:Exception
 } // namespace Registry::MojeIDImplData
 } // namespace Registry
 
-#endif//MOJEID_IMPL_DATA_H_7C7FD17C00D041F4BDAF5CE5A8CE5337
+#endif

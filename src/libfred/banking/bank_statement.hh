@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef BANK_STATEMENT_H_
-#define BANK_STATEMENT_H_
+#ifndef BANK_STATEMENT_HH_E638BA2322F743D08A9D72362EC8B508
+#define BANK_STATEMENT_HH_E638BA2322F743D08A9D72362EC8B508
 
 #include "src/libfred/exceptions.hh"
 #include "src/libfred/common_new.hh"

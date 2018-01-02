@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PASSWORD_STORAGE_HH_D62FBCFF6DD9A9CA715F3049D6376FF0//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define PASSWORD_STORAGE_HH_D62FBCFF6DD9A9CA715F3049D6376FF0
+#ifndef PASSWORD_STORAGE_HH_17C8BA6B40654F39BCA17B59CD80F53E
+#define PASSWORD_STORAGE_HH_17C8BA6B40654F39BCA17B59CD80F53E
 
 #include "src/util/password_storage/password_data.hh"
 
@@ -43,4 +43,4 @@ void check_password(
 
 } // namespace PasswordStorage
 
-#endif//PASSWORD_STORAGE_HH_D62FBCFF6DD9A9CA715F3049D6376FF0
+#endif

@@ -21,8 +21,8 @@
  * Base class for all corba clients
  */
 
-#ifndef BASE_CLIENT_H_
-#define BASE_CLIENT_H_
+#ifndef BASECLIENT_HH_F8472B4549B7445EB34B657F5E42E010
+#define BASECLIENT_HH_F8472B4549B7445EB34B657F5E42E010
 
 #include "src/bin/corba/EPP.hh"
 #include <map>

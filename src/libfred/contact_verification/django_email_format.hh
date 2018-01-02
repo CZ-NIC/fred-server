@@ -16,8 +16,8 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DJANGO_EMAIL_FORMAT_H_3edd58bf751d4e4f878abe4cbb114982
-#define DJANGO_EMAIL_FORMAT_H_3edd58bf751d4e4f878abe4cbb114982
+#ifndef DJANGO_EMAIL_FORMAT_HH_5AD46276489949D5B6F5171D07263344
+#define DJANGO_EMAIL_FORMAT_HH_5AD46276489949D5B6F5171D07263344
 
 #include "src/util/optional_value.hh"
 #include "src/util/idn_utils.hh"

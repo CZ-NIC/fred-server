@@ -21,8 +21,8 @@
  *  declaration for CORBA wrapper class CorbaContainer
  */
 
-#ifndef CORBA_WRAPPER_DECL_H_
-#define CORBA_WRAPPER_DECL_H_
+#ifndef CORBA_WRAPPER_DECL_HH_42C2B98DB8464BDF979610A3C3F06E11
+#define CORBA_WRAPPER_DECL_HH_42C2B98DB8464BDF979610A3C3F06E11
 
 #include <iostream>
 #include <exception>
@@ -158,4 +158,4 @@ public:
 };//class CorbaContainer
 
 
-#endif // CORBA_WRAPPER_DECL_H_
+#endif

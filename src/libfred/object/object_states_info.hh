@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef OBJECT_STATES_INFO_H_0AE168B27E2343E8A623660E996C99E0
-#define OBJECT_STATES_INFO_H_0AE168B27E2343E8A623660E996C99E0
+#ifndef OBJECT_STATES_INFO_HH_82ECCE75C7C44483AE9808A5CA0B59D9
+#define OBJECT_STATES_INFO_HH_82ECCE75C7C44483AE9808A5CA0B59D9
 
 #include "src/libfred/object/object_state.hh"
 #include "src/libfred/object_state/get_object_states.hh"

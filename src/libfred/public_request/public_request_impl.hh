@@ -1,5 +1,5 @@
-#ifndef PUBLIC_REQUEST_IMPL_H_
-#define PUBLIC_REQUEST_IMPL_H_
+#ifndef PUBLIC_REQUEST_IMPL_HH_21AC7B02F9C5497DA07D708E2DDAA8B5
+#define PUBLIC_REQUEST_IMPL_HH_21AC7B02F9C5497DA07D708E2DDAA8B5
 
 #include "src/libfred/public_request/public_request.hh"
 #include "src/libfred/common_impl.hh"

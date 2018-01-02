@@ -21,8 +21,8 @@
  *  optys undelivered mail notification download client header
  */
 
-#ifndef DOWNLOAD_CLIENT_H_406c9d815fff40afa7345c85ff4238f9
-#define DOWNLOAD_CLIENT_H_406c9d815fff40afa7345c85ff4238f9
+#ifndef DOWNLOAD_CLIENT_HH_B731E42D44DE4DC984CD3F9D5247BF92
+#define DOWNLOAD_CLIENT_HH_B731E42D44DE4DC984CD3F9D5247BF92
 
 #include <vector>
 #include <set>

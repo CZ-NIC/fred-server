@@ -21,8 +21,8 @@
  *  header of mojeid implementation internals
  */
 
-#ifndef MOJEID_IMPL_INTERNAL_H_89048D6E69724FBA9BA759D543C86AF9//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define MOJEID_IMPL_INTERNAL_H_89048D6E69724FBA9BA759D543C86AF9
+#ifndef MOJEID_IMPL_INTERNAL_HH_FE2F4C8DBC954060B7F95CB5FD9C93D4
+#define MOJEID_IMPL_INTERNAL_HH_FE2F4C8DBC954060B7F95CB5FD9C93D4
 
 #include "src/backend/mojeid/mojeid_checkers.hh"
 
@@ -161,4 +161,4 @@ void raise(const CheckProcessRegistrationValidation &result);
 } // namespace Registry::MojeIDImplInternal
 } // namespace Registry
 
-#endif//MOJEID_IMPL_INTERNAL_H_89048D6E69724FBA9BA759D543C86AF9
+#endif

@@ -21,8 +21,8 @@
  *  header of contact client implementation
  */
 
-#ifndef CONTACT_PARAMS_H_
-#define CONTACT_PARAMS_H_
+#ifndef CONTACT_PARAMS_HH_A3CD326D003549D8835664103DB3DC47
+#define CONTACT_PARAMS_HH_A3CD326D003549D8835664103DB3DC47
 
 #include "src/util/types/optional.hh"
 #include "src/backend/admin/contact/verification/fill_check_queue.hh"
@@ -228,4 +228,4 @@ struct ContactVerificationStartEnqueuedChecksArgs {
 };
 
 
-#endif // CONTACT_PARAMS_H_
+#endif

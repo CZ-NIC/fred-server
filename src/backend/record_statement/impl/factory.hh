@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef FACTORY_HH_4BFAD236EAC59AEF87FC6037F0106ABF//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define FACTORY_HH_4BFAD236EAC59AEF87FC6037F0106ABF
+#ifndef FACTORY_HH_11FF9EFF1490482CBE6092537EE29473
+#define FACTORY_HH_11FF9EFF1490482CBE6092537EE29473
 
 #include "src/backend/record_statement/record_statement.hh"
 
@@ -51,4 +51,4 @@ private:
 } // namespace LibFred::RecordStatement
 } // namespace LibFred
 
-#endif//FACTORY_HH_4BFAD236EAC59AEF87FC6037F0106ABF
+#endif

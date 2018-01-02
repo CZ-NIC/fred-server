@@ -17,8 +17,8 @@
  */
 
 
-#ifndef CACHE_H_
-#define CACHE_H_
+#ifndef REQUEST_CACHE_HH_B4B02CDD46DC4D8BAE36616834D210A4
+#define REQUEST_CACHE_HH_B4B02CDD46DC4D8BAE36616834D210A4
 
 #include "src/libfred/requests/request.hh"
 #include "src/libfred/requests/model_request.hh"

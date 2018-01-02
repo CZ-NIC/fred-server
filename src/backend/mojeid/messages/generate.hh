@@ -21,8 +21,8 @@
  *  declaration of LibFred::Messages::Generate class
  */
 
-#ifndef GENERATE_H_919490122FEE4648D5B94BDAC5299EAC//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define GENERATE_H_919490122FEE4648D5B94BDAC5299EAC
+#ifndef GENERATE_HH_01DB2767767C4522BF6CA4CFBABEEC17
+#define GENERATE_HH_01DB2767767C4522BF6CA4CFBABEEC17
 
 #include "src/libfred/opcontext.hh"
 #include "src/libfred/public_request/public_request_lock_guard.hh"
@@ -124,4 +124,4 @@ public:
 } // namespace MojeID::Messages
 } // namespace MojeID
 
-#endif//GENERATE_H_919490122FEE4648D5B94BDAC5299EAC
+#endif

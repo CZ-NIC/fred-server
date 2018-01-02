@@ -21,8 +21,8 @@
  *  get optional types from boost program options
  */
 
-#ifndef OPTIONAL_FROM_PROGRAM_OPTIONS_H_
-#define OPTIONAL_FROM_PROGRAM_OPTIONS_H_
+#ifndef OPTIONAL_FROM_PROGRAM_OPTIONS_HH_5A1CCF0415324298906D4133BF417003
+#define OPTIONAL_FROM_PROGRAM_OPTIONS_HH_5A1CCF0415324298906D4133BF417003
 
 #include <boost/program_options.hpp>
 #include "src/util/types/optional.hh"

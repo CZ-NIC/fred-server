@@ -21,8 +21,8 @@
  *  test if contact is reachable (by any means available)
  */
 
-#ifndef CONTACT_VERIFICATION_TEST_SEND_LETTER_51554788974_
-#define CONTACT_VERIFICATION_TEST_SEND_LETTER_51554788974_
+#ifndef TEST_SEND_LETTER_HH_8ECCCA2C52214DB2B5F9C4A317B06B9D
+#define TEST_SEND_LETTER_HH_8ECCCA2C52214DB2B5F9C4A317B06B9D
 
 #include "src/backend/admin/contact/verification/test_impl/test_interface.hh"
 
@@ -134,4 +134,4 @@ namespace ContactVerification
 }
 }
 
-#endif // #include guard end
+#endif

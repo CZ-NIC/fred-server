@@ -21,8 +21,8 @@
  *  registrar info data
  */
 
-#ifndef INFO_REGISTRAR_DATA_H_
-#define INFO_REGISTRAR_DATA_H_
+#ifndef INFO_REGISTRAR_DATA_HH_67CF94612B164604860B5B69A86A93AF
+#define INFO_REGISTRAR_DATA_HH_67CF94612B164604860B5B69A86A93AF
 
 #include <string>
 
@@ -87,4 +87,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif//INFO_REGISTRAR_DATA_H_
+#endif

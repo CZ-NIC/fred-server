@@ -21,8 +21,8 @@
  *  hybrid postservice upload configuration
  */
 
-#ifndef HANDLE_HPMAIL_ARGS_H_
-#define HANDLE_HPMAIL_ARGS_H_
+#ifndef HANDLE_HPMAIL_ARGS_HH_D481C14FB0C346C8AC381A722CEB060D
+#define HANDLE_HPMAIL_ARGS_HH_D481C14FB0C346C8AC381A722CEB060D
 
 #include <iostream>
 #include <exception>
@@ -282,4 +282,4 @@ public:
     }//handle
 };//class HandleHPMailArgsGrp
 
-#endif //HANDLE_HPMAIL_ARGS_H_
+#endif

@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef REMOVE_DELETE_CANDIDATES_HH_A22D8DE217C30D4315B6CF5D8E483321//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define REMOVE_DELETE_CANDIDATES_HH_A22D8DE217C30D4315B6CF5D8E483321
+#ifndef REMOVE_DELETE_CANDIDATES_HH_59422E14C17140D59C681C1D74277797
+#define REMOVE_DELETE_CANDIDATES_HH_59422E14C17140D59C681C1D74277797
 
 #include "src/util/nonconvertible.hh"
 
@@ -78,4 +78,4 @@ void delete_objects_marked_as_delete_candidate(
 
 } // namespace Admin
 
-#endif//REMOVE_DELETE_CANDIDATES_HH_A22D8DE217C30D4315B6CF5D8E483321
+#endif

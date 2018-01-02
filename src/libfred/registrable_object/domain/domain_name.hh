@@ -21,8 +21,8 @@
  *  domain name check
  */
 
-#ifndef DOMAIN_NAME_H_
-#define DOMAIN_NAME_H_
+#ifndef DOMAIN_NAME_HH_EE9936460E934E02B760C257E5DCAFEB
+#define DOMAIN_NAME_HH_EE9936460E934E02B760C257E5DCAFEB
 
 #include <string>
 #include <vector>
@@ -151,4 +151,4 @@ std::vector<std::string> get_domain_name_validation_config_for_zone(LibFred::Ope
 } // namespace LibFred
 } // namespace Domain
 
-#endif // DOMAIN_NAME_H_
+#endif

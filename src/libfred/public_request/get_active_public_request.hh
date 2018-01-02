@@ -21,8 +21,8 @@
  *  declaration of GetActivePublicRequest class
  */
 
-#ifndef GET_ACTIVE_PUBLIC_REQUEST_H_28ECBCA5E6C221EBD07D31636B2F3AEF//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define GET_ACTIVE_PUBLIC_REQUEST_H_28ECBCA5E6C221EBD07D31636B2F3AEF
+#ifndef GET_ACTIVE_PUBLIC_REQUEST_HH_DC9C890ACA6A4D5B81372F7FCFA8C864
+#define GET_ACTIVE_PUBLIC_REQUEST_HH_DC9C890ACA6A4D5B81372F7FCFA8C864
 
 #include "src/libfred/public_request/public_request_type_iface.hh"
 #include "src/libfred/public_request/public_request_object_lock_guard.hh"
@@ -70,4 +70,4 @@ private:
 
 } // namespace LibFred
 
-#endif//GET_ACTIVE_PUBLIC_REQUEST_H_28ECBCA5E6C221EBD07D31636B2F3AEF
+#endif

@@ -39,8 +39,8 @@
  */
 
 
-#ifndef TEST_CUSTOM_MAIN_H_
-#define TEST_CUSTOM_MAIN_H_
+#ifndef TEST_CUSTOM_MAIN_HH_EAA37051832449C38014021A656C4DE3
+#define TEST_CUSTOM_MAIN_HH_EAA37051832449C38014021A656C4DE3
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN
 
@@ -94,4 +94,4 @@ int main( int argc, char* argv[] )
 
 }//main
 
-#endif // TEST_CUSTOM_MAIN_H_
+#endif

@@ -1,5 +1,5 @@
-#ifndef BANK_STATEMENT_IMPL_H_
-#define BANK_STATEMENT_IMPL_H_
+#ifndef BANK_STATEMENT_IMPL_HH_1F29CB52BC574DEFBB8C89A84C799C60
+#define BANK_STATEMENT_IMPL_HH_1F29CB52BC574DEFBB8C89A84C799C60
 
 #include "src/libfred/banking/bank_common.hh"
 #include "src/libfred/banking/bank_statement.hh"

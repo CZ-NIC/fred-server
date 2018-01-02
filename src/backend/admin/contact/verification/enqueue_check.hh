@@ -21,8 +21,8 @@
  *  enqueue specified check (and invalidates checks obsoleted by it)
  */
 
-#ifndef ADMIN_CONTACT_VERIFICATION_ENQUEUE_CHECK_H_32421015464
-#define ADMIN_CONTACT_VERIFICATION_ENQUEUE_CHECK_H_32421015464
+#ifndef ENQUEUE_CHECK_HH_59E11A20502C4483846A7AC376D5E36C
+#define ENQUEUE_CHECK_HH_59E11A20502C4483846A7AC376D5E36C
 
 #include "src/backend/admin/contact/verification/exceptions.hh"
 
@@ -102,4 +102,4 @@ namespace Admin {
 }
 
 
-#endif // #include guard end
+#endif

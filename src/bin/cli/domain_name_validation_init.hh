@@ -21,8 +21,8 @@
  *  initialization of domain name validation
  */
 
-#ifndef DOMAIN_NAME_VALIDATION_IMPL_H_
-#define DOMAIN_NAME_VALIDATION_IMPL_H_
+#ifndef DOMAIN_NAME_VALIDATION_INIT_HH_4E51E41BE2744BCD8C3A3E8EBEACBF58
+#define DOMAIN_NAME_VALIDATION_INIT_HH_4E51E41BE2744BCD8C3A3E8EBEACBF58
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/handle_database_args.hh"
 #include "src/util/cfg/handle_corbanameservice_args.hh"
@@ -128,4 +128,4 @@ struct set_zone_domain_name_validation_impl
 };
 
 
-#endif // DOMAIN_NAME_VALIDATION_INIT_H_
+#endif

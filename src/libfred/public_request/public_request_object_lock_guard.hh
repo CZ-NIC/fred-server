@@ -21,8 +21,8 @@
  *  declaration of PublicRequestObjectLockGuardByObjectId class
  */
 
-#ifndef PUBLIC_REQUEST_OBJECT_LOCK_GUARD_H_A5806AB6CD121D576783659ADFF6343F//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define PUBLIC_REQUEST_OBJECT_LOCK_GUARD_H_A5806AB6CD121D576783659ADFF6343F
+#ifndef PUBLIC_REQUEST_OBJECT_LOCK_GUARD_HH_2EECCD07CAB44E26B9772ADE386A302C
+#define PUBLIC_REQUEST_OBJECT_LOCK_GUARD_HH_2EECCD07CAB44E26B9772ADE386A302C
 
 #include "src/libfred/object_state/typedefs.hh"
 #include "src/libfred/opexception.hh"
@@ -94,4 +94,4 @@ private:
 
 } // namespace LibFred
 
-#endif//PUBLIC_REQUEST_OBJECT_LOCK_GUARD_H_A5806AB6CD121D576783659ADFF6343F
+#endif

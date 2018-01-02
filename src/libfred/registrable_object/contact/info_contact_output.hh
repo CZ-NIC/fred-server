@@ -21,8 +21,8 @@
  *  contact info output structure
  */
 
-#ifndef INFO_CONTACT_OUTPUT_H_
-#define INFO_CONTACT_OUTPUT_H_
+#ifndef INFO_CONTACT_OUTPUT_HH_AA246BCE6413406AA423241C8797A25D
+#define INFO_CONTACT_OUTPUT_HH_AA246BCE6413406AA423241C8797A25D
 
 #include <string>
 
@@ -77,4 +77,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif//INFO_CONTACT_OUTPUT_H_
+#endif

@@ -20,8 +20,8 @@
 *  @file
 *  header of mojeid service name usable for client and server
 */
-#ifndef SERVICE_NAME_H_32A1860923ABB8446632FBA70955C28A//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define SERVICE_NAME_H_32A1860923ABB8446632FBA70955C28A
+#ifndef SERVICE_NAME_HH_77F8BDDD2B2641EFB432D06BEE2B1135
+#define SERVICE_NAME_HH_77F8BDDD2B2641EFB432D06BEE2B1135
 
 #include <string>
 
@@ -33,4 +33,4 @@ extern const std::string service_name;
 } // namespace Registry::MojeID
 } // namespace Registry
 
-#endif//SERVICE_NAME_H_32A1860923ABB8446632FBA70955C28A
+#endif

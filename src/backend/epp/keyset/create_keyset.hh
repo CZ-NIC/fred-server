@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CREATE_KEYSET_H_40D13A301E374731AE4EA4486456DAF6
-#define CREATE_KEYSET_H_40D13A301E374731AE4EA4486456DAF6
+#ifndef CREATE_KEYSET_HH_6E1697BC812E4AEA9613DC71E2814CEF
+#define CREATE_KEYSET_HH_6E1697BC812E4AEA9613DC71E2814CEF
 
 #include "src/backend/epp/keyset/create_keyset_config_data.hh"
 #include "src/backend/epp/keyset/create_keyset_input_data.hh"

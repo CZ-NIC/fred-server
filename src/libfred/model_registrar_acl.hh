@@ -1,5 +1,5 @@
-#ifndef MODEL_REGISTRAR_ACL_H_
-#define MODEL_REGISTRAR_ACL_H_
+#ifndef MODEL_REGISTRAR_ACL_HH_A4C972C684F3405ABC09168CAB1BAB9D
+#define MODEL_REGISTRAR_ACL_HH_A4C972C684F3405ABC09168CAB1BAB9D
 
 #include "src/libfred/db_settings.hh"
 #include "src/util/db/model/model.hh"

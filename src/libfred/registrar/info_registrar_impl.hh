@@ -21,8 +21,8 @@
  *  registrar info implementation
  */
 
-#ifndef INFO_REGISTRAR_IMPL_H_
-#define INFO_REGISTRAR_IMPL_H_
+#ifndef INFO_REGISTRAR_IMPL_HH_9B90FF37179041F386BF23335BE4F3E2
+#define INFO_REGISTRAR_IMPL_HH_9B90FF37179041F386BF23335BE4F3E2
 
 #include <string>
 #include <vector>
@@ -121,4 +121,4 @@ namespace LibFred
     };//classInfoRegistrar
 } // namespace LibFred
 
-#endif//INFO_REGISTRAR_IMPL_H_
+#endif

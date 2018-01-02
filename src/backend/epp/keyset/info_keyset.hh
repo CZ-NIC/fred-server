@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef INFO_KEYSET_H_6F5C2120747B47CB9758B4E30FA6FB73
-#define INFO_KEYSET_H_6F5C2120747B47CB9758B4E30FA6FB73
+#ifndef INFO_KEYSET_HH_0985D216320F4D00A6F848634F3AE6D9
+#define INFO_KEYSET_HH_0985D216320F4D00A6F848634F3AE6D9
 
 #include "src/backend/epp/keyset/info_keyset_config_data.hh"
 #include "src/backend/epp/keyset/info_keyset_output_data.hh"

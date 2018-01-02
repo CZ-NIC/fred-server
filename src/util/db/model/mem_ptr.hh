@@ -21,8 +21,8 @@
  *  Class member pointer
  */
 
-#ifndef MEM_PTR_H_
-#define MEM_PTR_H_
+#ifndef MEM_PTR_HH_500C755088514561BA60E2B88F197DA5
+#define MEM_PTR_HH_500C755088514561BA60E2B88F197DA5
 
 
 template<class _class, class _type>

@@ -20,8 +20,8 @@
 *  @file
 *  header of enum to database handle conversions
 */
-#ifndef ENUM_TO_DB_HANDLE_CONVERSION_H_F3B6053D340D5F1A2523AFCF3B705697//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define ENUM_TO_DB_HANDLE_CONVERSION_H_F3B6053D340D5F1A2523AFCF3B705697
+#ifndef ENUM_TO_DB_HANDLE_CONVERSION_HH_1FD9D18DF2704A3492EFC3A25953078B
+#define ENUM_TO_DB_HANDLE_CONVERSION_HH_1FD9D18DF2704A3492EFC3A25953078B
 
 #include "test/libfred/util.hh"
 
@@ -131,4 +131,4 @@ void enum_to_db_handle_conversion_test(::LibFred::OperationContext &ctx, const c
         check_std_exception);
 }
 
-#endif//ENUM_TO_DB_HANDLE_CONVERSION_H_F3B6053D340D5F1A2523AFCF3B705697
+#endif

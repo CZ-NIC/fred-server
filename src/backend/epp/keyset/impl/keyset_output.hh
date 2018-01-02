@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef KEYSET_OUTPUT_H_0B6E9FCC43D34765ADF95835FBEA9426
-#define KEYSET_OUTPUT_H_0B6E9FCC43D34765ADF95835FBEA9426
+#ifndef KEYSET_OUTPUT_HH_9A6DDDEE23EE40D2A15877A699B5EE90
+#define KEYSET_OUTPUT_HH_9A6DDDEE23EE40D2A15877A699B5EE90
 
 #include "src/libfred/registrable_object/keyset/info_keyset_data.hh"
 #include "src/backend/epp/keyset/info_keyset_output_data.hh"

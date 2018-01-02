@@ -1,5 +1,5 @@
-#ifndef INVOICE_FILTER_H_
-#define INVOICE_FILTER_H_
+#ifndef INVOICE_FILTER_HH_4983047A67094228AA9068AC1D37383B
+#define INVOICE_FILTER_HH_4983047A67094228AA9068AC1D37383B
 
 #include "src/util/db/query/base_filters.hh"
 #include "src/deprecated/model/object_filter.hh"

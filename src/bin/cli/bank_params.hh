@@ -21,8 +21,8 @@
  *  header of bank client implementation
  */
 
-#ifndef BANK_PARAMS_H_
-#define BANK_PARAMS_H_
+#ifndef BANK_PARAMS_HH_3733A4C1B616497DB466384B5F765873
+#define BANK_PARAMS_HH_3733A4C1B616497DB466384B5F765873
 
 #include "src/util/types/optional.hh"
 
@@ -77,4 +77,4 @@ struct AddAccountArgs
     {}//ctor
 };//struct AddAccountArgs
 
-#endif // BANK_PARAMS_H_
+#endif

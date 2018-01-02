@@ -21,8 +21,8 @@
  *  corba server implementation of registry notification
  */
 
-#ifndef SRC_ADMIN_NOTIFICATION_NOTIFICATION_H_
-#define SRC_ADMIN_NOTIFICATION_NOTIFICATION_H_
+#ifndef NOTIFICATION_HH_53C90537B4B44D188FA0933BCE7B555C
+#define NOTIFICATION_HH_53C90537B4B44D188FA0933BCE7B555C
 
 #include "src/libfred/opcontext.hh"
 #include "src/libfred/opexception.hh"

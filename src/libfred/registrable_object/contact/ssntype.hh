@@ -21,8 +21,8 @@
  *  header of ssn type enum
  */
 
-#ifndef SSNTYPE_H_4E9ED0E9B9EB357A6C4A3A774E87A1FE//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define SSNTYPE_H_4E9ED0E9B9EB357A6C4A3A774E87A1FE
+#ifndef SSNTYPE_HH_C642E51AB57B4DCEAC42C3FF68BE7F36
+#define SSNTYPE_HH_C642E51AB57B4DCEAC42C3FF68BE7F36
 
 #include "src/util/enum_conversion.hh"
 
@@ -75,4 +75,4 @@ inline LibFred::SSNType::Enum from_db_handle< LibFred::SSNType >(const std::stri
 } // namespace Conversion::Enums
 } // namespace Conversion
 
-#endif//SSNTYPE_H_4E9ED0E9B9EB357A6C4A3A774E87A1FE
+#endif

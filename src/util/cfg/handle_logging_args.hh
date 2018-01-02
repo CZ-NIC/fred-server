@@ -21,8 +21,8 @@
  *  logging configuration
  */
 
-#ifndef HANDLE_LOGGING_ARGS_H_
-#define HANDLE_LOGGING_ARGS_H_
+#ifndef HANDLE_LOGGING_ARGS_HH_431EDB4A1D714CE3BD4948CB99DFA42C
+#define HANDLE_LOGGING_ARGS_HH_431EDB4A1D714CE3BD4948CB99DFA42C
 
 #include <iostream>
 #include <exception>
@@ -121,4 +121,4 @@ public:
         {return HandleLoggingArgs::log_config_dump;}
 };//class HandleLoggingArgsGrp
 
-#endif //HANDLE_LOGGING_ARGS_H_
+#endif

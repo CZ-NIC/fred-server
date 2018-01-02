@@ -21,8 +21,8 @@
  *  header of public request implementation
  */
 
-#ifndef PUBLIC_REQUEST_H_75462367
-#define PUBLIC_REQUEST_H_75462367
+#ifndef PUBLIC_REQUEST_HH_609D44EB1F5A4BC98E8A88B662EE3761
+#define PUBLIC_REQUEST_HH_609D44EB1F5A4BC98E8A88B662EE3761
 
 #include "src/libfred/object/object_type.hh"
 #include "src/libfred/documents.hh"
@@ -199,4 +199,4 @@ private:
 
 } // namespace Registry
 
-#endif // PUBLIC_REQUEST_H_75462367
+#endif

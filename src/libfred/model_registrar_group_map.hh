@@ -1,5 +1,5 @@
-#ifndef _MODEL_REGISTRAR_GROUP_MAP_H_
-#define _MODEL_REGISTRAR_GROUP_MAP_H_
+#ifndef MODEL_REGISTRAR_GROUP_MAP_HH_4A634015A9624541AA1CB0E67AAB1553
+#define MODEL_REGISTRAR_GROUP_MAP_HH_4A634015A9624541AA1CB0E67AAB1553
 
 #include "src/libfred/db_settings.hh"
 #include "src/util/db/model/model.hh"
@@ -117,4 +117,4 @@ private:
     static field_list  fields;      /** < list of all model fields */
 }; // class ModelRegistrarGroupMap
 
-#endif // _MODEL_REGISTRAR_GROUP_MAP_H_
+#endif

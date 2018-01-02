@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TEST_INTERFACE_EPP_FIXTURE_681453104385310
-#define TEST_INTERFACE_EPP_FIXTURE_681453104385310
+#ifndef FIXTURE_HH_D413188368CF45BEA79CE297BB880BDD
+#define FIXTURE_HH_D413188368CF45BEA79CE297BB880BDD
 
 #include "test/setup/fixtures.hh"
 #include "test/backend/epp/fixture.hh"

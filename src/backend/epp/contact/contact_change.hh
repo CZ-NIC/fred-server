@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CONTACT_CHANGE_H_EEBE9D36AFCD48B8BFA4A97DD6F38EA1
-#define CONTACT_CHANGE_H_EEBE9D36AFCD48B8BFA4A97DD6F38EA1
+#ifndef CONTACT_CHANGE_HH_2C8C709868134389AD38F302E513C812
+#define CONTACT_CHANGE_HH_2C8C709868134389AD38F302E513C812
 
 #include "src/backend/epp/contact/contact_disclose.hh"
 #include "src/backend/epp/contact/contact_ident.hh"
@@ -88,4 +88,4 @@ ContactChange trim(const ContactChange& src);
 } // namespace Epp::Contact
 } // namespace Epp
 
-#endif//CONTACT_CHANGE_H_EEBE9D36AFCD48B8BFA4A97DD6F38EA1
+#endif

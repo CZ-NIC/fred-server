@@ -21,8 +21,8 @@
  *  header of object client implementation
  */
 
-#ifndef OBJECT_PARAMS_H_
-#define OBJECT_PARAMS_H_
+#ifndef OBJECT_PARAMS_HH_31E89F375BC04621B15997DA1105EE05
+#define OBJECT_PARAMS_HH_31E89F375BC04621B15997DA1105EE05
 
 #include "src/util/types/optional.hh"
 
@@ -124,4 +124,4 @@ struct DeleteObjectsArgs
     bool object_delete_debug;//OBJECT_DEBUG_NAME
 };
 
-#endif // OBJECT_PARAMS_H_
+#endif

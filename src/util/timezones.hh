@@ -16,10 +16,10 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TIMEZONES_HH_31164978E669B7B5985BCE61FC6794FC//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define TIMEZONES_HH_31164978E669B7B5985BCE61FC6794FC
+#ifndef TIMEZONES_HH_00B5CF83CBE745D7A4DF3EDBDB4706AE
+#define TIMEZONES_HH_00B5CF83CBE745D7A4DF3EDBDB4706AE
 
 #include "src/util/tz/europe/timezones.hh"
 #include "src/util/tz/utc.hh"
 
-#endif//TIMEZONES_HH_31164978E669B7B5985BCE61FC6794FC
+#endif

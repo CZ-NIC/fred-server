@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CREATE_CONTACT_H_04AAC9626F1042B0B8B6CFCDB9220277
-#define CREATE_CONTACT_H_04AAC9626F1042B0B8B6CFCDB9220277
+#ifndef CREATE_CONTACT_HH_6BB52584FE794312AC2D429BA7D07FCB
+#define CREATE_CONTACT_HH_6BB52584FE794312AC2D429BA7D07FCB
 
 #include "src/backend/epp/contact/create_contact_input_data.hh"
 #include "src/backend/epp/contact/create_contact_config_data.hh"

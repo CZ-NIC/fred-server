@@ -21,8 +21,8 @@
  *  functions for listing of various auxiliary enumerated objects realted to admin contact verification
  */
 
-#ifndef CONTACT_VERIFICATION_LIST_ENUM_OBJECTS_378454221371_
-#define CONTACT_VERIFICATION_LIST_ENUM_OBJECTS_378454221371_
+#ifndef LIST_ENUM_OBJECTS_HH_091937DEDDFA47F6806AC5068E1EB3B2
+#define LIST_ENUM_OBJECTS_HH_091937DEDDFA47F6806AC5068E1EB3B2
 
 #include "src/util/printable.hh"
 
@@ -79,4 +79,4 @@ namespace LibFred
     };
     std::vector<testsuite_definition> list_testsuite_definitions(const std::string& lang );
 }
-#endif // #include guard end
+#endif

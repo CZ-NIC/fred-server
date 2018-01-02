@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CHECK_KEYSET_LOCALIZED_RESPONSE_H_78FE1075D188416A874A5A8AF98971CD
-#define CHECK_KEYSET_LOCALIZED_RESPONSE_H_78FE1075D188416A874A5A8AF98971CD
+#ifndef CHECK_KEYSET_LOCALIZED_RESPONSE_HH_18741812205B44B583B69621F70AA0B2
+#define CHECK_KEYSET_LOCALIZED_RESPONSE_HH_18741812205B44B583B69621F70AA0B2
 
 #include "src/backend/epp/epp_response_success_localized.hh"
 #include "src/backend/epp/keyset/keyset_handle_registration_obstruction.hh"

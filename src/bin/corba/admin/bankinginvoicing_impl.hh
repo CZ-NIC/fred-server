@@ -1,5 +1,5 @@
-#ifndef _BANKING_IMPL_H_
-#define _BANKING_IMPL_H_
+#ifndef BANKINGINVOICING_IMPL_HH_03F685E625E04510AC2B1C6B1B6B5E20
+#define BANKINGINVOICING_IMPL_HH_03F685E625E04510AC2B1C6B1B6B5E20
 
 #include <string>
 #include "src/libfred/invoicing/invoice.hh"
@@ -33,4 +33,4 @@ public:
 
 };
 
-#endif // _BANKING_IMPL_H_
+#endif

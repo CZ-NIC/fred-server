@@ -1,5 +1,5 @@
-#ifndef _MODEL_REGISTRAR_GROUP_H_
-#define _MODEL_REGISTRAR_GROUP_H_
+#ifndef MODEL_REGISTRAR_GROUP_HH_663AFB6873DC47B5A8FB94D6BD0807AC
+#define MODEL_REGISTRAR_GROUP_HH_663AFB6873DC47B5A8FB94D6BD0807AC
 
 #include "src/libfred/db_settings.hh"
 #include "src/util/db/model/model.hh"
@@ -97,4 +97,4 @@ private:
     static field_list  fields;      /** < list of all model fields */
 }; // class ModelRegistrarGroup
 
-#endif // _MODEL_REGISTRAR_GROUP_H_
+#endif

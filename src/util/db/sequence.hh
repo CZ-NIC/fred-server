@@ -22,8 +22,8 @@
  */
 
 
-#ifndef SEQUENCE_H_
-#define SEQUENCE_H_
+#ifndef SEQUENCE_HH_17D27B3BFF844F8493741C95D12B5BC1
+#define SEQUENCE_HH_17D27B3BFF844F8493741C95D12B5BC1
 
 #include <string>
 #include "src/util/types/id.hh"

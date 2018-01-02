@@ -1,5 +1,5 @@
-#ifndef FILE_FILTER_H_
-#define FILE_FILTER_H_
+#ifndef FILE_FILTER_HH_E7A2250C135F4B0A917FA4DAD687ECB6
+#define FILE_FILTER_HH_E7A2250C135F4B0A917FA4DAD687ECB6
 
 #include "src/util/db/query/base_filters.hh"
 

@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef STATUS_VALUE_H_8DA30B84AACB4F6BB59FF181A946F237
-#define STATUS_VALUE_H_8DA30B84AACB4F6BB59FF181A946F237
+#ifndef STATUS_VALUE_HH_1FEA4D5DD753476DA77898A67439D35F
+#define STATUS_VALUE_HH_1FEA4D5DD753476DA77898A67439D35F
 
 #include "src/libfred/object/object_state.hh"
 #include "src/util/enum_conversion.hh"

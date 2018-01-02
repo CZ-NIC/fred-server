@@ -22,8 +22,8 @@
  */
 
 
-#ifndef CONCURRENT_QUEUE_H_
-#define CONCURRENT_QUEUE_H_
+#ifndef CONCURRENT_QUEUE_HH_C52DEFE6B3F04F6D9C4B5829923F7990
+#define CONCURRENT_QUEUE_HH_C52DEFE6B3F04F6D9C4B5829923F7990
 
 #include <boost/thread.hpp>
 #include <boost/version.hpp>
@@ -99,4 +99,4 @@ public:
     }
 };//concurrent_queue
 
-#endif //CONCURRENT_QUEUE_H_
+#endif

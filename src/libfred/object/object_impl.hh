@@ -21,8 +21,8 @@
  *  object impl
  */
 
-#ifndef OBJECT_IMPL_H_54ff2fba491943db8a52ff835e32741d
-#define OBJECT_IMPL_H_54ff2fba491943db8a52ff835e32741d
+#ifndef OBJECT_IMPL_HH_38C1FBA33F194F939B09B6939D286CD6
+#define OBJECT_IMPL_HH_38C1FBA33F194F939B09B6939D286CD6
 
 #include <string>
 
@@ -139,4 +139,4 @@ namespace LibFred
     }
 
 } // namespace LibFred
-#endif //OBJECT_IMPL_H_54ff2fba491943db8a52ff835e32741d
+#endif

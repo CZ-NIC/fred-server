@@ -1,5 +1,5 @@
-#ifndef _FILE_H_
-#define _FILE_H_
+#ifndef FILE_HH_4C69AF92C64E465AB978B45C57FF04E3
+#define FILE_HH_4C69AF92C64E465AB978B45C57FF04E3
 
 #include "src/libfred/common_impl_new.hh"
 #include "src/libfred/db_settings.hh"
@@ -68,4 +68,4 @@ typedef std::unique_ptr<Manager> ManagerPtr;
 }
 }
 
-#endif // _FILE_H_
+#endif

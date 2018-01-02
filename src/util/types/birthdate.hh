@@ -22,8 +22,8 @@
  */
 
 
-#ifndef BIRTHDATE_H_
-#define BIRTHDATE_H_
+#ifndef BIRTHDATE_HH_BE36FEFEFE5D47FDBEB617AC67BC878E
+#define BIRTHDATE_HH_BE36FEFEFE5D47FDBEB617AC67BC878E
 
 #include <string>
 #include <boost/date_time/posix_time/posix_time.hpp>

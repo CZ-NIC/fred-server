@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef AUTHENTIC_REGISTRAR_HH_9AD1BAC6EA509CCF4B1B535BBDD237ED//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define AUTHENTIC_REGISTRAR_HH_9AD1BAC6EA509CCF4B1B535BBDD237ED
+#ifndef AUTHENTIC_REGISTRAR_HH_6357347039744A8094FD4FEEDD63D8CE
+#define AUTHENTIC_REGISTRAR_HH_6357347039744A8094FD4FEEDD63D8CE
 
 #include "src/libfred/db_settings.hh"
 
@@ -50,4 +50,4 @@ private:
 } // namespace Epp::RegistrarAcl
 } // namespace Epp
 
-#endif//AUTHENTIC_REGISTRAR_HH_9AD1BAC6EA509CCF4B1B535BBDD237ED
+#endif

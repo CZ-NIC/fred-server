@@ -21,8 +21,8 @@
  *  declaration of UpdatePublicRequest class
  */
 
-#ifndef UPDATE_PUBLIC_REQUEST_H_9F964452619CB937F93C2B144C8A204D//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define UPDATE_PUBLIC_REQUEST_H_9F964452619CB937F93C2B144C8A204D
+#ifndef UPDATE_PUBLIC_REQUEST_HH_64F70895C73842AA91CDCC5168C324F9
+#define UPDATE_PUBLIC_REQUEST_HH_64F70895C73842AA91CDCC5168C324F9
 
 #include "src/libfred/public_request/public_request_lock_guard.hh"
 #include "src/libfred/public_request/public_request_object_lock_guard.hh"
@@ -196,4 +196,4 @@ private:
 
 } // namespace LibFred
 
-#endif//UPDATE_PUBLIC_REQUEST_H_9F964452619CB937F93C2B144C8A204D
+#endif

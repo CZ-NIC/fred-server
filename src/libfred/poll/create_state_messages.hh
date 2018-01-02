@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CREATE_STATE_MESSAGES_H_1B7FEABF62D24E6EB8C4FF50F8CF4F5B
-#define CREATE_STATE_MESSAGES_H_1B7FEABF62D24E6EB8C4FF50F8CF4F5B
+#ifndef CREATE_STATE_MESSAGES_HH_0A85298C178C4EAE98F36E3289C83390
+#define CREATE_STATE_MESSAGES_HH_0A85298C178C4EAE98F36E3289C83390
 
 #include "src/libfred/opcontext.hh"
 #include "src/libfred/poll/message_type_set.hh"

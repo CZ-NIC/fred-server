@@ -16,8 +16,8 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _POLLCLIENT_H_
-#define _POLLCLIENT_H_
+#ifndef POLLCLIENT_HH_631CACBC62A647579043C03CB7E6287A
+#define POLLCLIENT_HH_631CACBC62A647579043C03CB7E6287A
 
 #include <boost/program_options.hpp>
 #include <iostream>
@@ -82,4 +82,4 @@ public:
 
 } // namespace Admin;
 
-#endif // _POLLCLIENT_H_
+#endif

@@ -21,8 +21,8 @@
  *  domain info implementation
  */
 
-#ifndef INFO_DOMAIN_IMPL_H_
-#define INFO_DOMAIN_IMPL_H_
+#ifndef INFO_DOMAIN_IMPL_HH_79C22AA95B8C49119F0ED08FBB5158F5
+#define INFO_DOMAIN_IMPL_HH_79C22AA95B8C49119F0ED08FBB5158F5
 
 #include <algorithm>
 #include <string>
@@ -141,4 +141,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif//INFO_DOMAIN_IMPL_H_
+#endif

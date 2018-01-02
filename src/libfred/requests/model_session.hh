@@ -1,5 +1,5 @@
-#ifndef _MODEL_SESSION_H_
-#define _MODEL_SESSION_H_
+#ifndef MODEL_SESSION_HH_BF2491A08D684031867D641734B517EF
+#define MODEL_SESSION_HH_BF2491A08D684031867D641734B517EF
 
 #include "src/libfred/db_settings.hh"
 #include "src/util/db/model/model.hh"

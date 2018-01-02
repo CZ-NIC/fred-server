@@ -16,8 +16,8 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _CONTACTCLIENT_H_
-#define _CONTACTCLIENT_H_
+#ifndef CONTACTCLIENT_HH_62D312F551484FCFA363F90C7DE0190F
+#define CONTACTCLIENT_HH_62D312F551484FCFA363F90C7DE0190F
 
 #include <boost/program_options.hpp>
 #include <iostream>
@@ -70,4 +70,4 @@ public:
 } // namespace Admin;
 
 
-#endif // _CONTACTCLIENT_H_
+#endif

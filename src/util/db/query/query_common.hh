@@ -1,5 +1,5 @@
-#ifndef QUERY_COMMON_
-#define QUERY_COMMON_
+#ifndef QUERY_COMMON_HH_C7A6FB4DAB204F0B80BD616E68DFC420
+#define QUERY_COMMON_HH_C7A6FB4DAB204F0B80BD616E68DFC420
 
 #include <string>
 #include "src/util/db/value.hh"

@@ -21,8 +21,8 @@
  *  mojeid backend config
  */
 
-#ifndef HANDLE_MOJEID_ARGS_H_
-#define HANDLE_MOJEID_ARGS_H_
+#ifndef HANDLE_MOJEID_ARGS_HH_D782276C069643D0A93BE79A5E73C985
+#define HANDLE_MOJEID_ARGS_HH_D782276C069643D0A93BE79A5E73C985
 
 #include <iostream>
 #include <exception>
@@ -105,4 +105,4 @@ public:
     }//handle
 };
 
-#endif //HANDLE_MOJEID_ARGS_H_
+#endif

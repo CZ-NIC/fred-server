@@ -21,8 +21,8 @@
  *  Declaration of server setup.
  */
 
-#ifndef SETUP_SERVER_DECL_H_
-#define SETUP_SERVER_DECL_H_
+#ifndef SETUP_SERVER_DECL_HH_9810837C9F6943C09DD10B8E5526D0A6
+#define SETUP_SERVER_DECL_HH_9810837C9F6943C09DD10B8E5526D0A6
 
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/corba_wrapper_decl.hh"
@@ -31,4 +31,4 @@ void setup_logging(CfgArgs * cfg_instance_ptr);
 void run_server(CfgArgs * cfg_instance_ptr , CorbaContainer* corba_instance_ptr );
 void corba_init();
 
-#endif //SETUP_SERVER_DECL_H_
+#endif

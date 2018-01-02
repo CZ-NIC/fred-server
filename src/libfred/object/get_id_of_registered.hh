@@ -21,8 +21,8 @@
  *  header of get_objects_id method
  */
 
-#ifndef GET_ID_OF_REGISTERED_H_72462423417
-#define GET_ID_OF_REGISTERED_H_72462423417
+#ifndef GET_ID_OF_REGISTERED_HH_5FED292227824A75A2E624DDB696B907
+#define GET_ID_OF_REGISTERED_HH_5FED292227824A75A2E624DDB696B907
 
 #include "src/libfred/object/object_type.hh"
 #include "src/libfred/opcontext.hh"
@@ -44,4 +44,4 @@ unsigned long long get_id_of_registered(
 
 } // namespace LibFred
 
-#endif//GET_ID_OF_REGISTERED_H_72462423417
+#endif

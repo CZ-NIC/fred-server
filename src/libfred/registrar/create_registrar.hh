@@ -21,8 +21,8 @@
  *  create registrar
  */
 
-#ifndef CREATE_REGISTRAR_H_
-#define CREATE_REGISTRAR_H_
+#ifndef CREATE_REGISTRAR_HH_CACD883DD227451DABDDB6A9619C8954
+#define CREATE_REGISTRAR_HH_CACD883DD227451DABDDB6A9619C8954
 
 #include <string>
 
@@ -272,4 +272,4 @@ namespace LibFred
 
     };//CreateRegistrar
 }
-#endif // CREATE_REGISTRAR_H_
+#endif

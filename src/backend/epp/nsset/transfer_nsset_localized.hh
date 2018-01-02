@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TRANSFER_NSSET_LOCALIZED_H_B9B03599028B45F59A9D714CD01E1696
-#define TRANSFER_NSSET_LOCALIZED_H_B9B03599028B45F59A9D714CD01E1696
+#ifndef TRANSFER_NSSET_LOCALIZED_HH_6E64B6C2C2B94B8697FCF8C5A34DFF3D
+#define TRANSFER_NSSET_LOCALIZED_HH_6E64B6C2C2B94B8697FCF8C5A34DFF3D
 
 #include "src/backend/epp/nsset/transfer_nsset_config_data.hh"
 #include "src/backend/epp/epp_response_success_localized.hh"

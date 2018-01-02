@@ -21,8 +21,8 @@
  *  Operation charging implementation header
  */
 
-#ifndef _CHARGE_CLIENT_IMPL_H_
-#define _CHARGE_CLIENT_IMPL_H_
+#ifndef CHARGE_CLIENT_IMPL_HH_B5AFE799259E495A98C9BC6F15B74C47
+#define CHARGE_CLIENT_IMPL_HH_B5AFE799259E495A98C9BC6F15B74C47
 
 #include "src/util/cfg/config_handler_decl.hh"
 // #include "cfg/handle_database_args.h"

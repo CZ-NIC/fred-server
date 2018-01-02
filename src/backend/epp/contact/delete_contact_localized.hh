@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DELETE_CONTACT_LOCALIZED_H_4DDDFFEC71B342668A5C34F8785EDDB7
-#define DELETE_CONTACT_LOCALIZED_H_4DDDFFEC71B342668A5C34F8785EDDB7
+#ifndef DELETE_CONTACT_LOCALIZED_HH_DE2A45072B1746CC8952BEAAD13CC456
+#define DELETE_CONTACT_LOCALIZED_HH_DE2A45072B1746CC8952BEAAD13CC456
 
 #include "src/backend/epp/contact/delete_contact_config_data.hh"
 #include "src/backend/epp/epp_response_success_localized.hh"

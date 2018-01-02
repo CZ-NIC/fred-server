@@ -1,5 +1,5 @@
-#ifndef MAIL_H_
-#define MAIL_H_
+#ifndef MAIL_HH_8C9378EE39F54B9695A7961ED83CA3DA
+#define MAIL_HH_8C9378EE39F54B9695A7961ED83CA3DA
 
 #include "src/libfred/common_object.hh"
 #include "src/libfred/object.hh"

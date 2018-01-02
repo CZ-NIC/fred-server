@@ -1,5 +1,5 @@
-#ifndef _PAGETABLE_MESSAGES_H_
-#define _PAGETABLE_MESSAGES_H_
+#ifndef PAGETABLE_MESSAGES_HH_345B2A5F5F0A40EAB1D6192B48989139
+#define PAGETABLE_MESSAGES_HH_345B2A5F5F0A40EAB1D6192B48989139
 
 #include "src/bin/corba/admin/pagetable_impl.hh"
 
@@ -18,4 +18,4 @@ public:
 
 }; // class ccReg_Messages_i
 
-#endif // _PAGETABLE_MESSAGES_H_
+#endif

@@ -16,8 +16,8 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DOMAIN_H_1EA14F0B7B81445DAECFB5CB355FF522
-#define DOMAIN_H_1EA14F0B7B81445DAECFB5CB355FF522
+#ifndef DOMAIN_HH_315E04A6F30B4BF29977B9D8FCA3C01A
+#define DOMAIN_HH_315E04A6F30B4BF29977B9D8FCA3C01A
 
 #include <string>
 #include <vector>

@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CONTACT_IDENT_H_8A731CBF05BB43A05B7FE62544069231//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define CONTACT_IDENT_H_8A731CBF05BB43A05B7FE62544069231
+#ifndef CONTACT_IDENT_HH_A5B660D28E014495A5CC02AF4B809CC9
+#define CONTACT_IDENT_HH_A5B660D28E014495A5CC02AF4B809CC9
 
 #include <string>
 #include <boost/variant.hpp>
@@ -51,4 +51,4 @@ typedef boost::variant<
 } // namespace Epp::Contact
 } // namespace Epp
 
-#endif//CONTACT_IDENT_H_8A731CBF05BB43A05B7FE62544069231
+#endif

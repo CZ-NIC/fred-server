@@ -21,8 +21,8 @@
  *  create contact check
  */
 
-#ifndef CONTACT_VERIFICATION_CREATE_CHECK_51537653410_
-#define CONTACT_VERIFICATION_CREATE_CHECK_51537653410_
+#ifndef CREATE_CHECK_HH_E7C18731A8B34B26BD3EE1B1DB989BAC
+#define CREATE_CHECK_HH_E7C18731A8B34B26BD3EE1B1DB989BAC
 
 #include "src/util/printable.hh"
 
@@ -82,4 +82,4 @@ namespace LibFred
             virtual std::string to_string() const;
     };
 }
-#endif // #include guard end
+#endif

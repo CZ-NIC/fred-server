@@ -20,8 +20,8 @@
  *  @file
  */
 
-#ifndef CHECK_KEYSET_H_2978916EE20C45F98D9C16CA2D424FE4
-#define CHECK_KEYSET_H_2978916EE20C45F98D9C16CA2D424FE4
+#ifndef CHECK_KEYSET_HH_F7E13C5423334FA691DE5A6B0A040BBD
+#define CHECK_KEYSET_HH_F7E13C5423334FA691DE5A6B0A040BBD
 
 #include "src/libfred/registrable_object/keyset/handle_state.hh"
 #include "src/libfred/opcontext.hh"

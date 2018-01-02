@@ -1,5 +1,5 @@
-#ifndef REGISTER_FILTER_H_
-#define REGISTER_FILTER_H_
+#ifndef FILTER_HH_4DB005D7C8C944309BC7284FEBA74AD0
+#define FILTER_HH_4DB005D7C8C944309BC7284FEBA74AD0
 
 #include "src/libfred/common_impl.hh"
 #include "src/libfred/types.hh"

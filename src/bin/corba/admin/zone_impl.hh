@@ -1,5 +1,5 @@
-#ifndef ZONE_IMPL_H_
-#define ZONE_IMPL_H_
+#ifndef ZONE_IMPL_HH_3CE29ABDF9B64BD4BCD7899425227990
+#define ZONE_IMPL_HH_3CE29ABDF9B64BD4BCD7899425227990
 
 #include <string>
 #include "src/libfred/zone.hh"
@@ -71,4 +71,4 @@ public:
     );
 };//class ccReg_ZoneIf_i
 
-#endif //ZONE_IMPL_H_
+#endif

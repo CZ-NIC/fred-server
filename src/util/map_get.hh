@@ -1,5 +1,5 @@
-#ifndef MAP_GET_H_
-#define MAP_GET_H_
+#ifndef MAP_GET_HH_09F4233C0F124E0DA8FDC558CD63AC68
+#define MAP_GET_HH_09F4233C0F124E0DA8FDC558CD63AC68
 
 #include <vector>
 #include <algorithm>

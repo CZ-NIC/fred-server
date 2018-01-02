@@ -21,8 +21,8 @@
  *  Exception classes
  */
 
-#ifndef MODEL_EXCEPTION_H_
-#define MODEL_EXCEPTION_H_
+#ifndef MODEL_EXCEPTION_HH_0BBC1610BABA4BE3B7B994D6DAE91404
+#define MODEL_EXCEPTION_HH_0BBC1610BABA4BE3B7B994D6DAE91404
 
 #include "src/util/base_exception.hh"
 

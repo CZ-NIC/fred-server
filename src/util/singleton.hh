@@ -22,8 +22,8 @@
  *  \brief Template for simple implementing singleton pattern
  */
 
-#ifndef SINGLETON_H_
-#define SINGLETON_H_
+#ifndef SINGLETON_HH_C5F4DE21F764431C9B613A3D019D91A5
+#define SINGLETON_HH_C5F4DE21F764431C9B613A3D019D91A5
 
 
 template<class _Tp>

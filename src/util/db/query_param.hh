@@ -21,8 +21,8 @@
  *  Implementation of param object.
  */
 
-#ifndef QUERYPARAM_H_
-#define QUERYPARAM_H_
+#ifndef QUERY_PARAM_HH_FD0ED5831EF844BA88032F67BC9E2554
+#define QUERY_PARAM_HH_FD0ED5831EF844BA88032F67BC9E2554
 
 #include <vector>
 #include <string>
@@ -248,4 +248,4 @@ const QueryParam NullQueryParam;
 
 };//namespace Database
 
-#endif //QUERYPARAM_H_
+#endif

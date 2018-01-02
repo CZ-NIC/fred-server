@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CREATE_NSSET_H_2C8AA4B2A66B416FADE6B4087CFEFF2B
-#define CREATE_NSSET_H_2C8AA4B2A66B416FADE6B4087CFEFF2B
+#ifndef CREATE_NSSET_HH_7B50D7FE4BBB4019AD8D94BBD0BD688C
+#define CREATE_NSSET_HH_7B50D7FE4BBB4019AD8D94BBD0BD688C
 
 #include "src/backend/epp/nsset/create_nsset_localized.hh"
 #include "src/backend/epp/session_data.hh"

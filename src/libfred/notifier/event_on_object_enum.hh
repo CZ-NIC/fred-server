@@ -21,8 +21,8 @@
  *  notified events definitions and database handles correspondence
  */
 
-#ifndef FREDLIB_NOTIFIER2_EVENT_ON_OBJECT_ENUM_4245348310351
-#define FREDLIB_NOTIFIER2_EVENT_ON_OBJECT_ENUM_4245348310351
+#ifndef EVENT_ON_OBJECT_ENUM_HH_F6C782B1B3A9400EA19ECB9672CF38EB
+#define EVENT_ON_OBJECT_ENUM_HH_F6C782B1B3A9400EA19ECB9672CF38EB
 
 #include "src/libfred/object/registry_object_type.hh"
 

@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CLIENT_CREDIT_LOCALIZED_H_70DB3AA27BA936DA925FEB4F5E89D01B//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define CLIENT_CREDIT_LOCALIZED_H_70DB3AA27BA936DA925FEB4F5E89D01B
+#ifndef CLIENT_CREDIT_LOCALIZED_HH_59369CE558634FCF83F27F946FE5F9DD
+#define CLIENT_CREDIT_LOCALIZED_HH_59369CE558634FCF83F27F946FE5F9DD
 
 #include "src/backend/epp/credit/client_credit_localized_response.hh"
 #include "src/backend/epp/session_data.hh"
@@ -31,4 +31,4 @@ ClientCreditLocalizedResponse client_credit_localized(const SessionData& _sessio
 } // namespace Epp::Credit
 } // namespace Epp
 
-#endif//CLIENT_CREDIT_LOCALIZED_H_70DB3AA27BA936DA925FEB4F5E89D01B
+#endif

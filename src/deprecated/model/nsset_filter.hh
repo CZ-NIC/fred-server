@@ -1,5 +1,5 @@
-#ifndef NSSET_FILTER_H_
-#define NSSET_FILTER_H_
+#ifndef NSSET_FILTER_HH_2FDA0ABDA00C46108887CA0DDC34E522
+#define NSSET_FILTER_HH_2FDA0ABDA00C46108887CA0DDC34E522
 
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/utility.hpp>

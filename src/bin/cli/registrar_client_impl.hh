@@ -21,8 +21,8 @@
  *  registrar client implementation header
  */
 
-#ifndef REGISTRAR_CLIENT_IMPL_H_
-#define REGISTRAR_CLIENT_IMPL_H_
+#ifndef REGISTRAR_CLIENT_IMPL_HH_7B95C8AD54434E83B42D3ABC025B2FE5
+#define REGISTRAR_CLIENT_IMPL_HH_7B95C8AD54434E83B42D3ABC025B2FE5
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/handle_database_args.hh"
 #include "src/util/cfg/handle_corbanameservice_args.hh"
@@ -432,4 +432,4 @@ struct price_add_impl
 };
 
 
-#endif // REGISTRAR_CLIENT_IMPL_H_
+#endif

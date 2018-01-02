@@ -18,8 +18,8 @@
 
 // test-file-manager-client.h
 
-#ifndef TESTFILEMANAGERCLIENT_H_
-#define TESTFILEMANAGERCLIENT_H_
+#ifndef TEST_FILE_MANAGER_CLIENT_HH_BE8B1ACDEA434EFDB0D3325CA882E051
+#define TEST_FILE_MANAGER_CLIENT_HH_BE8B1ACDEA434EFDB0D3325CA882E051
 
 #include <memory>
 #include <iostream>
@@ -59,4 +59,4 @@
 #include "src/util/cfg/config_handler_decl.hh"
 #include <boost/test/unit_test.hpp>
 
-#endif //TESTFILEMANAGERCLIENT_H_
+#endif

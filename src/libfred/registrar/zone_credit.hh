@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ZONE_CREDIT_H_FD0F19DD9397C8841B8972FDDDB6DAB0//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define ZONE_CREDIT_H_FD0F19DD9397C8841B8972FDDDB6DAB0
+#ifndef ZONE_CREDIT_HH_0EC3DB4D6C6F48019FA034AA21B50A54
+#define ZONE_CREDIT_HH_0EC3DB4D6C6F48019FA034AA21B50A54
 
 #include "src/util/decimal/decimal.hh"
 
@@ -41,4 +41,4 @@ private:
 
 } // namespace LibFred
 
-#endif//ZONE_CREDIT_H_FD0F19DD9397C8841B8972FDDDB6DAB0
+#endif

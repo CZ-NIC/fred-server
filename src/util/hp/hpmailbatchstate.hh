@@ -21,8 +21,8 @@
  *  hybrid postservice mailbatch state check interface header
  */
 
-#ifndef HPMAILBATCHSTATE_H_
-#define HPMAILBATCHSTATE_H_
+#ifndef HPMAILBATCHSTATE_HH_F349A6B2D07A4A1B8515D9CDA4A3A2CB
+#define HPMAILBATCHSTATE_HH_F349A6B2D07A4A1B8515D9CDA4A3A2CB
 
 #include <cstdio>
 #include <memory>
@@ -86,4 +86,4 @@ public:
         );
 
 };
-#endif // HPMAILBATCHSTATE_H_
+#endif

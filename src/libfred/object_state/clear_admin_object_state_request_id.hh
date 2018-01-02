@@ -28,8 +28,8 @@ administrativni zruseni vsech stavu blokovani objektu, (update do object_state_r
   duvod
 */
 
-#ifndef CLEAR_ADMIN_OBJECT_STATE_REQUEST_ID_H_
-#define CLEAR_ADMIN_OBJECT_STATE_REQUEST_ID_H_
+#ifndef CLEAR_ADMIN_OBJECT_STATE_REQUEST_ID_HH_990A3C41B82647DE8BB643C27892AE53
+#define CLEAR_ADMIN_OBJECT_STATE_REQUEST_ID_HH_990A3C41B82647DE8BB643C27892AE53
 
 #include <string>
 
@@ -68,4 +68,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif//CLEAR_ADMINISTRATIVE_OBJECT_STATE_REQUEST_ID_H_
+#endif

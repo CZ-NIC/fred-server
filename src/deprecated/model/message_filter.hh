@@ -1,5 +1,5 @@
-#ifndef _MESSAGE_FILTER_H_
-#define _MESSAGE_FILTER_H_
+#ifndef MESSAGE_FILTER_HH_986521F658B84CB2BDBF2C69E6440A15
+#define MESSAGE_FILTER_HH_986521F658B84CB2BDBF2C69E6440A15
 
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/utility.hpp>
@@ -64,4 +64,4 @@ public:
 }
 }
 
-#endif // _MESSAGE_FILTER_H_
+#endif

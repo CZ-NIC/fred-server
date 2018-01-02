@@ -20,8 +20,8 @@
  *  @file
  */
 
-#ifndef CHECK_CONTACT_H
-#define CHECK_CONTACT_H
+#ifndef CHECK_CONTACT_HH_DE10D214C1FE4D5E888FBE3FFD666447
+#define CHECK_CONTACT_HH_DE10D214C1FE4D5E888FBE3FFD666447
 
 #include "src/libfred/registrable_object/contact/handle_state.hh"
 

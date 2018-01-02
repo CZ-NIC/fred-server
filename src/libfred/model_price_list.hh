@@ -1,5 +1,5 @@
-#ifndef _MODEL_PRICELIST_H_
-#define _MODEL_PRICELIST_H_
+#ifndef MODEL_PRICE_LIST_HH_1C90C751D350418B8AD541DA2288051B
+#define MODEL_PRICE_LIST_HH_1C90C751D350418B8AD541DA2288051B
 
 #include "src/libfred/db_settings.hh"
 #include "src/util/db/model/model.hh"

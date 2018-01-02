@@ -29,8 +29,8 @@
  */
 
 
-#ifndef QUERY_H_
-#define QUERY_H_
+#ifndef QUERY_HH_975265E60463469487FE1B0438845E5A
+#define QUERY_HH_975265E60463469487FE1B0438845E5A
 
 #include <string>
 #include <sstream>

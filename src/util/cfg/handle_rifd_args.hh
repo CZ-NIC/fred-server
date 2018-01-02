@@ -21,8 +21,8 @@
  *  registrar interface config
  */
 
-#ifndef HANDLE_RIFD_ARGS_H_
-#define HANDLE_RIFD_ARGS_H_
+#ifndef HANDLE_RIFD_ARGS_HH_1F2430A2C0A949A7AB56A73A8B39CC9D
+#define HANDLE_RIFD_ARGS_HH_1F2430A2C0A949A7AB56A73A8B39CC9D
 
 #include <iostream>
 #include <exception>
@@ -91,4 +91,4 @@ public:
     }//handle
 };
 
-#endif //HANDLE_RIFD_ARGS_H_
+#endif

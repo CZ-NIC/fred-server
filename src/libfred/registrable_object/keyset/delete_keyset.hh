@@ -21,8 +21,8 @@
  *  keyset delete
  */
 
-#ifndef DELETE_KEYSET_H_251124531351
-#define DELETE_KEYSET_H_251124531351
+#ifndef DELETE_KEYSET_HH_ADBDE88BAD844C238D381A3FBA4C7C9E
+#define DELETE_KEYSET_HH_ADBDE88BAD844C238D381A3FBA4C7C9E
 
 #include <string>
 
@@ -107,4 +107,4 @@ namespace LibFred
     };
 } // namespace LibFred
 
-#endif // end of #include guard
+#endif

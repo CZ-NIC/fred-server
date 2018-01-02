@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CHECK_KEYSET_H_EFE348DAB8F14531A5877D6F14C74BFD
-#define CHECK_KEYSET_H_EFE348DAB8F14531A5877D6F14C74BFD
+#ifndef CHECK_KEYSET_HH_6AF77422290D4D18870F0E59C46DF630
+#define CHECK_KEYSET_HH_6AF77422290D4D18870F0E59C46DF630
 
 #include "src/backend/epp/keyset/check_keyset_config_data.hh"
 #include "src/backend/epp/keyset/keyset_handle_registration_obstruction.hh"

@@ -21,8 +21,8 @@
  *  nsset dns host
  */
 
-#ifndef NSSET_DNS_HOST_H_
-#define NSSET_DNS_HOST_H_
+#ifndef NSSET_DNS_HOST_HH_4D35DC3B927B44738A33B885BE34293B
+#define NSSET_DNS_HOST_HH_4D35DC3B927B44738A33B885BE34293B
 
 #include <string>
 #include <vector>
@@ -93,4 +93,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif//NSSET_DNS_HOST_H_
+#endif

@@ -21,8 +21,8 @@
  *  domain history info output structure
  */
 
-#ifndef INFO_DOMAIN_OUTPUT_H_
-#define INFO_DOMAIN_OUTPUT_H_
+#ifndef INFO_DOMAIN_OUTPUT_HH_168A199B2E9047AA836EF14908186097
+#define INFO_DOMAIN_OUTPUT_HH_168A199B2E9047AA836EF14908186097
 
 #include <string>
 
@@ -78,4 +78,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif//INFO_DOMAIN_OUTPUT_H_
+#endif

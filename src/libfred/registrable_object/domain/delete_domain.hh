@@ -21,8 +21,8 @@
  *  domain delete
  */
 
-#ifndef DELETE_DOMAIN_H
-#define DELETE_DOMAIN_H
+#ifndef DELETE_DOMAIN_HH_F00B0682E1C1442D81125CBE1CBF56E0
+#define DELETE_DOMAIN_HH_F00B0682E1C1442D81125CBE1CBF56E0
 
 #include <string>
 
@@ -107,4 +107,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif // end of #include guard
+#endif

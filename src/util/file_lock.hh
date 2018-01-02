@@ -1,5 +1,5 @@
-#ifndef FILE_LOCK_H__
-#define FILE_LOCK_H__
+#ifndef FILE_LOCK_HH_0CACDBF88C5E454A82B847BDAD863064
+#define FILE_LOCK_HH_0CACDBF88C5E454A82B847BDAD863064
 
 #include <unistd.h>
 #include <fcntl.h>

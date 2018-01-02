@@ -21,8 +21,8 @@
  *  file client implementation header
  */
 
-#ifndef FILE_CLIENT_IMPL_H_
-#define FILE_CLIENT_IMPL_H_
+#ifndef FILE_CLIENT_IMPL_HH_5DDC000846C64CBEA63025C75F65FA8A
+#define FILE_CLIENT_IMPL_HH_5DDC000846C64CBEA63025C75F65FA8A
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/handle_database_args.hh"
 #include "src/util/cfg/handle_corbanameservice_args.hh"
@@ -49,4 +49,4 @@ struct file_list_impl
   }
 };
 
-#endif // FILE_CLIENT_IMPL_H_
+#endif

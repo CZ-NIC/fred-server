@@ -21,8 +21,8 @@
  *  update contact test
  */
 
-#ifndef CONTACT_VERIFICATION_UPDATE_TEST_51798341011_
-#define CONTACT_VERIFICATION_UPDATE_TEST_51798341011_
+#ifndef UPDATE_TEST_HH_468D7A1D716F40AE987CE495EF731B8D
+#define UPDATE_TEST_HH_468D7A1D716F40AE987CE495EF731B8D
 
 #include "src/util/printable.hh"
 #include "src/libfred/registrable_object/contact/verification/exceptions.hh"
@@ -89,4 +89,4 @@ namespace LibFred
             virtual std::string to_string() const;
     };
 }
-#endif // #include guard end
+#endif

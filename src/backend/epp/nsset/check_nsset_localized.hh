@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CHECK_NSSET_LOCALIZED_H_E0D532AC33D449DFB84FB3F0E2204B1F
-#define CHECK_NSSET_LOCALIZED_H_E0D532AC33D449DFB84FB3F0E2204B1F
+#ifndef CHECK_NSSET_LOCALIZED_HH_3504C0FA6F1041D7B7514EB18093E3D0
+#define CHECK_NSSET_LOCALIZED_HH_3504C0FA6F1041D7B7514EB18093E3D0
 
 #include "src/backend/epp/nsset/check_nsset_config_data.hh"
 #include "src/backend/epp/nsset/check_nsset_localized_response.hh"

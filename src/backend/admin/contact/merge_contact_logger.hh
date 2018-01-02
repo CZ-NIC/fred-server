@@ -1,5 +1,5 @@
-#ifndef MERGE_CONTACT_LOGGER_H__
-#define MERGE_CONTACT_LOGGER_H__
+#ifndef MERGE_CONTACT_LOGGER_HH_B9BCF17767FA4A008A433FCC2C549D0F
+#define MERGE_CONTACT_LOGGER_HH_B9BCF17767FA4A008A433FCC2C549D0F
 
 #include "src/libfred/registrable_object/contact/merge_contact.hh"
 #include "src/libfred/logger_client.hh"

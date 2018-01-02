@@ -1,5 +1,5 @@
-#ifndef ZONE_H_
-#define ZONE_H_
+#ifndef ZONE_HH_2C5BE1B6D84C4463A8A448A6E083225F
+#define ZONE_HH_2C5BE1B6D84C4463A8A448A6E083225F
 
 #include <memory>
 #include <string>

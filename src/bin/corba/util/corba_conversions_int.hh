@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CORBA_CONVERSIONS_INT_H_0E5F48581B554370AC6F40C240221546
-#define CORBA_CONVERSIONS_INT_H_0E5F48581B554370AC6F40C240221546
+#ifndef CORBA_CONVERSIONS_INT_HH_3297047856AB440581BA632C3EC803BB
+#define CORBA_CONVERSIONS_INT_HH_3297047856AB440581BA632C3EC803BB
 
 #include <boost/integer_traits.hpp>
 #include <boost/numeric/conversion/cast.hpp>

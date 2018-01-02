@@ -16,8 +16,8 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _COMMONCLIENT_H_
-#define _COMMONCLIENT_H_
+#ifndef COMMONCLIENT_HH_C591C9EB2DE14B0AA7E40F61B5089DB4
+#define COMMONCLIENT_HH_C591C9EB2DE14B0AA7E40F61B5089DB4
 
 #include <iostream>
 #include <vector>
@@ -75,4 +75,4 @@ void print_version();
 void print_moo();
 void help_dates();
 
-#endif // _COMMONCLIENT_H_
+#endif

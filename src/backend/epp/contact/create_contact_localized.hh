@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CREATE_CONTACT_LOCALIZED_H_8134301928FF41759B9B4E7061469BE4
-#define CREATE_CONTACT_LOCALIZED_H_8134301928FF41759B9B4E7061469BE4
+#ifndef CREATE_CONTACT_LOCALIZED_HH_1057B2F72E874B2E8E11B37F806E8904
+#define CREATE_CONTACT_LOCALIZED_HH_1057B2F72E874B2E8E11B37F806E8904
 
 #include "src/backend/epp/contact/create_contact_config_data.hh"
 #include "src/backend/epp/contact/create_contact_input_data.hh"
@@ -40,4 +40,4 @@ CreateContactLocalizedResponse create_contact_localized(
 } // namespace Epp::Contact
 } // namespace Epp
 
-#endif//CREATE_CONTACT_LOCALIZED_H_8134301928FF41759B9B4E7061469BE4
+#endif

@@ -16,8 +16,8 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef READ_CONFIG_FILE_H_9777d979c2ee4b83a0447019af4a7267
-#define READ_CONFIG_FILE_H_9777d979c2ee4b83a0447019af4a7267
+#ifndef READ_CONFIG_FILE_HH_43328C6DA5694C0EA6620A4529F3DFD2
+#define READ_CONFIG_FILE_HH_43328C6DA5694C0EA6620A4529F3DFD2
 
 #include <map>
 #include <string>
@@ -79,4 +79,4 @@ std::map<std::string, std::string> read_config_file(
 
 } // namespace Admin
 
-#endif // READ_CONFIG_FILE_H_9777d979c2ee4b83a0447019af4a7267
+#endif

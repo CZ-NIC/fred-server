@@ -21,8 +21,8 @@
  *  nsset info implementation
  */
 
-#ifndef INFO_NSSET_IMPL_H_
-#define INFO_NSSET_IMPL_H_
+#ifndef INFO_NSSET_IMPL_HH_3F9A4813905741329F222603AC6A8143
+#define INFO_NSSET_IMPL_HH_3F9A4813905741329F222603AC6A8143
 
 #include <string>
 #include <vector>
@@ -134,4 +134,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif//INFO_NSSET_IMPL_H_
+#endif

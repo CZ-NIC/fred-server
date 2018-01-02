@@ -21,8 +21,8 @@
  *  Interface for convert structures for convert from/to sql
  */
 
-#ifndef SQLIZE_H_
-#define SQLIZE_H_
+#ifndef SQLIZE_HH_8FDA493CEC1340129F6783C6BD6BC496
+#define SQLIZE_HH_8FDA493CEC1340129F6783C6BD6BC496
 
 #include "src/util/types/convert_sql_base.hh"
 

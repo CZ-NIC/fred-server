@@ -21,8 +21,8 @@
  *  header of file client implementation
  */
 
-#ifndef FILE_PARAMS_H_
-#define FILE_PARAMS_H_
+#ifndef FILE_PARAMS_HH_0238426118D644309AC107969E283AD9
+#define FILE_PARAMS_HH_0238426118D644309AC107969E283AD9
 
 #include "src/util/types/optional.hh"
 
@@ -65,4 +65,4 @@ struct FileListArgs
     {}//init ctor
 };//struct FileListArgs
 
-#endif // FILE_PARAMS_H_
+#endif

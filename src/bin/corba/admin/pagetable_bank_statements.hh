@@ -1,4 +1,4 @@
-#ifndef _PAGETABLE_STATEMENTS_H
+#ifndef PAGETABLE_BANK_STATEMENTS_HH_8D3F5827932B475892771EB871801C43
 #define	_PAGETABLE_STATEMENTS_H
 
 #include "src/bin/corba/admin/pagetable_impl.hh"

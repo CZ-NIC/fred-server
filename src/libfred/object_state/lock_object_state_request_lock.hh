@@ -21,8 +21,8 @@
  *  object state request locking
  */
 
-#ifndef LOCK_OBJECT_STATE_REQUEST_LOCK_H_
-#define LOCK_OBJECT_STATE_REQUEST_LOCK_H_
+#ifndef LOCK_OBJECT_STATE_REQUEST_LOCK_HH_354CB679B9FF4839A30A81D76DDCAF6E
+#define LOCK_OBJECT_STATE_REQUEST_LOCK_HH_354CB679B9FF4839A30A81D76DDCAF6E
 
 #include <string>
 
@@ -57,4 +57,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif // LOCK_OBJECT_STATE_REQUEST_LOCK_H_
+#endif

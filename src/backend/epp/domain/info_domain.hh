@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef INFO_DOMAIN_H_A9C7B7C225EB43899886D9EE74F3EF6B
-#define INFO_DOMAIN_H_A9C7B7C225EB43899886D9EE74F3EF6B
+#ifndef INFO_DOMAIN_HH_37A73F9984AD4E138824846417BEF50B
+#define INFO_DOMAIN_HH_37A73F9984AD4E138824846417BEF50B
 
 #include "src/backend/epp/domain/domain_enum_validation.hh"
 #include "src/backend/epp/domain/info_domain_config_data.hh"

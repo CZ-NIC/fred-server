@@ -22,8 +22,8 @@
  */
 
 
-#ifndef ROW_HPP_
-#define ROW_HPP_
+#ifndef ROW_HH_170CD68295BA47FCA8D7C2D22AB5FE1A
+#define ROW_HH_170CD68295BA47FCA8D7C2D22AB5FE1A
 
 #include <vector>
 #include <sstream>

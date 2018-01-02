@@ -1,5 +1,5 @@
-#ifndef _MODEL_FILES_H_
-#define _MODEL_FILES_H_
+#ifndef MODEL_FILES_HH_B96279DE23144547848A71408E3DFB4D
+#define MODEL_FILES_HH_B96279DE23144547848A71408E3DFB4D
 
 #include "src/libfred/db_settings.hh"
 #include "src/util/db/model/model.hh"

@@ -1,5 +1,5 @@
-#ifndef ADMIN_MERGE_CONTACT_H__
-#define ADMIN_MERGE_CONTACT_H__
+#ifndef MERGE_CONTACT_HH_3CD295105AA242C78849BEB86FB40A40
+#define MERGE_CONTACT_HH_3CD295105AA242C78849BEB86FB40A40
 
 #include "src/libfred/registrable_object/contact/merge_contact.hh"
 #include "src/libfred/logger_client.hh"

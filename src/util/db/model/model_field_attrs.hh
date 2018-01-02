@@ -21,8 +21,8 @@
  *  Model field attributes encapsulation 
  */
 
-#ifndef FIELD_MODEL_ATTRS_H_
-#define FIELD_MODEL_ATTRS_H_
+#ifndef MODEL_FIELD_ATTRS_HH_99BFFF2F50EA42A38D50490C61DFBE7F
+#define MODEL_FIELD_ATTRS_HH_99BFFF2F50EA42A38D50490C61DFBE7F
 
 
 namespace Model {

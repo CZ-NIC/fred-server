@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CHECK_CONTACT_LOCALIZED_H_1AE05A8205724400A94CCB90F0E0060F
-#define CHECK_CONTACT_LOCALIZED_H_1AE05A8205724400A94CCB90F0E0060F
+#ifndef CHECK_CONTACT_LOCALIZED_HH_1FE2D8D0111C48CFA0DF0FEABAD66C5D
+#define CHECK_CONTACT_LOCALIZED_HH_1FE2D8D0111C48CFA0DF0FEABAD66C5D
 
 #include "src/backend/epp/contact/check_contact_config_data.hh"
 #include "src/backend/epp/contact/check_contact_localized_response.hh"

@@ -1,5 +1,5 @@
-#ifndef WHOIS_FIXTURE_COMMON_H_
-#define WHOIS_FIXTURE_COMMON_H_
+#ifndef FIXTURE_COMMON_HH_23091B98FDF94EE3B83A72ED232CDF75
+#define FIXTURE_COMMON_HH_23091B98FDF94EE3B83A72ED232CDF75
 
 #include "src/backend/whois/whois.hh"
 #include "src/libfred/opcontext.hh"
@@ -19,4 +19,4 @@ struct whois_impl_instance_fixture : Test::instantiate_db_template
     {}
 };
 
-#endif //WHOIS_FIXTURE_COMMON_H_
+#endif

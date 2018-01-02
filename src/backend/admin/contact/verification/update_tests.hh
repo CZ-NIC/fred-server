@@ -21,8 +21,8 @@
  *  update tests of a check
  */
 
-#ifndef ADMIN_CONTACT_VERIFICATION_UPDATE_TESTS_H_1001456454560155
-#define ADMIN_CONTACT_VERIFICATION_UPDATE_TESTS_H_1001456454560155
+#ifndef UPDATE_TESTS_HH_F15339FCB033419B9AFE5ECD6E2E41DB
+#define UPDATE_TESTS_HH_F15339FCB033419B9AFE5ECD6E2E41DB
 
 #include "src/backend/admin/contact/verification/exceptions.hh"
 
@@ -58,4 +58,4 @@ namespace Admin {
 
 }
 
-#endif // #include guard end
+#endif

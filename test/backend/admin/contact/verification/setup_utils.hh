@@ -21,8 +21,8 @@
  *  setup utils for integration tests
  */
 
-#ifndef TESTS_ADMIN_CONTACT_VERIFICATION_SETUP_UTILS_H_102876878
-#define TESTS_ADMIN_CONTACT_VERIFICATION_SETUP_UTILS_H_102876878
+#ifndef SETUP_UTILS_HH_EE8CE4C846E54B10BF252B1C0A414EAF
+#define SETUP_UTILS_HH_EE8CE4C846E54B10BF252B1C0A414EAF
 
 #include <vector>
 #include <utility>
@@ -122,4 +122,4 @@ class DummyThrowingTest: public Admin::ContactVerification::Test {
         std::string get_handle() const { return handle_; }
 };
 
-#endif // #include guard end
+#endif

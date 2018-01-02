@@ -20,8 +20,8 @@
  *  @file
  */
 
-#ifndef UTIL_H_A4B759EF1350488596C500C9CC949C14
-#define UTIL_H_A4B759EF1350488596C500C9CC949C14
+#ifndef UTIL_HH_63802C73227A4AB2A7CEB864FFA71E62
+#define UTIL_HH_63802C73227A4AB2A7CEB864FFA71E62
 
 #include "test/setup/fixtures.hh"
 #include "test/setup/fixtures_utils.hh"

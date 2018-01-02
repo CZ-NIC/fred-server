@@ -21,8 +21,8 @@
  *  zone
  */
 
-#ifndef ZONE_ZONE_H_
-#define ZONE_ZONE_H_
+#ifndef ZONE_HH_D056E14F955D424794E54083116DA917
+#define ZONE_HH_D056E14F955D424794E54083116DA917
 
 #include <string>
 
@@ -80,4 +80,4 @@ namespace Zone {
 } // namespace Zone
 } // namespace LibFred
 
-#endif //ZONE_ZONE_H_
+#endif

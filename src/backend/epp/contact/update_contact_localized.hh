@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef UPDATE_CONTACT_LOCALIZED_H_3265A4F7B3D6435FBB17D88760C1AAED
-#define UPDATE_CONTACT_LOCALIZED_H_3265A4F7B3D6435FBB17D88760C1AAED
+#ifndef UPDATE_CONTACT_LOCALIZED_HH_E0CB8872A2AB4829A8EA19A752C53CD1
+#define UPDATE_CONTACT_LOCALIZED_HH_E0CB8872A2AB4829A8EA19A752C53CD1
 
 #include "src/backend/epp/contact/update_contact_config_data.hh"
 #include "src/backend/epp/contact/contact_change.hh"

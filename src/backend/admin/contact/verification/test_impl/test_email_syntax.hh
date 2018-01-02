@@ -21,8 +21,8 @@
  *  contact verification test for e-mail address (syntax only)
  */
 
-#ifndef CONTACT_VERIFICATION_TEST_EMAIL_SYNTAX_11637813419_
-#define CONTACT_VERIFICATION_TEST_EMAIL_SYNTAX_11637813419_
+#ifndef TEST_EMAIL_SYNTAX_HH_522344689B7342848459C093D15F7DD6
+#define TEST_EMAIL_SYNTAX_HH_522344689B7342848459C093D15F7DD6
 
 #include <boost/regex.hpp>
 #include <boost/assign/list_of.hpp>
@@ -85,4 +85,4 @@ namespace ContactVerification
 }
 }
 
-#endif // #include guard end
+#endif

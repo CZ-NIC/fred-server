@@ -20,8 +20,8 @@
  *  @file
  */
 
-#ifndef FREDLIB_NOTIFIER2_GATHER_EMAIL_CONTENT_4533447354
-#define FREDLIB_NOTIFIER2_GATHER_EMAIL_CONTENT_4533447354
+#ifndef GATHER_EMAIL_CONTENT_HH_3C4E3906E53448628AED7F0D087F0B8F
+#define GATHER_EMAIL_CONTENT_HH_3C4E3906E53448628AED7F0D087F0B8F
 
 #include "src/libfred/notifier/gather_email_data/notification_request.hh"
 #include "src/libfred/opcontext.hh"

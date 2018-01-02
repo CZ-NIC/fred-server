@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef NSSET_OUTPUT_H_23CC782463CD425BB913B83178B77AC6
-#define NSSET_OUTPUT_H_23CC782463CD425BB913B83178B77AC6
+#ifndef NSSET_OUTPUT_HH_E733861A880745A8B2CA2681046834B8
+#define NSSET_OUTPUT_HH_E733861A880745A8B2CA2681046834B8
 
 #include "src/libfred/registrable_object/nsset/info_nsset_data.hh"
 #include "src/backend/epp/nsset/info_nsset.hh"

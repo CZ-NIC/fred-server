@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CONTACT_DATA_H_ED120B0CE83DFE5832F00845928ECFA0//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define CONTACT_DATA_H_ED120B0CE83DFE5832F00845928ECFA0
+#ifndef CONTACT_DATA_HH_2ADE4FD677064F6994115E79385BB28D
+#define CONTACT_DATA_HH_2ADE4FD677064F6994115E79385BB28D
 
 #include "src/backend/epp/contact/contact_disclose.hh"
 #include "src/backend/epp/contact/contact_ident.hh"
@@ -65,4 +65,4 @@ ContactData trim(const ContactData& src);
 } // namespace Epp::Contact
 } // namespace Epp
 
-#endif//CONTACT_DATA_H_ED120B0CE83DFE5832F00845928ECFA0
+#endif

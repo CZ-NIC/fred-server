@@ -20,8 +20,8 @@
  *  @file convert_common.h
  */
 
-#ifndef CONVERT_COMMON_H_
-#define CONVERT_COMMON_H_
+#ifndef CONVERT_COMMON_HH_2A3D209AC90D4ECA89EB1D83F042DF5F
+#define CONVERT_COMMON_HH_2A3D209AC90D4ECA89EB1D83F042DF5F
 
 #include <iostream>
 #include <sstream>

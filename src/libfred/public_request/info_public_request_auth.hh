@@ -21,8 +21,8 @@
  *  declaration of InfoPublicRequestAuth class
  */
 
-#ifndef INFO_PUBLIC_REQUEST_AUTH_H_FCCB5C08F0D3771F7E4BE2ABCC46F5FB//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define INFO_PUBLIC_REQUEST_AUTH_H_FCCB5C08F0D3771F7E4BE2ABCC46F5FB
+#ifndef INFO_PUBLIC_REQUEST_AUTH_HH_369275A2EB1548C2BE4D42464BFE2CBD
+#define INFO_PUBLIC_REQUEST_AUTH_HH_369275A2EB1548C2BE4D42464BFE2CBD
 
 #include "src/libfred/public_request/info_public_request.hh"
 
@@ -103,4 +103,4 @@ inline bool operator==(const LibFred::PublicRequestAuthInfo &_data, const LibFre
     return _locked == _data;
 }
 
-#endif//INFO_PUBLIC_REQUEST_AUTH_H_FCCB5C08F0D3771F7E4BE2ABCC46F5FB
+#endif

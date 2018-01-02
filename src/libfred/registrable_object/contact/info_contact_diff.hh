@@ -21,8 +21,8 @@
  *  contact info data diff
  */
 
-#ifndef INFO_CONTACT_DIFF_H_
-#define INFO_CONTACT_DIFF_H_
+#ifndef INFO_CONTACT_DIFF_HH_741D8D1B6DF14EE1A97088C2CEE33E01
+#define INFO_CONTACT_DIFF_HH_741D8D1B6DF14EE1A97088C2CEE33E01
 
 #include <algorithm>
 #include <string>
@@ -113,4 +113,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif//INFO_CONTACT_DIFF_H_
+#endif

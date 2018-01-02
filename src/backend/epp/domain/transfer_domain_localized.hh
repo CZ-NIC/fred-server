@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TRANSFER_DOMAIN_LOCALIZED_H_35B028F1145C40FA8AA305D6AA0B4A3B
-#define TRANSFER_DOMAIN_LOCALIZED_H_35B028F1145C40FA8AA305D6AA0B4A3B
+#ifndef TRANSFER_DOMAIN_LOCALIZED_HH_FD74986582564C07AB67FA0A914FA1DB
+#define TRANSFER_DOMAIN_LOCALIZED_HH_FD74986582564C07AB67FA0A914FA1DB
 
 #include "src/backend/epp/domain/transfer_domain_config_data.hh"
 #include "src/backend/epp/epp_response_success_localized.hh"

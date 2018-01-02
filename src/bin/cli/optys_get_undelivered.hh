@@ -16,8 +16,8 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef OPTYS_GET_UNDELIVERED_H_
-#define OPTYS_GET_UNDELIVERED_H_
+#ifndef OPTYS_GET_UNDELIVERED_HH_F0E5D0D92ACB4E49BC5CB661EFED8B44
+#define OPTYS_GET_UNDELIVERED_HH_F0E5D0D92ACB4E49BC5CB661EFED8B44
 
 #include <string>
 

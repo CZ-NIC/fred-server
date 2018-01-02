@@ -21,8 +21,8 @@
  *  contact verification state
  */
 
-#ifndef CONTACT_VERIFICATION_STATE_H_85BD98645DD8A487ABA826A5D21C75CE//CONTACT_VERIFICATION_STATE_H_$(date "+%s"|md5sum|tr "[a-f]" "[A-F]")
-#define CONTACT_VERIFICATION_STATE_H_85BD98645DD8A487ABA826A5D21C75CE
+#ifndef CONTACT_VERIFICATION_STATE_HH_EC25B8CDFCDB4BE0AF554F99145BFF11
+#define CONTACT_VERIFICATION_STATE_HH_EC25B8CDFCDB4BE0AF554F99145BFF11
 
 #include <stdint.h>
 #include <string>
@@ -226,4 +226,4 @@ inline bool operator!(enum LibFred::Contact::Verification::State::Value _a)
     return _a == LibFred::Contact::Verification::State::Value(0);
 }
 
-#endif//CONTACT_VERIFICATION_STATE_H_85BD98645DD8A487ABA826A5D21C75CE
+#endif

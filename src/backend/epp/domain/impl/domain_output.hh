@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DOMAIN_OUTPUT_H_33D3AFAA0E8044C39744204635F10659
-#define DOMAIN_OUTPUT_H_33D3AFAA0E8044C39744204635F10659
+#ifndef DOMAIN_OUTPUT_HH_185F3D29A6954423AF5335D867A82AFD
+#define DOMAIN_OUTPUT_HH_185F3D29A6954423AF5335D867A82AFD
 
 #include "src/libfred/registrable_object/domain/info_domain_data.hh"
 #include "src/backend/epp/domain/info_domain.hh"

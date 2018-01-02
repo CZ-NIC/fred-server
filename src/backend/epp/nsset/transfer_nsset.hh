@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TRANSFER_NSSET_H_23BF32D131EA4C9CB2BA3778F1A845E2
-#define TRANSFER_NSSET_H_23BF32D131EA4C9CB2BA3778F1A845E2
+#ifndef TRANSFER_NSSET_HH_F0CF5B6652AA421AA0747B2638CF7B60
+#define TRANSFER_NSSET_HH_F0CF5B6652AA421AA0747B2638CF7B60
 
 #include "src/backend/epp/nsset/transfer_nsset_config_data.hh"
 #include "src/backend/epp/nsset/transfer_nsset_localized.hh"

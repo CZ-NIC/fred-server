@@ -16,8 +16,8 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef NSSET_H_B3B1A2D33F034B18B09C10B43D2A0540
-#define NSSET_H_B3B1A2D33F034B18B09C10B43D2A0540
+#ifndef NSSET_HH_A4551BD531764E629F8BBD2E02425A87
+#define NSSET_HH_A4551BD531764E629F8BBD2E02425A87
 
 #include <string>
 #include <vector>

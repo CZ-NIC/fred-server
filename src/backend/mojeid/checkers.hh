@@ -21,8 +21,8 @@
  *  declaration of partial contact check classes
  */
 
-#ifndef CHECKERS_H_D5C22F5DFA53E06F6886FD6DE0FD30C6//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define CHECKERS_H_D5C22F5DFA53E06F6886FD6DE0FD30C6
+#ifndef CHECKERS_HH_1C4A77A46C944F69B5D59D1B75B30116
+#define CHECKERS_HH_1C4A77A46C944F69B5D59D1B75B30116
 
 #include "src/backend/mojeid/check_collector.hh"
 #include "src/libfred/registrable_object/contact/info_contact_data.hh"
@@ -577,4 +577,4 @@ struct check_contact_ssn
 
 }//Fred
 
-#endif//CHECKERS_H_D5C22F5DFA53E06F6886FD6DE0FD30C6
+#endif

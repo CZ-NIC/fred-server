@@ -22,8 +22,8 @@
  */
 
 
-#ifndef FAKED_ARGS_H_
-#define FAKED_ARGS_H_
+#ifndef FAKED_ARGS_HH_734E8D0126D94E4791B090541FF354C2
+#define FAKED_ARGS_HH_734E8D0126D94E4791B090541FF354C2
 
 #include <iostream>
 #include <exception>
@@ -173,4 +173,4 @@ public:
 };//class FakedArgs
 
 
-#endif //FAKED_ARGS_H_
+#endif

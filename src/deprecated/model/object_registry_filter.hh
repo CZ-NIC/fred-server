@@ -1,5 +1,5 @@
-#ifndef OBJECT_REGISTRY_FILTER_H_
-#define OBJECT_REGISTRY_FILTER_H_
+#ifndef OBJECT_REGISTRY_FILTER_HH_4B7DBE7E6D5F44128F669A7F78840E4B
+#define OBJECT_REGISTRY_FILTER_HH_4B7DBE7E6D5F44128F669A7F78840E4B
 
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/utility.hpp>

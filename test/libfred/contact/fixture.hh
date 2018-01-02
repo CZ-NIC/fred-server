@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef FIXTURE_H_EDBE867A47014435BE73002E2F5D3723
-#define FIXTURE_H_EDBE867A47014435BE73002E2F5D3723
+#ifndef FIXTURE_HH_DDB7D8EEA4534803A96FA30593FE5869
+#define FIXTURE_HH_DDB7D8EEA4534803A96FA30593FE5869
 
 #include "test/libfred/contact/test_merge_contact_fixture.hh"
 #include "test/libfred/contact/util.hh"

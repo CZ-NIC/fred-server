@@ -1,5 +1,5 @@
-#ifndef _MODEL_ZONESOA_H_
-#define _MODEL_ZONESOA_H_
+#ifndef MODEL_ZONE_SOA_HH_885157B2352046C28953FAB00DC4EEAF
+#define MODEL_ZONE_SOA_HH_885157B2352046C28953FAB00DC4EEAF
 
 #include "src/libfred/db_settings.hh"
 #include "src/util/db/model/model.hh"

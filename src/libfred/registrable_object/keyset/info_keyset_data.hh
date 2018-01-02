@@ -21,8 +21,8 @@
  *  common keyset info data
  */
 
-#ifndef INFO_KEYSET_DATA_H_
-#define INFO_KEYSET_DATA_H_
+#ifndef INFO_KEYSET_DATA_HH_FF8C3982D4304BADBA11BD995610CB24
+#define INFO_KEYSET_DATA_HH_FF8C3982D4304BADBA11BD995610CB24
 
 #include <string>
 
@@ -87,4 +87,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif//INFO_KEYSET_DATA_H_
+#endif

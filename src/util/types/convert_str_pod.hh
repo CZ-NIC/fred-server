@@ -21,8 +21,8 @@
  *  Definitions of type conversions for POD types from/to string.
  */
 
-#ifndef CONVERT_STR_POD_H_
-#define CONVERT_STR_POD_H_
+#ifndef CONVERT_STR_POD_HH_9402ED4E44CA4BBFA3297D58E7AD959F
+#define CONVERT_STR_POD_HH_9402ED4E44CA4BBFA3297D58E7AD959F
 
 #include <limits>
 

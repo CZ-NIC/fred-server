@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef REGBLOCK_PARAMS_H_
-#define REGBLOCK_PARAMS_H_
+#ifndef REGBLOCK_PARAMS_HH_DCC635E6D1A7447596AA8D8578F797BC
+#define REGBLOCK_PARAMS_HH_DCC635E6D1A7447596AA8D8578F797BC
 
 #include "src/util/types/optional.hh"
 
@@ -55,4 +55,4 @@ struct RegBlockArgs {
         {  }
 };
 
-#endif // REGBLOCK_PARAMS_H_
+#endif

@@ -21,8 +21,8 @@
  *  poll client implementation header
  */
 
-#ifndef POLL_CLIENT_IMPL_H_
-#define POLL_CLIENT_IMPL_H_
+#ifndef POLL_CLIENT_IMPL_HH_E60EC9F468F141FDACC2E9A2E83E9131
+#define POLL_CLIENT_IMPL_HH_E60EC9F468F141FDACC2E9A2E83E9131
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/handle_database_args.hh"
 #include "src/util/cfg/handle_corbanameservice_args.hh"
@@ -80,4 +80,4 @@ struct poll_create_request_fee_messages_impl
     }
 };
 
-#endif // POLL_CLIENT_IMPL_H_
+#endif

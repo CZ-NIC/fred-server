@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef UTC_HH_748B3EAB9F738A09AC67EE6175AFFE22//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define UTC_HH_748B3EAB9F738A09AC67EE6175AFFE22
+#ifndef UTC_HH_062DFC1C5D0A421BB064E00E4CA10E5F
+#define UTC_HH_062DFC1C5D0A421BB064E00E4CA10E5F
 
 namespace Tz {
 
@@ -25,4 +25,4 @@ struct UTC;
 
 } // namespace Tz
 
-#endif//UTC_HH_748B3EAB9F738A09AC67EE6175AFFE22
+#endif

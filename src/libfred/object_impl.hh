@@ -1,5 +1,5 @@
-#ifndef OBJECT_IMPL_H_
-#define OBJECT_IMPL_H_
+#ifndef OBJECT_IMPL_HH_BE628EFBBBDE4C5BB1082D3C1048D07D
+#define OBJECT_IMPL_HH_BE628EFBBBDE4C5BB1082D3C1048D07D
 
 #include "src/libfred/object.hh"
 #include "src/libfred/common_impl.hh"

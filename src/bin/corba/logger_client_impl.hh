@@ -1,5 +1,5 @@
-#ifndef _LOGGER_CLIENT_IMPL_H_
-#define _LOGGER_CLIENT_IMPL_H_
+#ifndef LOGGER_CLIENT_IMPL_HH_08E0527D90D74431B6E79639226FDB14
+#define LOGGER_CLIENT_IMPL_HH_08E0527D90D74431B6E79639226FDB14
 
 #include <memory>
 #include <boost/thread/thread.hpp>
@@ -67,4 +67,4 @@ ccReg::Logger_var logger_ref;
        logger_ref = ccReg::Logger::_narrow(CorbaContainer::get_instance()->nsresolve("Logger"));
 */
 
-#endif // _LOGGER_CLIENT_IMPL_H_
+#endif

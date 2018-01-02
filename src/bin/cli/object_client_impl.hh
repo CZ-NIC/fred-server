@@ -21,8 +21,8 @@
  *  object client implementation header
  */
 
-#ifndef OBJECT_CLIENT_IMPL_H_
-#define OBJECT_CLIENT_IMPL_H_
+#ifndef OBJECT_CLIENT_IMPL_HH_9EF9B6A8E672417485939A06D8F3B0D3
+#define OBJECT_CLIENT_IMPL_HH_9EF9B6A8E672417485939A06D8F3B0D3
 
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/handle_database_args.hh"
@@ -152,4 +152,4 @@ struct object_delete_candidates_impl
     }
 };
 
-#endif//OBJECT_CLIENT_IMPL_H_
+#endif

@@ -21,8 +21,8 @@
  *  push back contact verification checks to queue up to it's at maximal length
  */
 
-#ifndef ADMIN_CONTACT_VERIFICATION_FILL_QUEUE_H_12513457488
-#define ADMIN_CONTACT_VERIFICATION_FILL_QUEUE_H_12513457488
+#ifndef FILL_CHECK_QUEUE_HH_88570337F2644563AFEF9EC8D1B778C9
+#define FILL_CHECK_QUEUE_HH_88570337F2644563AFEF9EC8D1B778C9
 
 #include <vector>
 #include <string>
@@ -99,4 +99,4 @@ namespace ContactVerificationQueue {
 }
 
 
-#endif // #include guard end
+#endif

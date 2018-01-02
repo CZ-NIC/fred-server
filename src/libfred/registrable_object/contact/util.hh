@@ -3,8 +3,8 @@
  *  misc utils related to contact
  */
 
-#ifndef FREDLIB_CONTACT_UTIL_H_151454412344661
-#define FREDLIB_CONTACT_UTIL_H_151454412344661
+#ifndef UTIL_HH_8801447BBF01407EA488B90620A42F69
+#define UTIL_HH_8801447BBF01407EA488B90620A42F69
 
 #include <string>
 #include <utility>
@@ -20,4 +20,4 @@ namespace ContactUtil
 }
 }
 
-#endif // #include guard end
+#endif

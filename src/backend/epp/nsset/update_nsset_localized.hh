@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef UPDATE_NSSET_LOCALIZED_H_EF8D30BE9BAF43968D5E49305821ECA2
-#define UPDATE_NSSET_LOCALIZED_H_EF8D30BE9BAF43968D5E49305821ECA2
+#ifndef UPDATE_NSSET_LOCALIZED_HH_590E7F1557224C248AAF931E4C7F5DDF
+#define UPDATE_NSSET_LOCALIZED_HH_590E7F1557224C248AAF931E4C7F5DDF
 
 #include "src/backend/epp/epp_response_success_localized.hh"
 #include "src/backend/epp/notification_data.hh"

@@ -1,5 +1,5 @@
-#ifndef _TESTS_COMMON_H_
-#define _TESTS_COMMON_H_
+#ifndef TESTS_COMMON_HH_A264CF6CAEE049C09B30361B0EB1F176
+#define TESTS_COMMON_HH_A264CF6CAEE049C09B30361B0EB1F176
 
 #include <boost/thread/mutex.hpp>
 #include <boost/test/unit_test.hpp>
@@ -29,4 +29,4 @@ extern boost::mutex boost_test_mutex;
     BOOST_TEST_MESSAGE( M );                                       \
 } while (0)
 
-#endif //_TESTS_COMMON_H_
+#endif

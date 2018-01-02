@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef POLL_REQUEST_H_EE8A599182D141B7987A82D5DBD174D1
-#define POLL_REQUEST_H_EE8A599182D141B7987A82D5DBD174D1
+#ifndef POLL_REQUEST_HH_D457514F0F9D48279E6263633651BD9C
+#define POLL_REQUEST_HH_D457514F0F9D48279E6263633651BD9C
 
 #include "src/backend/epp/session_lang.hh"
 #include "src/util/decimal/decimal.hh"

@@ -21,8 +21,8 @@
  *  admin client configuration
  */
 
-#ifndef HANDLE_ADMINCLIENTSELECTION_ARGS_H_
-#define HANDLE_ADMINCLIENTSELECTION_ARGS_H_
+#ifndef HANDLE_ADMINCLIENTSELECTION_ARGS_HH_809940176CCF407B8E20E1741F12646B
+#define HANDLE_ADMINCLIENTSELECTION_ARGS_HH_809940176CCF407B8E20E1741F12646B
 
 #include "src/util/cfg/faked_args.hh"
 #include "src/util/cfg/handle_args.hh"
@@ -2640,4 +2640,4 @@ class HandleSendObjectEventNotificationEmailsArgsGrp : public HandleCommandGrpAr
         }
 };
 
-#endif //HANDLE_ADMINCLIENTSELECTION_ARGS_H_
+#endif

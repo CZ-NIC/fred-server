@@ -21,8 +21,8 @@
  *  handle check
  */
 
-#ifndef CHECK_HANDLE_H
-#define CHECK_HANDLE_H
+#ifndef CHECK_HANDLE_HH_86E459F246F043259DB898F445EEB82A
+#define CHECK_HANDLE_HH_86E459F246F043259DB898F445EEB82A
 
 #include "src/libfred/opcontext.hh"
 #include "src/libfred/object/object_type.hh"
@@ -57,4 +57,4 @@ private:
 
 } // namespace LibFred
 
-#endif//CHECK_HANDLE_H
+#endif

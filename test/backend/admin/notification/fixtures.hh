@@ -21,8 +21,8 @@
  *  <++>
  */
 
-#ifndef TESTS_INTERFACES_ADMIN_NOTIFICATION_FIXTURES_H
-#define TESTS_INTERFACES_ADMIN_NOTIFICATION_FIXTURES_H
+#ifndef FIXTURES_HH_68A62721C00840268108B7F7893798D1
+#define FIXTURES_HH_68A62721C00840268108B7F7893798D1
 
 #include "src/libfred/registrable_object/domain/create_domain.hh"
 #include "src/libfred/registrable_object/domain/info_domain.hh"

@@ -21,8 +21,8 @@
  *  manipulation with common CORBA instances
  */
 
-#ifndef CORBA_WRAPPER_H_
-#define CORBA_WRAPPER_H_
+#ifndef CORBA_WRAPPER_HH_6CC50150E4C742CC81BC5922DB214312
+#define CORBA_WRAPPER_HH_6CC50150E4C742CC81BC5922DB214312
 
 #include <iostream>
 #include <stdexcept>
@@ -181,4 +181,4 @@ void CorbaContainer::destroy_instance()
     instance_ptr.reset(0);
 }
 
-#endif //CORBA_WRAPPER_H_
+#endif

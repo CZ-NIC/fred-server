@@ -21,8 +21,8 @@
  *  return checks ready to be processed and resolved by user
  */
 
-#ifndef ADMIN_CONTACT_VERIFICATION_LIST_CHECKS_AWAITING_RESOLUTION_H_710184892543
-#define ADMIN_CONTACT_VERIFICATION_LIST_CHECKS_AWAITING_RESOLUTION_H_710184892543
+#ifndef LIST_ACTIVE_CHECKS_HH_B5E8B3E8E6FD445D9E6DEB4EBDFEBACB
+#define LIST_ACTIVE_CHECKS_HH_B5E8B3E8E6FD445D9E6DEB4EBDFEBACB
 
 #include <libfred/admin_contact_verification.hh>
 
@@ -38,4 +38,4 @@ namespace Admin {
 }
 
 
-#endif // #include guard end
+#endif

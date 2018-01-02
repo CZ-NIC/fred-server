@@ -1,5 +1,5 @@
-#ifndef PAGETABLE_INVOICES_H_
-#define PAGETABLE_INVOICES_H_
+#ifndef PAGETABLE_INVOICES_HH_41AB4BFB090C42228DC2EBACAE626194
+#define PAGETABLE_INVOICES_HH_41AB4BFB090C42228DC2EBACAE626194
 
 #include "src/bin/corba/admin/pagetable_impl.hh"
 #include "src/libfred/invoicing/invoice.hh"

@@ -21,8 +21,8 @@
  *  nsset specific notification implementation
  */
 
-#ifndef FREDLIB_NOTIFIER2_OBJECT_TYPE_NSSET_397411054413
-#define FREDLIB_NOTIFIER2_OBJECT_TYPE_NSSET_397411054413
+#ifndef NSSET_HH_D3A9512F937F43449C0D312B42C03192
+#define NSSET_HH_D3A9512F937F43449C0D312B42C03192
 
 #include "src/libfred/opcontext.hh"
 #include "src/libfred/notifier/event_on_object_enum.hh"

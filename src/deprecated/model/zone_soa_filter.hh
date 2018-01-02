@@ -1,5 +1,5 @@
-#ifndef _ZONE_SOA_FILTER_H_
-#define _ZONE_SOA_FILTER_H_
+#ifndef ZONE_SOA_FILTER_HH_8D696DC2C81F4B7997691DE5BBCDD1A6
+#define ZONE_SOA_FILTER_HH_8D696DC2C81F4B7997691DE5BBCDD1A6
 
 #include "src/util/db/query/base_filters.hh"
 #include "src/deprecated/model/zone_filter.hh"
@@ -63,4 +63,4 @@ public:
 } // namespace Filters
 } // namespace Database
 
-#endif // _ZONE_SOA_FILTER_H_
+#endif

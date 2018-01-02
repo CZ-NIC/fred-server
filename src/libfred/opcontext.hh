@@ -21,8 +21,8 @@
  *  operation context
  */
 
-#ifndef OPCONTEXT_H_514FF01C2C974C899314DD0B8DE0E372//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define OPCONTEXT_H_514FF01C2C974C899314DD0B8DE0E372
+#ifndef OPCONTEXT_HH_313D7DA5889A4FCAA339EF8F775103C4
+#define OPCONTEXT_HH_313D7DA5889A4FCAA339EF8F775103C4
 
 #include "src/util/log/log.hh"
 #include "src/libfred/db_settings.hh"
@@ -160,4 +160,4 @@ void rollback_transaction(const std::string &_transaction_id);
 
 } // namespace LibFred
 
-#endif //OPCONTEXT_H_514FF01C2C974C899314DD0B8DE0E372
+#endif

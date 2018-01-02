@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef EPP_RESPONSE_FAILURE_LOCALIZED_H_2206E3966B8346719CBDBBFD6A2DC0EB
-#define EPP_RESPONSE_FAILURE_LOCALIZED_H_2206E3966B8346719CBDBBFD6A2DC0EB
+#ifndef EPP_RESPONSE_FAILURE_LOCALIZED_HH_782FF4573D2948D795F4649C7721BC17
+#define EPP_RESPONSE_FAILURE_LOCALIZED_HH_782FF4573D2948D795F4649C7721BC17
 
 #include "src/backend/epp/epp_response_failure.hh"
 #include "src/backend/epp/epp_result_failure_localized.hh"

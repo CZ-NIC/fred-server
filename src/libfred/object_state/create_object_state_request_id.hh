@@ -21,8 +21,8 @@
  *  create object state request
  */
 
-#ifndef CREATE_OBJECT_STATE_REQUEST_ID_H_
-#define CREATE_OBJECT_STATE_REQUEST_ID_H_
+#ifndef CREATE_OBJECT_STATE_REQUEST_ID_HH_C78B357E78664A7A9D0916F9B2DA677A
+#define CREATE_OBJECT_STATE_REQUEST_ID_HH_C78B357E78664A7A9D0916F9B2DA677A
 
 #include <utility>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -117,4 +117,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif//CREATE_OBJECT_STATE_REQUEST_ID_H_
+#endif

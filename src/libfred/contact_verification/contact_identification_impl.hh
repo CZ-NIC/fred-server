@@ -21,8 +21,8 @@
  *  header of contact identification
  */
 
-#ifndef CONTACT_IDENTIFICATION_IMPL_H_
-#define CONTACT_IDENTIFICATION_IMPL_H_
+#ifndef CONTACT_IDENTIFICATION_IMPL_HH_A3C4C7460E94422B9838BE92D1DA752A
+#define CONTACT_IDENTIFICATION_IMPL_HH_A3C4C7460E94422B9838BE92D1DA752A
 
 #include "src/libfred/public_request/public_request_impl.hh"
 #include "src/libfred/contact_verification/contact_verification_password.hh"
@@ -48,4 +48,4 @@ public:
 
 }}}
 
-#endif // CONTACT_IDENTIFICATION_IMPL_H_
+#endif

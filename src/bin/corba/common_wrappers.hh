@@ -21,8 +21,8 @@
  *  common CORBA type wrappers
  */
 
-#ifndef COMMON_WRAPPERS_H_
-#define COMMON_WRAPPERS_H_
+#ifndef COMMON_WRAPPERS_HH_C6F60F2FC4074C348513E75AEEA7503F
+#define COMMON_WRAPPERS_HH_C6F60F2FC4074C348513E75AEEA7503F
 
 #include <string>
 #include <boost/algorithm/string.hpp>
@@ -40,4 +40,4 @@ inline char* corba_wrap_string(const std::string &_s)
     return corba_wrap_string(_s.c_str());
 }
 
-#endif // COMMON_WRAPPERS_H_
+#endif

@@ -20,8 +20,8 @@
  *  @file
  */
 
-#ifndef FREDLIB_NOTIFIER2_OBJECT_TYPE_UTIL_75445343456365
-#define FREDLIB_NOTIFIER2_OBJECT_TYPE_UTIL_75445343456365
+#ifndef UTIL_HH_9EE31CBD39264FFE95D7118730815309
+#define UTIL_HH_9EE31CBD39264FFE95D7118730815309
 
 #include "src/libfred/opcontext.hh"
 #include "src/libfred/notifier/event_on_object_enum.hh"

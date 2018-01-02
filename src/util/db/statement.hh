@@ -21,8 +21,8 @@
  *  Base class for database statements
  */
 
-#ifndef STATEMENT_H_
-#define STATEMENT_H_
+#ifndef STATEMENT_HH_F74F6399A5C64CAC9D86782D909CF546
+#define STATEMENT_HH_F74F6399A5C64CAC9D86782D909CF546
 
 #include <boost/utility.hpp>
 #include <boost/function.hpp>

@@ -21,8 +21,8 @@
  *  Comparison of registered implementations with requirements.
  */
 
-#ifndef FACTORY_CHECK_H_
-#define FACTORY_CHECK_H_
+#ifndef FACTORY_CHECK_HH_32E8EF58E9B844A89ABA5459C1AA8D6A
+#define FACTORY_CHECK_HH_32E8EF58E9B844A89ABA5459C1AA8D6A
 
 #include <stdexcept>
 #include <string>
@@ -135,4 +135,4 @@ template <class FACTORY> std::vector<std::string> get_names_begining_with_prefix
 
 }
 
-#endif // FACTORY_CHECK_H_
+#endif

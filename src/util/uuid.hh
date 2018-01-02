@@ -21,8 +21,8 @@
  *  UUID type
  */
 
-#ifndef UTIIL_UUID_H_2323468522
-#define UTIIL_UUID_H_2323468522
+#ifndef UUID_HH_EF6BA55F5AD74813BC76C6832E552E2A
+#define UUID_HH_EF6BA55F5AD74813BC76C6832E552E2A
 
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid.hpp>

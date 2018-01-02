@@ -1,5 +1,5 @@
-#ifndef _PAGETABLE_ZONES_H_
-#define _PAGETABLE_ZONES_H_
+#ifndef PAGETABLE_ZONES_HH_B496FF4EB63A448F8BFF649F3603EAB6
+#define PAGETABLE_ZONES_HH_B496FF4EB63A448F8BFF649F3603EAB6
 
 #include "src/bin/corba/admin/pagetable_impl.hh"
 
@@ -17,4 +17,4 @@ public:
     LibFred::Zone::Zone *findId(ccReg::TID id);
 }; // class ccReg_Zones_i
 
-#endif // _PAGETABLE_ZONES_H_
+#endif

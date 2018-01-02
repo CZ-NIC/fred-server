@@ -1,5 +1,5 @@
-#ifndef PUBLIC_REQUEST_BLOCK_IMPL_H_
-#define PUBLIC_REQUEST_BLOCK_IMPL_H_
+#ifndef PUBLIC_REQUEST_BLOCK_IMPL_HH_6737A5987F404D159FEE30FE07322386
+#define PUBLIC_REQUEST_BLOCK_IMPL_HH_6737A5987F404D159FEE30FE07322386
 
 #include "src/libfred/public_request/public_request.hh"
 #include "src/util/factory.hh"

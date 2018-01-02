@@ -16,8 +16,8 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _NOTIFYCLIENT_H_
-#define _NOTIFYCLIENT_H_
+#ifndef NOTIFYCLIENT_HH_EA4AAF6519FA4C499BA2CCBDBA82616A
+#define NOTIFYCLIENT_HH_EA4AAF6519FA4C499BA2CCBDBA82616A
 
 #include "src/util/hp/hpmail.hh"
 #include "src/util/subprocess.hh"

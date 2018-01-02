@@ -21,8 +21,8 @@
  *  checked config option types
  */
 
-#ifndef CHECKED_TYPES_H_507789EEC9934471ACB32A3798A28B0A
-#define CHECKED_TYPES_H_507789EEC9934471ACB32A3798A28B0A
+#ifndef CHECKED_TYPES_HH_AF1016A8028542649AF4E0BFF7CEE830
+#define CHECKED_TYPES_HH_AF1016A8028542649AF4E0BFF7CEE830
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>

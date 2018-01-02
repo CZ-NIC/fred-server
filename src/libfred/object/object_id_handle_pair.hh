@@ -21,8 +21,8 @@
  *  object id and handle pair
  */
 
-#ifndef OBJECT_ID_HANDLE_PAIR_H
-#define OBJECT_ID_HANDLE_PAIR_H
+#ifndef OBJECT_ID_HANDLE_PAIR_HH_B98F5620CB614CC4AD93C8CF08D46449
+#define OBJECT_ID_HANDLE_PAIR_HH_B98F5620CB614CC4AD93C8CF08D46449
 
 #include <string>
 #include "src/util/printable.hh"
@@ -82,4 +82,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif//OBJECT_ID_HANDLE_PAIR_H
+#endif

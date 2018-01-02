@@ -22,8 +22,8 @@
  *  There can be another testsuites as well but content of this enum is mandatory and should be always present in database.
  */
 
-#ifndef CONTACT_VERIFICATION_TESTSUITE_HANDLE_2133867786_
-#define CONTACT_VERIFICATION_TESTSUITE_HANDLE_2133867786_
+#ifndef ENUM_TESTSUITE_HANDLE_HH_A93FF072A7BB4060882CCAB4DD88C45E
+#define ENUM_TESTSUITE_HANDLE_HH_A93FF072A7BB4060882CCAB4DD88C45E
 
 namespace LibFred
 {

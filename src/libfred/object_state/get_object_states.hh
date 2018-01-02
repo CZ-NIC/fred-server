@@ -21,8 +21,8 @@
  *  get object states
  */
 
-#ifndef GET_OBJECT_STATES_H_
-#define GET_OBJECT_STATES_H_
+#ifndef GET_OBJECT_STATES_HH_81B413998C6E4CA89A898636E5FF7A2B
+#define GET_OBJECT_STATES_HH_81B413998C6E4CA89A898636E5FF7A2B
 
 #include <vector>
 #include <string>
@@ -75,4 +75,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif // GET_OBJECT_STATES_H_
+#endif

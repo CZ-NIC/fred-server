@@ -1,5 +1,5 @@
-#ifndef BANK_PAYMENT_IMPL_H_
-#define BANK_PAYMENT_IMPL_H_
+#ifndef BANK_PAYMENT_IMPL_HH_F11C942347B648A4A9EDA7A6E3495B32
+#define BANK_PAYMENT_IMPL_HH_F11C942347B648A4A9EDA7A6E3495B32
 
 #include "src/libfred/banking/bank_common.hh"
 #include "src/libfred/banking/bank_payment.hh"

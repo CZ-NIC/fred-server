@@ -1,5 +1,5 @@
-#ifndef DOMAIN_FILTER_H_
-#define DOMAIN_FILTER_H_
+#ifndef DOMAIN_FILTER_HH_2597303E5C114757ADC791C817A3C219
+#define DOMAIN_FILTER_HH_2597303E5C114757ADC791C817A3C219
 
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/utility.hpp>

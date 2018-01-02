@@ -21,8 +21,8 @@
  *  \brief Storing Connection as a thread specific data
  */
 
-#ifndef DATABASE_MANAGER_TSS_H_
-#define DATABASE_MANAGER_TSS_H_
+#ifndef MANAGER_TSS_HH_BF0788B58F294031ACB5E438E48E058E
+#define MANAGER_TSS_HH_BF0788B58F294031ACB5E438E48E058E
 
 #include <string>
 #include <boost/thread/thread.hpp>

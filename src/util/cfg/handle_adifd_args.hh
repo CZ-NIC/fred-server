@@ -21,8 +21,8 @@
  *  admin interface config
  */
 
-#ifndef HANDLE_ADIFD_ARGS_H_
-#define HANDLE_ADIFD_ARGS_H_
+#ifndef HANDLE_ADIFD_ARGS_HH_554360F06B964373B1F5A82419BE7708
+#define HANDLE_ADIFD_ARGS_HH_554360F06B964373B1F5A82419BE7708
 
 #include <iostream>
 #include <exception>
@@ -78,4 +78,4 @@ public:
     }//handle
 };
 
-#endif //HANDLE_ADIFD_ARGS_H_
+#endif

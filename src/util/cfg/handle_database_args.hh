@@ -21,8 +21,8 @@
  *  database dependent args handling
  */
 
-#ifndef HANDLE_DATABASE_ARGS_H_
-#define HANDLE_DATABASE_ARGS_H_
+#ifndef HANDLE_DATABASE_ARGS_HH_932E1219F77B4A3F9E7B1DB0E25CB8E1
+#define HANDLE_DATABASE_ARGS_HH_932E1219F77B4A3F9E7B1DB0E25CB8E1
 
 #include <iostream>
 #include <exception>
@@ -148,4 +148,4 @@ public:
 };//class HandleDatabaseArgsGrp
 
 
-#endif //HANDLE_DATABASE_ARGS_H_
+#endif

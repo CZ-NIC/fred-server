@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef UPDATE_CONTACT_H_AC0FEA7E8B954D94BA589B65399518D9
-#define UPDATE_CONTACT_H_AC0FEA7E8B954D94BA589B65399518D9
+#ifndef UPDATE_CONTACT_HH_2117202ACF1A4A4E99F44F43EA046C6C
+#define UPDATE_CONTACT_HH_2117202ACF1A4A4E99F44F43EA046C6C
 
 #include "src/backend/epp/session_data.hh"
 #include "src/backend/epp/contact/contact_change.hh"

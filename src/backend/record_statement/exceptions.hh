@@ -21,8 +21,8 @@
  *  registry record statement exceptions
  */
 
-#ifndef EXCEPTIONS_HH_3EF08AD8037C49FAB1E9CDC31F63D540//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define EXCEPTIONS_HH_3EF08AD8037C49FAB1E9CDC31F63D540
+#ifndef EXCEPTIONS_HH_F43965EE8C00484A82D6DD239D102C38
+#define EXCEPTIONS_HH_F43965EE8C00484A82D6DD239D102C38
 
 #include <exception>
 
@@ -58,4 +58,4 @@ struct ObjectNotFound:std::exception
 } // namespace Registry::RecordStatement
 } // namespace Registry
 
-#endif//EXCEPTIONS_HH_3EF08AD8037C49FAB1E9CDC31F63D540
+#endif

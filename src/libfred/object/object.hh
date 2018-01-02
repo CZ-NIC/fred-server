@@ -21,8 +21,8 @@
  *  common object
  */
 
-#ifndef OBJECT__H_
-#define OBJECT__H_
+#ifndef OBJECT_HH_656D57B205F348B8A9C6540F6FAA1625
+#define OBJECT_HH_656D57B205F348B8A9C6540F6FAA1625
 
 #include <string>
 
@@ -167,4 +167,4 @@ namespace LibFred
     };
 
 } // namespace LibFred
-#endif // end of #include guard
+#endif

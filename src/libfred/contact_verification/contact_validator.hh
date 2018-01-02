@@ -1,5 +1,5 @@
-#ifndef CONTACT_VALIDATOR_H__
-#define CONTACT_VALIDATOR_H__
+#ifndef CONTACT_VALIDATOR_HH_082D41229FAB4477BC5BBB3C88922C44
+#define CONTACT_VALIDATOR_HH_082D41229FAB4477BC5BBB3C88922C44
 
 #include "src/libfred/contact_verification/contact.hh"
 #include "src/util/log/logger.hh"

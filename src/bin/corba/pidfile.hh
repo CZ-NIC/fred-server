@@ -1,5 +1,5 @@
-#ifndef PIDFILE_H
-#define PIDFILE_H
+#ifndef PIDFILE_HH_0CC94EEC68B8493EAA21406B4CA09FEF
+#define PIDFILE_HH_0CC94EEC68B8493EAA21406B4CA09FEF
 
 #include <fstream>
 #include <string>
@@ -10,7 +10,7 @@
 namespace PidFileNS
 {
   //PID type
-#ifndef pid_t
+#ifndef PIDFILE_HH_0CC94EEC68B8493EAA21406B4CA09FEF
   typedef unsigned long pid_t;
 #endif
 
@@ -61,4 +61,4 @@ namespace PidFileNS
 
 } // namespace pidfilens
 
-#endif //PIDFILE_H
+#endif

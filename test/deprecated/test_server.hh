@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TESTSERVER_H_
-#define TESTSERVER_H_
+#ifndef TEST_SERVER_HH_A22A698B89124E618E6E6F0F07FA4AA5
+#define TEST_SERVER_HH_A22A698B89124E618E6E6F0F07FA4AA5
 
 #include <memory>
 #include <stdexcept>
@@ -60,4 +60,4 @@
 #include "src/util/cfg/handle_domainbrowser_args.hh"
 
 
-#endif // TESTSERVER_H_
+#endif

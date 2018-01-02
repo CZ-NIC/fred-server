@@ -1,5 +1,5 @@
-#ifndef _BANK_COMMON_H_
-#define _BANK_COMMON_H_
+#ifndef BANK_COMMON_HH_600B23674C6343DDB75AD74E697FF953
+#define BANK_COMMON_HH_600B23674C6343DDB75AD74E697FF953
 
 #include <istream>
 #include <libxml/xmlwriter.h>
@@ -148,4 +148,4 @@ public:
 } // namespace Banking
 } // namespace LibFred
 
-#endif // _BANK_COMMON_H_
+#endif

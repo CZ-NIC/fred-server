@@ -1,5 +1,5 @@
-#ifndef REMINDER_H__
-#define REMINDER_H__
+#ifndef REMINDER_HH_F21022EA59C544D5924D2228DDC4A8DF
+#define REMINDER_HH_F21022EA59C544D5924D2228DDC4A8DF
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <stdexcept>

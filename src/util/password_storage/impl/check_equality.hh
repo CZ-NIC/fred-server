@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CHECK_EQUALITY_HH_19FD627794361D94A2AEA40661216EE2//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define CHECK_EQUALITY_HH_19FD627794361D94A2AEA40661216EE2
+#ifndef CHECK_EQUALITY_HH_5DA1AC8D523247509F4A3CA6DDA82654
+#define CHECK_EQUALITY_HH_5DA1AC8D523247509F4A3CA6DDA82654
 
 #include "src/util/password_storage.hh"
 
@@ -50,4 +50,4 @@ void check_equality(
 } // namespace PasswordStorage::Impl
 } // namespace PasswordStorage
 
-#endif//CHECK_EQUALITY_HH_19FD627794361D94A2AEA40661216EE2
+#endif

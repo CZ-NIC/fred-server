@@ -21,8 +21,8 @@
  *  header of mojeid implementation
  */
 
-#ifndef MOJEID_H_06D795C17DD0FF3D98B375032F99493A//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define MOJEID_H_06D795C17DD0FF3D98B375032F99493A
+#ifndef MOJEID_HH_56C8449065CF456E85D3F2D0A1B5A37A
+#define MOJEID_HH_56C8449065CF456E85D3F2D0A1B5A37A
 
 #include "src/backend/mojeid/mojeid_checkers.hh"
 #include "src/backend/mojeid/mojeid_impl_data_conversion.hh"
@@ -158,4 +158,4 @@ private:
 } // namespace Registry::MojeID
 } // namespace Registry
 
-#endif//MOJEID_H_06D795C17DD0FF3D98B375032F99493A
+#endif

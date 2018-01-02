@@ -22,8 +22,8 @@
  */
 
 
-#ifndef RANDOM_DATA_GENERATOR_H_
-#define RANDOM_DATA_GENERATOR_H_
+#ifndef RANDOM_DATA_GENERATOR_HH_94BF03B65AC44513BB65FE985FA1311A
+#define RANDOM_DATA_GENERATOR_HH_94BF03B65AC44513BB65FE985FA1311A
 
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/linear_congruential.hpp>
@@ -225,4 +225,4 @@ public:
 };//class RandomDataGenerator
 
 
-#endif //RANDOM_DATA_GENERATOR_H_
+#endif

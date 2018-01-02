@@ -1,5 +1,5 @@
-#ifndef BANK_PAYMENT_LIST_H_
-#define BANK_PAYMENT_LIST_H_
+#ifndef BANK_PAYMENT_LIST_HH_D36C58174E3346C3BF1B07551015F5B7
+#define BANK_PAYMENT_LIST_HH_D36C58174E3346C3BF1B07551015F5B7
 
 #include "src/libfred/common_new.hh"
 #include "src/libfred/banking/bank_payment.hh"

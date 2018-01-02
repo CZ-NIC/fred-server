@@ -21,8 +21,8 @@
  *  templates for contact enums
  */
 
-#ifndef CONTACT_ENUM_H
-#define CONTACT_ENUM_H
+#ifndef CONTACT_ENUM_HH_54DADDB16CD34A4BAABBA444F473BE6B
+#define CONTACT_ENUM_HH_54DADDB16CD34A4BAABBA444F473BE6B
 
 #include <string>
 
@@ -123,4 +123,4 @@ std::string get_country_code(const Optional<std::string>& country, OperationCont
 } // namespace Contact
 } // namespace LibFred
 
-#endif//CONTACT_ENUM_H
+#endif

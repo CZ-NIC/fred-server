@@ -22,8 +22,8 @@
  *  database manipulation
  */
 
-#ifndef FIELD_H_
-#define FIELD_H_
+#ifndef FIELD_HH_60D5E7629E9C4269AAB249F84D3CD433
+#define FIELD_HH_60D5E7629E9C4269AAB249F84D3CD433
 
 
 namespace Field {

@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CHECK_CONTACT_LOCALIZED_RESPONSE_H_1D58962AC119499B837AB72B6CF42B0B
-#define CHECK_CONTACT_LOCALIZED_RESPONSE_H_1D58962AC119499B837AB72B6CF42B0B
+#ifndef CHECK_CONTACT_LOCALIZED_RESPONSE_HH_76B911CCBE23436F97F66117D02910B7
+#define CHECK_CONTACT_LOCALIZED_RESPONSE_HH_76B911CCBE23436F97F66117D02910B7
 
 #include "src/backend/epp/contact/contact_handle_registration_obstruction_localized.hh"
 #include "src/backend/epp/epp_response_success_localized.hh"

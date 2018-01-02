@@ -21,8 +21,8 @@
  *  hybrid postservice mailbatch state check configuration
  */
 
-#ifndef HANDLE_HPMAILBATCHSTATE_ARGS_H_
-#define HANDLE_HPMAILBATCHSTATE_ARGS_H_
+#ifndef HANDLE_HPMAILBATCHSTATE_ARGS_HH_3F4A141ECB5A4EB7863F532D9E6A9E2F
+#define HANDLE_HPMAILBATCHSTATE_ARGS_HH_3F4A141ECB5A4EB7863F532D9E6A9E2F
 
 #include <iostream>
 #include <exception>
@@ -243,4 +243,4 @@ public:
     }//handle
 };//class HandleHPMailBatchStateArgsGrp
 
-#endif //HANDLE_HPMAILBATCHSTATE_ARGS_H_
+#endif

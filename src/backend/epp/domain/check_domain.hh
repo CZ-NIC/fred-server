@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CHECK_DOMAIN_H_29361249D9254622AD544B34701D9E63
-#define CHECK_DOMAIN_H_29361249D9254622AD544B34701D9E63
+#ifndef CHECK_DOMAIN_HH_1BDF5A43C48645919D20881B6D63C254
+#define CHECK_DOMAIN_HH_1BDF5A43C48645919D20881B6D63C254
 
 #include "src/backend/epp/domain/check_domain_config_data.hh"
 #include "src/backend/epp/domain/check_domain_localized.hh"

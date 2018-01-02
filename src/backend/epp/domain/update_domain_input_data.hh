@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef UPDATE_DOMAIN_INPUT_DATA_H_E0B4BA71C29D44E1ABEBC646702AE2BC
-#define UPDATE_DOMAIN_INPUT_DATA_H_E0B4BA71C29D44E1ABEBC646702AE2BC
+#ifndef UPDATE_DOMAIN_INPUT_DATA_HH_20735D14D1A54D8293D414DDFE019687
+#define UPDATE_DOMAIN_INPUT_DATA_HH_20735D14D1A54D8293D414DDFE019687
 
 #include "src/backend/epp/domain/domain_enum_validation.hh"
 #include "src/util/db/nullable.hh"

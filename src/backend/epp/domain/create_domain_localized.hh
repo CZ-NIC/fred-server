@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CREATE_DOMAIN_LOCALIZED_H_EDC3ED43379D48C5A532E4A061895332
-#define CREATE_DOMAIN_LOCALIZED_H_EDC3ED43379D48C5A532E4A061895332
+#ifndef CREATE_DOMAIN_LOCALIZED_HH_D9720345EB9B4BF090357A9D636B3AA3
+#define CREATE_DOMAIN_LOCALIZED_HH_D9720345EB9B4BF090357A9D636B3AA3
 
 #include "src/backend/epp/domain/create_domain_config_data.hh"
 #include "src/backend/epp/domain/create_domain_input_data.hh"

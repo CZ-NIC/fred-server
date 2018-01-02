@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _REGBLOCK_CLIENT_IMPL_H_
-#define _REGBLOCK_CLIENT_IMPL_H_
+#ifndef REGBLOCK_CLIENT_IMPL_HH_704666A1360646B4863A2C28B5D334ED
+#define REGBLOCK_CLIENT_IMPL_HH_704666A1360646B4863A2C28B5D334ED
 
 #include "src/bin/corba/logger_client_impl.hh"
 #include "src/bin/corba/epp_corba_client_impl.hh"
@@ -151,4 +151,4 @@ private:
 };
 
 
-#endif // _REGBLOCK_CLIENT_IMPL_H_
+#endif

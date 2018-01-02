@@ -17,8 +17,8 @@
  */
 
 
-#ifndef MODEL_FIELD_MACROS_H_
-#define MODEL_FIELD_MACROS_H_
+#ifndef MODEL_FIELD_MACROS_HH_D5B542C568EA42AFBF29A6AC924DA165
+#define MODEL_FIELD_MACROS_HH_D5B542C568EA42AFBF29A6AC924DA165
 
 #include "src/util/db/model/model_field.hh"
 // #include "model_field_related.h"

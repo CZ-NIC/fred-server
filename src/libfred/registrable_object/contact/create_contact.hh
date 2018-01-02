@@ -21,8 +21,8 @@
  *  create contact
  */
 
-#ifndef CREATE_CONTACT_H_
-#define CREATE_CONTACT_H_
+#ifndef CREATE_CONTACT_HH_99FAF02B7ADB45C3ADD9E9C3A0B9AFB7
+#define CREATE_CONTACT_HH_99FAF02B7ADB45C3ADD9E9C3A0B9AFB7
 
 #include <string>
 #include <vector>
@@ -345,4 +345,4 @@ namespace LibFred
 
     };//CreateContact
 }
-#endif // CREATE_CONTACT_H_
+#endif

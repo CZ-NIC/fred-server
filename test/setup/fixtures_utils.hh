@@ -3,8 +3,8 @@
  *  test fixture utils
  */
 
-#ifndef TESTS_SETUP_COMMON_FIXTURES_41215653023
-#define TESTS_SETUP_COMMON_FIXTURES_41215653023
+#ifndef FIXTURES_UTILS_HH_AFF603B566B44E78A5A215F9112A2040
+#define FIXTURES_UTILS_HH_AFF603B566B44E78A5A215F9112A2040
 
 #include "src/util/db/nullable.hh"
 #include "src/util/optional_value.hh"
@@ -641,4 +641,4 @@ namespace Test {
     };
 };
 
-#endif // #include guard end
+#endif

@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DELETE_CONTACT_H_453EB59462824558BD5077709DA2806D
-#define DELETE_CONTACT_H_453EB59462824558BD5077709DA2806D
+#ifndef DELETE_CONTACT_HH_F686D915FAF44E22A9DDBBE589ACD111
+#define DELETE_CONTACT_HH_F686D915FAF44E22A9DDBBE589ACD111
 
 #include "src/backend/epp/contact/delete_contact_config_data.hh"
 #include "src/backend/epp/session_data.hh"

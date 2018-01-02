@@ -27,8 +27,8 @@ ziska relaci stav blokovani objektu -> id stavu blokovani objektu
   object_type
 */
 
-#ifndef GET_OBJECT_STATE_ID_MAP_H_
-#define GET_OBJECT_STATE_ID_MAP_H_
+#ifndef GET_OBJECT_STATE_ID_MAP_HH_564EE8F37C4F4F1A9ECF8B417EEE2C20
+#define GET_OBJECT_STATE_ID_MAP_HH_564EE8F37C4F4F1A9ECF8B417EEE2C20
 
 #include "src/libfred/opexception.hh"
 #include "src/libfred/opcontext.hh"
@@ -66,4 +66,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif//GET_OBJECT_STATE_ID_MAP_H_
+#endif

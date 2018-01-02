@@ -21,8 +21,8 @@
  *  Create request for administrative blocking of object.
  */
 
-#ifndef CREATE_ADMIN_OBJECT_BLOCK_REQUEST_ID_H_
-#define CREATE_ADMIN_OBJECT_BLOCK_REQUEST_ID_H_
+#ifndef CREATE_ADMIN_OBJECT_BLOCK_REQUEST_ID_HH_F574499E2EA143E4AF72C97243C9A7E1
+#define CREATE_ADMIN_OBJECT_BLOCK_REQUEST_ID_HH_F574499E2EA143E4AF72C97243C9A7E1
 
 #include "src/libfred/object_state/create_object_state_request_id.hh"
 
@@ -129,4 +129,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif//CREATE_ADMIN_OBJECT_BLOCK_REQUEST_ID_H_
+#endif

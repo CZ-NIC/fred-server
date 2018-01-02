@@ -21,8 +21,8 @@
  *  header of whois implementation
  */
 
-#ifndef _WHOIS_H_3513138416434634
-#define _WHOIS_H_3513138416434634
+#ifndef WHOIS_HH_C352E6E1DED044AAAE6EC8B2EF5DCA30
+#define WHOIS_HH_C352E6E1DED044AAAE6EC8B2EF5DCA30
 
 #include "src/libfred/object_state/get_object_states.hh"
 #include "src/libfred/registrable_object/domain/info_domain_output.hh"

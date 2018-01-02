@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef EPP_RESULT_FAILURE_LOCALIZED_H_F6024F1DD96944B58A9E6F191A9DB2A6
-#define EPP_RESULT_FAILURE_LOCALIZED_H_F6024F1DD96944B58A9E6F191A9DB2A6
+#ifndef EPP_RESULT_FAILURE_LOCALIZED_HH_F77661AD879F4D99A8A8558E620A01EF
+#define EPP_RESULT_FAILURE_LOCALIZED_HH_F77661AD879F4D99A8A8558E620A01EF
 
 #include "src/backend/epp/epp_extended_error_localized.hh"
 #include "src/backend/epp/epp_result_failure.hh"

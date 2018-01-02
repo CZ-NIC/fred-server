@@ -22,8 +22,8 @@
  */
 
 
-#ifndef SUBPROCESS_H_
-#define SUBPROCESS_H_
+#ifndef SUBPROCESS_HH_A539E3A3E3B4436D828087C418ADE5A2
+#define SUBPROCESS_HH_A539E3A3E3B4436D828087C418ADE5A2
 
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -257,4 +257,4 @@ private:
     const RelativeTimeInSeconds timeout_; /**< Maximal command lifetime in seconds. */
 };//class ShellCmd
 
-#endif//SUBPROCESS_H_
+#endif

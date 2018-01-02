@@ -3,8 +3,8 @@
  *  test fredlib utils
  */
 
-#ifndef TESTS_FREDLIB_UTIL_69498451224
-#define TESTS_FREDLIB_UTIL_69498451224
+#ifndef UTIL_HH_EF3AC5061B72408083458556AF1CEE43
+#define UTIL_HH_EF3AC5061B72408083458556AF1CEE43
 
 #include "test/setup/fixtures.hh"
 #include "test/setup/fixtures_utils.hh"
@@ -242,4 +242,4 @@ struct has_nsset_and_a_different_registrar : has_nsset {
 
 }
 
-#endif // #include guard end
+#endif

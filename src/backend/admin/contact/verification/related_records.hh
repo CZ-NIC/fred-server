@@ -21,8 +21,8 @@
  *  utilities for records related to admin contact verification data
  */
 
-#ifndef ADMIN_CONTACT_VERIFICATION_RELATED_RECORDS_H_56564542442
-#define ADMIN_CONTACT_VERIFICATION_RELATED_RECORDS_H_56564542442
+#ifndef RELATED_RECORDS_HH_255B3730A58F470DA6BEAF4858BE4213
+#define RELATED_RECORDS_HH_255B3730A58F470DA6BEAF4858BE4213
 
 #include <vector>
 #include <string>
@@ -102,4 +102,4 @@ namespace Admin {
 }
 
 
-#endif // #include guard end
+#endif

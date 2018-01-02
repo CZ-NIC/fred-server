@@ -1,5 +1,5 @@
-#ifndef STR_CORBAOUT_H_
-#define STR_CORBAOUT_H_
+#ifndef STR_CORBAOUT_HH_4471E069481644EAA190BD3C7083BE9D
+#define STR_CORBAOUT_HH_4471E069481644EAA190BD3C7083BE9D
 
 #include "src/bin/corba/admin/common.hh"
 #include "src/util/types/stringify.hh"

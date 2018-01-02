@@ -1,5 +1,5 @@
-#ifndef QUERY_OLD_H_
-#define QUERY_OLD_H_
+#ifndef QUERY_OLD_HH_3C832E96E9104C25A646225C4B400587
+#define QUERY_OLD_HH_3C832E96E9104C25A646225C4B400587
 
 #include <iostream>
 #include <sstream>

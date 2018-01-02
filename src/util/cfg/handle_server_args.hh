@@ -21,8 +21,8 @@
  *  server process common configuration
  */
 
-#ifndef HANDLE_SERVER_ARGS_H_
-#define HANDLE_SERVER_ARGS_H_
+#ifndef HANDLE_SERVER_ARGS_HH_B70FE2E429FF4878BA17304A091919BB
+#define HANDLE_SERVER_ARGS_HH_B70FE2E429FF4878BA17304A091919BB
 
 #include <iostream>
 #include <exception>
@@ -68,4 +68,4 @@ public:
     }//handle
 };
 
-#endif //HANDLE_SERVER_ARGS_H_
+#endif

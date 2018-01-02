@@ -1,5 +1,5 @@
-#ifndef PAGETABLE_SESSION_H_
-#define PAGETABLE_SESSION_H_
+#ifndef PAGETABLE_LOGSESSION_HH_6FA7C69F550246F1A3BFE920EDB1C534
+#define PAGETABLE_LOGSESSION_HH_6FA7C69F550246F1A3BFE920EDB1C534
 
 #include "src/libfred/requests/session.hh"
 #include "src/bin/corba/admin/pagetable_impl.hh"
@@ -22,4 +22,4 @@ public:
 	const static int NUM_COLUMNS;
 };
 
-#endif // PAGETABLE_SESSION_H_
+#endif

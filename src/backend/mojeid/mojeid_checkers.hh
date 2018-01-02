@@ -21,8 +21,8 @@
  *  header of mojeid checkers
  */
 
-#ifndef MOJEID2_CHECKERS_H_3F3071E19E8ADD1CB7438F97BBE37530//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define MOJEID2_CHECKERS_H_3F3071E19E8ADD1CB7438F97BBE37530
+#ifndef MOJEID_CHECKERS_HH_717A66E63EE24C88BEE864D37E955CBA
+#define MOJEID_CHECKERS_HH_717A66E63EE24C88BEE864D37E955CBA
 
 #include "src/backend/mojeid/checkers.hh"
 #include "src/libfred/registrable_object/contact/info_contact_data.hh"
@@ -56,4 +56,4 @@ struct states_before_transfer_into_mojeid
 }//Fred::MojeID
 }//Fred
 
-#endif//MOJEID2_CHECKERS_H_3F3071E19E8ADD1CB7438F97BBE37530
+#endif

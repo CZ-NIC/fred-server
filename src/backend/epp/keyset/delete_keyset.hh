@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DELETE_KEYSET_H_B1F9FD75689C471A8C4FAB8A30DB2B80
-#define DELETE_KEYSET_H_B1F9FD75689C471A8C4FAB8A30DB2B80
+#ifndef DELETE_KEYSET_HH_BFD720C00EE944EA8C5ADDF7D97D15CF
+#define DELETE_KEYSET_HH_BFD720C00EE944EA8C5ADDF7D97D15CF
 
 #include "src/backend/epp/keyset/delete_keyset_config_data.hh"
 #include "src/backend/epp/session_data.hh"

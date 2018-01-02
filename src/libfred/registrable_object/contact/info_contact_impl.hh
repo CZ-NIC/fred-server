@@ -21,8 +21,8 @@
  *  contact info implementation
  */
 
-#ifndef INFO_CONTACT_IMPL_H_
-#define INFO_CONTACT_IMPL_H_
+#ifndef INFO_CONTACT_IMPL_HH_5E8548AD1FB04583864D47C716CE05F9
+#define INFO_CONTACT_IMPL_HH_5E8548AD1FB04583864D47C716CE05F9
 
 #include <string>
 #include <vector>
@@ -153,4 +153,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif//INFO_CONTACT_IMPL_H_
+#endif

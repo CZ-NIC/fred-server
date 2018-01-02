@@ -1,5 +1,5 @@
-#ifndef _MIGRATE_H_
-#define _MIGRATE_H_
+#ifndef MIGRATE_HH_B07B1FEC47E94E6FBABACCB0D12970E9
+#define MIGRATE_HH_B07B1FEC47E94E6FBABACCB0D12970E9
 
 #include <iostream>
 #include <fstream>

@@ -22,8 +22,8 @@
  */
 
 
-#ifndef CONFIG_HANDLER_DECL_H_
-#define CONFIG_HANDLER_DECL_H_
+#ifndef CONFIG_HANDLER_DECL_HH_572439E976FC479AB59B2826F8919ACB
+#define CONFIG_HANDLER_DECL_HH_572439E976FC479AB59B2826F8919ACB
 #include <cstdio>
 #include <iostream>
 #include <exception>
@@ -242,4 +242,4 @@ template <class HELP> CfgArgGroups* CfgArgGroups::init(const HandlerPtrGrid& hpg
     return instance_ptr.get();
 }
 
-#endif //CONFIG_HANDLER_DECL_H_
+#endif

@@ -20,8 +20,8 @@
 *  @file
 *  header of admin contact verification wrapper over corba
 */
-#ifndef CORBA_ADMIN_CONTACT_VERIFICATION_SERVER_I_H_85445454532330
-#define CORBA_ADMIN_CONTACT_VERIFICATION_SERVER_I_H_85445454532330
+#ifndef SERVER_I_HH_A8647A097EF94EDE84D4B3AD5B608FDD
+#define SERVER_I_HH_A8647A097EF94EDE84D4B3AD5B608FDD
 
 // generated from idl
 #include "src/bin/corba/AdminContactVerification.hh"
@@ -72,4 +72,4 @@ namespace Registry
     }
 }
 
-#endif // #include guard
+#endif

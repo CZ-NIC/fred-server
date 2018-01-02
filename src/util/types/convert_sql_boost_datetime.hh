@@ -22,8 +22,8 @@
  *  sql query string.
  */
 
-#ifndef CONVERT_SQL_BOOST_DATETIME_H_
-#define CONVERT_SQL_BOOST_DATETIME_H_
+#ifndef CONVERT_SQL_BOOST_DATETIME_HH_671FBEF800594263836DFC004A69D86F
+#define CONVERT_SQL_BOOST_DATETIME_HH_671FBEF800594263836DFC004A69D86F
 
 #include <string>
 #include <boost/date_time/posix_time/posix_time.hpp>

@@ -21,8 +21,8 @@
  *  contact specific notification implementation
  */
 
-#ifndef FREDLIB_NOTIFIER2_OBJECT_TYPE_CONTACT_34289684254
-#define FREDLIB_NOTIFIER2_OBJECT_TYPE_CONTACT_34289684254
+#ifndef CONTACT_HH_3BBBCE559F3D4FB59261C5C3AC35CDDC
+#define CONTACT_HH_3BBBCE559F3D4FB59261C5C3AC35CDDC
 
 #include "src/libfred/opcontext.hh"
 #include "src/libfred/notifier/event_on_object_enum.hh"

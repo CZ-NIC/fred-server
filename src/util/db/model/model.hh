@@ -25,8 +25,8 @@
  *  - insert, update, remove
  */
 
-#ifndef MODEL_H_
-#define MODEL_H_
+#ifndef MODEL_HH_259EE9F5F8C8484C9B2735CF642C00D1
+#define MODEL_HH_259EE9F5F8C8484C9B2735CF642C00D1
 
 #include <vector>
 #include <boost/assign/list_of.hpp>

@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TRANSFER_DOMAIN_H_5EA6B0EA56704EF5ACCB8A6A2B76D1DD
-#define TRANSFER_DOMAIN_H_5EA6B0EA56704EF5ACCB8A6A2B76D1DD
+#ifndef TRANSFER_DOMAIN_HH_3D3B7D9BD9F142AC8347A049ED72C916
+#define TRANSFER_DOMAIN_HH_3D3B7D9BD9F142AC8347A049ED72C916
 
 #include "src/backend/epp/domain/transfer_domain_localized.hh"
 #include "src/libfred/opcontext.hh"

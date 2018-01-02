@@ -20,8 +20,8 @@
  * Interface to component which parses xml documents and returns document's
  * content in form of a structure.
  */
-#ifndef M_EPP_PARSER_H
-#define M_EPP_PARSER_H
+#ifndef M_EPP_PARSER_HH_B14652141FE5443B9628A0E3E3007DD8
+#define M_EPP_PARSER_HH_B14652141FE5443B9628A0E3E3007DD8
 
 /*
  *  Copyright (C) 2007  CZ.NIC, z.s.p.o.

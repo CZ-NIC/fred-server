@@ -1,5 +1,5 @@
-#ifndef _PAGETABLE_PAYMENTS_H_
-#define _PAGETABLE_PAYMENTS_H_
+#ifndef PAGETABLE_BANK_PAYMENTS_HH_4D8F5789C23F4D148DC38D20725ECE13
+#define PAGETABLE_BANK_PAYMENTS_HH_4D8F5789C23F4D148DC38D20725ECE13
 
 #include "src/bin/corba/admin/pagetable_impl.hh"
 #include "src/libfred/banking/bank_payment_list.hh"
@@ -19,4 +19,4 @@ public:
     LibFred::Banking::Payment *findId(ccReg::TID id);
 }; // class ccReg_PageTable_i
 
-#endif // _PAGETABLE_PAYMENTS_H_
+#endif

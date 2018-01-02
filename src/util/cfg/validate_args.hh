@@ -22,8 +22,8 @@
  *  option argument value custom validation
  */
 
-#ifndef VALIDATE_ARGS_H_cdc5c061928e479397d512bdd29e8c95
-#define VALIDATE_ARGS_H_cdc5c061928e479397d512bdd29e8c95
+#ifndef VALIDATE_ARGS_HH_BAA5803FB80F4518ABC0DC0372B55DCF
+#define VALIDATE_ARGS_HH_BAA5803FB80F4518ABC0DC0372B55DCF
 
 #include <iostream>
 #include <stdexcept>

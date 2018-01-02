@@ -21,8 +21,8 @@
  *  nsset update
  */
 
-#ifndef UPDATE_NSSET_H_
-#define UPDATE_NSSET_H_
+#ifndef UPDATE_NSSET_HH_BCF9DE8893B544DAB39A7D4CADD3CD51
+#define UPDATE_NSSET_HH_BCF9DE8893B544DAB39A7D4CADD3CD51
 
 #include <string>
 #include <vector>
@@ -177,4 +177,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif//UPDATE_NSSET_H_
+#endif

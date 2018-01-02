@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef UPDATE_KEYSET_H_F61394277C224F9DAD449E23FBBA054E
-#define UPDATE_KEYSET_H_F61394277C224F9DAD449E23FBBA054E
+#ifndef UPDATE_KEYSET_HH_38CC1B22FCC84934A2D28948B489EC1E
+#define UPDATE_KEYSET_HH_38CC1B22FCC84934A2D28948B489EC1E
 
 #include "src/backend/epp/keyset/update_keyset_input_data.hh"
 #include "src/libfred/opcontext.hh"

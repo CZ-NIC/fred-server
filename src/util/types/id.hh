@@ -1,5 +1,5 @@
-#ifndef ID_H_
-#define ID_H_
+#ifndef ID_HH_D595630589994F598A0C6260B6A5BFAE
+#define ID_HH_D595630589994F598A0C6260B6A5BFAE
 
 #include <ostream>
 #include <istream>
