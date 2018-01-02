@@ -913,6 +913,7 @@ src_libfred_libfred_a_SOURCES = \
 		src/libfred/object/transfer_object_exception.hh \
 		src/libfred/object/object.cc \
 		src/libfred/poll/message_type.hh \
+		src/libfred/poll/message_type_set.hh \
 		src/libfred/poll/create_poll_message.hh \
 		src/libfred/poll/create_poll_message.cc \
 		src/libfred/poll/create_update_object_poll_message.hh \
