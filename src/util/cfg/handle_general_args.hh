@@ -21,8 +21,8 @@
  *  config file parser, help print
  */
 
-#ifndef HANDLE_GENERAL_ARGS_H_
-#define HANDLE_GENERAL_ARGS_H_
+#ifndef HANDLE_GENERAL_ARGS_HH_8FF8CEE375FF4CD5A019EAE8A0748A46
+#define HANDLE_GENERAL_ARGS_HH_8FF8CEE375FF4CD5A019EAE8A0748A46
 
 #include <iostream>
 #include <fstream>
@@ -229,4 +229,4 @@ public:
     }//handle
 };//class HandleConfigFileArgsGrp
 
-#endif //HANDLE_GENERAL_ARGS_H_
+#endif

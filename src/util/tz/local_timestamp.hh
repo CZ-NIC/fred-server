@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LOCAL_TIMESTAMP_HH_2B3D1BC865F96692A6178061F9D356C0//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define LOCAL_TIMESTAMP_HH_2B3D1BC865F96692A6178061F9D356C0
+#ifndef LOCAL_TIMESTAMP_HH_427811098795485B928DAB09F2C34D8B
+#define LOCAL_TIMESTAMP_HH_427811098795485B928DAB09F2C34D8B
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 
@@ -74,4 +74,4 @@ private:
 
 } // namespace Tz
 
-#endif//LOCAL_TIMESTAMP_HH_2B3D1BC865F96692A6178061F9D356C0
+#endif

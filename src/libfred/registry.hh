@@ -16,8 +16,8 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef REGISTRY_H_3717B6E8AF6D4EF79122BD54E8C058ED
-#define REGISTRY_H_3717B6E8AF6D4EF79122BD54E8C058ED
+#ifndef REGISTRY_HH_EE078BED31594117A24231B6C43CFAF4
+#define REGISTRY_HH_EE078BED31594117A24231B6C43CFAF4
 
 #include <string>
 #include "src/libfred/registrable_object/domain.hh"

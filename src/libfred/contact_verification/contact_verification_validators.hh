@@ -1,5 +1,5 @@
-#ifndef CONTACT_VERIFICATION_VALIDATORS_H_2258484658
-#define CONTACT_VERIFICATION_VALIDATORS_H_2258484658
+#ifndef CONTACT_VERIFICATION_VALIDATORS_HH_8A5530A7519C42B8A3D05D1F6AA05558
+#define CONTACT_VERIFICATION_VALIDATORS_HH_8A5530A7519C42B8A3D05D1F6AA05558
 
 #include "src/libfred/contact_verification/contact_validator.hh"
 #include "src/libfred/contact_verification/contact_verification_checkers.hh"

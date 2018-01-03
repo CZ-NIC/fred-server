@@ -21,8 +21,8 @@
  *  contact info
  */
 
-#ifndef INFO_CONTACT_H_
-#define INFO_CONTACT_H_
+#ifndef INFO_CONTACT_HH_E0B2A756ECD64B59AA1679BD8ECE51C0
+#define INFO_CONTACT_HH_E0B2A756ECD64B59AA1679BD8ECE51C0
 
 #include <string>
 #include <vector>
@@ -287,4 +287,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif//INFO_CONTACT_H_
+#endif

@@ -1,5 +1,5 @@
-#ifndef _ZONE_NS_FILTER_H_
-#define _ZONE_NS_FILTER_H_
+#ifndef ZONE_NS_FILTER_HH_F93CFDCB1F7F485B8DEDC955AAB3D9AC
+#define ZONE_NS_FILTER_HH_F93CFDCB1F7F485B8DEDC955AAB3D9AC
 
 #include "src/util/db/query/base_filters.hh"
 
@@ -49,4 +49,4 @@ public:
 } // namespace Filters
 } // namespace Database
 
-#endif // _ZONE_NS_FILTER_H_
+#endif

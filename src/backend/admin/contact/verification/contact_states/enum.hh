@@ -22,8 +22,8 @@
  *  There can be another testsuites as well but content of this enum is mandatory and should be always present in database.
  */
 
-#ifndef CONTACT_VERIFICATION_RELATED_OBJECT_STATES_21547565320_
-#define CONTACT_VERIFICATION_RELATED_OBJECT_STATES_21547565320_
+#ifndef ENUM_HH_5A2AA128050749E194A29DEF54A4DF92
+#define ENUM_HH_5A2AA128050749E194A29DEF54A4DF92
 
 #include <vector>
 #include <string>

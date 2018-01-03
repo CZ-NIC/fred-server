@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef RENEW_DOMAIN_H_D7F4D8C176734E96A2CECBBED06B6A99
-#define RENEW_DOMAIN_H_D7F4D8C176734E96A2CECBBED06B6A99
+#ifndef RENEW_DOMAIN_HH_EA4471E7A0CA4E0A932E089E0A25E5A7
+#define RENEW_DOMAIN_HH_EA4471E7A0CA4E0A932E089E0A25E5A7
 
 #include "src/backend/epp/domain/renew_domain_config_data.hh"
 #include "src/backend/epp/domain/renew_domain_localized.hh"

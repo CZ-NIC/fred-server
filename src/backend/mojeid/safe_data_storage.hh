@@ -21,8 +21,8 @@
  *  header of safe data storage implementation
  */
 
-#ifndef SAFE_DATA_STORAGE_H_0651EFC2C7AD1750794ABD06628B1589//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define SAFE_DATA_STORAGE_H_0651EFC2C7AD1750794ABD06628B1589
+#ifndef SAFE_DATA_STORAGE_HH_788C0297D4FD4B119C93044CBD21B3DB
+#define SAFE_DATA_STORAGE_HH_788C0297D4FD4B119C93044CBD21B3DB
 
 #include <map>
 #include <stdexcept>
@@ -165,4 +165,4 @@ private:
     storage_type storage_;
 };
 
-#endif//SAFE_DATA_STORAGE_H_0651EFC2C7AD1750794ABD06628B1589
+#endif

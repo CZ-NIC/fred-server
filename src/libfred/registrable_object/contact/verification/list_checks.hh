@@ -21,8 +21,8 @@
  *  (get) list (of) contact check
  */
 
-#ifndef CONTACT_VERIFICATION_LIST_CHECKS_213454867445_
-#define CONTACT_VERIFICATION_LIST_CHECKS_213454867445_
+#ifndef LIST_CHECKS_HH_FB6753BD3A1940EB83D5CCB8176D0D4B
+#define LIST_CHECKS_HH_FB6753BD3A1940EB83D5CCB8176D0D4B
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <vector>
@@ -118,4 +118,4 @@ namespace LibFred
             virtual std::string to_string() const;
     };
 }
-#endif // #include guard end
+#endif

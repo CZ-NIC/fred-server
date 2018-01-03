@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CREATE_KEYSET_LOCALIZED_H_7AD651C69E1247888C7D924FE3B981F5
-#define CREATE_KEYSET_LOCALIZED_H_7AD651C69E1247888C7D924FE3B981F5
+#ifndef CREATE_KEYSET_LOCALIZED_HH_DC145E03C2654D648B881CA0D8D74454
+#define CREATE_KEYSET_LOCALIZED_HH_DC145E03C2654D648B881CA0D8D74454
 
 #include "src/backend/epp/keyset/create_keyset_config_data.hh"
 #include "src/backend/epp/keyset/create_keyset_input_data.hh"

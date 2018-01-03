@@ -21,8 +21,8 @@
  *  declaration of CreatePublicRequest class
  */
 
-#ifndef CREATE_PUBLIC_REQUEST_H_4C9FE3D9B8BB0233CD814C7F0E46D4C9//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define CREATE_PUBLIC_REQUEST_H_4C9FE3D9B8BB0233CD814C7F0E46D4C9
+#ifndef CREATE_PUBLIC_REQUEST_HH_A65130F6EBA54C92A73B3B7E513C85B6
+#define CREATE_PUBLIC_REQUEST_HH_A65130F6EBA54C92A73B3B7E513C85B6
 
 #include "src/libfred/public_request/public_request_type_iface.hh"
 #include "src/libfred/public_request/public_request_object_lock_guard.hh"
@@ -117,4 +117,4 @@ private:
 
 } // namespace LibFred
 
-#endif//CREATE_PUBLIC_REQUEST_H_4C9FE3D9B8BB0233CD814C7F0E46D4C9
+#endif

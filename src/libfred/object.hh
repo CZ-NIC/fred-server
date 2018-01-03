@@ -1,5 +1,5 @@
-#ifndef OBJECT_H_
-#define OBJECT_H_
+#ifndef OBJECT_HH_6634623E2BC04A399831B8A177AC7F3A
+#define OBJECT_HH_6634623E2BC04A399831B8A177AC7F3A
 
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>

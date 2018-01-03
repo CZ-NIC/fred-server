@@ -21,8 +21,8 @@
  *  header of invoice client implementation
  */
 
-#ifndef INVOICE_PARAMS_H_
-#define INVOICE_PARAMS_H_
+#ifndef INVOICE_PARAMS_HH_6969EEC06CBA4AECBFE57EEEF62DDA21
+#define INVOICE_PARAMS_HH_6969EEC06CBA4AECBFE57EEEF62DDA21
 
 #include "src/util/types/optional.hh"
 
@@ -237,4 +237,4 @@ struct AddInvoiceNumberPrefixArgs
 
 };//struct AddInvoiceNumberPrefixArgs
 
-#endif // INVOICE_PARAMS_H_
+#endif

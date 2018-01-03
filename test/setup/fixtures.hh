@@ -3,8 +3,8 @@
  *  test fixtures
  */
 
-#ifndef TESTS_SETUP_FIXTURES_41215653023
-#define TESTS_SETUP_FIXTURES_41215653023
+#ifndef FIXTURES_HH_327B2D873D064624803561323E8E3BF3
+#define FIXTURES_HH_327B2D873D064624803561323E8E3BF3
 
 #include <string>
 #include "src/util/cfg/handle_args.hh"
@@ -66,4 +66,4 @@ namespace Test {
 
 } // namespace Test
 
-#endif // #include guard end
+#endif

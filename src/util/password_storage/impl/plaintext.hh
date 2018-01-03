@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PLAINTEXT_HH_D4D38336731B2CD1A30D3E5345544AD6//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define PLAINTEXT_HH_D4D38336731B2CD1A30D3E5345544AD6
+#ifndef PLAINTEXT_HH_94F719E5DC354A5C88FDDEA555CB3E21
+#define PLAINTEXT_HH_94F719E5DC354A5C88FDDEA555CB3E21
 
 #include "src/util/password_storage/base64.hh"
 #include "src/util/password_storage/password_data.hh"
@@ -69,4 +69,4 @@ struct AlgPlaintext
 } // namespace PasswordStorage::Impl
 } // namespace PasswordStorage
 
-#endif//PLAINTEXT_HH_D4D38336731B2CD1A30D3E5345544AD6
+#endif

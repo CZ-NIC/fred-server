@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DOMAIN_ENUM_VALIDATION_H_043243524619413590ABD90064AE3DE6
-#define DOMAIN_ENUM_VALIDATION_H_043243524619413590ABD90064AE3DE6
+#ifndef DOMAIN_ENUM_VALIDATION_HH_DCB9A66C2D764A84863FBFAA5ADB7651
+#define DOMAIN_ENUM_VALIDATION_HH_DCB9A66C2D764A84863FBFAA5ADB7651
 
 #include "src/libfred/opcontext.hh"
 #include <boost/date_time/gregorian/gregorian.hpp>

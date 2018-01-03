@@ -22,8 +22,8 @@
  *  attributes.
  */
 
-#ifndef FIELD_MODEL_H_
-#define FIELD_MODEL_H_
+#ifndef MODEL_FIELD_HH_3532D2E18F574B9AA316A0048C7F53D8
+#define MODEL_FIELD_HH_3532D2E18F574B9AA316A0048C7F53D8
 
 #include <string>
 #include <deque>

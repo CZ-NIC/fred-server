@@ -21,8 +21,8 @@
  *  create keyset
  */
 
-#ifndef CREATE_KEYSET_H_
-#define CREATE_KEYSET_H_
+#ifndef CREATE_KEYSET_HH_19E4B696C7A64400BF4135FCA2DC92C4
+#define CREATE_KEYSET_HH_19E4B696C7A64400BF4135FCA2DC92C4
 
 #include "src/libfred/opexception.hh"
 #include "src/libfred/opcontext.hh"
@@ -139,4 +139,4 @@ namespace LibFred
         std::vector<std::string> tech_contacts_; /**< technical contact handles */
     };//CreateKeyset
 }
-#endif // CREATE_KEYSET_H_
+#endif

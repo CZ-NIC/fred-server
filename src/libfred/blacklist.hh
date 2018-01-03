@@ -1,5 +1,5 @@
-#ifndef BLACKLIST_H_
-#define BLACKLIST_H_
+#ifndef BLACKLIST_HH_50696502AC5F4D9082557C36C1ACB7F7
+#define BLACKLIST_HH_50696502AC5F4D9082557C36C1ACB7F7
 
 #include <string>
 #include "src/libfred/exceptions.hh"

@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef BASE64_HH_E132A9F919691C01C3B3F98A5D41AE4F//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define BASE64_HH_E132A9F919691C01C3B3F98A5D41AE4F
+#ifndef BASE64_HH_B846DD2F17074D62AE03C4FAA9A1DE3F
+#define BASE64_HH_B846DD2F17074D62AE03C4FAA9A1DE3F
 
 #include <memory>
 #include <string>
@@ -57,4 +57,4 @@ private:
 
 } // namespace PasswordStorage
 
-#endif//BASE64_HH_E132A9F919691C01C3B3F98A5D41AE4F
+#endif

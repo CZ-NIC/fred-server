@@ -1,5 +1,5 @@
-#ifndef DAEMONIZE_H
-#define DAEMONIZE_H
+#ifndef DAEMONIZE_HH_E494C4E4E86C4BF9A0044B2654DE3D74
+#define DAEMONIZE_HH_E494C4E4E86C4BF9A0044B2654DE3D74
 
 /*simple daemonize for linux mainly from 
 http://www.itp.uzh.ch/~dpotter/howto/daemonize
@@ -55,4 +55,4 @@ static void daemonize(void)
     if(freopen( "/dev/null", "w", stderr) == NULL) exit(DAE_FAIL);
 }
 
-#endif //DAEMONIZE_H
+#endif

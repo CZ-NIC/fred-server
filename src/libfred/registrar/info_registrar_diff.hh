@@ -21,8 +21,8 @@
  *  registrar info data diff
  */
 
-#ifndef INFO_REGISTRAR_DIFF_H_
-#define INFO_REGISTRAR_DIFF_H_
+#ifndef INFO_REGISTRAR_DIFF_HH_C738A5AC10834248935E9252BDA08FD2
+#define INFO_REGISTRAR_DIFF_HH_C738A5AC10834248935E9252BDA08FD2
 
 #include <string>
 
@@ -93,4 +93,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif//INFO_REGISTRAR_DIFF_H_
+#endif

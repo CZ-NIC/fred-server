@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef EPP_RESPONSE_SUCCESS_H_F5E63D3AD54E4A7285621882FFB304F9
-#define EPP_RESPONSE_SUCCESS_H_F5E63D3AD54E4A7285621882FFB304F9
+#ifndef EPP_RESPONSE_SUCCESS_HH_C214DF4F95BD4112BFE1C84E5F5D619F
+#define EPP_RESPONSE_SUCCESS_HH_C214DF4F95BD4112BFE1C84E5F5D619F
 
 #include "src/backend/epp/epp_result_failure.hh"
 #include "src/backend/epp/epp_result_success.hh"

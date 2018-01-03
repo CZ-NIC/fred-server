@@ -21,8 +21,8 @@
  *  header of keyset list implementation
  */
 
-#ifndef KEYSET_PARAMS_H_
-#define KEYSET_PARAMS_H_
+#ifndef KEYSET_PARAMS_HH_5225AE0C627C4CFFB4DC9B7A3A2B623F
+#define KEYSET_PARAMS_HH_5225AE0C627C4CFFB4DC9B7A3A2B623F
 
 #include "src/util/types/optional.hh"
 
@@ -86,4 +86,4 @@ struct KeysetListArgs
     {}//init ctor
 };//struct KeysetListArgs
 
-#endif // KEYSET_PARAMS_H_
+#endif

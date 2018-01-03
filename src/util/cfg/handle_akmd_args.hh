@@ -21,8 +21,8 @@
  *  automatic keyset management interface config
  */
 
-#ifndef HANDLE_AKMD_ARGS_H_1DB8D08DB999477AA07B980E2C929C76
-#define HANDLE_AKMD_ARGS_H_1DB8D08DB999477AA07B980E2C929C76
+#ifndef HANDLE_AKMD_ARGS_HH_75AC747D91B74A3BAC1C366394B17831
+#define HANDLE_AKMD_ARGS_HH_75AC747D91B74A3BAC1C366394B17831
 
 #include "src/util/cfg/faked_args.hh"
 #include "src/util/cfg/handle_args.hh"

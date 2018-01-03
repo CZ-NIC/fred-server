@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CLIENT_CREDIT_OUTPUT_DATA_H_4C00FA5A4D123087F40CBB2504E925BD//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define CLIENT_CREDIT_OUTPUT_DATA_H_4C00FA5A4D123087F40CBB2504E925BD
+#ifndef CLIENT_CREDIT_OUTPUT_DATA_HH_7429FE6C91A644908969207D2F47B555
+#define CLIENT_CREDIT_OUTPUT_DATA_HH_7429FE6C91A644908969207D2F47B555
 
 #include "src/libfred/opcontext.hh"
 #include "src/util/decimal/decimal.hh"
@@ -53,4 +53,4 @@ typedef std::set<ZoneCredit, OrderZoneCreditByZoneFqdn> ClientCreditOutputData;
 } // namespace Epp::Credit
 } // namespace Epp
 
-#endif//CLIENT_CREDIT_OUTPUT_DATA_H_4C00FA5A4D123087F40CBB2504E925BD
+#endif

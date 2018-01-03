@@ -21,8 +21,8 @@
  *  (get) info (about) contact check
  */
 
-#ifndef CONTACT_VERIFICATION_INFO_CHECK_11537653419_
-#define CONTACT_VERIFICATION_INFO_CHECK_11537653419_
+#ifndef INFO_CHECK_HH_78A1015DB35948E7AFA58CF421DE454F
+#define INFO_CHECK_HH_78A1015DB35948E7AFA58CF421DE454F
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <vector>
@@ -131,4 +131,4 @@ namespace LibFred
                 const std::string& _output_timezone = "Europe/Prague");
     };
 }
-#endif // #include guard end
+#endif

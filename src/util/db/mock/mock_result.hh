@@ -22,8 +22,8 @@
  */
 
 
-#ifndef MOCK_RESULT_H_
-#define MOCK_RESULT_H_
+#ifndef MOCK_RESULT_HH_E9DD2ED0D55A432AB6A5D530F930C483
+#define MOCK_RESULT_HH_E9DD2ED0D55A432AB6A5D530F930C483
 
 //mock #include <libpq-fe.h>
 #include <cstdlib>

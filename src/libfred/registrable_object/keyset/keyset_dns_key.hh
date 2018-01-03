@@ -21,8 +21,8 @@
  *  keyset dns key
  */
 
-#ifndef KEYSET_DNS_KEY_H_
-#define KEYSET_DNS_KEY_H_
+#ifndef KEYSET_DNS_KEY_HH_31FCB2F7C5E4404F9819430431D20BAB
+#define KEYSET_DNS_KEY_HH_31FCB2F7C5E4404F9819430431D20BAB
 
 #include <string>
 #include <sstream>
@@ -190,4 +190,4 @@ public:
 
 } // namespace LibFred
 
-#endif//KEYSET_DNS_KEY_H_
+#endif

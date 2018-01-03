@@ -20,8 +20,8 @@
  *  @file
  */
 
-#ifndef CHECK_DNS_KEY_H_F75DC6271204DFF2C7678D1565A10144//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define CHECK_DNS_KEY_H_F75DC6271204DFF2C7678D1565A10144
+#ifndef CHECK_DNS_KEY_HH_D116922494E547B5B638A21AB084ACEB
+#define CHECK_DNS_KEY_HH_D116922494E547B5B638A21AB084ACEB
 
 #include "src/libfred/opcontext.hh"
 
@@ -43,4 +43,4 @@ Algorithm::Usability get_algorithm_usability(OperationContext &ctx, int algorith
 } // namespace LibFred::DnsSec
 } // namespace LibFred
 
-#endif//CHECK_DNS_KEY_H_F75DC6271204DFF2C7678D1565A10144
+#endif

@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef EPP_RESULT_FAILURE_H_05F2D2D2FCCD46019CD7B7E1BBF33E09
-#define EPP_RESULT_FAILURE_H_05F2D2D2FCCD46019CD7B7E1BBF33E09
+#ifndef EPP_RESULT_FAILURE_HH_0578C488286448C59576AB85243B21D8
+#define EPP_RESULT_FAILURE_HH_0578C488286448C59576AB85243B21D8
 
 #include "src/backend/epp/epp_extended_error.hh"
 #include "src/backend/epp/epp_result_code.hh"

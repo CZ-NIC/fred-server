@@ -21,8 +21,8 @@
  *  create domain
  */
 
-#ifndef CREATE_DOMAIN_H_
-#define CREATE_DOMAIN_H_
+#ifndef CREATE_DOMAIN_HH_50FADF453194422ABF1FB8259B1F8F2A
+#define CREATE_DOMAIN_HH_50FADF453194422ABF1FB8259B1F8F2A
 
 #include <string>
 #include <vector>
@@ -223,4 +223,4 @@ namespace LibFred
         std::string to_string() const;
     };//CreateDomain
 }
-#endif // CREATE_DOMAIN_H_
+#endif

@@ -21,8 +21,8 @@
  *  declaration for Registry::MojeIDImplData namespace
  */
 
-#ifndef MOJEID_IMPL_DATA_CONVERSION_H_88A849ACE9E8EA6C6F74FC5AE03FF2EF//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define MOJEID_IMPL_DATA_CONVERSION_H_88A849ACE9E8EA6C6F74FC5AE03FF2EF
+#ifndef MOJEID_IMPL_DATA_CONVERSION_HH_3FFB13E7D2574A12916DF3E34D830D12
+#define MOJEID_IMPL_DATA_CONVERSION_HH_3FFB13E7D2574A12916DF3E34D830D12
 
 #include "src/backend/mojeid/mojeid_impl_data.hh"
 #include "src/libfred/registrable_object/contact/info_contact_data.hh"
@@ -46,4 +46,4 @@ void from_into(const LibFred::InfoContactData &src, InfoContact &dst);
 } // namespace Registry::MojeIDImplData
 } // namespace Registry
 
-#endif//MOJEID_IMPL_DATA_CONVERSION_H_88A849ACE9E8EA6C6F74FC5AE03FF2EF
+#endif

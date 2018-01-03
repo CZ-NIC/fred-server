@@ -5,8 +5,8 @@
  *      Author: jvicenik
  */
 
-#ifndef SESSION_H_
-#define SESSION_H_
+#ifndef SESSION_HH_B8086417AB0F4947BBBC52CC8CAF056D
+#define SESSION_HH_B8086417AB0F4947BBBC52CC8CAF056D
 
 #include "src/libfred/object.hh"
 #include "src/libfred/db_settings.hh"

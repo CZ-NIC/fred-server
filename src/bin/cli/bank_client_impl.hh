@@ -21,8 +21,8 @@
  *  bank client implementation header
  */
 
-#ifndef BANK_CLIENT_IMPL_H_
-#define BANK_CLIENT_IMPL_H_
+#ifndef BANK_CLIENT_IMPL_HH_27593C1EF81C44D688679B93F16F68C9
+#define BANK_CLIENT_IMPL_HH_27593C1EF81C44D688679B93F16F68C9
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/handle_database_args.hh"
 #include "src/util/cfg/handle_corbanameservice_args.hh"
@@ -109,4 +109,4 @@ struct bank_add_account_impl
   }
 };
 
-#endif // BANK_CLIENT_IMPL_H_
+#endif

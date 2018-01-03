@@ -21,8 +21,8 @@
  *  registar impl
  */
 
-#ifndef REGISTRAR_IMPL_H_
-#define REGISTRAR_IMPL_H_
+#ifndef REGISTRAR_IMPL_HH_FF866228AFE34734AEFE5316DAC782AE
+#define REGISTRAR_IMPL_HH_FF866228AFE34734AEFE5316DAC782AE
 
 #include <string>
 
@@ -77,4 +77,4 @@ namespace Registrar
 
 } // namespace Registrar
 } // namespace LibFred
-#endif //REGISTRAR_IMPL_H_
+#endif

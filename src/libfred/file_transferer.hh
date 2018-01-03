@@ -21,8 +21,8 @@
  *  Interface for transfering files between client and server
  */
 
-#ifndef FILE_TRANSFER_H_
-#define FILE_TRANSFER_H_
+#ifndef FILE_TRANSFERER_HH_A90C3634F4A44F07A17A3582C2F42B9C
+#define FILE_TRANSFERER_HH_A90C3634F4A44F07A17A3582C2F42B9C
 
 #include <memory>
 #include <string>

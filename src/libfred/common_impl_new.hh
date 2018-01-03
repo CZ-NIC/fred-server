@@ -1,5 +1,5 @@
-#ifndef _COMMON_IMPL_NEW_H_
-#define _COMMON_IMPL_NEW_H_
+#ifndef COMMON_IMPL_NEW_HH_FA1D5E66C657470BA8D0BC349EC85E35
+#define COMMON_IMPL_NEW_HH_FA1D5E66C657470BA8D0BC349EC85E35
 
 #include "src/libfred/db_settings.hh"
 #include "src/libfred/common_new.hh"
@@ -70,4 +70,4 @@ public:
 
 } // namespace LibFred
 
-#endif // _COMMON_IMPL_NEW_H_
+#endif

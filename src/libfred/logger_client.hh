@@ -1,5 +1,5 @@
-#ifndef _LOGGER_CLIENT_H_
-#define _LOGGER_CLIENT_H_
+#ifndef LOGGER_CLIENT_HH_6295BB642CBC4154A1BA7AEC088EF657
+#define LOGGER_CLIENT_HH_6295BB642CBC4154A1BA7AEC088EF657
 
 #include "src/libfred/requests/request_manager.hh"
 
@@ -46,4 +46,4 @@ public:
 }
 }
 
-#endif // _LOGGER_CLIENT_H_
+#endif

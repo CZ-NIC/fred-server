@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CORBA_CONVERSIONS_H_0DA22651C0FF48C5A0AF69E77BB4A561
-#define CORBA_CONVERSIONS_H_0DA22651C0FF48C5A0AF69E77BB4A561
+#ifndef CORBA_CONVERSIONS_HH_C3BA4DD497834F29B428E0CB16C3146B
+#define CORBA_CONVERSIONS_HH_C3BA4DD497834F29B428E0CB16C3146B
 
 #include "src/bin/corba/EPP.hh"
 #include "src/bin/corba/util/corba_conversions_string.hh"

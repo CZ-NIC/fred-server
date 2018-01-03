@@ -21,8 +21,8 @@
  * Common type for postal addresses of contacts.
  */
 
-#ifndef PLACE_ADDRESS_H_40BCB51572DBDD30F6E1441AE2CCADF5 // PLACE_ADDRESS_H_$(date "+%s"|md5sum)
-#define PLACE_ADDRESS_H_40BCB51572DBDD30F6E1441AE2CCADF5
+#ifndef PLACE_ADDRESS_HH_2E5EE8A3E6DE409AB8A0D01800797A6E
+#define PLACE_ADDRESS_HH_2E5EE8A3E6DE409AB8A0D01800797A6E
 
 #include "src/util/optional_value.hh"
 #include <iosfwd>
@@ -87,4 +87,4 @@ std::ostream& operator<<(std::ostream &out, const PlaceAddress &src);
 } // namespace Contact
 } // namespace LibFred
 
-#endif//PLACE_ADDRESS_H_40BCB51572DBDD30F6E1441AE2CCADF5
+#endif

@@ -1,5 +1,5 @@
-#ifndef OBJECT_FILTER_H_
-#define OBJECT_FILTER_H_
+#ifndef OBJECT_FILTER_HH_19C85B79F8BC4A3892AE8652015A8D69
+#define OBJECT_FILTER_HH_19C85B79F8BC4A3892AE8652015A8D69
 
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/utility.hpp>

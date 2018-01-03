@@ -27,8 +27,8 @@
  *    Result, Sequence and Row types.
  */
 
-#ifndef DB_SETTINGS_H_
-#define DB_SETTINGS_H_
+#ifndef DB_SETTINGS_HH_496DFB2A05584145B21F5808014C6545
+#define DB_SETTINGS_HH_496DFB2A05584145B21F5808014C6545
 
 #include "src/util/db/database.hh"
 

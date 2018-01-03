@@ -16,8 +16,8 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef NOTIFY_H_D320FB5E3AEC489188346088EA8FD72E
-#define NOTIFY_H_D320FB5E3AEC489188346088EA8FD72E
+#ifndef NOTIFY_HH_CC3CE4F4CE76408D87452BF176947323
+#define NOTIFY_HH_CC3CE4F4CE76408D87452BF176947323
 
 #include "src/libfred/mailer.hh"
 #include "src/libfred/registrable_object/contact.hh"

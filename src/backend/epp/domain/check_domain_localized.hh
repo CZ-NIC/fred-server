@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.or/licenses/>.
  */
 
-#ifndef CHECK_DOMAIN_LOCALIZED_H_2EB8975220034A3F92F6BF3D499C6EF5
-#define CHECK_DOMAIN_LOCALIZED_H_2EB8975220034A3F92F6BF3D499C6EF5
+#ifndef CHECK_DOMAIN_LOCALIZED_HH_583D8249FAB042B888B1D3EA88F6E343
+#define CHECK_DOMAIN_LOCALIZED_HH_583D8249FAB042B888B1D3EA88F6E343
 
 #include "src/backend/epp/domain/check_domain_config_data.hh"
 #include "src/backend/epp/domain/check_domain_localized_response.hh"

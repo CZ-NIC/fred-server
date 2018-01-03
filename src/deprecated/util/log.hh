@@ -1,5 +1,5 @@
-#ifndef __LOG_H__
-#define __LOG_H__
+#ifndef LOG_HH_35AF77A705CD4C51A25DBE915252CEF2
+#define LOG_HH_35AF77A705CD4C51A25DBE915252CEF2
 
 #include <syslog.h>
 #include <stdarg.h>

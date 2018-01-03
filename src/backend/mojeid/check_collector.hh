@@ -21,8 +21,8 @@
  *  Check collection template classes
  */
 
-#ifndef CHECK_COLLECTOR_H_88829F1E63D951E2C5975F79439ECDBF//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define CHECK_COLLECTOR_H_88829F1E63D951E2C5975F79439ECDBF
+#ifndef CHECK_COLLECTOR_HH_9AAF6BC7D16249E79BE9E2401EFAD32B
+#define CHECK_COLLECTOR_HH_9AAF6BC7D16249E79BE9E2401EFAD32B
 
 #include <stdexcept>
 #include <boost/static_assert.hpp>
@@ -521,4 +521,4 @@ struct Check< typename boost::mpl::clear< boost::mpl::list< > >::type, CHECK_WRA
 
 }//Fred
 
-#endif//CHECK_COLLECTOR_H_88829F1E63D951E2C5975F79439ECDBF
+#endif

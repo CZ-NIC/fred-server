@@ -21,8 +21,8 @@
  *  Implementation of value object.
  */
 
-#ifndef VALUE_H_
-#define VALUE_H_
+#ifndef VALUE_HH_345838BAA73C4BD3ACC134711E9B1E05
+#define VALUE_HH_345838BAA73C4BD3ACC134711E9B1E05
 
 #include <stdlib.h>
 #include <stdio.h>

@@ -1,5 +1,5 @@
-#ifndef _BANK_PAYMENT_FILTER_H_
-#define _BANK_PAYMENT_FILTER_H_
+#ifndef BANK_PAYMENT_FILTER_HH_69C7137CF8434E0EB100920F6D91FADB
+#define BANK_PAYMENT_FILTER_HH_69C7137CF8434E0EB100920F6D91FADB
 
 #include "src/util/db/query/base_filters.hh"
 #include "src/deprecated/model/bank_statement_filter.hh"
@@ -72,4 +72,4 @@ public:
 } // namespace Filters
 } // namespace Database
 
-#endif // _BANK_PAYMENT_FILTER_H_
+#endif

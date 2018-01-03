@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef UTIL_H_17F84529F3144E09A6C1DECAFCD5FBC0
-#define UTIL_H_17F84529F3144E09A6C1DECAFCD5FBC0
+#ifndef UTIL_HH_20EA4D52B76F4169A2CC6CB531BDF305
+#define UTIL_HH_20EA4D52B76F4169A2CC6CB531BDF305
 
 #include "src/libfred/opcontext.hh"
 #include "test/setup/fixtures.hh"

@@ -21,8 +21,8 @@
  *  contact verification test for telephone (syntax only)
  */
 
-#ifndef CONTACT_VERIFICATION_TEST_PHONE_SYNTAX_976844345676_
-#define CONTACT_VERIFICATION_TEST_PHONE_SYNTAX_976844345676_
+#ifndef TEST_PHONE_SYNTAX_HH_EA33EC78FD5A4D5FB4958729106C87BB
+#define TEST_PHONE_SYNTAX_HH_EA33EC78FD5A4D5FB4958729106C87BB
 
 #include <boost/regex.hpp>
 
@@ -71,4 +71,4 @@ namespace ContactVerification
 }
 }
 
-#endif // #include guard end
+#endif

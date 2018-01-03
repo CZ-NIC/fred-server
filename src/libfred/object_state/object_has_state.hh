@@ -21,8 +21,8 @@
  *  object state check
  */
 
-#ifndef OBJECT_HAS_STATE_H_
-#define OBJECT_HAS_STATE_H_
+#ifndef OBJECT_HAS_STATE_HH_5A6F78D1414F4B408896D19454DCD98D
+#define OBJECT_HAS_STATE_HH_5A6F78D1414F4B408896D19454DCD98D
 
 #include "src/libfred/opexception.hh"
 
@@ -58,4 +58,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif // OBJECT_HAS_STATE_H_
+#endif

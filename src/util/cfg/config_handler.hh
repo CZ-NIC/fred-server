@@ -22,8 +22,8 @@
  */
 
 
-#ifndef CONFIG_HANDLER_H_
-#define CONFIG_HANDLER_H_
+#ifndef CONFIG_HANDLER_HH_AC3B377B6DEE43D1A349A0E02C5899A6
+#define CONFIG_HANDLER_HH_AC3B377B6DEE43D1A349A0E02C5899A6
 
 #include "src/util/cfg/config_handler_decl.hh"
 
@@ -66,4 +66,4 @@ CfgArgGroups* CfgArgGroups::instance()
 
 
 
-#endif //CONFIG_HANDLER_H_
+#endif

@@ -26,8 +26,8 @@ ziska seznam vsech stavu blokovani objektu GetBlockingStatusDescList
   lang
 */
 
-#ifndef GET_BLOCKING_STATUS_DESC_LIST_H_
-#define GET_BLOCKING_STATUS_DESC_LIST_H_
+#ifndef GET_BLOCKING_STATUS_DESC_LIST_HH_46493E5A90F8457598C9C7392F80A875
+#define GET_BLOCKING_STATUS_DESC_LIST_HH_46493E5A90F8457598C9C7392F80A875
 
 #include "src/libfred/opexception.hh"
 #include "src/libfred/opcontext.hh"
@@ -86,4 +86,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif//GET_BLOCKING_STATUS_DESC_LIST_H_
+#endif

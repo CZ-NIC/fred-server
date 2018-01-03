@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef REGISTRAR_ZONE_ACCESS_H_10675EA02C1D4994B3D25C4098D07F3D
-#define REGISTRAR_ZONE_ACCESS_H_10675EA02C1D4994B3D25C4098D07F3D
+#ifndef REGISTRAR_ZONE_ACCESS_HH_3F41B79AF3524A2598B8F2A2B2E1FC23
+#define REGISTRAR_ZONE_ACCESS_HH_3F41B79AF3524A2598B8F2A2B2E1FC23
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include "src/libfred/opcontext.hh"

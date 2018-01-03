@@ -1,5 +1,5 @@
-#ifndef SIMPLE_FILTERS_H_
-#define SIMPLE_FILTERS_H_
+#ifndef SIMPLE_FILTERS_HH_9AB05463EDE54FDF8DCA9C0D0F17307C
+#define SIMPLE_FILTERS_HH_9AB05463EDE54FDF8DCA9C0D0F17307C
 
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/utility.hpp>

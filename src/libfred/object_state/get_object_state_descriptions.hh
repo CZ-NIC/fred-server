@@ -21,8 +21,8 @@
  *  get object state descriptions
  */
 
-#ifndef GET_OBJECT_STATE_DESCRIPTIONS_H_
-#define GET_OBJECT_STATE_DESCRIPTIONS_H_
+#ifndef GET_OBJECT_STATE_DESCRIPTIONS_HH_0CC99FD3E22344B296D3BD9799E97982
+#define GET_OBJECT_STATE_DESCRIPTIONS_HH_0CC99FD3E22344B296D3BD9799E97982
 
 #include <vector>
 #include <string>
@@ -85,4 +85,4 @@ namespace LibFred
     };
 } // namespace LibFred
 
-#endif // GET_OBJECT_STATE_DESCRIPTIONS_H_
+#endif

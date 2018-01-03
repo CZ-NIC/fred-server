@@ -1,5 +1,5 @@
-#ifndef UTILS_H_
-#define UTILS_H_
+#ifndef COMMON_HH_356FC41370474BDA82802F9A41BFD04F
+#define COMMON_HH_356FC41370474BDA82802F9A41BFD04F
 
 #include <boost/date_time/posix_time/time_formatters.hpp>
 #include <boost/date_time/local_time/local_time.hpp>

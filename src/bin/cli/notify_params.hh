@@ -21,8 +21,8 @@
  *  header of notify client implementation
  */
 
-#ifndef NOTIFY_PARAMS_H_
-#define NOTIFY_PARAMS_H_
+#ifndef NOTIFY_PARAMS_HH_E386FFF818E840BBA7A1A9514687FD7B
+#define NOTIFY_PARAMS_HH_E386FFF818E840BBA7A1A9514687FD7B
 
 #include "src/util/types/optional.hh"
 
@@ -92,4 +92,4 @@ struct RegisteredLettersManualSendArgs
     {}//init ctor
 };//struct RegisteredLettersManualSendArgs
 
-#endif // NOTIFY_PARAMS_H_
+#endif

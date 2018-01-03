@@ -21,8 +21,8 @@
  *  nsset delete
  */
 
-#ifndef DELETE_NSSET_H_298781152115
-#define DELETE_NSSET_H_298781152115
+#ifndef DELETE_NSSET_HH_032B916B940949C5B705A366FDCC1F0A
+#define DELETE_NSSET_HH_032B916B940949C5B705A366FDCC1F0A
 
 #include <string>
 
@@ -110,4 +110,4 @@ namespace LibFred
     };
 } // namespace LibFred
 
-#endif // end of #include guard
+#endif

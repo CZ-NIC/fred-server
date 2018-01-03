@@ -21,8 +21,8 @@
  *  merge contact test fixture
  */
 
-#ifndef TEST_MERGE_CONTACT_FIXTURE_H_7b8f6ad0c0a540419a8a9b52ba626425
-#define TEST_MERGE_CONTACT_FIXTURE_H_7b8f6ad0c0a540419a8a9b52ba626425
+#ifndef TEST_MERGE_CONTACT_FIXTURE_HH_33293FCB533C454FAC1CEFD251A927A1
+#define TEST_MERGE_CONTACT_FIXTURE_HH_33293FCB533C454FAC1CEFD251A927A1
 
 #include <math.h>
 #include <string>
@@ -1469,4 +1469,4 @@ public:
 } // namespace Test::LibFred
 } // namespace Test
 
-#endif // TEST_MERGE_CONTACT_FIXTURE_H_7b8f6ad0c0a540419a8a9b52ba626425
+#endif

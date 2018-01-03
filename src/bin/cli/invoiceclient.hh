@@ -16,8 +16,8 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _INVOICECLIENT_H_
-#define _INVOICECLIENT_H_
+#ifndef INVOICECLIENT_HH_422C99F1ED2542AA901F8F93465A1CDC
+#define INVOICECLIENT_HH_422C99F1ED2542AA901F8F93465A1CDC
 
 #include <boost/program_options.hpp>
 #include <iostream>

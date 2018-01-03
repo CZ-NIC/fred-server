@@ -1,5 +1,5 @@
-#ifndef _MODEL_ZONENS_H_
-#define _MODEL_ZONENS_H_
+#ifndef MODEL_ZONE_NS_HH_E7087B0D762F4CF5800C945C20FB9098
+#define MODEL_ZONE_NS_HH_E7087B0D762F4CF5800C945C20FB9098
 
 #include "src/libfred/db_settings.hh"
 #include "src/util/db/model/model.hh"

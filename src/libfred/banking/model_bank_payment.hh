@@ -1,5 +1,5 @@
-#ifndef _MODEL_BANK_PAYMENT_H_
-#define _MODEL_BANK_PAYMENT_H_
+#ifndef MODEL_BANK_PAYMENT_HH_129A3EF858334CE380D6A07003BF0D0C
+#define MODEL_BANK_PAYMENT_HH_129A3EF858334CE380D6A07003BF0D0C
 
 #include "src/libfred/db_settings.hh"
 #include "src/util/db/model/model.hh"

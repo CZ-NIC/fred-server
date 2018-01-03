@@ -21,8 +21,8 @@
  *  declaration for MojeID CORBA conversion
  */
 
-#ifndef MOJEID_CORBA_CONVERSION_H_e5b26622ca884604abf9cf49892b20d7
-#define MOJEID_CORBA_CONVERSION_H_e5b26622ca884604abf9cf49892b20d7
+#ifndef MOJEID_CORBA_CONVERSION_HH_02D1309914E14D58B682DF7CFD19A17A
+#define MOJEID_CORBA_CONVERSION_HH_02D1309914E14D58B682DF7CFD19A17A
 
 #include "src/util/corba_conversion.hh"
 #include "src/util/db/nullable.hh"
@@ -141,4 +141,4 @@ void raise_PROCESS_REGISTRATION_VALIDATION_ERROR(const Registry::MojeIDImplData:
 
 } // namespace CorbaConversion
 
-#endif//MOJEID_CORBA_CONVERSION_H_e5b26622ca884604abf9cf49892b20d7
+#endif

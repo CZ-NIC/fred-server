@@ -1,5 +1,5 @@
-#ifndef DATA_TYPES_H_
-#define DATA_TYPES_H_
+#ifndef DATA_TYPES_HH_8295F3C4F5664C62808BDE49AC2C8E73
+#define DATA_TYPES_HH_8295F3C4F5664C62808BDE49AC2C8E73
 
 #include "src/util/types/datetime_common.hh"
 #include "src/util/types/date.hh"

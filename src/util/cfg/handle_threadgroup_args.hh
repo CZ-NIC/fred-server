@@ -21,8 +21,8 @@
  *  thread group configuration
  */
 
-#ifndef HANDLE_THREADGROUP_ARGS_H_
-#define HANDLE_THREADGROUP_ARGS_H_
+#ifndef HANDLE_THREADGROUP_ARGS_HH_99F3598FFCCC48989BFB569058FAF5C6
+#define HANDLE_THREADGROUP_ARGS_HH_99F3598FFCCC48989BFB569058FAF5C6
 
 #include <iostream>
 #include <exception>
@@ -70,4 +70,4 @@ public:
     }//handle
 };
 
-#endif //HANDLE_THREADGROUP_ARGS_H_
+#endif

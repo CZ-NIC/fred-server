@@ -1,5 +1,5 @@
-#ifndef _MODEL_ZONE_H_
-#define _MODEL_ZONE_H_
+#ifndef MODEL_ZONE_HH_2896F962874D4B2ABC13655A2190FBD0
+#define MODEL_ZONE_HH_2896F962874D4B2ABC13655A2190FBD0
 
 #include "src/libfred/db_settings.hh"
 #include "src/util/db/model/model.hh"
@@ -124,4 +124,4 @@ private:
     static field_list   fields;
 }; // class ModelZone;
 
-#endif // _MODEL_ZONE_H_
+#endif

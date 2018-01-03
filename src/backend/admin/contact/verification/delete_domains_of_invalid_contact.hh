@@ -21,8 +21,8 @@
  *  delete domains owned by contact which fails manual verification check
  */
 
-#ifndef ADMIN_CONTACT_VERIFICATION_DELETE_DOMAINS_OF_INVALID_CONTACT_H_585314041545
-#define ADMIN_CONTACT_VERIFICATION_DELETE_DOMAINS_OF_INVALID_CONTACT_H_585314041545
+#ifndef DELETE_DOMAINS_OF_INVALID_CONTACT_HH_B778D2F9BB834FE5A8BCAE9D6BF0DD35
+#define DELETE_DOMAINS_OF_INVALID_CONTACT_HH_B778D2F9BB834FE5A8BCAE9D6BF0DD35
 
 #include "src/backend/admin/contact/verification/exceptions.hh"
 
@@ -49,4 +49,4 @@ namespace Admin {
 }
 
 
-#endif // #include guard end
+#endif

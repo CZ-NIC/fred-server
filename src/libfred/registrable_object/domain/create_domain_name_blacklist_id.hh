@@ -21,8 +21,8 @@
  *  create domain name blacklist
  */
 
-#ifndef CREATE_DOMAIN_NAME_BLACKLIST_ID_H_
-#define CREATE_DOMAIN_NAME_BLACKLIST_ID_H_
+#ifndef CREATE_DOMAIN_NAME_BLACKLIST_ID_HH_08D6A20F84844E0389D243C68769039A
+#define CREATE_DOMAIN_NAME_BLACKLIST_ID_HH_08D6A20F84844E0389D243C68769039A
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 
@@ -70,4 +70,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif//CREATE_DOMAIN_NAME_BLACKLIST_H_
+#endif

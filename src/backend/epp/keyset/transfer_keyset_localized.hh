@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TRANSFER_KEYSET_LOCALIZED_H_49BA69E2FC3645A09CA592D1E3FDD10A
-#define TRANSFER_KEYSET_LOCALIZED_H_49BA69E2FC3645A09CA592D1E3FDD10A
+#ifndef TRANSFER_KEYSET_LOCALIZED_HH_6C4FB3618C6A4083A9E71098BFB96A64
+#define TRANSFER_KEYSET_LOCALIZED_HH_6C4FB3618C6A4083A9E71098BFB96A64
 
 #include "src/backend/epp/keyset/transfer_keyset_config_data.hh"
 #include "src/backend/epp/epp_response_success_localized.hh"

@@ -21,8 +21,8 @@
  *  domain renew
  */
 
-#ifndef RENEW_DOMAIN_H_b6cdb6bc48cf4d9eaba249a46ac7f6a7
-#define RENEW_DOMAIN_H_b6cdb6bc48cf4d9eaba249a46ac7f6a7
+#ifndef RENEW_DOMAIN_HH_EA4297FB2A4444E39B4618D2FBE3C396
+#define RENEW_DOMAIN_HH_EA4297FB2A4444E39B4618D2FBE3C396
 
 #include <string>
 

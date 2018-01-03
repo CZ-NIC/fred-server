@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef EPP_EXTENDED_ERROR_H_99879BF0F9DD4F748F8180F415BB299E
-#define EPP_EXTENDED_ERROR_H_99879BF0F9DD4F748F8180F415BB299E
+#ifndef EPP_EXTENDED_ERROR_HH_C126AAC773CE4FD1AB7A34F15C4CA1A1
+#define EPP_EXTENDED_ERROR_HH_C126AAC773CE4FD1AB7A34F15C4CA1A1
 
 #include "src/backend/epp/param.hh"
 #include "src/backend/epp/reason.hh"

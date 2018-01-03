@@ -16,8 +16,8 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef KEYSET_H_215FBA3573974F59BDEE7E3802EF20F7
-#define KEYSET_H_215FBA3573974F59BDEE7E3802EF20F7
+#ifndef KEYSET_HH_578ADA392786428BB3807D637FFC5AC1
+#define KEYSET_HH_578ADA392786428BB3807D637FFC5AC1
 
 #include <string>
 #include <vector>

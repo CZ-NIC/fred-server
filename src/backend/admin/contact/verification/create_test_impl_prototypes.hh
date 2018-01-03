@@ -21,8 +21,8 @@
  *  push back contact verification checks to queue up to it's at maximal length
  */
 
-#ifndef ADMIN_CONTACT_VERIFICATION_CREATE_TEST_IMPL_PROTOTYPES_H_224556435
-#define ADMIN_CONTACT_VERIFICATION_CREATE_TEST_IMPL_PROTOTYPES_H_224556435
+#ifndef CREATE_TEST_IMPL_PROTOTYPES_HH_9627A790EC304B26805677091D2BE100
+#define CREATE_TEST_IMPL_PROTOTYPES_HH_9627A790EC304B26805677091D2BE100
 
 #include <map>
 #include <string>
@@ -47,4 +47,4 @@ namespace Admin {
     );
 }
 
-#endif // #include guard end
+#endif

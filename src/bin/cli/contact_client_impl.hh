@@ -21,8 +21,8 @@
  *  contact client implementation header
  */
 
-#ifndef CONTACT_CLIENT_IMPL_H_
-#define CONTACT_CLIENT_IMPL_H_
+#ifndef CONTACT_CLIENT_IMPL_HH_24044019110A40949F068BFB640C2404
+#define CONTACT_CLIENT_IMPL_HH_24044019110A40949F068BFB640C2404
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/foreach.hpp>
@@ -425,4 +425,4 @@ struct contact_verification_start_enqueued_checks_impl
 };
 
 
-#endif // CONTACT_CLIENT_IMPL_H_
+#endif

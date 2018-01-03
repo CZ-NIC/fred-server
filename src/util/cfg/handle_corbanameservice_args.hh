@@ -21,8 +21,8 @@
  *  corba nameservice configuration
  */
 
-#ifndef HANDLE_CORBANAMESERVICE_ARGS_H_
-#define HANDLE_CORBANAMESERVICE_ARGS_H_
+#ifndef HANDLE_CORBANAMESERVICE_ARGS_HH_AA52E86E46594E788EB970E475A66227
+#define HANDLE_CORBANAMESERVICE_ARGS_HH_AA52E86E46594E788EB970E475A66227
 
 #include <iostream>
 #include <exception>
@@ -118,4 +118,4 @@ public:
 
 };//class HandleCorbaNameServiceArgsGrp
 
-#endif //HANDLE_CORBANAMESERVICE_ARGS_H_
+#endif

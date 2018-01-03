@@ -21,8 +21,8 @@
  *  header of conditional contact identification
  */
 
-#ifndef CONTACT_CONDITIONAL_IDENTIFICATION_IMPL_H_
-#define CONTACT_CONDITIONAL_IDENTIFICATION_IMPL_H_
+#ifndef CONTACT_CONDITIONAL_IDENTIFICATION_IMPL_HH_142686BD80BC4B9C8C3B489409C0FFD6
+#define CONTACT_CONDITIONAL_IDENTIFICATION_IMPL_HH_142686BD80BC4B9C8C3B489409C0FFD6
 
 #include "src/libfred/public_request/public_request_impl.hh"
 #include "src/libfred/contact_verification/contact_verification_password.hh"

@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CREATE_DOMAIN_INPUT_DATA_H_F9503633D88E4A2C89BE98249E429A98
-#define CREATE_DOMAIN_INPUT_DATA_H_F9503633D88E4A2C89BE98249E429A98
+#ifndef CREATE_DOMAIN_INPUT_DATA_HH_8AEC65DBEE314051AF0BA1B83AA57B8A
+#define CREATE_DOMAIN_INPUT_DATA_HH_8AEC65DBEE314051AF0BA1B83AA57B8A
 
 #include "src/backend/epp/domain/domain_enum_validation.hh"
 #include "src/backend/epp/domain/domain_registration_time.hh"

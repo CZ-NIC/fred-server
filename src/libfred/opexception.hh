@@ -21,8 +21,8 @@
  *  operation exceptions
  */
 
-#ifndef OPEXCEPTION_H_
-#define OPEXCEPTION_H_
+#ifndef OPEXCEPTION_HH_CD4D595579FB4E3CBA845B23423113F3
+#define OPEXCEPTION_HH_CD4D595579FB4E3CBA845B23423113F3
 
 #include <unistd.h>
 #include <string.h>
@@ -313,4 +313,4 @@ template <class T> struct ExceptionTraits;
 
 
 } // namespace LibFred
-#endif // OPEXCEPTION_H_
+#endif

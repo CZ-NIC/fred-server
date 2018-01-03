@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef INFO_CONTACT_H_F087DD16707E43589C93442CE9D0CED5
-#define INFO_CONTACT_H_F087DD16707E43589C93442CE9D0CED5
+#ifndef INFO_CONTACT_HH_FDF0BE2833874CB0A8E8CD911C1D2572
+#define INFO_CONTACT_HH_FDF0BE2833874CB0A8E8CD911C1D2572
 
 #include "src/backend/epp/contact/contact_data.hh"
 #include "src/backend/epp/contact/contact_disclose.hh"

@@ -21,8 +21,8 @@
  *  common config options handling
  */
 
-#ifndef HANDLE_ARGS_H_
-#define HANDLE_ARGS_H_
+#ifndef HANDLE_ARGS_HH_F9FF669BA79446E4A11145D780C03F91
+#define HANDLE_ARGS_HH_F9FF669BA79446E4A11145D780C03F91
 
 #include "src/util/cfg/faked_args.hh"
 #include "src/util/cfg/checked_types.hh"
@@ -345,4 +345,4 @@ typedef std::shared_ptr<HandleGrpArgs> HandleGrpArgsPtr;//group args ptr
 typedef std::vector<HandleGrpArgsPtr > HandlerGrpVector;//vector of arg groups
 typedef std::vector<HandlerGrpVector > HandlerPtrGrid;//grid of grouped args
 
-#endif //HANDLE_ARGS_H_
+#endif

@@ -1,5 +1,5 @@
-#ifndef _EPP_CORBA_CLIENT_IMPL_H_
-#define _EPP_CORBA_CLIENT_IMPL_H_
+#ifndef EPP_CORBA_CLIENT_IMPL_HH_E0FFD7FBE9284C4593DCD9E28A896CCF
+#define EPP_CORBA_CLIENT_IMPL_HH_E0FFD7FBE9284C4593DCD9E28A896CCF
 
 #include <boost/thread/thread.hpp>
 #include <src/bin/corba/EPP.hh>
@@ -19,4 +19,4 @@ private:
     mutable boost::mutex ref_mutex;
 };
 
-#endif // _EPP_CORBA_CLIENT_IMPL_H_
+#endif

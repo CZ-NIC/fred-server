@@ -1,5 +1,5 @@
-#ifndef REGISTRAR_H_
-#define REGISTRAR_H_
+#ifndef REGISTRAR_HH_33FA604169D84E8FBEFD15326F3F066D
+#define REGISTRAR_HH_33FA604169D84E8FBEFD15326F3F066D
 
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/date_time/posix_time/time_period.hpp>

@@ -1,5 +1,5 @@
-#ifndef __SQL_H__
-#define __SQL_H__
+#ifndef SQL_HH_A39EC0A3D09946AFA4580FB98CAE0749
+#define SQL_HH_A39EC0A3D09946AFA4580FB98CAE0749
 
 #include <boost/date_time/gregorian/formatters.hpp>
 #include <boost/date_time/posix_time/time_formatters.hpp>

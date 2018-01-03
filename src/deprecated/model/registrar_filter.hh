@@ -1,5 +1,5 @@
-#ifndef REGISTRAR_FILTER_H_
-#define REGISTRAR_FILTER_H_
+#ifndef REGISTRAR_FILTER_HH_54BBB0A943DA422CADDBAFB062E29EA6
+#define REGISTRAR_FILTER_HH_54BBB0A943DA422CADDBAFB062E29EA6
 
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/utility.hpp>

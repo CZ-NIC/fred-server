@@ -22,8 +22,8 @@
  */
 
 
-#ifndef TRANSACTION_H_
-#define TRANSACTION_H_ 
+#ifndef TRANSACTION_HH_5C53568EE7CD44B188FDBECB85CFAC71
+#define TRANSACTION_HH_5C53568EE7CD44B188FDBECB85CFAC71
 
 #include <boost/noncopyable.hpp>
 #include <string>

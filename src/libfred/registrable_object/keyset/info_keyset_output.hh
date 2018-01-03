@@ -21,8 +21,8 @@
  *  keyset info
  */
 
-#ifndef INFO_KEYSET_OUTPUT_H_
-#define INFO_KEYSET_OUTPUT_H_
+#ifndef INFO_KEYSET_OUTPUT_HH_2906766BA0734F9394B24C5FBD8F158C
+#define INFO_KEYSET_OUTPUT_HH_2906766BA0734F9394B24C5FBD8F158C
 
 #include <string>
 #include <vector>
@@ -78,4 +78,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif//INFO_KEYSET_OUTPUT_H_
+#endif

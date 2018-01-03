@@ -21,8 +21,8 @@
  *  header of passwords implementation
  */
 
-#ifndef CONTACT_VERIFICATION_PASSWORD_H_
-#define CONTACT_VERIFICATION_PASSWORD_H_
+#ifndef CONTACT_VERIFICATION_PASSWORD_HH_C663C8EF11554AC2B587074DA95FFCAD
+#define CONTACT_VERIFICATION_PASSWORD_HH_C663C8EF11554AC2B587074DA95FFCAD
 
 #include <map>
 #include <string>
@@ -65,4 +65,4 @@ ContactVerificationPassword::MessageData& collect_message_data(
 }//Fred
 
 
-#endif // CONTACT_VERIFICATION_PASSWORD_H_
+#endif

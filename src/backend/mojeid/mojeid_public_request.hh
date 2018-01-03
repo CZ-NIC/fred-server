@@ -21,8 +21,8 @@
  *  header of mojeid public request classes
  */
 
-#ifndef MOJEID_PUBLIC_REQUEST_H_77C5F1C5C56F30200BE16A2E48A104EB//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define MOJEID_PUBLIC_REQUEST_H_77C5F1C5C56F30200BE16A2E48A104EB
+#ifndef MOJEID_PUBLIC_REQUEST_HH_84FE8D19EBEB44C998CD55B92E3E2ABE
+#define MOJEID_PUBLIC_REQUEST_HH_84FE8D19EBEB44C998CD55B92E3E2ABE
 
 #include "src/libfred/public_request/public_request_auth_type_iface.hh"
 
@@ -147,4 +147,4 @@ private:
 }//Fred::MojeID
 }//Fred
 
-#endif//MOJEID_PUBLIC_REQUEST_H_77C5F1C5C56F30200BE16A2E48A104EB
+#endif

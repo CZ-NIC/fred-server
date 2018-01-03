@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PASSWORD_DATA_HH_1CFF3678F5A669D20515A667F8B5BABD//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define PASSWORD_DATA_HH_1CFF3678F5A669D20515A667F8B5BABD
+#ifndef PASSWORD_DATA_HH_6380E92C1F334D92B4B8F436A0750C1D
+#define PASSWORD_DATA_HH_6380E92C1F334D92B4B8F436A0750C1D
 
 #include "src/util/nonconvertible.hh"
 
@@ -31,4 +31,4 @@ typedef Util::Nonconvertible<std::string>::Named<PasswordDataTag> PasswordData;
 
 } // namespace PasswordStorage
 
-#endif//PASSWORD_DATA_HH_1CFF3678F5A669D20515A667F8B5BABD
+#endif

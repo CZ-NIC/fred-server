@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef INFO_DOMAIN_LOCALIZED_RESPONSE_H_63645EF9A6324C078BE9A40618EF88BA
-#define INFO_DOMAIN_LOCALIZED_RESPONSE_H_63645EF9A6324C078BE9A40618EF88BA
+#ifndef INFO_DOMAIN_LOCALIZED_RESPONSE_HH_9FD2467249424EEFA56FD7EBBB0803BB
+#define INFO_DOMAIN_LOCALIZED_RESPONSE_HH_9FD2467249424EEFA56FD7EBBB0803BB
 
 #include "src/backend/epp/domain/info_domain_localized_output_data.hh"
 #include "src/backend/epp/epp_response_success_localized.hh"

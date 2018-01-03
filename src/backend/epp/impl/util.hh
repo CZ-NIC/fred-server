@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef UTIL_H_1EFC4C4310E84E82A77F0ABA8DB8B97F
-#define UTIL_H_1EFC4C4310E84E82A77F0ABA8DB8B97F
+#ifndef UTIL_HH_07EB9DDD81E745B199F551BBEB64141E
+#define UTIL_HH_07EB9DDD81E745B199F551BBEB64141E
 
 #include "src/libfred/db_settings.hh"
 #include "src/libfred/opcontext.hh"

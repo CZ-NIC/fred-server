@@ -22,8 +22,8 @@
  */
 
 
-#ifndef DATABASE_H_
-#define DATABASE_H_
+#ifndef DATABASE_HH_F6BBA466DE8F4688847CE452B1236CDF
+#define DATABASE_HH_F6BBA466DE8F4688847CE452B1236CDF
 
 #include "src/util/db/connection.hh"
 #include "src/util/db/connection_factory.hh"

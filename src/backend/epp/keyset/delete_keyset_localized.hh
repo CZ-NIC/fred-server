@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DELETE_KEYSET_LOCALIZED_H_8DB04AC4562642F192AACBA17210E895
-#define DELETE_KEYSET_LOCALIZED_H_8DB04AC4562642F192AACBA17210E895
+#ifndef DELETE_KEYSET_LOCALIZED_HH_E1D3526EA7414AADB2E2AB103F8E83B1
+#define DELETE_KEYSET_LOCALIZED_HH_E1D3526EA7414AADB2E2AB103F8E83B1
 
 #include "src/backend/epp/epp_response_success_localized.hh"
 #include "src/backend/epp/keyset/delete_keyset_config_data.hh"

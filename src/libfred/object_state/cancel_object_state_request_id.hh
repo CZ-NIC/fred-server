@@ -21,8 +21,8 @@
  *  cancel object state request
  */
 
-#ifndef CANCEL_OBJECT_STATE_REQUEST_ID_H_
-#define CANCEL_OBJECT_STATE_REQUEST_ID_H_
+#ifndef CANCEL_OBJECT_STATE_REQUEST_ID_HH_DC869EB936FA49D393D44E764C0110E4
+#define CANCEL_OBJECT_STATE_REQUEST_ID_HH_DC869EB936FA49D393D44E764C0110E4
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 #include "src/libfred/opexception.hh"
@@ -62,4 +62,4 @@ pozadavek na zruseni stavu objektu (update object_state_request)
 
 } // namespace LibFred
 
-#endif//CANCEL_OBJECT_STATE_REQUEST_ID_H_
+#endif

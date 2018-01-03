@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CHECK_DOMAIN_LOCALIZED_RESPONSE_H_EA8DA66B6D34477D9D35E925F78BE8FB
-#define CHECK_DOMAIN_LOCALIZED_RESPONSE_H_EA8DA66B6D34477D9D35E925F78BE8FB
+#ifndef CHECK_DOMAIN_LOCALIZED_RESPONSE_HH_AD34C8B010364210B98850054DBD69BF
+#define CHECK_DOMAIN_LOCALIZED_RESPONSE_HH_AD34C8B010364210B98850054DBD69BF
 
 #include "src/backend/epp/domain/domain_registration_obstruction.hh"
 #include "src/backend/epp/epp_response_success_localized.hh"

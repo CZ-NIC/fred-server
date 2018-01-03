@@ -1,5 +1,5 @@
-#ifndef _EPP_CORBA_CLIENT_
-#define _EPP_CORBA_CLIENT_
+#ifndef EPP_CORBA_CLIENT_HH_1C8AE669378C4EA19C051EDC1780309A
+#define EPP_CORBA_CLIENT_HH_1C8AE669378C4EA19C051EDC1780309A
 
 #include "src/util/types/id.hh"
 
@@ -13,4 +13,4 @@ public:
 
 };
 
-#endif // _EPP_CORBA_CLIENT_
+#endif

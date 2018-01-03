@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef INFO_NSSET_H_0EB95E12F9594FE1BAEA1D2E56AAA5F8
-#define INFO_NSSET_H_0EB95E12F9594FE1BAEA1D2E56AAA5F8
+#ifndef INFO_NSSET_HH_9C05C3D3135F4A3F98BD3132C4441E61
+#define INFO_NSSET_HH_9C05C3D3135F4A3F98BD3132C4441E61
 
 #include "src/backend/epp/nsset/dns_host_output.hh"
 #include "src/backend/epp/nsset/info_nsset_config_data.hh"
@@ -78,4 +78,4 @@ InfoNssetOutputData info_nsset(
 } // namespace Epp::Nsset
 } // namespace Epp
 
-#endif//INFO_NSSET_H_0EB95E12F9594FE1BAEA1D2E56AAA5F8
+#endif

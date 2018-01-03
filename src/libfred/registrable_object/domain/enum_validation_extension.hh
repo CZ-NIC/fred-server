@@ -21,8 +21,8 @@
  *  domain ENUM validation extension
  */
 
-#ifndef ENUM_VALIDATION_EXTENSION_H_
-#define ENUM_VALIDATION_EXTENSION_H_
+#ifndef ENUM_VALIDATION_EXTENSION_HH_284897C7D2FA49E7803BCDB2B0E906E1
+#define ENUM_VALIDATION_EXTENSION_HH_284897C7D2FA49E7803BCDB2B0E906E1
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 
@@ -78,4 +78,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif//ENUM_VALIDATION_EXTENSION_H_
+#endif

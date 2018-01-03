@@ -16,8 +16,8 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _KEYSETCLIENT_H_
-#define _KEYSETCLIENT_H_
+#ifndef KEYSETCLIENT_HH_B6793A8414C34B8E8BED9CB3B92C898D
+#define KEYSETCLIENT_HH_B6793A8414C34B8E8BED9CB3B92C898D
 
 #include <boost/program_options.hpp>
 #include <iostream>
@@ -70,4 +70,4 @@ public:
 
 } // namespace Admin;
 
-#endif // _KEYSETCLIENT_H_
+#endif

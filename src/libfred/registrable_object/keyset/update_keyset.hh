@@ -21,8 +21,8 @@
  *  keyset update
  */
 
-#ifndef UPDATE_KEYSET_H_
-#define UPDATE_KEYSET_H_
+#ifndef UPDATE_KEYSET_HH_3C5EA3EF513E4F39B79B7D9BB3C72645
+#define UPDATE_KEYSET_HH_3C5EA3EF513E4F39B79B7D9BB3C72645
 
 #include <string>
 #include <vector>
@@ -165,4 +165,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif//UPDATE_KEYSET_H_
+#endif

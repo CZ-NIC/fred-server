@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DELETE_NSSET_LOCALIZED_H_9D46AC55B43743898CF9E6A41641A1BC
-#define DELETE_NSSET_LOCALIZED_H_9D46AC55B43743898CF9E6A41641A1BC
+#ifndef DELETE_NSSET_LOCALIZED_HH_9BB0774F653D4769AEA8CEFE461A6352
+#define DELETE_NSSET_LOCALIZED_HH_9BB0774F653D4769AEA8CEFE461A6352
 
 #include "src/backend/epp/epp_response_success_localized.hh"
 #include "src/backend/epp/notification_data.hh"

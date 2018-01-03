@@ -22,8 +22,8 @@
  *  (inspired by C++ FAQ Lite)
  */
 
-#ifndef STRINGIFY_H_
-#define STRINGIFY_H_
+#ifndef STRINGIFY_HH_6E69CB02AB5C43C6B97D9A72E7979116
+#define STRINGIFY_HH_6E69CB02AB5C43C6B97D9A72E7979116
 
 #include "src/util/types/convert_str_base.hh"
 #include "src/util/types/convert_str_pod.hh"

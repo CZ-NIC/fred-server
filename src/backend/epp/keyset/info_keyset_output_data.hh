@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef INFO_KEYSET_OUTPUT_DATA_H_95C2E2D9FC0045CA9DFC4AF376229616
-#define INFO_KEYSET_OUTPUT_DATA_H_95C2E2D9FC0045CA9DFC4AF376229616
+#ifndef INFO_KEYSET_OUTPUT_DATA_HH_C2D418CDD9C94231AB79FF944AD8D17E
+#define INFO_KEYSET_OUTPUT_DATA_HH_C2D418CDD9C94231AB79FF944AD8D17E
 
 #include "src/backend/epp/keyset/dns_key.hh"
 #include "src/backend/epp/keyset/ds_record.hh"

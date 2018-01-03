@@ -1,5 +1,5 @@
-#ifndef VERIFICATION_CONTACT_H_
-#define VERIFICATION_CONTACT_H_
+#ifndef CONTACT_HH_8AE54A8F092B431FA743166F42607F38
+#define CONTACT_HH_8AE54A8F092B431FA743166F42607F38
 
 #include "src/util/db/nullable.hh"
 #include "src/util/optional_value.hh"

@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PRAGUE_HH_A3F62C9A5A8A70BDD58A7DD08B57C05F//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define PRAGUE_HH_A3F62C9A5A8A70BDD58A7DD08B57C05F
+#ifndef PRAGUE_HH_780788939D3E445991BBD8BD96B7AF35
+#define PRAGUE_HH_780788939D3E445991BBD8BD96B7AF35
 
 namespace Tz {
 namespace Europe {
@@ -27,4 +27,4 @@ struct Prague;
 } // namespace Tz::Europe
 } // namespace Tz
 
-#endif//PRAGUE_HH_A3F62C9A5A8A70BDD58A7DD08B57C05F
+#endif

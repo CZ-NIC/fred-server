@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CONNECTION_RELEASER_H_
-#define CONNECTION_RELEASER_H_
+#ifndef CONNECTION_RELEASER_HH_62CC5FC394E342D9B51CA77E1D213618
+#define CONNECTION_RELEASER_HH_62CC5FC394E342D9B51CA77E1D213618
 
 #include "src/libfred/db_settings.hh"
 #include "src/util/log/logger.hh"

@@ -21,8 +21,8 @@
  *  header of registry messages
  */
 
-#ifndef MESSAGES_IMPL_H_
-#define MESSAGES_IMPL_H_
+#ifndef MESSAGES_IMPL_HH_9D52FB7BDA1B4718A5F1E03C5FD37EB1
+#define MESSAGES_IMPL_HH_9D52FB7BDA1B4718A5F1E03C5FD37EB1
 
 #include <string>
 #include <vector>
@@ -271,4 +271,4 @@ ManagerPtr create_manager();
 
 } // namespace Messages
 } // namespace LibFred
-#endif //MESSAGES_IMPL_H_
+#endif

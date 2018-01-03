@@ -21,11 +21,11 @@
  *  type for money calculation
  */
 
-#ifndef MONEY_H_
-#define MONEY_H_
+#ifndef MONEY_HH_9413AD2620F4484FAFDF1B737A919EC6
+#define MONEY_HH_9413AD2620F4484FAFDF1B737A919EC6
 
 #include "src/util/decimal/decimal.hh"
 
 typedef Decimal Money;
 
-#endif // MONEY_H_
+#endif

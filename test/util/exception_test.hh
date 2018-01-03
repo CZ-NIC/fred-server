@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef EXCEPTIONTEST_H_
-#define EXCEPTIONTEST_H_
+#ifndef EXCEPTION_TEST_HH_06ECEA65269043B79A1CA9A1FB27CFAE
+#define EXCEPTION_TEST_HH_06ECEA65269043B79A1CA9A1FB27CFAE
 #include <exception>
 #include <stdio.h>
 #include <pthread.h>
@@ -130,4 +130,4 @@ public:
 
 
 
-#endif // EXCEPTIONTEST_H_
+#endif

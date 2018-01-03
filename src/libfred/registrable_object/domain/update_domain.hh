@@ -21,8 +21,8 @@
  *  domain update
  */
 
-#ifndef UPDATE_DOMAIN_H_
-#define UPDATE_DOMAIN_H_
+#ifndef UPDATE_DOMAIN_HH_7FF0ED5B318E44E1949BB1CCA7E9CBCF
+#define UPDATE_DOMAIN_HH_7FF0ED5B318E44E1949BB1CCA7E9CBCF
 
 #include <string>
 #include <vector>
@@ -242,4 +242,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif//UPDATE_DOMAIN_H_
+#endif

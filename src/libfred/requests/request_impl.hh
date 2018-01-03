@@ -1,5 +1,5 @@
-#ifndef _REQUEST_IMPL_H_
-#define _REQUEST_IMPL_H_
+#ifndef REQUEST_IMPL_HH_AF154DFA3B4849ABB6CDF61018D5B56A
+#define REQUEST_IMPL_HH_AF154DFA3B4849ABB6CDF61018D5B56A
 
 #include "src/libfred/common_impl.hh"
 #include "src/libfred/requests/request.hh"

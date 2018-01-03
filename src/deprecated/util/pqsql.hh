@@ -1,5 +1,5 @@
-#ifndef __PQSQL_H__
-#define __PQSQL_H__
+#ifndef PQSQL_HH_71724B7F68524A8DA6C9985AECD7E53B
+#define PQSQL_HH_71724B7F68524A8DA6C9985AECD7E53B
 
 #include <libpq-fe.h>
 #include <string>

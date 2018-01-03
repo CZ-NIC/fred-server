@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef NONCONVERIBLE_HH_DB3A95A707DDC25D0E91C9A48F213E18//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define NONCONVERIBLE_HH_DB3A95A707DDC25D0E91C9A48F213E18
+#ifndef NONCONVERTIBLE_HH_E7127163E2844FA8A8C6DA098FD9D4D7
+#define NONCONVERTIBLE_HH_E7127163E2844FA8A8C6DA098FD9D4D7
 
 #include <type_traits>
 
@@ -62,4 +62,4 @@ struct Nonconvertible
 
 } // namespace Util
 
-#endif//NONCONVERIBLE_HH_DB3A95A707DDC25D0E91C9A48F213E18
+#endif

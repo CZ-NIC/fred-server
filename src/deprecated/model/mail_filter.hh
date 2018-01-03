@@ -1,5 +1,5 @@
-#ifndef MAIL_FILTER_H_
-#define MAIL_FILTER_H_
+#ifndef MAIL_FILTER_HH_7D939F1475434A96B6D35F5698A244A5
+#define MAIL_FILTER_HH_7D939F1475434A96B6D35F5698A244A5
 
 #include "src/util/db/query/base_filters.hh"
 #include "src/deprecated/model/file_filter.hh"

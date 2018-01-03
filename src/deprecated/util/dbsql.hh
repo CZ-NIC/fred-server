@@ -1,5 +1,5 @@
-#ifndef __DBSQL_H__
-#define __DBSQL_H__
+#ifndef DBSQL_HH_1EE7FA4B5D8E4144AEFA46DDDE716764
+#define DBSQL_HH_1EE7FA4B5D8E4144AEFA46DDDE716764
 
 #include "src/libfred/db_settings.hh"
 

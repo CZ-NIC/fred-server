@@ -20,8 +20,8 @@
  *  @file
  */
 
-#ifndef CHECK_NSSET_H_1891b4d769ff4638a99477500bba8aa4
-#define CHECK_NSSET_H_1891b4d769ff4638a99477500bba8aa4
+#ifndef CHECK_NSSET_HH_B06A1F479EB2476FA4B91EFD8DBBE353
+#define CHECK_NSSET_HH_B06A1F479EB2476FA4B91EFD8DBBE353
 
 #include "src/libfred/registrable_object/nsset/handle_state.hh"
 

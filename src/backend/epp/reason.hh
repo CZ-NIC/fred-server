@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef REASON_H_7629BFD8BB7641BE890C92F2BEC79615
-#define REASON_H_7629BFD8BB7641BE890C92F2BEC79615
+#ifndef REASON_HH_F09B8C7F15B642FE8AB9F7B63FDCE2E4
+#define REASON_HH_F09B8C7F15B642FE8AB9F7B63FDCE2E4
 
 #include "src/backend/epp/exception.hh"
 

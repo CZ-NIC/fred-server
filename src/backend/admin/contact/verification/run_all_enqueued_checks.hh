@@ -21,8 +21,8 @@
  *  run all contact verification checks in queue
  */
 
-#ifndef ADMIN_CONTACT_VERIFICATION_RUN_ALL_ENQUEUED_CHECKS_H_102876878
-#define ADMIN_CONTACT_VERIFICATION_RUN_ALL_ENQUEUED_CHECKS_H_102876878
+#ifndef RUN_ALL_ENQUEUED_CHECKS_HH_98FF71CFFEEF434FAD74FEBACFD1DAE5
+#define RUN_ALL_ENQUEUED_CHECKS_HH_98FF71CFFEEF434FAD74FEBACFD1DAE5
 
 #include <vector>
 #include <string>
@@ -44,4 +44,4 @@ namespace Admin {
         Optional<unsigned long long> _logd_request_id = Optional<unsigned long long>());
 }
 
-#endif // #include guard end
+#endif

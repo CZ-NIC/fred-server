@@ -21,8 +21,8 @@
  *  keyset specific notification implementation
  */
 
-#ifndef FREDLIB_NOTIFIER2_OBJECT_TYPE_KEYSET_543054361041
-#define FREDLIB_NOTIFIER2_OBJECT_TYPE_KEYSET_543054361041
+#ifndef KEYSET_HH_DE68A983920F46AB9F99A43E9EE4CB50
+#define KEYSET_HH_DE68A983920F46AB9F99A43E9EE4CB50
 
 #include "src/libfred/opcontext.hh"
 #include "src/libfred/notifier/event_on_object_enum.hh"

@@ -16,8 +16,8 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _CHARGECLIENT_H_
-#define _CHARGECLIENT_H_
+#ifndef CHARGECLIENT_HH_40EFC56FBE424C79BD0719D5E3524610
+#define CHARGECLIENT_HH_40EFC56FBE424C79BD0719D5E3524610
 
 #include "src/bin/cli/charge_params.hh"
 

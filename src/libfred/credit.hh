@@ -23,8 +23,8 @@
 
 
 
-#ifndef CREDIT_H_
-#define CREDIT_H_
+#ifndef CREDIT_HH_51F9B935380D4D2C861E4C47558CD8EC
+#define CREDIT_HH_51F9B935380D4D2C861E4C47558CD8EC
 
 #include "src/util/decimal/decimal.hh"
 #include "src/util/types/money.hh"

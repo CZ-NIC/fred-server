@@ -21,8 +21,8 @@
  *  decimal floating point type wrapper
  */
 
-#ifndef DECIMAL_H_
-#define DECIMAL_H_
+#ifndef DECIMAL_HH_A18DFE7A4A94487A8508AC39F9CE7C77
+#define DECIMAL_HH_A18DFE7A4A94487A8508AC39F9CE7C77
 
 #include <stdexcept>
 #include <sstream>
@@ -803,4 +803,4 @@ public:
 */
 };//class Decimal
 
-#endif // DECIMAL_H_
+#endif

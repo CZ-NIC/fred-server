@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef NSSET_H_634498071C8843DB8A93086D7746DDE0
-#define NSSET_H_634498071C8843DB8A93086D7746DDE0
+#ifndef NSSET_HH_33B9C4D3463347E98F1D3C6CDA721323
+#define NSSET_HH_33B9C4D3463347E98F1D3C6CDA721323
 
 #include "src/backend/epp/epp_extended_error.hh"
 #include "src/backend/epp/param.hh"

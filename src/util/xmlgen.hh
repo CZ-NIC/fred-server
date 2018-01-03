@@ -21,8 +21,8 @@
  *  xml generator
  */
 
-#ifndef XMLGEN_H_
-#define XMLGEN_H_
+#ifndef XMLGEN_HH_A6C4BC97CEC14C489DF5FF8E97BEEAE8
+#define XMLGEN_HH_A6C4BC97CEC14C489DF5FF8E97BEEAE8
 
 #include <string>
 #include <vector>

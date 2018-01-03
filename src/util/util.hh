@@ -1,5 +1,5 @@
-#ifndef UTIL_H_
-#define UTIL_H_
+#ifndef UTIL_HH_F54151D7C0B848C8926F03720CB06166
+#define UTIL_HH_F54151D7C0B848C8926F03720CB06166
 
 #include <string>
 #include <vector>

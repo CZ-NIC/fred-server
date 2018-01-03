@@ -21,8 +21,8 @@
  *  header of domain client implementation
  */
 
-#ifndef DOMAIN_PARAMS_H_
-#define DOMAIN_PARAMS_H_
+#ifndef DOMAIN_PARAMS_HH_F379BDA5DF2942259EE8FD97A91853F6
+#define DOMAIN_PARAMS_HH_F379BDA5DF2942259EE8FD97A91853F6
 
 #include "src/util/types/optional.hh"
 
@@ -132,4 +132,4 @@ struct DomainListArgs
 
 };//struct DomainListArgs
 
-#endif // DOMAIN_PARAMS_H_
+#endif

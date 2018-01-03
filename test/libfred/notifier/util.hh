@@ -20,8 +20,8 @@
  *  @file
  */
 
-#ifndef TEST_FREDLIB_NOTIFIER2_UTIL_65463101231
-#define TEST_FREDLIB_NOTIFIER2_UTIL_65463101231
+#ifndef UTIL_HH_1946C028CFD1459D9A3D10E559FDC6CE
+#define UTIL_HH_1946C028CFD1459D9A3D10E559FDC6CE
 
 #include "src/libfred/opcontext.hh"
 #include "test/setup/fixtures_utils.hh"

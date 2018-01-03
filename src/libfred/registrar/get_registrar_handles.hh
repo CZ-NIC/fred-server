@@ -21,8 +21,8 @@
  *  get registar handles
  */
 
-#ifndef GET_REGISTRAR_HANDLES_H_
-#define GET_REGISTRAR_HANDLES_H_
+#ifndef GET_REGISTRAR_HANDLES_HH_2144E839F7384BA88F31FABC2D64B57B
+#define GET_REGISTRAR_HANDLES_HH_2144E839F7384BA88F31FABC2D64B57B
 
 #include <vector>
 #include <string>
@@ -78,4 +78,4 @@ namespace Registrar
 
 } // namespace Registrar
 } // namespace LibFred
-#endif //GET_REGISTRAR_HANDLES_H_
+#endif

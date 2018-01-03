@@ -1,5 +1,5 @@
-#ifndef _BANK_MANAGER_H_
-#define _BANK_MANAGER_H_
+#ifndef BANK_MANAGER_HH_5C8C2E1D0B944AA19ED43A94CE1AE7FC
+#define BANK_MANAGER_HH_5C8C2E1D0B944AA19ED43A94CE1AE7FC
 
 #include "src/libfred/banking/bank_payment.hh"
 #include "src/libfred/banking/bank_payment_list.hh"
@@ -55,4 +55,4 @@ typedef std::unique_ptr<Manager> ManagerPtr;
 } // namespace Banking
 } // namespace LibFred
 
-#endif // _BANK_MANAGER_H_
+#endif

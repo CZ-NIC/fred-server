@@ -22,8 +22,8 @@
  */
 
 
-#ifndef PRINTABLE_H_
-#define PRINTABLE_H_
+#ifndef PRINTABLE_HH_5C88F872476A4AF5BC114777C1ECFB24
+#define PRINTABLE_HH_5C88F872476A4AF5BC114777C1ECFB24
 
 #include <string>
 #include <vector>
@@ -190,4 +190,4 @@ namespace Util
 
 } // namespace Util
 
-#endif //PRINTABLE_H_
+#endif

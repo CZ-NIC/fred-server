@@ -21,8 +21,8 @@
  *  keyset info data diff
  */
 
-#ifndef INFO_KEYSET_DIFF_H_
-#define INFO_KEYSET_DIFF_H_
+#ifndef INFO_KEYSET_DIFF_HH_5166F7638312403697651744C3726161
+#define INFO_KEYSET_DIFF_HH_5166F7638312403697651744C3726161
 
 #include <string>
 #include <vector>
@@ -99,4 +99,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif//INFO_KEYSET_DIFF_H_
+#endif

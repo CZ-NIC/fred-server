@@ -16,8 +16,8 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _REGISTRARCLIENT_H_
-#define _REGISTRARCLIENT_H_
+#ifndef REGISTRARCLIENT_HH_A5F71ACF1ADA4B709D0A3E04C04AC7C7
+#define REGISTRARCLIENT_HH_A5F71ACF1ADA4B709D0A3E04C04AC7C7
 
 #include <boost/program_options.hpp>
 #include <iostream>
@@ -160,4 +160,4 @@ public:
 
 } // namespace Admin;
 
-#endif // _REGISTRARCLIENT_H_
+#endif

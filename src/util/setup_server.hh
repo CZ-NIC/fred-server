@@ -21,8 +21,8 @@
  *  Implementation of server setup.
  */
 
-#ifndef SETUP_SERVER_H_
-#define SETUP_SERVER_H_
+#ifndef SETUP_SERVER_HH_B3A8DA8BD3A64FAEBB957E50B12B46BE
+#define SETUP_SERVER_HH_B3A8DA8BD3A64FAEBB957E50B12B46BE
 
 #include <string>
 #include <boost/any.hpp>
@@ -95,4 +95,4 @@ void corba_init()
 
 }
 
-#endif //SETUP_SERVER_H_
+#endif

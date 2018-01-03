@@ -21,8 +21,8 @@
  *  logger config
  */
 
-#ifndef HANDLE_LOGD_ARGS_H_
-#define HANDLE_LOGD_ARGS_H_
+#ifndef HANDLE_LOGD_ARGS_HH_72562AC0712641649BE566415B9A3B2F
+#define HANDLE_LOGD_ARGS_HH_72562AC0712641649BE566415B9A3B2F
 
 #include <iostream>
 #include <exception>
@@ -69,4 +69,4 @@ public:
     }//handle
 };
 
-#endif //HANDLE_LOGD_ARGS_H_
+#endif

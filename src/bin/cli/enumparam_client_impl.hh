@@ -21,8 +21,8 @@
  *  enumparam client implementation header
  */
 
-#ifndef ENUMPARAM_CLIENT_IMPL_H_
-#define ENUMPARAM_CLIENT_IMPL_H_
+#ifndef ENUMPARAM_CLIENT_IMPL_HH_EF0E8982D1BA40E490F06D40E6C8BAF4
+#define ENUMPARAM_CLIENT_IMPL_HH_EF0E8982D1BA40E490F06D40E6C8BAF4
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/handle_database_args.hh"
 #include "src/util/cfg/handle_corbanameservice_args.hh"
@@ -49,4 +49,4 @@ struct enum_parameter_change_impl
   }
 };
 
-#endif // ENUMPARAM_CLIENT_IMPL_H_
+#endif

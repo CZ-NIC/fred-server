@@ -21,8 +21,8 @@
  *  nsset info output structure
  */
 
-#ifndef INFO_NSSET_OUTPUT_H_
-#define INFO_NSSET_OUTPUT_H_
+#ifndef INFO_NSSET_OUTPUT_HH_3B3A6EFB6BB4457A999D7E84BD9FA805
+#define INFO_NSSET_OUTPUT_HH_3B3A6EFB6BB4457A999D7E84BD9FA805
 
 #include <string>
 #include <vector>
@@ -80,4 +80,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif//INFO_NSSET_OUTPUT_H_
+#endif

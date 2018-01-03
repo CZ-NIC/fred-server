@@ -21,8 +21,8 @@
  *  nullable value
  */
 
-#ifndef NULLABLE_H_10011114543210
-#define NULLABLE_H_10011114543210
+#ifndef NULLABLE_HH_7B62E1FA8ED84EFF87B015F3A8BE8DE5
+#define NULLABLE_HH_7B62E1FA8ED84EFF87B015F3A8BE8DE5
 
 #include "src/util/db/value.hh"
 #include <stdexcept>

@@ -21,8 +21,8 @@
  *  notify client implementation header
  */
 
-#ifndef NOTIFY_CLIENT_IMPL_H_
-#define NOTIFY_CLIENT_IMPL_H_
+#ifndef NOTIFY_CLIENT_IMPL_HH_0232A4C033DF4D1C8735F2D58162D111
+#define NOTIFY_CLIENT_IMPL_HH_0232A4C033DF4D1C8735F2D58162D111
 #include <cstdio>
 #include <cstdlib>
 #include <cerrno>
@@ -212,4 +212,4 @@ struct send_object_event_notification_emails_impl {
     }
 };
 
-#endif // NOTIFY_CLIENT_IMPL_H_
+#endif

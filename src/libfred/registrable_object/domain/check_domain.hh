@@ -21,8 +21,8 @@
  *  domain check
  */
 
-#ifndef CHECK_DOMAIN_H
-#define CHECK_DOMAIN_H
+#ifndef CHECK_DOMAIN_HH_94109AC573AD470D9113D5EF51567F45
+#define CHECK_DOMAIN_HH_94109AC573AD470D9113D5EF51567F45
 
 #include <string>
 
@@ -106,4 +106,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif//CHECK_DOMAIN_H
+#endif

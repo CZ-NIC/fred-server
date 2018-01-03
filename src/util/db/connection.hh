@@ -21,8 +21,8 @@
  *  Interface definition of automanaged connection object
  */
 
-#ifndef CONNECTION_H_
-#define CONNECTION_H_
+#ifndef CONNECTION_HH_6C0F30D7035E4AFDA6456A86D2FD5B24
+#define CONNECTION_HH_6C0F30D7035E4AFDA6456A86D2FD5B24
 
 #include <boost/noncopyable.hpp>
 #include <boost/regex.hpp>

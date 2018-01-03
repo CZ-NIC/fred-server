@@ -17,8 +17,8 @@
  */
 
 
-#ifndef TIME_CLOCK_H_
-#define TIME_CLOCK_H_
+#ifndef TIME_CLOCK_HH_930B2A4B106847E9873B166F5C8936A9
+#define TIME_CLOCK_HH_930B2A4B106847E9873B166F5C8936A9
 
 #include <ctime>
 #include <string>

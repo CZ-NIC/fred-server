@@ -1,5 +1,5 @@
-#ifndef MODEL_REGISTRAR_H_
-#define MODEL_REGISTRAR_H_
+#ifndef MODEL_REGISTRAR_HH_ADF07039F5254399BA1B22A69055A8D6
+#define MODEL_REGISTRAR_HH_ADF07039F5254399BA1B22A69055A8D6
 
 #include "src/libfred/db_settings.hh"
 #include "src/util/db/model/model.hh"

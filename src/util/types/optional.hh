@@ -21,8 +21,8 @@
  *  optional types
  */
 
-#ifndef OPTIONAL_H_
-#define OPTIONAL_H_
+#ifndef OPTIONAL_HH_42E8981D4545409A9C808870CB70787F
+#define OPTIONAL_HH_42E8981D4545409A9C808870CB70787F
 
 #include <string>
 #include <boost/date_time/posix_time/posix_time.hpp>

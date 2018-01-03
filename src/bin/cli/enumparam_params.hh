@@ -21,8 +21,8 @@
  *  header of enumparam client implementation
  */
 
-#ifndef ENUMPARAM_PARAMS_H_
-#define ENUMPARAM_PARAMS_H_
+#ifndef ENUMPARAM_PARAMS_HH_6BD58E2DC17649F5B45443F9341035EA
+#define ENUMPARAM_PARAMS_HH_6BD58E2DC17649F5B45443F9341035EA
 
 #include "src/util/types/optional.hh"
 
@@ -46,4 +46,4 @@ struct EnumParameterChangeArgs
     {}//init ctor
 };//struct EnumParameterChangeArgs
 
-#endif // ENUMPARAM_PARAMS_H_
+#endif

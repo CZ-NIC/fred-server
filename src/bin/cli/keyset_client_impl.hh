@@ -21,8 +21,8 @@
  *  keyset client implementation header
  */
 
-#ifndef KEYSET_CLIENT_IMPL_H_
-#define KEYSET_CLIENT_IMPL_H_
+#ifndef KEYSET_CLIENT_IMPL_HH_9771FDE462DF4CD7BEAF48C94412FABA
+#define KEYSET_CLIENT_IMPL_HH_9771FDE462DF4CD7BEAF48C94412FABA
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/handle_database_args.hh"
 #include "src/util/cfg/handle_corbanameservice_args.hh"
@@ -52,4 +52,4 @@ struct keyset_list_impl
   }
 };
 
-#endif // KEYSET_CLIENT_IMPL_H_
+#endif

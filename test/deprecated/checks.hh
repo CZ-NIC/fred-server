@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CHECKS_H_
-#define CHECKS_H_
+#ifndef CHECKS_HH_B184719E9B714931B21FD05BCEAA2E67
+#define CHECKS_HH_B184719E9B714931B21FD05BCEAA2E67
 
 #include <boost/test/unit_test.hpp>
 
@@ -50,4 +50,4 @@ inline unsigned long long check_public_request_on_contact(::LibFred::Contact::Ve
 }
 
 
-#endif // CHECKS_H_
+#endif

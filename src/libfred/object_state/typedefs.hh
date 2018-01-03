@@ -21,8 +21,8 @@
  *  type aliases for object_state implementation
  */
 
-#ifndef TYPEDEF_H_fd8fae73c3e44523ae3e21c3805a288d
-#define TYPEDEF_H_fd8fae73c3e44523ae3e21c3805a288d
+#ifndef TYPEDEFS_HH_F871C7189C80499AB88D772CB0034FBE
+#define TYPEDEFS_HH_F871C7189C80499AB88D772CB0034FBE
 
 
 #include <string>

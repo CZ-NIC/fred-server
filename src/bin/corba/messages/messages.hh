@@ -21,8 +21,8 @@
  *  corba server header of registry messages
  */
 
-#ifndef MESSAGES_H_
-#define MESSAGES_H_
+#ifndef MESSAGES_HH_AEA9DFD63E13458CA49AAAF0DF076EA0
+#define MESSAGES_HH_AEA9DFD63E13458CA49AAAF0DF076EA0
 
 #include "src/libfred/messages/messages_impl.hh"
 
@@ -94,4 +94,4 @@ public:
 
 extern const char* server_name;//for logging contxt
 
-#endif //MESSAGES_H_
+#endif

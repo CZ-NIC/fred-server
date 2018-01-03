@@ -21,8 +21,8 @@
  *  domain specific notification implementation
  */
 
-#ifndef FREDLIB_NOTIFIER2_OBJECT_TYPE_DOMAIN_87436738731
-#define FREDLIB_NOTIFIER2_OBJECT_TYPE_DOMAIN_87436738731
+#ifndef DOMAIN_HH_4FE595060EF44641B41C68646B7BD330
+#define DOMAIN_HH_4FE595060EF44641B41C68646B7BD330
 
 #include "src/libfred/opcontext.hh"
 #include "src/libfred/notifier/event_on_object_enum.hh"

@@ -1,5 +1,5 @@
-#ifndef _COMMON_OBJECT_H_
-#define _COMMON_OBJECT_H_
+#ifndef COMMON_OBJECT_HH_032DFFE6A56A419B96321F6CC7E1868A
+#define COMMON_OBJECT_HH_032DFFE6A56A419B96321F6CC7E1868A
 
 #include "src/libfred/types.hh"
 #include "src/libfred/exceptions.hh"

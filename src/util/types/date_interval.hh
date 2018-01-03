@@ -1,5 +1,5 @@
-#ifndef DATE_INTERVAL_
-#define DATE_INTERVAL_
+#ifndef DATE_INTERVAL_HH_1BFEC07BC51D4D46A040B33189A3B02B
+#define DATE_INTERVAL_HH_1BFEC07BC51D4D46A040B33189A3B02B
 
 #include <string>
 #include <boost/date_time/posix_time/posix_time.hpp>

@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GET_PSQL_HANDLE_OF_HH_C550D29B4570E9C45BCDB17FF334FF8F//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define GET_PSQL_HANDLE_OF_HH_C550D29B4570E9C45BCDB17FF334FF8F
+#ifndef GET_PSQL_HANDLE_OF_HH_7517E7624815491EA5A2439B1C011A8C
+#define GET_PSQL_HANDLE_OF_HH_7517E7624815491EA5A2439B1C011A8C
 
 #include <string>
 
@@ -28,4 +28,4 @@ std::string get_psql_handle_of();
 
 } // namespace Tz
 
-#endif//GET_PSQL_HANDLE_OF_HH_C550D29B4570E9C45BCDB17FF334FF8F
+#endif

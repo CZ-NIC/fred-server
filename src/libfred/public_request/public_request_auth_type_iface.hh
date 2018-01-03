@@ -21,8 +21,8 @@
  *  declaration of PublicRequestAuthTypeIface class
  */
 
-#ifndef PUBLIC_REQUEST_AUTH_TYPE_IFACE_H_F7F25DCF5675DE12A1BC3F7F86DE6750//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define PUBLIC_REQUEST_AUTH_TYPE_IFACE_H_F7F25DCF5675DE12A1BC3F7F86DE6750
+#ifndef PUBLIC_REQUEST_AUTH_TYPE_IFACE_HH_CCE79FEBE5884A72A08D508B4AF24BC8
+#define PUBLIC_REQUEST_AUTH_TYPE_IFACE_HH_CCE79FEBE5884A72A08D508B4AF24BC8
 
 #include "src/libfred/public_request/public_request_type_iface.hh"
 #include "src/libfred/public_request/public_request_object_lock_guard.hh"
@@ -49,4 +49,4 @@ public:
 
 } // namespace LibFred
 
-#endif//PUBLIC_REQUEST_AUTH_TYPE_IFACE_H_F7F25DCF5675DE12A1BC3F7F86DE6750
+#endif

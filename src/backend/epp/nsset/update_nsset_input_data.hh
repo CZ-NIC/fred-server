@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef UPDATE_NSSET_INPUT_DATA_H_3F2F31DCCD7B40A69412F2CC09D32AC7
-#define UPDATE_NSSET_INPUT_DATA_H_3F2F31DCCD7B40A69412F2CC09D32AC7
+#ifndef UPDATE_NSSET_INPUT_DATA_HH_B0E1C0624AD24C77A6BFA86F6A640FAC
+#define UPDATE_NSSET_INPUT_DATA_HH_B0E1C0624AD24C77A6BFA86F6A640FAC
 
 #include "src/backend/epp/nsset/dns_host_input.hh"
 #include "src/util/optional_value.hh"

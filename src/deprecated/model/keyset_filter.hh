@@ -1,5 +1,5 @@
-#ifndef KEYSET_FILTER_H_
-#define KEYSET_FILTER_H_
+#ifndef KEYSET_FILTER_HH_26AEA8517BF34970B574BEF10682B753
+#define KEYSET_FILTER_HH_26AEA8517BF34970B574BEF10682B753
 
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/utility.hpp>
@@ -76,4 +76,4 @@ class KeySetHistoryImpl: public ObjectHistoryImpl, virtual public KeySet {
 } // namespace Filters
 } // namespace Database
 
-#endif // KEYSET_FILTER_H_
+#endif

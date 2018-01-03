@@ -1,5 +1,5 @@
-#ifndef _MODEL_REGISTRAR_CERTIFICATION_H_
-#define _MODEL_REGISTRAR_CERTIFICATION_H_
+#ifndef MODEL_REGISTRAR_CERTIFICATION_HH_C319F2074BCC4EC8B5E09048D18AA9F8
+#define MODEL_REGISTRAR_CERTIFICATION_HH_C319F2074BCC4EC8B5E09048D18AA9F8
 
 #include "src/libfred/db_settings.hh"
 #include "src/util/db/model/model.hh"
@@ -126,4 +126,4 @@ private:
     static field_list  fields;      /** < list of all model fields */
 }; // class ModelRegistrarCertification
 
-#endif // _MODEL_REGISTRAR_CERTIFICATION_H_
+#endif

@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TRANSFER_CONTACT_H_A01B6F5659C348CB9F8372FEBD555CDB
-#define TRANSFER_CONTACT_H_A01B6F5659C348CB9F8372FEBD555CDB
+#ifndef TRANSFER_CONTACT_HH_89A0361AC01E4724B9631086D19BCC5E
+#define TRANSFER_CONTACT_HH_89A0361AC01E4724B9631086D19BCC5E
 
 #include "src/backend/epp/contact/transfer_contact_localized.hh"
 #include "src/libfred/opcontext.hh"

@@ -21,8 +21,8 @@
  *  perform object state request
  */
 
-#ifndef PERFORM_OBJECT_STATE_REQUEST_H_
-#define PERFORM_OBJECT_STATE_REQUEST_H_
+#ifndef PERFORM_OBJECT_STATE_REQUEST_HH_2CFAD473CF7E4138AE10AF167D322FB1
+#define PERFORM_OBJECT_STATE_REQUEST_HH_2CFAD473CF7E4138AE10AF167D322FB1
 
 #include "src/libfred/opexception.hh"
 
@@ -68,4 +68,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif // PERFORM_OBJECT_STATE_REQUEST_H_
+#endif

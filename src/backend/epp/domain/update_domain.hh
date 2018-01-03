@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef UPDATE_DOMAIN_H_2D1D225B719341E0B0F4384B04E36D74
-#define UPDATE_DOMAIN_H_2D1D225B719341E0B0F4384B04E36D74
+#ifndef UPDATE_DOMAIN_HH_7918D9AE9CAE4376B32D46C1931E8164
+#define UPDATE_DOMAIN_HH_7918D9AE9CAE4376B32D46C1931E8164
 
 #include "src/backend/epp/contact/update_contact.hh"
 #include "src/backend/epp/domain/domain_enum_validation.hh"

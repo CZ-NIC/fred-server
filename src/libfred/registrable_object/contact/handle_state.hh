@@ -20,8 +20,8 @@
  *  @file
  */
 
-#ifndef HANDLE_STATE_35441783769
-#define HANDLE_STATE_35441783769
+#ifndef HANDLE_STATE_HH_6B40A21625274DCDACA16F086B6A3B28
+#define HANDLE_STATE_HH_6B40A21625274DCDACA16F086B6A3B28
 
 namespace LibFred {
 namespace ContactHandleState {
@@ -48,4 +48,4 @@ struct SyntaxValidity
 } // namespace LibFred::ContactHandleState
 } // namespace LibFred
 
-#endif//HANDLE_STATE_35441783769
+#endif

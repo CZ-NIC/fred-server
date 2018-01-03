@@ -1,5 +1,5 @@
-#ifndef _MODEL_BANK_STATEMENT_H_
-#define _MODEL_BANK_STATEMENT_H_
+#ifndef MODEL_BANK_STATEMENT_HH_941F6CC8C9F04564A535EEB7DA882204
+#define MODEL_BANK_STATEMENT_HH_941F6CC8C9F04564A535EEB7DA882204
 
 #include "src/libfred/db_settings.hh"
 #include "src/util/db/model/model.hh"

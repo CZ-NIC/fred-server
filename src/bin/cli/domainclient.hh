@@ -16,8 +16,8 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _DOMAINCLIENT_H_
-#define _DOMAINCLIENT_H_
+#ifndef DOMAINCLIENT_HH_3EE1CCDFD40D4553A52C187C8D328B0C
+#define DOMAINCLIENT_HH_3EE1CCDFD40D4553A52C187C8D328B0C
 
 #include <boost/program_options.hpp>
 #include <iostream>
@@ -131,4 +131,4 @@ public:
 
 } // namespace Admin;
 
-#endif // _DOMAINCLIENT_H_
+#endif

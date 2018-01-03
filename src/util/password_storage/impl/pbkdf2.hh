@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PBKDF2_HH_B6647B465A59BDD3713C0F996B1D90A2//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define PBKDF2_HH_B6647B465A59BDD3713C0F996B1D90A2
+#ifndef PBKDF2_HH_A578E94D645945AB852292D05294E40A
+#define PBKDF2_HH_A578E94D645945AB852292D05294E40A
 
 #include "src/util/password_storage/base64.hh"
 #include "src/util/password_storage/password_data.hh"
@@ -86,4 +86,4 @@ struct AlgPbkdf2
 } // namespace PasswordStorage::Impl
 } // namespace PasswordStorage
 
-#endif//PBKDF2_HH_B6647B465A59BDD3713C0F996B1D90A2
+#endif

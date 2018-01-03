@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DELETE_NSSET_H_3578B2297509402F87E30F8130000C4A
-#define DELETE_NSSET_H_3578B2297509402F87E30F8130000C4A
+#ifndef DELETE_NSSET_HH_B737D56D3518457CBD931DFB2B12C3BB
+#define DELETE_NSSET_HH_B737D56D3518457CBD931DFB2B12C3BB
 
 #include "src/backend/epp/notification_data.hh"
 #include "src/backend/epp/nsset/delete_nsset_config_data.hh"

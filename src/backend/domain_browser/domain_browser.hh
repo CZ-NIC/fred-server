@@ -21,8 +21,8 @@
  *  header of domain browser implementation
  */
 
-#ifndef DOMAIN_BROWSER_H_
-#define DOMAIN_BROWSER_H_
+#ifndef DOMAIN_BROWSER_HH_F6A0584311AA4C86B546FD690C10A2FA
+#define DOMAIN_BROWSER_HH_F6A0584311AA4C86B546FD690C10A2FA
 
 #include <string>
 #include <vector>
@@ -771,4 +771,4 @@ namespace Registry
     }//namespace DomainBrowserImpl
 } // namespace Registry
 
-#endif // DOMAIN_BROWSER_H_
+#endif

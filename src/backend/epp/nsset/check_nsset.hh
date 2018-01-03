@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CHECK_NSSET_H_B5F837D0A1C14E38AF40554365CF857B
-#define CHECK_NSSET_H_B5F837D0A1C14E38AF40554365CF857B
+#ifndef CHECK_NSSET_HH_7A08F85D49C64258BBD4FE4415F42501
+#define CHECK_NSSET_HH_7A08F85D49C64258BBD4FE4415F42501
 
 #include "src/backend/epp/nsset/check_nsset_config_data.hh"
 #include "src/backend/epp/nsset/nsset_handle_registration_obstruction.hh"

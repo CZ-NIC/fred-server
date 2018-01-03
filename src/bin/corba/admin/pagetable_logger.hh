@@ -1,5 +1,5 @@
-#ifndef PAGETABLE_LOGGER_H_
-#define PAGETABLE_LOGGER_H_
+#ifndef PAGETABLE_LOGGER_HH_67E6A46D22DA4C55B3A4E36505728A45
+#define PAGETABLE_LOGGER_HH_67E6A46D22DA4C55B3A4E36505728A45
 
 #include "src/bin/corba/admin/pagetable_impl.hh"
 
@@ -22,4 +22,4 @@ public:
 	const static int NUM_COLUMNS;
 };
 
-#endif // PAGETABLE_LOGGER_H_
+#endif

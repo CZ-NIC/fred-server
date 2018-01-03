@@ -1,5 +1,5 @@
-#ifndef CONTEXT_H_
-#define CONTEXT_H_
+#ifndef CONTEXT_HH_1A3983AA309849AAA28B99D050A00D21
+#define CONTEXT_HH_1A3983AA309849AAA28B99D050A00D21
 
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>

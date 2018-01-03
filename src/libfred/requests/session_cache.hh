@@ -17,8 +17,8 @@
  */
 
 
-#ifndef SESSION_CACHE_H_
-#define SESSION_CACHE_H_
+#ifndef SESSION_CACHE_HH_C90DAD914D6140849EA02871F6538A02
+#define SESSION_CACHE_HH_C90DAD914D6140849EA02871F6538A02
 
 #include "src/libfred/requests/session.hh"
 #include "src/libfred/requests/model_session.hh"

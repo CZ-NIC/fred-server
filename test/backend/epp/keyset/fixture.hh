@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef FIXTURE_H_266C91BC21244C9C83BA2220FF3A82DB
-#define FIXTURE_H_266C91BC21244C9C83BA2220FF3A82DB
+#ifndef FIXTURE_HH_3EE8595B6FD3495EA94DB11F74D71AAA
+#define FIXTURE_HH_3EE8595B6FD3495EA94DB11F74D71AAA
 
 #include "src/backend/epp/keyset/check_keyset_config_data.hh"
 #include "src/backend/epp/keyset/create_keyset_config_data.hh"

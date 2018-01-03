@@ -16,8 +16,8 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MAP_AT_H_
-#define MAP_AT_H_
+#ifndef MAP_AT_HH_0F40C4D88AA5475C91EF7F998E0B968A
+#define MAP_AT_HH_0F40C4D88AA5475C91EF7F998E0B968A
 
 #include <stdexcept>
 

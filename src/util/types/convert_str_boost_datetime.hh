@@ -21,8 +21,8 @@
  *  Definitions of type conversions for boost datetime types from/to string.
  */
 
-#ifndef CONVERT_STR_BOOST_DATETIME_H_
-#define CONVERT_STR_BOOST_DATETIME_H_
+#ifndef CONVERT_STR_BOOST_DATETIME_HH_FB6D8ABE869C473994059D39F4415AB0
+#define CONVERT_STR_BOOST_DATETIME_HH_FB6D8ABE869C473994059D39F4415AB0
 
 #include <string>
 #include <boost/date_time/posix_time/posix_time.hpp>

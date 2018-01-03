@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GET_OBJECT_STATES_BY_HISTORY_ID_HH_279123EE844010FE77D80D07444694A1//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define GET_OBJECT_STATES_BY_HISTORY_ID_HH_279123EE844010FE77D80D07444694A1
+#ifndef GET_OBJECT_STATES_BY_HISTORY_ID_HH_BD592E4538FA457F808161FCB173E937
+#define GET_OBJECT_STATES_BY_HISTORY_ID_HH_BD592E4538FA457F808161FCB173E937
 
 #include "src/libfred/object_state/get_object_states.hh"
 #include "src/libfred/opcontext.hh"
@@ -41,4 +41,4 @@ private:
 
 } // namespace LibFred
 
-#endif//GET_OBJECT_STATES_BY_HISTORY_ID_HH_279123EE844010FE77D80D07444694A1
+#endif

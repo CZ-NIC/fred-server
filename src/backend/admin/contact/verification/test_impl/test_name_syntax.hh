@@ -21,8 +21,8 @@
  *  contact verification test for name (syntax only)
  */
 
-#ifndef CONTACT_VERIFICATION_TEST_NAME_SYNTAX_124898987441_
-#define CONTACT_VERIFICATION_TEST_NAME_SYNTAX_124898987441_
+#ifndef TEST_NAME_SYNTAX_HH_D585913B490D498FBDB3F06070B637B7
+#define TEST_NAME_SYNTAX_HH_D585913B490D498FBDB3F06070B637B7
 
 #include "src/backend/admin/contact/verification/test_impl/test_interface.hh"
 
@@ -64,4 +64,4 @@ namespace ContactVerification
 }
 }
 
-#endif // #include guard end
+#endif

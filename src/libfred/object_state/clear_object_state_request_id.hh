@@ -21,8 +21,8 @@
  *  clear object state request
  */
 
-#ifndef CLEAR_OBJECT_STATE_REQUEST_ID_H_
-#define CLEAR_OBJECT_STATE_REQUEST_ID_H_
+#ifndef CLEAR_OBJECT_STATE_REQUEST_ID_HH_7FF13ECC79004EC8A6E4D18F5AED5FF9
+#define CLEAR_OBJECT_STATE_REQUEST_ID_HH_7FF13ECC79004EC8A6E4D18F5AED5FF9
 
 #include <vector>
 
@@ -60,4 +60,4 @@ pozadavek na zruseni vsech stavu objektu (update object_state_request)
 
 } // namespace LibFred
 
-#endif//CLEAR_OBJECT_STATE_REQUEST_ID_H_
+#endif

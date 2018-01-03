@@ -1,5 +1,5 @@
-#ifndef CONTACT_FILTER_H_
-#define CONTACT_FILTER_H_
+#ifndef CONTACT_FILTER_HH_73AA1B8B469D4D6985B223D1EFA095FC
+#define CONTACT_FILTER_HH_73AA1B8B469D4D6985B223D1EFA095FC
 
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/utility.hpp>

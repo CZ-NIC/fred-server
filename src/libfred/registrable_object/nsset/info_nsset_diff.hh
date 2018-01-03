@@ -21,8 +21,8 @@
  *  nsset info data diff
  */
 
-#ifndef INFO_NSSET_DIFF_H_
-#define INFO_NSSET_DIFF_H_
+#ifndef INFO_NSSET_DIFF_HH_90CCBE2D77FA4C68BEBE583D68FD17E5
+#define INFO_NSSET_DIFF_HH_90CCBE2D77FA4C68BEBE583D68FD17E5
 
 #include <string>
 #include <vector>
@@ -99,4 +99,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif//INFO_NSSET_DIFF_H_
+#endif

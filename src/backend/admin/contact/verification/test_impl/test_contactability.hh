@@ -21,8 +21,8 @@
  *  test if contact is reachable (by any means available)
  */
 
-#ifndef CONTACT_VERIFICATION_TEST_CONTACTABILITY_42567645497_
-#define CONTACT_VERIFICATION_TEST_CONTACTABILITY_42567645497_
+#ifndef TEST_CONTACTABILITY_HH_E987A2533FD741C9B50057E36C3284C8
+#define TEST_CONTACTABILITY_HH_E987A2533FD741C9B50057E36C3284C8
 
 #include "src/backend/admin/contact/verification/test_impl/test_interface.hh"
 
@@ -149,4 +149,4 @@ namespace ContactVerification
 }
 }
 
-#endif // #include guard end
+#endif

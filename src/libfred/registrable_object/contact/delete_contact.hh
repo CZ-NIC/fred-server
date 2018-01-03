@@ -21,8 +21,8 @@
  *  contact delete
  */
 
-#ifndef DELETE_CONTACT_H_54135345435453
-#define DELETE_CONTACT_H_54135345435453
+#ifndef DELETE_CONTACT_HH_52AE8F85389D4E66B0EA3A26E4371466
+#define DELETE_CONTACT_HH_52AE8F85389D4E66B0EA3A26E4371466
 
 #include <string>
 
@@ -112,4 +112,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif // end of #include guard
+#endif

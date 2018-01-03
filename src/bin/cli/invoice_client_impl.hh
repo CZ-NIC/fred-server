@@ -21,8 +21,8 @@
  *  invoice client implementation header
  */
 
-#ifndef INVOICE_CLIENT_IMPL_H_
-#define INVOICE_CLIENT_IMPL_H_
+#ifndef INVOICE_CLIENT_IMPL_HH_6E4EE876C9984B8EBD641AD90656A56C
+#define INVOICE_CLIENT_IMPL_HH_6E4EE876C9984B8EBD641AD90656A56C
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/handle_database_args.hh"
 #include "src/util/cfg/handle_corbanameservice_args.hh"
@@ -292,4 +292,4 @@ struct create_invoice_impl
   }
 };
 
-#endif // INVOICE_CLIENT_IMPL_H_
+#endif

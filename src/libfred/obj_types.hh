@@ -22,8 +22,8 @@
  */
 
 
-#ifndef OBJ_TYPES_H_
-#define OBJ_TYPES_H_
+#ifndef OBJ_TYPES_HH_6DDCEE3942994087828436BB4953FB57
+#define OBJ_TYPES_HH_6DDCEE3942994087828436BB4953FB57
 
 #include <string>
 #include <vector>

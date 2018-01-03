@@ -21,8 +21,8 @@
  *  common contact info data
  */
 
-#ifndef INFO_CONTACT_DATA_H_
-#define INFO_CONTACT_DATA_H_
+#ifndef INFO_CONTACT_DATA_HH_72F0149107A84D17AABEEAC0E248C180
+#define INFO_CONTACT_DATA_HH_72F0149107A84D17AABEEAC0E248C180
 
 #include "src/util/db/nullable.hh"
 #include "src/util/printable.hh"
@@ -410,4 +410,4 @@ inline std::ostream& operator<<(std::ostream &out, const PersonalIdUnion &person
 
 } // namespace LibFred
 
-#endif//INFO_CONTACT_DATA_H_
+#endif

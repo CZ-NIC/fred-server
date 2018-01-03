@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef UPDATE_DOMAIN_LOCALIZED_H_F4E3294590164F499765EEE0244A5196
-#define UPDATE_DOMAIN_LOCALIZED_H_F4E3294590164F499765EEE0244A5196
+#ifndef UPDATE_DOMAIN_LOCALIZED_HH_9432867E1C8E4100B55C9018091FA48E
+#define UPDATE_DOMAIN_LOCALIZED_HH_9432867E1C8E4100B55C9018091FA48E
 
 #include "src/backend/epp/domain/update_domain_config_data.hh"
 #include "src/backend/epp/domain/update_domain_input_data.hh"

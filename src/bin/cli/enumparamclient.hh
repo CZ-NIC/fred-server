@@ -16,8 +16,8 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _ENUMPARAMCLIENT_H_
-#define _ENUMPARAMCLIENT_H_
+#ifndef ENUMPARAMCLIENT_HH_C5B92C465AD54EE9B7AC30B4177104CA
+#define ENUMPARAMCLIENT_HH_C5B92C465AD54EE9B7AC30B4177104CA
 
 #include <boost/program_options.hpp>
 #include <iostream>
@@ -72,4 +72,4 @@ public:
 
 }; // namespace Admin
 
-#endif // _ENUMPARAMCLIENT_H_
+#endif

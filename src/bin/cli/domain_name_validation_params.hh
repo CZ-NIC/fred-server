@@ -21,8 +21,8 @@
  *  header of domain name validation administration implementation
  */
 
-#ifndef DOMAIN_NAME_VALIDATION_PARAMS_H_
-#define DOMAIN_NAME_VALIDATION_PARAMS_H_
+#ifndef DOMAIN_NAME_VALIDATION_PARAMS_HH_FD360EFB54ED482E973592741BD1FC8A
+#define DOMAIN_NAME_VALIDATION_PARAMS_HH_FD360EFB54ED482E973592741BD1FC8A
 
 #include "src/util/types/optional.hh"
 
@@ -70,4 +70,4 @@ struct ZoneDomainNameValidationCheckersArgs
     {}//init ctor
 };//struct ZoneDomainNameValidationCheckersArgs
 
-#endif // DOMAIN_NAME_VALIDATION_PARAMS_H_
+#endif

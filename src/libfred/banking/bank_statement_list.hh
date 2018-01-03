@@ -1,5 +1,5 @@
-#ifndef BANK_STATEMENT_LIST_H_
-#define BANK_STATEMENT_LIST_H_
+#ifndef BANK_STATEMENT_LIST_HH_24F2576F660D4A52B4708D005241A5E5
+#define BANK_STATEMENT_LIST_HH_24F2576F660D4A52B4708D005241A5E5
 
 #include "src/libfred/common_new.hh"
 #include "src/libfred/banking/bank_statement.hh"

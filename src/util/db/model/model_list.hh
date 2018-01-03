@@ -21,8 +21,8 @@
  *  list of model instances loaded by filter
  */
 
-#ifndef MODEL_LIST_H_
-#define MODEL_LIST_H_
+#ifndef MODEL_LIST_HH_EE673018C30F48CB92E82531D1D495EF
+#define MODEL_LIST_HH_EE673018C30F48CB92E82531D1D495EF
 
 #include <deque>
 

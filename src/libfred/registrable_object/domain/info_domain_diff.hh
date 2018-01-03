@@ -21,8 +21,8 @@
  *  domain info data diff
  */
 
-#ifndef INFO_DOMAIN_DIFF_H_
-#define INFO_DOMAIN_DIFF_H_
+#ifndef INFO_DOMAIN_DIFF_HH_68B5D7A7671D46E7B7BCD2A93DEB43EF
+#define INFO_DOMAIN_DIFF_HH_68B5D7A7671D46E7B7BCD2A93DEB43EF
 
 #include <string>
 #include <vector>
@@ -106,4 +106,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif//INFO_DOMAIN_DIFF_H_
+#endif

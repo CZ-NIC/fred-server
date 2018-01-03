@@ -21,8 +21,8 @@
  *  hybrid postservice communication header
  */
 
-#ifndef HP_H_
-#define HP_H_
+#ifndef HP_HH_3A1D3CF0E53D45F485880FE06D9731C8
+#define HP_HH_3A1D3CF0E53D45F485880FE06D9731C8
 
 
 #include <cstdio>
@@ -212,4 +212,4 @@ void hp_form_prehledzak(curl_httppost **formpost_pp //out parameter
         , const std::string& datum = std::string("") //date in format yyyymmdd, default none
         );
 
-#endif // HP_H_
+#endif

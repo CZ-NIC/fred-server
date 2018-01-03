@@ -21,8 +21,8 @@
  *  command option group selection
  */
 
-#ifndef COMMAND_SELECTION_ARGS_H_
-#define COMMAND_SELECTION_ARGS_H_
+#ifndef COMMAND_SELECTION_ARGS_HH_4752E0F913B04834AFD698979D2A1959
+#define COMMAND_SELECTION_ARGS_HH_4752E0F913B04834AFD698979D2A1959
 
 #include <iostream>
 #include <exception>
@@ -360,4 +360,4 @@ template <typename CONTAINER_TYPE > struct list_of_gv
 typedef list_of_gv<HandlerPtrGrid> gv_list;
 
 
-#endif //COMMAND_SELECTION_ARGS_H_
+#endif

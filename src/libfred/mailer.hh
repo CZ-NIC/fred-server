@@ -1,5 +1,5 @@
-#ifndef __MAILER_H__
-#define __MAILER_H__
+#ifndef MAILER_HH_20C1B607DE314B78AF5A8EE057FCAA07
+#define MAILER_HH_20C1B607DE314B78AF5A8EE057FCAA07
 
 #include <map>
 #include <vector>

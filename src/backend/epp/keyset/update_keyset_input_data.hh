@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef UPDATE_KEYSET_INPUT_DATA_H_849E3328720B4BAB83CC01909130F3EB
-#define UPDATE_KEYSET_INPUT_DATA_H_849E3328720B4BAB83CC01909130F3EB
+#ifndef UPDATE_KEYSET_INPUT_DATA_HH_254A2B82C5C845418AC5724CF762CA7C
+#define UPDATE_KEYSET_INPUT_DATA_HH_254A2B82C5C845418AC5724CF762CA7C
 
 #include "src/backend/epp/keyset/dns_key.hh"
 #include "src/backend/epp/keyset/ds_record.hh"

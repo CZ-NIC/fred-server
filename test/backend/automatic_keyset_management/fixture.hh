@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef FIXTURE_H_97F8653D6277433B888C3C90BB2B858D
-#define FIXTURE_H_97F8653D6277433B888C3C90BB2B858D
+#ifndef FIXTURE_HH_2F32CFFD20C14C38B52FC66CEC983B63
+#define FIXTURE_HH_2F32CFFD20C14C38B52FC66CEC983B63
 
 #include "test/setup/fixtures.hh"
 #include "test/setup/fixtures_utils.hh"

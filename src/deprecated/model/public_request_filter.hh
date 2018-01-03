@@ -1,5 +1,5 @@
-#ifndef PUBLIC_REQUEST_FILTER_H_
-#define PUBLIC_REQUEST_FILTER_H_
+#ifndef PUBLIC_REQUEST_FILTER_HH_16BD74C725D346D28E6C0166401D97DC
+#define PUBLIC_REQUEST_FILTER_HH_16BD74C725D346D28E6C0166401D97DC
 
 #include "src/util/db/query/base_filters.hh"
 #include "src/deprecated/model/object_filter.hh"

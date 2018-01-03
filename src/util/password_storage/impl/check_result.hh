@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CHECK_RESULT_HH_ACE7125386B0F97E27F274DB3510399D//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define CHECK_RESULT_HH_ACE7125386B0F97E27F274DB3510399D
+#ifndef CHECK_RESULT_HH_22DE6D476B4147D090AC641E3A540456
+#define CHECK_RESULT_HH_22DE6D476B4147D090AC641E3A540456
 
 namespace PasswordStorage {
 namespace Impl {
@@ -31,4 +31,4 @@ enum class CheckResult
 } // namespace PasswordStorage::Impl
 } // namespace PasswordStorage
 
-#endif//CHECK_RESULT_HH_ACE7125386B0F97E27F274DB3510399D
+#endif

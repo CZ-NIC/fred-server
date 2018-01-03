@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef REQUEST_MANAGER_H_
-#define REQUEST_MANAGER_H_
+#ifndef REQUEST_MANAGER_HH_F4CF50B792BC4330B21A6EB0D5A4546F
+#define REQUEST_MANAGER_HH_F4CF50B792BC4330B21A6EB0D5A4546F
 
 #include "src/libfred/requests/request_cache.hh"
 #include "src/libfred/requests/session_cache.hh"

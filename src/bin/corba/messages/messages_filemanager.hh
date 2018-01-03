@@ -23,8 +23,8 @@
 
 
 
-#ifndef MESSAGES_CORBA_IMPL_H_
-#define MESSAGES_CORBA_IMPL_H_
+#ifndef MESSAGES_FILEMANAGER_HH_81DF852DE79441E78980E3E4BB6C8F5D
+#define MESSAGES_FILEMANAGER_HH_81DF852DE79441E78980E3E4BB6C8F5D
 
 #include <vector>
 #include <string>
@@ -33,4 +33,4 @@ unsigned long long save_file(std::vector<char> & file_buffer
         , const std::string file_name, const std::string file_mime_type
         , const unsigned int file_type );
 
-#endif // MESSAGES_CORBA_IMPL_H_
+#endif

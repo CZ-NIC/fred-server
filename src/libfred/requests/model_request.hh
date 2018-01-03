@@ -1,5 +1,5 @@
-#ifndef _MODEL_REQUEST_H_
-#define _MODEL_REQUEST_H_
+#ifndef MODEL_REQUEST_HH_26E266133691471FA8D5A926547505EB
+#define MODEL_REQUEST_HH_26E266133691471FA8D5A926547505EB
 
 #include "src/libfred/db_settings.hh"
 #include "src/util/db/model/model.hh"

@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef INFO_CONTACT_LOCALIZED_RESPONSE_H_B1A92D8D6FC04366A0327A5E73AB558C
-#define INFO_CONTACT_LOCALIZED_RESPONSE_H_B1A92D8D6FC04366A0327A5E73AB558C
+#ifndef INFO_CONTACT_LOCALIZED_RESPONSE_HH_C899981C505F446CB61D626044045C11
+#define INFO_CONTACT_LOCALIZED_RESPONSE_HH_C899981C505F446CB61D626044045C11
 
 #include "src/backend/epp/contact/info_contact_localized_output_data.hh"
 #include "src/backend/epp/epp_response_success_localized.hh"

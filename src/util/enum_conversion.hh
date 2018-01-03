@@ -20,8 +20,8 @@
 *  @file
 *  header of enum to database handle conversions
 */
-#ifndef ENUM_CONVERSION_H_97D0943DD36E63B820D471ECB6C3D088//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define ENUM_CONVERSION_H_97D0943DD36E63B820D471ECB6C3D088
+#ifndef ENUM_CONVERSION_HH_80B072B9641D46E9BB89C16155CE19DE
+#define ENUM_CONVERSION_HH_80B072B9641D46E9BB89C16155CE19DE
 
 #include <string>
 #include <stdexcept>
@@ -79,4 +79,4 @@ D inverse_transformation(const S& src, const D (&set_of_results)[items], S (*for
 } // namespace Conversion::Enums
 } // namespace Conversion
 
-#endif//ENUM_CONVERSION_H_97D0943DD36E63B820D471ECB6C3D088
+#endif

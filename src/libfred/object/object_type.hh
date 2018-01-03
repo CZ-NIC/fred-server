@@ -21,8 +21,8 @@
 *  header of LibFred::Object_Type class
 */
 
-#ifndef OBJECT_TYPE_H_22A124B8D173FCF75E30657FA4D8D922//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define OBJECT_TYPE_H_22A124B8D173FCF75E30657FA4D8D922
+#ifndef OBJECT_TYPE_HH_27FB1EE2D6C847D38289B5572F983A42
+#define OBJECT_TYPE_HH_27FB1EE2D6C847D38289B5572F983A42
 
 #include "src/util/enum_conversion.hh"
 
@@ -78,4 +78,4 @@ inline LibFred::Object_Type::Enum from_db_handle< LibFred::Object_Type >(const s
 } // namespace Conversion::Enums
 } // namespace Conversion
 
-#endif//OBJECT_TYPE_H_22A124B8D173FCF75E30657FA4D8D922
+#endif

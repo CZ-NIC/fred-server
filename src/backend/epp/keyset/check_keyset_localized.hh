@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CHECK_KEYSET_LOCALIZED_H_231A7D4B89FC4368A15ED984120F7488
-#define CHECK_KEYSET_LOCALIZED_H_231A7D4B89FC4368A15ED984120F7488
+#ifndef CHECK_KEYSET_LOCALIZED_HH_B3119157D3C04959A251069FAA076257
+#define CHECK_KEYSET_LOCALIZED_HH_B3119157D3C04959A251069FAA076257
 
 #include "src/backend/epp/keyset/check_keyset_config_data.hh"
 #include "src/backend/epp/keyset/check_keyset_localized_response.hh"

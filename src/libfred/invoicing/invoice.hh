@@ -1,5 +1,5 @@
-#ifndef INVOICE_H_
-#define INVOICE_H_
+#ifndef INVOICE_HH_5ED6D3B6BFD449BD96BF4989DDF9A788
+#define INVOICE_HH_5ED6D3B6BFD449BD96BF4989DDF9A788
 
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/date_time/posix_time/time_period.hpp>
@@ -375,4 +375,4 @@ void getRequestFeeParams(unsigned *zone_id, unsigned *base_free_count = NULL, un
 }
 ; // Fred
 
-#endif // INVOICE_H_
+#endif

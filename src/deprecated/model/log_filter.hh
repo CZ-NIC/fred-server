@@ -1,5 +1,5 @@
-#ifndef LOG_FILTER_H_
-#define LOG_FILTER_H_
+#ifndef LOG_FILTER_HH_B926012F433745A0BB00F1048DD7B776
+#define LOG_FILTER_HH_B926012F433745A0BB00F1048DD7B776
 
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/utility.hpp>

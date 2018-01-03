@@ -1,5 +1,5 @@
-#ifndef _ZONE_FILTER_H_
-#define _ZONE_FILTER_H_
+#ifndef ZONE_FILTER_HH_46C0F86CF6584F90B74ACEA216FD6E17
+#define ZONE_FILTER_HH_46C0F86CF6584F90B74ACEA216FD6E17
 
 #include "src/util/db/query/base_filters.hh"
 
@@ -60,4 +60,4 @@ public:
 } // namespace Filters
 } // namespace Database
 
-#endif // _ZONE_FILTER_H_
+#endif

@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GENERATE_SALT_HH_A6DF5CEF9518CEA33F18124D0F03344C//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define GENERATE_SALT_HH_A6DF5CEF9518CEA33F18124D0F03344C
+#ifndef GENERATE_SALT_HH_0C3EAFE249E541CF875E953F4DB90745
+#define GENERATE_SALT_HH_0C3EAFE249E541CF875E953F4DB90745
 
 #include "src/util/password_storage/base64.hh"
 
@@ -55,4 +55,4 @@ inline BinaryData generate_salt(int bytes)
 } // namespace PasswordStorage::Impl
 } // namespace PasswordStorage
 
-#endif//GENERATE_SALT_HH_A6DF5CEF9518CEA33F18124D0F03344C
+#endif

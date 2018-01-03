@@ -21,8 +21,8 @@
  *  nsset info
  */
 
-#ifndef INFO_NSSET_H_
-#define INFO_NSSET_H_
+#ifndef INFO_NSSET_HH_5DB73EDDB0DA4717851421430B3F21F5
+#define INFO_NSSET_HH_5DB73EDDB0DA4717851421430B3F21F5
 
 #include <string>
 #include <vector>
@@ -377,4 +377,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif//INFO_NSSET_H_
+#endif

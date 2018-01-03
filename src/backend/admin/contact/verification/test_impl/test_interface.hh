@@ -21,8 +21,8 @@
  *  contact verification tests interface
  */
 
-#ifndef CONTACT_VERIFICATION_TEST_INTF_11637813419_
-#define CONTACT_VERIFICATION_TEST_INTF_11637813419_
+#ifndef TEST_INTERFACE_HH_A08924E6431F4104B6BCBAE4FCD18BA7
+#define TEST_INTERFACE_HH_A08924E6431F4104B6BCBAE4FCD18BA7
 
 #include <string>
 #include <set>
@@ -92,4 +92,4 @@ namespace ContactVerification{
 }
 }
 
-#endif // #include guard end
+#endif

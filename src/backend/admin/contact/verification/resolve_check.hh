@@ -21,8 +21,8 @@
  *  check resolution operations - setting the final status and "postprocessing"
  */
 
-#ifndef ADMIN_CONTACT_VERIFICATION_RESOLVE_CHECK_H_4574534345654
-#define ADMIN_CONTACT_VERIFICATION_RESOLVE_CHECK_H_4574534345654
+#ifndef RESOLVE_CHECK_HH_E67802A4D0154696B19BFB1228955BED
+#define RESOLVE_CHECK_HH_E67802A4D0154696B19BFB1228955BED
 
 #include "src/backend/admin/contact/verification/exceptions.hh"
 
@@ -82,4 +82,4 @@ namespace Admin {
     };
 }
 
-#endif // #include guard end
+#endif

@@ -21,8 +21,8 @@
  *  declaration of InfoPublicRequest operation
  */
 
-#ifndef INFO_PUBLIC_REQUEST_H_6189924FC8F697665AC188B830E29EB7//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define INFO_PUBLIC_REQUEST_H_6189924FC8F697665AC188B830E29EB7
+#ifndef INFO_PUBLIC_REQUEST_HH_C305C7CD83904237AA9DAE4E57F3D43F
+#define INFO_PUBLIC_REQUEST_HH_C305C7CD83904237AA9DAE4E57F3D43F
 
 #include "src/util/db/nullable.hh"
 #include "src/libfred/object_state/typedefs.hh"
@@ -150,4 +150,4 @@ inline bool operator==(const LibFred::PublicRequestInfo &_data, const LibFred::L
     return _locked == _data;
 }
 
-#endif//INFO_PUBLIC_REQUEST_H_6189924FC8F697665AC188B830E29EB7
+#endif

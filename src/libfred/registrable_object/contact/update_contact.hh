@@ -21,8 +21,8 @@
  *  contact update
  */
 
-#ifndef UPDATE_CONTACT_H_
-#define UPDATE_CONTACT_H_
+#ifndef UPDATE_CONTACT_HH_039849D7E0FD4D099F4F6CAFB1A32093
+#define UPDATE_CONTACT_HH_039849D7E0FD4D099F4F6CAFB1A32093
 
 #include "src/libfred/opexception.hh"
 #include "src/libfred/opcontext.hh"
@@ -761,4 +761,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif//UPDATE_CONTACT_H_
+#endif

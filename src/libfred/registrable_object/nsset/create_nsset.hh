@@ -21,8 +21,8 @@
  *  create nsset
  */
 
-#ifndef CREATE_NSSET_H_
-#define CREATE_NSSET_H_
+#ifndef CREATE_NSSET_HH_85F3D80AEDC6465FB71D1306CCEADAEE
+#define CREATE_NSSET_HH_85F3D80AEDC6465FB71D1306CCEADAEE
 
 #include <string>
 #include <vector>
@@ -163,4 +163,4 @@ namespace LibFred
     };//CreateNsset
 
 }
-#endif // CREATE_NSSET_H_
+#endif

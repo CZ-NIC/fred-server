@@ -21,8 +21,8 @@
  *  copy contact
  */
 
-#ifndef COPY_CONTACT_H_
-#define COPY_CONTACT_H_
+#ifndef COPY_CONTACT_HH_B8E2D97E8D6D40A8A4E8A484379C2CC6
+#define COPY_CONTACT_HH_B8E2D97E8D6D40A8A4E8A484379C2CC6
 
 #include "src/libfred/opexception.hh"
 #include "src/libfred/opcontext.hh"
@@ -69,4 +69,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif//COPY_CONTACT_H_
+#endif

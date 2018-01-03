@@ -21,8 +21,8 @@
  *  poll message types
  */
 
-#ifndef MESSAGE_TYPE_H_B95C664FD50B40C2B5A521511970095C
-#define MESSAGE_TYPE_H_B95C664FD50B40C2B5A521511970095C
+#ifndef MESSAGE_TYPE_HH_69BDFA38C9AF48A3A46B259DB22EFD5E
+#define MESSAGE_TYPE_HH_69BDFA38C9AF48A3A46B259DB22EFD5E
 
 #include "src/util/enum_conversion.hh"
 
@@ -146,4 +146,4 @@ inline LibFred::Poll::MessageType::Enum from_db_handle<LibFred::Poll::MessageTyp
 } // namespace Conversion::Enums
 } // namespace Conversion
 
-#endif//MESSAGE_TYPE_H_B95C664FD50B40C2B5A521511970095C
+#endif

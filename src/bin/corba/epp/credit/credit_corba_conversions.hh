@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CREDIT_CORBA_CONVERSIONS_H_BA36AF5DA2D75E09E18C971A77551277//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define CREDIT_CORBA_CONVERSIONS_H_BA36AF5DA2D75E09E18C971A77551277
+#ifndef CREDIT_CORBA_CONVERSIONS_HH_80A5B0A9DBF24992B74E0F2BD2B27268
+#define CREDIT_CORBA_CONVERSIONS_HH_80A5B0A9DBF24992B74E0F2BD2B27268
 
 #include "src/bin/corba/EPP.hh"
 
@@ -33,4 +33,4 @@ void wrap_ClientCreditOutputData(
 } // namespace LibFred::Corba
 } // namespace LibFred
 
-#endif//CREDIT_CORBA_CONVERSIONS_H_BA36AF5DA2D75E09E18C971A77551277
+#endif

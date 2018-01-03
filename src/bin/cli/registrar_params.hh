@@ -21,8 +21,8 @@
  *  header of registrar client implementation
  */
 
-#ifndef REGISTRAR_PARAMS_H_
-#define REGISTRAR_PARAMS_H_
+#ifndef REGISTRAR_PARAMS_HH_6EAEB728E88F4AB2A62C010EE41CF630
+#define REGISTRAR_PARAMS_HH_6EAEB728E88F4AB2A62C010EE41CF630
 
 #include "src/util/types/optional.hh"
 #include "src/util/decimal/decimal.hh"
@@ -368,4 +368,4 @@ struct PriceAddArgs
     {}//init ctor
 };//struct PriceAddArgs
 
-#endif // REGISTRAT_PARAMS_H_
+#endif

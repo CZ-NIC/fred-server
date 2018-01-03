@@ -22,8 +22,8 @@
  *  from/to sql query string.
  */
 
-#ifndef CONVERT_SQL_DB_TYPES_H_
-#define CONVERT_SQL_DB_TYPES_H_
+#ifndef CONVERT_SQL_DB_TYPES_HH_1E2A0502A346432496A0AC454C9EEA92
+#define CONVERT_SQL_DB_TYPES_HH_1E2A0502A346432496A0AC454C9EEA92
 
 #include "src/util/types/convert_sql_pod.hh"
 #include "src/util/types/convert_sql_boost_datetime.hh"

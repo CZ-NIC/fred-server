@@ -17,8 +17,8 @@
  */
 
 
-#ifndef TEST_REGISTRAR_CERTIFICATION_H_
-#define TEST_REGISTRAR_CERTIFICATION_H_
+#ifndef TEST_REGISTRAR_CERTIFICATION_HH_054F4C6C7C6D46F889CEAC7F130915C5
+#define TEST_REGISTRAR_CERTIFICATION_HH_054F4C6C7C6D46F889CEAC7F130915C5
 
 #include <memory>
 #include <iostream>
@@ -63,4 +63,4 @@
 #include "src/util/cfg/config_handler_decl.hh"
 #include <boost/test/unit_test.hpp>
 
-#endif // TEST_REGISTRAR_CERTIFICATION_H_
+#endif

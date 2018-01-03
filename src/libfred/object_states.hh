@@ -1,5 +1,5 @@
-#ifndef OBJECT_STATES_H_
-#define OBJECT_STATES_H_
+#ifndef OBJECT_STATES_HH_6A367F3320C141AAB5F9571FE05FE382
+#define OBJECT_STATES_HH_6A367F3320C141AAB5F9571FE05FE382
 
 #include "src/libfred/db_settings.hh"
 #include "src/util/types/optional.hh"

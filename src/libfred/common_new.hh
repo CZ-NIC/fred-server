@@ -1,5 +1,5 @@
-#ifndef _COMMON_NEW_H_
-#define _COMMON_NEW_H_
+#ifndef COMMON_NEW_HH_A99B05C4BC0242E9A134DB2FC71F6F13
+#define COMMON_NEW_HH_A99B05C4BC0242E9A134DB2FC71F6F13
 
 #include "src/deprecated/model/model_filters.hh"
 
@@ -52,4 +52,4 @@ public:
 
 } // namespace LibFred
 
-#endif  // _COMMON_NEW_H_
+#endif

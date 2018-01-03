@@ -21,8 +21,8 @@
  *  declaration for CORBA conversion
  */
 
-#ifndef CORBA_CONVERSION_H_4402374c71c24ba88a4dfc1886eeebb5
-#define CORBA_CONVERSION_H_4402374c71c24ba88a4dfc1886eeebb5
+#ifndef CORBA_CONVERSION_HH_387FCF00142C44A6BBF750AD5FF0E4F8
+#define CORBA_CONVERSION_HH_387FCF00142C44A6BBF750AD5FF0E4F8
 
 #include <stdexcept>
 #include <string>
@@ -93,4 +93,4 @@ CORBA::String_var wrap_string(const std::string &src);
 
 }
 
-#endif//CORBA_CONVERSION_H_4402374c71c24ba88a4dfc1886eeebb5
+#endif

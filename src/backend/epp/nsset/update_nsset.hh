@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef UPDATE_NSSET_H_A39C4BFF30BD43699F6D06CC93A6B4EC
-#define UPDATE_NSSET_H_A39C4BFF30BD43699F6D06CC93A6B4EC
+#ifndef UPDATE_NSSET_HH_31D2F031F0814B98BDD24E67C93CDD12
+#define UPDATE_NSSET_HH_31D2F031F0814B98BDD24E67C93CDD12
 
 #include "src/backend/epp/nsset/update_nsset_config_data.hh"
 #include "src/backend/epp/nsset/update_nsset_input_data.hh"

@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CHECK_CONTACT_H_19C1ED6F0967492CB555556A6BD1317D
-#define CHECK_CONTACT_H_19C1ED6F0967492CB555556A6BD1317D
+#ifndef CHECK_CONTACT_HH_1F312D347CC4480D8997C7D845C31303
+#define CHECK_CONTACT_HH_1F312D347CC4480D8997C7D845C31303
 
 #include "src/backend/epp/contact/check_contact_config_data.hh"
 #include "src/backend/epp/contact/contact_handle_registration_obstruction.hh"

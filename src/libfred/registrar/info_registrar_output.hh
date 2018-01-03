@@ -21,8 +21,8 @@
  *  registrar info output structure
  */
 
-#ifndef INFO_REGISTRAR_OUTPUT_H_
-#define INFO_REGISTRAR_OUTPUT_H_
+#ifndef INFO_REGISTRAR_OUTPUT_HH_B02F3193B41A4A21ACFC4224FE193452
+#define INFO_REGISTRAR_OUTPUT_HH_B02F3193B41A4A21ACFC4224FE193452
 
 #include <string>
 #include <vector>
@@ -76,4 +76,4 @@ namespace LibFred
     };
 } // namespace LibFred
 
-#endif//INFO_REGISTRAR_OUTPUT_H_
+#endif

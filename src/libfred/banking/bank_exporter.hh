@@ -1,5 +1,5 @@
-#ifndef _BANK_EXPORTER_H_
-#define _BANK_EXPORTER_H_
+#ifndef BANK_EXPORTER_HH_D1F1B4C8F68846B697FA0A792D29C944
+#define BANK_EXPORTER_HH_D1F1B4C8F68846B697FA0A792D29C944
 
 #include <ostream>
 #include "src/libfred/banking/bank_common.hh"
@@ -39,4 +39,4 @@ public:
 } // namespace Banking
 } // namespace LibFred
 
-#endif // _BANK_EXPORTER_H_
+#endif

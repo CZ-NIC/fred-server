@@ -21,8 +21,8 @@
  *  domain history info
  */
 
-#ifndef INFO_DOMAIN_H_
-#define INFO_DOMAIN_H_
+#ifndef INFO_DOMAIN_HH_E4C6FC6930714E419B82E94BD9F47DC6
+#define INFO_DOMAIN_HH_E4C6FC6930714E419B82E94BD9F47DC6
 
 #include <string>
 #include <vector>
@@ -476,4 +476,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif//INFO_DOMAIN_H_
+#endif

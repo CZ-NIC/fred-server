@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef REQUEST_LIST_H_
-#define REQUEST_LIST_H_
+#ifndef REQUEST_LIST_HH_A0994E3FC4F749F8A4B0EEEA0514587C
+#define REQUEST_LIST_HH_A0994E3FC4F749F8A4B0EEEA0514587C
 
 #include "src/libfred/requests/request.hh"
 

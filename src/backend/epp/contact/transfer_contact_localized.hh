@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TRANSFER_CONTACT_LOCALIZED_H_24DC8E8F98A248C4B25980228AD6AB69
-#define TRANSFER_CONTACT_LOCALIZED_H_24DC8E8F98A248C4B25980228AD6AB69
+#ifndef TRANSFER_CONTACT_LOCALIZED_HH_FBCD15D375B747639A7BE5A741A3DA30
+#define TRANSFER_CONTACT_LOCALIZED_HH_FBCD15D375B747639A7BE5A741A3DA30
 
 #include "src/backend/epp/contact/transfer_contact_config_data.hh"
 #include "src/backend/epp/epp_response_success_localized.hh"

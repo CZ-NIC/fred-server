@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CLIENT_CREDIT_LOCALIZED_RESPONSE_H_EFE819249D3E9376B5363A231CC13FEC//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define CLIENT_CREDIT_LOCALIZED_RESPONSE_H_EFE819249D3E9376B5363A231CC13FEC
+#ifndef CLIENT_CREDIT_LOCALIZED_RESPONSE_HH_C901948D489940458E827561535A7691
+#define CLIENT_CREDIT_LOCALIZED_RESPONSE_HH_C901948D489940458E827561535A7691
 
 #include "src/backend/epp/credit/client_credit_output_data.hh"
 #include "src/backend/epp/epp_response_success_localized.hh"
@@ -40,4 +40,4 @@ struct ClientCreditLocalizedResponse
 } // namespace Epp::Contact
 } // namespace Epp
 
-#endif//CLIENT_CREDIT_LOCALIZED_RESPONSE_H_EFE819249D3E9376B5363A231CC13FEC
+#endif

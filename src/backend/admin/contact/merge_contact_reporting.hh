@@ -1,5 +1,5 @@
-#ifndef ADMIN_MERGE_CONTACT_REPORTING_H__
-#define ADMIN_MERGE_CONTACT_REPORTING_H__
+#ifndef MERGE_CONTACT_REPORTING_HH_C8872AAD743842349AD31C756D45F323
+#define MERGE_CONTACT_REPORTING_HH_C8872AAD743842349AD31C756D45F323
 
 #include "src/util/output_indenter.hh"
 #include "src/libfred/registrable_object/contact/merge_contact.hh"

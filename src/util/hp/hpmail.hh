@@ -21,8 +21,8 @@
  *  hybrid postservice upload interface header
  */
 
-#ifndef HPMAIL_H_
-#define HPMAIL_H_
+#ifndef HPMAIL_HH_A78C0CA00C2D48A3A1320608BC303B09
+#define HPMAIL_HH_A78C0CA00C2D48A3A1320608BC303B09
 
 #include <cstdio>
 #include <memory>
@@ -124,4 +124,4 @@ public:
 
 };//class HPMail
 
-#endif // HPMAIL_H_
+#endif

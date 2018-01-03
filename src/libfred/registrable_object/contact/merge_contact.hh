@@ -21,8 +21,8 @@
  *  contact merge
  */
 
-#ifndef MERGE_CONTACT_H
-#define MERGE_CONTACT_H
+#ifndef MERGE_CONTACT_HH_A8F6A2E368C14B09AD1BF404F3E1B4D4
+#define MERGE_CONTACT_HH_A8F6A2E368C14B09AD1BF404F3E1B4D4
 
 #include <string>
 #include <vector>
@@ -383,4 +383,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif//MERGE_CONTACT_H
+#endif

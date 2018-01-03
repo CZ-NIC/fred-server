@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DELETE_DOMAIN_H_E59390C3378948FBBEE42A0F7666F0E7
-#define DELETE_DOMAIN_H_E59390C3378948FBBEE42A0F7666F0E7
+#ifndef DELETE_DOMAIN_HH_773335E44C874F31866B775F01912D84
+#define DELETE_DOMAIN_HH_773335E44C874F31866B775F01912D84
 
 #include "src/backend/epp/domain/delete_domain_config_data.hh"
 #include "src/backend/epp/session_data.hh"

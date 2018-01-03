@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef RENEW_DOMAIN_INPUT_DATA_H_D65B0A775E5B45A1A12B3920EF972A63
-#define RENEW_DOMAIN_INPUT_DATA_H_D65B0A775E5B45A1A12B3920EF972A63
+#ifndef RENEW_DOMAIN_INPUT_DATA_HH_1836C9F245B6483FAF65646EA1183226
+#define RENEW_DOMAIN_INPUT_DATA_HH_1836C9F245B6483FAF65646EA1183226
 
 #include "src/backend/epp/domain/domain_enum_validation.hh"
 #include "src/backend/epp/domain/domain_registration_time.hh"

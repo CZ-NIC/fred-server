@@ -1,5 +1,5 @@
-#ifndef LOG_H_
-#define LOG_H_
+#ifndef LOG_HH_122CBA13F35A4A728F0E7A261062A564
+#define LOG_HH_122CBA13F35A4A728F0E7A261062A564
 
 #include <string>
 #include <iostream>

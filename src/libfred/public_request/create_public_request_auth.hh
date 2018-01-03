@@ -21,8 +21,8 @@
  *  declaration of CreatePublicRequestAuth class
  */
 
-#ifndef CREATE_PUBLIC_REQUEST_AUTH_H_D034201C95EC2E9FF787F4CBF17E7802//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define CREATE_PUBLIC_REQUEST_AUTH_H_D034201C95EC2E9FF787F4CBF17E7802
+#ifndef CREATE_PUBLIC_REQUEST_AUTH_HH_0CB1D410483C48558103AA43C7FB32BD
+#define CREATE_PUBLIC_REQUEST_AUTH_HH_0CB1D410483C48558103AA43C7FB32BD
 
 #include "src/libfred/public_request/public_request_auth_type_iface.hh"
 #include "src/libfred/public_request/public_request_object_lock_guard.hh"
@@ -127,4 +127,4 @@ private:
 
 } // namespace LibFred
 
-#endif//CREATE_PUBLIC_REQUEST_AUTH_H_D034201C95EC2E9FF787F4CBF17E7802
+#endif

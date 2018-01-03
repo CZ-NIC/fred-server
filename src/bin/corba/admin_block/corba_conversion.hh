@@ -1,5 +1,5 @@
-#ifndef CORBA_CONVERT_H_
-#define CORBA_CONVERT_H_
+#ifndef CORBA_CONVERSION_HH_4787F0F5B8964E3282F494229EA4B01B
+#define CORBA_CONVERSION_HH_4787F0F5B8964E3282F494229EA4B01B
 
 #include "src/util/db/nullable.hh"
 #include "src/bin/corba/common_wrappers.hh"

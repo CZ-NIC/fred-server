@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CREATE_CONTACT_INPUT_DATA_H_D431534126A348DFA7E2C485EB27B2A7
-#define CREATE_CONTACT_INPUT_DATA_H_D431534126A348DFA7E2C485EB27B2A7
+#ifndef CREATE_CONTACT_INPUT_DATA_HH_616155610E4842C6BAC450787A8269EB
+#define CREATE_CONTACT_INPUT_DATA_HH_616155610E4842C6BAC450787A8269EB
 
 #include "src/backend/epp/contact/contact_data.hh"
 
@@ -63,4 +63,4 @@ struct CreateContactInputData
 } // namespace Epp::Contact
 } // namespace Epp
 
-#endif//CREATE_CONTACT_INPUT_DATA_H_D431534126A348DFA7E2C485EB27B2A7
+#endif

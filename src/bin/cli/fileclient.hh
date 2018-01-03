@@ -16,8 +16,8 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _FILECLIENT_H_
-#define _FILECLIENT_H_
+#ifndef FILECLIENT_HH_A6D880632E134B91850CFBC572CF2A46
+#define FILECLIENT_HH_A6D880632E134B91850CFBC572CF2A46
 
 #include <iostream>
 #include <boost/program_options.hpp>

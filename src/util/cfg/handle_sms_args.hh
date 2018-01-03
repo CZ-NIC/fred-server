@@ -21,8 +21,8 @@
  *  sms sender config
  */
 
-#ifndef HANDLE_SMS_ARGS_H_
-#define HANDLE_SMS_ARGS_H_
+#ifndef HANDLE_SMS_ARGS_HH_0DC5647B14DF4EF1AD42BC79CF18FD27
+#define HANDLE_SMS_ARGS_HH_0DC5647B14DF4EF1AD42BC79CF18FD27
 
 #include <iostream>
 #include <exception>
@@ -93,4 +93,4 @@ public:
         {return HandleSmsArgs::command;}
 };//class HandleSmsArgsGrp
 
-#endif //HANDLE_SMS_ARGS_H_
+#endif

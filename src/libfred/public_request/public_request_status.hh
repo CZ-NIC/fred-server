@@ -20,8 +20,8 @@
 *  @file
 *  header of LibFred::PublicRequest::Status class
 */
-#ifndef PUBLIC_REQUEST_STATUS_H_648D4833B94F11152913135FA0FE767E//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define PUBLIC_REQUEST_STATUS_H_648D4833B94F11152913135FA0FE767E
+#ifndef PUBLIC_REQUEST_STATUS_HH_3BF6CC4D1E3A43799970F76F3DD62B96
+#define PUBLIC_REQUEST_STATUS_HH_3BF6CC4D1E3A43799970F76F3DD62B96
 
 #include "src/util/enum_conversion.hh"
 
@@ -75,4 +75,4 @@ inline LibFred::PublicRequest::Status::Enum from_db_handle< LibFred::PublicReque
 } // namespace Conversion::Enums
 } // namespace Conversion
 
-#endif//PUBLIC_REQUEST_STATUS_H_648D4833B94F11152913135FA0FE767E
+#endif

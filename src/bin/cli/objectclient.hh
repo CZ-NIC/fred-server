@@ -16,8 +16,8 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _OBJECTCLIENT_H_
-#define _OBJECTCLIENT_H_
+#ifndef OBJECTCLIENT_HH_673CBCC4D75746C6919827FD6E1CDC06
+#define OBJECTCLIENT_HH_673CBCC4D75746C6919827FD6E1CDC06
 
 #include "src/bin/cli/baseclient.hh"
 #include "src/bin/cli/commonclient.hh"
@@ -99,4 +99,4 @@ private:
 
 } // namespace Admin
 
-#endif // _OBJECTCLIENT_H_
+#endif

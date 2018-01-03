@@ -16,8 +16,8 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _BANKCLIENT_H_
-#define _BANKCLIENT_H_
+#ifndef BANKCLIENT_HH_662B03479AF14F298CC7D200FA4752A1
+#define BANKCLIENT_HH_662B03479AF14F298CC7D200FA4752A1
 
 #include <boost/program_options.hpp>
 #include <iostream>
@@ -103,4 +103,4 @@ public:
 
 } // namespace Admin;
 
-#endif //_BANKCLIENT_H_
+#endif

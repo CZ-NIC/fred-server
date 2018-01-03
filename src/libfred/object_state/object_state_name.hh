@@ -21,8 +21,8 @@
  *  object state name
  */
 
-#ifndef OBJECT_STATE_NAME_H_
-#define OBJECT_STATE_NAME_H_
+#ifndef OBJECT_STATE_NAME_HH_A1D7A78BB8C24E9DBB3AC4D5D6D4A0C3
+#define OBJECT_STATE_NAME_HH_A1D7A78BB8C24E9DBB3AC4D5D6D4A0C3
 
 #include <string>
 
@@ -62,4 +62,4 @@ namespace LibFred
     }
 } // namespace LibFred
 
-#endif // OBJECT_STATE_NAME_H_
+#endif

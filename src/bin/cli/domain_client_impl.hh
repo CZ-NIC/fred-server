@@ -21,8 +21,8 @@
  *  domain client implementation header
  */
 
-#ifndef DOMAIN_CLIENT_IMPL_H_
-#define DOMAIN_CLIENT_IMPL_H_
+#ifndef DOMAIN_CLIENT_IMPL_HH_5A27F567122B48C7B842182F1B73AD06
+#define DOMAIN_CLIENT_IMPL_HH_5A27F567122B48C7B842182F1B73AD06
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/handle_database_args.hh"
 #include "src/util/cfg/handle_corbanameservice_args.hh"
@@ -51,4 +51,4 @@ struct domain_list_impl
   }
 };
 
-#endif // DOMAIN_CLIENT_IMPL_H_
+#endif

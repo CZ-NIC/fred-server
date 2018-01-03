@@ -21,8 +21,8 @@
  *  keyset info implementation
  */
 
-#ifndef INFO_KEYSET_IMPL_H_
-#define INFO_KEYSET_IMPL_H_
+#ifndef INFO_KEYSET_IMPL_HH_3E20CD14F99F472787BF0F1BADD6DE2F
+#define INFO_KEYSET_IMPL_HH_3E20CD14F99F472787BF0F1BADD6DE2F
 
 #include <string>
 #include <vector>
@@ -131,4 +131,4 @@ namespace LibFred
 
 } // namespace LibFred
 
-#endif//INFO_KEYSET_IMPL_H_
+#endif

@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TEMPLATES_IMPL_HH_1EE16A76AB7E51E0D04BA200F2C8BAFE//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define TEMPLATES_IMPL_HH_1EE16A76AB7E51E0D04BA200F2C8BAFE
+#ifndef TEMPLATES_IMPL_HH_06DE732BD7B24E81A9587A9C789F0E54
+#define TEMPLATES_IMPL_HH_06DE732BD7B24E81A9587A9C789F0E54
 
 #include "src/backend/record_statement/impl/record_statement_xml.hh"
 #include "src/backend/record_statement/impl/factory.hh"
@@ -1077,4 +1077,4 @@ const typename InstanceOfNecessaryImpl<T>::RegistryProducer InstanceOfNecessaryI
 } // namespace LibFred::RecordStatement
 } // namespace LibFred
 
-#endif//TEMPLATES_IMPL_HH_1EE16A76AB7E51E0D04BA200F2C8BAFE
+#endif

@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TEST_MSGD_H_
-#define TEST_MSGD_H_
+#ifndef TEST_MSGD_HH_972981A6B74D4DA980A8B9E15C8720E6
+#define TEST_MSGD_HH_972981A6B74D4DA980A8B9E15C8720E6
 
 #include <memory>
 #include <iostream>
@@ -64,4 +64,4 @@
 #include <boost/test/unit_test.hpp>
 
 
-#endif // TEST_MSGD_H_
+#endif

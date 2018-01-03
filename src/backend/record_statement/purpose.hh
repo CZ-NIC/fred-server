@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PURPOSE_HH_F9C0DEF8A30E9FD48DF69B3AA5DE34F9//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define PURPOSE_HH_F9C0DEF8A30E9FD48DF69B3AA5DE34F9
+#ifndef PURPOSE_HH_DF4E208D9E66437BA875CF29CB5D07B3
+#define PURPOSE_HH_DF4E208D9E66437BA875CF29CB5D07B3
 
 namespace Registry {
 namespace RecordStatement {
@@ -34,4 +34,4 @@ struct Purpose
 } // namespace Registry::RecordStatement
 } // namespace Registry
 
-#endif//PURPOSE_HH_F9C0DEF8A30E9FD48DF69B3AA5DE34F9
+#endif

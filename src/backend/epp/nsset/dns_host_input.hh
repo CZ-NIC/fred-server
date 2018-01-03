@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DNS_HOST_INPUT_H_5AECF83B2E1642388AB0A8C400CD4083
-#define DNS_HOST_INPUT_H_5AECF83B2E1642388AB0A8C400CD4083
+#ifndef DNS_HOST_INPUT_HH_A3F8D3477B9140BBA679D6745244ADD8
+#define DNS_HOST_INPUT_HH_A3F8D3477B9140BBA679D6745244ADD8
 
 #include "src/backend/epp/session_lang.hh"
 #include "src/libfred/opcontext.hh"

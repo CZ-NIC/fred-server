@@ -21,8 +21,8 @@
  *  header of poll client implementation
  */
 
-#ifndef POLL_PARAMS_H_
-#define POLL_PARAMS_H_
+#ifndef POLL_PARAMS_HH_83FFE3CAB49344E6A3005AE265696847
+#define POLL_PARAMS_HH_83FFE3CAB49344E6A3005AE265696847
 
 #include "src/util/types/optional.hh"
 
@@ -67,4 +67,4 @@ struct PollCreateRequestFeeMessagesArgs
 };
 
 
-#endif // BANK_PARAMS_H_
+#endif

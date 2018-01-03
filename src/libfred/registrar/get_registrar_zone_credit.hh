@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GET_REGISTRAR_ZONE_CREDIT_H_F5B012B7AE1C00C057707D35FFD0A1C9//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define GET_REGISTRAR_ZONE_CREDIT_H_F5B012B7AE1C00C057707D35FFD0A1C9
+#ifndef GET_REGISTRAR_ZONE_CREDIT_HH_D79316DD78B143EAB0BFE211A4C3AD0F
+#define GET_REGISTRAR_ZONE_CREDIT_HH_D79316DD78B143EAB0BFE211A4C3AD0F
 
 #include "src/libfred/registrar/registrar_zone_credit.hh"
 #include "src/libfred/opcontext.hh"
@@ -32,4 +32,4 @@ public:
 
 } // namespace LibFred
 
-#endif//GET_REGISTRAR_ZONE_CREDIT_H_F5B012B7AE1C00C057707D35FFD0A1C9
+#endif

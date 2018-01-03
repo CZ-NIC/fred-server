@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef INFO_CONTACT_LOCALIZED_H_1AA5F0561FEF4660B5392F22BD64435C
-#define INFO_CONTACT_LOCALIZED_H_1AA5F0561FEF4660B5392F22BD64435C
+#ifndef INFO_CONTACT_LOCALIZED_HH_EF41DA3A6AD7403CBBD9DB1371A55FC0
+#define INFO_CONTACT_LOCALIZED_HH_EF41DA3A6AD7403CBBD9DB1371A55FC0
 
 #include "src/backend/epp/contact/info_contact_config_data.hh"
 #include "src/backend/epp/contact/info_contact_localized_response.hh"

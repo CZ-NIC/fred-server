@@ -1,5 +1,5 @@
-#ifndef UNION_FILTER_H_
-#define UNION_FILTER_H_
+#ifndef UNION_FILTER_HH_3983029ED7E84AC99C4658EACFBF5922
+#define UNION_FILTER_HH_3983029ED7E84AC99C4658EACFBF5922
 
 #include <vector>
 #include <boost/serialization/nvp.hpp>

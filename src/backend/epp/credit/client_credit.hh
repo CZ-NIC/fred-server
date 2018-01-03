@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CLIENT_CREDIT_H_E89D3E7C5F1FFE3E22340654403DA23C//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define CLIENT_CREDIT_H_E89D3E7C5F1FFE3E22340654403DA23C
+#ifndef CLIENT_CREDIT_HH_25CA480C60E84583A20F3B5FB1D4B650
+#define CLIENT_CREDIT_HH_25CA480C60E84583A20F3B5FB1D4B650
 
 #include "src/backend/epp/credit/client_credit_output_data.hh"
 #include "src/libfred/opcontext.hh"
@@ -35,4 +35,4 @@ ClientCreditOutputData client_credit(
 } // namespace Epp::Credit
 } // namespace Epp
 
-#endif//CLIENT_CREDIT_H_E89D3E7C5F1FFE3E22340654403DA23C
+#endif

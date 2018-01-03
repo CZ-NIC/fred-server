@@ -1,5 +1,5 @@
-#ifndef DOCGEN_H_
-#define DOCGEN_H_
+#ifndef DOCUMENTS_HH_81664F77E9D4483CAA2A6969E0515678
+#define DOCUMENTS_HH_81664F77E9D4483CAA2A6969E0515678
 
 #include "src/libfred/types.hh"
 #include <iostream>
