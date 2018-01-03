@@ -476,7 +476,7 @@ struct generate_message< CommChannel::sms, LibFred::MojeID::PublicRequest::Conta
                                      get_pin2_part(password);
         const std::string sms_content = "Potvrzujeme uspesne zalozeni uctu mojeID. "
                                         "Pro aktivaci Vaseho uctu je nutne vlozit kody "
-                                        "PIN1 a PIN2. PIN1 Vam byl zaslan emailem, PIN2 je: " + pin2;
+                                        "PIN1 a PIN2. PIN1 Vam byl zaslan e-mailem, PIN2 je: " + pin2;
 
         const GeneralId message_id = _multimanager.select< LibFred::Messages::Manager >()
                                          .save_sms_to_send(contact_handle.c_str(),
