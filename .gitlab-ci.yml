@@ -24,7 +24,7 @@ docker:server:ubuntu:
 docker:server:fedora:
   <<: *image
   variables:
-    IMAGE_NAME: fedora:latest
+    IMAGE_NAME: fedora:27
     IMAGE_TAG: $CI_REGISTRY_IMAGE/$IMAGE_NAME
 
 .ubuntu_latest: &ubuntu_latest
@@ -34,8 +34,8 @@ docker:server:fedora:
     - builder
     - linux
 
-.fedora_latest: &fedora_latest
-  image: "$CI_REGISTRY/fred/server/fedora:latest"
+.fedora_27: &fedora_27
+  image: "$CI_REGISTRY/fred/server/fedora:27"
   tags:
     - amd64
     - builder
@@ -60,5 +60,5 @@ build:ubuntu:amd64:
   <<: *build_job
 
 build:fedora:amd64:
-  <<: *fedora_latest
+  <<: *fedora_27
   <<: *build_job
