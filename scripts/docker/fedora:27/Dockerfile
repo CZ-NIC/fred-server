@@ -17,6 +17,5 @@ RUN dnf -y install       \
         libidn-devel     \
         mpdecimal-devel  \
         libssh-devel     \
-        minizip-devel
-RUN dnf -y --disablerepo=updates install \
+        minizip-devel    \
         omniORB-devel
