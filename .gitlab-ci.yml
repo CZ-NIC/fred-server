@@ -13,6 +13,7 @@ stages:
     - docker push "$IMAGE_TAG"
   tags:
     - dind
+    - old
 
 docker:server:ubuntu:
   <<: *image
@@ -30,11 +31,15 @@ docker:server:fedora:
   image: "$CI_REGISTRY/fred/server/ubuntu:latest"
   tags:
     - amd64
+    - builder
+    - linux
 
 .fedora_latest: &fedora_latest
   image: "$CI_REGISTRY/fred/server/fedora:latest"
   tags:
     - amd64
+    - builder
+    - linux
 
 .build: &build_job
   stage: build
