@@ -12,7 +12,7 @@ BuildRequires:  omniORB-devel, boost-devel, postgresql-devel, gcc-c++, libxml2-d
 %if 0%{?centos}
 BuildRequires: centos-release-scl, devtoolset-7, devtoolset-7-build
 %endif
-Requires: omniORB, boost, postgresql-libs, libxml2, libcurl, libidn, fred-pyfred, fred-doc2pdf fred-db redhat-lsb, mpdecimal, openssl-libs
+Requires: omniORB, boost, postgresql-libs, libxml2, libcurl, libidn, fred-pyfred, fred-doc2pdf, fred-db, redhat-lsb, mpdecimal, openssl-libs
 
 %define idldir --with-idldir=/usr/share/idl/fred/
 
