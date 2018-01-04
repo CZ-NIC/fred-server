@@ -1,4 +1,4 @@
-FROM ubuntu:latest
+FROM ubuntu:16.04
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get -y clean
 RUN apt-get -y update

@@ -18,7 +18,7 @@ stages:
 docker:server:ubuntu:
   <<: *image
   variables:
-    IMAGE_NAME: ubuntu:latest
+    IMAGE_NAME: ubuntu:16.04
     IMAGE_TAG: $CI_REGISTRY_IMAGE/$IMAGE_NAME
 
 docker:server:fedora:
@@ -27,8 +27,8 @@ docker:server:fedora:
     IMAGE_NAME: fedora:27
     IMAGE_TAG: $CI_REGISTRY_IMAGE/$IMAGE_NAME
 
-.ubuntu_latest: &ubuntu_latest
-  image: "$CI_REGISTRY/fred/server/ubuntu:latest"
+.ubuntu_16_04: &ubuntu_16_04
+  image: "$CI_REGISTRY/fred/server/ubuntu:16.04"
   tags:
     - amd64
     - builder
@@ -56,7 +56,7 @@ docker:server:fedora:
     - DISTCHECK_CONFIGURE_FLAGS="--with-idldir=./idl/idl" make -j $(expr $(cat /proc/cpuinfo | grep processor | wc -l) / 2)
 
 build:ubuntu:amd64:
-  <<: *ubuntu_latest
+  <<: *ubuntu_16_04
   <<: *build_job
 
 build:fedora:amd64:
