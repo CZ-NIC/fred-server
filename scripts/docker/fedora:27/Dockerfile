@@ -1,4 +1,5 @@
 FROM fedora:27
+RUN dnf -y clean all
 RUN dnf -y upgrade
 RUN dnf -y install       \
         autoconf         \
