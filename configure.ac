@@ -512,7 +512,7 @@ AC_SUBST(CONFIGURE_CFLAGS)
 AC_SUBST(CONFIGURE_LDFLAGS)
 
 AC_CONFIG_FILES([Makefile
-                 fred-server.spec
+                 contrib/fedora/fred-server.spec
                  config/server.conf
                  config/hpmail.conf
                  config/optysmail.conf
