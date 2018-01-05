@@ -16,17 +16,28 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/test/unit_test.hpp>
-#include <string>
-
 #include "src/libfred/opcontext.hh"
-#include <libfred/keyset.hh>
-#include <libfred/contact.hh>
+#include "src/libfred/registrable_object/contact/check_contact.hh"
+#include "src/libfred/registrable_object/contact/copy_contact.hh"
+#include "src/libfred/registrable_object/contact/create_contact.hh"
+#include "src/libfred/registrable_object/contact/delete_contact.hh"
+#include "src/libfred/registrable_object/contact/info_contact.hh"
+#include "src/libfred/registrable_object/contact/info_contact_diff.hh"
+#include "src/libfred/registrable_object/contact/merge_contact.hh"
+#include "src/libfred/registrable_object/contact/update_contact.hh"
+#include "src/libfred/registrable_object/keyset/check_keyset.hh"
+#include "src/libfred/registrable_object/keyset/create_keyset.hh"
+#include "src/libfred/registrable_object/keyset/delete_keyset.hh"
+#include "src/libfred/registrable_object/keyset/info_keyset.hh"
+#include "src/libfred/registrable_object/keyset/info_keyset_diff.hh"
 #include "src/libfred/registrable_object/keyset/info_keyset_impl.hh"
-
+#include "src/libfred/registrable_object/keyset/update_keyset.hh"
 #include "src/util/random_data_generator.hh"
 #include "test/setup/fixtures.hh"
 
+#include <boost/test/unit_test.hpp>
+
+#include <string>
 
 BOOST_AUTO_TEST_SUITE(TestInfoKeyset);
 

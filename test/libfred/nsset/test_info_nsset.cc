@@ -16,17 +16,28 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/test/unit_test.hpp>
-#include <string>
-
 #include "src/libfred/opcontext.hh"
-#include <libfred/nsset.hh>
-#include <libfred/contact.hh>
+#include "src/libfred/registrable_object/contact/check_contact.hh"
+#include "src/libfred/registrable_object/contact/copy_contact.hh"
+#include "src/libfred/registrable_object/contact/create_contact.hh"
+#include "src/libfred/registrable_object/contact/delete_contact.hh"
+#include "src/libfred/registrable_object/contact/info_contact.hh"
+#include "src/libfred/registrable_object/contact/info_contact_diff.hh"
+#include "src/libfred/registrable_object/contact/merge_contact.hh"
+#include "src/libfred/registrable_object/contact/update_contact.hh"
+#include "src/libfred/registrable_object/nsset/check_nsset.hh"
+#include "src/libfred/registrable_object/nsset/create_nsset.hh"
+#include "src/libfred/registrable_object/nsset/delete_nsset.hh"
+#include "src/libfred/registrable_object/nsset/info_nsset.hh"
+#include "src/libfred/registrable_object/nsset/info_nsset_diff.hh"
 #include "src/libfred/registrable_object/nsset/info_nsset_impl.hh"
-
+#include "src/libfred/registrable_object/nsset/update_nsset.hh"
 #include "src/util/random_data_generator.hh"
 #include "test/setup/fixtures.hh"
 
+#include <boost/test/unit_test.hpp>
+
+#include <string>
 
 BOOST_AUTO_TEST_SUITE(TestInfoNsset);
 

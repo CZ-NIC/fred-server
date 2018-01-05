@@ -6,24 +6,50 @@
 #ifndef FIXTURES_UTILS_HH_AFF603B566B44E78A5A215F9112A2040
 #define FIXTURES_UTILS_HH_AFF603B566B44E78A5A215F9112A2040
 
+#include "src/libfred/registrable_object/contact/check_contact.hh"
+#include "src/libfred/registrable_object/contact/copy_contact.hh"
+#include "src/libfred/registrable_object/contact/create_contact.hh"
+#include "src/libfred/registrable_object/contact/delete_contact.hh"
+#include "src/libfred/registrable_object/contact/info_contact.hh"
+#include "src/libfred/registrable_object/contact/info_contact_diff.hh"
+#include "src/libfred/registrable_object/contact/merge_contact.hh"
+#include "src/libfred/registrable_object/contact/update_contact.hh"
+#include "src/libfred/registrable_object/domain/check_domain.hh"
+#include "src/libfred/registrable_object/domain/create_domain.hh"
+#include "src/libfred/registrable_object/domain/delete_domain.hh"
+#include "src/libfred/registrable_object/domain/info_domain.hh"
+#include "src/libfred/registrable_object/domain/info_domain_diff.hh"
+#include "src/libfred/registrable_object/domain/renew_domain.hh"
+#include "src/libfred/registrable_object/domain/update_domain.hh"
+#include "src/libfred/registrable_object/keyset/check_keyset.hh"
+#include "src/libfred/registrable_object/keyset/create_keyset.hh"
+#include "src/libfred/registrable_object/keyset/delete_keyset.hh"
+#include "src/libfred/registrable_object/keyset/info_keyset.hh"
+#include "src/libfred/registrable_object/keyset/info_keyset_diff.hh"
+#include "src/libfred/registrable_object/keyset/update_keyset.hh"
+#include "src/libfred/registrable_object/nsset/check_nsset.hh"
+#include "src/libfred/registrable_object/nsset/create_nsset.hh"
+#include "src/libfred/registrable_object/nsset/delete_nsset.hh"
+#include "src/libfred/registrable_object/nsset/info_nsset.hh"
+#include "src/libfred/registrable_object/nsset/info_nsset_diff.hh"
+#include "src/libfred/registrable_object/nsset/update_nsset.hh"
+#include "src/libfred/registrar/check_registrar.hh"
+#include "src/libfred/registrar/create_registrar.hh"
+#include "src/libfred/registrar/info_registrar.hh"
+#include "src/libfred/registrar/info_registrar_diff.hh"
 #include "src/util/db/nullable.hh"
 #include "src/util/optional_value.hh"
 #include "src/util/random_data_generator.hh"
 #include "src/util/tz/europe/prague.hh"
 #include "src/util/tz/get_psql_handle_of.hh"
 
-#include <libfred/registrar.hh>
-#include <libfred/contact.hh>
-#include <libfred/domain.hh>
-#include <libfred/nsset.hh>
-#include <libfred/keyset.hh>
-
-#include <vector>
-#include <utility>
-#include <boost/static_assert.hpp>
+#include <boost/assign/list_of.hpp>
 #include <boost/foreach.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
-#include <boost/assign/list_of.hpp>
+#include <boost/static_assert.hpp>
+
+#include <utility>
+#include <vector>
 
 namespace Test {
 

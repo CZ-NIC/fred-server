@@ -17,17 +17,23 @@
  */
 
 #include "src/backend/admin/contact/verification/test_impl/test_send_letter.hh"
-#include "src/libfred/registrable_object/contact/verification/enum_test_status.hh"
+
 #include "src/backend/admin/contact/verification/test_impl/util.hh"
-
-#include <libfred/contact.hh>
-
+#include "src/libfred/registrable_object/contact/check_contact.hh"
+#include "src/libfred/registrable_object/contact/copy_contact.hh"
+#include "src/libfred/registrable_object/contact/create_contact.hh"
+#include "src/libfred/registrable_object/contact/delete_contact.hh"
+#include "src/libfred/registrable_object/contact/info_contact.hh"
+#include "src/libfred/registrable_object/contact/info_contact_diff.hh"
+#include "src/libfred/registrable_object/contact/merge_contact.hh"
+#include "src/libfred/registrable_object/contact/update_contact.hh"
+#include "src/libfred/registrable_object/contact/verification/enum_test_status.hh"
 #include "src/util/util.hh"
 
-#include <utility>
-
-#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/algorithm/string/trim.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+
+#include <utility>
 
 namespace Admin {
 namespace ContactVerification {

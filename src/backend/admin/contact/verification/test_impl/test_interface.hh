@@ -24,14 +24,22 @@
 #ifndef TEST_INTERFACE_HH_A08924E6431F4104B6BCBAE4FCD18BA7
 #define TEST_INTERFACE_HH_A08924E6431F4104B6BCBAE4FCD18BA7
 
-#include <string>
-#include <set>
-#include <boost/tuple/tuple.hpp>
-#include <boost/lexical_cast.hpp>
-#include "src/util/optional_value.hh"
+#include "src/libfred/registrable_object/contact/check_contact.hh"
+#include "src/libfred/registrable_object/contact/copy_contact.hh"
+#include "src/libfred/registrable_object/contact/create_contact.hh"
+#include "src/libfred/registrable_object/contact/delete_contact.hh"
+#include "src/libfred/registrable_object/contact/info_contact.hh"
+#include "src/libfred/registrable_object/contact/info_contact_diff.hh"
+#include "src/libfred/registrable_object/contact/merge_contact.hh"
+#include "src/libfred/registrable_object/contact/update_contact.hh"
 #include "src/util/factory.hh"
+#include "src/util/optional_value.hh"
 
-#include <libfred/contact.hh>
+#include <boost/lexical_cast.hpp>
+#include <boost/tuple/tuple.hpp>
+
+#include <set>
+#include <string>
 
 namespace Admin
 {

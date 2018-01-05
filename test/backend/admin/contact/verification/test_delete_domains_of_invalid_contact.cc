@@ -22,16 +22,19 @@
  */
 
 #include "src/backend/admin/contact/verification/delete_domains_of_invalid_contact.hh"
-
-#include "src/backend/admin/contact/verification/resolve_check.hh"
 #include "src/backend/admin/contact/verification/enqueue_check.hh"
-
-#include <libfred/domain.hh>
-
-#include <boost/test/unit_test.hpp>
-
+#include "src/backend/admin/contact/verification/resolve_check.hh"
+#include "src/libfred/registrable_object/domain/check_domain.hh"
+#include "src/libfred/registrable_object/domain/create_domain.hh"
+#include "src/libfred/registrable_object/domain/delete_domain.hh"
+#include "src/libfred/registrable_object/domain/info_domain.hh"
+#include "src/libfred/registrable_object/domain/info_domain_diff.hh"
+#include "src/libfred/registrable_object/domain/renew_domain.hh"
+#include "src/libfred/registrable_object/domain/update_domain.hh"
 #include "test/backend/admin/contact/verification/setup_utils.hh"
 #include "test/setup/fixtures.hh"
+
+#include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_SUITE(TestContactVerification)
 BOOST_FIXTURE_TEST_SUITE(TestDeleteDomainOfInvalidatedContact, Test::instantiate_db_template)

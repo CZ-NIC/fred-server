@@ -22,13 +22,21 @@
  */
 
 #include "src/backend/admin/contact/verification/resolve_check.hh"
-#include <libfred/admin_contact_verification.hh>
-
-#include <boost/test/unit_test.hpp>
-
-
+#include "src/libfred/registrable_object/contact/verification/create_check.hh"
+#include "src/libfred/registrable_object/contact/verification/create_test.hh"
+#include "src/libfred/registrable_object/contact/verification/enum_check_status.hh"
+#include "src/libfred/registrable_object/contact/verification/enum_test_status.hh"
+#include "src/libfred/registrable_object/contact/verification/enum_testsuite_handle.hh"
+#include "src/libfred/registrable_object/contact/verification/exceptions.hh"
+#include "src/libfred/registrable_object/contact/verification/info_check.hh"
+#include "src/libfred/registrable_object/contact/verification/list_checks.hh"
+#include "src/libfred/registrable_object/contact/verification/list_enum_objects.hh"
+#include "src/libfred/registrable_object/contact/verification/update_check.hh"
+#include "src/libfred/registrable_object/contact/verification/update_test.hh"
 #include "test/backend/admin/contact/verification/setup_utils.hh"
 #include "test/setup/fixtures.hh"
+
+#include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_SUITE(TestContactVerification)
 BOOST_FIXTURE_TEST_SUITE(TestResolveCheck, Test::instantiate_db_template)

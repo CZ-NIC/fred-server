@@ -17,26 +17,31 @@
  */
 
 #include "src/backend/admin/contact/verification/test_impl/test_cz_address_exists.hh"
-#include "src/libfred/registrable_object/contact/verification/enum_test_status.hh"
 
 #include "src/libfred/opexception.hh"
-
-#include <libfred/contact.hh>
-
+#include "src/libfred/registrable_object/contact/check_contact.hh"
+#include "src/libfred/registrable_object/contact/copy_contact.hh"
+#include "src/libfred/registrable_object/contact/create_contact.hh"
+#include "src/libfred/registrable_object/contact/delete_contact.hh"
+#include "src/libfred/registrable_object/contact/info_contact.hh"
+#include "src/libfred/registrable_object/contact/info_contact_diff.hh"
+#include "src/libfred/registrable_object/contact/merge_contact.hh"
+#include "src/libfred/registrable_object/contact/update_contact.hh"
+#include "src/libfred/registrable_object/contact/verification/enum_test_status.hh"
 #include "src/util/util.hh"
 
-#include <cctype>
-#include <iterator>
-#include <locale>
-#include <algorithm>    // std::reverse, std::next_permutaion
-
-#include <memory>
-#include <boost/scoped_ptr.hpp>
-#include <boost/foreach.hpp>
-#include <boost/regex.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/assign/list_of.hpp>
+#include <boost/foreach.hpp>
+#include <boost/regex.hpp>
+#include <boost/scoped_ptr.hpp>
+
+#include <algorithm>    // std::reverse, std::next_permutaion
+#include <cctype>
+#include <iterator>
+#include <locale>
+#include <memory>
 
 namespace Admin {
 namespace ContactVerification {

@@ -20,14 +20,29 @@
 
 #include "src/backend/admin/contact/verification/contact_states/delete_all.hh"
 #include "src/backend/admin/contact/verification/contact_states/enum.hh"
+#include "src/backend/admin/contact/verification/create_test_impl_prototypes.hh"
+#include "src/backend/admin/contact/verification/delete_domains_of_invalid_contact.hh"
+#include "src/backend/admin/contact/verification/enqueue_check.hh"
+#include "src/backend/admin/contact/verification/exceptions.hh"
+#include "src/backend/admin/contact/verification/fill_check_queue.hh"
+#include "src/backend/admin/contact/verification/list_active_checks.hh"
+#include "src/backend/admin/contact/verification/related_records.hh"
+#include "src/backend/admin/contact/verification/resolve_check.hh"
+#include "src/backend/admin/contact/verification/run_all_enqueued_checks.hh"
+#include "src/backend/admin/contact/verification/update_tests.hh"
 #include "src/libfred/object/object_state.hh"
 #include "src/libfred/object/object_type.hh"
 #include "src/libfred/object_state/cancel_object_state_request_id.hh"
 #include "src/libfred/object_state/lock_object_state_request_lock.hh"
 #include "src/libfred/object_state/perform_object_state_request.hh"
-
-#include <admin/admin_contact_verification.hh>
-#include <libfred/contact.hh>
+#include "src/libfred/registrable_object/contact/check_contact.hh"
+#include "src/libfred/registrable_object/contact/copy_contact.hh"
+#include "src/libfred/registrable_object/contact/create_contact.hh"
+#include "src/libfred/registrable_object/contact/delete_contact.hh"
+#include "src/libfred/registrable_object/contact/info_contact.hh"
+#include "src/libfred/registrable_object/contact/info_contact_diff.hh"
+#include "src/libfred/registrable_object/contact/merge_contact.hh"
+#include "src/libfred/registrable_object/contact/update_contact.hh"
 
 namespace Epp {
 namespace Contact {
