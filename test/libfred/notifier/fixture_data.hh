@@ -23,11 +23,20 @@
 #ifndef FIXTURE_DATA_HH_C6D7DDED73CB410498DED2CDFCACBB5E
 #define FIXTURE_DATA_HH_C6D7DDED73CB410498DED2CDFCACBB5E
 
+#include "src/libfred/registrable_object/contact/check_contact.hh"
+#include "src/libfred/registrable_object/contact/copy_contact.hh"
+#include "src/libfred/registrable_object/contact/create_contact.hh"
+#include "src/libfred/registrable_object/contact/delete_contact.hh"
+#include "src/libfred/registrable_object/contact/info_contact.hh"
+#include "src/libfred/registrable_object/contact/info_contact_diff.hh"
+#include "src/libfred/registrable_object/contact/merge_contact.hh"
+#include "src/libfred/registrable_object/contact/update_contact.hh"
+#include "src/libfred/registrar/check_registrar.hh"
+#include "src/libfred/registrar/create_registrar.hh"
+#include "src/libfred/registrar/info_registrar.hh"
+#include "src/libfred/registrar/info_registrar_diff.hh"
 #include "test/libfred/notifier/util.hh"
-
 #include "test/setup/fixtures_utils.hh"
-#include "include/libfred/registrar.hh"
-#include "include/libfred/contact.hh"
 
 #include <boost/assign/list_of.hpp>
 

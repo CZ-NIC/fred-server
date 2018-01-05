@@ -7,12 +7,7 @@ AM_CPPFLAGS = \
 		$(LIBIDN_CFLAGS) \
 		$(OMNIORB4_CFLAGS) \
 		$(XML2_CFLAGS) \
-		-I $(top_srcdir)/util \
 		-I $(top_srcdir) \
-		-I $(top_srcdir)/util/db/model \
-		-I $(top_srcdir)/util/db \
-		-I $(top_srcdir)/util/decimal \
-		-I $(top_srcdir)/include \
 		-I $(top_builddir) \
 		-D __STDC_LIMIT_MACROS
 
@@ -142,14 +137,6 @@ endif
 
 
 noinst_HEADERS = \
-		include/libfred/contact.hh \
-		include/libfred/domain.hh \
-		include/libfred/libfred.hh \
-		include/libfred/keyset.hh \
-		include/libfred/nsset.hh \
-		include/libfred/admin_contact_verification.hh \
-		include/admin/admin_contact_verification.hh \
-		include/libfred/registrar.hh \
 		src/util/util.hh \
 		src/util/singleton.hh \
 		src/util/time_clock.hh \

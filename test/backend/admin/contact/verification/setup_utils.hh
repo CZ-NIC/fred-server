@@ -24,20 +24,35 @@
 #ifndef SETUP_UTILS_HH_EE8CE4C846E54B10BF252B1C0A414EAF
 #define SETUP_UTILS_HH_EE8CE4C846E54B10BF252B1C0A414EAF
 
-#include <vector>
-#include <utility>
-#include <string>
+#include "test/libfred/contact/verification/setup_utils.hh"
 
-#include <libfred/contact.hh>
-#include <libfred/admin_contact_verification.hh>
-
+#include "src/backend/admin/contact/verification/test_impl/test_interface.hh"
 #include "src/libfred/db_settings.hh"
+#include "src/libfred/registrable_object/contact/check_contact.hh"
+#include "src/libfred/registrable_object/contact/copy_contact.hh"
+#include "src/libfred/registrable_object/contact/create_contact.hh"
+#include "src/libfred/registrable_object/contact/delete_contact.hh"
+#include "src/libfred/registrable_object/contact/info_contact.hh"
+#include "src/libfred/registrable_object/contact/info_contact_diff.hh"
+#include "src/libfred/registrable_object/contact/merge_contact.hh"
+#include "src/libfred/registrable_object/contact/update_contact.hh"
+#include "src/libfred/registrable_object/contact/verification/create_check.hh"
+#include "src/libfred/registrable_object/contact/verification/create_test.hh"
+#include "src/libfred/registrable_object/contact/verification/enum_check_status.hh"
+#include "src/libfred/registrable_object/contact/verification/enum_test_status.hh"
+#include "src/libfred/registrable_object/contact/verification/enum_testsuite_handle.hh"
+#include "src/libfred/registrable_object/contact/verification/exceptions.hh"
+#include "src/libfred/registrable_object/contact/verification/info_check.hh"
+#include "src/libfred/registrable_object/contact/verification/list_checks.hh"
+#include "src/libfred/registrable_object/contact/verification/list_enum_objects.hh"
+#include "src/libfred/registrable_object/contact/verification/update_check.hh"
+#include "src/libfred/registrable_object/contact/verification/update_test.hh"
 #include "src/util/db/nullable.hh"
 #include "src/util/random_data_generator.hh"
 
-#include "test/libfred/contact/verification/setup_utils.hh"
-#include "src/backend/admin/contact/verification/test_impl/test_interface.hh"
-
+#include <string>
+#include <utility>
+#include <vector>
 
 class DummyTestReturning: public Admin::ContactVerification::Test {
         std::string handle;

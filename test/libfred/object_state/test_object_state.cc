@@ -16,25 +16,32 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/libfred/opcontext.hh"
-#include "include/libfred/contact.hh"
-#include "src/libfred/object_state/create_object_state_request_id.hh"
-#include "src/libfred/object_state/perform_object_state_request.hh"
-#include "src/libfred/object_state/get_object_states.hh"
-#include "src/libfred/object_state/get_object_state_descriptions.hh"
-#include "src/libfred/object_state/object_state_name.hh"
 #include "src/libfred/object/object_state.hh"
-
-#include "src/util/util.hh"
+#include "src/libfred/object_state/create_object_state_request_id.hh"
+#include "src/libfred/object_state/get_object_state_descriptions.hh"
+#include "src/libfred/object_state/get_object_states.hh"
+#include "src/libfred/object_state/object_state_name.hh"
+#include "src/libfred/object_state/perform_object_state_request.hh"
+#include "src/libfred/opcontext.hh"
+#include "src/libfred/registrable_object/contact/check_contact.hh"
+#include "src/libfred/registrable_object/contact/copy_contact.hh"
+#include "src/libfred/registrable_object/contact/create_contact.hh"
+#include "src/libfred/registrable_object/contact/delete_contact.hh"
+#include "src/libfred/registrable_object/contact/info_contact.hh"
+#include "src/libfred/registrable_object/contact/info_contact_diff.hh"
+#include "src/libfred/registrable_object/contact/merge_contact.hh"
+#include "src/libfred/registrable_object/contact/update_contact.hh"
 #include "src/util/random_data_generator.hh"
-#include "test/setup/fixtures.hh"
+#include "src/util/util.hh"
 #include "test/libfred/enum_to_db_handle_conversion.hh"
+#include "test/setup/fixtures.hh"
 
-#include <boost/test/unit_test.hpp>
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
-#include <string>
+#include <boost/test/unit_test.hpp>
+
 #include <algorithm>
+#include <string>
 
 BOOST_FIXTURE_TEST_SUITE(TestObjectState, Test::instantiate_db_template)
 

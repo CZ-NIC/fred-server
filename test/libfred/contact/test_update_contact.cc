@@ -16,16 +16,33 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/test/unit_test.hpp>
-#include <string>
-
 #include "src/libfred/opcontext.hh"
-#include <libfred/contact.hh>
-#include <libfred/nsset.hh>
-#include <libfred/keyset.hh>
-
+#include "src/libfred/registrable_object/contact/check_contact.hh"
+#include "src/libfred/registrable_object/contact/copy_contact.hh"
+#include "src/libfred/registrable_object/contact/create_contact.hh"
+#include "src/libfred/registrable_object/contact/delete_contact.hh"
+#include "src/libfred/registrable_object/contact/info_contact.hh"
+#include "src/libfred/registrable_object/contact/info_contact_diff.hh"
+#include "src/libfred/registrable_object/contact/merge_contact.hh"
+#include "src/libfred/registrable_object/contact/update_contact.hh"
+#include "src/libfred/registrable_object/keyset/check_keyset.hh"
+#include "src/libfred/registrable_object/keyset/create_keyset.hh"
+#include "src/libfred/registrable_object/keyset/delete_keyset.hh"
+#include "src/libfred/registrable_object/keyset/info_keyset.hh"
+#include "src/libfred/registrable_object/keyset/info_keyset_diff.hh"
+#include "src/libfred/registrable_object/keyset/update_keyset.hh"
+#include "src/libfred/registrable_object/nsset/check_nsset.hh"
+#include "src/libfred/registrable_object/nsset/create_nsset.hh"
+#include "src/libfred/registrable_object/nsset/delete_nsset.hh"
+#include "src/libfred/registrable_object/nsset/info_nsset.hh"
+#include "src/libfred/registrable_object/nsset/info_nsset_diff.hh"
+#include "src/libfred/registrable_object/nsset/update_nsset.hh"
 #include "src/util/random_data_generator.hh"
 #include "test/setup/fixtures.hh"
+
+#include <boost/test/unit_test.hpp>
+
+#include <string>
 
 const std::string server_name = "test-update-contact";
 

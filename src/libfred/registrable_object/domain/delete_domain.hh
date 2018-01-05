@@ -24,11 +24,11 @@
 #ifndef DELETE_DOMAIN_HH_F00B0682E1C1442D81125CBE1CBF56E0
 #define DELETE_DOMAIN_HH_F00B0682E1C1442D81125CBE1CBF56E0
 
-#include <string>
-
 #include "src/libfred/opexception.hh"
 #include "src/libfred/opcontext.hh"
 #include "src/util/printable.hh"
+
+#include <string>
 
 namespace LibFred
 {

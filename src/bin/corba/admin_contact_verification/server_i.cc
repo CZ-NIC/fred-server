@@ -23,21 +23,45 @@
 
 #include "src/bin/corba/admin_contact_verification/server_i.hh"
 
-#include <vector>
-#include <utility>
-#include <string>
-
-#include <libfred/contact.hh>
-#include <libfred/admin_contact_verification.hh>
-#include <admin/admin_contact_verification.hh>
-
+#include "src/backend/admin/contact/verification/create_test_impl_prototypes.hh"
+#include "src/backend/admin/contact/verification/delete_domains_of_invalid_contact.hh"
+#include "src/backend/admin/contact/verification/enqueue_check.hh"
+#include "src/backend/admin/contact/verification/exceptions.hh"
+#include "src/backend/admin/contact/verification/fill_check_queue.hh"
+#include "src/backend/admin/contact/verification/list_active_checks.hh"
+#include "src/backend/admin/contact/verification/related_records.hh"
+#include "src/backend/admin/contact/verification/resolve_check.hh"
+#include "src/backend/admin/contact/verification/run_all_enqueued_checks.hh"
+#include "src/backend/admin/contact/verification/update_tests.hh"
+#include "src/bin/corba/util/corba_conversions_datetime.hh"
+#include "src/bin/corba/util/corba_conversions_nullable_types.hh"
+#include "src/bin/corba/util/corba_conversions_string.hh"
+#include "src/libfred/registrable_object/contact/check_contact.hh"
+#include "src/libfred/registrable_object/contact/copy_contact.hh"
+#include "src/libfred/registrable_object/contact/create_contact.hh"
+#include "src/libfred/registrable_object/contact/delete_contact.hh"
+#include "src/libfred/registrable_object/contact/info_contact.hh"
+#include "src/libfred/registrable_object/contact/info_contact_diff.hh"
+#include "src/libfred/registrable_object/contact/merge_contact.hh"
+#include "src/libfred/registrable_object/contact/update_contact.hh"
+#include "src/libfred/registrable_object/contact/verification/create_check.hh"
+#include "src/libfred/registrable_object/contact/verification/create_test.hh"
+#include "src/libfred/registrable_object/contact/verification/enum_check_status.hh"
+#include "src/libfred/registrable_object/contact/verification/enum_test_status.hh"
+#include "src/libfred/registrable_object/contact/verification/enum_testsuite_handle.hh"
+#include "src/libfred/registrable_object/contact/verification/exceptions.hh"
+#include "src/libfred/registrable_object/contact/verification/info_check.hh"
+#include "src/libfred/registrable_object/contact/verification/list_checks.hh"
+#include "src/libfred/registrable_object/contact/verification/list_enum_objects.hh"
+#include "src/libfred/registrable_object/contact/verification/update_check.hh"
+#include "src/libfred/registrable_object/contact/verification/update_test.hh"
 #include "src/util/log/context.hh"
 #include "src/util/random_data_generator.hh"
 #include "src/util/uuid.hh"
 
-#include "src/bin/corba/util/corba_conversions_datetime.hh"
-#include "src/bin/corba/util/corba_conversions_string.hh"
-#include "src/bin/corba/util/corba_conversions_nullable_types.hh"
+#include <string>
+#include <utility>
+#include <vector>
 
 static inline std::string create_log_server_id(const std::string& _server_name) {
     return _server_name + "-" + RandomDataGenerator().xnumstring(5);

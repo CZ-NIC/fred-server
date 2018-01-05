@@ -16,16 +16,29 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/test/unit_test.hpp>
-#include <string>
-
 #include "src/libfred/opcontext.hh"
-#include <libfred/domain.hh>
-#include <libfred/contact.hh>
-
+#include "src/libfred/registrable_object/contact/check_contact.hh"
+#include "src/libfred/registrable_object/contact/copy_contact.hh"
+#include "src/libfred/registrable_object/contact/create_contact.hh"
+#include "src/libfred/registrable_object/contact/delete_contact.hh"
+#include "src/libfred/registrable_object/contact/info_contact.hh"
+#include "src/libfred/registrable_object/contact/info_contact_diff.hh"
+#include "src/libfred/registrable_object/contact/merge_contact.hh"
+#include "src/libfred/registrable_object/contact/update_contact.hh"
+#include "src/libfred/registrable_object/domain/check_domain.hh"
+#include "src/libfred/registrable_object/domain/create_domain.hh"
+#include "src/libfred/registrable_object/domain/delete_domain.hh"
+#include "src/libfred/registrable_object/domain/info_domain.hh"
+#include "src/libfred/registrable_object/domain/info_domain_diff.hh"
+#include "src/libfred/registrable_object/domain/renew_domain.hh"
+#include "src/libfred/registrable_object/domain/update_domain.hh"
 #include "src/util/random_data_generator.hh"
-#include "test/setup/fixtures.hh"
 #include "test/libfred/util.hh"
+#include "test/setup/fixtures.hh"
+
+#include <boost/test/unit_test.hpp>
+
+#include <string>
 
 const std::string server_name = "test-create-domain";
 

@@ -1,6 +1,16 @@
 #include "src/backend/admin/contact/verification/update_tests.hh"
-#include <libfred/admin_contact_verification.hh>
 
+#include "src/libfred/registrable_object/contact/verification/create_check.hh"
+#include "src/libfred/registrable_object/contact/verification/create_test.hh"
+#include "src/libfred/registrable_object/contact/verification/enum_check_status.hh"
+#include "src/libfred/registrable_object/contact/verification/enum_test_status.hh"
+#include "src/libfred/registrable_object/contact/verification/enum_testsuite_handle.hh"
+#include "src/libfred/registrable_object/contact/verification/exceptions.hh"
+#include "src/libfred/registrable_object/contact/verification/info_check.hh"
+#include "src/libfred/registrable_object/contact/verification/list_checks.hh"
+#include "src/libfred/registrable_object/contact/verification/list_enum_objects.hh"
+#include "src/libfred/registrable_object/contact/verification/update_check.hh"
+#include "src/libfred/registrable_object/contact/verification/update_test.hh"
 #include "src/util/log/context.hh"
 
 namespace  Admin {

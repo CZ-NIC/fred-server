@@ -24,30 +24,37 @@
 #ifndef CONTACT_CLIENT_IMPL_HH_24044019110A40949F068BFB640C2404
 #define CONTACT_CLIENT_IMPL_HH_24044019110A40949F068BFB640C2404
 
-#include <boost/date_time/gregorian/gregorian.hpp>
-#include <boost/foreach.hpp>
-#include <boost/algorithm/string.hpp>
-
-#include "src/util/cfg/config_handler_decl.hh"
-#include "src/util/cfg/handle_database_args.hh"
-#include "src/util/cfg/handle_registry_args.hh"
-#include "src/util/cfg/handle_corbanameservice_args.hh"
-#include "src/bin/cli/handle_adminclientselection_args.hh"
-#include "src/util/log/context.hh"
-#include "src/bin/cli/contactclient.hh"
-#include "src/bin/cli/commonclient.hh"
-#include "src/libfred/reminder.hh"
-#include "src/backend/admin/contact/merge_contact_auto_procedure.hh"
 #include "src/backend/admin/contact/merge_contact.hh"
+#include "src/backend/admin/contact/merge_contact_auto_procedure.hh"
 #include "src/backend/admin/contact/merge_contact_reporting.hh"
+#include "src/backend/admin/contact/verification/create_test_impl_prototypes.hh"
+#include "src/backend/admin/contact/verification/delete_domains_of_invalid_contact.hh"
+#include "src/backend/admin/contact/verification/enqueue_check.hh"
+#include "src/backend/admin/contact/verification/exceptions.hh"
+#include "src/backend/admin/contact/verification/fill_check_queue.hh"
+#include "src/backend/admin/contact/verification/list_active_checks.hh"
+#include "src/backend/admin/contact/verification/related_records.hh"
+#include "src/backend/admin/contact/verification/resolve_check.hh"
+#include "src/backend/admin/contact/verification/run_all_enqueued_checks.hh"
+#include "src/backend/admin/contact/verification/update_tests.hh"
+#include "src/bin/cli/commonclient.hh"
+#include "src/bin/cli/contactclient.hh"
+#include "src/bin/cli/handle_adminclientselection_args.hh"
 #include "src/bin/corba/logger_client_impl.hh"
-#include <admin/admin_contact_verification.hh>
-
-#include "src/libfred/mailer.hh"
 #include "src/libfred/documents.hh"
+#include "src/libfred/mailer.hh"
 #include "src/libfred/messages/messages_impl.hh"
 #include "src/libfred/registrar/get_registrar_handles.hh"
+#include "src/libfred/reminder.hh"
+#include "src/util/cfg/config_handler_decl.hh"
+#include "src/util/cfg/handle_corbanameservice_args.hh"
+#include "src/util/cfg/handle_database_args.hh"
+#include "src/util/cfg/handle_registry_args.hh"
+#include "src/util/log/context.hh"
 
+#include <boost/algorithm/string.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/foreach.hpp>
 /**
  * \class contact_list_impl
  * \brief admin client implementation of contact_list

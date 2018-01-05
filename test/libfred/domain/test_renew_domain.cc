@@ -21,18 +21,42 @@
  *  RenewDomain tests
  */
 
-#include <boost/test/unit_test.hpp>
-#include <boost/date_time/gregorian/gregorian.hpp>
-#include <string>
-
 #include "src/libfred/opcontext.hh"
-#include <libfred/domain.hh>
-#include <libfred/contact.hh>
-#include <libfred/nsset.hh>
-#include <libfred/keyset.hh>
-
+#include "src/libfred/registrable_object/contact/check_contact.hh"
+#include "src/libfred/registrable_object/contact/copy_contact.hh"
+#include "src/libfred/registrable_object/contact/create_contact.hh"
+#include "src/libfred/registrable_object/contact/delete_contact.hh"
+#include "src/libfred/registrable_object/contact/info_contact.hh"
+#include "src/libfred/registrable_object/contact/info_contact_diff.hh"
+#include "src/libfred/registrable_object/contact/merge_contact.hh"
+#include "src/libfred/registrable_object/contact/update_contact.hh"
+#include "src/libfred/registrable_object/domain/check_domain.hh"
+#include "src/libfred/registrable_object/domain/create_domain.hh"
+#include "src/libfred/registrable_object/domain/delete_domain.hh"
+#include "src/libfred/registrable_object/domain/info_domain.hh"
+#include "src/libfred/registrable_object/domain/info_domain_diff.hh"
+#include "src/libfred/registrable_object/domain/info_domain_impl.hh"
+#include "src/libfred/registrable_object/domain/renew_domain.hh"
+#include "src/libfred/registrable_object/domain/update_domain.hh"
+#include "src/libfred/registrable_object/keyset/check_keyset.hh"
+#include "src/libfred/registrable_object/keyset/create_keyset.hh"
+#include "src/libfred/registrable_object/keyset/delete_keyset.hh"
+#include "src/libfred/registrable_object/keyset/info_keyset.hh"
+#include "src/libfred/registrable_object/keyset/info_keyset_diff.hh"
+#include "src/libfred/registrable_object/keyset/update_keyset.hh"
+#include "src/libfred/registrable_object/nsset/check_nsset.hh"
+#include "src/libfred/registrable_object/nsset/create_nsset.hh"
+#include "src/libfred/registrable_object/nsset/delete_nsset.hh"
+#include "src/libfred/registrable_object/nsset/info_nsset.hh"
+#include "src/libfred/registrable_object/nsset/info_nsset_diff.hh"
+#include "src/libfred/registrable_object/nsset/update_nsset.hh"
 #include "src/util/random_data_generator.hh"
 #include "test/setup/fixtures.hh"
+
+#include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/test/unit_test.hpp>
+
+#include <string>
 
 const std::string server_name = "test-renew-domain";
 

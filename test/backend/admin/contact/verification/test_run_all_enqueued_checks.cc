@@ -21,21 +21,29 @@
  *  integration tests for admin/contact/verification/run_all_enqueued_checks.cc
  */
 
-#include "src/backend/admin/contact/verification/run_all_enqueued_checks.hh"
 #include "src/backend/admin/contact/verification/fill_check_queue.hh"
-#include <libfred/admin_contact_verification.hh>
+#include "src/backend/admin/contact/verification/run_all_enqueued_checks.hh"
 #include "src/libfred/opexception.hh"
-
-#include <boost/test/unit_test.hpp>
-#include <boost/assign/list_of.hpp>
-#include <boost/foreach.hpp>
-#include <map>
-
+#include "src/libfred/registrable_object/contact/verification/create_check.hh"
+#include "src/libfred/registrable_object/contact/verification/create_test.hh"
+#include "src/libfred/registrable_object/contact/verification/enum_check_status.hh"
+#include "src/libfred/registrable_object/contact/verification/enum_test_status.hh"
+#include "src/libfred/registrable_object/contact/verification/enum_testsuite_handle.hh"
+#include "src/libfred/registrable_object/contact/verification/exceptions.hh"
+#include "src/libfred/registrable_object/contact/verification/info_check.hh"
+#include "src/libfred/registrable_object/contact/verification/list_checks.hh"
+#include "src/libfred/registrable_object/contact/verification/list_enum_objects.hh"
+#include "src/libfred/registrable_object/contact/verification/update_check.hh"
+#include "src/libfred/registrable_object/contact/verification/update_test.hh"
+#include "src/util/random.hh"
 #include "test/backend/admin/contact/verification/setup_utils.hh"
 #include "test/setup/fixtures.hh"
-#include "src/util/random.hh"
 
+#include <boost/assign/list_of.hpp>
+#include <boost/foreach.hpp>
+#include <boost/test/unit_test.hpp>
 
+#include <map>
 
 struct dummy_testsuite : public setup_empty_testsuite {
 
