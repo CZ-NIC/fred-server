@@ -121,7 +121,7 @@ rcconfdir = $(sysconfdir)/init.d
 
 
 EXTRA_DIST = \
-		fred-server.spec \
+		contrib/fedora/fred-server.spec \
 		src/util/sms_send.bash \
 		test/deprecated/test_file.pdf
 
