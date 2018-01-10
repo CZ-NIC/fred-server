@@ -147,7 +147,7 @@ public:
             account_memo = account_memo.substr(0, 63);
             if (account_memo.at(account_memo.length() - 1) == '\\')
             {
-                size_t occurrences = std::count(account_memo.begin(), account_memo.end(), '\\');
+                const size_t occurrences = std::count(account_memo.begin(), account_memo.end(), '\\');
                 if ((occurrences % 2) != 0)
                 {
                     account_memo = account_memo.substr(0, 62);
@@ -171,7 +171,7 @@ public:
             account_name = account_name.substr(0, 63);
             if (account_name.at(account_name.length() - 1) == '\\')
             {
-                size_t occurrences = std::count(account_name.begin(), account_name.end(), '\\');
+                const size_t occurrences = std::count(account_name.begin(), account_name.end(), '\\');
                 if ((occurrences % 2) != 0)
                 {
                     account_name = account_name.substr(0, 62);
