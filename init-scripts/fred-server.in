@@ -329,11 +329,11 @@ init_cz()
     # add EPP autentication data to these testin registrars 
     $ADMCMD --registrar_acl_add \
         --handle=REG-FRED_A \
-        --certificate="39:D1:0C:CA:05:3A:CC:C0:0B:EC:6F:3F:81:0D:C7:9E" \
+        --certificate="6A:AC:49:24:F8:32:1E:B7:A1:83:B5:D4:CB:74:29:98" \
         --password=passwd
     $ADMCMD --registrar_acl_add \
         --handle=REG-FRED_B \
-        --certificate="39:D1:0C:CA:05:3A:CC:C0:0B:EC:6F:3F:81:0D:C7:9E" \
+        --certificate="6A:AC:49:24:F8:32:1E:B7:A1:83:B5:D4:CB:74:29:98" \
         --password=passwd
     # add EPP access to both zones to both registrars
     $ADMCMD --registrar_add_zone \
