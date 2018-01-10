@@ -4,6 +4,8 @@
 #include "src/libfred/db_settings.hh"
 #include "src/util/db/model/model.hh"
 
+#include <boost/algorithm/string/replace.hpp>
+
 class ModelBankPayment:
     public Model::Base {
 public:
@@ -137,12 +139,23 @@ public:
     }
     void setAccountMemo(const std::string &accountMemo)
     {
-        if (accountMemo.size() >= 64) {
-            m_accountMemo = accountMemo.substr(0, 63);
+        std::string account_memo = accountMemo;
+
+        // HACK #18735
+        boost::algorithm::replace_all(account_memo, "\\", "\\\\");
+        if (account_memo.size() >= 64) {
+            account_memo = account_memo.substr(0, 63);
+            if (account_memo.at(account_memo.length() - 1) == '\\')
+            {
+                size_t occurrences = std::count(account_memo.begin(), account_memo.end(), '\\');
+                if ((occurrences % 2) != 0)
+                {
+                    account_memo = account_memo.substr(0, 62);
+                }
+            }
         }
-        else {
-            m_accountMemo = accountMemo;
-        }
+
+        m_accountMemo = account_memo;
     }
     void setInvoiceId(const unsigned long long &invoiceId)
     {
@@ -150,12 +163,23 @@ public:
     }
     void setAccountName(const std::string &accountName)
     {
-        if (accountName.size() >= 64) {
-            m_accountName = accountName.substr(0, 63);
+        std::string account_name = accountName;
+
+        // HACK #18735
+        boost::algorithm::replace_all(account_name, "\\", "\\\\");
+        if (account_name.size() >= 64) {
+            account_name = account_name.substr(0, 63);
+            if (account_name.at(account_name.length() - 1) == '\\')
+            {
+                size_t occurrences = std::count(account_name.begin(), account_name.end(), '\\');
+                if ((occurrences % 2) != 0)
+                {
+                    account_name = account_name.substr(0, 62);
+                }
+            }
         }
-        else {
-            m_accountName = accountName;
-        }
+
+        m_accountName = account_name;
     }
     void setCrTime(const Database::DateTime &crTime)
     {
