@@ -5,6 +5,7 @@
 #include "src/util/db/model/model.hh"
 
 #include <boost/algorithm/string/replace.hpp>
+#include <boost/algorithm/string/resize.hpp>
 
 class ModelBankPayment:
     public Model::Base {
@@ -145,12 +146,12 @@ public:
         boost::algorithm::replace_all(account_memo, "\\", "\\\\");
         if (account_memo.size() >= 64) {
             account_memo = account_memo.substr(0, 63);
-            if (account_memo.at(account_memo.length() - 1) == '\\')
+            if (account_memo.back() == '\\')
             {
                 const size_t occurrences = std::count(account_memo.begin(), account_memo.end(), '\\');
                 if ((occurrences % 2) != 0)
                 {
-                    account_memo = account_memo.substr(0, 62);
+                    account_memo.resize(63);
                 }
             }
         }
@@ -169,12 +170,12 @@ public:
         boost::algorithm::replace_all(account_name, "\\", "\\\\");
         if (account_name.size() >= 64) {
             account_name = account_name.substr(0, 63);
-            if (account_name.at(account_name.length() - 1) == '\\')
+            if (account_name.back() == '\\')
             {
                 const size_t occurrences = std::count(account_name.begin(), account_name.end(), '\\');
                 if ((occurrences % 2) != 0)
                 {
-                    account_name = account_name.substr(0, 62);
+                    account_name.resize(63);
                 }
             }
         }
