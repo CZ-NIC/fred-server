@@ -1,5 +1,35 @@
 #include "src/libfred/banking/model_bank_payment.hh"
 
+#include <boost/algorithm/string/replace.hpp>
+
+#include <locale>
+#include <codecvt>
+
+namespace {
+
+std::string wtruncate(const std::string& utf8, std::size_t max_length)
+{
+    std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> conv;
+    const std::wstring wdata = conv.from_bytes(utf8);
+    return conv.to_bytes(wdata.substr(0, max_length));
+}
+
+} // namespace {anonymous}
+
+void ModelBankPayment::setAccountMemo(const std::string& accountMemo)
+{
+    std::string account_memo = wtruncate(accountMemo, 63);
+    boost::algorithm::replace_all(account_memo, "\\", "\\\\"); // HACK #18735
+    m_accountMemo = account_memo;
+}
+
+void ModelBankPayment::setAccountName(const std::string& accountName)
+{
+    std::string account_name = wtruncate(accountName, 63);
+    boost::algorithm::replace_all(account_name, "\\", "\\\\"); // HACK #18735
+    m_accountName = account_name;
+}
+
 std::string ModelBankPayment::table_name = "bank_payment";
 
 DEFINE_PRIMARY_KEY(ModelBankPayment, unsigned long long, id, m_id, table_name, "id", .setDefault())
