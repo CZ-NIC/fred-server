@@ -42,6 +42,7 @@
 #include "src/libfred/banking/bank_payment.hh"
 #include "src/libfred/public_request/public_request_authinfo_impl.hh"
 #include "src/libfred/public_request/public_request_block_impl.hh"
+#include "src/libfred/registrar/info_registrar.hh"
 #include "src/util/factory_check.hh"
 #include "src/util/log/logger.hh"
 #include "src/util/log/context.hh"
@@ -1764,7 +1765,8 @@ ccReg::RegistrarRequestCountInfo* ccReg_Admin_i::getRegistrarRequestCount(const 
     try {
         LibFred::OperationContextCreator ctx;
         ctx.get_log().info(server_name_);
-        const unsigned long long registrar_id = boost::lexical_cast<unsigned long long>(_registrar);
+        const unsigned long long registrar_id =
+            ::LibFred::InfoRegistrarByHandle(_registrar).exec(ctx).info_registrar_data.id;
         const LibFred::Poll::RequestFeeInfoEvent request_fee_info =
             LibFred::Poll::get_last_request_fee_info_message(ctx, registrar_id);
 
