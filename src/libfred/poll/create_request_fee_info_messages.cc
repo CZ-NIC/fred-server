@@ -205,7 +205,7 @@ void create_request_fee_info_messages(
     const boost::posix_time::ptime ts_period_from(local_period_from);
 
     const std::unique_ptr<LibFred::Logger::RequestCountInfo> request_counts =
-        logger_client.getRequestCountUsers(ts_period_to, ts_period_from, "EPP");
+        logger_client.getRequestCountUsers(ts_period_from, ts_period_to, "EPP");
 
     for (std::size_t i = 0; i < sql_query_result.size(); ++i)
     {
