@@ -1,10 +1,9 @@
-#include <utility>
-
 #include "src/backend/mojeid/mojeid_public_request.hh"
 #include "src/util/random.hh"
-#include "src/util/cfg/handle_contactverification_args.hh"
 #include "src/util/cfg/handle_mojeid_args.hh"
 #include "src/util/cfg/config_handler_decl.hh"
+
+#include <utility>
 
 namespace LibFred {
 
@@ -118,16 +117,16 @@ std::string generate_pin1_pin2()
     return generate_pin1() + generate_pin2();
 }
 
-}//Fred::{anonymous}
-
 std::string conditional_contact_identification_generate_passwords()
 {
     const bool runs_in_demo_mode =
-        CfgArgs::instance()->get_handler_ptr_by_type< HandleContactVerificationArgs >()->demo_mode;
+        CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIDArgs>()->demo_mode;
 
     return runs_in_demo_mode ? get_demo_pin1_pin2()
                              : generate_pin1_pin2();
 }
+
+}//Fred::{anonymous}
 
 namespace MojeID {
 

@@ -28,8 +28,6 @@
 
 namespace LibFred {
 
-std::string conditional_contact_identification_generate_passwords();
-
 namespace MojeID {
 
 std::string contact_transfer_request_generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact);
