@@ -23,6 +23,7 @@
 #include "src/util/db/param_query_composition.hh"
 
 #include <boost/lexical_cast.hpp>
+#include <boost/optional.hpp>
 
 #include <string>
 
@@ -31,11 +32,16 @@ namespace Poll {
 
 namespace {
 
+struct period_to_with_tz_t
+{
+    const boost::posix_time::ptime& period_to;
+    const std::string& tz;
+};
+
 RequestFeeInfoEvent get_request_fee_info_message_impl(
         LibFred::OperationContext& ctx,
         unsigned long long registrar_id,
-        const Database::ParamQuery& query_part,
-        const std::string& common_debug_string)
+        const boost::optional<period_to_with_tz_t>& period_to_with_tz)
 {
     Database::ParamQuery sql_query;
     sql_query("SELECT prf.period_from, prf.period_to, prf.total_free_count, prf.used_count, prf.price "
@@ -43,8 +49,18 @@ RequestFeeInfoEvent get_request_fee_info_message_impl(
               "JOIN message m ON m.id=prf.msgid "
               "JOIN messagetype mt ON mt.id=m.msgtype "
               "WHERE m.clid=").param_bigint(registrar_id)
-              (" AND mt.name=").param_text(Conversion::Enums::to_db_handle(MessageType::request_fee_info))
-              (query_part);
+             (" AND mt.name=").param_text(Conversion::Enums::to_db_handle(MessageType::request_fee_info));
+    if (period_to_with_tz == boost::none)
+    {
+        sql_query(" ORDER BY m.id DESC LIMIT 1");
+    }
+    else
+    {
+        sql_query(" AND period_to = (");
+        sql_query.param_timestamp(period_to_with_tz->period_to)(" AT TIME ZONE ")
+            .param_text(period_to_with_tz->tz)(" AT TIME ZONE 'UTC')");
+    }
+
 
     const Database::Result sql_query_result = ctx.get_conn().exec_params(sql_query);
     switch (sql_query_result.size())
@@ -60,12 +76,21 @@ RequestFeeInfoEvent get_request_fee_info_message_impl(
                 const std::string message_;
             };
             const std::string repr_registrar_id = boost::lexical_cast<std::string>(registrar_id);
-            const std::string registrar_handle =
-                LibFred::InfoRegistrarById(registrar_id).exec(ctx).info_registrar_data.handle;
+            std::string registrar_handle;
+            try
+            {
+                registrar_handle = LibFred::InfoRegistrarById(registrar_id).exec(ctx).info_registrar_data.handle;
+            }
+            catch (...)
+            {
+                registrar_handle = "<unknown handle>";
+            }
             throw NotFound("Poll request fee message for registrar "
                            + registrar_handle
                            + " (" + repr_registrar_id + ") "
-                           + common_debug_string
+                           + (period_to_with_tz == boost::none
+                              ? std::string("(the last message)")
+                              : "with period_to " + to_simple_string(period_to_with_tz->period_to))
                            + " not found");
         }
         case 1:
@@ -97,18 +122,15 @@ RequestFeeInfoEvent get_request_fee_info_message(
         const boost::posix_time::ptime& period_to,
         const std::string& time_zone)
 {
-    Database::ParamQuery by_period_to_sql_part(" AND period_to = (");
-    by_period_to_sql_part.param_timestamp(period_to)(" AT TIME ZONE ").param_text(time_zone)(" AT TIME ZONE 'UTC')");
-    const std::string debug_string = "with period_to " + to_simple_string(period_to);
-    return get_request_fee_info_message_impl(ctx, registrar_id, by_period_to_sql_part, debug_string);
+    const period_to_with_tz_t period_to_with_tz = { period_to, time_zone };
+    return get_request_fee_info_message_impl(ctx, registrar_id, period_to_with_tz);
 }
 
 RequestFeeInfoEvent get_last_request_fee_info_message(
         LibFred::OperationContext& ctx,
         unsigned long long registrar_id)
 {
-    const Database::ParamQuery last_sql_part(" ORDER BY m.id DESC LIMIT 1");
-    return get_request_fee_info_message_impl(ctx, registrar_id, last_sql_part, "(the last message)");
+    return get_request_fee_info_message_impl(ctx, registrar_id, boost::none);
 }
 
 } // namespace LibFred::Poll
