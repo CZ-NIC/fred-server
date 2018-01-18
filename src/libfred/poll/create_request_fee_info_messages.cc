@@ -53,7 +53,7 @@ DomainCounts get_domain_counts(LibFred::OperationContext& ctx, unsigned long lon
         {
             struct NotFound : OperationException
             {
-                const char* what() const throw() { return "failed to fetch domain counts from request_fee_parameter table"; }
+                const char* what() const noexcept { return "failed to fetch domain counts from request_fee_parameter table"; }
             };
             throw NotFound();
         }
@@ -63,7 +63,7 @@ DomainCounts get_domain_counts(LibFred::OperationContext& ctx, unsigned long lon
             {
                 struct InvalidValue : OperationException
                 {
-                    const char* what() const throw() { return "invalid domain counts fetched from request_fee_parameter table"; }
+                    const char* what() const noexcept { return "invalid domain counts fetched from request_fee_parameter table"; }
                 };
                 throw InvalidValue();
             }
@@ -102,7 +102,7 @@ Decimal get_request_unit_price(LibFred::OperationContext& ctx, unsigned long lon
         {
             struct NotFound : OperationException
             {
-                const char* what() const throw() { return "failed to fetch price from price_list table"; }
+                const char* what() const noexcept { return "failed to fetch price from price_list table"; }
             };
             throw NotFound();
         }
