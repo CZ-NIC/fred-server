@@ -69,16 +69,16 @@ public:
                  boost::program_options::value<unsigned int>()->default_value(10),
                  "maximal number of hosts in nsset")
                 ("registry.docgen_path",
-                 boost::program_options::value<std::string>(),
+                 boost::program_options::value<std::string>()->required(),
                  "")
                 ("registry.docgen_template_path",
-                 boost::program_options::value<std::string>(),
+                 boost::program_options::value<std::string>()->required(),
                  "")
                 ("registry.docgen_domain_count_limit",
                  boost::program_options::value<unsigned int>()->default_value(100),
                  "")
                 ("registry.fileclient_path",
-                 boost::program_options::value<std::string>(),
+                 boost::program_options::value<std::string>()->required(),
                  "")
                 ("registry.disable_epp_notifier_cltrid_prefix",
                  boost::program_options::value<std::string>()->default_value("do_not_notify"),
