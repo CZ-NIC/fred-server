@@ -19,7 +19,10 @@
 #include "src/libfred/poll/get_request_fee_message.hh"
 #include "src/libfred/opexception.hh"
 #include "src/libfred/poll/message_type.hh"
+#include "src/libfred/registrar/info_registrar.hh"
 #include "src/util/db/param_query_composition.hh"
+
+#include <boost/lexical_cast.hpp>
 
 #include <string>
 
@@ -31,7 +34,8 @@ namespace {
 RequestFeeInfoEvent get_request_fee_info_message_impl(
         LibFred::OperationContext& ctx,
         unsigned long long registrar_id,
-        const Database::ParamQuery& query_part)
+        const Database::ParamQuery& query_part,
+        const std::string& common_debug_string)
 {
     Database::ParamQuery sql_query;
     sql_query("SELECT prf.period_from, prf.period_to, prf.total_free_count, prf.used_count, prf.price "
@@ -47,11 +51,22 @@ RequestFeeInfoEvent get_request_fee_info_message_impl(
     {
         case 0:
         {
-            struct NotFound : OperationException
+            class NotFound : public OperationException
             {
-                const char* what() const throw() { return "no message was found"; }
+            public:
+                explicit NotFound(const std::string& _message) : message_(_message) {}
+                const char* what() const noexcept { return message_.c_str(); }
+            private:
+                const std::string message_;
             };
-            throw NotFound();
+            const std::string repr_registrar_id = boost::lexical_cast<std::string>(registrar_id);
+            const std::string registrar_handle =
+                LibFred::InfoRegistrarById(registrar_id).exec(ctx).info_registrar_data.handle;
+            throw NotFound("Poll request fee message for registrar "
+                           + registrar_handle
+                           + " (" + repr_registrar_id + ") "
+                           + common_debug_string
+                           + " not found");
         }
         case 1:
             break;
@@ -84,7 +99,8 @@ RequestFeeInfoEvent get_request_fee_info_message(
 {
     Database::ParamQuery by_period_to_sql_part(" AND period_to = (");
     by_period_to_sql_part.param_timestamp(period_to)(" AT TIME ZONE ").param_text(time_zone)(" AT TIME ZONE 'UTC')");
-    return get_request_fee_info_message_impl(ctx, registrar_id, by_period_to_sql_part);
+    const std::string debug_string = "with period_to " + to_simple_string(period_to);
+    return get_request_fee_info_message_impl(ctx, registrar_id, by_period_to_sql_part, debug_string);
 }
 
 RequestFeeInfoEvent get_last_request_fee_info_message(
@@ -92,7 +108,7 @@ RequestFeeInfoEvent get_last_request_fee_info_message(
         unsigned long long registrar_id)
 {
     const Database::ParamQuery last_sql_part(" ORDER BY m.id DESC LIMIT 1");
-    return get_request_fee_info_message_impl(ctx, registrar_id, last_sql_part);
+    return get_request_fee_info_message_impl(ctx, registrar_id, last_sql_part, "(the last message)");
 }
 
 } // namespace LibFred::Poll
