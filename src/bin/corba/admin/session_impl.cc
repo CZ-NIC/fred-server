@@ -1332,7 +1332,7 @@ Registry::Registrar::Detail* ccReg_Session_i::createRegistrarDetail(LibFred::Reg
   detail->access.length(_registrar->getACLSize());
   for (unsigned i = 0; i < _registrar->getACLSize(); i++) {
     detail->access[i].md5Cert = DUPSTRFUN(_registrar->getACL(i)->getCertificateMD5);
-    detail->access[i].password = "no password available";
+    detail->access[i].password = "";
   }
   detail->zones.length(_registrar->getZoneAccessSize());
   for (unsigned i = 0; i < _registrar->getZoneAccessSize(); i++)
