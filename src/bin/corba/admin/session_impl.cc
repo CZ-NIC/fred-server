@@ -1331,6 +1331,7 @@ Registry::Registrar::Detail* ccReg_Session_i::createRegistrarDetail(LibFred::Reg
 
   detail->access.length(_registrar->getACLSize());
   for (unsigned i = 0; i < _registrar->getACLSize(); i++) {
+    detail->access[i].id = _registrar->getACL(i)->getId();
     detail->access[i].md5Cert = DUPSTRFUN(_registrar->getACL(i)->getCertificateMD5);
     detail->access[i].password = "";
   }
@@ -1411,12 +1412,31 @@ ccReg::TID ccReg_Session_i::updateRegistrar(const ccReg::AdminRegistrar& _regist
     LOGGER(PACKAGE).debug(boost::format
             ("ccReg_Session_i::updateRegistrar : i: %1% setRegistrarId: %2%")
                 % i % update_registrar->getId());
+    const unsigned long long acl_id = _registrar.access[i].id;
+    if (acl_id != 0)
+    {
+        registrar_acl->setId(acl_id);
+    }
     if (_registrar.id != 0)
     {
         registrar_acl->setRegistrarId(update_registrar->getId());//set id
     }
+    const std::string password = std::string(_registrar.access[i].password);
+    if (!password.empty())
+    {
+        registrar_acl->set_password(password);
+    }
     registrar_acl->setCertificateMD5((const char *)_registrar.access[i].md5Cert);
-    registrar_acl->set_password(static_cast<const char*>(_registrar.access[i].password));
+
+    const std::string md5_cert2 = std::string(_registrar.access[i].md5Cert2SamePasswd);
+    if (!md5_cert2.empty() && acl_id != 0 && _registrar.id != 0)
+    {
+        LibFred::Registrar::ACL *registrar_acl_same_password = update_registrar->newACL();
+
+        registrar_acl_same_password->setRegistrarId(update_registrar->getId());
+        registrar_acl_same_password->setCertificateMD5(md5_cert2);
+        registrar_acl_same_password->set_password_same_as_acl_id(acl_id);
+    }
   }
 
   update_registrar->clearZoneAccessList();
