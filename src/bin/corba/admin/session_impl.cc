@@ -1412,31 +1412,64 @@ ccReg::TID ccReg_Session_i::updateRegistrar(const ccReg::AdminRegistrar& _regist
     LOGGER(PACKAGE).debug(boost::format
             ("ccReg_Session_i::updateRegistrar : i: %1% setRegistrarId: %2%")
                 % i % update_registrar->getId());
+
     const unsigned long long acl_id = _registrar.access[i].id;
-    if (acl_id != 0)
-    {
-        registrar_acl->setId(acl_id);
-    }
-    if (_registrar.id != 0)
-    {
-        registrar_acl->setRegistrarId(update_registrar->getId());//set id
-    }
     const std::string password = std::string(_registrar.access[i].password);
+    const std::string md5cert = std::string(_registrar.access[i].md5Cert);
+
+    registrar_acl->setCertificateMD5(md5cert);
     if (!password.empty())
     {
         registrar_acl->set_password(password);
     }
-    registrar_acl->setCertificateMD5((const char *)_registrar.access[i].md5Cert);
 
-    const std::string md5_cert2 = std::string(_registrar.access[i].md5Cert2SamePasswd);
-    if (!md5_cert2.empty() && acl_id != 0 && _registrar.id != 0)
+    const bool is_new_registrar = (_registrar.id == 0);
+    if (!is_new_registrar)
     {
-        LibFred::Registrar::ACL *registrar_acl_same_password = update_registrar->newACL();
+        const std::string md5_cert2 = std::string(_registrar.access[i].md5Cert2SamePasswd);
+        registrar_acl->setRegistrarId(update_registrar->getId());
 
-        registrar_acl_same_password->setRegistrarId(update_registrar->getId());
-        registrar_acl_same_password->setCertificateMD5(md5_cert2);
-        registrar_acl_same_password->set_password_same_as_acl_id(acl_id);
+        const bool is_new_acl_record = (acl_id == 0);
+        if (!is_new_acl_record)
+        {
+            registrar_acl->setId(acl_id);
+
+            // add second record with same password
+            if (!md5_cert2.empty())
+            {
+                LibFred::Registrar::ACL *registrar_acl_same_password = update_registrar->newACL();
+                registrar_acl_same_password->setRegistrarId(update_registrar->getId());
+                registrar_acl_same_password->setCertificateMD5(md5_cert2);
+                registrar_acl_same_password->set_password_same_as_acl_id(acl_id);
+            }
+        }
+        else
+        {
+            if (password.empty())
+            {
+                throw ccReg::Admin::UpdateFailed();
+            }
+            // add second record with same password but - we don't have id of acl record yet
+            // so we use same password value (due to password hashing, records in database will
+            // be different)
+            else if (!md5_cert2.empty())
+            {
+                LibFred::Registrar::ACL *registrar_acl_same_password = update_registrar->newACL();
+                registrar_acl_same_password->setRegistrarId(update_registrar->getId());
+                registrar_acl_same_password->setCertificateMD5(md5_cert2);
+                registrar_acl_same_password->set_password(password);
+            }
+        }
     }
+    else
+    {
+        const bool new_registrar_has_mandatory_data = !password.empty() && !md5cert.empty();
+        if (!new_registrar_has_mandatory_data)
+        {
+            throw ccReg::Admin::UpdateFailed();
+        }
+    }
+
   }
 
   update_registrar->clearZoneAccessList();
