@@ -64,14 +64,19 @@ class RegistrarImpl;
 
 class ACLImpl:public ACL, private ModelRegistrarAcl
 {
+private:
+    boost::optional<unsigned long long> password_same_as_acl_id_;
+
 public:
   ACLImpl()
-	  : ModelRegistrarAcl()
+      : ModelRegistrarAcl(),
+        password_same_as_acl_id_()
   { }
   ACLImpl(TID _id,
           const std::string& _certificateMD5,
           const std::string& _plaintext_password)
-	  : ModelRegistrarAcl()
+      : ModelRegistrarAcl(),
+        password_same_as_acl_id_()
   {
 	  this->ModelRegistrarAcl::setId(_id);
 	  this->ModelRegistrarAcl::setCert(_certificateMD5);
@@ -106,6 +111,11 @@ public:
       const auto encrypted_password = ::PasswordStorage::encrypt_password_by_preferred_method(_plaintext_password);
       this->ModelRegistrarAcl::setPassword(encrypted_password.get_value());
   }
+  void set_password_same_as_acl_id(const unsigned long long _acl_id) override
+  {
+      this->ModelRegistrarAcl::setPassword("");
+      password_same_as_acl_id_ = _acl_id;
+  }
   bool operator==(TID _id)const
   {
     return getId() == _id;
@@ -119,14 +129,69 @@ public:
 		const TID id = this->getId();
 		LOGGER(PACKAGE).debug(boost::format("ACLImpl::save id: %1% RegistrarId: %2%")
 		% id % this->getRegistarId());
-		if (id != 0)
-		{
-		    this->ModelRegistrarAcl::update();
-		}
-		else
-		{
-		    this->ModelRegistrarAcl::insert();
-		}
+
+        if (id != 0)
+        {
+            if (!this->ModelRegistrarAcl::getPassword().empty())
+            {
+                conn.exec_params(
+                    "UPDATE registraracl SET cert = $1::text, password = $2::text"
+                    " WHERE registrarid = $3::bigint and id = $4::bigint",
+                    Database::query_param_list
+                        (this->ModelRegistrarAcl::getCert())
+                        (this->ModelRegistrarAcl::getPassword())
+                        (this->ModelRegistrarAcl::getRegistarId())
+                        (id)
+                );
+            }
+            else
+            {
+                conn.exec_params(
+                    "UPDATE registraracl SET cert = $1::text"
+                    " WHERE registrarid = $2::bigint and id = $3::bigint",
+                    Database::query_param_list
+                        (this->ModelRegistrarAcl::getCert())
+                        (this->ModelRegistrarAcl::getRegistarId())
+                        (id)
+                );
+            }
+        }
+        else
+        {
+            if (password_same_as_acl_id_ == boost::none)
+            {
+                Database::Result r_id = conn.exec_params(
+                    "INSERT INTO registraracl (registrarid, cert, password) VALUES"
+                    " ($1::bigint, $2::text, $3::text)"
+                    " RETURNING id",
+                    Database::query_param_list
+                        (this->ModelRegistrarAcl::getRegistarId())
+                        (this->ModelRegistrarAcl::getCert())
+                        (this->ModelRegistrarAcl::getPassword())
+                );
+                if (r_id.size() == 1)
+                {
+                    this->setId(static_cast<unsigned long long>(r_id[0][0]));
+                }
+            }
+            else
+            {
+                Database::Result r_id = conn.exec_params(
+                    "INSERT INTO registraracl (registrarid, cert, password) VALUES"
+                    " ($1::bigint, $2::text,"
+                    " (SELECT password FROM registraracl WHERE id = $3 AND registrarid = $1))"
+                    " RETURNING id",
+                    Database::query_param_list
+                        (this->ModelRegistrarAcl::getRegistarId())
+                        (this->ModelRegistrarAcl::getCert())
+                        (*password_same_as_acl_id_)
+                );
+                if (r_id.size() == 1)
+                {
+                    this->setId(static_cast<unsigned long long>(r_id[0][0]));
+                }
+            }
+        }
 	}
 	catch (...)
 	{
@@ -700,15 +765,29 @@ public:
 	                    % id);
 		}
 
-
-    	std::ostringstream sql;
-		sql << "DELETE FROM registraracl WHERE registrarid=" << id;
-		conn.exec(sql.str());
-		for (unsigned j = 0; j < acl.size(); j++)
-		{
-			acl[j]->setRegistrarId(id);
-			acl[j]->save();
-		}//for acl
+        std::set<unsigned long long> keep_acl_ids;
+        for (unsigned j = 0; j < acl.size(); j++)
+        {
+            acl[j]->setRegistrarId(id);
+            acl[j]->save();
+            keep_acl_ids.insert(acl[j]->getId());
+        }
+        std::string delete_sql = "DELETE FROM registraracl WHERE registrarid = $1::bigint";
+        Database::query_param_list delete_params(id);
+        if (keep_acl_ids.size())
+        {
+            std::string id_list_sql;
+            for (const auto id : keep_acl_ids)
+            {
+                if (!id_list_sql.empty())
+                {
+                    id_list_sql += ", ";
+                }
+                id_list_sql += "$" + delete_params.add(id) + "::bigint";
+            }
+            delete_sql += " AND id NOT IN (" + id_list_sql + ")";
+        }
+        conn.exec_params(delete_sql, delete_params);
 
 		for (unsigned i = 0; i < actzones.size(); i++)
 		{
