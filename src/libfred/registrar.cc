@@ -772,7 +772,7 @@ public:
             acl[j]->save();
             keep_acl_ids.insert(acl[j]->getId());
         }
-        std::string delete_sql = "DELETE FROM registraracl WHERE registrarid = $1";
+        std::string delete_sql = "DELETE FROM registraracl WHERE registrarid = $1::bigint";
         Database::query_param_list delete_params(id);
         if (keep_acl_ids.size())
         {
