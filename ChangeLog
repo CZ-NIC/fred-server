@@ -1,3 +1,15 @@
+2018-02-01 (2.34.0)
+
+  * transitioned to a newer C++ standard (C++14)
+
+  * epp - registrars' password is stored as hash (pbkdf2 sha512)
+
+  * reimplemented object deletion (object types by name, spread during time argument)
+
+  * reimplemented generation of poll messages
+
+  * repository structure reworked
+
 2017-12-01 (2.33.1)
 
   * epp - fix response code for invalid country code in mailing address (without reason message)

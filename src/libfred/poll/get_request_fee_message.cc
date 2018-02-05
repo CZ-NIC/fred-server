@@ -24,6 +24,7 @@
 
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
+#include <boost/version.hpp>
 
 #include <string>
 
@@ -37,6 +38,16 @@ struct period_to_with_tz_t
     const boost::posix_time::ptime& period_to;
     const std::string& tz;
 };
+
+#ifdef BOOST_VERSION
+#if (BOOST_VERSION < 105600)
+// The (in)equality comparison with boost::none does not require that T be EqualityComparable (fixed in boost-1.56.0)
+inline bool operator==(const boost::optional<period_to_with_tz_t>& optional, boost::none_t)
+{
+    return static_cast<bool>(optional);
+}
+#endif
+#endif
 
 RequestFeeInfoEvent get_request_fee_info_message_impl(
         LibFred::OperationContext& ctx,

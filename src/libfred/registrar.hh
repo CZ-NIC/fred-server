@@ -67,12 +67,15 @@ enum MemberType {
 class ACL
 {
 public:
+  virtual TID getId() const = 0;
+  virtual void setId(TID _id) = 0;
   /// Return MD5 of client SSL certificate for EPP communication
   virtual const std::string& getCertificateMD5() const = 0;
   /// Set MD5 of client SSL certificate for EPP communication
   virtual void setCertificateMD5(const std::string& newCertificateMD5) = 0;
   virtual void setRegistrarId(const TID &_registrar_id) = 0;
   virtual void set_password(const std::string& _plaintext_password) = 0;
+  virtual void set_password_same_as_acl_id(unsigned long long _acl_id) = 0;
 protected:
   /// Protected destructor, object is managed by object Registrar
   virtual ~ACL() { }

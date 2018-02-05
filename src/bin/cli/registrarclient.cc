@@ -122,7 +122,7 @@ RegistrarClient::list()
             std::cout
                 << "\t\t<ACL>\n"
                 << "\t\t\t<cert_md5>" << reg_list->get(i)->getACL(j)->getCertificateMD5() << "</cert_md5>\n"
-                << "\t\t\t<pass>no password available</pass>\n"
+                << "\t\t\t<pass></pass>\n"
                 << "\t\t</ACL>\n";
         }
         std::cout
