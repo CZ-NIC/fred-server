@@ -51,4 +51,20 @@ struct domain_list_impl
   }
 };
 
+/**
+ * \class create_expired_domain_impl
+ * \brief admin client implementation of create_expired_domain
+ */
+struct create_expired_domain_impl
+{
+    void operator()() const
+    {
+        Logging::Context ctx("create_expired_domain_impl");
+        Admin::create_expired_domain(
+            CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientCreateExpiredDomainArgsGrp>()->params
+            );
+        return ;
+    }
+};
+
 #endif

@@ -129,6 +129,8 @@ public:
     void domain_list();
 }; // class DomainClient
 
+void create_expired_domain(const CreateExpiredDomainArgs& params);
+
 } // namespace Admin;
 
 #endif

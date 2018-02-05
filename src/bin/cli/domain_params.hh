@@ -132,4 +132,32 @@ struct DomainListArgs
 
 };//struct DomainListArgs
 
+
+/**
+ * \class CreateExpiredDomainArgs
+ * \brief admin client create_expired_domain params
+ */
+struct CreateExpiredDomainArgs
+{
+    std::string fqdn;
+    std::string registrant;
+    std::string cltrid;
+    bool delete_existing;
+
+    CreateExpiredDomainArgs()
+    : delete_existing(false)
+    {}//ctor
+    CreateExpiredDomainArgs(
+             const std::string& _fqdn
+             , const std::string& _registrant
+             , const std::string& _cltrid
+             , bool _delete_existing
+            )
+    : fqdn(_fqdn)
+    , registrant(_registrant)
+    , cltrid(_cltrid)
+    , delete_existing(_delete_existing)
+    {}//init ctor
+};//struct CreateExpiredDomainArgs
+
 #endif

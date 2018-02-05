@@ -140,6 +140,7 @@ CommandHandlerPtrVector chpv = boost::assign::list_of
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleContactVerificationEnqueueCheckArgsGrp), contact_verification_enqueue_check_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleContactVerificationStartEnqueuedChecksArgsGrp), contact_verification_start_enqueued_checks_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleSendObjectEventNotificationEmailsArgsGrp), send_object_event_notification_emails_impl()))
+    (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientCreateExpiredDomainArgsGrp), create_expired_domain_impl()))
     ;
 
 CommandOptionGroups cog(chpv);
