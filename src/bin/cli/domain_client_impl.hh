@@ -29,6 +29,7 @@
 #include "src/bin/cli/handle_adminclientselection_args.hh"
 #include "src/util/log/context.hh"
 #include "src/bin/cli/domainclient.hh"
+#include "src/bin/corba/logger_client_impl.hh"
 
 /**
  * \class domain_list_impl
@@ -60,7 +61,27 @@ struct create_expired_domain_impl
     void operator()() const
     {
         Logging::Context ctx("create_expired_domain_impl");
+
+        FakedArgs orb_fa = CfgArgGroups::instance()->fa;
+        HandleCorbaNameServiceArgsGrp* ns_args_ptr = CfgArgGroups::instance()->
+                   get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>();
+
+        CorbaContainer::set_instance(
+                orb_fa.get_argc(),
+                orb_fa.get_argv(),
+                ns_args_ptr->get_nameservice_host(),
+                ns_args_ptr->get_nameservice_port(),
+                ns_args_ptr->get_nameservice_context()
+                );
+
+        std::unique_ptr<LibFred::Logger::LoggerClient> logger_client(
+                new LibFred::Logger::LoggerCorbaClientImpl());
+        if (!logger_client.get()) {
+            throw std::runtime_error("unable to get request logger reference");
+        }
+
         Admin::create_expired_domain(
+            *(logger_client.get()),
             CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientCreateExpiredDomainArgsGrp>()->params
             );
         return ;

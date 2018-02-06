@@ -18,18 +18,18 @@
 
 #include <utility>
 
+#include <boost/date_time/gregorian/gregorian.hpp>
+
 #include "src/bin/cli/commonclient.hh"
 #include "src/bin/cli/domainclient.hh"
+#include "src/libfred/opcontext.hh"
 #include "src/libfred/registry.hh"
+#include "src/libfred/registrable_object/domain/create_domain.hh"
+#include "src/libfred/registrable_object/domain/delete_domain.hh"
 #include "src/util/corba_wrapper_decl.hh"
 #include "src/util/cfg/faked_args.hh"
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/handle_corbanameservice_args.hh"
-
-#include "src/libfred/registrable_object/domain/create_domain.hh"
-#include "src/libfred/registrable_object/domain/delete_domain.hh"
-#include "src/libfred/opcontext.hh"
-#include <boost/date_time/gregorian/gregorian.hpp>
 
 namespace Admin {
 
@@ -184,14 +184,13 @@ DomainClient::domain_list()
 }
 
 void
-create_expired_domain(const CreateExpiredDomainArgs& params)
+create_expired_domain(LibFred::Logger::LoggerClient& _logger_client, const CreateExpiredDomainArgs& params)
 {
 
     LibFred::OperationContextCreator ctx;
 
-    Database::Result registrar_res = ctx.get_conn().exec_params(
-            "SELECT handle FROM registrar WHERE system = $1::bool"
-            , Database::query_param_list(true));
+    Database::Result registrar_res = ctx.get_conn().exec(
+            "SELECT handle FROM registrar WHERE system = True");
     if (registrar_res.size() != 1)
     {
         boost::format msg("System registrar is not found in database.");
@@ -200,8 +199,8 @@ create_expired_domain(const CreateExpiredDomainArgs& params)
     std::string registrar = static_cast<std::string>(registrar_res[0][0]);
 
     Database::Result registrant_res = ctx.get_conn().exec_params(
-            "SELECT id FROM object_registry WHERE type = 1 AND name = $1::text AND erdate is NULL"
-            , Database::query_param_list(params.registrant));
+            "SELECT id FROM object_registry WHERE type = 1 AND name = $1::text AND erdate is NULL",
+            Database::query_param_list(params.registrant));
     if (registrant_res.size() != 1)
     {
         boost::format msg("Contact with handle %1% not found in database.");
@@ -210,8 +209,8 @@ create_expired_domain(const CreateExpiredDomainArgs& params)
     }
 
     Database::Result fqdn_res = ctx.get_conn().exec_params(
-            "SELECT name FROM object_registry WHERE type = 3 AND name = $1::text AND erdate is NULL"
-            , Database::query_param_list(params.fqdn));
+            "SELECT id FROM object_registry WHERE type = 3 AND name = $1::text AND erdate is NULL",
+            Database::query_param_list(params.fqdn));
     if (fqdn_res.size() == 1)
     {
         if (params.delete_existing)
