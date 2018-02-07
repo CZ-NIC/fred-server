@@ -184,10 +184,22 @@ DomainClient::domain_list()
 }
 
 void
-create_expired_domain(LibFred::Logger::LoggerClient& _logger_client, const CreateExpiredDomainArgs& params)
+create_expired_domain(LibFred::Logger::LoggerClient& _logger_client, const CreateExpiredDomainArgs& _params)
 {
 
     LibFred::OperationContextCreator ctx;
+
+    unsigned long long req_id = _logger_client.createRequest("", "Admin", "",
+            boost::assign::list_of
+                (LibFred::Logger::RequestProperty("command", "create_expired_domain", false))
+                (LibFred::Logger::RequestProperty("handle", _params.fqdn, true))
+                (LibFred::Logger::RequestProperty("registrant", _params.registrant, true))
+                (LibFred::Logger::RequestProperty("cltrid", _params.cltrid, true)),
+            LibFred::Logger::ObjectReferences(),
+            "CreateExpiredDomain", 0);
+    if (req_id == 0) {
+        throw std::runtime_error("unable to log create expired domain request");
+    }
 
     Database::Result registrar_res = ctx.get_conn().exec(
             "SELECT handle FROM registrar WHERE system = True");
@@ -199,45 +211,65 @@ create_expired_domain(LibFred::Logger::LoggerClient& _logger_client, const Creat
     std::string registrar = static_cast<std::string>(registrar_res[0][0]);
 
     Database::Result registrant_res = ctx.get_conn().exec_params(
-            "SELECT id FROM object_registry WHERE type = 1 AND name = $1::text AND erdate is NULL",
-            Database::query_param_list(params.registrant));
+            "SELECT id FROM object_registry WHERE type = get_object_type_id('contact') AND name = $1::text AND erdate is NULL",
+            Database::query_param_list(_params.registrant));
     if (registrant_res.size() != 1)
     {
         boost::format msg("Contact with handle %1% not found in database.");
-        msg % params.registrant;
+        msg % _params.registrant;
         throw std::runtime_error(msg.str());
     }
 
     Database::Result fqdn_res = ctx.get_conn().exec_params(
-            "SELECT id FROM object_registry WHERE type = 3 AND name = $1::text AND erdate is NULL",
-            Database::query_param_list(params.fqdn));
+            "SELECT id FROM object_registry WHERE type = get_object_type_id('domain') AND name = $1::text AND erdate is NULL",
+            Database::query_param_list(_params.fqdn));
+
+    long long unsigned int deleted_domain_id = 0;
     if (fqdn_res.size() == 1)
     {
-        if (params.delete_existing)
+        if (_params.delete_existing)
         {
-            LibFred::DeleteDomainByFqdn(params.fqdn).exec(ctx);
+            LibFred::DeleteDomainByFqdn(_params.fqdn).exec(ctx);
+            deleted_domain_id = static_cast<long long unsigned int>(fqdn_res[0][0]);
         }
         else
         {
             boost::format msg("Domain with fqdn %1% already exists in database.");
-            msg % params.fqdn;
+            msg % _params.fqdn;
             throw std::runtime_error(msg.str());
         }
     }
 
     boost::gregorian::date current_date(boost::gregorian::day_clock::local_day());
+    LibFred::CreateDomain::Result result;
     try
     {
-        LibFred::CreateDomain(
-            params.fqdn,
+        result = LibFred::CreateDomain(
+            _params.fqdn,
             registrar,
-            params.registrant).set_expiration_date(current_date).exec(ctx);
+            _params.registrant).set_expiration_date(current_date).exec(ctx);
     }
-    catch (std::exception &ex)
+    catch (std::exception&)
     {
         throw std::runtime_error("domain create failed");
     }
     ctx.commit_transaction();
+
+    if (req_id)
+    {
+        LibFred::Logger::RequestProperties properties;
+        LibFred::Logger::ObjectReferences references;
+        properties.push_back(LibFred::Logger::RequestProperty("opTRID", Util::make_svtrid(req_id), false));
+        if (deleted_domain_id > 0)
+        {
+            references.push_back(LibFred::Logger::ObjectReference("domain", deleted_domain_id));
+        }
+        references.push_back(LibFred::Logger::ObjectReference("domain", result.create_object_result.object_id));
+        _logger_client.closeRequest(req_id, "Admin", "",
+                properties,
+                references,
+                "Success", 0);
+    }
 }
 
 } // namespace Admin;
