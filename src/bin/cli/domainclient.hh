@@ -135,6 +135,15 @@ void create_expired_domain(
         const CreateExpiredDomainArgs& params
         );
 
+void
+logger_create_expired_domain_close(
+        LibFred::Logger::LoggerClient& _logger_client,
+        const std::string& _result,
+        const unsigned long long _req_id,
+        const unsigned long long _deleted_domain_id,
+        const unsigned long long _new_domain_id
+        );
+
 } // namespace Admin;
 
 #endif

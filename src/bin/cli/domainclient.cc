@@ -188,6 +188,8 @@ create_expired_domain(LibFred::Logger::LoggerClient& _logger_client, const Creat
 {
 
     LibFred::OperationContextCreator ctx;
+    unsigned long long deleted_domain_id = 0;
+    unsigned long long new_domain_id = 0;
 
     unsigned long long req_id = _logger_client.createRequest("", "Admin", "",
             boost::assign::list_of
@@ -198,6 +200,7 @@ create_expired_domain(LibFred::Logger::LoggerClient& _logger_client, const Creat
             LibFred::Logger::ObjectReferences(),
             "CreateExpiredDomain", 0);
     if (req_id == 0) {
+        logger_create_expired_domain_close(_logger_client, "Fail", req_id, deleted_domain_id, new_domain_id);
         throw std::runtime_error("unable to log create expired domain request");
     }
 
@@ -206,6 +209,7 @@ create_expired_domain(LibFred::Logger::LoggerClient& _logger_client, const Creat
     if (registrar_res.size() != 1)
     {
         boost::format msg("System registrar is not found in database.");
+        logger_create_expired_domain_close(_logger_client, "Fail", req_id, deleted_domain_id, new_domain_id);
         throw std::runtime_error(msg.str());
     }
     std::string registrar = static_cast<std::string>(registrar_res[0][0]);
@@ -217,6 +221,7 @@ create_expired_domain(LibFred::Logger::LoggerClient& _logger_client, const Creat
     {
         boost::format msg("Contact with handle %1% not found in database.");
         msg % _params.registrant;
+        logger_create_expired_domain_close(_logger_client, "Fail", req_id, deleted_domain_id, new_domain_id);
         throw std::runtime_error(msg.str());
     }
 
@@ -224,18 +229,18 @@ create_expired_domain(LibFred::Logger::LoggerClient& _logger_client, const Creat
             "SELECT id FROM object_registry WHERE type = get_object_type_id('domain') AND name = $1::text AND erdate is NULL",
             Database::query_param_list(_params.fqdn));
 
-    long long unsigned int deleted_domain_id = 0;
     if (fqdn_res.size() == 1)
     {
         if (_params.delete_existing)
         {
             LibFred::DeleteDomainByFqdn(_params.fqdn).exec(ctx);
-            deleted_domain_id = static_cast<long long unsigned int>(fqdn_res[0][0]);
+            deleted_domain_id = static_cast<unsigned long long>(fqdn_res[0][0]);
         }
         else
         {
             boost::format msg("Domain with fqdn %1% already exists in database.");
             msg % _params.fqdn;
+            logger_create_expired_domain_close(_logger_client, "Fail", req_id, deleted_domain_id, new_domain_id);
             throw std::runtime_error(msg.str());
         }
     }
@@ -251,25 +256,36 @@ create_expired_domain(LibFred::Logger::LoggerClient& _logger_client, const Creat
     }
     catch (std::exception&)
     {
+        logger_create_expired_domain_close(_logger_client, "Fail", req_id, deleted_domain_id, new_domain_id);
         throw std::runtime_error("domain create failed");
     }
     ctx.commit_transaction();
+    logger_create_expired_domain_close(_logger_client, "Success", req_id, deleted_domain_id, result.create_object_result.object_id);
+}
 
-    if (req_id)
+void
+logger_create_expired_domain_close(
+        LibFred::Logger::LoggerClient& _logger_client,
+        const std::string& _result,
+        const unsigned long long _req_id,
+        const unsigned long long _deleted_domain_id,
+        const unsigned long long _new_domain_id)
+{
+    LibFred::Logger::RequestProperties properties;
+    LibFred::Logger::ObjectReferences references;
+    properties.push_back(LibFred::Logger::RequestProperty("opTRID", Util::make_svtrid(_req_id), false));
+    if (_deleted_domain_id > 0)
     {
-        LibFred::Logger::RequestProperties properties;
-        LibFred::Logger::ObjectReferences references;
-        properties.push_back(LibFred::Logger::RequestProperty("opTRID", Util::make_svtrid(req_id), false));
-        if (deleted_domain_id > 0)
-        {
-            references.push_back(LibFred::Logger::ObjectReference("domain", deleted_domain_id));
-        }
-        references.push_back(LibFred::Logger::ObjectReference("domain", result.create_object_result.object_id));
-        _logger_client.closeRequest(req_id, "Admin", "",
-                properties,
-                references,
-                "Success", 0);
+        references.push_back(LibFred::Logger::ObjectReference("domain", _deleted_domain_id));
     }
+    if (_new_domain_id > 0)
+    {
+        references.push_back(LibFred::Logger::ObjectReference("domain", _new_domain_id));
+    }
+    _logger_client.closeRequest(_req_id, "Admin", "",
+            properties,
+            references,
+            _result, 0);
 }
 
 } // namespace Admin;
