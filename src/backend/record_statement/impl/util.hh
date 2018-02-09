@@ -16,30 +16,19 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- *  registry record statement exceptions
- */
+#ifndef UTIL_HH_7C8A853ECD8048A0A591D2604479C2CE
+#define UTIL_HH_7C8A853ECD8048A0A591D2604479C2CE
 
-#include "src/backend/record_statement/exceptions.hh"
+#include "src/libfred/opcontext.hh"
 
-namespace Registry {
+namespace LibFred {
 namespace RecordStatement {
+namespace Impl {
 
-const char* InternalServerError::what()const noexcept
-{
-    return "internal server error";
-}
+bool is_delete_candidate(LibFred::OperationContext& _ctx, unsigned long long _object_id);
 
-const char* ObjectNotFound::what()const noexcept
-{
-    return "registry object with specified ID does not exist";
-}
+} // namespace LibFred::RecordStatement::Impl
+} // namespace LibFred::RecordStatement
+} // namespace LibFred
 
-const char* ObjectDeleteCandidate::what()const noexcept
-{
-    return "registry object with specified ID is a delete candidate";
-}
-
-} // namespace Registry::RecordStatement
-} // namespace Registry
+#endif

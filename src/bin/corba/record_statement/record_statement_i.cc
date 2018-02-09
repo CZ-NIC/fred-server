@@ -84,6 +84,10 @@ PdfBuffer* Server_i::domain_printout(const char* _fqdn, ::CORBA::Boolean _is_pri
 
         return wrap_pdf_buffer(pdf_content)._retn();
     }
+    catch (const ObjectDeleteCandidate&)
+    {
+        throw OBJECT_DELETE_CANDIDATE();
+    }
     catch (const ObjectNotFound&)
     {
         throw OBJECT_NOT_FOUND();
@@ -102,6 +106,10 @@ PdfBuffer* Server_i::nsset_printout(const char* handle)
                 LibFred::Corba::unwrap_string_from_const_char_ptr(handle));
 
         return wrap_pdf_buffer(pdf_content)._retn();
+    }
+    catch (const ObjectDeleteCandidate&)
+    {
+        throw OBJECT_DELETE_CANDIDATE();
     }
     catch (const ObjectNotFound&)
     {
@@ -122,6 +130,10 @@ PdfBuffer* Server_i::keyset_printout(const char* handle)
 
         return wrap_pdf_buffer(pdf_content)._retn();
     }
+    catch (const ObjectDeleteCandidate&)
+    {
+        throw OBJECT_DELETE_CANDIDATE();
+    }
     catch (const ObjectNotFound&)
     {
         throw OBJECT_NOT_FOUND();
@@ -141,6 +153,10 @@ PdfBuffer* Server_i::contact_printout(const char* _handle, ::CORBA::Boolean _is_
                 : impl_->contact_printout<Purpose::public_printout>(LibFred::Corba::unwrap_string_from_const_char_ptr(_handle));
 
         return wrap_pdf_buffer(pdf_content)._retn();
+    }
+    catch (const ObjectDeleteCandidate&)
+    {
+        throw OBJECT_DELETE_CANDIDATE();
     }
     catch (const ObjectNotFound&)
     {
@@ -254,6 +270,10 @@ void Server_i::send_domain_printout(const char* fqdn)
     {
         impl_->send_domain_printout<Purpose::private_printout>(LibFred::Corba::unwrap_string_from_const_char_ptr(fqdn));
     }
+    catch (const ObjectDeleteCandidate&)
+    {
+        throw OBJECT_DELETE_CANDIDATE();
+    }
     catch (const ObjectNotFound&)
     {
         throw OBJECT_NOT_FOUND();
@@ -269,6 +289,10 @@ void Server_i::send_nsset_printout(const char* handle)
     try
     {
         impl_->send_nsset_printout(LibFred::Corba::unwrap_string_from_const_char_ptr(handle));
+    }
+    catch (const ObjectDeleteCandidate&)
+    {
+        throw OBJECT_DELETE_CANDIDATE();
     }
     catch (const ObjectNotFound&)
     {
@@ -286,6 +310,10 @@ void Server_i::send_keyset_printout(const char* handle)
     {
         impl_->send_keyset_printout(LibFred::Corba::unwrap_string_from_const_char_ptr(handle));
     }
+    catch (const ObjectDeleteCandidate&)
+    {
+        throw OBJECT_DELETE_CANDIDATE();
+    }
     catch (const ObjectNotFound&)
     {
         throw OBJECT_NOT_FOUND();
@@ -301,6 +329,10 @@ void Server_i::send_contact_printout(const char* handle)
     try
     {
         impl_->send_contact_printout<Purpose::private_printout>(LibFred::Corba::unwrap_string_from_const_char_ptr(handle));
+    }
+    catch (const ObjectDeleteCandidate&)
+    {
+        throw OBJECT_DELETE_CANDIDATE();
     }
     catch (const ObjectNotFound&)
     {

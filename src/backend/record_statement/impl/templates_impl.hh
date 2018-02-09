@@ -19,12 +19,13 @@
 #ifndef TEMPLATES_IMPL_HH_06DE732BD7B24E81A9587A9C789F0E54
 #define TEMPLATES_IMPL_HH_06DE732BD7B24E81A9587A9C789F0E54
 
-#include "src/backend/record_statement/impl/record_statement_xml.hh"
-#include "src/backend/record_statement/impl/factory.hh"
 #include "src/backend/record_statement/exceptions.hh"
-
+#include "src/backend/record_statement/impl/factory.hh"
+#include "src/backend/record_statement/impl/record_statement_xml.hh"
+#include "src/backend/record_statement/impl/util.hh"
+#include "src/libfred/object/get_id_of_registered.hh"
+#include "src/libfred/opcontext.hh"
 #include "src/libfred/zone/zone.hh"
-
 #include "src/util/tz/utc.hh"
 
 #include <boost/algorithm/string/join.hpp>
@@ -507,6 +508,11 @@ Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::domain_printou
         const std::string& _fqdn,
         Registry::RecordStatement::Purpose::Enum _purpose)const
 {
+    if (is_delete_candidate(_ctx, LibFred::get_id_of_registered<LibFred::Object_Type::domain>(_ctx, _fqdn)))
+    {
+        throw Registry::RecordStatement::ObjectDeleteCandidate();
+    }
+
     std::stringstream xml_document;
     xml_document << domain_printout_xml_with_data<RegistryTimeZone>(
             _ctx,
@@ -524,6 +530,11 @@ Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::nsset_printout
         LibFred::OperationContext& _ctx,
         const std::string& _handle)const
 {
+    if (is_delete_candidate(_ctx, LibFred::get_id_of_registered<LibFred::Object_Type::nsset>(_ctx, _handle)))
+    {
+        throw Registry::RecordStatement::ObjectDeleteCandidate();
+    }
+
     std::stringstream xml_document;
     xml_document << nsset_printout_xml_with_data<RegistryTimeZone>(_ctx, _handle).xml;
 
@@ -538,6 +549,11 @@ Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::keyset_printou
         LibFred::OperationContext& _ctx,
         const std::string& _handle)const
 {
+    if (is_delete_candidate(_ctx, LibFred::get_id_of_registered<LibFred::Object_Type::keyset>(_ctx, _handle)))
+    {
+        throw Registry::RecordStatement::ObjectDeleteCandidate();
+    }
+
     std::stringstream xml_document;
     xml_document << keyset_printout_xml_with_data<RegistryTimeZone>(_ctx, _handle).xml;
 
@@ -553,6 +569,12 @@ Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::contact_printo
         const std::string& _handle,
         Registry::RecordStatement::Purpose::Enum _purpose)const
 {
+
+    if (is_delete_candidate(_ctx, LibFred::get_id_of_registered<LibFred::Object_Type::contact>(_ctx, _handle)))
+    {
+        throw Registry::RecordStatement::ObjectDeleteCandidate();
+    }
+
     std::stringstream xml_document;
     xml_document << contact_printout_xml_with_data<RegistryTimeZone>(
             _ctx,
@@ -750,6 +772,11 @@ void ImplementationWithin<T>::send_domain_printout(
         const std::string& _fqdn,
         Registry::RecordStatement::Purpose::Enum _purpose)const
 {
+    if (is_delete_candidate(_ctx, LibFred::get_id_of_registered<LibFred::Object_Type::domain>(_ctx, _fqdn)))
+    {
+        throw Registry::RecordStatement::ObjectDeleteCandidate();
+    }
+
     const XmlWithData printout_data =
             domain_printout_xml_with_data<RegistryTimeZone>(
                     _ctx,
@@ -806,6 +833,11 @@ void ImplementationWithin<T>::send_nsset_printout(
         LibFred::OperationContext& _ctx,
         const std::string& _handle)const
 {
+    if (is_delete_candidate(_ctx, LibFred::get_id_of_registered<LibFred::Object_Type::nsset>(_ctx, _handle)))
+    {
+        throw Registry::RecordStatement::ObjectDeleteCandidate();
+    }
+
     const XmlWithData printout_data =
             nsset_printout_xml_with_data<RegistryTimeZone>(
                     _ctx,
@@ -863,6 +895,11 @@ void ImplementationWithin<T>::send_keyset_printout(
         LibFred::OperationContext& _ctx,
         const std::string& _handle)const
 {
+    if (is_delete_candidate(_ctx, LibFred::get_id_of_registered<LibFred::Object_Type::keyset>(_ctx, _handle)))
+    {
+        throw Registry::RecordStatement::ObjectDeleteCandidate();
+    }
+
     const XmlWithData printout_data =
             keyset_printout_xml_with_data<RegistryTimeZone>(
                     _ctx,
@@ -921,6 +958,11 @@ void ImplementationWithin<T>::send_contact_printout(
         const std::string& _handle,
         Registry::RecordStatement::Purpose::Enum _purpose)const
 {
+    if (is_delete_candidate(_ctx, LibFred::get_id_of_registered<LibFred::Object_Type::contact>(_ctx, _handle)))
+    {
+        throw Registry::RecordStatement::ObjectDeleteCandidate();
+    }
+
     const XmlWithData printout_data =
             contact_printout_xml_with_data<RegistryTimeZone>(
                     _ctx,

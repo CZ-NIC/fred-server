@@ -55,6 +55,16 @@ struct ObjectNotFound:std::exception
     const char* what()const noexcept;
 };
 
+struct ObjectDeleteCandidate:std::exception
+{
+    /**
+     * Returns failure description.
+     * @return string with the general cause of the current error.
+     */
+    const char* what()const noexcept;
+};
+
+
 } // namespace Registry::RecordStatement
 } // namespace Registry
 

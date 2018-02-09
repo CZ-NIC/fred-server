@@ -2386,6 +2386,8 @@ src_bin_corba_record_statement_fred_rsifd_SOURCES = \
 		src/backend/record_statement/impl/factory.hh \
 		src/backend/record_statement/impl/utc_impl.cc \
 		src/backend/record_statement/impl/europe_prague_impl.cc \
+		src/backend/record_statement/impl/util.cc \
+		src/backend/record_statement/impl/util.hh \
 		src/bin/corba/nameservice.cc \
 		src/bin/corba/record_statement/record_statement_i.cc \
 		src/bin/corba/record_statement/record_statement_i.hh \
@@ -3520,6 +3522,8 @@ test_backend_test_record_statement_SOURCES = \
 		src/backend/record_statement/impl/factory.hh \
 		src/backend/record_statement/impl/utc_impl.cc \
 		src/backend/record_statement/impl/europe_prague_impl.cc \
+		src/backend/record_statement/impl/util.cc \
+		src/backend/record_statement/impl/util.hh \
 		test/backend/record_statement/util.hh \
 		test/backend/record_statement/fixture.hh \
 		test/backend/record_statement/main.cc \
