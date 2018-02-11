@@ -163,7 +163,7 @@ namespace  Admin {
                     "check_id "
                     "JOIN contact_check_message_map  AS c_ch_m_map   ON check_id.id = c_ch_m_map.contact_check_id "
                     "JOIN mail_archive               AS m_a          ON c_ch_m_map.mail_archive_id = m_a.id "
-                    "JOIN mail_type                  AS m_t          ON m_a.mailtype = m_t.id "
+                    "JOIN mail_type                  AS m_t          ON m_a.mail_type_id = m_t.id "
                 "UNION "
                 "SELECT "
                     "c_ch_m_map.message_archive_id   AS id_, "

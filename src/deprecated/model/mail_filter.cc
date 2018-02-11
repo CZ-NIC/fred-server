@@ -25,7 +25,7 @@ Value<Database::ID>& MailImpl::addId() {
 }
 
 Value<int>& MailImpl::addType() {
-  Value<int> *tmp = new Value<int>(Column("mailtype", joinMailTable()));
+  Value<int> *tmp = new Value<int>(Column("mail_type_id", joinMailTable()));
   add(tmp);
   tmp->setName("Type");
   return *tmp;
