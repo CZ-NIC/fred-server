@@ -144,7 +144,7 @@ public:
 
     Database::SelectQuery object_info_query;
     object_info_query.select() << "t_1.id, t_1.mailtype, t_1.crdate, t_1.moddate, "
-                               << "t_1.status, t_1.message, t_2.name";
+                               << "t_1.status, jsonb_pretty(t_1.message_params::jsonb), t_2.name";
     object_info_query.from() << getTempTableName() << " tmp "
                              << "JOIN mail_archive t_1 ON (tmp.id = t_1.id) "
                              << "JOIN mail_type t_2 ON (t_1.mailtype = t_2.id)";

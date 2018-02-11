@@ -62,8 +62,9 @@ Value<int>& MailImpl::addAttempt() {
 }
 
 Value<std::string>& MailImpl::addMessage() {
-  Value<std::string> *tmp = new Value<std::string>(Column("message", joinMailTable()),
-                                                   SQL_OP_LIKE);
+  Column column = Column("message_params", joinMailTable());
+  column.castTo("text");
+  Value<std::string> *tmp = new Value<std::string>(column, SQL_OP_LIKE);
   add(tmp);
   tmp->setName("Message");
   return *tmp;
