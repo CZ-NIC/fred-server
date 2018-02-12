@@ -25,7 +25,7 @@ Value<Database::ID>& MailImpl::addId() {
 }
 
 Value<int>& MailImpl::addType() {
-  Value<int> *tmp = new Value<int>(Column("mailtype", joinMailTable()));
+  Value<int> *tmp = new Value<int>(Column("mail_type_id", joinMailTable()));
   add(tmp);
   tmp->setName("Type");
   return *tmp;
@@ -62,8 +62,9 @@ Value<int>& MailImpl::addAttempt() {
 }
 
 Value<std::string>& MailImpl::addMessage() {
-  Value<std::string> *tmp = new Value<std::string>(Column("message", joinMailTable()),
-                                                   SQL_OP_LIKE);
+  Column column = Column("message_params", joinMailTable());
+  column.castTo("text");
+  Value<std::string> *tmp = new Value<std::string>(column, SQL_OP_LIKE);
   add(tmp);
   tmp->setName("Message");
   return *tmp;

@@ -392,7 +392,7 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
                 " join public_request_auth pra on pr.id = pra.id "
                 " join public_request_messages_map prmm on prmm.public_request_id = pr.id "
                 " join mail_archive ma on ma.id = prmm.mail_archive_id "
-                " join mail_type mt on mt.id = ma.mailtype "
+                " join mail_type mt on mt.id = ma.mail_type_id "
                 " where pra.identification = $1::text and eprt.name = $2::text "
                 " and mt.name = 'conditional_contact_identification' "
             , Database::query_param_list(another_request_id)
@@ -713,7 +713,7 @@ public:
                         " join public_request_auth pra on pr.id = pra.id "
                         " join public_request_messages_map prmm on prmm.public_request_id = pr.id "
                         " join mail_archive ma on ma.id = prmm.mail_archive_id "
-                        " join mail_type mt on mt.id = ma.mailtype "
+                        " join mail_type mt on mt.id = ma.mail_type_id "
                         " where pra.identification = $1::text and eprt.name = $2::text "
                         " and mt.name = 'conditional_contact_identification' "
                     , Database::query_param_list(another_request_id)
