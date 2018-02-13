@@ -63,6 +63,7 @@
 #include "src/util/cfg/handle_database_args.hh"
 #include "src/util/cfg/handle_threadgroup_args.hh"
 #include "src/util/cfg/handle_corbanameservice_args.hh"
+#include "src/util/cfg/handle_createexpireddomain_args.hh"
 #include "src/bin/cli/handle_adminclientselection_args.hh"
 #include "src/util/cfg/handle_registry_args.hh"
 #include "src/util/cfg/handle_sms_args.hh"

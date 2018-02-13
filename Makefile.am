@@ -178,6 +178,7 @@ noinst_HEADERS = \
 		src/util/cfg/validate_args.hh \
 		src/util/cfg/handle_sms_args.hh \
 		src/util/cfg/handle_contactverification_args.hh \
+		src/util/cfg/handle_createexpireddomain_args.hh \
 		src/util/cfg/handle_tests_args.hh \
 		src/util/optys/handle_optys_mail_args.hh \
 		src/util/cfg/handle_akmd_args.hh \
@@ -332,6 +333,7 @@ noinst_LIBRARIES = \
 		src/bin/corba/libcorba_conversion_test.a \
 		src/backend/admin/contact/verification/libadmin_contact_verification.a \
 		src/backend/admin/notification/libadmin_notification.a \
+		src/backend/admin/domain/libadmin_create_expired_domain.a \
 		src/epp/impl/registraracl/libauthentic_registrar.a
 
 
@@ -1256,6 +1258,15 @@ src_backend_admin_notification_libadmin_notification_a_SOURCES = \
 #
 # src/admin/notification/libadmin_notification.a
 
+# src/admin/domain/libadmin_create_expired_domain.a
+#
+src_backend_admin_domain_libadmin_create_expired_domain_a_SOURCES = \
+		src/backend/admin/domain/create_expired_domain.hh \
+		src/backend/admin/domain/create_expired_domain.cc
+#
+# src/admin/domain/libadmin_create_expired_domain.a
+
+
 BUILT_SOURCES = \
 		src/bin/corba/MessagesSK.cc \
 		src/bin/corba/MojeIDSK.cc \
@@ -1994,6 +2005,8 @@ src_bin_corba_fred_adifd_SOURCES = \
 		src/bin/corba/notification/notification_corba_conversion.cc \
 		src/backend/admin/notification/notification.hh \
 		src/backend/admin/notification/notification.cc \
+		src/backend/admin/domain/create_expired_domain.hh \
+		src/backend/admin/domain/create_expired_domain.cc \
 		src/util/corba_conversion.hh \
 		src/util/corba_conversion.cc
 
@@ -2509,7 +2522,9 @@ src_bin_cli_fred_admin_SOURCES = \
 		src/util/optys/download_client.hh \
 		src/util/optys/download_client.cc \
 		src/backend/admin/notification/notification.hh \
-		src/backend/admin/notification/notification.cc
+		src/backend/admin/notification/notification.cc \
+		src/backend/admin/domain/create_expired_domain.hh \
+		src/backend/admin/domain/create_expired_domain.cc
 
 src_bin_cli_fred_admin_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
@@ -2782,6 +2797,7 @@ test_backend_test_admin_notification_LDFLAGS = \
 
 test_backend_test_admin_notification_LDADD = \
 		src/backend/admin/notification/libadmin_notification.a \
+		src/backend/admin/domain/libadmin_create_expired_domain.a \
 		src/bin/corba/libcorba.a \
 		src/libfred/libfred.a \
 		src/util/log/liblog.a \
@@ -3034,6 +3050,7 @@ test_test_server_LDADD = \
 		src/libfred/public_request/libpublic_request.a \
 		src/backend/admin/contact/verification/libadmin_contact_verification.a \
 		src/backend/admin/notification/libadmin_notification.a \
+		src/backend/admin/domain/libadmin_create_expired_domain.a \
 		src/libfred/libfred.a \
 		src/epp/impl/registraracl/libauthentic_registrar.a \
 		src/util/libpassword_storage.a \

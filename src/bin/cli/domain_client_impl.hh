@@ -26,10 +26,12 @@
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/handle_database_args.hh"
 #include "src/util/cfg/handle_corbanameservice_args.hh"
+#include "src/util/cfg/handle_createexpireddomain_args.hh"
 #include "src/bin/cli/handle_adminclientselection_args.hh"
 #include "src/util/log/context.hh"
 #include "src/bin/cli/domainclient.hh"
 #include "src/bin/corba/logger_client_impl.hh"
+#include "src/backend/admin/domain/create_expired_domain.hh"
 
 /**
  * \class domain_list_impl
@@ -76,14 +78,14 @@ struct create_expired_domain_impl
 
         std::unique_ptr<LibFred::Logger::LoggerClient> logger_client(
                 new LibFred::Logger::LoggerCorbaClientImpl());
+
         if (!logger_client.get()) {
             throw std::runtime_error("unable to get request logger reference");
         }
 
-        Admin::create_expired_domain(
-            *(logger_client.get()),
-            CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientCreateExpiredDomainArgsGrp>()->params
-            );
+        const auto params = CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientCreateExpiredDomainArgsGrp>()->params;
+        auto registrar_handle = CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCreateExpiredDomainArgs>()->registrar_handle;
+        Admin::Domain::create_expired_domain(*(logger_client.get()), params.fqdn, params.registrant, params.cltrid, params.delete_existing, registrar_handle);
         return ;
     }
 };

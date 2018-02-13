@@ -2633,20 +2633,20 @@ class HandleAdminClientCreateExpiredDomainArgsGrp : public HandleCommandGrpArgs
                 ("create_expired_domain", "create expired domain")
                 ("fqdn", boost::program_options
                     ::value<Checked::string>()->required()
-                        ->notifier(save_arg<std::string>(params.fqdn))
-                    ,"fully qualified domain name is domain object handle")
+                        ->notifier(save_arg<std::string>(params.fqdn)),
+                    "fully qualified domain name is domain object handle")
                 ("registrant", boost::program_options
                     ::value<Checked::string>()->required()
-                        ->notifier(save_arg<std::string>(params.registrant))
-                    , "registrant")
+                        ->notifier(save_arg<std::string>(params.registrant)),
+                    "registrant")
                 ("cltrid", boost::program_options
                     ::value<Checked::string>()->required()
-                        ->notifier(save_arg<std::string>(params.cltrid))
-                    , "cltrid")
+                        ->notifier(save_arg<std::string>(params.cltrid)),
+                    "cltrid")
                 ("delete_existing", boost::program_options
                     ::value<bool>()->zero_tokens()
-                        ->notifier(save_arg<bool>(params.delete_existing))
-                    , "delete existing domain")
+                        ->notifier(save_arg<bool>(params.delete_existing)),
+                    "delete existing domain")
                 ;
             return cfg_opts;
         }//get_options_description

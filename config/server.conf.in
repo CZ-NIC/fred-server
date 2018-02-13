@@ -200,6 +200,12 @@ hostname = demo.contactverification.cz
 demo_mode = false
 
 ###
+### Create expired domain ADIFD settings
+###
+[create_expired_domain]
+registrar_handle = REG-FRED_C
+
+###
 ### DBIFD specific settings
 ###
 [domain_browser]
