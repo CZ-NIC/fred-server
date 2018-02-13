@@ -165,11 +165,14 @@ HandlerGrpVector registry_gv = boost::assign::list_of
 HandlerGrpVector sms_gv = boost::assign::list_of
         (HandleGrpArgsPtr(
                 new HandleSmsArgsGrp));
+HandlerGrpVector create_expired_domain_gv = boost::assign::list_of
+        (HandleGrpArgsPtr(
+                new HandleCreateExpiredDomainArgsGrp));
 
 HandlerPtrGrid global_hpg = gv_list
     (help_gv)(help_dates_gv)
     .addCommandOptions(cog)
-    (config_gv)(loging_gv)(database_gv)(corbans_gv)(registry_gv)(sms_gv)
+    (config_gv)(loging_gv)(database_gv)(corbans_gv)(registry_gv)(sms_gv)(create_expired_domain_gv)
     ;
 
 

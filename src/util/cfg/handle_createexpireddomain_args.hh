@@ -62,4 +62,29 @@ public:
     }//handle
 };
 
+/**
+ * \class HandleCreateExpiredDomainArgsGrp
+ * \brief corba nameservice options handler with option groups
+ */
+
+class HandleCreateExpiredDomainArgsGrp : public HandleGrpArgs
+                            , private HandleCreateExpiredDomainArgs
+{
+public:
+    std::shared_ptr<boost::program_options::options_description>
+        get_options_description()
+    {
+        return HandleCreateExpiredDomainArgs::get_options_description();
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        HandleCreateExpiredDomainArgs::handle(argc, argv, fa);
+        return option_group_index;
+    }//handle
+
+    const std::string& get_registrar_handle()
+        {return HandleCreateExpiredDomainArgs::registrar_handle;}
+
+};//class HandleCreateExpiredDomainArgsGrp
 #endif

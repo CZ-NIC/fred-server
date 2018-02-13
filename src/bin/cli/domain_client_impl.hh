@@ -84,7 +84,7 @@ struct create_expired_domain_impl
         }
 
         const auto params = CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientCreateExpiredDomainArgsGrp>()->params;
-        auto registrar_handle = CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCreateExpiredDomainArgs>()->registrar_handle;
+        auto registrar_handle = CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCreateExpiredDomainArgsGrp>()->get_registrar_handle();
         Admin::Domain::create_expired_domain(*(logger_client.get()), params.fqdn, params.registrant, params.cltrid, params.delete_existing, registrar_handle);
         return ;
     }
