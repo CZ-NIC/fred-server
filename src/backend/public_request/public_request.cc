@@ -1,4 +1,6 @@
 #include "src/backend/public_request/public_request.hh"
+
+#include "src/backend/buffer.hh"
 #include "src/libfred/public_request/create_public_request.hh"
 #include "src/libfred/public_request/update_public_request.hh"
 #include "src/libfred/object/object_state.hh"
@@ -785,7 +787,7 @@ std::string language_to_lang_code(PublicRequestImpl::Language::Enum lang)
 
 } // namespace Registry::{anonymous}
 
-PublicRequestImpl::Buffer PublicRequestImpl::create_public_request_pdf(
+Fred::Backend::Buffer PublicRequestImpl::create_public_request_pdf(
     unsigned long long public_request_id,
     Language::Enum lang,
     std::shared_ptr<LibFred::Document::Manager> manager)
@@ -847,7 +849,7 @@ PublicRequestImpl::Buffer PublicRequestImpl::create_public_request_pdf(
         << "</enum_whois>";
     docgen_ptr->closeInput();
 
-    return Buffer(pdf_content.str());
+    return Fred::Backend::Buffer(pdf_content.str());
 }
 
 std::shared_ptr<LibFred::Mailer::Manager> PublicRequestImpl::get_default_mailer_manager()
@@ -866,9 +868,5 @@ std::shared_ptr<LibFred::Document::Manager> PublicRequestImpl::get_default_docum
                     args->fileclient_path,
                     CorbaContainer::get_instance()->getNS()->getHostName()));
 }
-
-PublicRequestImpl::Buffer::Buffer(const std::string& s)
-    : value(s)
-{ }
 
 } // namespace Registry

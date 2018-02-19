@@ -1492,6 +1492,9 @@ nodist_src_bin_corba_libcorbadomainbrowser_a_SOURCES = \
 		src/bin/corba/DomainBrowser.hh
 
 nodist_src_bin_corba_libcorbapublicrequest_a_SOURCES = \
+		src/bin/corba/BufferSK.cc \
+		src/bin/corba/BufferDynSK.cc \
+		src/bin/corba/Buffer.hh \
 		src/bin/corba/PublicRequestSK.cc \
 		src/bin/corba/PublicRequestDynSK.cc \
 		src/bin/corba/PublicRequest.hh
@@ -1575,7 +1578,7 @@ src/bin/corba/ContactVerificationSK.cc: $(IDLDIR)/ContactVerification.idl
 src/bin/corba/DomainBrowserSK.cc: $(IDLDIR)/DomainBrowser.idl $(IDLDIR)/NullableIsoDate.idl $(IDLDIR)/NullableIsoDateTime.idl
 src/bin/corba/AdminContactVerificationSK.cc: $(IDLDIR)/AdminContactVerification.idl $(IDLDIR)/_dataTypes.idl $(IDLDIR)/NullableIsoDateTime.idl $(IDLDIR)/IsoDateTime.idl
 src/bin/corba/NotificationSK.cc: $(IDLDIR)/Notification.idl
-src/bin/corba/PublicRequestSK.cc: $(IDLDIR)/PublicRequest.idl $(IDLDIR)/NullableTypes.idl
+src/bin/corba/PublicRequestSK.cc: $(IDLDIR)/PublicRequest.idl $(IDLDIR)/NullableTypes.idl $(IDLDIR)/Buffer.idl
 src/bin/corba/AutomaticKeysetManagementSK.cc: $(IDLDIR)/AutomaticKeysetManagement.idl
 src/bin/corba/RecordStatementSK.cc: $(IDLDIR)/RecordStatement.idl
 src/bin/corba/BufferSK.cc: $(IDLDIR)/Buffer.idl
@@ -2172,6 +2175,8 @@ src_bin_corba_fred_pifd_SOURCES = \
 		src/backend/contact_verification/contact_verification_impl.cc \
 		src/backend/contact_verification/contact_verification_impl.hh \
 		src/backend/contact_verification/public_request_contact_verification_wrapper.hh \
+		src/backend/buffer.cc \
+		src/backend/buffer.hh \
 		src/backend/public_request/public_request.cc \
 		src/backend/public_request/public_request.hh \
 		src/bin/corba/public_request/server_i.cc \
@@ -2199,6 +2204,7 @@ src_bin_corba_fred_pifd_LDADD = \
 		src/bin/corba/libcorbanullabletypes.a \
 		src/libfred/contact_verification/libcontact_verification.a \
 		src/bin/corba/libcorbacontactverification.a \
+		src/bin/corba/libcorbabuffer.a \
 		src/bin/corba/libcorbapublicrequest.a \
 		src/libfred/requests/librequests.a \
 		src/libfred/banking/libbanking.a \
@@ -3258,6 +3264,7 @@ test_test_server_LDADD = \
 #
 test_backend_test_public_request_SOURCES = \
 		test/backend/public_request/main.cc \
+		src/backend/buffer.cc \
 		src/backend/public_request/public_request.cc \
 		test/backend/public_request/test_registry_email.cc \
 		test/backend/public_request/test_non_registry_email.cc \

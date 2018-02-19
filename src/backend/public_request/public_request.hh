@@ -24,6 +24,7 @@
 #ifndef PUBLIC_REQUEST_HH_609D44EB1F5A4BC98E8A88B662EE3761
 #define PUBLIC_REQUEST_HH_609D44EB1F5A4BC98E8A88B662EE3761
 
+#include "src/backend/buffer.hh"
 #include "src/libfred/object/object_type.hh"
 #include "src/libfred/documents.hh"
 #include "src/libfred/mailer.hh"
@@ -86,12 +87,6 @@ public:
             domain,
             keyset,
         };
-    };
-
-    struct Buffer
-    {
-        explicit Buffer(const std::string& s);
-        const std::string value;
     };
 
     struct ObjectAlreadyBlocked : std::exception
@@ -186,7 +181,7 @@ public:
         ConfirmedBy::Enum confirmation_method,
         LockRequestType::Enum lock_request_type);
 
-    Buffer create_public_request_pdf(
+    Fred::Backend::Buffer create_public_request_pdf(
         unsigned long long public_request_id,
         Language::Enum lang,
         std::shared_ptr<LibFred::Document::Manager> manager);

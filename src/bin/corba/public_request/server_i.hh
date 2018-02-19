@@ -24,6 +24,7 @@
 #ifndef SERVER_I_HH_4C0DD51687BF47B19E2078C31BF6AA93
 #define SERVER_I_HH_4C0DD51687BF47B19E2078C31BF6AA93
 
+#include "src/bin/corba/Buffer.hh"
 #include "src/bin/corba/PublicRequest.hh"
 
 #include <memory>

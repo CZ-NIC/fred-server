@@ -133,7 +133,7 @@ BOOST_FIXTURE_TEST_CASE(create_pdf, create_pdf_fixture)
     const std::string buffer_value = pr.create_public_request_pdf(
             block_transfer_post,
             Registry::PublicRequestImpl::Language::en,
-            manager).value;
+            manager).data;
     BOOST_TEST_MESSAGE(buffer_value);
 }
 
