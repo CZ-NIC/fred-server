@@ -26,7 +26,8 @@
 
 #include <exception>
 
-namespace Registry {
+namespace Fred {
+namespace Backend {
 namespace RecordStatement {
 
 /**
@@ -65,7 +66,8 @@ struct ObjectDeleteCandidate:std::exception
 };
 
 
-} // namespace Registry::RecordStatement
-} // namespace Registry
+} // namespace Fred::Backend::RecordStatement
+} // namespace Fred::Backend::RecordStatement
+} // namespace Fred
 
 #endif

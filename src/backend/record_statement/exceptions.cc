@@ -23,7 +23,8 @@
 
 #include "src/backend/record_statement/exceptions.hh"
 
-namespace Registry {
+namespace Fred {
+namespace Backend {
 namespace RecordStatement {
 
 const char* InternalServerError::what()const noexcept
@@ -41,5 +42,6 @@ const char* ObjectDeleteCandidate::what()const noexcept
     return "registry object with specified ID is a delete candidate";
 }
 
-} // namespace Registry::RecordStatement
-} // namespace Registry
+} // namespace Fred::Backend::RecordStatement
+} // namespace Fred::Backend
+} // namespace Fred

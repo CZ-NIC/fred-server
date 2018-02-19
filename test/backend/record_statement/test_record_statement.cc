@@ -71,32 +71,32 @@ BOOST_FIXTURE_TEST_CASE(domain_printout_xml, Test::domain_fixture)
             ? boost::optional<std::string>()
             : info_domain_output.info_domain_data.nsset.get_value().handle;
 
-        const boost::optional<::LibFred::RecordStatement::Impl::NssetPrintoutInputData> nsset_data =
-                ::LibFred::RecordStatement::Impl::make_nsset_data(nsset_handle, ctx);
+        const boost::optional<Fred::Backend::RecordStatement::Impl::NssetPrintoutInputData> nsset_data =
+                Fred::Backend::RecordStatement::Impl::make_nsset_data(nsset_handle, ctx);
 
 
         const boost::optional<std::string> keyset_handle = info_domain_output.info_domain_data.keyset.isnull()
             ? boost::optional<std::string>()
             : info_domain_output.info_domain_data.keyset.get_value().handle;
 
-        const boost::optional<::LibFred::RecordStatement::Impl::KeysetPrintoutInputData> keyset_data =
-                ::LibFred::RecordStatement::Impl::make_keyset_data(keyset_handle, ctx);
+        const boost::optional<Fred::Backend::RecordStatement::Impl::KeysetPrintoutInputData> keyset_data =
+                Fred::Backend::RecordStatement::Impl::make_keyset_data(keyset_handle, ctx);
 
         info_domain_output.utc_timestamp = boost::posix_time::time_from_string("2017-05-04 11:06:00");
         const Tz::LocalTimestamp data_valid_at =
                 Tz::LocalTimestamp(boost::posix_time::time_from_string("2017-05-01 08:32:17"), 2 * 60);
 
-        const std::string test_domain_xml = ::LibFred::RecordStatement::Impl::domain_printout_xml<Tz::Europe::Prague>(
+        const std::string test_domain_xml = Fred::Backend::RecordStatement::Impl::domain_printout_xml<Tz::Europe::Prague>(
                 ctx,
                 info_domain_output,
                 data_valid_at,
-                Registry::RecordStatement::Purpose::public_printout,
+                Fred::Backend::RecordStatement::Purpose::public_printout,
                 info_registrant_output,
                 info_admin_contact_output,
                 info_sponsoring_registrar_output,
                 nsset_data,
                 keyset_data,
-                ::LibFred::RecordStatement::Impl::make_external_states(info_domain_output.info_domain_data.id, ctx));
+                Fred::Backend::RecordStatement::Impl::make_external_states(info_domain_output.info_domain_data.id, ctx));
 
         //BOOST_TEST_MESSAGE(test_domain_xml);
 
@@ -239,14 +239,14 @@ BOOST_FIXTURE_TEST_CASE(nsset_printout_xml, Test::domain_fixture)
     {
         boost::optional<std::string> nsset_handle(test_nsset_handle);
 
-        boost::optional<::LibFred::RecordStatement::Impl::NssetPrintoutInputData> nsset_data
-            = ::LibFred::RecordStatement::Impl::make_nsset_data(nsset_handle, ctx);
+        boost::optional<Fred::Backend::RecordStatement::Impl::NssetPrintoutInputData> nsset_data
+            = Fred::Backend::RecordStatement::Impl::make_nsset_data(nsset_handle, ctx);
 
         nsset_data->info.utc_timestamp = boost::posix_time::time_from_string("2017-05-04 11:06:00");
         const Tz::LocalTimestamp data_valid_at =
                 Tz::LocalTimestamp(boost::posix_time::time_from_string("2017-05-04 13:06:00"), 2 * 60);
 
-        const std::string test_nsset_xml = ::LibFred::RecordStatement::Impl::nsset_printout_xml(
+        const std::string test_nsset_xml = Fred::Backend::RecordStatement::Impl::nsset_printout_xml(
                 *nsset_data,
                 data_valid_at);
 
@@ -310,14 +310,14 @@ BOOST_FIXTURE_TEST_CASE(keyset_printout_xml, Test::domain_fixture)
     {
         boost::optional<std::string> keyset_handle(test_keyset_handle);
 
-        boost::optional<::LibFred::RecordStatement::Impl::KeysetPrintoutInputData> keyset_data
-            = ::LibFred::RecordStatement::Impl::make_keyset_data(keyset_handle, ctx);
+        boost::optional<Fred::Backend::RecordStatement::Impl::KeysetPrintoutInputData> keyset_data
+            = Fred::Backend::RecordStatement::Impl::make_keyset_data(keyset_handle, ctx);
 
         keyset_data->info.utc_timestamp = boost::posix_time::time_from_string("2017-05-04 11:06:00");
         const Tz::LocalTimestamp data_valid_at =
                 Tz::LocalTimestamp(boost::posix_time::time_from_string("2017-05-04 13:06:00"), 2 * 60);
 
-        const std::string test_keyset_xml = ::LibFred::RecordStatement::Impl::keyset_printout_xml(
+        const std::string test_keyset_xml = Fred::Backend::RecordStatement::Impl::keyset_printout_xml(
                 *keyset_data,
                 data_valid_at);
 
@@ -385,13 +385,13 @@ BOOST_FIXTURE_TEST_CASE(contact_printout_xml, Test::domain_fixture)
         const Tz::LocalTimestamp data_valid_at =
                 Tz::LocalTimestamp(boost::posix_time::time_from_string("2017-05-04 13:06:00"), 2 * 60);
 
-        const std::string test_contact_xml = ::LibFred::RecordStatement::Impl::contact_printout_xml<Tz::Europe::Prague>(
+        const std::string test_contact_xml = Fred::Backend::RecordStatement::Impl::contact_printout_xml<Tz::Europe::Prague>(
               ctx,
               info_contact_output,
               data_valid_at,
-              Registry::RecordStatement::Purpose::private_printout,
+              Fred::Backend::RecordStatement::Purpose::private_printout,
               info_sponsoring_registrar_output,
-              ::LibFred::RecordStatement::Impl::make_external_states(info_contact_output.info_contact_data.id, ctx));
+              Fred::Backend::RecordStatement::Impl::make_external_states(info_contact_output.info_contact_data.id, ctx));
 
         //BOOST_TEST_MESSAGE(test_contact_xml);
 
@@ -453,10 +453,10 @@ BOOST_FIXTURE_TEST_CASE(contact_printout_xml, Test::domain_fixture)
 
 namespace {
 
-void save_pdf(const std::string& file_name, const Registry::RecordStatement::PdfBufferImpl& pdf_buff)
+void save_pdf(const std::string& file_name, const Fred::Backend::Buffer& pdf_buffer)
 {
     std::ofstream pdf_file(file_name.c_str(), std::ofstream::out | std::ofstream::trunc | std::ofstream::binary);
-    pdf_file.write(pdf_buff.value.c_str(), pdf_buff.value.size());
+    pdf_file.write(pdf_buffer.data.c_str(), pdf_buffer.data.size());
     pdf_file.close();
 }
 
@@ -466,13 +466,13 @@ BOOST_FIXTURE_TEST_CASE(domain_printout_pdf, Test::domain_fixture)
 {
     try
     {
-        const Registry::RecordStatement::PdfBufferImpl pdf_buff =
-                rs_impl->domain_printout(ctx, test_fqdn, Registry::RecordStatement::Purpose::private_printout);
+        const Fred::Backend::Buffer pdf_buffer =
+                rs_impl->domain_printout(ctx, test_fqdn, Fred::Backend::RecordStatement::Purpose::private_printout);
 
-        BOOST_CHECK(!pdf_buff.value.empty());
+        BOOST_CHECK(!pdf_buffer.data.empty());
 
         //debug file output
-        save_pdf("domain_printout.pdf", pdf_buff);
+        save_pdf("domain_printout.pdf", pdf_buffer);
     }
     catch (const boost::exception& e)
     {
@@ -487,20 +487,20 @@ BOOST_FIXTURE_TEST_CASE(domain_printout_pdf, Test::domain_fixture)
 BOOST_FIXTURE_TEST_CASE(domain_printout_not_found, Test::domain_fixture)
 {
     BOOST_CHECK_THROW(
-        rs_impl->domain_printout(ctx, test_fqdn + "bad", Registry::RecordStatement::Purpose::private_printout),
-        Registry::RecordStatement::ObjectNotFound);
+        rs_impl->domain_printout(ctx, test_fqdn + "bad", Fred::Backend::RecordStatement::Purpose::private_printout),
+        Fred::Backend::RecordStatement::ObjectNotFound);
 }
 
 BOOST_FIXTURE_TEST_CASE(nsset_printout_pdf, Test::domain_fixture)
 {
     try
     {
-        const Registry::RecordStatement::PdfBufferImpl pdf_buff = rs_impl->nsset_printout(ctx, test_nsset_handle);
+        const Fred::Backend::Buffer pdf_buffer = rs_impl->nsset_printout(ctx, test_nsset_handle);
 
-        BOOST_CHECK(!pdf_buff.value.empty());
+        BOOST_CHECK(!pdf_buffer.data.empty());
 
         //debug file output
-        save_pdf("nsset_printout.pdf", pdf_buff);
+        save_pdf("nsset_printout.pdf", pdf_buffer);
     }
     catch (const boost::exception& e)
     {
@@ -515,19 +515,19 @@ BOOST_FIXTURE_TEST_CASE(nsset_printout_pdf, Test::domain_fixture)
 BOOST_FIXTURE_TEST_CASE(nsset_printout_not_found, Test::domain_fixture)
 {
     BOOST_CHECK_THROW(rs_impl->nsset_printout(ctx, test_nsset_handle + "bad"),
-        Registry::RecordStatement::ObjectNotFound);
+        Fred::Backend::RecordStatement::ObjectNotFound);
 }
 
 BOOST_FIXTURE_TEST_CASE(keyset_printout_pdf, Test::domain_fixture)
 {
     try
     {
-        const Registry::RecordStatement::PdfBufferImpl pdf_buff = rs_impl->keyset_printout(ctx, test_keyset_handle);
+        const Fred::Backend::Buffer pdf_buffer = rs_impl->keyset_printout(ctx, test_keyset_handle);
 
-        BOOST_CHECK(!pdf_buff.value.empty());
+        BOOST_CHECK(!pdf_buffer.data.empty());
 
         //debug file output
-        save_pdf("keyset_printout.pdf", pdf_buff);
+        save_pdf("keyset_printout.pdf", pdf_buffer);
     }
     catch (const boost::exception& e)
     {
@@ -542,7 +542,7 @@ BOOST_FIXTURE_TEST_CASE(keyset_printout_pdf, Test::domain_fixture)
 BOOST_FIXTURE_TEST_CASE(keyset_printout_not_found, Test::domain_fixture)
 {
     BOOST_CHECK_THROW(rs_impl->keyset_printout(ctx, test_keyset_handle + "bad"),
-        Registry::RecordStatement::ObjectNotFound);
+        Fred::Backend::RecordStatement::ObjectNotFound);
 }
 
 
@@ -550,13 +550,13 @@ BOOST_FIXTURE_TEST_CASE(contact_printout_pdf, Test::domain_fixture)
 {
     try
     {
-        const Registry::RecordStatement::PdfBufferImpl pdf_buff =
-                rs_impl->contact_printout(ctx, registrant_contact_handle, Registry::RecordStatement::Purpose::private_printout);
+        const Fred::Backend::Buffer pdf_buffer =
+                rs_impl->contact_printout(ctx, registrant_contact_handle, Fred::Backend::RecordStatement::Purpose::private_printout);
 
-        BOOST_CHECK(!pdf_buff.value.empty());
+        BOOST_CHECK(!pdf_buffer.data.empty());
 
         //debug file output
-        save_pdf("contact_printout.pdf", pdf_buff);
+        save_pdf("contact_printout.pdf", pdf_buffer);
     }
     catch (const boost::exception& e)
     {
@@ -570,21 +570,21 @@ BOOST_FIXTURE_TEST_CASE(contact_printout_pdf, Test::domain_fixture)
 
 BOOST_FIXTURE_TEST_CASE(contact_printout_not_found, Test::domain_fixture)
 {
-    BOOST_CHECK_THROW(rs_impl->contact_printout(ctx, registrant_contact_handle + "bad", Registry::RecordStatement::Purpose::private_printout),
-        Registry::RecordStatement::ObjectNotFound);
+    BOOST_CHECK_THROW(rs_impl->contact_printout(ctx, registrant_contact_handle + "bad", Fred::Backend::RecordStatement::Purpose::private_printout),
+        Fred::Backend::RecordStatement::ObjectNotFound);
 }
 
 BOOST_FIXTURE_TEST_CASE(historic_domain_printout_pdf, Test::domain_by_name_and_time_fixture)
 {
     try
     {
-        const Registry::RecordStatement::PdfBufferImpl pdf_buff =
+        const Fred::Backend::Buffer pdf_buffer =
                 rs_impl->historic_domain_printout(ctx, test_fqdn, timestamp);
 
-        BOOST_CHECK(!pdf_buff.value.empty());
+        BOOST_CHECK(!pdf_buffer.data.empty());
 
         //debug file output
-        save_pdf("historic_domain_printout.pdf", pdf_buff);
+        save_pdf("historic_domain_printout.pdf", pdf_buffer);
 
     }
     catch (const boost::exception& e)
@@ -606,20 +606,20 @@ BOOST_FIXTURE_TEST_CASE(historic_domain_bad_timestamp, Test::domain_by_name_and_
 BOOST_FIXTURE_TEST_CASE(historic_domain_not_found, Test::domain_by_name_and_time_fixture)
 {
     BOOST_CHECK_THROW(rs_impl->historic_domain_printout(ctx, "bad" + test_fqdn, timestamp),
-                      Registry::RecordStatement::ObjectNotFound);
+                      Fred::Backend::RecordStatement::ObjectNotFound);
 }
 
 BOOST_FIXTURE_TEST_CASE(historic_nsset_printout_pdf, Test::domain_by_name_and_time_fixture)
 {
     try
     {
-        const Registry::RecordStatement::PdfBufferImpl pdf_buff =
+        const Fred::Backend::Buffer pdf_buffer =
                 rs_impl->historic_nsset_printout(ctx, test_nsset_handle, timestamp);
 
-        BOOST_CHECK(!pdf_buff.value.empty());
+        BOOST_CHECK(!pdf_buffer.data.empty());
 
         //debug file output
-        save_pdf("historic_nsset_printout.pdf", pdf_buff);
+        save_pdf("historic_nsset_printout.pdf", pdf_buffer);
     }
     catch (const boost::exception& e)
     {
@@ -640,20 +640,20 @@ BOOST_FIXTURE_TEST_CASE(historic_nsset_bad_timestamp, Test::domain_by_name_and_t
 BOOST_FIXTURE_TEST_CASE(historic_nsset_not_found, Test::domain_by_name_and_time_fixture)
 {
     BOOST_CHECK_THROW(rs_impl->historic_nsset_printout(ctx, "bad" + test_nsset_handle, timestamp),
-                      Registry::RecordStatement::ObjectNotFound);
+                      Fred::Backend::RecordStatement::ObjectNotFound);
 }
 
 BOOST_FIXTURE_TEST_CASE(historic_keyset_printout_pdf, Test::domain_by_name_and_time_fixture)
 {
     try
     {
-        const Registry::RecordStatement::PdfBufferImpl pdf_buff =
+        const Fred::Backend::Buffer pdf_buffer =
                 rs_impl->historic_keyset_printout(ctx, test_keyset_handle, timestamp);
 
-        BOOST_CHECK(!pdf_buff.value.empty());
+        BOOST_CHECK(!pdf_buffer.data.empty());
 
         //debug file output
-        save_pdf("historic_keyset_printout.pdf", pdf_buff);
+        save_pdf("historic_keyset_printout.pdf", pdf_buffer);
     }
     catch (const boost::exception& e)
     {
@@ -674,7 +674,7 @@ BOOST_FIXTURE_TEST_CASE(historic_keyset_bad_timestamp, Test::domain_by_name_and_
 BOOST_FIXTURE_TEST_CASE(historic_keyset_not_found, Test::domain_by_name_and_time_fixture)
 {
     BOOST_CHECK_THROW(rs_impl->historic_keyset_printout(ctx, "bad" + test_keyset_handle, timestamp),
-                      Registry::RecordStatement::ObjectNotFound);
+                      Fred::Backend::RecordStatement::ObjectNotFound);
 }
 
 
@@ -682,13 +682,13 @@ BOOST_FIXTURE_TEST_CASE(historic_contact_printout_pdf, Test::domain_by_name_and_
 {
     try
     {
-        const Registry::RecordStatement::PdfBufferImpl pdf_buff =
+        const Fred::Backend::Buffer pdf_buffer =
                 rs_impl->historic_contact_printout(ctx, registrant_contact_handle, timestamp);
 
-        BOOST_CHECK(!pdf_buff.value.empty());
+        BOOST_CHECK(!pdf_buffer.data.empty());
 
         //debug file output
-        save_pdf("historic_contact_printout.pdf", pdf_buff);
+        save_pdf("historic_contact_printout.pdf", pdf_buffer);
     }
     catch (const boost::exception& e)
     {
@@ -709,19 +709,19 @@ BOOST_FIXTURE_TEST_CASE(historic_contact_bad_timestamp, Test::domain_by_name_and
 BOOST_FIXTURE_TEST_CASE(historic_contact_not_found, Test::domain_by_name_and_time_fixture)
 {
     BOOST_CHECK_THROW(rs_impl->historic_contact_printout(ctx, "bad" + registrant_contact_handle, timestamp),
-                      Registry::RecordStatement::ObjectNotFound);
+                      Fred::Backend::RecordStatement::ObjectNotFound);
 }
 
 
 BOOST_FIXTURE_TEST_CASE(email_domain_printout_pdf, Test::domain_fixture)
 {
-    BOOST_CHECK_NO_THROW(rs_impl->send_domain_printout(ctx, test_fqdn, Registry::RecordStatement::Purpose::private_printout));
+    BOOST_CHECK_NO_THROW(rs_impl->send_domain_printout(ctx, test_fqdn, Fred::Backend::RecordStatement::Purpose::private_printout));
 }
 
 BOOST_FIXTURE_TEST_CASE(email_domain_not_found, Test::domain_fixture)
 {
-    BOOST_CHECK_THROW(rs_impl->send_domain_printout(ctx, "bad" + test_fqdn, Registry::RecordStatement::Purpose::private_printout),
-                      Registry::RecordStatement::ObjectNotFound);
+    BOOST_CHECK_THROW(rs_impl->send_domain_printout(ctx, "bad" + test_fqdn, Fred::Backend::RecordStatement::Purpose::private_printout),
+                      Fred::Backend::RecordStatement::ObjectNotFound);
 }
 
 BOOST_FIXTURE_TEST_CASE(email_nsset_printout_pdf, Test::domain_fixture)
@@ -732,7 +732,7 @@ BOOST_FIXTURE_TEST_CASE(email_nsset_printout_pdf, Test::domain_fixture)
 BOOST_FIXTURE_TEST_CASE(email_nsset_not_found, Test::domain_fixture)
 {
     BOOST_CHECK_THROW(rs_impl->send_nsset_printout(ctx, "bad" + test_nsset_handle),
-                      Registry::RecordStatement::ObjectNotFound);
+                      Fred::Backend::RecordStatement::ObjectNotFound);
 }
 
 BOOST_FIXTURE_TEST_CASE(email_keyset_printout_pdf, Test::domain_fixture)
@@ -743,18 +743,18 @@ BOOST_FIXTURE_TEST_CASE(email_keyset_printout_pdf, Test::domain_fixture)
 BOOST_FIXTURE_TEST_CASE(email_keyset_not_found, Test::domain_fixture)
 {
     BOOST_CHECK_THROW(rs_impl->send_keyset_printout(ctx, "bad" + test_keyset_handle),
-                      Registry::RecordStatement::ObjectNotFound);
+                      Fred::Backend::RecordStatement::ObjectNotFound);
 }
 
 BOOST_FIXTURE_TEST_CASE(email_contact_printout_pdf, Test::domain_fixture)
 {
-    BOOST_CHECK_NO_THROW(rs_impl->send_contact_printout(ctx, admin_contact_handle, Registry::RecordStatement::Purpose::private_printout));
+    BOOST_CHECK_NO_THROW(rs_impl->send_contact_printout(ctx, admin_contact_handle, Fred::Backend::RecordStatement::Purpose::private_printout));
 }
 
 BOOST_FIXTURE_TEST_CASE(email_contact_not_found, Test::domain_fixture)
 {
-    BOOST_CHECK_THROW(rs_impl->send_contact_printout(ctx, "bad" + admin_contact_handle, Registry::RecordStatement::Purpose::private_printout),
-                      Registry::RecordStatement::ObjectNotFound);
+    BOOST_CHECK_THROW(rs_impl->send_contact_printout(ctx, "bad" + admin_contact_handle, Fred::Backend::RecordStatement::Purpose::private_printout),
+                      Fred::Backend::RecordStatement::ObjectNotFound);
 }
 
 BOOST_AUTO_TEST_SUITE_END()//TestRecordStatement

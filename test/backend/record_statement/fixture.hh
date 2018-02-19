@@ -76,7 +76,7 @@ struct domain_fixture : virtual public Test::instantiate_db_template
       test_nsset_handle("TEST-NSSET-HANDLE"),
       test_keyset_handle("TEST-KEYSET-HANDLE"),
       test_fqdn("fredinfo.cz"),
-      rs_impl(::LibFred::RecordStatement::Impl::Factory::produce(
+      rs_impl(Fred::Backend::RecordStatement::Impl::Factory::produce(
               CfgArgs::instance()->get_handler_ptr_by_type<HandleRegistryArgs>()->registry_timezone,
               make_doc_manager(),
               make_mailer_manager()))
@@ -195,7 +195,7 @@ struct domain_fixture : virtual public Test::instantiate_db_template
     ::LibFred::InfoDomainOutput test_info_domain_output;
     ::LibFred::InfoRegistrarData test_info_registrar;
 
-    boost::shared_ptr<Registry::RecordStatement::RecordStatementImpl::WithExternalContext> rs_impl;
+    boost::shared_ptr<Fred::Backend::RecordStatement::RecordStatementImpl::WithExternalContext> rs_impl;
 };
 
 
@@ -211,7 +211,7 @@ struct domain_by_name_and_time_fixture : virtual public Test::instantiate_db_tem
           test_keyset_handle("TEST-KEYSET-HANDLE"),
           test_fqdn("fredinfo.cz"),
           timestamp(Tz::LocalTimestamp::from_rfc3339_formated_string("1970-01-01T00:00:00Z")),
-          rs_impl(::LibFred::RecordStatement::Impl::Factory::produce(
+          rs_impl(Fred::Backend::RecordStatement::Impl::Factory::produce(
                   CfgArgs::instance()->get_handler_ptr_by_type<HandleRegistryArgs>()->registry_timezone,
                   make_doc_manager(),
                   make_mailer_manager()))
@@ -311,7 +311,7 @@ struct domain_by_name_and_time_fixture : virtual public Test::instantiate_db_tem
     ::LibFred::InfoRegistrarData test_info_registrar;
 
     Tz::LocalTimestamp timestamp;
-    boost::shared_ptr<Registry::RecordStatement::RecordStatementImpl::WithExternalContext> rs_impl;
+    boost::shared_ptr<Fred::Backend::RecordStatement::RecordStatementImpl::WithExternalContext> rs_impl;
 };
 
 } // namespace Test

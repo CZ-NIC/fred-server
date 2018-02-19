@@ -41,14 +41,14 @@ namespace RecordStatement {
 
 namespace {
 
-PdfBuffer_var wrap_pdf_buffer(const PdfBufferImpl& pdf)
+Buffer_var wrap_buffer(const Fred::Backend::Buffer& _buffer)
 {
-    PdfBuffer_var result(new PdfBuffer());
+    Buffer_var result(new Buffer());
 
-    result->data.length(pdf.value.size());
-    if (!pdf.value.empty())
+    result->data.length(_buffer.data.size());
+    if (!_buffer.data.empty())
     {
-        std::memcpy(result->data.get_buffer(), pdf.value.c_str(), pdf.value.size());
+        std::memcpy(result->data.get_buffer(), _buffer.data.c_str(), _buffer.data.size());
     }
 
     return result;
@@ -61,7 +61,7 @@ Server_i::Server_i(
         const boost::shared_ptr<LibFred::Document::Manager>& _doc_manager,
         const boost::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager,
         const std::string& _registry_timezone)
-    : impl_(new Registry::RecordStatement::RecordStatementImpl(
+    : impl_(new Fred::Backend::RecordStatement::RecordStatementImpl(
             _server_name,
             _doc_manager,
             _mailer_manager,
@@ -74,21 +74,21 @@ Server_i::~Server_i()
 }
 
 //   Methods corresponding to IDL attributes and operations
-PdfBuffer* Server_i::domain_printout(const char* _fqdn, ::CORBA::Boolean _is_private_printout)
+Buffer* Server_i::domain_printout(const char* _fqdn, ::CORBA::Boolean _is_private_printout)
 {
     try
     {
-        const PdfBufferImpl pdf_content = _is_private_printout
-                ? impl_->domain_printout<Purpose::private_printout>(LibFred::Corba::unwrap_string_from_const_char_ptr(_fqdn))
-                : impl_->domain_printout<Purpose::public_printout>(LibFred::Corba::unwrap_string_from_const_char_ptr(_fqdn));
+        const Fred::Backend::Buffer pdf_content = _is_private_printout
+                ? impl_->domain_printout<Fred::Backend::RecordStatement::Purpose::private_printout>(LibFred::Corba::unwrap_string_from_const_char_ptr(_fqdn))
+                : impl_->domain_printout<Fred::Backend::RecordStatement::Purpose::public_printout>(LibFred::Corba::unwrap_string_from_const_char_ptr(_fqdn));
 
-        return wrap_pdf_buffer(pdf_content)._retn();
+        return wrap_buffer(pdf_content)._retn();
     }
-    catch (const ObjectDeleteCandidate&)
+    catch (const Fred::Backend::RecordStatement::ObjectDeleteCandidate&)
     {
         throw OBJECT_DELETE_CANDIDATE();
     }
-    catch (const ObjectNotFound&)
+    catch (const Fred::Backend::RecordStatement::ObjectNotFound&)
     {
         throw OBJECT_NOT_FOUND();
     }
@@ -98,20 +98,20 @@ PdfBuffer* Server_i::domain_printout(const char* _fqdn, ::CORBA::Boolean _is_pri
     }
 }
 
-PdfBuffer* Server_i::nsset_printout(const char* handle)
+Buffer* Server_i::nsset_printout(const char* handle)
 {
     try
     {
-        const PdfBufferImpl pdf_content = impl_->nsset_printout(
+        const Fred::Backend::Buffer pdf_content = impl_->nsset_printout(
                 LibFred::Corba::unwrap_string_from_const_char_ptr(handle));
 
-        return wrap_pdf_buffer(pdf_content)._retn();
+        return wrap_buffer(pdf_content)._retn();
     }
-    catch (const ObjectDeleteCandidate&)
+    catch (const Fred::Backend::RecordStatement::ObjectDeleteCandidate&)
     {
         throw OBJECT_DELETE_CANDIDATE();
     }
-    catch (const ObjectNotFound&)
+    catch (const Fred::Backend::RecordStatement::ObjectNotFound&)
     {
         throw OBJECT_NOT_FOUND();
     }
@@ -121,20 +121,20 @@ PdfBuffer* Server_i::nsset_printout(const char* handle)
     }
 }
 
-PdfBuffer* Server_i::keyset_printout(const char* handle)
+Buffer* Server_i::keyset_printout(const char* handle)
 {
     try
     {
-        const PdfBufferImpl pdf_content = impl_->keyset_printout(
+        const Fred::Backend::Buffer pdf_content = impl_->keyset_printout(
                 LibFred::Corba::unwrap_string_from_const_char_ptr(handle));
 
-        return wrap_pdf_buffer(pdf_content)._retn();
+        return wrap_buffer(pdf_content)._retn();
     }
-    catch (const ObjectDeleteCandidate&)
+    catch (const Fred::Backend::RecordStatement::ObjectDeleteCandidate&)
     {
         throw OBJECT_DELETE_CANDIDATE();
     }
-    catch (const ObjectNotFound&)
+    catch (const Fred::Backend::RecordStatement::ObjectNotFound&)
     {
         throw OBJECT_NOT_FOUND();
     }
@@ -144,21 +144,21 @@ PdfBuffer* Server_i::keyset_printout(const char* handle)
     }
 }
 
-PdfBuffer* Server_i::contact_printout(const char* _handle, ::CORBA::Boolean _is_private_printout)
+Buffer* Server_i::contact_printout(const char* _handle, ::CORBA::Boolean _is_private_printout)
 {
     try
     {
-        const PdfBufferImpl pdf_content = _is_private_printout
-                ? impl_->contact_printout<Purpose::private_printout>(LibFred::Corba::unwrap_string_from_const_char_ptr(_handle))
-                : impl_->contact_printout<Purpose::public_printout>(LibFred::Corba::unwrap_string_from_const_char_ptr(_handle));
+        const Fred::Backend::Buffer pdf_content = _is_private_printout
+                ? impl_->contact_printout<Fred::Backend::RecordStatement::Purpose::private_printout>(LibFred::Corba::unwrap_string_from_const_char_ptr(_handle))
+                : impl_->contact_printout<Fred::Backend::RecordStatement::Purpose::public_printout>(LibFred::Corba::unwrap_string_from_const_char_ptr(_handle));
 
-        return wrap_pdf_buffer(pdf_content)._retn();
+        return wrap_buffer(pdf_content)._retn();
     }
-    catch (const ObjectDeleteCandidate&)
+    catch (const Fred::Backend::RecordStatement::ObjectDeleteCandidate&)
     {
         throw OBJECT_DELETE_CANDIDATE();
     }
-    catch (const ObjectNotFound&)
+    catch (const Fred::Backend::RecordStatement::ObjectNotFound&)
     {
         throw OBJECT_NOT_FOUND();
     }
@@ -168,17 +168,17 @@ PdfBuffer* Server_i::contact_printout(const char* _handle, ::CORBA::Boolean _is_
     }
 }
 
-PdfBuffer* Server_i::historic_domain_printout(const char* fqdn, const Registry::RecordStatement::DateTime& time)
+Buffer* Server_i::historic_domain_printout(const char* fqdn, const Registry::IsoDateTime& time)
 {
     try
     {
-        const PdfBufferImpl pdf_content = impl_->historic_domain_printout(
+        const Fred::Backend::Buffer pdf_content = impl_->historic_domain_printout(
                 LibFred::Corba::unwrap_string_from_const_char_ptr(fqdn),
                 Tz::LocalTimestamp::from_rfc3339_formated_string(LibFred::Corba::unwrap_string_from_const_char_ptr(time.value)));
 
-        return wrap_pdf_buffer(pdf_content)._retn();
+        return wrap_buffer(pdf_content)._retn();
     }
-    catch (const ObjectNotFound&)
+    catch (const Fred::Backend::RecordStatement::ObjectNotFound&)
     {
         throw OBJECT_NOT_FOUND();
     }
@@ -192,17 +192,17 @@ PdfBuffer* Server_i::historic_domain_printout(const char* fqdn, const Registry::
     }
 }
 
-PdfBuffer* Server_i::historic_nsset_printout(const char* handle, const Registry::RecordStatement::DateTime& time)
+Buffer* Server_i::historic_nsset_printout(const char* handle, const Registry::IsoDateTime& time)
 {
     try
     {
-        const PdfBufferImpl pdf_content = impl_->historic_nsset_printout(
+        const Fred::Backend::Buffer pdf_content = impl_->historic_nsset_printout(
                 LibFred::Corba::unwrap_string_from_const_char_ptr(handle),
                 Tz::LocalTimestamp::from_rfc3339_formated_string(LibFred::Corba::unwrap_string_from_const_char_ptr(time.value)));
 
-        return wrap_pdf_buffer(pdf_content)._retn();
+        return wrap_buffer(pdf_content)._retn();
     }
-    catch (const ObjectNotFound&)
+    catch (const Fred::Backend::RecordStatement::ObjectNotFound&)
     {
         throw OBJECT_NOT_FOUND();
     }
@@ -216,17 +216,17 @@ PdfBuffer* Server_i::historic_nsset_printout(const char* handle, const Registry:
     }
 }
 
-PdfBuffer* Server_i::historic_keyset_printout(const char* handle, const Registry::RecordStatement::DateTime& time)
+Buffer* Server_i::historic_keyset_printout(const char* handle, const Registry::IsoDateTime& time)
 {
     try
     {
-        const PdfBufferImpl pdf_content = impl_->historic_keyset_printout(
+        const Fred::Backend::Buffer pdf_content = impl_->historic_keyset_printout(
                 LibFred::Corba::unwrap_string_from_const_char_ptr(handle),
                 Tz::LocalTimestamp::from_rfc3339_formated_string(LibFred::Corba::unwrap_string_from_const_char_ptr(time.value)));
 
-        return wrap_pdf_buffer(pdf_content)._retn();
+        return wrap_buffer(pdf_content)._retn();
     }
-    catch (const ObjectNotFound&)
+    catch (const Fred::Backend::RecordStatement::ObjectNotFound&)
     {
         throw OBJECT_NOT_FOUND();
     }
@@ -240,17 +240,17 @@ PdfBuffer* Server_i::historic_keyset_printout(const char* handle, const Registry
     }
 }
 
-PdfBuffer* Server_i::historic_contact_printout(const char* handle, const Registry::RecordStatement::DateTime& time)
+Buffer* Server_i::historic_contact_printout(const char* handle, const Registry::IsoDateTime& time)
 {
     try
     {
-        const PdfBufferImpl pdf_content = impl_->historic_contact_printout(
+        const Fred::Backend::Buffer pdf_content = impl_->historic_contact_printout(
                 LibFred::Corba::unwrap_string_from_const_char_ptr(handle),
                 Tz::LocalTimestamp::from_rfc3339_formated_string(LibFred::Corba::unwrap_string_from_const_char_ptr(time.value)));
 
-        return wrap_pdf_buffer(pdf_content)._retn();
+        return wrap_buffer(pdf_content)._retn();
     }
-    catch (const ObjectNotFound&)
+    catch (const Fred::Backend::RecordStatement::ObjectNotFound&)
     {
         throw OBJECT_NOT_FOUND();
     }
@@ -268,13 +268,13 @@ void Server_i::send_domain_printout(const char* fqdn)
 {
     try
     {
-        impl_->send_domain_printout<Purpose::private_printout>(LibFred::Corba::unwrap_string_from_const_char_ptr(fqdn));
+        impl_->send_domain_printout<Fred::Backend::RecordStatement::Purpose::private_printout>(LibFred::Corba::unwrap_string_from_const_char_ptr(fqdn));
     }
-    catch (const ObjectDeleteCandidate&)
+    catch (const Fred::Backend::RecordStatement::ObjectDeleteCandidate&)
     {
         throw OBJECT_DELETE_CANDIDATE();
     }
-    catch (const ObjectNotFound&)
+    catch (const Fred::Backend::RecordStatement::ObjectNotFound&)
     {
         throw OBJECT_NOT_FOUND();
     }
@@ -290,11 +290,11 @@ void Server_i::send_nsset_printout(const char* handle)
     {
         impl_->send_nsset_printout(LibFred::Corba::unwrap_string_from_const_char_ptr(handle));
     }
-    catch (const ObjectDeleteCandidate&)
+    catch (const Fred::Backend::RecordStatement::ObjectDeleteCandidate&)
     {
         throw OBJECT_DELETE_CANDIDATE();
     }
-    catch (const ObjectNotFound&)
+    catch (const Fred::Backend::RecordStatement::ObjectNotFound&)
     {
         throw OBJECT_NOT_FOUND();
     }
@@ -310,11 +310,11 @@ void Server_i::send_keyset_printout(const char* handle)
     {
         impl_->send_keyset_printout(LibFred::Corba::unwrap_string_from_const_char_ptr(handle));
     }
-    catch (const ObjectDeleteCandidate&)
+    catch (const Fred::Backend::RecordStatement::ObjectDeleteCandidate&)
     {
         throw OBJECT_DELETE_CANDIDATE();
     }
-    catch (const ObjectNotFound&)
+    catch (const Fred::Backend::RecordStatement::ObjectNotFound&)
     {
         throw OBJECT_NOT_FOUND();
     }
@@ -328,13 +328,13 @@ void Server_i::send_contact_printout(const char* handle)
 {
     try
     {
-        impl_->send_contact_printout<Purpose::private_printout>(LibFred::Corba::unwrap_string_from_const_char_ptr(handle));
+        impl_->send_contact_printout<Fred::Backend::RecordStatement::Purpose::private_printout>(LibFred::Corba::unwrap_string_from_const_char_ptr(handle));
     }
-    catch (const ObjectDeleteCandidate&)
+    catch (const Fred::Backend::RecordStatement::ObjectDeleteCandidate&)
     {
         throw OBJECT_DELETE_CANDIDATE();
     }
-    catch (const ObjectNotFound&)
+    catch (const Fred::Backend::RecordStatement::ObjectNotFound&)
     {
         throw OBJECT_NOT_FOUND();
     }

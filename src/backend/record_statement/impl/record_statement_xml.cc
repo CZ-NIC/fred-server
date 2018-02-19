@@ -47,7 +47,8 @@
 #include <sstream>
 
 
-namespace LibFred {
+namespace Fred {
+namespace Backend {
 namespace RecordStatement {
 namespace Impl {
 
@@ -429,7 +430,7 @@ unsigned long long get_history_id_of(
 
     if (db_res.size() == 0)
     {
-        throw Registry::RecordStatement::ObjectNotFound();
+        throw ObjectNotFound();
     }
 
     return static_cast<unsigned long long>(db_res[0][0]);
@@ -474,7 +475,7 @@ unsigned long long get_history_id_of<LibFred::Object_Type::domain>(
 
     if (db_res.size() == 0)
     {
-        throw Registry::RecordStatement::ObjectNotFound();
+        throw ObjectNotFound();
     }
 
     return static_cast<unsigned long long>(db_res[0][0]);
@@ -531,7 +532,7 @@ boost::optional<NssetPrintoutInputData> make_historic_nsset_data(
             .exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
 
     retval.external_states =
-            LibFred::RecordStatement::Impl::make_historic_external_states(retval.info.info_nsset_data.id, timestamp, ctx);
+            make_historic_external_states(retval.info.info_nsset_data.id, timestamp, ctx);
 
     return retval;
 }
@@ -567,6 +568,7 @@ boost::optional<KeysetPrintoutInputData> make_historic_keyset_data(
     return retval;
 }
 
-} // namespace LibFred::RecordStatement::Impl
-} // namespace LibFred::RecordStatement
+} // namespace LibFred::Backend::RecordStatement::Impl
+} // namespace LibFred::Backend::RecordStatement::Impl
+} // namespace LibFred::Backend
 } // namespace LibFred

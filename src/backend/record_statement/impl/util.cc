@@ -22,7 +22,8 @@
 #include "src/libfred/object/object_states_info.hh"
 #include "src/libfred/opcontext.hh"
 
-namespace LibFred {
+namespace Fred {
+namespace Backend {
 namespace RecordStatement {
 namespace Impl {
 
@@ -32,6 +33,7 @@ bool is_delete_candidate(LibFred::OperationContext& _ctx, unsigned long long _ob
     return object_states.presents(LibFred::Object_State::delete_candidate);
 }
 
-} // namespace LibFred::RecordStatement::Impl
-} // namespace LibFred::RecordStatement
-} // namespace LibFred
+} // namespace Fred::Backend::RecordStatement::Impl
+} // namespace Fred::Backend::RecordStatement
+} // namespace Fred::Backend
+} // namespace Fred

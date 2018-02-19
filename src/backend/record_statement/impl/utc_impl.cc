@@ -20,12 +20,14 @@
 #include "src/backend/record_statement/impl/templates_impl.hh"
 #include "src/util/tz/utc.hh"
 
-namespace LibFred {
+namespace Fred {
+namespace Backend {
 namespace RecordStatement {
 namespace Impl {
 
 template class InstanceOfNecessaryImpl<Tz::UTC>;
 
-} // namespace LibFred::RecordStatement::Impl
-} // namespace LibFred::RecordStatement
+} // namespace LibFred::Backend::RecordStatement::Impl
+} // namespace LibFred::Backend::RecordStatement
+} // namespace LibFred::Backend
 } // namespace LibFred

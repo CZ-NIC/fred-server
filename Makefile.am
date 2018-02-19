@@ -1515,6 +1515,12 @@ nodist_src_bin_corba_libcorbaautomatickeysetmanagement_a_SOURCES = \
 		src/bin/corba/AutomaticKeysetManagement.hh
 
 nodist_src_bin_corba_libcorbarecordstatement_a_SOURCES = \
+		src/bin/corba/BufferSK.cc \
+		src/bin/corba/BufferDynSK.cc \
+		src/bin/corba/Buffer.hh \
+		src/bin/corba/IsoDateTimeSK.cc \
+		src/bin/corba/IsoDateTimeDynSK.cc \
+		src/bin/corba/IsoDateTime.hh \
 		src/bin/corba/RecordStatementSK.cc \
 		src/bin/corba/RecordStatementDynSK.cc \
 		src/bin/corba/RecordStatement.hh
@@ -1580,7 +1586,7 @@ src/bin/corba/AdminContactVerificationSK.cc: $(IDLDIR)/AdminContactVerification.
 src/bin/corba/NotificationSK.cc: $(IDLDIR)/Notification.idl
 src/bin/corba/PublicRequestSK.cc: $(IDLDIR)/PublicRequest.idl $(IDLDIR)/NullableTypes.idl $(IDLDIR)/Buffer.idl
 src/bin/corba/AutomaticKeysetManagementSK.cc: $(IDLDIR)/AutomaticKeysetManagement.idl
-src/bin/corba/RecordStatementSK.cc: $(IDLDIR)/RecordStatement.idl
+src/bin/corba/RecordStatementSK.cc: $(IDLDIR)/RecordStatement.idl $(IDLDIR)/Buffer.idl $(IDLDIR)/IsoDate.idl $(IDLDIR)/IsoDateTime.idl
 src/bin/corba/BufferSK.cc: $(IDLDIR)/Buffer.idl
 src/bin/corba/IsoDateSK.cc: $(IDLDIR)/IsoDate.idl
 src/bin/corba/NullableIsoDateSK.cc: $(IDLDIR)/NullableIsoDate.idl $(IDLDIR)/IsoDate.idl
@@ -2505,6 +2511,8 @@ src_bin_corba_automatic_keyset_management_fred_akmd_LDADD = \
 # src/bin/corba/record_statement/fred-rsifd
 #
 src_bin_corba_record_statement_fred_rsifd_SOURCES = \
+		src/backend/buffer.cc \
+		src/backend/buffer.hh \
 		src/backend/record_statement/record_statement.cc \
 		src/backend/record_statement/record_statement.hh \
 		src/backend/record_statement/purpose.hh \
@@ -2540,6 +2548,9 @@ src_bin_corba_record_statement_fred_rsifd_LDADD = \
 		src/bin/corba/libcorba.a \
 		src/bin/corba/libmailer.a \
 		src/bin/corba/libcorbadatatypes.a \
+		src/bin/corba/libcorbabuffer.a \
+		src/bin/corba/libcorbaisodate.a \
+		src/bin/corba/libcorbaisodatetime.a \
 		src/bin/corba/libcorbarecordstatement.a \
 		$(LIBIDN_LIBS) \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
@@ -3696,6 +3707,8 @@ test_backend_test_automatic_keyset_management_LDADD = \
 # test/backend/test-record-statement
 #
 test_backend_test_record_statement_SOURCES = \
+		src/backend/buffer.cc \
+		src/backend/buffer.hh \
 		src/backend/record_statement/record_statement.cc \
 		src/backend/record_statement/record_statement.hh \
 		src/backend/record_statement/purpose.hh \
@@ -3734,6 +3747,9 @@ test_backend_test_record_statement_LDADD = \
 		src/bin/corba/libcorba.a \
 		src/bin/corba/libmailer.a \
 		src/bin/corba/libcorbadatatypes.a \
+		src/bin/corba/libcorbabuffer.a \
+		src/bin/corba/libcorbaisodate.a \
+		src/bin/corba/libcorbaisodatetime.a \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \

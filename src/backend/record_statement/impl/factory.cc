@@ -20,7 +20,8 @@
 
 #include <stdexcept>
 
-namespace LibFred {
+namespace Fred {
+namespace Backend {
 namespace RecordStatement {
 namespace Impl {
 
@@ -58,7 +59,8 @@ Factory::Product Factory::produce(
     return producers_itr->second(_doc_manager, _mailer_manager);
 }
 
-} // namespace LibFred::RecordStatement::Impl
-} // namespace LibFred::RecordStatement
-} // namespace LibFred
+} // namespace Fred::Backend::RecordStatement::Impl
+} // namespace Fred::Backend::RecordStatement
+} // namespace Fred::Backend
+} // namespace Fred
 

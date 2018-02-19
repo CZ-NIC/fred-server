@@ -23,14 +23,15 @@
 
 #include <map>
 
-namespace LibFred {
+namespace Fred {
+namespace Backend {
 namespace RecordStatement {
 namespace Impl {
 
 class Factory
 {
 public:
-    typedef boost::shared_ptr<Registry::RecordStatement::RecordStatementImpl::WithExternalContext> Product;
+    typedef boost::shared_ptr<Fred::Backend::RecordStatement::RecordStatementImpl::WithExternalContext> Product;
     typedef Product (*Producer)(const boost::shared_ptr<LibFred::Document::Manager>&,
                                 const boost::shared_ptr<LibFred::Mailer::Manager>&);
     static void register_producer(const std::string& _key, Producer _producer);
@@ -47,8 +48,9 @@ private:
     static RegisteredProducers& get_registered_producers();
 };
 
-} // namespace LibFred::RecordStatement::Impl
-} // namespace LibFred::RecordStatement
-} // namespace LibFred
+} // namespace Fred::Backend::RecordStatement::Impl
+} // namespace Fred::Backend::RecordStatement
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

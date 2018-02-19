@@ -53,7 +53,8 @@
 #include <set>
 #include <vector>
 
-namespace LibFred {
+namespace Fred {
+namespace Backend {
 namespace RecordStatement {
 namespace Impl {
 
@@ -86,7 +87,7 @@ std::string domain_printout_xml(
         LibFred::OperationContext& ctx,
         const LibFred::InfoDomainOutput& info,
         const Tz::LocalTimestamp& valid_at,
-        Registry::RecordStatement::Purpose::Enum purpose,
+        Purpose::Enum purpose,
         const LibFred::InfoContactOutput& registrant_info,
         const std::vector<LibFred::InfoContactOutput>& admin_contact_info,
         const LibFred::InfoRegistrarOutput& sponsoring_registrar_info,
@@ -107,7 +108,7 @@ std::string contact_printout_xml(
         LibFred::OperationContext& ctx,
         const LibFred::InfoContactOutput& info,
         const Tz::LocalTimestamp& valid_at,
-        Registry::RecordStatement::Purpose::Enum purpose,
+        Purpose::Enum purpose,
         const LibFred::InfoRegistrarOutput& sponsoring_registrar_info,
         const std::set<std::string>& external_states);
 
@@ -123,7 +124,7 @@ template <typename REGISTRY_TIMEZONE>
 XmlWithData domain_printout_xml_with_data(
         LibFred::OperationContext& ctx,
         const std::string& fqdn,
-        Registry::RecordStatement::Purpose::Enum purpose);
+        Purpose::Enum purpose);
 
 template <typename REGISTRY_TIMEZONE>
 XmlWithData nsset_printout_xml_with_data(
@@ -139,7 +140,7 @@ template <typename REGISTRY_TIMEZONE>
 XmlWithData contact_printout_xml_with_data(
         LibFred::OperationContext& ctx,
         const std::string& handle,
-        Registry::RecordStatement::Purpose::Enum purpose);
+        Purpose::Enum purpose);
 
 std::set<std::string> make_external_states(
         unsigned long long object_id,
@@ -200,7 +201,7 @@ private:
 };
 
 template <typename T>
-class ImplementationWithin:public Registry::RecordStatement::RecordStatementImpl::WithExternalContext
+class ImplementationWithin:public RecordStatementImpl::WithExternalContext
 {
 public:
     typedef T RegistryTimeZone;
@@ -209,40 +210,40 @@ public:
             const boost::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager);
     ~ImplementationWithin();
 
-    Registry::RecordStatement::PdfBufferImpl domain_printout(
+    Buffer domain_printout(
             LibFred::OperationContext& _ctx,
             const std::string& _fqdn,
-            Registry::RecordStatement::Purpose::Enum _purpose)const;
+            Purpose::Enum _purpose)const;
 
-    Registry::RecordStatement::PdfBufferImpl nsset_printout(
+    Buffer nsset_printout(
             LibFred::OperationContext& _ctx,
             const std::string& _handle)const;
 
-    Registry::RecordStatement::PdfBufferImpl keyset_printout(
+    Buffer keyset_printout(
             LibFred::OperationContext& _ctx,
             const std::string& _handle)const;
 
-    Registry::RecordStatement::PdfBufferImpl contact_printout(
+    Buffer contact_printout(
             LibFred::OperationContext& _ctx,
             const std::string& _handle,
-            Registry::RecordStatement::Purpose::Enum _purpose)const;
+            Purpose::Enum _purpose)const;
 
-    Registry::RecordStatement::PdfBufferImpl historic_domain_printout(
+    Buffer historic_domain_printout(
             LibFred::OperationContext& _ctx,
             const std::string& _fqdn,
             const Tz::LocalTimestamp& _valid_at)const;
 
-    Registry::RecordStatement::PdfBufferImpl historic_nsset_printout(
+    Buffer historic_nsset_printout(
             LibFred::OperationContext& _ctx,
             const std::string& _handle,
             const Tz::LocalTimestamp& _valid_at)const;
 
-    Registry::RecordStatement::PdfBufferImpl historic_keyset_printout(
+    Buffer historic_keyset_printout(
             LibFred::OperationContext& _ctx,
             const std::string& _handle,
             const Tz::LocalTimestamp& _valid_at)const;
 
-    Registry::RecordStatement::PdfBufferImpl historic_contact_printout(
+    Buffer historic_contact_printout(
             LibFred::OperationContext& _ctx,
             const std::string& _handle,
             const Tz::LocalTimestamp& _valid_at)const;
@@ -250,7 +251,7 @@ public:
     void send_domain_printout(
             LibFred::OperationContext& _ctx,
             const std::string& _fqdn,
-            Registry::RecordStatement::Purpose::Enum _purpose)const;
+            Purpose::Enum _purpose)const;
 
     void send_nsset_printout(
             LibFred::OperationContext& _ctx,
@@ -263,7 +264,7 @@ public:
     void send_contact_printout(
             LibFred::OperationContext& _ctx,
             const std::string& _handle,
-            Registry::RecordStatement::Purpose::Enum _purpose)const;
+            Purpose::Enum _purpose)const;
 private:
     boost::shared_ptr<LibFred::Document::Manager> doc_manager_;
     boost::shared_ptr<LibFred::Mailer::Manager> mailer_manager_;
@@ -297,8 +298,9 @@ boost::optional<KeysetPrintoutInputData> make_historic_keyset_data(
         const Tz::LocalTimestamp& timestamp, //for keyset tech contact and keyset states history
         LibFred::OperationContext& ctx);
 
-} // namespace LibFred::RecordStatement::Impl
-} // namespace LibFred::RecordStatement
-} // namespace LibFred
+} // namespace Fred::Backend::RecordStatement::Impl
+} // namespace Fred::Backend::RecordStatement
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

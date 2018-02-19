@@ -24,9 +24,9 @@
 #ifndef RECORD_STATEMENT_HH_72FF9604ED0747FAA4BC91F598728BBC
 #define RECORD_STATEMENT_HH_72FF9604ED0747FAA4BC91F598728BBC
 
+#include "src/backend/buffer.hh"
 #include "src/backend/record_statement/exceptions.hh"
 #include "src/backend/record_statement/purpose.hh"
-
 #include "src/libfred/documents.hh"
 #include "src/libfred/mailer.hh"
 #include "src/libfred/opcontext.hh"
@@ -46,14 +46,9 @@
 #include <string>
 #include <vector>
 
-namespace Registry {
+namespace Fred {
+namespace Backend {
 namespace RecordStatement {
-
-struct PdfBufferImpl
-{
-    explicit PdfBufferImpl(const std::string& _s);
-    const std::string value;
-};
 
 class RecordStatementImpl
 {
@@ -72,32 +67,32 @@ public:
     const std::string& get_server_name()const;
 
     template <Purpose::Enum _purpose>
-    PdfBufferImpl domain_printout(
+    Buffer domain_printout(
             const std::string& _fqdn)const;
 
-    PdfBufferImpl nsset_printout(
+    Buffer nsset_printout(
             const std::string& _handle)const;
 
-    PdfBufferImpl keyset_printout(
+    Buffer keyset_printout(
             const std::string& _handle)const;
 
     template <Purpose::Enum _purpose>
-    PdfBufferImpl contact_printout(
+    Buffer contact_printout(
             const std::string& _handle)const;
 
-    PdfBufferImpl historic_domain_printout(
+    Buffer historic_domain_printout(
             const std::string& _fqdn,
             const Tz::LocalTimestamp& _valid_at)const;
 
-    PdfBufferImpl historic_nsset_printout(
+    Buffer historic_nsset_printout(
             const std::string& _handle,
             const Tz::LocalTimestamp& _valid_at)const;
 
-    PdfBufferImpl historic_keyset_printout(
+    Buffer historic_keyset_printout(
             const std::string& _handle,
             const Tz::LocalTimestamp& _valid_at)const;
 
-    PdfBufferImpl historic_contact_printout(
+    Buffer historic_contact_printout(
             const std::string& _handle,
             const Tz::LocalTimestamp& _valid_at)const;
 
@@ -120,40 +115,40 @@ public:
     public:
         virtual ~WithExternalContext() { }
 
-        virtual PdfBufferImpl domain_printout(
+        virtual Buffer domain_printout(
                 LibFred::OperationContext& _ctx,
                 const std::string& _fqdn,
                 Purpose::Enum _purpose)const = 0;
 
-        virtual PdfBufferImpl nsset_printout(
+        virtual Buffer nsset_printout(
                 LibFred::OperationContext& _ctx,
                 const std::string& _handle)const = 0;
 
-        virtual PdfBufferImpl keyset_printout(
+        virtual Buffer keyset_printout(
                 LibFred::OperationContext& _ctx,
                 const std::string& _handle)const = 0;
 
-        virtual PdfBufferImpl contact_printout(
+        virtual Buffer contact_printout(
                 LibFred::OperationContext& _ctx,
                 const std::string& _handle,
                 Purpose::Enum _purpose)const = 0;
 
-        virtual PdfBufferImpl historic_domain_printout(
+        virtual Buffer historic_domain_printout(
                 LibFred::OperationContext& _ctx,
                 const std::string& _fqdn,
                 const Tz::LocalTimestamp& _valid_at)const = 0;
 
-        virtual PdfBufferImpl historic_nsset_printout(
+        virtual Buffer historic_nsset_printout(
                 LibFred::OperationContext& _ctx,
                 const std::string& _handle,
                 const Tz::LocalTimestamp& _valid_at)const = 0;
 
-        virtual PdfBufferImpl historic_keyset_printout(
+        virtual Buffer historic_keyset_printout(
                 LibFred::OperationContext& _ctx,
                 const std::string& _handle,
                 const Tz::LocalTimestamp& _valid_at)const = 0;
 
-        virtual PdfBufferImpl historic_contact_printout(
+        virtual Buffer historic_contact_printout(
                 LibFred::OperationContext& _ctx,
                 const std::string& _handle,
                 const Tz::LocalTimestamp& _valid_at)const = 0;
@@ -181,7 +176,8 @@ private:
     boost::shared_ptr<WithExternalContext> impl_;
 };
 
-} // namespace Registry::RecordStatement
-} // namespace Registry
+} // namespace Fred::Backend::RecordStatement
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

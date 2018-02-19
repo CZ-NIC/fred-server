@@ -19,7 +19,8 @@
 #ifndef PURPOSE_HH_DF4E208D9E66437BA875CF29CB5D07B3
 #define PURPOSE_HH_DF4E208D9E66437BA875CF29CB5D07B3
 
-namespace Registry {
+namespace Fred {
+namespace Backend {
 namespace RecordStatement {
 
 struct Purpose
@@ -31,7 +32,8 @@ struct Purpose
     };
 };
 
-} // namespace Registry::RecordStatement
-} // namespace Registry
+} // namespace Fred::Backend::RecordStatement
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif
