@@ -2,7 +2,10 @@
 #define CORBA_CONVERSIONS_DATETIME_HH_2DFCA5681F694A0BB3EACBB0FB4B0110
 
 #include "src/bin/corba/DateTime.hh"
+#include "src/bin/corba/IsoDate.hh"
+#include "src/bin/corba/IsoDateTime.hh"
 #include "src/util/db/nullable.hh"
+
 #include <boost/date_time/gregorian/gregorian_types.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
@@ -64,6 +67,20 @@ Nullable<CORBA::String_var> wrap_nullable_date_to_nullable_corba_string(
  * dot with decimal fractions are optional, allocated by CORBA::string_dup
  */
 Nullable<CORBA::String_var> wrap_nullable_ptime_to_nullable_corba_string(
+        const Nullable<boost::posix_time::ptime>& in);
+
+
+Registry::IsoDate_var wrap_date_to_IsoDate(boost::gregorian::date in);
+
+
+Registry::IsoDateTime_var wrap_ptime_to_IsoDateTime(boost::posix_time::ptime in);
+
+
+Nullable<Registry::IsoDate_var> wrap_nullable_date_to_Nullable_IsoDate(
+        const Nullable<boost::gregorian::date>& in);
+
+
+Nullable<Registry::IsoDateTime_var> wrap_nullable_ptime_to_Nullable_IsoDateTime(
         const Nullable<boost::posix_time::ptime>& in);
 
 

@@ -102,5 +102,49 @@ Nullable<CORBA::String_var> wrap_nullable_ptime_to_nullable_corba_string(
 }
 
 
+Registry::IsoDate_var wrap_date_to_IsoDate(boost::gregorian::date in)
+{
+    Registry::IsoDate_var iso_date;
+    iso_date->value = wrap_date_to_corba_string(in);
+    return iso_date;
+}
+
+
+Registry::IsoDateTime_var wrap_ptime_to_IsoDateTime(boost::posix_time::ptime in)
+{
+    Registry::IsoDateTime_var iso_date_time;
+    iso_date_time->value = wrap_ptime_to_corba_string(in);
+    return iso_date_time;
+}
+
+
+Nullable<Registry::IsoDate_var> wrap_nullable_date_to_Nullable_IsoDate(
+        const Nullable<boost::gregorian::date>& in)
+{
+    if (in.isnull() || in.get_value().is_special())
+    {
+        return Nullable<Registry::IsoDate_var>();
+    }
+
+    Registry::IsoDate_var iso_date;
+    iso_date->value = CORBA::string_dup(boost::gregorian::to_iso_extended_string(in.get_value()).c_str());
+    return Nullable<Registry::IsoDate_var>(iso_date);
+}
+
+
+Nullable<Registry::IsoDateTime_var> wrap_nullable_ptime_to_Nullable_IsoDateTime(
+        const Nullable<boost::posix_time::ptime>& in)
+{
+    if (in.isnull() || in.get_value().is_special())
+    {
+        return Nullable<Registry::IsoDateTime_var>();
+    }
+
+    Registry::IsoDateTime_var iso_date;
+    iso_date->value = CORBA::string_dup(boost::posix_time::to_iso_extended_string(in.get_value()).c_str());
+    return Nullable<Registry::IsoDateTime_var>(iso_date);
+}
+
+
 } // namespace LibFred::Corba
 } // namespace LibFred

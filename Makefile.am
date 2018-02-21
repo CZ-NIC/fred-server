@@ -1463,6 +1463,18 @@ nodist_src_bin_corba_libcorbaadministrativeblocking_a_SOURCES = \
 		src/bin/corba/AdministrativeBlocking.hh
 
 nodist_src_bin_corba_libcorbadomainbrowser_a_SOURCES = \
+		src/bin/corba/IsoDateSK.cc \
+		src/bin/corba/IsoDateDynSK.cc \
+		src/bin/corba/IsoDate.hh \
+		src/bin/corba/NullableIsoDateSK.cc \
+		src/bin/corba/NullableIsoDateDynSK.cc \
+		src/bin/corba/NullableIsoDate.hh \
+		src/bin/corba/IsoDateTimeSK.cc \
+		src/bin/corba/IsoDateTimeDynSK.cc \
+		src/bin/corba/IsoDateTime.hh \
+		src/bin/corba/NullableIsoDateTimeSK.cc \
+		src/bin/corba/NullableIsoDateTimeDynSK.cc \
+		src/bin/corba/NullableIsoDateTime.hh \
 		src/bin/corba/DomainBrowserSK.cc \
 		src/bin/corba/DomainBrowserDynSK.cc \
 		src/bin/corba/DomainBrowser.hh
@@ -1548,7 +1560,7 @@ src/bin/corba/TechCheckSK.cc: $(IDLDIR)/TechCheck.idl $(IDLDIR)/_dataTypes.idl
 src/bin/corba/EPPSK.cc: $(IDLDIR)/EPP.idl $(IDLDIR)/_dataTypes.idl
 src/bin/corba/ZoneGeneratorSK.cc: $(IDLDIR)/ZoneGenerator.idl $(IDLDIR)/_dataTypes.idl
 src/bin/corba/ContactVerificationSK.cc: $(IDLDIR)/ContactVerification.idl
-src/bin/corba/DomainBrowserSK.cc: $(IDLDIR)/DomainBrowser.idl
+src/bin/corba/DomainBrowserSK.cc: $(IDLDIR)/DomainBrowser.idl $(IDLDIR)/NullableIsoDate.idl $(IDLDIR)/NullableIsoDateTime.idl
 src/bin/corba/AdminContactVerificationSK.cc: $(IDLDIR)/AdminContactVerification.idl $(IDLDIR)/_dataTypes.idl
 src/bin/corba/NotificationSK.cc: $(IDLDIR)/Notification.idl
 src/bin/corba/PublicRequestSK.cc: $(IDLDIR)/PublicRequest.idl $(IDLDIR)/NullableTypes.idl
