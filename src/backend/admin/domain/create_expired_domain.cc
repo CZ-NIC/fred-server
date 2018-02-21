@@ -83,10 +83,8 @@ create_expired_domain(LibFred::Logger::LoggerClient& _logger_client,
         }
         else
         {
-            boost::format msg("Domain with fqdn %1% already exists in database.");
-            msg % _fqdn;
             logger_create_expired_domain_close(_logger_client, "Fail", req_id, existing_domain_id, new_domain_id);
-            throw std::runtime_error(msg.str());
+            throw DomainExistsError();
         }
     }
 

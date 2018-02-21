@@ -24,6 +24,14 @@
 namespace Admin {
 namespace Domain {
 
+struct DomainExistsError : std::exception
+{
+    virtual const char* what() const noexcept
+    {
+        return "Domain already exists in database.";
+    }
+};
+
 void
 create_expired_domain(
         LibFred::Logger::LoggerClient& _logger_client,
