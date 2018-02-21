@@ -24,6 +24,7 @@
 #ifndef SERVER_I_HH_B20D42971A09437AAE3D4B735A7129B4
 #define SERVER_I_HH_B20D42971A09437AAE3D4B735A7129B4
 
+#include "src/bin/corba/Buffer.hh"
 #include "src/bin/corba/MojeID.hh"
 #include "src/bin/corba/mojeid/service_name.hh"
 #include <memory>
@@ -91,7 +92,7 @@ public:
     void rollback_prepared_transaction(
         const char *trans_id);
 
-    Buffer* get_validation_pdf(
+    Registry::Buffer* get_validation_pdf(
         ContactId contact_id);
 
     void create_validation_request(

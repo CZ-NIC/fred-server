@@ -355,7 +355,9 @@ noinst_LIBRARIES = \
 		src/bin/corba/libcorba_conversion_test.a \
 		src/bin/corba/libcorbabuffer.a \
 		src/bin/corba/libcorbaisodate.a \
+		src/bin/corba/libcorbanullableisodate.a \
 		src/bin/corba/libcorbaisodatetime.a \
+		src/bin/corba/libcorbanullableisodatetime.a \
 		src/backend/admin/contact/verification/libadmin_contact_verification.a \
 		src/backend/admin/notification/libadmin_notification.a \
 		src/backend/admin/domain/libadmin_create_expired_domain.a \
@@ -1359,6 +1361,15 @@ nodist_src_bin_corba_libcorbamessages_a_SOURCES = \
 		src/bin/corba/Messages.hh
 
 nodist_src_bin_corba_libcorbamojeid_a_SOURCES = \
+		src/bin/corba/BufferSK.cc \
+		src/bin/corba/BufferDynSK.cc \
+		src/bin/corba/Buffer.hh \
+		src/bin/corba/NullableIsoDateSK.cc \
+		src/bin/corba/NullableIsoDateDynSK.cc \
+		src/bin/corba/NullableIsoDate.hh \
+		src/bin/corba/IsoDateTimeSK.cc \
+		src/bin/corba/IsoDateTimeDynSK.cc \
+		src/bin/corba/IsoDateTime.hh \
 		src/bin/corba/MojeIDSK.cc \
 		src/bin/corba/MojeIDDynSK.cc
 
@@ -1519,7 +1530,7 @@ nodist_src_bin_corba_libcorbanullableisodatetime_a_SOURCES = \
 # idl build
 #
 src/bin/corba/MessagesSK.cc: $(IDLDIR)/Messages.idl
-src/bin/corba/MojeIDSK.cc: $(IDLDIR)/MojeID.idl
+src/bin/corba/MojeIDSK.cc: $(IDLDIR)/MojeID.idl $(IDLDIR)/NullableIsoDate.idl $(IDLDIR)/IsoDateTime.idl
 src/bin/corba/AdministrativeBlockingSK.cc: $(IDLDIR)/AdministrativeBlocking.idl
 src/bin/corba/FileManagerSK.cc: $(IDLDIR)/FileManager.idl $(IDLDIR)/_dataTypes.idl
 src/bin/corba/MailerSK.cc: $(IDLDIR)/Mailer.idl $(IDLDIR)/_dataTypes.idl
@@ -2278,6 +2289,7 @@ src_bin_corba_messages_fred_msgd_LDADD = \
 # src/bin/corba/mojeid/fred-mifd
 #
 src_bin_corba_mojeid_fred_mifd_SOURCES = \
+		src/backend/buffer.cc \
 		src/backend/mojeid/mojeid.cc \
 		src/backend/mojeid/mojeid_impl_data_conversion.cc \
 		src/backend/mojeid/mojeid_impl_internal.cc \
@@ -2311,6 +2323,9 @@ src_bin_corba_mojeid_fred_mifd_LDADD = \
 		src/util/types/libtypes.a \
 		src/util/db/libdb.a \
 		src/deprecated/util/liboldutils.a \
+		src/bin/corba/libcorbabuffer.a \
+		src/bin/corba/libcorbaisodatetime.a \
+		src/bin/corba/libcorbanullableisodate.a \
 		src/bin/corba/libcorba.a \
 		-lmpdec -lm -lrt \
 		$(LIBIDN_LIBS) \
@@ -2339,6 +2354,9 @@ src_bin_corba_mojeid_messages_fred_mojeid_msggen_LDFLAGS = \
 		$(AM_LDFLAGS)
 
 src_bin_corba_mojeid_messages_fred_mojeid_msggen_LDADD = \
+		src/bin/corba/libcorbabuffer.a \
+		src/bin/corba/libcorbanullableisodate.a \
+		src/bin/corba/libcorbaisodatetime.a \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(OMNIORB4_LIBS) \
 		$(BOOST_DATE_TIME_LIB)
@@ -3529,6 +3547,8 @@ test_test_optys_LDADD = \
 # test/test_corba_conversion
 #
 test_test_corba_conversion_SOURCES = \
+		src/backend/buffer.hh \
+		src/backend/buffer.cc \
 		src/util/corba_conversion.hh \
 		src/util/corba_conversion.cc \
 		src/bin/corba/mojeid/mojeid_corba_conversion.hh \
@@ -3549,8 +3569,8 @@ test_test_corba_conversion_LDFLAGS = \
 test_test_corba_conversion_LDADD = \
 		src/bin/corba/libcorba_conversion_test.a \
 		src/bin/corba/libcorbabuffer.a \
-		src/bin/corba/libcorbaisodate.a \
-		src/bin/corba/libcorbaisodatetime.a \
+		src/bin/corba/libcorbanullableisodate.a \
+		src/bin/corba/libcorbanullableisodatetime.a \
 		src/bin/corba/libcorbamojeid.a \
 		src/libfred/libfred.a \
 		src/util/libutil.a \

@@ -24,6 +24,7 @@
 #ifndef MOJEID_HH_56C8449065CF456E85D3F2D0A1B5A37A
 #define MOJEID_HH_56C8449065CF456E85D3F2D0A1B5A37A
 
+#include "src/backend/buffer.hh"
 #include "src/backend/mojeid/mojeid_checkers.hh"
 #include "src/backend/mojeid/mojeid_impl_data_conversion.hh"
 #include "src/libfred/object/object_state.hh"
@@ -90,7 +91,7 @@ public:
 
     void rollback_prepared_transaction(const std::string &_trans_id)const;
 
-    MojeIDImplData::Buffer get_validation_pdf(ContactId _contact_id)const;
+    Fred::Backend::Buffer get_validation_pdf(ContactId _contact_id)const;
 
     void create_validation_request(
         ContactId contact_id,

@@ -24,10 +24,13 @@
 #ifndef MOJEID_CORBA_CONVERSION_HH_02D1309914E14D58B682DF7CFD19A17A
 #define MOJEID_CORBA_CONVERSION_HH_02D1309914E14D58B682DF7CFD19A17A
 
+#include "src/backend/buffer.hh"
+#include "src/backend/mojeid/mojeid_impl_data.hh"
+#include "src/bin/corba/IsoDate.hh"
+#include "src/bin/corba/MojeID.hh"
+#include "src/bin/corba/NullableIsoDate.hh"
 #include "src/util/corba_conversion.hh"
 #include "src/util/db/nullable.hh"
-#include "src/bin/corba/MojeID.hh"
-#include "src/backend/mojeid/mojeid_impl_data.hh"
 
 namespace CorbaConversion
 {
@@ -35,12 +38,12 @@ namespace CorbaConversion
 void unwrap_NullableString(const Registry::MojeID::NullableString *src_ptr, Nullable< std::string > &dst);
 Registry::MojeID::NullableString_var wrap_Nullable_string(const Nullable< std::string > &src);
 
-void unwrap_Date(const Registry::MojeID::Date &src, Registry::MojeIDImplData::Date &dst);
-void unwrap_NullableDate(const Registry::MojeID::NullableDate *src_ptr, Nullable< Registry::MojeIDImplData::Date > &dst);
-void wrap_boost_gregorian_date(const boost::gregorian::date &src, Registry::MojeID::Date &dst);
-void wrap_Date(const Registry::MojeIDImplData::Date &src, Registry::MojeID::Date &dst);
-Registry::MojeID::NullableDate_var wrap_Nullable_Date(const Nullable< Registry::MojeIDImplData::Date > &src);
-Registry::MojeID::NullableDate_var wrap_Nullable_boost_gregorian_date(const Nullable< boost::gregorian::date > &src);
+void unwrap_Date(const Registry::IsoDate &src, Registry::MojeIDImplData::Birthdate &dst);
+void unwrap_NullableIsoDate(const Registry::NullableIsoDate *src_ptr, Nullable< Registry::MojeIDImplData::Birthdate > &dst);
+void wrap_boost_gregorian_date(const boost::gregorian::date &src, Registry::IsoDate &dst);
+void wrap_Date(const Registry::MojeIDImplData::Birthdate &src, Registry::IsoDate &dst);
+Registry::NullableIsoDate_var wrap_Nullable_Date(const Nullable< Registry::MojeIDImplData::Birthdate > &src);
+Registry::NullableIsoDate_var wrap_Nullable_boost_gregorian_date(const Nullable< boost::gregorian::date > &src);
 
 void unwrap_Address(const Registry::MojeID::Address &src, Registry::MojeIDImplData::Address &dst);
 void unwrap_NullableAddress(const Registry::MojeID::NullableAddress *src_ptr, Nullable< Registry::MojeIDImplData::Address > &dst);
@@ -61,8 +64,8 @@ struct ArgumentIsSpecial:std::invalid_argument
     virtual ~ArgumentIsSpecial() {}
 };
 
-void unwrap_DateTime(const Registry::MojeID::DateTime &src, boost::posix_time::ptime &dst);
-Registry::MojeID::DateTime_var wrap_DateTime(const boost::posix_time::ptime &src);
+void unwrap_DateTime(const Registry::IsoDateTime &src, boost::posix_time::ptime &dst);
+Registry::IsoDateTime_var wrap_DateTime(const boost::posix_time::ptime &src);
 
 /**
  * Exception if argument value is not enum ValidationResult value
@@ -118,7 +121,7 @@ Registry::MojeID::ContactStateInfo_var wrap_ContactStateInfo(const Registry::Moj
 
 Registry::MojeID::ContactStateInfoList_var wrap_ContactStateInfoList(const Registry::MojeIDImplData::ContactStateInfoList &src);
 
-Registry::MojeID::Buffer_var wrap_Buffer(const Registry::MojeIDImplData::Buffer &src);
+Registry::Buffer_var wrap_Buffer(const Fred::Backend::Buffer &src);
 
 /**
  * Exception if allocbuf is unable to alocate memory

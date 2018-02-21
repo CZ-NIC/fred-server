@@ -25,6 +25,7 @@
 #include <utility>
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
+
 #include "config.h"
 #include "src/libfred/opcontext.hh"
 #include "src/bin/cli/read_config_file.hh"
@@ -45,6 +46,9 @@
 
 #include "src/util/cfg/config_handler_decl.hh"
 #include <boost/test/unit_test.hpp>
+
+#include "src/bin/corba/Buffer.hh"
+#include "src/backend/buffer.hh"
 
 namespace Test {
 namespace CorbaConversion {
@@ -171,11 +175,11 @@ BOOST_AUTO_TEST_CASE(test_mojeid_date)
     static const std::string date_as_string = boost::gregorian::to_iso_extended_string(date);
     BOOST_CHECK(date_as_string == "2015-12-10");
 
-    Registry::MojeID::Date idl_date;
+    Registry::IsoDate idl_date;
     CorbaConversion::wrap_boost_gregorian_date(date, idl_date);
     BOOST_CHECK(idl_date.value.in() == date_as_string);
 
-    Registry::MojeIDImplData::Date impl_date;
+    Registry::MojeIDImplData::Birthdate impl_date;
     CorbaConversion::unwrap_Date(idl_date, impl_date);
     BOOST_CHECK(impl_date.value == date_as_string);
 
@@ -189,7 +193,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_datetime)
     static const std::string time_as_string = boost::posix_time::to_iso_extended_string(time);
     BOOST_CHECK(time_as_string == "2015-12-10T00:00:00");
 
-    Registry::MojeID::DateTime_var idl_time = CorbaConversion::wrap_DateTime(time)._retn();
+    Registry::IsoDateTime_var idl_time = CorbaConversion::wrap_DateTime(time)._retn();
     BOOST_CHECK(idl_time->value.in() == time_as_string);
 
     boost::posix_time::ptime impl_time;
@@ -210,20 +214,20 @@ BOOST_AUTO_TEST_CASE(test_mojeid_nullabledate)
     BOOST_CHECK(date_as_string == "2015-12-10");
     static const Nullable< boost::gregorian::date > nnd(date);
 
-    const Registry::MojeID::NullableDate_var nd1 = CorbaConversion::wrap_Nullable_boost_gregorian_date(nnd)._retn();
+    const Registry::NullableIsoDate_var nd1 = CorbaConversion::wrap_Nullable_boost_gregorian_date(nnd)._retn();
     BOOST_CHECK(std::string(nd1->value()) == date_as_string);
 
     static const Nullable< boost::gregorian::date > nd;
-    const Registry::MojeID::NullableDate_var nd2 = CorbaConversion::wrap_Nullable_boost_gregorian_date(nd)._retn();
+    const Registry::NullableIsoDate_var nd2 = CorbaConversion::wrap_Nullable_boost_gregorian_date(nd)._retn();
     BOOST_CHECK(nd2.in() == NULL);
 
-    Nullable< Registry::MojeIDImplData::Date > res1;
-    CorbaConversion::unwrap_NullableDate(nd1.in(), res1);
+    Nullable< Registry::MojeIDImplData::Birthdate > res1;
+    CorbaConversion::unwrap_NullableIsoDate(nd1.in(), res1);
     BOOST_CHECK(!res1.isnull());
     BOOST_CHECK(res1.get_value().value == date_as_string);
 
-    Nullable< Registry::MojeIDImplData::Date > res2;
-    CorbaConversion::unwrap_NullableDate(nd2.in(), res2);
+    Nullable< Registry::MojeIDImplData::Birthdate > res2;
+    CorbaConversion::unwrap_NullableIsoDate(nd2.in(), res2);
     BOOST_CHECK(res2.isnull());
 }
 
@@ -1488,7 +1492,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_info_contact)
     impl_ic.organization = "org";
     impl_ic.vat_reg_num = "vat_reg_num";
     {
-        Registry::MojeIDImplData::Date birthdate;
+        Registry::MojeIDImplData::Birthdate birthdate;
         birthdate.value = boost::gregorian::to_iso_extended_string(boost::gregorian::date(2015,12,10));
         impl_ic.birth_date = birthdate;
     }
@@ -1722,12 +1726,11 @@ BOOST_AUTO_TEST_CASE(test_mojeid_contact_state_info_list)
 
 BOOST_AUTO_TEST_CASE(test_mojeid_buffer)
 {
-    Registry::MojeIDImplData::Buffer impl_buffer;
-    impl_buffer.value = "test";
-    Registry::MojeID::Buffer_var idl_buffer_ptr = CorbaConversion::wrap_Buffer(impl_buffer);
+    Fred::Backend::Buffer impl_buffer("test");
+    Registry::Buffer_var idl_buffer_ptr = CorbaConversion::wrap_Buffer(impl_buffer);
     BOOST_REQUIRE(idl_buffer_ptr.operator ->() != NULL);
-    BOOST_CHECK(std::string(reinterpret_cast< const char* >(idl_buffer_ptr->value.get_buffer()),
-                            idl_buffer_ptr->value.length()) == impl_buffer.value);
+    BOOST_CHECK(std::string(reinterpret_cast< const char* >(idl_buffer_ptr->data.get_buffer()),
+                            idl_buffer_ptr->data.length()) == impl_buffer.data);
 }
 
 BOOST_AUTO_TEST_CASE(test_mojeid_constact_handle_list)

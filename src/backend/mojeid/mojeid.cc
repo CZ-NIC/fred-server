@@ -21,6 +21,7 @@
  *  mojeid implementation
  */
 
+#include "src/backend/buffer.hh"
 #include "src/backend/mojeid/mojeid.hh"
 #include "src/backend/mojeid/mojeid_impl_internal.hh"
 #include "src/backend/mojeid/safe_data_storage.hh"
@@ -1298,7 +1299,7 @@ void invalid_birthday_looks_like_no_birthday(MojeIDImplData::InfoContact &_data)
         const boost::gregorian::date invalid_date(boost::gregorian::not_a_date_time);
         const std::string invalid_date_str = boost::gregorian::to_iso_extended_string(invalid_date);
         if (_data.birth_date.get_value().value == invalid_date_str) { //make believe that invalid birthday
-            _data.birth_date = Nullable< MojeIDImplData::Date >();    //is no birthday
+            _data.birth_date = Nullable< MojeIDImplData::Birthdate >();    //is no birthday
         }
     }
 }
@@ -1803,7 +1804,7 @@ std::string birthdate_into_czech_date(const std::string &_birthdate)
 
 }
 
-MojeIDImplData::Buffer MojeIDImpl::get_validation_pdf(ContactId _contact_id)const
+Fred::Backend::Buffer MojeIDImpl::get_validation_pdf(ContactId _contact_id)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
@@ -1877,9 +1878,7 @@ MojeIDImplData::Buffer MojeIDImpl::get_validation_pdf(ContactId _contact_id)cons
 
         doc_gen->getInput() << letter_xml;
         doc_gen->closeInput();
-        MojeIDImplData::Buffer content;
-        content.value = pdf_document.str();
-        return content;
+        return Fred::Backend::Buffer(pdf_document.str());
     }
     catch (const LibFred::PublicRequestsOfObjectLockGuardByObjectId::Exception &e) {
         if (e.is_set_object_doesnt_exist()) {

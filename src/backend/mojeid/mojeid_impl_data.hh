@@ -208,8 +208,18 @@ struct ProcessRegistrationValidationResult
     ValidationResult::Value phone;
 };
 
-struct Date
+struct Birthdate
 {
+    Birthdate()
+        : value()
+    {
+    }
+
+    explicit Birthdate(const std::string& _value)
+        : value(_value)
+    {
+    }
+
     std::string value;
 };
 
@@ -220,7 +230,7 @@ struct CreateContact
     std::string                 last_name;
     Nullable< std::string >     organization;
     Nullable< std::string >     vat_reg_num;
-    Nullable< Date >            birth_date;
+    Nullable< Birthdate >       birth_date;
     Nullable< std::string >     id_card_num;
     Nullable< std::string >     passport_num;
     Nullable< std::string >     ssn_id_num;
@@ -243,7 +253,7 @@ struct UpdateContact
     std::string                 last_name;
     Nullable< std::string >     organization;
     Nullable< std::string >     vat_reg_num;
-    Nullable< Date >            birth_date;
+    Nullable< Birthdate >       birth_date;
     Nullable< std::string >     id_card_num;
     Nullable< std::string >     passport_num;
     Nullable< std::string >     ssn_id_num;
@@ -267,7 +277,7 @@ struct InfoContact
     std::string                 last_name;
     Nullable< std::string >     organization;
     Nullable< std::string >     vat_reg_num;
-    Nullable< Date >            birth_date;
+    Nullable< Birthdate >       birth_date;
     Nullable< std::string >     id_card_num;
     Nullable< std::string >     passport_num;
     Nullable< std::string >     ssn_id_num;
@@ -312,7 +322,7 @@ struct UpdateTransferContact
     std::string             full_name;
     Nullable< std::string > organization;
     Nullable< std::string > vat_reg_num;
-    Nullable< Date >        birth_date;
+    Nullable< Birthdate >   birth_date;
     Nullable< std::string > vat_id_num;
     Address                 permanent;
     Nullable< Address >     mailing;
@@ -329,11 +339,6 @@ struct ContactStateInfo
     Nullable< boost::gregorian::date > identification_date;
     Nullable< boost::gregorian::date > validation_date;
     Nullable< boost::gregorian::date > linked_date;
-};
-
-struct Buffer
-{
-    std::string value;
 };
 
 typedef std::vector< ContactStateInfo > ContactStateInfoList;

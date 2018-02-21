@@ -20,9 +20,17 @@
  *  @file
  *  implementation for MojeID CORBA conversion
  */
+
 #include "src/bin/corba/mojeid/mojeid_corba_conversion.hh"
-#include <string>
+
+#include "src/backend/buffer.hh"
+#include "src/bin/corba/IsoDate.hh"
+#include "src/bin/corba/MojeID.hh"
+#include "src/bin/corba/NullableIsoDate.hh"
+
 #include <boost/lexical_cast.hpp>
+
+#include <string>
 
 namespace CorbaConversion {
 
@@ -64,24 +72,24 @@ Registry::MojeID::NullableString_var wrap_Nullable_string(const Nullable< std::s
                               new Registry::MojeID::NullableString(src.get_value().c_str()));
 }
 
-void unwrap_Date(const Registry::MojeID::Date &src, Registry::MojeIDImplData::Date &dst)
+void unwrap_Date(const Registry::IsoDate &src, Registry::MojeIDImplData::Birthdate &dst)
 {
     dst.value = src.value.in();
 }
 
-void unwrap_NullableDate(const Registry::MojeID::NullableDate *src_ptr, Nullable< Registry::MojeIDImplData::Date > &dst)
+void unwrap_NullableIsoDate(const Registry::NullableIsoDate *src_ptr, Nullable< Registry::MojeIDImplData::Birthdate > &dst)
 {
     if (src_ptr == NULL) {
-        dst = Nullable< Registry::MojeIDImplData::Date >();
+        dst = Nullable< Registry::MojeIDImplData::Birthdate >();
     }
     else {
-        Registry::MojeIDImplData::Date result;
+        Registry::MojeIDImplData::Birthdate result;
         unwrap_Date(src_ptr->_boxed_in(), result);
         dst = result;
     }
 }
 
-void wrap_boost_gregorian_date(const boost::gregorian::date &src, Registry::MojeID::Date &dst)
+void wrap_boost_gregorian_date(const boost::gregorian::date &src, Registry::IsoDate &dst)
 {
     if (src.is_special()) {
         throw ArgumentIsSpecial();
@@ -90,27 +98,27 @@ void wrap_boost_gregorian_date(const boost::gregorian::date &src, Registry::Moje
     dst.value = wrap_string(boost::gregorian::to_iso_extended_string(src))._retn();
 }
 
-void wrap_Date(const Registry::MojeIDImplData::Date &src, Registry::MojeID::Date &dst)
+void wrap_Date(const Registry::MojeIDImplData::Birthdate &src, Registry::IsoDate &dst)
 {
     dst.value = wrap_string(src.value)._retn();
 }
 
-Registry::MojeID::NullableDate_var wrap_Nullable_Date(const Nullable< Registry::MojeIDImplData::Date > &src)
+Registry::NullableIsoDate_var wrap_Nullable_Date(const Nullable< Registry::MojeIDImplData::Birthdate > &src)
 {
     if (src.isnull()) {
-        return Registry::MojeID::NullableDate_var();
+        return Registry::NullableIsoDate_var();
     }
-    Registry::MojeID::NullableDate_var result(new Registry::MojeID::NullableDate());
+    Registry::NullableIsoDate_var result(new Registry::NullableIsoDate());
     wrap_Date(src.get_value(), result.in()->_value());
     return result._retn();
 }
 
-Registry::MojeID::NullableDate_var wrap_Nullable_boost_gregorian_date(const Nullable< boost::gregorian::date > &src)
+Registry::NullableIsoDate_var wrap_Nullable_boost_gregorian_date(const Nullable< boost::gregorian::date > &src)
 {
     if (src.isnull()) {
-        return Registry::MojeID::NullableDate_var();
+        return Registry::NullableIsoDate_var();
     }
-    Registry::MojeID::NullableDate_var result(new Registry::MojeID::NullableDate());
+    Registry::NullableIsoDate_var result(new Registry::NullableIsoDate());
     wrap_boost_gregorian_date(src.get_value(), result.in()->_value());
     return result._retn();
 }
@@ -228,7 +236,7 @@ ArgumentIsSpecial::ArgumentIsSpecial()
 {
 }
 
-void unwrap_DateTime(const Registry::MojeID::DateTime &src, boost::posix_time::ptime &dst)
+void unwrap_DateTime(const Registry::IsoDateTime &src, boost::posix_time::ptime &dst)
 {
     const std::string value = src.value.in();
     try {
@@ -242,13 +250,13 @@ void unwrap_DateTime(const Registry::MojeID::DateTime &src, boost::posix_time::p
     }
 }
 
-Registry::MojeID::DateTime_var wrap_DateTime(const boost::posix_time::ptime &src)
+Registry::IsoDateTime_var wrap_DateTime(const boost::posix_time::ptime &src)
 {
     if (src.is_special()) {
         throw ArgumentIsSpecial();
     }
 
-    Registry::MojeID::DateTime_var result(new Registry::MojeID::DateTime());
+    Registry::IsoDateTime_var result(new Registry::IsoDateTime());
     result.inout().value = wrap_string(boost::posix_time::to_iso_extended_string(src))._retn();
     return result._retn();
 }
@@ -377,7 +385,7 @@ void unwrap_CreateContact(const Registry::MojeID::CreateContact &src, Registry::
     unwrap_NullableString(src.organization.in(), dst.organization);
     unwrap_NullableString(src.vat_reg_num.in(),  dst.vat_reg_num);
 
-    unwrap_NullableDate(src.birth_date.in(), dst.birth_date);
+    unwrap_NullableIsoDate(src.birth_date.in(), dst.birth_date);
 
     unwrap_NullableString_fix_frontend_bug(src.id_card_num.in(),  dst.id_card_num);
     unwrap_NullableString_fix_frontend_bug(src.passport_num.in(), dst.passport_num);
@@ -409,7 +417,7 @@ void unwrap_UpdateTransferContact(const Registry::MojeID::UpdateTransferContact 
     unwrap_NullableString(src.organization.in(), dst.organization);
     unwrap_NullableString(src.vat_reg_num.in(),  dst.vat_reg_num);
 
-    unwrap_NullableDate(src.birth_date.in(), dst.birth_date);
+    unwrap_NullableIsoDate(src.birth_date.in(), dst.birth_date);
 
     unwrap_NullableString_fix_frontend_bug(src.vat_id_num.in(), dst.vat_id_num);
 
@@ -434,7 +442,7 @@ void unwrap_UpdateContact(const Registry::MojeID::UpdateContact &src, Registry::
     unwrap_NullableString(src.organization.in(), dst.organization);
     unwrap_NullableString(src.vat_reg_num.in(),  dst.vat_reg_num);
 
-    unwrap_NullableDate(src.birth_date.in(), dst.birth_date);
+    unwrap_NullableIsoDate(src.birth_date.in(), dst.birth_date);
 
     unwrap_NullableString_fix_frontend_bug(src.id_card_num.in(),  dst.id_card_num);
     unwrap_NullableString_fix_frontend_bug(src.passport_num.in(), dst.passport_num);
@@ -555,13 +563,13 @@ AllocbufFailed::AllocbufFailed()
 {
 }
 
-Registry::MojeID::Buffer_var wrap_Buffer(const Registry::MojeIDImplData::Buffer &src)
+Registry::Buffer_var wrap_Buffer(const Fred::Backend::Buffer& src)
 {
-    Registry::MojeID::Buffer_var result(new Registry::MojeID::Buffer());
+    Registry::Buffer_var result(new Registry::Buffer());
     try {
-        result->value.length(src.value.size());
-        if (!src.value.empty()) {
-            std::memcpy(result->value.get_buffer(), src.value.c_str(), src.value.size());
+        result->data.length(src.data.size());
+        if (!src.data.empty()) {
+            std::memcpy(result->data.get_buffer(), src.data.c_str(), src.data.size());
         }
     }
     catch (...) {

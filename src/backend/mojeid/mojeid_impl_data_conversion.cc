@@ -21,6 +21,7 @@
  *  declaration for Registry::MojeIDImplData namespace
  */
 
+#include "src/backend/mojeid/mojeid_impl_data.hh"
 #include "src/backend/mojeid/mojeid_impl_data_conversion.hh"
 #include "src/util/types/birthdate.hh"
 #include "src/libfred/registrable_object/contact/ssntype.hh"
@@ -124,10 +125,10 @@ void minimal_common_conversion_from_fred(const LibFred::InfoContactData &src, DS
         switch (Conversion::Enums::from_db_handle< LibFred::SSNType >(src.ssntype.get_value())) {
             case LibFred::SSNType::birthday:
             {
-                Registry::MojeIDImplData::Date birthdate;
-                birthdate.value = boost::gregorian::to_iso_extended_string(
-                                      birthdate_from_string_to_date(src.ssn.get_value()));
-                dst.birth_date = birthdate;
+                dst.birth_date =
+                        Registry::MojeIDImplData::Birthdate(
+                                boost::gregorian::to_iso_extended_string(
+                                        birthdate_from_string_to_date(src.ssn.get_value())));
                 break;
             }
             case LibFred::SSNType::ico:
