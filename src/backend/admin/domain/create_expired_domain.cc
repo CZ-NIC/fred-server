@@ -41,10 +41,10 @@ create_expired_domain(LibFred::Logger::LoggerClient& _logger_client,
 {
 
     LibFred::OperationContextCreator ctx;
-    boost::optional<unsigned long long> deleted_domain_id = boost::none;
-    boost::optional<unsigned long long> new_domain_id = boost::none;
+    boost::optional<unsigned long long> existing_domain_id;
+    boost::optional<unsigned long long> new_domain_id;
 
-    boost::optional<unsigned long long> req_id = _logger_client.createRequest("", "Admin", "",
+    unsigned long long req_id = _logger_client.createRequest("", "Admin", "",
             boost::assign::list_of
                 (LibFred::Logger::RequestProperty("command", "create_expired_domain", false))
                 (LibFred::Logger::RequestProperty("handle", _fqdn, true))
@@ -52,7 +52,7 @@ create_expired_domain(LibFred::Logger::LoggerClient& _logger_client,
                 (LibFred::Logger::RequestProperty("cltrid", _cltrid, true)),
             LibFred::Logger::ObjectReferences(),
             "CreateExpiredDomain", 0);
-    if (!req_id) {
+    if (req_id == 0) {
         throw std::runtime_error("unable to log create expired domain request");
     }
 
@@ -60,22 +60,22 @@ create_expired_domain(LibFred::Logger::LoggerClient& _logger_client,
     {
         LibFred::get_id_of_registered<LibFred::Object_Type::contact>(ctx, _registrant);
     }
-    catch (const std::exception&)
+    catch (const LibFred::UnknownObject&)
     {
         boost::format msg("Contact with handle %1% not found in database.");
         msg % _registrant;
-        logger_create_expired_domain_close(_logger_client, "Fail", req_id, deleted_domain_id, new_domain_id);
+        logger_create_expired_domain_close(_logger_client, "Fail", req_id, existing_domain_id, new_domain_id);
         throw std::runtime_error(msg.str());
     }
 
     try
     {
-        deleted_domain_id = LibFred::get_id_of_registered<LibFred::Object_Type::domain>(ctx, _fqdn);
+        existing_domain_id = LibFred::get_id_of_registered<LibFred::Object_Type::domain>(ctx, _fqdn);
     }
-    catch (const std::exception&)
+    catch (const LibFred::UnknownObject&)
     { }  // Domain could be already deleted
 
-    if (deleted_domain_id)
+    if (existing_domain_id)
     {
         if (_delete_existing)
         {
@@ -85,7 +85,7 @@ create_expired_domain(LibFred::Logger::LoggerClient& _logger_client,
         {
             boost::format msg("Domain with fqdn %1% already exists in database.");
             msg % _fqdn;
-            logger_create_expired_domain_close(_logger_client, "Fail", req_id, deleted_domain_id, new_domain_id);
+            logger_create_expired_domain_close(_logger_client, "Fail", req_id, existing_domain_id, new_domain_id);
             throw std::runtime_error(msg.str());
         }
     }
@@ -101,11 +101,11 @@ create_expired_domain(LibFred::Logger::LoggerClient& _logger_client,
     }
     catch (const std::exception&)
     {
-        logger_create_expired_domain_close(_logger_client, "Fail", req_id, deleted_domain_id, new_domain_id);
+        logger_create_expired_domain_close(_logger_client, "Fail", req_id, existing_domain_id, new_domain_id);
         throw std::runtime_error("Create domain failed");
     }
     ctx.commit_transaction();
-    logger_create_expired_domain_close(_logger_client, "Success", req_id, deleted_domain_id, result.create_object_result.object_id);
+    logger_create_expired_domain_close(_logger_client, "Success", req_id, existing_domain_id, result.create_object_result.object_id);
 }
 
 void
