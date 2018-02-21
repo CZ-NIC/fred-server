@@ -2668,6 +2668,7 @@ SERVER_TESTS = \
 		test/backend/test-admin-contact-verification \
 		test/backend/test-admin-contact-automerge \
 		test/backend/test-admin-notification \
+		test/backend/test-admin-domain \
 		test/backend/test-epp \
 		test/backend/test-whois \
 		test/backend/test-public-request \
@@ -2797,7 +2798,6 @@ test_backend_test_admin_notification_LDFLAGS = \
 
 test_backend_test_admin_notification_LDADD = \
 		src/backend/admin/notification/libadmin_notification.a \
-		src/backend/admin/domain/libadmin_create_expired_domain.a \
 		src/bin/corba/libcorba.a \
 		src/libfred/libfred.a \
 		src/util/log/liblog.a \
@@ -2817,6 +2817,51 @@ test_backend_test_admin_notification_LDADD = \
 		$(LIBIDN_LIBS)
 #
 # test/backend/test-admin-notification
+
+# test/backend/test-admin-domain
+#
+test_backend_test_admin_domain_SOURCES = \
+		test/backend/admin/domain/fixtures.hh \
+		test/backend/admin/domain/main.cc \
+		test/backend/admin/domain/test_create_expired_domain.cc \
+		src/backend/admin/domain/create_expired_domain.hh \
+		src/backend/admin/domain/create_expired_domain.cc \
+		test/setup/fixtures.hh \
+		test/setup/fixtures.cc
+
+test_backend_test_admin_domain_LDFLAGS = \
+		$(POSTGRESQL_LDFLAGS) \
+		$(BOOST_LDFLAGS) \
+		$(AM_LDFLAGS)
+
+test_backend_test_admin_domain_LDADD = \
+		src/backend/admin/domain/libadmin_create_expired_domain.a \
+		src/bin/corba/libcorba.a \
+		src/bin/corba/libcorbaregistry.a \
+		src/bin/corba/libcorbafilters.a \
+		src/bin/corba/libmailer.a \
+		src/bin/corba/libcorbadatatypes.a \
+		src/bin/corba/libfilemanager.a \
+		src/libfred/libfred.a \
+		src/libfred/requests/librequests.a \
+		src/util/log/liblog.a \
+		src/util/db/libdb.a \
+		src/util/libutil.a \
+		src/util/types/libtypes.a \
+		src/util/tz/libtimezones.a \
+		$(BOOST_PROGRAM_OPTIONS_LIB) \
+		$(BOOST_DATE_TIME_LIB) \
+		$(BOOST_REGEX_LIB) \
+		$(BOOST_RANDOM_LIB) \
+		$(OMNIORB4_LIBS) \
+		$(BOOST_THREAD_LIB) \
+		$(BOOST_SERIALIZATION_LIB) \
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB) \
+		$(BOOST_UNIT_TEST_FRAMEWORK_LIB) \
+		$(LIBIDN_LIBS)
+#
+# test/backend/test-admin-domain
 
 # test/backend/test-epp
 #
