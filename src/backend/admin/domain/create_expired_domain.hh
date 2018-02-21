@@ -31,17 +31,15 @@ create_expired_domain(
         const std::string& _registrant,
         const std::string& _cltrid,
         bool _delete_existing,
-        const std::string& _registrar
-        );
+        const std::string& _registrar);
 
 void
 logger_create_expired_domain_close(
         LibFred::Logger::LoggerClient& _logger_client,
         const std::string& _result,
-        const unsigned long long _req_id,
-        const unsigned long long _deleted_domain_id,
-        const unsigned long long _new_domain_id
-        );
+        const boost::optional<unsigned long long> _req_id,
+        const boost::optional<unsigned long long> _deleted_domain_id,
+        const boost::optional<unsigned long long> _new_domain_id);
 
 } // namespace Domain;
 } // namespace Admin;
