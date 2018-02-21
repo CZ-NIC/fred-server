@@ -18,7 +18,7 @@ unsigned long msseed()
 {
     struct timeval tv;
     gettimeofday(&tv, NULL);
-    return (tv.tv_usec + tv.tv_sec) ^ static_cast<unsigned long>(syscall(SYS_gettid));
+    return (static_cast<unsigned long>(tv.tv_sec) + tv.tv_usec) ^ syscall(SYS_gettid);
 }
 
 
