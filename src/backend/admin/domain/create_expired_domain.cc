@@ -37,10 +37,7 @@ create_expired_domain(
         bool _delete_existing,
         const std::string& _registrar)
 {
-
     LibFred::OperationContextCreator ctx;
-    boost::optional<unsigned long long> existing_domain_id;
-    boost::optional<unsigned long long> new_domain_id;
 
     unsigned long long req_id = _logger_client.createRequest("", "Admin", "",
             boost::assign::list_of
@@ -56,25 +53,28 @@ create_expired_domain(
 
     if (!get_id_by_handle<LibFred::Object_Type::contact>(ctx, _registrant))
     {
-        logger_create_expired_domain_close(_logger_client, "Fail", req_id, existing_domain_id, new_domain_id);
+        logger_create_expired_domain_close(_logger_client, "Fail", req_id, boost::none, boost::none);
         throw RegistrantNotExists();
     }
 
-    existing_domain_id = get_id_by_handle<LibFred::Object_Type::domain>(ctx, _fqdn);
+    const boost::optional<unsigned long long> existing_domain_id = get_id_by_handle<LibFred::Object_Type::domain>(ctx, _fqdn);
 
-    if (existing_domain_id && _delete_existing)
+    if (existing_domain_id && !_delete_existing)
     {
-        LibFred::DeleteDomainByFqdn(_fqdn).exec(ctx);
-    }
-    else if (existing_domain_id && !_delete_existing)
-    {
-        logger_create_expired_domain_close(_logger_client, "Fail", req_id, existing_domain_id, new_domain_id);
+        logger_create_expired_domain_close(_logger_client, "Fail", req_id, existing_domain_id, boost::none);
         throw DomainExists();
     }
-    else if (!existing_domain_id && _delete_existing)
+    if (!existing_domain_id && _delete_existing)
     {
-        logger_create_expired_domain_close(_logger_client, "Fail", req_id, existing_domain_id, new_domain_id);
+        logger_create_expired_domain_close(_logger_client, "Fail", req_id, boost::none, boost::none);
         throw DomainNotExists();
+    }
+
+    bool do_delete = existing_domain_id && _delete_existing;
+
+    if (do_delete)
+    {
+        LibFred::DeleteDomainByFqdn(_fqdn).exec(ctx);
     }
 
     boost::gregorian::date current_date(boost::gregorian::day_clock::local_day());
@@ -88,7 +88,7 @@ create_expired_domain(
     }
     catch (const std::exception& e)
     {
-        logger_create_expired_domain_close(_logger_client, "Fail", req_id, existing_domain_id, new_domain_id);
+        logger_create_expired_domain_close(_logger_client, "Fail", req_id, existing_domain_id, boost::none);
         boost::format msg("Create domain failed: %1%");
         msg % e.what();
         throw std::runtime_error(msg.str());
