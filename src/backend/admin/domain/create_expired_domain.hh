@@ -69,7 +69,7 @@ get_id_by_handle(LibFred::OperationContextCreator& _ctx, const std::string& _han
         id = LibFred::get_id_of_registered<object_type>(_ctx, _handle);
     }
     catch (const LibFred::UnknownObject&)
-    { }  // Domain could be already deleted
+    { }  // Object may not exist
 
     return id;
 }
