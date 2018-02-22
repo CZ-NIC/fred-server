@@ -178,5 +178,4 @@ DomainClient::domain_list()
     delete unionFilter;
 }
 
-
 } // namespace Admin;

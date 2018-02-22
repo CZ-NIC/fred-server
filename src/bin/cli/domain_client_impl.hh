@@ -26,9 +26,12 @@
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/handle_database_args.hh"
 #include "src/util/cfg/handle_corbanameservice_args.hh"
+#include "src/util/cfg/handle_createexpireddomain_args.hh"
 #include "src/bin/cli/handle_adminclientselection_args.hh"
 #include "src/util/log/context.hh"
 #include "src/bin/cli/domainclient.hh"
+#include "src/bin/corba/logger_client_impl.hh"
+#include "src/backend/admin/domain/create_expired_domain.hh"
 
 /**
  * \class domain_list_impl
@@ -49,6 +52,40 @@ struct domain_list_impl
       domain_client.runMethod();
       return ;
   }
+};
+
+/**
+ * \class create_expired_domain_impl
+ * \brief admin client implementation of create_expired_domain
+ */
+struct create_expired_domain_impl
+{
+    void operator()() const
+    {
+        Logging::Context ctx("create_expired_domain_impl");
+
+        FakedArgs orb_fa = CfgArgGroups::instance()->fa;
+        HandleCorbaNameServiceArgsGrp* ns_args_ptr = CfgArgGroups::instance()->
+                   get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>();
+
+        CorbaContainer::set_instance(
+                orb_fa.get_argc(),
+                orb_fa.get_argv(),
+                ns_args_ptr->get_nameservice_host(),
+                ns_args_ptr->get_nameservice_port(),
+                ns_args_ptr->get_nameservice_context()
+                );
+
+        auto logger_client = std::make_unique<LibFred::Logger::LoggerCorbaClientImpl>();
+
+        if (!logger_client) {
+            throw std::runtime_error("unable to get request logger reference");
+        }
+
+        const auto params = CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientCreateExpiredDomainArgsGrp>()->params;
+        const auto registrar_handle = CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCreateExpiredDomainArgsGrp>()->get_registrar_handle();
+        Admin::Domain::create_expired_domain(*logger_client, params.fqdn, params.registrant, params.cltrid, params.delete_existing, registrar_handle);
+    }
 };
 
 #endif

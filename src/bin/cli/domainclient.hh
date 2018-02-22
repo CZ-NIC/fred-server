@@ -27,6 +27,7 @@
 #include "src/bin/cli/baseclient.hh"
 #include "src/util/types/optional.hh"
 #include "src/bin/cli/domain_params.hh"
+#include "src/libfred/logger_client.hh"
 
 namespace Admin {
 

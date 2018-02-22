@@ -63,6 +63,7 @@
 #include "src/util/cfg/handle_database_args.hh"
 #include "src/util/cfg/handle_threadgroup_args.hh"
 #include "src/util/cfg/handle_corbanameservice_args.hh"
+#include "src/util/cfg/handle_createexpireddomain_args.hh"
 #include "src/bin/cli/handle_adminclientselection_args.hh"
 #include "src/util/cfg/handle_registry_args.hh"
 #include "src/util/cfg/handle_sms_args.hh"
@@ -140,6 +141,7 @@ CommandHandlerPtrVector chpv = boost::assign::list_of
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleContactVerificationEnqueueCheckArgsGrp), contact_verification_enqueue_check_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleContactVerificationStartEnqueuedChecksArgsGrp), contact_verification_start_enqueued_checks_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleSendObjectEventNotificationEmailsArgsGrp), send_object_event_notification_emails_impl()))
+    (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientCreateExpiredDomainArgsGrp), create_expired_domain_impl()))
     ;
 
 CommandOptionGroups cog(chpv);
@@ -163,11 +165,14 @@ HandlerGrpVector registry_gv = boost::assign::list_of
 HandlerGrpVector sms_gv = boost::assign::list_of
         (HandleGrpArgsPtr(
                 new HandleSmsArgsGrp));
+HandlerGrpVector create_expired_domain_gv = boost::assign::list_of
+        (HandleGrpArgsPtr(
+                new HandleCreateExpiredDomainArgsGrp));
 
 HandlerPtrGrid global_hpg = gv_list
     (help_gv)(help_dates_gv)
     .addCommandOptions(cog)
-    (config_gv)(loging_gv)(database_gv)(corbans_gv)(registry_gv)(sms_gv)
+    (config_gv)(loging_gv)(database_gv)(corbans_gv)(registry_gv)(sms_gv)(create_expired_domain_gv)
     ;
 
 

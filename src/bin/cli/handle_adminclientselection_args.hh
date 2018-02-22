@@ -2609,6 +2609,56 @@ public:
     }//handle
 };//class HandleAdminClientNotifyLettersOptysGetUndeliveredArgsGrp
 
+/**
+ * \class HandleAdminClientCreateExpiredDomainArgsGrp
+ * \brief admin client create_expired_domain options handler
+ */
+class HandleAdminClientCreateExpiredDomainArgsGrp : public HandleCommandGrpArgs
+{
+    public:
+        CreateExpiredDomainArgs params;
+
+        CommandDescription get_command_option()
+        {
+            return CommandDescription("create_expired_domain");
+        }
+
+        std::shared_ptr<boost::program_options::options_description>
+        get_options_description()
+        {
+            std::shared_ptr<boost::program_options::options_description> cfg_opts(
+                    new boost::program_options::options_description(
+                            std::string("create_expired_domain options")));
+            cfg_opts->add_options()
+                ("create_expired_domain", "create expired domain")
+                ("fqdn", boost::program_options
+                    ::value<Checked::string>()->required()
+                        ->notifier(save_arg<std::string>(params.fqdn)),
+                    "fully qualified domain name is domain object handle")
+                ("registrant", boost::program_options
+                    ::value<Checked::string>()->required()
+                        ->notifier(save_arg<std::string>(params.registrant)),
+                    "registrant")
+                ("cltrid", boost::program_options
+                    ::value<Checked::string>()->required()
+                        ->notifier(save_arg<std::string>(params.cltrid)),
+                    "cltrid")
+                ("delete_existing", boost::program_options
+                    ::value<bool>()->zero_tokens()
+                        ->notifier(save_arg<bool>(params.delete_existing)),
+                    "delete existing domain")
+                ;
+            return cfg_opts;
+        }//get_options_description
+
+        std::size_t handle( int argc, char* argv[], FakedArgs &fa, std::size_t option_group_index)
+        {
+            boost::program_options::variables_map vm;
+            handler_parse_args()(get_options_description(), vm, argc, argv, fa);
+            return option_group_index;
+        }//handle
+};//class HandleAdminClientCreateExpiredDomainArgsGrp
+
 class HandleSendObjectEventNotificationEmailsArgsGrp : public HandleCommandGrpArgs {
     private:
         static const char* get_command_name() { return "notify_email_objects_events"; }
