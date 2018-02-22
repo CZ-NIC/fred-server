@@ -44,7 +44,7 @@ namespace Backend {
 namespace Admin {
 namespace Domain {
 
-LibFred::Logger::LoggerClient& get_logger()
+std::unique_ptr<LibFred::Logger::LoggerClient> get_logger()
 {
     FakedArgs fa = CfgArgs::instance()->fa;
 
@@ -56,10 +56,9 @@ LibFred::Logger::LoggerClient& get_logger()
             ns_args_ptr->nameservice_port,
             ns_args_ptr->nameservice_context);
 
-    std::unique_ptr<LibFred::Logger::LoggerClient> logger_client(
-            new ::LibFred::Logger::DummyLoggerCorbaClientImpl());
+    auto logger_client = std::make_unique<::LibFred::Logger::DummyLoggerCorbaClientImpl>();
 
-    return *(logger_client.release());
+    return std::move(logger_client);
 }
 
 struct Fqdn
@@ -73,7 +72,6 @@ struct Fqdn
 
 struct NoExistingDomain : Fqdn
 {
-    RandomDataGenerator* generator = new RandomDataGenerator(0);
     NoExistingDomain(const std::string& _fqdn) : Fqdn(_fqdn)
     {
     }
@@ -85,7 +83,6 @@ struct ExistingDomain : Fqdn
     ExistingDomain(const std::string& _fqdn) : Fqdn(_fqdn)
     {
         ::LibFred::OperationContextCreator ctx;
-        std::cout << "create " << fqdn << std::endl;
         domain = Test::exec(Test::CreateX_factory<::LibFred::CreateDomain>()
                         .make(Test::registrar::make(ctx).handle,
                               Test::contact::make(ctx).handle,
@@ -108,8 +105,7 @@ struct SystemRegistrar
 
 struct HasNoExistingDomain {
     SystemRegistrar registrar;
-    //NoExistingDomain domain;
-    const std::string domain;
+    NoExistingDomain domain;
     bool delete_existing;
     const std::string registrant;
     const std::string cltrid;
@@ -124,8 +120,7 @@ struct HasNoExistingDomain {
 
 struct HasNoDeleteNoExistingDomain {
     SystemRegistrar registrar;
-    //NoExistingDomain domain;
-    const std::string domain;
+    NoExistingDomain domain;
     bool delete_existing;
     const std::string registrant;
     const std::string cltrid;
@@ -140,8 +135,7 @@ struct HasNoDeleteNoExistingDomain {
 
 struct HasExistingDomain {
     SystemRegistrar registrar;
-    //ExistingDomain domain;
-    const std::string domain;
+    ExistingDomain domain;
     bool delete_existing;
     const std::string registrant;
     const std::string cltrid;
@@ -156,8 +150,7 @@ struct HasExistingDomain {
 
 struct HasNoDeleteExistingDomain {
     SystemRegistrar registrar;
-    //ExistingDomain domain;
-    const std::string domain;
+    ExistingDomain domain;
     bool delete_existing;
     const std::string registrant;
     const std::string cltrid;
@@ -165,6 +158,21 @@ struct HasNoDeleteExistingDomain {
         domain("existingdomain1.cz"),
         delete_existing(false),
         registrant("KONTAKT"),
+        cltrid("cltrid")
+    {
+    }
+};
+
+struct HasNoExistingRegistrant {
+    SystemRegistrar registrar;
+    ExistingDomain domain;
+    bool delete_existing;
+    const std::string registrant;
+    const std::string cltrid;
+    HasNoExistingRegistrant() :
+        domain("noexistingregistrant.cz"),
+        delete_existing(false),
+        registrant("no_existing_contact"),
         cltrid("cltrid")
     {
     }

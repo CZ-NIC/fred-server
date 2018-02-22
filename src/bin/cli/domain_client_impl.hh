@@ -76,16 +76,15 @@ struct create_expired_domain_impl
                 ns_args_ptr->get_nameservice_context()
                 );
 
-        std::unique_ptr<LibFred::Logger::LoggerClient> logger_client(
-                new LibFred::Logger::LoggerCorbaClientImpl());
+        auto logger_client = std::make_unique<LibFred::Logger::LoggerCorbaClientImpl>();
 
-        if (!logger_client.get()) {
+        if (!logger_client) {
             throw std::runtime_error("unable to get request logger reference");
         }
 
         const auto params = CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientCreateExpiredDomainArgsGrp>()->params;
         const auto registrar_handle = CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCreateExpiredDomainArgsGrp>()->get_registrar_handle();
-        Admin::Domain::create_expired_domain(*(logger_client.get()), params.fqdn, params.registrant, params.cltrid, params.delete_existing, registrar_handle);
+        Admin::Domain::create_expired_domain(std::move(logger_client), params.fqdn, params.registrant, params.cltrid, params.delete_existing, registrar_handle);
     }
 };
 
