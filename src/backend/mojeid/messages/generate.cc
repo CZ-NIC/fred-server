@@ -16,6 +16,7 @@
 #include "src/util/xmlgen.hh"
 
 #include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/algorithm/string/case_conv.hpp>
 #include <boost/algorithm/string/trim.hpp>
 #include <utility>
 
@@ -580,7 +581,7 @@ Generate::MessageId send_auth_owner_letter(
             (Util::XmlTagPair("postal_code", Util::XmlUnparsedCData(pa.code)))
             (Util::XmlTagPair("country", Util::XmlUnparsedCData(addr_country)))
             (Util::XmlTagPair("account", Util::vector_of<Util::XmlCallback>
-                (Util::XmlTagPair("username", Util::XmlUnparsedCData(contact_handle)))
+                (Util::XmlTagPair("username", Util::XmlUnparsedCData(boost::algorithm::to_lower_copy(contact_handle))))
                 (Util::XmlTagPair("first_name", Util::XmlUnparsedCData(firstname)))
                 (Util::XmlTagPair("last_name", Util::XmlUnparsedCData(lastname)))
                 (Util::XmlTagPair("sex", Util::XmlUnparsedCData(sex)))
