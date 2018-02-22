@@ -34,6 +34,14 @@ struct DomainExists : std::exception
     }
 };
 
+struct DomainNotExists : std::exception
+{
+    virtual const char* what() const noexcept
+    {
+        return "Domain does not exist in database.";
+    }
+};
+
 struct RegistrantNotExists : std::exception
 {
     virtual const char* what() const noexcept

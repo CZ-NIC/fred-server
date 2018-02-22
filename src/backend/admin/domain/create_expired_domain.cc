@@ -62,17 +62,19 @@ create_expired_domain(
 
     existing_domain_id = get_id_by_handle<LibFred::Object_Type::domain>(ctx, _fqdn);
 
-    if (existing_domain_id)
+    if (existing_domain_id && _delete_existing)
     {
-        if (_delete_existing)
-        {
-            LibFred::DeleteDomainByFqdn(_fqdn).exec(ctx);
-        }
-        else
-        {
-            logger_create_expired_domain_close(_logger_client, "Fail", req_id, existing_domain_id, new_domain_id);
-            throw DomainExists();
-        }
+        LibFred::DeleteDomainByFqdn(_fqdn).exec(ctx);
+    }
+    else if (existing_domain_id && !_delete_existing)
+    {
+        logger_create_expired_domain_close(_logger_client, "Fail", req_id, existing_domain_id, new_domain_id);
+        throw DomainExists();
+    }
+    else if (!existing_domain_id && _delete_existing)
+    {
+        logger_create_expired_domain_close(_logger_client, "Fail", req_id, existing_domain_id, new_domain_id);
+        throw DomainNotExists();
     }
 
     boost::gregorian::date current_date(boost::gregorian::day_clock::local_day());
