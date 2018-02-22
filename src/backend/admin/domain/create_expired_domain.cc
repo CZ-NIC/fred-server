@@ -30,7 +30,7 @@ namespace Domain {
 
 void
 create_expired_domain(
-        std::unique_ptr<LibFred::Logger::LoggerClient> _logger_client,
+        LibFred::Logger::LoggerClient& _logger_client,
         const std::string& _fqdn,
         const std::string& _registrant,
         const std::string& _cltrid,
@@ -42,7 +42,7 @@ create_expired_domain(
     boost::optional<unsigned long long> existing_domain_id;
     boost::optional<unsigned long long> new_domain_id;
 
-    unsigned long long req_id = _logger_client->createRequest("", "Admin", "",
+    unsigned long long req_id = _logger_client.createRequest("", "Admin", "",
             boost::assign::list_of
                 (LibFred::Logger::RequestProperty("command", "create_expired_domain", false))
                 (LibFred::Logger::RequestProperty("handle", _fqdn, true))
@@ -56,8 +56,8 @@ create_expired_domain(
 
     if (!get_id_by_handle<LibFred::Object_Type::contact>(ctx, _registrant))
     {
-        logger_create_expired_domain_close(*_logger_client, "Fail", req_id, existing_domain_id, new_domain_id);
-        throw RegistrantNoExistsError();
+        logger_create_expired_domain_close(_logger_client, "Fail", req_id, existing_domain_id, new_domain_id);
+        throw RegistrantNotExists();
     }
 
     existing_domain_id = get_id_by_handle<LibFred::Object_Type::domain>(ctx, _fqdn);
@@ -70,8 +70,8 @@ create_expired_domain(
         }
         else
         {
-            logger_create_expired_domain_close(*_logger_client, "Fail", req_id, existing_domain_id, new_domain_id);
-            throw DomainExistsError();
+            logger_create_expired_domain_close(_logger_client, "Fail", req_id, existing_domain_id, new_domain_id);
+            throw DomainExists();
         }
     }
 
@@ -86,13 +86,13 @@ create_expired_domain(
     }
     catch (const std::exception& e)
     {
-        logger_create_expired_domain_close(*_logger_client, "Fail", req_id, existing_domain_id, new_domain_id);
+        logger_create_expired_domain_close(_logger_client, "Fail", req_id, existing_domain_id, new_domain_id);
         boost::format msg("Create domain failed: %1%");
         msg % e.what();
         throw std::runtime_error(msg.str());
     }
     ctx.commit_transaction();
-    logger_create_expired_domain_close(*_logger_client, "Success", req_id, existing_domain_id, result.create_object_result.object_id);
+    logger_create_expired_domain_close(_logger_client, "Success", req_id, existing_domain_id, result.create_object_result.object_id);
 }
 
 void

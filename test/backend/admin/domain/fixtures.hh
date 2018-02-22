@@ -56,9 +56,9 @@ std::unique_ptr<LibFred::Logger::LoggerClient> get_logger()
             ns_args_ptr->nameservice_port,
             ns_args_ptr->nameservice_context);
 
-    auto logger_client = std::make_unique<::LibFred::Logger::DummyLoggerCorbaClientImpl>();
+    std::unique_ptr<LibFred::Logger::LoggerClient> logger_client = std::make_unique<::LibFred::Logger::DummyLoggerCorbaClientImpl>();
 
-    return std::move(logger_client);
+    return logger_client;
 }
 
 struct Fqdn

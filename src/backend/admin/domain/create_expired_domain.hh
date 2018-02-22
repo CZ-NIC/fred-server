@@ -26,7 +26,7 @@
 namespace Admin {
 namespace Domain {
 
-struct DomainExistsError : std::exception
+struct DomainExists : std::exception
 {
     virtual const char* what() const noexcept
     {
@@ -34,7 +34,7 @@ struct DomainExistsError : std::exception
     }
 };
 
-struct RegistrantNoExistsError : std::exception
+struct RegistrantNotExists : std::exception
 {
     virtual const char* what() const noexcept
     {
@@ -44,7 +44,7 @@ struct RegistrantNoExistsError : std::exception
 
 void
 create_expired_domain(
-        std::unique_ptr<LibFred::Logger::LoggerClient> _logger_client,
+        LibFred::Logger::LoggerClient& _logger_client,
         const std::string& _fqdn,
         const std::string& _registrant,
         const std::string& _cltrid,
@@ -61,7 +61,7 @@ logger_create_expired_domain_close(
 
 template <LibFred::Object_Type::Enum object_type>
 boost::optional<unsigned long long>
-get_id_by_handle(LibFred::OperationContextCreator& _ctx, const std::string _handle)
+get_id_by_handle(LibFred::OperationContextCreator& _ctx, const std::string& _handle)
 {
     boost::optional<unsigned long long> id;
     try
@@ -74,8 +74,8 @@ get_id_by_handle(LibFred::OperationContextCreator& _ctx, const std::string _hand
     return id;
 }
 
-template boost::optional<unsigned long long> get_id_by_handle<LibFred::Object_Type::domain>(LibFred::OperationContextCreator& _ctx, const std::string _handle);
-template boost::optional<unsigned long long> get_id_by_handle<LibFred::Object_Type::contact>(LibFred::OperationContextCreator& _ctx, const std::string _handle);
+template boost::optional<unsigned long long> get_id_by_handle<LibFred::Object_Type::domain>(LibFred::OperationContextCreator& _ctx, const std::string& _handle);
+template boost::optional<unsigned long long> get_id_by_handle<LibFred::Object_Type::contact>(LibFred::OperationContextCreator& _ctx, const std::string& _handle);
 
 } // namespace Domain;
 } // namespace Admin;
