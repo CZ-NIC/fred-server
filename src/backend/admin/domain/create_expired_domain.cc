@@ -21,6 +21,7 @@
 #include "src/libfred/opcontext.hh"
 #include "src/libfred/registrable_object/domain/create_domain.hh"
 #include "src/libfred/registrable_object/domain/delete_domain.hh"
+#include "src/libfred/registrar/info_registrar.hh"
 
 #include <boost/optional.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
@@ -51,6 +52,16 @@ create_expired_domain(
         throw std::runtime_error("unable to log create expired domain request");
     }
 
+    const LibFred::InfoRegistrarData session_registrar =
+            LibFred::InfoRegistrarByHandle(_registrar).exec(ctx).info_registrar_data;
+
+    const bool is_system_registrar = session_registrar.system.get_value();
+
+    if (!is_system_registrar)
+    {
+        throw NotSystemRegistrar();
+    }
+
     if (!get_id_by_handle<LibFred::Object_Type::contact>(ctx, _registrant))
     {
         logger_create_expired_domain_close(_logger_client, "Fail", req_id, boost::none, boost::none);
@@ -70,7 +81,7 @@ create_expired_domain(
         throw DomainNotExists();
     }
 
-    bool do_delete = existing_domain_id && _delete_existing;
+    const bool do_delete = existing_domain_id && _delete_existing;
 
     if (do_delete)
     {

@@ -57,7 +57,7 @@ BOOST_FIXTURE_TEST_CASE(set_no_delete_existing_domain, HasNoDeleteExistingDomain
     BOOST_CHECK_THROW(
            ::Admin::Domain::create_expired_domain(*get_logger(), domain.fqdn, registrant, cltrid, delete_existing, registrar.handle),
            ::Admin::Domain::DomainExists
-   )
+   );
 }
 
 BOOST_FIXTURE_TEST_CASE(set_no_existing_registrant, HasNoExistingRegistrant)
@@ -65,7 +65,7 @@ BOOST_FIXTURE_TEST_CASE(set_no_existing_registrant, HasNoExistingRegistrant)
     BOOST_CHECK_THROW(
            ::Admin::Domain::create_expired_domain(*get_logger(), domain.fqdn, registrant, cltrid, delete_existing, registrar.handle),
            ::Admin::Domain::RegistrantNotExists
-   )
+   );
 }
 
 BOOST_FIXTURE_TEST_CASE(set_no_existing_domain, HasNoExistingDomain)
@@ -73,7 +73,7 @@ BOOST_FIXTURE_TEST_CASE(set_no_existing_domain, HasNoExistingDomain)
     BOOST_CHECK_THROW(
            ::Admin::Domain::create_expired_domain(*get_logger(), domain.fqdn, registrant, cltrid, delete_existing, registrar.handle),
            ::Admin::Domain::DomainNotExists
-   )
+   );
 }
 
 BOOST_FIXTURE_TEST_CASE(set_existing_domain, HasExistingDomain)

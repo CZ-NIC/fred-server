@@ -26,6 +26,14 @@
 namespace Admin {
 namespace Domain {
 
+struct NotSystemRegistrar : std::exception
+{
+    virtual const char* what() const noexcept
+    {
+        return "System registrar expected - check configuration.";
+    }
+};
+
 struct DomainExists : std::exception
 {
     virtual const char* what() const noexcept
