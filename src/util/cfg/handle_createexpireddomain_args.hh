@@ -43,7 +43,7 @@ public:
     {
         std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
-                        std::string("Fred Admin - Create expired domain configuration")));
+                        std::string("Create expired domain configuration")));
 
         cfg_opts->add_options()
                 ("create_expired_domain.registrar_handle",
