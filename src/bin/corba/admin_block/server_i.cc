@@ -23,9 +23,13 @@
  */
 
 
+#include "src/bin/corba/NullableIsoDate.hh"
+
 #include "src/bin/corba/admin_block/server_i.hh"
 #include "src/bin/corba/admin_block/corba_conversion.hh"
+#include "src/bin/corba/util/corba_conversions_isodate.hh"
 #include "src/backend/admin_block/administrativeblocking.hh"
+
 #include <string>
 
 
@@ -65,7 +69,7 @@ namespace Registry
             const ::Registry::Administrative::DomainIdList& domain_list,
             const ::Registry::Administrative::StatusList& status_list,
             ::Registry::Administrative::OwnerBlockMode owner_block_mode,
-            ::Registry::Administrative::NullableDate *block_to_date,
+            ::Registry::NullableIsoDate *block_to_date,
             const char* reason,
             ::CORBA::ULongLong log_req_id)
         {
@@ -73,7 +77,7 @@ namespace Registry
                 return corba_wrap_owner_change_list(bimpl_->blockDomainsId(corba_unwrap_domain_id_list(domain_list),
                                                                            corba_unwrap_status_list(status_list),
                                                                            corba_unwrap_owner_block_mode(owner_block_mode),
-                                                                           corba_unwrap_nullable_date(block_to_date),
+                                                                           CorbaConversion::Util::unwrap_NullableIsoDate_to_Nullable_boost_gregorian_date(block_to_date),
                                                                            reason,
                                                                            log_req_id));
             }
@@ -108,14 +112,14 @@ namespace Registry
         void Server_i::updateBlockDomainsId(
             const ::Registry::Administrative::DomainIdList &domain_list,
             const ::Registry::Administrative::StatusList &status_list,
-            ::Registry::Administrative::NullableDate *block_to_date,
+            ::Registry::NullableIsoDate *block_to_date,
             const char *reason,
             ::CORBA::ULongLong log_req_id)
         {
             try {
                 bimpl_->updateBlockDomainsId(corba_unwrap_domain_id_list(domain_list),
                                              corba_unwrap_status_list(status_list),
-                                             corba_unwrap_nullable_date(block_to_date),
+                                             CorbaConversion::Util::unwrap_NullableIsoDate_to_Nullable_boost_gregorian_date(block_to_date),
                                              reason,
                                              log_req_id);
             }
@@ -203,20 +207,20 @@ namespace Registry
         
         void Server_i::blacklistAndDeleteDomains(
             const ::Registry::Administrative::DomainList &domain_list,
-            ::Registry::Administrative::NullableDate *blacklist_to_date)
+            ::Registry::NullableIsoDate *blacklist_to_date)
         {
             throw std::runtime_error("blacklistAndDeleteDomains not implemented");
         }
 
         void Server_i::blacklistAndDeleteDomainsId(
             const ::Registry::Administrative::DomainIdList &domain_list,
-            ::Registry::Administrative::NullableDate *blacklist_to_date,
+            ::Registry::NullableIsoDate *blacklist_to_date,
             const char* reason,
             ::CORBA::ULongLong log_req_id)
         {
             try {
                 bimpl_->blacklistAndDeleteDomainsId(corba_unwrap_domain_id_list(domain_list),
-                                                    corba_unwrap_nullable_date(blacklist_to_date),
+                                                    CorbaConversion::Util::unwrap_NullableIsoDate_to_Nullable_boost_gregorian_date(blacklist_to_date),
                                                     reason,
                                                     log_req_id);
             }
@@ -230,7 +234,7 @@ namespace Registry
 
         void Server_i::blacklistDomains(
             const ::Registry::Administrative::DomainList &domain_list,
-            ::Registry::Administrative::NullableDate *blacklist_to_date,
+            ::Registry::NullableIsoDate *blacklist_to_date,
             ::CORBA::Boolean with_delete)
         {
             throw std::runtime_error("blacklistDomains not implemented");
@@ -238,13 +242,13 @@ namespace Registry
 
         void Server_i::blacklistDomainsId(
             const ::Registry::Administrative::DomainIdList &domain_list,
-            ::Registry::Administrative::NullableDate *blacklist_to_date,
+            ::Registry::NullableIsoDate *blacklist_to_date,
             ::CORBA::Boolean with_delete,
             ::CORBA::ULongLong log_req_id)
         {
             try {
                 bimpl_->blacklistDomainsId(corba_unwrap_domain_id_list(domain_list),
-                                           corba_unwrap_nullable_date(blacklist_to_date),
+                                           CorbaConversion::Util::unwrap_NullableIsoDate_to_Nullable_boost_gregorian_date(blacklist_to_date),
                                            with_delete,
                                            log_req_id);
             }

@@ -1464,6 +1464,12 @@ nodist_src_bin_corba_libcorbaadmincontactverification_a_SOURCES = \
 		src/bin/corba/AdminContactVerification.hh
 
 nodist_src_bin_corba_libcorbaadministrativeblocking_a_SOURCES = \
+		src/bin/corba/IsoDateSK.cc \
+		src/bin/corba/IsoDateDynSK.cc \
+		src/bin/corba/IsoDate.hh \
+		src/bin/corba/NullableIsoDateSK.cc \
+		src/bin/corba/NullableIsoDateDynSK.cc \
+		src/bin/corba/NullableIsoDate.hh \
 		src/bin/corba/AdministrativeBlockingSK.cc \
 		src/bin/corba/AdministrativeBlockingDynSK.cc \
 		src/bin/corba/AdministrativeBlocking.hh
@@ -1549,7 +1555,7 @@ nodist_src_bin_corba_libcorbanullableisodatetime_a_SOURCES = \
 #
 src/bin/corba/MessagesSK.cc: $(IDLDIR)/Messages.idl
 src/bin/corba/MojeIDSK.cc: $(IDLDIR)/MojeID.idl $(IDLDIR)/NullableIsoDate.idl $(IDLDIR)/IsoDateTime.idl
-src/bin/corba/AdministrativeBlockingSK.cc: $(IDLDIR)/AdministrativeBlocking.idl
+src/bin/corba/AdministrativeBlockingSK.cc: $(IDLDIR)/AdministrativeBlocking.idl $(IDLDIR)/NullableIsoDate.idl $(IDLDIR)/IsoDate.idl
 src/bin/corba/FileManagerSK.cc: $(IDLDIR)/FileManager.idl $(IDLDIR)/_dataTypes.idl
 src/bin/corba/MailerSK.cc: $(IDLDIR)/Mailer.idl $(IDLDIR)/_dataTypes.idl
 src/bin/corba/ZoneSK.cc: $(IDLDIR)/Zone.idl
