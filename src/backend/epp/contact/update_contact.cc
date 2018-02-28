@@ -146,28 +146,23 @@ bool has_data_changed(
 }
 
 
-bool has_streets_changed(
-        const std::vector<boost::optional<Nullable<std::string> > >& change,
-        const LibFred::Contact::PlaceAddress& current_value)
+bool has_streets_changed(const std::vector< boost::optional< Nullable<std::string> > >& change,
+                         const LibFred::Contact::PlaceAddress& current_value)
 {
+    const boost::optional<Nullable<std::string>> delete_street = Nullable<std::string>();
     switch (change.size())
     {
         case 0:
             return false;
 
         case 1:
-            return has_data_changed(
-                change[0],
-                current_value.street1);
-
+            return has_data_changed(change[0], current_value.street1) ||
+                   has_data_changed(delete_street, current_value.street2) ||
+                   has_data_changed(delete_street, current_value.street3);
         case 2:
-            return has_data_changed(
-                change[0],
-                current_value.street1) ||
-                   has_data_changed(
-                change[1],
-                current_value.street2);
-
+            return has_data_changed(change[0], current_value.street1) ||
+                   has_data_changed(change[1], current_value.street2) ||
+                   has_data_changed(delete_street, current_value.street3);
         case 3:
             return has_data_changed(
                 change[0],
