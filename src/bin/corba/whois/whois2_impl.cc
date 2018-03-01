@@ -1,7 +1,8 @@
 #include "src/bin/corba/whois/whois2_impl.hh"
 #include "src/bin/corba/common_wrappers.hh"
 #include "src/bin/corba/util/corba_conversions_string.hh"
-#include "src/bin/corba/util/corba_conversions_datetime.hh"
+#include "src/bin/corba/util/corba_conversions_isodate.hh"
+#include "src/bin/corba/util/corba_conversions_isodatetime.hh"
 #include "src/bin/corba/util/corba_conversions_nullable_types.hh"
 
 #include <omniORB4/CORBA.h>
@@ -207,9 +208,9 @@ Contact wrap_contact(const Registry::WhoisImpl::Contact& con)
             LibFred::Corba::wrap_string_to_corba_string(con.creating_registrar);
     result.sponsoring_registrar_handle =
             LibFred::Corba::wrap_string_to_corba_string(con.sponsoring_registrar);
-    result.created = LibFred::Corba::wrap_time(con.created);
-    result.changed = LibFred::Corba::wrap_nullable_datetime(con.changed);
-    result.last_transfer = LibFred::Corba::wrap_nullable_datetime(con.last_transfer);
+    result.created = CorbaConversion::Util::wrap_boost_posix_time_ptime_to_IsoDateTime(con.created);
+    result.changed = CorbaConversion::Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(con.changed);
+    result.last_transfer = CorbaConversion::Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(con.last_transfer);
 
     result.statuses.length(con.statuses.size());
     CORBA::ULong i = 0;
@@ -284,9 +285,9 @@ NSSet wrap_nsset(const Registry::WhoisImpl::NSSet& nsset)
 
     result.handle = LibFred::Corba::wrap_string_to_corba_string(nsset.handle);
     result.registrar_handle = LibFred::Corba::wrap_string_to_corba_string(nsset.sponsoring_registrar);
-    result.created = LibFred::Corba::wrap_time(nsset.created);
-    result.changed = LibFred::Corba::wrap_nullable_datetime(nsset.changed);
-    result.last_transfer = LibFred::Corba::wrap_nullable_datetime(nsset.last_transfer);
+    result.created = CorbaConversion::Util::wrap_boost_posix_time_ptime_to_IsoDateTime(nsset.created);
+    result.changed = CorbaConversion::Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(nsset.changed);
+    result.last_transfer = CorbaConversion::Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(nsset.last_transfer);
 
     result.nservers.length(nsset.nservers.size());
     for (CORBA::ULong i = 0; i < nsset.nservers.size(); ++i)
@@ -438,9 +439,9 @@ KeySet wrap_keyset(const Registry::WhoisImpl::KeySet& keyset)
 
     result.handle  = LibFred::Corba::wrap_string_to_corba_string(keyset.handle);
     result.registrar_handle = LibFred::Corba::wrap_string_to_corba_string(keyset.sponsoring_registrar);
-    result.created = LibFred::Corba::wrap_time(keyset.created);
-    result.changed = LibFred::Corba::wrap_nullable_datetime(keyset.changed);
-    result.last_transfer = LibFred::Corba::wrap_nullable_datetime(keyset.last_transfer);
+    result.created = CorbaConversion::Util::wrap_boost_posix_time_ptime_to_IsoDateTime(keyset.created);
+    result.changed = CorbaConversion::Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(keyset.changed);
+    result.last_transfer = CorbaConversion::Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(keyset.last_transfer);
 
     result.tech_contact_handles.length(keyset.tech_contacts.size());
     CORBA::ULong i = 0;
@@ -539,12 +540,12 @@ Domain wrap_domain(const Registry::WhoisImpl::Domain& domain)
         result.keyset_handle = new NullableString(LibFred::Corba::wrap_string_to_corba_string(domain.keyset));
     }
     result.registrar_handle = LibFred::Corba::wrap_string_to_corba_string(domain.sponsoring_registrar);
-    result.registered = LibFred::Corba::wrap_time(domain.registered);
-    result.changed = LibFred::Corba::wrap_nullable_datetime(domain.changed);
-    result.last_transfer = LibFred::Corba::wrap_nullable_datetime(domain.last_transfer);
-    result.expire = LibFred::Corba::wrap_date(domain.expire);
-    result.expire_time_estimate = LibFred::Corba::wrap_time(domain.expire_time_estimate);
-    result.expire_time_actual = LibFred::Corba::wrap_nullable_datetime(domain.expire_time_actual);
+    result.registered = CorbaConversion::Util::wrap_boost_posix_time_ptime_to_IsoDateTime(domain.registered);
+    result.changed = CorbaConversion::Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(domain.changed);
+    result.last_transfer = CorbaConversion::Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(domain.last_transfer);
+    result.expire = CorbaConversion::Util::wrap_boost_gregorian_date_to_IsoDate(domain.expire);
+    result.expire_time_estimate = CorbaConversion::Util::wrap_boost_posix_time_ptime_to_IsoDateTime(domain.expire_time_estimate);
+    result.expire_time_actual = CorbaConversion::Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(domain.expire_time_actual);
     if (domain.validated_to.isnull())
     {
         result.validated_to = NULL;
@@ -553,9 +554,9 @@ Domain wrap_domain(const Registry::WhoisImpl::Domain& domain)
     }
     else
     {
-        result.validated_to = new Registry::NullableDate(LibFred::Corba::wrap_date(domain.validated_to.get_value()));
-        result.validated_to_time_estimate = LibFred::Corba::wrap_nullable_datetime(domain.validated_to_time_estimate);
-        result.validated_to_time_actual = LibFred::Corba::wrap_nullable_datetime(domain.validated_to_time_actual);
+        result.validated_to = new Registry::NullableIsoDate(CorbaConversion::Util::wrap_boost_gregorian_date_to_IsoDate(domain.validated_to.get_value()));
+        result.validated_to_time_estimate = CorbaConversion::Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(domain.validated_to_time_estimate);
+        result.validated_to_time_actual = CorbaConversion::Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(domain.validated_to_time_actual);
     }
 
     result.admin_contact_handles.length(domain.admin_contacts.size());

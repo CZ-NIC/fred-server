@@ -2208,6 +2208,8 @@ src_bin_corba_fred_pifd_LDADD = \
 		src/bin/corba/libcorbalogger.a \
 		src/bin/corba/util/libcorbautil.a \
 		src/bin/corba/libcorbanullabletypes.a \
+		src/bin/corba/libcorbanullableisodate.a \
+		src/bin/corba/libcorbanullableisodatetime.a \
 		src/libfred/contact_verification/libcontact_verification.a \
 		src/bin/corba/libcorbacontactverification.a \
 		src/bin/corba/libcorbabuffer.a \
@@ -3111,6 +3113,8 @@ test_backend_test_whois_LDADD = \
 		src/bin/corba/libmailer.a \
 		src/bin/corba/libcorbadatatypes.a \
 		src/bin/corba/libfilemanager.a \
+		src/bin/corba/libcorbanullableisodate.a \
+		src/bin/corba/libcorbanullableisodatetime.a \
 		src/libfred/requests/librequests.a \
 		src/util/log/liblog.a \
 		src/util/types/libtypes.a \
