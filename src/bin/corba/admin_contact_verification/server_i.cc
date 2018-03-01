@@ -36,6 +36,7 @@
 #include "src/bin/corba/util/corba_conversions_datetime.hh"
 #include "src/bin/corba/util/corba_conversions_nullable_types.hh"
 #include "src/bin/corba/util/corba_conversions_string.hh"
+#include "src/bin/corba/util/corba_conversions_isodatetime.hh"
 #include "src/libfred/registrable_object/contact/check_contact.hh"
 #include "src/libfred/registrable_object/contact/copy_contact.hh"
 #include "src/libfred/registrable_object/contact/create_contact.hh"
@@ -91,7 +92,7 @@ namespace Corba {
         out->contact_handle =       LibFred::Corba::wrap_string(contact_info_historical.info_contact_data.handle);
         out->contact_id =           contact_info_historical.info_contact_data.id;
         out->checked_contact_hid =  in.contact_history_id;
-        out->created =              LibFred::Corba::wrap_time(in.local_create_time);
+        out->created =              CorbaConversion::Util::wrap_boost_posix_time_ptime_to_IsoDateTime(in.local_create_time);
 
         out->status_history.length(in.check_state_history.size());
         unsigned long check_seq_i(0);
@@ -101,7 +102,7 @@ namespace Corba {
             ++check_it, ++check_seq_i
         ) {
             out->status_history[check_seq_i].status =           LibFred::Corba::wrap_string(check_it->status_handle);
-            out->status_history[check_seq_i].update =           LibFred::Corba::wrap_time(check_it->local_update_time);
+            out->status_history[check_seq_i].update =           CorbaConversion::Util::wrap_boost_posix_time_ptime_to_IsoDateTime(check_it->local_update_time);
             out->status_history[check_seq_i].logd_request_id =  LibFred::Corba::wrap_nullable_ulonglong(check_it->logd_request_id);
         }
 
@@ -146,7 +147,7 @@ namespace Corba {
             }
 
             out->test_list[test_seq_i].test_handle = LibFred::Corba::wrap_string(test_it->test_handle);
-            out->test_list[test_seq_i].created = LibFred::Corba::wrap_time(test_it->local_create_time);
+            out->test_list[test_seq_i].created = CorbaConversion::Util::wrap_boost_posix_time_ptime_to_IsoDateTime(test_it->local_create_time);
 
             out->test_list[test_seq_i].status_history.length(test_it->state_history.size());
             testhistory_seq_i= 0;
@@ -164,7 +165,7 @@ namespace Corba {
                         : LibFred::Corba::wrap_string(testhistory_it->error_msg.get_value_or_default());
 
                 out->test_list[test_seq_i].status_history[testhistory_seq_i].update
-                    = LibFred::Corba::wrap_time(testhistory_it->local_update_time);
+                    = CorbaConversion::Util::wrap_boost_posix_time_ptime_to_IsoDateTime(testhistory_it->local_update_time);
 
                 out->test_list[test_seq_i].status_history[testhistory_seq_i].logd_request_id
                     = LibFred::Corba::wrap_nullable_ulonglong(testhistory_it->logd_request_id);
@@ -183,10 +184,10 @@ namespace Corba {
             out[list_index].contact_handle =        LibFred::Corba::wrap_string(it->contact_handle);
             out[list_index].contact_id =            it->contact_id;
             out[list_index].checked_contact_hid =   it->contact_history_id;
-            out[list_index].created =               LibFred::Corba::wrap_time(it->local_create_time);
-            out[list_index].updated =               LibFred::Corba::wrap_time(it->local_update_time);
-            out[list_index].last_contact_update =   LibFred::Corba::wrap_time(it->local_last_contact_update);
-            out[list_index].last_test_finished =    LibFred::Corba::wrap_nullable_datetime(it->last_test_finished_local_time);
+            out[list_index].created =               CorbaConversion::Util::wrap_boost_posix_time_ptime_to_IsoDateTime(it->local_create_time);
+            out[list_index].updated =               CorbaConversion::Util::wrap_boost_posix_time_ptime_to_IsoDateTime(it->local_update_time);
+            out[list_index].last_contact_update =   CorbaConversion::Util::wrap_boost_posix_time_ptime_to_IsoDateTime(it->local_last_contact_update);
+            out[list_index].last_test_finished =    CorbaConversion::Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(it->last_test_finished_local_time);
             out[list_index].current_status =        LibFred::Corba::wrap_string(it->status_handle);
         }
     }
@@ -275,8 +276,8 @@ namespace Corba {
             out[list_index].id              = it->id;
             out[list_index].type_handle     = LibFred::Corba::wrap_string(it->comm_type);
             out[list_index].content_handle  = LibFred::Corba::wrap_string(it->content_type);
-            out[list_index].created         = LibFred::Corba::wrap_time(it->created);
-            out[list_index].updated         = LibFred::Corba::wrap_nullable_datetime(it->update);
+            out[list_index].created         = CorbaConversion::Util::wrap_boost_posix_time_ptime_to_IsoDateTime(it->created);
+            out[list_index].updated         = CorbaConversion::Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(it->update);
             out[list_index].status          = LibFred::Corba::wrap_string(it->status_name);
         }
     }

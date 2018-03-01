@@ -1452,6 +1452,12 @@ nodist_src_bin_corba_libcorbacontactverification_a_SOURCES = \
 		src/bin/corba/ContactVerification.hh
 
 nodist_src_bin_corba_libcorbaadmincontactverification_a_SOURCES = \
+		src/bin/corba/IsoDateTimeSK.cc \
+		src/bin/corba/IsoDateTimeDynSK.cc \
+		src/bin/corba/IsoDateTime.hh \
+		src/bin/corba/NullableIsoDateTimeSK.cc \
+		src/bin/corba/NullableIsoDateTimeDynSK.cc \
+		src/bin/corba/NullableIsoDateTime.hh \
 		src/bin/corba/AdminContactVerificationSK.cc \
 		src/bin/corba/AdminContactVerificationDynSK.cc \
 		src/bin/corba/AdminContactVerificationSK.h \
@@ -1561,7 +1567,7 @@ src/bin/corba/EPPSK.cc: $(IDLDIR)/EPP.idl $(IDLDIR)/_dataTypes.idl
 src/bin/corba/ZoneGeneratorSK.cc: $(IDLDIR)/ZoneGenerator.idl $(IDLDIR)/_dataTypes.idl
 src/bin/corba/ContactVerificationSK.cc: $(IDLDIR)/ContactVerification.idl
 src/bin/corba/DomainBrowserSK.cc: $(IDLDIR)/DomainBrowser.idl $(IDLDIR)/NullableIsoDate.idl $(IDLDIR)/NullableIsoDateTime.idl
-src/bin/corba/AdminContactVerificationSK.cc: $(IDLDIR)/AdminContactVerification.idl $(IDLDIR)/_dataTypes.idl
+src/bin/corba/AdminContactVerificationSK.cc: $(IDLDIR)/AdminContactVerification.idl $(IDLDIR)/_dataTypes.idl $(IDLDIR)/NullableIsoDateTime.idl $(IDLDIR)/IsoDateTime.idl
 src/bin/corba/NotificationSK.cc: $(IDLDIR)/Notification.idl
 src/bin/corba/PublicRequestSK.cc: $(IDLDIR)/PublicRequest.idl $(IDLDIR)/NullableTypes.idl
 src/bin/corba/AutomaticKeysetManagementSK.cc: $(IDLDIR)/AutomaticKeysetManagement.idl
@@ -2119,6 +2125,7 @@ src_bin_corba_fred_adifd_LDADD = \
 		src/bin/corba/libcorbaadmincontactverification.a \
 		src/bin/corba/libfilemanager.a \
 		src/bin/corba/libcorbaadministrativeblocking.a \
+		src/bin/corba/libcorbaisodatetime.a \
 		src/libfred/requests/librequests.a \
 		src/libfred/contact_verification/libcontact_verification.a \
 		src/libfred/public_request/libpublic_request.a \
