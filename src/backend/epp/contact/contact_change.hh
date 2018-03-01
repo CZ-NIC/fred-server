@@ -46,7 +46,7 @@ struct ContactChange
     };
     boost::optional< Nullable<std::string> > name;
     boost::optional< Nullable<std::string> > organization;
-    std::vector< boost::optional< Nullable<std::string> > > streets;
+    boost::optional<std::vector<std::string>> streets;
     boost::optional< Nullable<std::string> > city;
     boost::optional< Nullable<std::string> > state_or_province;
     boost::optional< Nullable<std::string> > postal_code;

@@ -19,16 +19,11 @@
 #ifndef UTIL_HH_8345C51906DE4928B293893C7B1DF9B3
 #define UTIL_HH_8345C51906DE4928B293893C7B1DF9B3
 
-#include <vector>
-
 namespace Epp {
 namespace Contact {
 
 template <typename T>
 T trim(const T& src);
-
-template <typename T>
-std::vector<T> trim(const std::vector<T>& src);
 
 } // namespace Epp::Contact
 } // namespace Epp

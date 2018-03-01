@@ -353,15 +353,15 @@ static void check_equal(
     BOOST_CHECK_EQUAL(boost::to_upper_copy(info_after.handle), info_before.handle);
     BOOST_CHECK_EQUAL(info_after.name, get_new_value(update.name, info_before.name));
     BOOST_CHECK_EQUAL(info_after.organization, get_new_value(update.organization, info_before.organization));
-    BOOST_CHECK_EQUAL(info_after.place.get_value_or_default().street1,
-        0 < update.streets.size() ? get_new_value(update.streets[0], info_before.place.get_value_or_default().street1)
-                                  : "");
-    BOOST_CHECK_EQUAL(info_after.place.get_value_or_default().street2,
-        1 < update.streets.size() ? get_new_value(update.streets[1], info_before.place.get_value_or_default().street2)
-                                  : "");
-    BOOST_CHECK_EQUAL(info_after.place.get_value_or_default().street3,
-        2 < update.streets.size() ? get_new_value(update.streets[2], info_before.place.get_value_or_default().street3)
-                                  : "");
+    BOOST_CHECK_EQUAL(
+            info_after.place.get_value_or_default().street1,
+            (update.streets != boost::none) && (0 < update.streets->size()) ? (*update.streets)[0] : "");
+    BOOST_CHECK_EQUAL(
+            info_after.place.get_value_or_default().street2.get_value_or_default(),
+            (update.streets != boost::none) && (1 < update.streets->size()) ? (*update.streets)[1] : "");
+    BOOST_CHECK_EQUAL(
+            info_after.place.get_value_or_default().street3.get_value_or_default(),
+            (update.streets != boost::none) && (2 < update.streets->size()) ? (*update.streets)[2] : "");
     BOOST_CHECK_EQUAL(info_after.place.get_value_or_default().city,
                       get_new_value(update.city, info_before.place.get_value_or_default().city));
     BOOST_CHECK_EQUAL(info_after.place.get_value_or_default().postalcode,
