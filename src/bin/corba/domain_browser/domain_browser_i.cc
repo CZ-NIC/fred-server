@@ -25,7 +25,8 @@
 #include "src/bin/corba/domain_browser/domain_browser_i.hh"
 #include "src/backend/domain_browser/domain_browser.hh"
 #include "src/bin/corba/util/corba_conversions_string.hh"
-#include "src/bin/corba/util/corba_conversions_datetime.hh"
+#include "src/bin/corba/util/corba_conversions_isodate.hh"
+#include "src/bin/corba/util/corba_conversions_isodatetime.hh"
 #include "src/bin/corba/util/corba_conversions_nullable_types.hh"
 #include "src/bin/corba/DomainBrowser.hh"
 #include <string>
@@ -79,7 +80,7 @@ namespace Registry
             Registry::DomainBrowserImpl::NextDomainState next_state = in.get_value();
 
             ret.state_code = LibFred::Corba::wrap_string_to_corba_string(next_state.state_code);
-            ret.state_date = LibFred::Corba::wrap_date_to_IsoDate(next_state.state_date);
+            ret.state_date = CorbaConversion::Util::wrap_boost_gregorian_date_to_IsoDate(next_state.state_date);
             return Nullable<Registry::DomainBrowser::NextDomainState>(ret);
         }
 
@@ -351,12 +352,12 @@ namespace Registry
                 contact_detail->registrar.id = detail_impl.sponsoring_registrar.id;
                 contact_detail->registrar.handle = LibFred::Corba::wrap_string_to_corba_string(detail_impl.sponsoring_registrar.handle);
                 contact_detail->registrar.name = LibFred::Corba::wrap_string_to_corba_string(detail_impl.sponsoring_registrar.name);
-                contact_detail->create_time = LibFred::Corba::wrap_ptime_to_IsoDateTime(detail_impl.creation_time);
+                contact_detail->create_time = CorbaConversion::Util::wrap_boost_posix_time_ptime_to_IsoDateTime(detail_impl.creation_time);
 
-                contact_detail->transfer_time = LibFred::Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableIsoDateTime>(
-                    LibFred::Corba::wrap_nullable_ptime_to_Nullable_IsoDateTime(detail_impl.transfer_time));
-                contact_detail->update_time = LibFred::Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableIsoDateTime>(
-                    LibFred::Corba::wrap_nullable_ptime_to_Nullable_IsoDateTime(detail_impl.update_time));
+                contact_detail->transfer_time =
+                        CorbaConversion::Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(detail_impl.transfer_time);
+                contact_detail->update_time =
+                        CorbaConversion::Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(detail_impl.update_time);
 
                 contact_detail->auth_info = LibFred::Corba::wrap_string_to_corba_string(detail_impl.authinfopw);
                 contact_detail->name = LibFred::Corba::wrap_string_to_corba_string(detail_impl.name.get_value_or_default());
@@ -444,12 +445,12 @@ namespace Registry
                 nsset_detail->registrar.id = detail_impl.sponsoring_registrar.id;
                 nsset_detail->registrar.handle = LibFred::Corba::wrap_string_to_corba_string(detail_impl.sponsoring_registrar.handle);
                 nsset_detail->registrar.name = LibFred::Corba::wrap_string_to_corba_string(detail_impl.sponsoring_registrar.name);
-                nsset_detail->create_time = LibFred::Corba::wrap_ptime_to_IsoDateTime(detail_impl.creation_time);
+                nsset_detail->create_time = CorbaConversion::Util::wrap_boost_posix_time_ptime_to_IsoDateTime(detail_impl.creation_time);
 
-                nsset_detail->transfer_time = LibFred::Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableIsoDateTime>(
-                    LibFred::Corba::wrap_nullable_ptime_to_Nullable_IsoDateTime(detail_impl.transfer_time));
-                nsset_detail->update_time = LibFred::Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableIsoDateTime>(
-                    LibFred::Corba::wrap_nullable_ptime_to_Nullable_IsoDateTime(detail_impl.update_time));
+                nsset_detail->transfer_time =
+                    CorbaConversion::Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(detail_impl.transfer_time);
+                nsset_detail->update_time =
+                    CorbaConversion::Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(detail_impl.update_time);
 
                 nsset_detail->create_registrar.id = detail_impl.create_registrar.id;
                 nsset_detail->create_registrar.handle = LibFred::Corba::wrap_string_to_corba_string(detail_impl.create_registrar.handle);
@@ -533,26 +534,26 @@ namespace Registry
                 domain_detail->registrar.id = detail_impl.sponsoring_registrar.id;
                 domain_detail->registrar.handle = LibFred::Corba::wrap_string_to_corba_string(detail_impl.sponsoring_registrar.handle);
                 domain_detail->registrar.name = LibFred::Corba::wrap_string_to_corba_string(detail_impl.sponsoring_registrar.name);
-                domain_detail->create_time = LibFred::Corba::wrap_ptime_to_IsoDateTime(detail_impl.creation_time);
+                domain_detail->create_time = CorbaConversion::Util::wrap_boost_posix_time_ptime_to_IsoDateTime(detail_impl.creation_time);
 
-                domain_detail->update_time = LibFred::Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableIsoDateTime>(
-                    LibFred::Corba::wrap_nullable_ptime_to_Nullable_IsoDateTime(detail_impl.update_time));
+                domain_detail->update_time =
+                        CorbaConversion::Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(detail_impl.update_time);
 
                 domain_detail->auth_info = LibFred::Corba::wrap_string_to_corba_string(detail_impl.authinfopw);
                 domain_detail->registrant.id = detail_impl.registrant.id;
                 domain_detail->registrant.handle = LibFred::Corba::wrap_string_to_corba_string(detail_impl.registrant.handle);
                 domain_detail->registrant.name = LibFred::Corba::wrap_string_to_corba_string(detail_impl.registrant.name);
 
-                domain_detail->expiration_date = LibFred::Corba::wrap_date_to_IsoDate(detail_impl.expiration_date);
+                domain_detail->expiration_date = CorbaConversion::Util::wrap_boost_gregorian_date_to_IsoDate(detail_impl.expiration_date);
 
                 domain_detail->is_enum = !detail_impl.enum_domain_validation.isnull();
                 if(domain_detail->is_enum)
                 {
                     domain_detail->publish = detail_impl.enum_domain_validation.get_value().publish;
 
-                    domain_detail->val_ex_date = LibFred::Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableIsoDate>(
-                    LibFred::Corba::wrap_nullable_date_to_Nullable_IsoDate(
-                        Nullable<boost::gregorian::date>(detail_impl.enum_domain_validation.get_value().validation_expiration)));
+                    domain_detail->val_ex_date =
+                            CorbaConversion::Util::wrap_Nullable_boost_gregorian_date_to_NullableIsoDate(
+                                    Nullable<boost::gregorian::date>(detail_impl.enum_domain_validation.get_value().validation_expiration));
                 }
                 else
                 {
@@ -627,12 +628,12 @@ namespace Registry
                 keyset_detail->registrar.id = detail_impl.sponsoring_registrar.id;
                 keyset_detail->registrar.handle = LibFred::Corba::wrap_string_to_corba_string(detail_impl.sponsoring_registrar.handle);
                 keyset_detail->registrar.name = LibFred::Corba::wrap_string_to_corba_string(detail_impl.sponsoring_registrar.name);
-                keyset_detail->create_time = LibFred::Corba::wrap_ptime_to_IsoDateTime(detail_impl.creation_time);
+                keyset_detail->create_time = CorbaConversion::Util::wrap_boost_posix_time_ptime_to_IsoDateTime(detail_impl.creation_time);
 
-                keyset_detail->transfer_time = LibFred::Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableIsoDateTime>(
-                    LibFred::Corba::wrap_nullable_ptime_to_Nullable_IsoDateTime(detail_impl.transfer_time));
-                keyset_detail->update_time = LibFred::Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableIsoDateTime>(
-                    LibFred::Corba::wrap_nullable_ptime_to_Nullable_IsoDateTime(detail_impl.update_time));
+                keyset_detail->transfer_time =
+                        CorbaConversion::Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(detail_impl.transfer_time);
+                keyset_detail->update_time =
+                        CorbaConversion::Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(detail_impl.update_time);
 
                 keyset_detail->create_registrar.id = detail_impl.create_registrar.id;
                 keyset_detail->create_registrar.handle = LibFred::Corba::wrap_string_to_corba_string(detail_impl.create_registrar.handle);

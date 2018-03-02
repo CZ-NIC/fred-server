@@ -40,6 +40,7 @@
 
 #include "src/bin/corba/corba_conversion_test.hh"
 #include "src/bin/corba/mojeid/mojeid_corba_conversion.hh"
+#include "src/bin/corba/util/corba_conversions_buffer.hh"
 
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN
@@ -1727,7 +1728,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_contact_state_info_list)
 BOOST_AUTO_TEST_CASE(test_mojeid_buffer)
 {
     Fred::Backend::Buffer impl_buffer("test");
-    Registry::Buffer_var idl_buffer_ptr = CorbaConversion::wrap_Buffer(impl_buffer);
+    Registry::Buffer_var idl_buffer_ptr = CorbaConversion::Util::wrap_Buffer(impl_buffer);
     BOOST_REQUIRE(idl_buffer_ptr.operator ->() != NULL);
     BOOST_CHECK(std::string(reinterpret_cast< const char* >(idl_buffer_ptr->data.get_buffer()),
                             idl_buffer_ptr->data.length()) == impl_buffer.data);

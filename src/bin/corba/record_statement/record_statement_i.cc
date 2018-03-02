@@ -26,8 +26,8 @@
 #include "src/bin/corba/record_statement/record_statement_i.hh"
 
 #include "src/backend/record_statement/record_statement.hh"
+#include "src/bin/corba/util/corba_conversions_buffer.hh"
 #include "src/bin/corba/util/corba_conversions_string.hh"
-#include "src/bin/corba/util/corba_conversions_datetime.hh"
 #include "src/bin/corba/util/corba_conversions_nullable_types.hh"
 #include "src/bin/corba/RecordStatement.hh"
 
@@ -38,23 +38,6 @@
 
 namespace Registry {
 namespace RecordStatement {
-
-namespace {
-
-Buffer_var wrap_buffer(const Fred::Backend::Buffer& _buffer)
-{
-    Buffer_var result(new Buffer());
-
-    result->data.length(_buffer.data.size());
-    if (!_buffer.data.empty())
-    {
-        std::memcpy(result->data.get_buffer(), _buffer.data.c_str(), _buffer.data.size());
-    }
-
-    return result;
-}
-
-} // namespace Registry::RecordStatement::{anonymous}
 
 Server_i::Server_i(
         const std::string &_server_name,
@@ -82,7 +65,7 @@ Buffer* Server_i::domain_printout(const char* _fqdn, ::CORBA::Boolean _is_privat
                 ? impl_->domain_printout<Fred::Backend::RecordStatement::Purpose::private_printout>(LibFred::Corba::unwrap_string_from_const_char_ptr(_fqdn))
                 : impl_->domain_printout<Fred::Backend::RecordStatement::Purpose::public_printout>(LibFred::Corba::unwrap_string_from_const_char_ptr(_fqdn));
 
-        return wrap_buffer(pdf_content)._retn();
+        return CorbaConversion::Util::wrap_Buffer(pdf_content)._retn();
     }
     catch (const Fred::Backend::RecordStatement::ObjectDeleteCandidate&)
     {
@@ -105,7 +88,7 @@ Buffer* Server_i::nsset_printout(const char* handle)
         const Fred::Backend::Buffer pdf_content = impl_->nsset_printout(
                 LibFred::Corba::unwrap_string_from_const_char_ptr(handle));
 
-        return wrap_buffer(pdf_content)._retn();
+        return CorbaConversion::Util::wrap_Buffer(pdf_content)._retn();
     }
     catch (const Fred::Backend::RecordStatement::ObjectDeleteCandidate&)
     {
@@ -128,7 +111,7 @@ Buffer* Server_i::keyset_printout(const char* handle)
         const Fred::Backend::Buffer pdf_content = impl_->keyset_printout(
                 LibFred::Corba::unwrap_string_from_const_char_ptr(handle));
 
-        return wrap_buffer(pdf_content)._retn();
+        return CorbaConversion::Util::wrap_Buffer(pdf_content)._retn();
     }
     catch (const Fred::Backend::RecordStatement::ObjectDeleteCandidate&)
     {
@@ -152,7 +135,7 @@ Buffer* Server_i::contact_printout(const char* _handle, ::CORBA::Boolean _is_pri
                 ? impl_->contact_printout<Fred::Backend::RecordStatement::Purpose::private_printout>(LibFred::Corba::unwrap_string_from_const_char_ptr(_handle))
                 : impl_->contact_printout<Fred::Backend::RecordStatement::Purpose::public_printout>(LibFred::Corba::unwrap_string_from_const_char_ptr(_handle));
 
-        return wrap_buffer(pdf_content)._retn();
+        return CorbaConversion::Util::wrap_Buffer(pdf_content)._retn();
     }
     catch (const Fred::Backend::RecordStatement::ObjectDeleteCandidate&)
     {
@@ -176,7 +159,7 @@ Buffer* Server_i::historic_domain_printout(const char* fqdn, const Registry::Iso
                 LibFred::Corba::unwrap_string_from_const_char_ptr(fqdn),
                 Tz::LocalTimestamp::from_rfc3339_formated_string(LibFred::Corba::unwrap_string_from_const_char_ptr(time.value)));
 
-        return wrap_buffer(pdf_content)._retn();
+        return CorbaConversion::Util::wrap_Buffer(pdf_content)._retn();
     }
     catch (const Fred::Backend::RecordStatement::ObjectNotFound&)
     {
@@ -200,7 +183,7 @@ Buffer* Server_i::historic_nsset_printout(const char* handle, const Registry::Is
                 LibFred::Corba::unwrap_string_from_const_char_ptr(handle),
                 Tz::LocalTimestamp::from_rfc3339_formated_string(LibFred::Corba::unwrap_string_from_const_char_ptr(time.value)));
 
-        return wrap_buffer(pdf_content)._retn();
+        return CorbaConversion::Util::wrap_Buffer(pdf_content)._retn();
     }
     catch (const Fred::Backend::RecordStatement::ObjectNotFound&)
     {
@@ -224,7 +207,7 @@ Buffer* Server_i::historic_keyset_printout(const char* handle, const Registry::I
                 LibFred::Corba::unwrap_string_from_const_char_ptr(handle),
                 Tz::LocalTimestamp::from_rfc3339_formated_string(LibFred::Corba::unwrap_string_from_const_char_ptr(time.value)));
 
-        return wrap_buffer(pdf_content)._retn();
+        return CorbaConversion::Util::wrap_Buffer(pdf_content)._retn();
     }
     catch (const Fred::Backend::RecordStatement::ObjectNotFound&)
     {
@@ -248,7 +231,7 @@ Buffer* Server_i::historic_contact_printout(const char* handle, const Registry::
                 LibFred::Corba::unwrap_string_from_const_char_ptr(handle),
                 Tz::LocalTimestamp::from_rfc3339_formated_string(LibFred::Corba::unwrap_string_from_const_char_ptr(time.value)));
 
-        return wrap_buffer(pdf_content)._retn();
+        return CorbaConversion::Util::wrap_Buffer(pdf_content)._retn();
     }
     catch (const Fred::Backend::RecordStatement::ObjectNotFound&)
     {

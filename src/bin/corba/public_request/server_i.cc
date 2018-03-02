@@ -1,5 +1,6 @@
 #include "src/bin/corba/public_request/server_i.hh"
 #include "src/bin/corba/util/corba_conversions_string.hh"
+#include "src/bin/corba/util/corba_conversions_buffer.hh"
 #include "src/backend/buffer.hh"
 #include "src/backend/public_request/public_request.hh"
 #include "src/libfred/public_request/create_public_request.hh"
@@ -247,16 +248,6 @@ PublicRequestImpl::Language::Enum unwrap_language_to_language(Language::Type lan
     throw std::invalid_argument("language code not found");
 }
 
-void wrap_buffer(const Fred::Backend::Buffer& src, Buffer_var& dst)
-{
-    dst = new Buffer();
-    dst->data.length(src.data.size());
-    if (!src.data.empty())
-    {
-        std::memcpy(dst->data.get_buffer(), src.data.c_str(), src.data.size());
-    }
-}
-
 } // namespace Registry::PublicRequest::{anonymous}
 
 Buffer* Server_i::create_public_request_pdf(CORBA::ULongLong public_request_id, Language::Type lang)
@@ -268,8 +259,7 @@ Buffer* Server_i::create_public_request_pdf(CORBA::ULongLong public_request_id, 
                         public_request_id,
                         unwrap_language_to_language(lang),
                         PublicRequestImpl::get_default_document_manager());
-        Buffer_var result;
-        wrap_buffer(pdf_content, result);
+        Buffer_var result = CorbaConversion::Util::wrap_Buffer(pdf_content);
         return result._retn();
     }
     catch (const PublicRequestImpl::ObjectNotFound& e)

@@ -216,7 +216,7 @@ noinst_HEADERS = \
 		src/util/optional_value.hh \
 		src/util/is_equal_optional_nullable.hh \
 		src/util/output_indenter.hh \
-		src/bin/corba/util/corba_conversions_datetime.hh \
+		src/bin/corba/util/corba_conversions_buffer.hh \
 		src/bin/corba/util/corba_conversions_nullable_types.hh \
 		src/bin/corba/util/corba_conversions_string.hh \
 		src/bin/corba/util/corba_conversions_int.hh \
@@ -660,7 +660,7 @@ src_util_hp_crc32_LDADD = \
 # src/bin/corba/util/libcorbautil.a
 #
 src_bin_corba_util_libcorbautil_a_SOURCES = \
-		src/bin/corba/util/corba_conversions_datetime.cc \
+		src/bin/corba/util/corba_conversions_buffer.cc \
 		src/bin/corba/util/corba_conversions_nullable_types.cc \
 		src/bin/corba/util/corba_conversions_string.cc \
 		src/bin/corba/util/corba_conversions_isodate.cc \
@@ -2187,6 +2187,8 @@ src_bin_corba_fred_pifd_SOURCES = \
 		src/backend/public_request/public_request.hh \
 		src/bin/corba/public_request/server_i.cc \
 		src/bin/corba/public_request/server_i.hh \
+		src/bin/corba/util/corba_conversions_buffer.cc \
+		src/bin/corba/util/corba_conversions_buffer.hh \
 		src/util/corba_conversion.hh \
 		src/util/corba_conversion.cc \
 		src/bin/corba/admin/common.hh \
@@ -2336,6 +2338,7 @@ src_bin_corba_mojeid_fred_mifd_SOURCES = \
 		src/backend/mojeid/messages/generate.cc \
 		src/bin/corba/nameservice.cc \
 		src/bin/corba/mojeid/server_i.cc \
+		src/bin/corba/util/corba_conversions_buffer.cc \
 		src/util/corba_conversion.cc \
 		src/bin/corba/mojeid/mojeid_corba_conversion.cc \
 		src/bin/corba/mojeid/service_name.cc \
@@ -3596,6 +3599,8 @@ test_test_optys_LDADD = \
 test_test_corba_conversion_SOURCES = \
 		src/backend/buffer.hh \
 		src/backend/buffer.cc \
+		src/bin/corba/util/corba_conversions_buffer.hh \
+		src/bin/corba/util/corba_conversions_buffer.cc \
 		src/util/corba_conversion.hh \
 		src/util/corba_conversion.cc \
 		src/bin/corba/mojeid/mojeid_corba_conversion.hh \

@@ -121,17 +121,6 @@ Registry::MojeID::ContactStateInfo_var wrap_ContactStateInfo(const Registry::Moj
 
 Registry::MojeID::ContactStateInfoList_var wrap_ContactStateInfoList(const Registry::MojeIDImplData::ContactStateInfoList &src);
 
-Registry::Buffer_var wrap_Buffer(const Fred::Backend::Buffer &src);
-
-/**
- * Exception if allocbuf is unable to alocate memory
- */
-struct AllocbufFailed:std::invalid_argument
-{
-    AllocbufFailed();
-    virtual ~AllocbufFailed() {}
-};
-
 Registry::MojeID::ContactHandleList_var wrap_ContactHandleList(const Registry::MojeIDImplData::ContactHandleList &src);
 
 void wrap_MessageLimitExceeded(const Registry::MojeIDImplData::MessageLimitExceeded &src, Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED &dst);

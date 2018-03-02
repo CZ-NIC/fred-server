@@ -23,6 +23,7 @@
  */
 
 #include "src/bin/corba/Buffer.hh"
+#include "src/bin/corba/util/corba_conversions_buffer.hh"
 #include "src/bin/corba/mojeid/server_i.hh"
 #include "src/bin/corba/mojeid/mojeid_corba_conversion.hh"
 #include "src/backend/mojeid/mojeid.hh"
@@ -301,7 +302,7 @@ Registry::Buffer* Server_i::get_validation_pdf(
 {
     try {
         const Fred::Backend::Buffer pdf_content = impl_ptr_->get_validation_pdf(_contact_id);
-        return CorbaConversion::wrap_Buffer(pdf_content)._retn();
+        return CorbaConversion::Util::wrap_Buffer(pdf_content)._retn();
     }
     catch (const MojeIDImplData::ObjectDoesntExist&) {
         throw IDL::OBJECT_NOT_EXISTS();

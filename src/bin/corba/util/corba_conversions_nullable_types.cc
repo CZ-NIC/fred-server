@@ -1,4 +1,3 @@
-#include "src/bin/corba/util/corba_conversions_datetime.hh"
 #include "src/bin/corba/util/corba_conversions_nullable_types.hh"
 
 namespace LibFred {
@@ -30,39 +29,6 @@ Registry::NullableULongLong* wrap_nullable_ulonglong(const Nullable<unsigned lon
     }
 
     return new Registry::NullableULongLong(in.get_value());
-}
-
-
-Registry::NullableDate* wrap_nullable_date(const Nullable<boost::gregorian::date>& in)
-{
-    if (in.isnull())
-    {
-        return NULL;
-    }
-
-    return new Registry::NullableDate(wrap_date(in.get_value()));
-}
-
-
-Registry::NullableDateTime* wrap_nullable_datetime(const Nullable<boost::posix_time::ptime>& in)
-{
-    if (in.isnull())
-    {
-        return NULL;
-    }
-
-    return new Registry::NullableDateTime(wrap_time(in.get_value()));
-}
-
-
-Registry::NullableDateTime_var wrap_optional_datetime(const Optional<boost::posix_time::ptime>& in)
-{
-    if (!in.isset())
-    {
-        return Registry::NullableDateTime_var();
-    }
-
-    return Registry::NullableDateTime_var(new Registry::NullableDateTime(wrap_time(in.get_value())));
 }
 
 
