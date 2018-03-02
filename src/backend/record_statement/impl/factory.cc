@@ -48,8 +48,8 @@ void Factory::register_producer(const std::string& _key, Producer _producer)
 
 Factory::Product Factory::produce(
         const std::string& _handle_of_timezone,
-        const boost::shared_ptr<LibFred::Document::Manager>& _doc_manager,
-        const boost::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager)
+        const std::shared_ptr<LibFred::Document::Manager>& _doc_manager,
+        const std::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager)
 {
     const RegisteredProducers::const_iterator producers_itr = get_registered_producers().find(_handle_of_timezone);
     if (producers_itr == get_registered_producers().end())

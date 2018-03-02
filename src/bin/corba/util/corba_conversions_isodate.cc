@@ -47,7 +47,7 @@ Nullable<boost::gregorian::date>
 unwrap_NullableIsoDate_to_Nullable_boost_gregorian_date(
         const Registry::NullableIsoDate* src_ptr)
 {
-    if (src_ptr == NULL)
+    if (src_ptr == nullptr)
     {
         return Nullable<boost::gregorian::date>();
     }

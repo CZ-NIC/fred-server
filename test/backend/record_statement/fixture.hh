@@ -43,14 +43,13 @@
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/test/test_tools.hpp>
 
 namespace Test {
 
-boost::shared_ptr<::LibFred::Document::Manager> make_doc_manager()
+std::shared_ptr<::LibFred::Document::Manager> make_doc_manager()
 {
-    return boost::shared_ptr<::LibFred::Document::Manager>(::LibFred::Document::Manager::create(
+    return std::shared_ptr<::LibFred::Document::Manager>(::LibFred::Document::Manager::create(
         CfgArgs::instance()->get_handler_ptr_by_type< HandleRegistryArgs >()->docgen_path,
         CfgArgs::instance()->get_handler_ptr_by_type<HandleRegistryArgs>()->docgen_template_path,
         CfgArgs::instance()->get_handler_ptr_by_type<HandleRegistryArgs>()->fileclient_path,
@@ -58,10 +57,11 @@ boost::shared_ptr<::LibFred::Document::Manager> make_doc_manager()
     ).release());
 }
 
-boost::shared_ptr<::LibFred::Mailer::Manager> make_mailer_manager()
+std::shared_ptr<::LibFred::Mailer::Manager> make_mailer_manager()
 {
-    return boost::shared_ptr<::LibFred::Mailer::Manager> (
-        new MailerManager(CorbaContainer::get_instance()->getNS()));
+    std::shared_ptr<::LibFred::Mailer::Manager> mailer_manager =
+            std::make_shared<MailerManager>(CorbaContainer::get_instance()->getNS());
+    return mailer_manager;
 }
 
 
@@ -195,7 +195,7 @@ struct domain_fixture : virtual public Test::instantiate_db_template
     ::LibFred::InfoDomainOutput test_info_domain_output;
     ::LibFred::InfoRegistrarData test_info_registrar;
 
-    boost::shared_ptr<Fred::Backend::RecordStatement::RecordStatementImpl::WithExternalContext> rs_impl;
+    std::shared_ptr<Fred::Backend::RecordStatement::RecordStatementImpl::WithExternalContext> rs_impl;
 };
 
 
@@ -311,7 +311,7 @@ struct domain_by_name_and_time_fixture : virtual public Test::instantiate_db_tem
     ::LibFred::InfoRegistrarData test_info_registrar;
 
     Tz::LocalTimestamp timestamp;
-    boost::shared_ptr<Fred::Backend::RecordStatement::RecordStatementImpl::WithExternalContext> rs_impl;
+    std::shared_ptr<Fred::Backend::RecordStatement::RecordStatementImpl::WithExternalContext> rs_impl;
 };
 
 } // namespace Test

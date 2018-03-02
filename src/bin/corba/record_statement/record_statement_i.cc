@@ -58,8 +58,8 @@ Buffer_var wrap_buffer(const Fred::Backend::Buffer& _buffer)
 
 Server_i::Server_i(
         const std::string &_server_name,
-        const boost::shared_ptr<LibFred::Document::Manager>& _doc_manager,
-        const boost::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager,
+        const std::shared_ptr<LibFred::Document::Manager>& _doc_manager,
+        const std::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager,
         const std::string& _registry_timezone)
     : impl_(new Fred::Backend::RecordStatement::RecordStatementImpl(
             _server_name,

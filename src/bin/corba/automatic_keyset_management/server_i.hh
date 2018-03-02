@@ -29,8 +29,6 @@
 #include "src/bin/corba/AutomaticKeysetManagement.hh"
 #include "src/libfred/logger_client.hh"
 
-#include <boost/shared_ptr.hpp>
-
 #include <string>
 #include <set>
 
@@ -84,7 +82,7 @@ private:
     // destructor non-public
     virtual ~Server_i();
     // do not copy
-    const boost::shared_ptr<LibFred::AutomaticKeysetManagement::AutomaticKeysetManagementImpl> impl_;
+    const std::shared_ptr<LibFred::AutomaticKeysetManagement::AutomaticKeysetManagementImpl> impl_;
     Server_i(const Server_i&);//no body
     Server_i& operator= (const Server_i&);//no body
 };

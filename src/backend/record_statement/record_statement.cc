@@ -92,8 +92,8 @@ private:
 
 RecordStatementImpl::RecordStatementImpl(
         const std::string &_server_name,
-        const boost::shared_ptr<LibFred::Document::Manager>& _doc_manager,
-        const boost::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager,
+        const std::shared_ptr<LibFred::Document::Manager>& _doc_manager,
+        const std::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager,
         const std::string& _registry_timezone)
     : server_name_(_server_name),
       impl_(Impl::Factory::produce(

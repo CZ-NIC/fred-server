@@ -48,7 +48,7 @@ Nullable<boost::posix_time::ptime>
 unwrap_NullableIsoDateTime_to_Nullable_boost_posix_time_ptime(
         const Registry::NullableIsoDateTime* src_ptr)
 {
-    if (src_ptr == NULL)
+    if (src_ptr == nullptr)
     {
         return Nullable<boost::posix_time::ptime>();
     }

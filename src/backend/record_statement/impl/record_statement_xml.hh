@@ -206,8 +206,8 @@ class ImplementationWithin:public RecordStatementImpl::WithExternalContext
 public:
     typedef T RegistryTimeZone;
     ImplementationWithin(
-            const boost::shared_ptr<LibFred::Document::Manager>& _doc_manager,
-            const boost::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager);
+            const std::shared_ptr<LibFred::Document::Manager>& _doc_manager,
+            const std::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager);
     ~ImplementationWithin();
 
     Buffer domain_printout(
@@ -266,8 +266,8 @@ public:
             const std::string& _handle,
             Purpose::Enum _purpose)const;
 private:
-    boost::shared_ptr<LibFred::Document::Manager> doc_manager_;
-    boost::shared_ptr<LibFred::Mailer::Manager> mailer_manager_;
+    std::shared_ptr<LibFred::Document::Manager> doc_manager_;
+    std::shared_ptr<LibFred::Mailer::Manager> mailer_manager_;
 };
 
 template <LibFred::Object_Type::Enum object_type>

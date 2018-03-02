@@ -31,14 +31,14 @@ namespace Impl {
 class Factory
 {
 public:
-    typedef boost::shared_ptr<Fred::Backend::RecordStatement::RecordStatementImpl::WithExternalContext> Product;
-    typedef Product (*Producer)(const boost::shared_ptr<LibFred::Document::Manager>&,
-                                const boost::shared_ptr<LibFred::Mailer::Manager>&);
+    typedef std::shared_ptr<Fred::Backend::RecordStatement::RecordStatementImpl::WithExternalContext> Product;
+    typedef Product (*Producer)(const std::shared_ptr<LibFred::Document::Manager>&,
+                                const std::shared_ptr<LibFred::Mailer::Manager>&);
     static void register_producer(const std::string& _key, Producer _producer);
     static Product produce(
             const std::string& _handle_of_timezone,
-            const boost::shared_ptr<LibFred::Document::Manager>& _doc_manager,
-            const boost::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager);
+            const std::shared_ptr<LibFred::Document::Manager>& _doc_manager,
+            const std::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager);
 private:
     Factory();
     Factory(const Factory&);

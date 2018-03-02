@@ -33,8 +33,6 @@
 #include "src/libfred/documents.hh"
 #include "src/libfred/mailer.hh"
 
-#include <boost/shared_ptr.hpp>
-
 #include <string>
 
 namespace Fred {
@@ -56,8 +54,8 @@ class Server_i:public POA_Registry::RecordStatement::Server
 public:
     Server_i(
         const std::string &_server_name,
-        const boost::shared_ptr<LibFred::Document::Manager>& _doc_manager,
-        const boost::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager,
+        const std::shared_ptr<LibFred::Document::Manager>& _doc_manager,
+        const std::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager,
         const std::string& _registry_timezone);
     virtual ~Server_i();
 

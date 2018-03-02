@@ -578,7 +578,7 @@ BOOST_FIXTURE_TEST_CASE(test_keep_contact_states, Test::LibFred::Contact::supply
             ns_args_ptr->nameservice_port,
             ns_args_ptr->nameservice_context);
 
-    const boost::shared_ptr<::LibFred::Mailer::Manager> mm(new MailerManager(CorbaContainer::get_instance()->getNS()));
+    const std::shared_ptr<::LibFred::Mailer::Manager> mm(new MailerManager(CorbaContainer::get_instance()->getNS()));
     const std::unique_ptr<::LibFred::Logger::LoggerClient> logger_client(new ::LibFred::Logger::DummyLoggerCorbaClientImpl());
 
     std::vector<::LibFred::MergeContactNotificationEmailWithAddr> notification_email;

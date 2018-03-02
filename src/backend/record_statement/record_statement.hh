@@ -41,7 +41,6 @@
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/shared_ptr.hpp>
 
 #include <string>
 #include <vector>
@@ -55,8 +54,8 @@ class RecordStatementImpl
 public:
     RecordStatementImpl(
             const std::string& _server_name,
-            const boost::shared_ptr<LibFred::Document::Manager>& _doc_manager,
-            const boost::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager,
+            const std::shared_ptr<LibFred::Document::Manager>& _doc_manager,
+            const std::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager,
             const std::string& _handle_of_registry_timezone);//"Europe/Prague" or "UTC"
     virtual ~RecordStatementImpl();
 
@@ -173,7 +172,7 @@ public:
     };
 private:
     std::string server_name_;
-    boost::shared_ptr<WithExternalContext> impl_;
+    std::shared_ptr<WithExternalContext> impl_;
 };
 
 } // namespace Fred::Backend::RecordStatement

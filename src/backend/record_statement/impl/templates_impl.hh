@@ -493,8 +493,8 @@ XmlWithData contact_printout_xml_with_data(
 
 template <typename T>
 ImplementationWithin<T>::ImplementationWithin(
-        const boost::shared_ptr<LibFred::Document::Manager>& _doc_manager,
-        const boost::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager)
+        const std::shared_ptr<LibFred::Document::Manager>& _doc_manager,
+        const std::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager)
     : doc_manager_(_doc_manager),
       mailer_manager_(_mailer_manager)
 {
@@ -657,7 +657,7 @@ Buffer ImplementationWithin<T>::historic_domain_printout(
     _ctx.get_log().debug(xml_document);
 
     std::ostringstream pdf_document;
-    boost::shared_ptr<LibFred::Document::Generator> doc_gen(
+    std::shared_ptr<LibFred::Document::Generator> doc_gen(
         doc_manager_->createOutputGenerator(LibFred::Document::GT_RECORD_STATEMENT_DOMAIN, pdf_document, "").release());
 
     doc_gen->getInput() << xml_document;
@@ -689,7 +689,7 @@ Buffer ImplementationWithin<T>::historic_nsset_printout(
     _ctx.get_log().debug(xml_document);
 
     std::ostringstream pdf_document;
-    boost::shared_ptr<LibFred::Document::Generator> doc_gen(
+    std::shared_ptr<LibFred::Document::Generator> doc_gen(
             doc_manager_->createOutputGenerator(
                     LibFred::Document::GT_RECORD_STATEMENT_NSSET, pdf_document, "").release());
 
@@ -722,7 +722,7 @@ Buffer ImplementationWithin<T>::historic_keyset_printout(
     _ctx.get_log().debug(xml_document);
 
     std::ostringstream pdf_document;
-    boost::shared_ptr< LibFred::Document::Generator > doc_gen(
+    std::shared_ptr<LibFred::Document::Generator> doc_gen(
             doc_manager_->createOutputGenerator(
                     LibFred::Document::GT_RECORD_STATEMENT_KEYSET, pdf_document, "").release());
 
@@ -759,7 +759,7 @@ Buffer ImplementationWithin<T>::historic_contact_printout(
     _ctx.get_log().debug(xml_document);
 
     std::ostringstream pdf_document;
-    boost::shared_ptr< LibFred::Document::Generator > doc_gen(
+    std::shared_ptr<LibFred::Document::Generator> doc_gen(
             doc_manager_->createOutputGenerator(
                     LibFred::Document::GT_RECORD_STATEMENT_CONTACT, pdf_document, "").release());
 
@@ -1098,8 +1098,8 @@ private:
     }
 
     static Factory::Product producer(
-            const boost::shared_ptr<LibFred::Document::Manager>& _doc_manager,
-            const boost::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager)
+            const std::shared_ptr<LibFred::Document::Manager>& _doc_manager,
+            const std::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager)
     {
         return Factory::Product(
                 new ImplementationWithin<REGISTRY_TIMEZONE>(_doc_manager, _mailer_manager));

@@ -42,7 +42,6 @@
 #include "src/util/setup_server.hh"
 
 #include <boost/assign/list_of.hpp>
-#include <boost/shared_ptr.hpp>
 
 #include <iostream>
 #include <string>
@@ -76,11 +75,9 @@ int main(int argc, char *argv[])
         //CORBA init
         corba_init();
 
-        boost::shared_ptr<LibFred::Mailer::Manager> mailer_manager(
-            new MailerManager(CorbaContainer::get_instance()->getNS()));
+        std::shared_ptr<LibFred::Mailer::Manager> mailer_manager = std::make_shared<MailerManager>(CorbaContainer::get_instance()->getNS());
 
-
-        boost::shared_ptr<LibFred::Document::Manager>  doc_manager(
+        std::shared_ptr<LibFred::Document::Manager>  doc_manager(
             LibFred::Document::Manager::create(
                 CfgArgs::instance()->get_handler_ptr_by_type< HandleRegistryArgs >()->docgen_path,
                 CfgArgs::instance()->get_handler_ptr_by_type<HandleRegistryArgs>()->docgen_template_path,
