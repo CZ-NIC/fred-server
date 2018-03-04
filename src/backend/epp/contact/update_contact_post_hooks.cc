@@ -173,11 +173,11 @@ void update_contact_post_hooks(
 
         LibFred::PerformObjectStateRequest(contact_id).exec(_ctx);
         // admin contact verification Ticket #10935
-        if (Admin::AdminContactVerificationObjectStates::conditionally_cancel_final_states(_ctx, contact_id))
+        if (Fred::Backend::Admin::Contact::Verification::ContactStates::conditionally_cancel_final_states(_ctx, contact_id))
         {
             if (_epp_update_contact_enqueue_check)
             {
-                Admin::enqueue_check_if_no_other_exists(
+                Fred::Backend::Admin::Contact::Verification::enqueue_check_if_no_other_exists(
                         _ctx,
                         contact_id,
                         LibFred::TestsuiteHandle::AUTOMATIC,

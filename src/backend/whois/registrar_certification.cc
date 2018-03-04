@@ -1,8 +1,10 @@
 #include "src/backend/whois/registrar_certification.hh"
 
 
-namespace Whois
-{
+namespace Fred {
+namespace Backend {
+namespace Whois {
+
     std::vector<RegistrarCertificationData> get_registrar_certifications(
             LibFred::OperationContext& ctx)
     {
@@ -30,4 +32,6 @@ namespace Whois
         }
         return ret;
     }
-}
+} // namespace Fred::Backend::Whois
+} // namespace Fred::Backend
+} // namespace Fred

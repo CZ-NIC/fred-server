@@ -30,10 +30,9 @@
 #include <list>
 #include <set>
 
-namespace Registry
-{
-    namespace Administrative
-    {
+namespace Fred {
+namespace Backend {
+namespace AdministrativeBlocking {
 
         struct IdlOwnerChange {
             unsigned long long domain_id;
@@ -169,15 +168,12 @@ namespace Registry
                 bool _with_delete,
                 unsigned long long _log_req_id);
 
-//            void unblacklistAndCreateDomains(
-//                const ::Registry::Administrative::DomainList &_domain_list,
-//                const std::string &_owner);
-
         private:
             std::string server_name_;
-        };//class BlockingImpl
+        };
 
-    }//namespace Administrative
-} // namespace Registry
+} // namespace Fred::Backend::AdministrativeBlocking
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

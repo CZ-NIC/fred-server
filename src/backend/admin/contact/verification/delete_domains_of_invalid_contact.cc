@@ -27,7 +27,11 @@
 
 #include <set>
 
-namespace  Admin {
+namespace Fred {
+namespace Backend {
+namespace Admin {
+namespace Contact {
+namespace Verification {
 
     static std::set<unsigned long long> get_owned_domains_locking(
         LibFred::OperationContext& _ctx,
@@ -56,17 +60,17 @@ namespace  Admin {
             LibFred::InfoContactCheckOutput check_info = LibFred::InfoContactCheck(_check_handle).exec(_ctx);
 
             if( check_info.testsuite_handle != LibFred::TestsuiteHandle::MANUAL) {
-                throw Admin::ExceptionIncorrectTestsuite();
+                throw ExceptionIncorrectTestsuite();
             }
 
             if( check_info.check_state_history.rbegin()->status_handle != LibFred::ContactCheckStatus::FAIL ) {
-                throw Admin::ExceptionIncorrectCheckStatus();
+                throw ExceptionIncorrectCheckStatus();
             }
 
             LibFred::InfoContactOutput contact_info = LibFred::InfoContactHistoryByHistoryid(check_info.contact_history_id).exec(_ctx);
 
             {
-                using namespace AdminContactVerificationObjectStates;
+                using namespace ContactStates;
                 bool has_state_failed_verification = false;
 
                 BOOST_FOREACH(
@@ -77,18 +81,18 @@ namespace  Admin {
                     if(state.state_name == CONTACT_FAILED_MANUAL_VERIFICATION) {
                         has_state_failed_verification = true;
                     } else if(state.state_name == CONTACT_IN_MANUAL_VERIFICATION) {
-                        throw Admin::ExceptionIncorrectContactStatus();
+                        throw ExceptionIncorrectContactStatus();
                     } else if(state.state_name == CONTACT_PASSED_MANUAL_VERIFICATION) {
-                        throw Admin::ExceptionIncorrectContactStatus();
+                        throw ExceptionIncorrectContactStatus();
                     }
                 }
                 if( ! has_state_failed_verification ) {
-                    throw Admin::ExceptionIncorrectContactStatus();
+                    throw ExceptionIncorrectContactStatus();
                 }
             }
 
             if(related_delete_domain_poll_message_exists(_ctx, _check_handle)) {
-                throw Admin::ExceptionDomainsAlreadyDeleted();
+                throw ExceptionDomainsAlreadyDeleted();
             }
 
             std::set<unsigned long long> domain_ids_to_delete =
@@ -113,7 +117,7 @@ namespace  Admin {
             }
         }
         catch (const LibFred::ExceptionUnknownCheckHandle&) {
-            throw Admin::ExceptionUnknownCheckHandle();
+            throw ExceptionUnknownCheckHandle();
         }
     }
 
@@ -177,4 +181,8 @@ namespace  Admin {
                     (_check_handle)
                     (Conversion::Enums::to_db_handle(LibFred::Poll::MessageType::delete_domain))).size();
     }
-}
+} // namespace Fred::Backend::Admin::Contact::Verification
+} // namespace Fred::Backend::Admin::Contact
+} // namespace Fred::Backend::Admin
+} // namespace Fred::Backend
+} // namespace Fred

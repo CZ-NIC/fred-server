@@ -37,7 +37,7 @@ boost::assign::list_of
 (HandleArgsPtr(new HandleRegistryArgs))
 (HandleArgsPtr(new HandleRifdArgs))
 (HandleArgsPtr(new HandleContactVerificationArgs))
-(HandleArgsPtr(new HandleMojeIDArgs))
+(HandleArgsPtr(new HandleMojeIdArgs))
 (HandleArgsPtr(new HandleDomainBrowserArgs))
 ;
 

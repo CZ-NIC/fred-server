@@ -12,23 +12,23 @@
 #include <map>
 #include <stdexcept>
 
-namespace Registry {
+namespace CorbaConversion {
 namespace PublicRequest {
 namespace {
 
-PublicRequestImpl::ObjectType::Enum unwrap_objecttype_pr_to_objecttype(ObjectType_PR::Type object_type)
+Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::Enum unwrap_objecttype_pr_to_objecttype(Registry::PublicRequest::ObjectType_PR::Type object_type)
 {
     switch (object_type)
     {
-        case ObjectType_PR::contact: return PublicRequestImpl::ObjectType::contact;
-        case ObjectType_PR::nsset: return PublicRequestImpl::ObjectType::nsset;
-        case ObjectType_PR::domain: return PublicRequestImpl::ObjectType::domain;
-        case ObjectType_PR::keyset: return PublicRequestImpl::ObjectType::keyset;
+        case Registry::PublicRequest::ObjectType_PR::contact: return Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::contact;
+        case Registry::PublicRequest::ObjectType_PR::nsset: return Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::nsset;
+        case Registry::PublicRequest::ObjectType_PR::domain: return Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::domain;
+        case Registry::PublicRequest::ObjectType_PR::keyset: return Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::keyset;
     }
     throw std::invalid_argument("value doesn't exist in Registry::PublicRequest::ObjectType_PR");
 }
 
-Optional<unsigned long long> unwrap_nullableulonglong_to_optional_unsigned_long_long(NullableULongLong* src_ptr)
+Optional<unsigned long long> unwrap_nullableulonglong_to_optional_unsigned_long_long(Registry::NullableULongLong* src_ptr)
 {
     if (src_ptr == NULL)
     {
@@ -39,10 +39,10 @@ Optional<unsigned long long> unwrap_nullableulonglong_to_optional_unsigned_long_
     return dst;
 }
 
-} // namespace Registry::PublicRequest::{anonymous}
+} // namespace CorbaConversion::PublicRequest::{anonymous}
 
 Server_i::Server_i(const std::string& _server_name)
-    : pimpl_(new PublicRequestImpl(_server_name))
+    : pimpl_(new Fred::Backend::PublicRequest::PublicRequestImpl(_server_name))
 {
 }
 
@@ -51,9 +51,9 @@ Server_i::~Server_i()
 }
 
 ::CORBA::ULongLong Server_i::create_authinfo_request_registry_email(
-    ObjectType_PR::Type object_type,
+    Registry::PublicRequest::ObjectType_PR::Type object_type,
     const char* object_handle,
-    NullableULongLong* log_request_id)
+    Registry::NullableULongLong* log_request_id)
 {
     try
     {
@@ -61,59 +61,59 @@ Server_i::~Server_i()
                 unwrap_objecttype_pr_to_objecttype(object_type),
                 LibFred::Corba::unwrap_string_from_const_char_ptr(object_handle),
                 unwrap_nullableulonglong_to_optional_unsigned_long_long(log_request_id),
-                PublicRequestImpl::get_default_mailer_manager());
+                Fred::Backend::PublicRequest::PublicRequestImpl::get_default_mailer_manager());
         ::CORBA::ULongLong result;
         CorbaConversion::wrap_int(public_request_id, result);
         return result;
     }
-    catch (const PublicRequestImpl::NoContactEmail& e)
+    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::NoContactEmail& e)
     {
         LOGGER(PACKAGE).info(e.what());
-        throw INVALID_EMAIL();
+        throw Registry::PublicRequest::INVALID_EMAIL();
     }
-    catch (const PublicRequestImpl::ObjectNotFound& e)
+    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::ObjectNotFound& e)
     {
         LOGGER(PACKAGE).info(e.what());
-        throw OBJECT_NOT_FOUND();
+        throw Registry::PublicRequest::OBJECT_NOT_FOUND();
     }
-    catch (const PublicRequestImpl::ObjectTransferProhibited& e)
+    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::ObjectTransferProhibited& e)
     {
         LOGGER(PACKAGE).info(e.what());
-        throw OBJECT_TRANSFER_PROHIBITED();
+        throw Registry::PublicRequest::OBJECT_TRANSFER_PROHIBITED();
     }
     catch (const std::exception& e)
     {
         LOGGER(PACKAGE).error(e.what());
-        throw INTERNAL_SERVER_ERROR();
+        throw Registry::PublicRequest::INTERNAL_SERVER_ERROR();
     }
     catch (...)
     {
         LOGGER(PACKAGE).error("unexpected exception");
-        throw INTERNAL_SERVER_ERROR();
+        throw Registry::PublicRequest::INTERNAL_SERVER_ERROR();
     }
 }
 
 namespace {
 
-PublicRequestImpl::ConfirmedBy::Enum unwrap_confirmedby_to_confirmedby(ConfirmedBy::Type confirmation_method)
+Fred::Backend::PublicRequest::PublicRequestImpl::ConfirmedBy::Enum unwrap_confirmedby_to_confirmedby(Registry::PublicRequest::ConfirmedBy::Type confirmation_method)
 {
     switch (confirmation_method)
     {
-        case ConfirmedBy::signed_email:
-            return PublicRequestImpl::ConfirmedBy::email;
-        case ConfirmedBy::notarized_letter:
-            return PublicRequestImpl::ConfirmedBy::letter;
+        case Registry::PublicRequest::ConfirmedBy::signed_email:
+            return Fred::Backend::PublicRequest::PublicRequestImpl::ConfirmedBy::email;
+        case Registry::PublicRequest::ConfirmedBy::notarized_letter:
+            return Fred::Backend::PublicRequest::PublicRequestImpl::ConfirmedBy::letter;
     }
     throw std::invalid_argument("value doesn't exist in Registry::PublicRequest::ConfirmedBy");
 }
 
-} // namespace Registry::PublicRequest::{anonymous}
+} // namespace CorbaConversion::PublicRequest::{anonymous}
 
 CORBA::ULongLong Server_i::create_authinfo_request_non_registry_email(
-    ObjectType_PR::Type object_type,
+    Registry::PublicRequest::ObjectType_PR::Type object_type,
     const char* object_handle,
-    NullableULongLong* log_request_id,
-    ConfirmedBy::Type confirmation_method,
+    Registry::NullableULongLong* log_request_id,
+    Registry::PublicRequest::ConfirmedBy::Type confirmation_method,
     const char* specified_email)
 {
     try
@@ -128,59 +128,59 @@ CORBA::ULongLong Server_i::create_authinfo_request_non_registry_email(
         CorbaConversion::wrap_int(public_request_id, result);
         return result;
     }
-    catch (const PublicRequestImpl::ObjectNotFound& e)
+    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::ObjectNotFound& e)
     {
         LOGGER(PACKAGE).info(e.what());
-        throw OBJECT_NOT_FOUND();
+        throw Registry::PublicRequest::OBJECT_NOT_FOUND();
     }
-    catch (const PublicRequestImpl::ObjectTransferProhibited& e)
+    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::ObjectTransferProhibited& e)
     {
         LOGGER(PACKAGE).info(e.what());
-        throw OBJECT_TRANSFER_PROHIBITED();
+        throw Registry::PublicRequest::OBJECT_TRANSFER_PROHIBITED();
     }
-    catch (const PublicRequestImpl::InvalidContactEmail& e)
+    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::InvalidContactEmail& e)
     {
         LOGGER(PACKAGE).info(e.what());
-        throw INVALID_EMAIL();
+        throw Registry::PublicRequest::INVALID_EMAIL();
     }
     catch (const std::exception& e)
     {
         LOGGER(PACKAGE).error(e.what());
-        throw INTERNAL_SERVER_ERROR();
+        throw Registry::PublicRequest::INTERNAL_SERVER_ERROR();
     }
     catch (...)
     {
         LOGGER(PACKAGE).error("unexpected exception");
-        throw INTERNAL_SERVER_ERROR();
+        throw Registry::PublicRequest::INTERNAL_SERVER_ERROR();
     }
 }
 
 namespace {
 
-PublicRequestImpl::LockRequestType::Enum unwrap_lockrequesttype_to_lockrequesttype(LockRequestType::Type lock_request_type)
+Fred::Backend::PublicRequest::PublicRequestImpl::LockRequestType::Enum unwrap_lockrequesttype_to_lockrequesttype(Registry::PublicRequest::LockRequestType::Type lock_request_type)
 {
     switch (lock_request_type)
     {
-        case LockRequestType::block_transfer:
-            return PublicRequestImpl::LockRequestType::block_transfer;
-        case LockRequestType::block_transfer_and_update:
-            return PublicRequestImpl::LockRequestType::block_transfer_and_update;
-        case LockRequestType::unblock_transfer:
-            return PublicRequestImpl::LockRequestType::unblock_transfer;
-        case LockRequestType::unblock_transfer_and_update:
-            return PublicRequestImpl::LockRequestType::unblock_transfer_and_update;
+        case Registry::PublicRequest::LockRequestType::block_transfer:
+            return Fred::Backend::PublicRequest::PublicRequestImpl::LockRequestType::block_transfer;
+        case Registry::PublicRequest::LockRequestType::block_transfer_and_update:
+            return Fred::Backend::PublicRequest::PublicRequestImpl::LockRequestType::block_transfer_and_update;
+        case Registry::PublicRequest::LockRequestType::unblock_transfer:
+            return Fred::Backend::PublicRequest::PublicRequestImpl::LockRequestType::unblock_transfer;
+        case Registry::PublicRequest::LockRequestType::unblock_transfer_and_update:
+            return Fred::Backend::PublicRequest::PublicRequestImpl::LockRequestType::unblock_transfer_and_update;
     }
-    throw std::invalid_argument("value doesn't exist in LockRequestType");
+    throw std::invalid_argument("value doesn't exist in Registry::PublicRequest::LockRequestType");
 }
 
-} // namespace Registry::PublicRequest::{anonymous}
+} // namespace CorbaConversion::PublicRequest::{anonymous}
 
 CORBA::ULongLong Server_i::create_block_unblock_request(
-    ObjectType_PR::Type object_type,
+    Registry::PublicRequest::ObjectType_PR::Type object_type,
     const char* object_handle,
-    NullableULongLong* log_request_id,
-    ConfirmedBy::Type confirmation_method,
-    LockRequestType::Type lock_request_type)
+    Registry::NullableULongLong* log_request_id,
+    Registry::PublicRequest::ConfirmedBy::Type confirmation_method,
+    Registry::PublicRequest::LockRequestType::Type lock_request_type)
 {
     try
     {
@@ -194,63 +194,63 @@ CORBA::ULongLong Server_i::create_block_unblock_request(
         CorbaConversion::wrap_int(public_request_id, result);
         return result;
     }
-    catch (const PublicRequestImpl::ObjectNotFound& e)
+    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::ObjectNotFound& e)
     {
         LOGGER(PACKAGE).info(e.what());
-        throw OBJECT_NOT_FOUND();
+        throw Registry::PublicRequest::OBJECT_NOT_FOUND();
     }
-    catch (const PublicRequestImpl::InvalidContactEmail& e)
+    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::InvalidContactEmail& e)
     {
         LOGGER(PACKAGE).info(e.what());
-        throw INVALID_EMAIL();
+        throw Registry::PublicRequest::INVALID_EMAIL();
     }
-    catch (const PublicRequestImpl::HasDifferentBlock& e)
+    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::HasDifferentBlock& e)
     {
         LOGGER(PACKAGE).info(e.what());
-        throw HAS_DIFFERENT_BLOCK();
+        throw Registry::PublicRequest::HAS_DIFFERENT_BLOCK();
     }
-    catch (const PublicRequestImpl::ObjectAlreadyBlocked& e)
+    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::ObjectAlreadyBlocked& e)
     {
         LOGGER(PACKAGE).info(e.what());
-        throw OBJECT_ALREADY_BLOCKED();
+        throw Registry::PublicRequest::OBJECT_ALREADY_BLOCKED();
     }
-    catch (const PublicRequestImpl::ObjectNotBlocked& e)
+    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::ObjectNotBlocked& e)
     {
         LOGGER(PACKAGE).info(e.what());
-        throw OBJECT_NOT_BLOCKED();
+        throw Registry::PublicRequest::OBJECT_NOT_BLOCKED();
     }
-    catch (const PublicRequestImpl::OperationProhibited& e)
+    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::OperationProhibited& e)
     {
         LOGGER(PACKAGE).info(e.what());
-        throw OPERATION_PROHIBITED();
+        throw Registry::PublicRequest::OPERATION_PROHIBITED();
     }
     catch (const std::exception& e)
     {
         LOGGER(PACKAGE).error(e.what());
-        throw INTERNAL_SERVER_ERROR();
+        throw Registry::PublicRequest::INTERNAL_SERVER_ERROR();
     }
     catch (...)
     {
         LOGGER(PACKAGE).error("unexpected exception");
-        throw INTERNAL_SERVER_ERROR();
+        throw Registry::PublicRequest::INTERNAL_SERVER_ERROR();
     }
 }
 
 namespace {
 
-PublicRequestImpl::Language::Enum unwrap_language_to_language(Language::Type lang)
+Fred::Backend::PublicRequest::PublicRequestImpl::Language::Enum unwrap_language_to_language(Registry::PublicRequest::Language::Type lang)
 {
     switch (lang)
     {
-        case Language::cs: return PublicRequestImpl::Language::cs;
-        case Language::en: return PublicRequestImpl::Language::en;
+        case Registry::PublicRequest::Language::cs: return Fred::Backend::PublicRequest::PublicRequestImpl::Language::cs;
+        case Registry::PublicRequest::Language::en: return Fred::Backend::PublicRequest::PublicRequestImpl::Language::en;
     }
     throw std::invalid_argument("language code not found");
 }
 
-} // namespace Registry::PublicRequest::{anonymous}
+} // namespace CorbaConversion::PublicRequest::{anonymous}
 
-Buffer* Server_i::create_public_request_pdf(CORBA::ULongLong public_request_id, Language::Type lang)
+Registry::Buffer* Server_i::create_public_request_pdf(CORBA::ULongLong public_request_id, Registry::PublicRequest::Language::Type lang)
 {
     try
     {
@@ -258,31 +258,31 @@ Buffer* Server_i::create_public_request_pdf(CORBA::ULongLong public_request_id, 
                 pimpl_->create_public_request_pdf(
                         public_request_id,
                         unwrap_language_to_language(lang),
-                        PublicRequestImpl::get_default_document_manager());
-        Buffer_var result = CorbaConversion::Util::wrap_Buffer(pdf_content);
+                        Fred::Backend::PublicRequest::PublicRequestImpl::get_default_document_manager());
+        Registry::Buffer_var result = CorbaConversion::Util::wrap_Buffer(pdf_content);
         return result._retn();
     }
-    catch (const PublicRequestImpl::ObjectNotFound& e)
+    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::ObjectNotFound& e)
     {
         LOGGER(PACKAGE).info(e.what());
-        throw OBJECT_NOT_FOUND();
+        throw Registry::PublicRequest::OBJECT_NOT_FOUND();
     }
-    catch (const PublicRequestImpl::InvalidPublicRequestType& e)
+    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::InvalidPublicRequestType& e)
     {
         LOGGER(PACKAGE).info(e.what());
-        throw INVALID_PUBLIC_REQUEST_TYPE();
+        throw Registry::PublicRequest::INVALID_PUBLIC_REQUEST_TYPE();
     }
     catch (const std::exception& e)
     {
         LOGGER(PACKAGE).error(e.what());
-        throw INTERNAL_SERVER_ERROR();
+        throw Registry::PublicRequest::INTERNAL_SERVER_ERROR();
     }
     catch (...)
     {
         LOGGER(PACKAGE).error("unexpected exception");
-        throw INTERNAL_SERVER_ERROR();
+        throw Registry::PublicRequest::INTERNAL_SERVER_ERROR();
     }
 }
 
-} // namespace Registry::PublicRequest
-} // namespace Registry
+} // namespace CorbaConversion::PublicRequest
+} // namespace CorbaConversion

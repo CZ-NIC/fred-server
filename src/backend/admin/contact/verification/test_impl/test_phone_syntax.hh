@@ -30,10 +30,11 @@
 
 #include <boost/assign/list_of.hpp>
 
-namespace Admin
-{
-namespace ContactVerification
-{
+namespace Fred {
+namespace Backend {
+namespace Admin {
+namespace Contact {
+namespace Verification {
     FACTORY_MODULE_INIT_DECL(TestPhoneSyntax_init)
 
     class TestPhoneSyntax
@@ -68,7 +69,10 @@ namespace ContactVerification
             return boost::assign::list_of(phone_);
         }
     };
-}
-}
+} // namespace Fred::Backend::Admin::Contact::Verification
+} // namespace Fred::Backend::Admin::Contact
+} // namespace Fred::Backend::Admin
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

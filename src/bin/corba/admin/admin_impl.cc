@@ -1021,7 +1021,7 @@ ccReg::TID ccReg_Admin_i::resendPin2SMS(ccReg::TID publicRequestId)
         }
         const std::string typeOfRequest = static_cast< std::string >(res[0][0]);
         if ((typeOfRequest != "mojeid_contact_conditional_identification") &&
-            (typeOfRequest != LibFred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION)) {
+            (typeOfRequest != Fred::Backend::ContactVerification::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION)) {
             LOGGER(PACKAGE).error(boost::format("publicRequestId: %1% of %2% type is not PIN2 request")
                 % publicRequestId
                 % typeOfRequest);

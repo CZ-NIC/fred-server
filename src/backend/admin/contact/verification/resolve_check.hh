@@ -30,7 +30,11 @@
 #include "src/util/optional_value.hh"
 #include "src/libfred/opcontext.hh"
 
+namespace Fred {
+namespace Backend {
 namespace Admin {
+namespace Contact {
+namespace Verification {
     /**
      * Operation for setting the final status of check and triggering consequent actions
      */
@@ -80,6 +84,10 @@ namespace Admin {
              */
             void exec(LibFred::OperationContext& _ctx);
     };
-}
+} // namespace Fred::Backend::Admin::Contact::Verification
+} // namespace Fred::Backend::Admin::Contact
+} // namespace Fred::Backend::Admin
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

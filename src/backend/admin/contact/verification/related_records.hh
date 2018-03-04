@@ -31,7 +31,11 @@
 
 #include "src/libfred/opcontext.hh"
 
+namespace Fred {
+namespace Backend {
 namespace Admin {
+namespace Contact {
+namespace Verification {
     using std::vector;
     using std::string;
 
@@ -99,7 +103,11 @@ namespace Admin {
         LibFred::OperationContext& _ctx,
         unsigned long long      _contact_id,
         const std::string&      _output_timezone = "Europe/Prague");
-}
+} // namespace Fred::Backend::Admin::Contact::Verification
+} // namespace Fred::Backend::Admin::Contact
+} // namespace Fred::Backend::Admin
+} // namespace Fred::Backend
+} // namespace Fred
 
 
 #endif

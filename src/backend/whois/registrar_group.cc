@@ -1,6 +1,8 @@
 #include "src/backend/whois/registrar_group.hh"
 
 
+namespace Fred {
+namespace Backend {
 namespace Whois {
     std::map<std::string, std::vector<std::string> > get_registrar_groups(
         LibFred::OperationContext& ctx)
@@ -25,4 +27,6 @@ namespace Whois {
         }
         return ret;
     }
-}
+} // namespace Fred::Backend::Whois
+} // namespace Fred::Backend
+} // namespace Fred

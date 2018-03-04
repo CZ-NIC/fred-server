@@ -7,12 +7,12 @@ struct test_contact_fixture
 : whois_impl_instance_fixture
 {
     boost::posix_time::ptime now_utc;
-    ::LibFred::InfoContactData contact;
+    LibFred::InfoContactData contact;
 
     test_contact_fixture()
     {
-        ::LibFred::OperationContextCreator ctx;
-        const ::LibFred::InfoRegistrarData registrar = Test::registrar::make(ctx);
+        LibFred::OperationContextCreator ctx;
+        const LibFred::InfoRegistrarData registrar = Test::registrar::make(ctx);
         contact = Test::exec(
                     Test::generate_test_data(
                         Test::CreateX_factory<::LibFred::CreateContact>().make(registrar.handle)),
@@ -27,7 +27,7 @@ struct test_contact_fixture
 
 BOOST_FIXTURE_TEST_CASE(get_contact_by_handle, test_contact_fixture)
 {
-    Registry::WhoisImpl::Contact con = impl.get_contact_by_handle(contact.handle);
+    Fred::Backend::Whois::Contact con = impl.get_contact_by_handle(contact.handle);
 
     BOOST_CHECK(con.fax                                  == contact.fax.get_value_or_default());
     BOOST_CHECK(con.name                                 == contact.name.get_value_or_default());
@@ -62,13 +62,13 @@ struct test_contact_discloseflags_fixture
 : whois_impl_instance_fixture
 {
     boost::posix_time::ptime now_utc;
-    ::LibFred::InfoContactData contact_show;
-    ::LibFred::InfoContactData contact_hide;
+    LibFred::InfoContactData contact_show;
+    LibFred::InfoContactData contact_hide;
 
     test_contact_discloseflags_fixture()
     {
-        ::LibFred::OperationContextCreator ctx;
-        const ::LibFred::InfoRegistrarData registrar = Test::registrar::make(ctx);
+        LibFred::OperationContextCreator ctx;
+        const LibFred::InfoRegistrarData registrar = Test::registrar::make(ctx);
         contact_show = Test::exec(
                     Test::generate_test_data(
                         Test::CreateX_factory<::LibFred::CreateContact>().make(registrar.handle))
@@ -108,7 +108,7 @@ struct test_contact_discloseflags_fixture
 
 BOOST_FIXTURE_TEST_CASE(get_contact_by_handle_discloseflags, test_contact_discloseflags_fixture)
 {
-    Registry::WhoisImpl::Contact c1 = impl.get_contact_by_handle(contact_show.handle);
+    Fred::Backend::Whois::Contact c1 = impl.get_contact_by_handle(contact_show.handle);
 
     BOOST_CHECK(c1.disclose_organization                == contact_show.discloseorganization);
     BOOST_CHECK(c1.disclose_name                        == contact_show.disclosename);
@@ -120,7 +120,7 @@ BOOST_FIXTURE_TEST_CASE(get_contact_by_handle_discloseflags, test_contact_disclo
     BOOST_CHECK(c1.disclose_identification              == contact_show.discloseident);
     BOOST_CHECK(c1.disclose_vat_number                  == contact_show.disclosevat);
 
-    Registry::WhoisImpl::Contact c2 = impl.get_contact_by_handle(contact_hide.handle);
+    Fred::Backend::Whois::Contact c2 = impl.get_contact_by_handle(contact_hide.handle);
 
     BOOST_CHECK(c2.disclose_organization                == contact_hide.discloseorganization);
     BOOST_CHECK(c2.disclose_name                        == contact_hide.disclosename);
@@ -136,13 +136,13 @@ BOOST_FIXTURE_TEST_CASE(get_contact_by_handle_discloseflags, test_contact_disclo
 
 BOOST_FIXTURE_TEST_CASE(get_contact_by_handle_no_contact, test_contact_fixture)
 {
-    BOOST_CHECK_THROW(impl.get_contact_by_handle("fine-handle"), Registry::WhoisImpl::ObjectNotExists);
+    BOOST_CHECK_THROW(impl.get_contact_by_handle("fine-handle"), Fred::Backend::Whois::ObjectNotExists);
 }
 
 
 BOOST_FIXTURE_TEST_CASE(get_contact_by_handle_wrong_contact, test_contact_fixture)
 {
-    BOOST_CHECK_THROW(impl.get_contact_by_handle(""), Registry::WhoisImpl::InvalidHandle);
+    BOOST_CHECK_THROW(impl.get_contact_by_handle(""), Fred::Backend::Whois::InvalidHandle);
 }
 
 

@@ -28,18 +28,18 @@
 #include "src/libfred/registrable_object/contact/info_contact_data.hh"
 #include "src/libfred/object/object_states_info.hh"
 
-namespace LibFred {
-namespace MojeID {
-namespace Check {
+namespace Fred {
+namespace Backend {
+namespace MojeId {
 
 struct states_before_transfer_into_mojeid
 {
-    states_before_transfer_into_mojeid(const ObjectStatesInfo &_states_info)
-    :   server_user_blocked   (_states_info.presents(Object_State::server_transfer_prohibited) ||
-                               _states_info.presents(Object_State::server_update_prohibited) ||
-                               _states_info.presents(Object_State::server_delete_prohibited)),
-        server_admin_blocked  (_states_info.presents(Object_State::server_blocked)),
-        mojeid_contact_present(_states_info.presents(Object_State::mojeid_contact))
+    states_before_transfer_into_mojeid(const LibFred::ObjectStatesInfo &_states_info)
+    :   server_user_blocked   (_states_info.presents(LibFred::Object_State::server_transfer_prohibited) ||
+                               _states_info.presents(LibFred::Object_State::server_update_prohibited) ||
+                               _states_info.presents(LibFred::Object_State::server_delete_prohibited)),
+        server_admin_blocked  (_states_info.presents(LibFred::Object_State::server_blocked)),
+        mojeid_contact_present(_states_info.presents(LibFred::Object_State::mojeid_contact))
     { }
     bool success()const
     {
@@ -52,8 +52,8 @@ struct states_before_transfer_into_mojeid
     bool mojeid_contact_present:1;
 };
 
-}//Fred::MojeID::Check
-}//Fred::MojeID
-}//Fred
+} // namespace Fred::Backend::MojeId
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

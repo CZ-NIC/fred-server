@@ -1,3 +1,4 @@
+#include "src/bin/corba/Whois2.hh"
 #include "src/bin/corba/whois/whois2_impl.hh"
 #include "src/bin/corba/common_wrappers.hh"
 #include "src/bin/corba/util/corba_conversions_string.hh"
@@ -9,14 +10,14 @@
 
 #include <vector>
 
-namespace Registry
+namespace CorbaConversion
 {
 namespace Whois
 {
 
-PlaceAddress wrap_address(const Registry::WhoisImpl::PlaceAddress& address)
+Registry::Whois::PlaceAddress wrap_address(const Fred::Backend::Whois::PlaceAddress& address)
 {
-    PlaceAddress result;
+    Registry::Whois::PlaceAddress result;
     result.street1    = LibFred::Corba::wrap_string_to_corba_string(address.street1);
     result.street2    = LibFred::Corba::wrap_string_to_corba_string(address.street2);
     result.street3    = LibFred::Corba::wrap_string_to_corba_string(address.street3);
@@ -27,9 +28,9 @@ PlaceAddress wrap_address(const Registry::WhoisImpl::PlaceAddress& address)
     return result;
 }
 
-Registrar wrap_registrar(const Registry::WhoisImpl::Registrar& registrar)
+Registry::Whois::Registrar wrap_registrar(const Fred::Backend::Whois::Registrar& registrar)
 {
-    Registrar result;
+    Registry::Whois::Registrar result;
     result.handle  = LibFred::Corba::wrap_string_to_corba_string(registrar.handle);
     result.name    = LibFred::Corba::wrap_string_to_corba_string(registrar.name);
     result.organization = LibFred::Corba::wrap_string_to_corba_string(registrar.organization);
@@ -40,34 +41,34 @@ Registrar wrap_registrar(const Registry::WhoisImpl::Registrar& registrar)
     return result;
 }
 
-Registrar* Server_impl::get_registrar_by_handle(const char* handle)
+Registry::Whois::Registrar* Server_impl::get_registrar_by_handle(const char* handle)
 {
     try
     {
-        return new Registrar(
+        return new Registry::Whois::Registrar(
                 wrap_registrar(
                     pimpl_->get_registrar_by_handle(std::string(handle))));
     }
-    catch (const Registry::WhoisImpl::InvalidHandle& e)
+    catch (const Fred::Backend::Whois::InvalidHandle& e)
     {
         throw Registry::Whois::INVALID_HANDLE();
     }
-    catch (const Registry::WhoisImpl::ObjectNotExists& e)
+    catch (const Fred::Backend::Whois::ObjectNotExists& e)
     {
         throw Registry::Whois::OBJECT_NOT_FOUND();
     }
     catch (...) { }
 
     // default exception handling
-    throw INTERNAL_SERVER_ERROR();
+    throw Registry::Whois::INTERNAL_SERVER_ERROR();
 }
 
-RegistrarSeq* Server_impl::get_registrars()
+Registry::Whois::RegistrarSeq* Server_impl::get_registrars()
 {
     try
     {
-        RegistrarSeq_var result = new RegistrarSeq;
-        const std::vector<Registry::WhoisImpl::Registrar>& registrars = pimpl_->get_registrars();
+        Registry::Whois::RegistrarSeq_var result = new Registry::Whois::RegistrarSeq;
+        const std::vector<Fred::Backend::Whois::Registrar>& registrars = pimpl_->get_registrars();
         result->length(registrars.size());
         for (CORBA::ULong i = 0; i < registrars.size(); ++i)
         {
@@ -78,12 +79,12 @@ RegistrarSeq* Server_impl::get_registrars()
     catch (...) { }
 
     //default exception handling
-    throw INTERNAL_SERVER_ERROR();
+    throw Registry::Whois::INTERNAL_SERVER_ERROR();
 }
 
-RegistrarGroup wrap_registrar_group(const Registry::WhoisImpl::RegistrarGroup& group)
+Registry::Whois::RegistrarGroup wrap_registrar_group(const Fred::Backend::Whois::RegistrarGroup& group)
 {
-    RegistrarGroup result;
+    Registry::Whois::RegistrarGroup result;
     result.name = LibFred::Corba::wrap_string_to_corba_string(group.name);
     result.members.length(group.members.size());
     CORBA::ULong i = 0;
@@ -95,12 +96,12 @@ RegistrarGroup wrap_registrar_group(const Registry::WhoisImpl::RegistrarGroup& g
     return result;
 }
 
-RegistrarGroupList* Server_impl::get_registrar_groups()
+Registry::Whois::RegistrarGroupList* Server_impl::get_registrar_groups()
 {
     try
     {
-        RegistrarGroupList_var result = new RegistrarGroupList;
-        const std::vector<Registry::WhoisImpl::RegistrarGroup>& groups = pimpl_->get_registrar_groups();
+        Registry::Whois::RegistrarGroupList_var result = new Registry::Whois::RegistrarGroupList;
+        const std::vector<Fred::Backend::Whois::RegistrarGroup>& groups = pimpl_->get_registrar_groups();
         result->length(groups.size());
         for (CORBA::ULong i = 0; i < groups.size(); ++i)
         {
@@ -111,24 +112,24 @@ RegistrarGroupList* Server_impl::get_registrar_groups()
     catch (...) { }
 
     //default exception handling
-    throw INTERNAL_SERVER_ERROR();
+    throw Registry::Whois::INTERNAL_SERVER_ERROR();
 }
 
-RegistrarCertification wrap_registrar_certification(const Registry::WhoisImpl::RegistrarCertification& cert)
+Registry::Whois::RegistrarCertification wrap_registrar_certification(const Fred::Backend::Whois::RegistrarCertification& cert)
 {
-    RegistrarCertification result;
+    Registry::Whois::RegistrarCertification result;
     result.registrar_handle = LibFred::Corba::wrap_string_to_corba_string(cert.registrar);
     result.score = cert.score;
     result.evaluation_file_id = cert.evaluation_file_id;
     return result;
 }
 
-RegistrarCertificationList* Server_impl::get_registrar_certification_list()
+Registry::Whois::RegistrarCertificationList* Server_impl::get_registrar_certification_list()
 {
     try
     {
-        RegistrarCertificationList_var result = new RegistrarCertificationList;
-        const std::vector<Registry::WhoisImpl::RegistrarCertification>& certifications = pimpl_->get_registrar_certification_list();
+        Registry::Whois::RegistrarCertificationList_var result = new Registry::Whois::RegistrarCertificationList;
+        const std::vector<Fred::Backend::Whois::RegistrarCertification>& certifications = pimpl_->get_registrar_certification_list();
         result->length(certifications.size());
         for (CORBA::ULong i = 0; i < certifications.size(); ++i)
         {
@@ -139,14 +140,14 @@ RegistrarCertificationList* Server_impl::get_registrar_certification_list()
     catch (...) { }
 
     //default exception handling
-    throw INTERNAL_SERVER_ERROR();
+    throw Registry::Whois::INTERNAL_SERVER_ERROR();
 }
 
-ZoneFqdnList* Server_impl::get_managed_zone_list()
+Registry::Whois::ZoneFqdnList* Server_impl::get_managed_zone_list()
 {
     try
     {
-        ZoneFqdnList_var result = new ZoneFqdnList;
+        Registry::Whois::ZoneFqdnList_var result = new Registry::Whois::ZoneFqdnList;
         const std::vector<std::string>& zones = pimpl_->get_managed_zone_list();
         result->length(zones.size());
         CORBA::ULong i = 0;
@@ -160,20 +161,20 @@ ZoneFqdnList* Server_impl::get_managed_zone_list()
     catch (...) { }
 
     //default exception handling
-    throw INTERNAL_SERVER_ERROR();
+    throw Registry::Whois::INTERNAL_SERVER_ERROR();
 }
 
-DisclosableString wrap_disclosable_string(const std::string& str, bool disclose)
+Registry::Whois::DisclosableString wrap_disclosable_string(const std::string& str, bool disclose)
 {
-    DisclosableString temp;
+    Registry::Whois::DisclosableString temp;
     temp.value = LibFred::Corba::wrap_string_to_corba_string(str);
     temp.disclose = disclose;
     return temp;
 }
 
-DisclosablePlaceAddress wrap_disclosable_address(const Registry::WhoisImpl::PlaceAddress& addr, bool disclose)
+Registry::Whois::DisclosablePlaceAddress wrap_disclosable_address(const Fred::Backend::Whois::PlaceAddress& addr, bool disclose)
 {
-    DisclosablePlaceAddress temp;
+    Registry::Whois::DisclosablePlaceAddress temp;
     temp.value.street1 = LibFred::Corba::wrap_string_to_corba_string(addr.street1);
     temp.value.street2 = LibFred::Corba::wrap_string_to_corba_string(addr.street2);
     temp.value.street3 = LibFred::Corba::wrap_string_to_corba_string(addr.street3);
@@ -185,9 +186,9 @@ DisclosablePlaceAddress wrap_disclosable_address(const Registry::WhoisImpl::Plac
     return temp;
 }
 
-Contact wrap_contact(const Registry::WhoisImpl::Contact& con)
+Registry::Whois::Contact wrap_contact(const Fred::Backend::Whois::Contact& con)
 {
-    Contact result;
+    Registry::Whois::Contact result;
     result.handle       = LibFred::Corba::wrap_string_to_corba_string(con.handle);
     result.organization = wrap_disclosable_string(con.organization, con.disclose_organization);
     result.name         = wrap_disclosable_string(con.name, con.disclose_name);
@@ -208,9 +209,9 @@ Contact wrap_contact(const Registry::WhoisImpl::Contact& con)
             LibFred::Corba::wrap_string_to_corba_string(con.creating_registrar);
     result.sponsoring_registrar_handle =
             LibFred::Corba::wrap_string_to_corba_string(con.sponsoring_registrar);
-    result.created = CorbaConversion::Util::wrap_boost_posix_time_ptime_to_IsoDateTime(con.created);
-    result.changed = CorbaConversion::Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(con.changed);
-    result.last_transfer = CorbaConversion::Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(con.last_transfer);
+    result.created = Util::wrap_boost_posix_time_ptime_to_IsoDateTime(con.created);
+    result.changed = Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(con.changed);
+    result.last_transfer = Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(con.last_transfer);
 
     result.statuses.length(con.statuses.size());
     CORBA::ULong i = 0;
@@ -223,24 +224,24 @@ Contact wrap_contact(const Registry::WhoisImpl::Contact& con)
     return result;
 }
 
-Contact* Server_impl::get_contact_by_handle(const char* handle)
+Registry::Whois::Contact* Server_impl::get_contact_by_handle(const char* handle)
 {
     try
     {
-        return new Contact(wrap_contact(pimpl_->get_contact_by_handle(handle)));
+        return new Registry::Whois::Contact(wrap_contact(pimpl_->get_contact_by_handle(handle)));
     }
-    catch (const Registry::WhoisImpl::InvalidHandle& e)
+    catch (const Fred::Backend::Whois::InvalidHandle& e)
     {
         throw Registry::Whois::INVALID_HANDLE();
     }
-    catch (const Registry::WhoisImpl::ObjectNotExists& e)
+    catch (const Fred::Backend::Whois::ObjectNotExists& e)
     {
         throw Registry::Whois::OBJECT_NOT_FOUND();
     }
     catch (...) { }
 
     //default exception handling
-    throw INTERNAL_SERVER_ERROR();
+    throw Registry::Whois::INTERNAL_SERVER_ERROR();
 }
 
 struct InvalidIPAddressException : public std::runtime_error
@@ -248,17 +249,17 @@ struct InvalidIPAddressException : public std::runtime_error
     InvalidIPAddressException() : std::runtime_error("invalid IP address") {}
 };
 
-IPAddress wrap_ipaddress(const boost::asio::ip::address& in)
+Registry::Whois::IPAddress wrap_ipaddress(const boost::asio::ip::address& in)
 {
-    IPAddress result;
+    Registry::Whois::IPAddress result;
     result.address = LibFred::Corba::wrap_string(in.to_string());
     if (in.is_v4())
     {
-        result.version = IPv4;
+        result.version = Registry::Whois::IPv4;
     }
     else if (in.is_v6())
     {
-        result.version = IPv6;
+        result.version = Registry::Whois::IPv6;
     }
     else
     {
@@ -267,9 +268,9 @@ IPAddress wrap_ipaddress(const boost::asio::ip::address& in)
     return result;
 }
 
-NameServer wrap_nameserver(const Registry::WhoisImpl::NameServer& ns)
+Registry::Whois::NameServer wrap_nameserver(const Fred::Backend::Whois::NameServer& ns)
 {
-    NameServer result;
+    Registry::Whois::NameServer result;
     result.fqdn = LibFred::Corba::wrap_string_to_corba_string(ns.fqdn);
     result.ip_addresses.length(ns.ip_addresses.size());
     for (CORBA::ULong i = 0; i < ns.ip_addresses.size(); ++i)
@@ -279,15 +280,15 @@ NameServer wrap_nameserver(const Registry::WhoisImpl::NameServer& ns)
     return result;
 }
 
-NSSet wrap_nsset(const Registry::WhoisImpl::NSSet& nsset)
+Registry::Whois::NSSet wrap_nsset(const Fred::Backend::Whois::NSSet& nsset)
 {
-    NSSet result;
+    Registry::Whois::NSSet result;
 
     result.handle = LibFred::Corba::wrap_string_to_corba_string(nsset.handle);
     result.registrar_handle = LibFred::Corba::wrap_string_to_corba_string(nsset.sponsoring_registrar);
-    result.created = CorbaConversion::Util::wrap_boost_posix_time_ptime_to_IsoDateTime(nsset.created);
-    result.changed = CorbaConversion::Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(nsset.changed);
-    result.last_transfer = CorbaConversion::Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(nsset.last_transfer);
+    result.created = Util::wrap_boost_posix_time_ptime_to_IsoDateTime(nsset.created);
+    result.changed = Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(nsset.changed);
+    result.last_transfer = Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(nsset.last_transfer);
 
     result.nservers.length(nsset.nservers.size());
     for (CORBA::ULong i = 0; i < nsset.nservers.size(); ++i)
@@ -312,35 +313,35 @@ NSSet wrap_nsset(const Registry::WhoisImpl::NSSet& nsset)
     return result;
 }
 
-NSSet* Server_impl::get_nsset_by_handle(const char* handle)
+Registry::Whois::NSSet* Server_impl::get_nsset_by_handle(const char* handle)
 {
     try
     {
-        return new NSSet(wrap_nsset(pimpl_->get_nsset_by_handle(handle)));
+        return new Registry::Whois::NSSet(wrap_nsset(pimpl_->get_nsset_by_handle(handle)));
     }
-    catch (const Registry::WhoisImpl::InvalidHandle& e)
+    catch (const Fred::Backend::Whois::InvalidHandle& e)
     {
         throw Registry::Whois::INVALID_HANDLE();
     }
-    catch (const Registry::WhoisImpl::ObjectNotExists& e)
+    catch (const Fred::Backend::Whois::ObjectNotExists& e)
     {
         throw Registry::Whois::OBJECT_NOT_FOUND();
     }
     catch (...) { }
 
     //default exception handling
-    throw INTERNAL_SERVER_ERROR();
+    throw Registry::Whois::INTERNAL_SERVER_ERROR();
 }
 
-NSSetSeq* Server_impl::get_nssets_by_ns(
+Registry::Whois::NSSetSeq* Server_impl::get_nssets_by_ns(
     const char* handle,
     ::CORBA::ULong limit,
     ::CORBA::Boolean& limit_exceeded)
 {
     try
     {
-        NSSetSeq_var result = new NSSetSeq;
-        Registry::WhoisImpl::NSSetSeq nss_seq = pimpl_->get_nssets_by_ns(handle, limit);
+        Registry::Whois::NSSetSeq_var result = new Registry::Whois::NSSetSeq;
+        Fred::Backend::Whois::NSSetSeq nss_seq = pimpl_->get_nssets_by_ns(handle, limit);
         limit_exceeded = nss_seq.limit_exceeded;
         result->length(nss_seq.content.size());
         for (CORBA::ULong i = 0; i < nss_seq.content.size(); ++i)
@@ -349,29 +350,29 @@ NSSetSeq* Server_impl::get_nssets_by_ns(
         }
         return result._retn();
     }
-    catch (const Registry::WhoisImpl::InvalidHandle& e)
+    catch (const Fred::Backend::Whois::InvalidHandle& e)
     {
         throw Registry::Whois::INVALID_HANDLE();
     }
-    catch (const Registry::WhoisImpl::ObjectNotExists& e)
+    catch (const Fred::Backend::Whois::ObjectNotExists& e)
     {
         throw Registry::Whois::OBJECT_NOT_FOUND();
     }
     catch (...) { }
 
     //default exception handling
-    throw INTERNAL_SERVER_ERROR();
+    throw Registry::Whois::INTERNAL_SERVER_ERROR();
 }
 
-NSSetSeq* Server_impl::get_nssets_by_tech_c(
+Registry::Whois::NSSetSeq* Server_impl::get_nssets_by_tech_c(
     const char* handle,
     ::CORBA::ULong limit,
     ::CORBA::Boolean& limit_exceeded)
 {
     try
     {
-        NSSetSeq_var result = new NSSetSeq;
-        Registry::WhoisImpl::NSSetSeq nss_seq = pimpl_->get_nssets_by_tech_c(handle, limit);
+        Registry::Whois::NSSetSeq_var result = new Registry::Whois::NSSetSeq;
+        Fred::Backend::Whois::NSSetSeq nss_seq = pimpl_->get_nssets_by_tech_c(handle, limit);
         limit_exceeded = nss_seq.limit_exceeded;
         result->length(nss_seq.content.size());
         for (CORBA::ULong i = 0; i < nss_seq.content.size(); ++i)
@@ -380,25 +381,25 @@ NSSetSeq* Server_impl::get_nssets_by_tech_c(
         }
         return result._retn();
     }
-    catch (const Registry::WhoisImpl::InvalidHandle& e)
+    catch (const Fred::Backend::Whois::InvalidHandle& e)
     {
         throw Registry::Whois::INVALID_HANDLE();
     }
-    catch (const Registry::WhoisImpl::ObjectNotExists& e)
+    catch (const Fred::Backend::Whois::ObjectNotExists& e)
     {
         throw Registry::Whois::OBJECT_NOT_FOUND();
     }
     catch (...) { }
 
     //default exception handling
-    throw INTERNAL_SERVER_ERROR();
+    throw Registry::Whois::INTERNAL_SERVER_ERROR();
 }
 
-NameServer* Server_impl::get_nameserver_by_fqdn(const char* handle)
+Registry::Whois::NameServer* Server_impl::get_nameserver_by_fqdn(const char* handle)
 {
     try
     {
-        NameServer result;
+        Registry::Whois::NameServer result;
         result.fqdn = LibFred::Corba::wrap_string_to_corba_string(pimpl_->get_nameserver_by_fqdn(handle).fqdn);
         /*
          * Because of grouping nameservers in NSSet we don't include
@@ -407,25 +408,25 @@ NameServer* Server_impl::get_nameserver_by_fqdn(const char* handle)
          *
          * result.ip_addresses;
          */
-        return new NameServer(result);
+        return new Registry::Whois::NameServer(result);
     }
-    catch (const Registry::WhoisImpl::InvalidHandle& e)
+    catch (const Fred::Backend::Whois::InvalidHandle& e)
     {
         throw Registry::Whois::INVALID_HANDLE();
     }
-    catch (const Registry::WhoisImpl::ObjectNotExists& e)
+    catch (const Fred::Backend::Whois::ObjectNotExists& e)
     {
         throw Registry::Whois::OBJECT_NOT_FOUND();
     }
     catch (...) { }
 
     //default exception handling
-    throw INTERNAL_SERVER_ERROR();
+    throw Registry::Whois::INTERNAL_SERVER_ERROR();
 }
 
-DNSKey wrap_dnskey(const Registry::WhoisImpl::DNSKey& dnskey)
+Registry::Whois::DNSKey wrap_dnskey(const Fred::Backend::Whois::DNSKey& dnskey)
 {
-    DNSKey result;
+    Registry::Whois::DNSKey result;
     result.flags      = dnskey.flags;
     result.protocol   = dnskey.protocol;
     result.alg        = dnskey.alg;
@@ -433,15 +434,15 @@ DNSKey wrap_dnskey(const Registry::WhoisImpl::DNSKey& dnskey)
     return result;
 }
 
-KeySet wrap_keyset(const Registry::WhoisImpl::KeySet& keyset)
+Registry::Whois::KeySet wrap_keyset(const Fred::Backend::Whois::KeySet& keyset)
 {
-    KeySet result;
+    Registry::Whois::KeySet result;
 
     result.handle  = LibFred::Corba::wrap_string_to_corba_string(keyset.handle);
     result.registrar_handle = LibFred::Corba::wrap_string_to_corba_string(keyset.sponsoring_registrar);
-    result.created = CorbaConversion::Util::wrap_boost_posix_time_ptime_to_IsoDateTime(keyset.created);
-    result.changed = CorbaConversion::Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(keyset.changed);
-    result.last_transfer = CorbaConversion::Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(keyset.last_transfer);
+    result.created = Util::wrap_boost_posix_time_ptime_to_IsoDateTime(keyset.created);
+    result.changed = Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(keyset.changed);
+    result.last_transfer = Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(keyset.last_transfer);
 
     result.tech_contact_handles.length(keyset.tech_contacts.size());
     CORBA::ULong i = 0;
@@ -467,35 +468,35 @@ KeySet wrap_keyset(const Registry::WhoisImpl::KeySet& keyset)
     return result;
 }
 
-KeySet* Server_impl::get_keyset_by_handle(const char* handle)
+Registry::Whois::KeySet* Server_impl::get_keyset_by_handle(const char* handle)
 {
     try
     {
-        return new KeySet(wrap_keyset(pimpl_->get_keyset_by_handle(handle)));
+        return new Registry::Whois::KeySet(wrap_keyset(pimpl_->get_keyset_by_handle(handle)));
     }
-    catch (const Registry::WhoisImpl::InvalidHandle& e)
+    catch (const Fred::Backend::Whois::InvalidHandle& e)
     {
         throw Registry::Whois::INVALID_HANDLE();
     }
-    catch (const Registry::WhoisImpl::ObjectNotExists& e)
+    catch (const Fred::Backend::Whois::ObjectNotExists& e)
     {
         throw Registry::Whois::OBJECT_NOT_FOUND();
     }
     catch (...) { }
 
     //default exception handling
-    throw INTERNAL_SERVER_ERROR();
+    throw Registry::Whois::INTERNAL_SERVER_ERROR();
 }
 
-KeySetSeq* Server_impl::get_keysets_by_tech_c(
+Registry::Whois::KeySetSeq* Server_impl::get_keysets_by_tech_c(
     const char* handle,
     ::CORBA::ULong limit,
     ::CORBA::Boolean& limit_exceeded)
 {
     try
     {
-        KeySetSeq_var result = new KeySetSeq;
-        Registry::WhoisImpl::KeySetSeq ks_seq = pimpl_->get_keysets_by_tech_c(handle, limit);
+        Registry::Whois::KeySetSeq_var result = new Registry::Whois::KeySetSeq;
+        Fred::Backend::Whois::KeySetSeq ks_seq = pimpl_->get_keysets_by_tech_c(handle, limit);
         limit_exceeded = ks_seq.limit_exceeded;
         result->length(ks_seq.content.size());
         for (CORBA::ULong i = 0; i < ks_seq.content.size(); ++i)
@@ -504,23 +505,23 @@ KeySetSeq* Server_impl::get_keysets_by_tech_c(
         }
         return result._retn();
     }
-    catch (const Registry::WhoisImpl::InvalidHandle& e)
+    catch (const Fred::Backend::Whois::InvalidHandle& e)
     {
         throw Registry::Whois::INVALID_HANDLE();
     }
-    catch (const Registry::WhoisImpl::ObjectNotExists& e)
+    catch (const Fred::Backend::Whois::ObjectNotExists& e)
     {
         throw Registry::Whois::OBJECT_NOT_FOUND();
     }
     catch (...) { }
 
     //default exception handling
-    throw INTERNAL_SERVER_ERROR();
+    throw Registry::Whois::INTERNAL_SERVER_ERROR();
 }
 
-Domain wrap_domain(const Registry::WhoisImpl::Domain& domain)
+Registry::Whois::Domain wrap_domain(const Fred::Backend::Whois::Domain& domain)
 {
-    Domain result;
+    Registry::Whois::Domain result;
     result.handle = LibFred::Corba::wrap_string_to_corba_string(domain.fqdn);
     result.registrant_handle = LibFred::Corba::wrap_string_to_corba_string(domain.registrant);
     if (domain.nsset.size() == 0)
@@ -529,7 +530,7 @@ Domain wrap_domain(const Registry::WhoisImpl::Domain& domain)
     }
     else
     {
-        result.nsset_handle = new NullableString(LibFred::Corba::wrap_string_to_corba_string(domain.nsset));
+        result.nsset_handle = new Registry::NullableString(LibFred::Corba::wrap_string_to_corba_string(domain.nsset));
     }
     if (domain.keyset.size() == 0)
     {
@@ -537,15 +538,15 @@ Domain wrap_domain(const Registry::WhoisImpl::Domain& domain)
     }
     else
     {
-        result.keyset_handle = new NullableString(LibFred::Corba::wrap_string_to_corba_string(domain.keyset));
+        result.keyset_handle = new Registry::NullableString(LibFred::Corba::wrap_string_to_corba_string(domain.keyset));
     }
     result.registrar_handle = LibFred::Corba::wrap_string_to_corba_string(domain.sponsoring_registrar);
-    result.registered = CorbaConversion::Util::wrap_boost_posix_time_ptime_to_IsoDateTime(domain.registered);
-    result.changed = CorbaConversion::Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(domain.changed);
-    result.last_transfer = CorbaConversion::Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(domain.last_transfer);
-    result.expire = CorbaConversion::Util::wrap_boost_gregorian_date_to_IsoDate(domain.expire);
-    result.expire_time_estimate = CorbaConversion::Util::wrap_boost_posix_time_ptime_to_IsoDateTime(domain.expire_time_estimate);
-    result.expire_time_actual = CorbaConversion::Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(domain.expire_time_actual);
+    result.registered = Util::wrap_boost_posix_time_ptime_to_IsoDateTime(domain.registered);
+    result.changed = Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(domain.changed);
+    result.last_transfer = Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(domain.last_transfer);
+    result.expire = Util::wrap_boost_gregorian_date_to_IsoDate(domain.expire);
+    result.expire_time_estimate = Util::wrap_boost_posix_time_ptime_to_IsoDateTime(domain.expire_time_estimate);
+    result.expire_time_actual = Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(domain.expire_time_actual);
     if (domain.validated_to.isnull())
     {
         result.validated_to = NULL;
@@ -554,9 +555,9 @@ Domain wrap_domain(const Registry::WhoisImpl::Domain& domain)
     }
     else
     {
-        result.validated_to = new Registry::NullableIsoDate(CorbaConversion::Util::wrap_boost_gregorian_date_to_IsoDate(domain.validated_to.get_value()));
-        result.validated_to_time_estimate = CorbaConversion::Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(domain.validated_to_time_estimate);
-        result.validated_to_time_actual = CorbaConversion::Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(domain.validated_to_time_actual);
+        result.validated_to = new Registry::NullableIsoDate(Util::wrap_boost_gregorian_date_to_IsoDate(domain.validated_to.get_value()));
+        result.validated_to_time_estimate = Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(domain.validated_to_time_estimate);
+        result.validated_to_time_actual = Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(domain.validated_to_time_actual);
     }
 
     result.admin_contact_handles.length(domain.admin_contacts.size());
@@ -579,39 +580,39 @@ Domain wrap_domain(const Registry::WhoisImpl::Domain& domain)
 
 }
 
-Domain* Server_impl::get_domain_by_handle(const char* handle)
+Registry::Whois::Domain* Server_impl::get_domain_by_handle(const char* handle)
 {
     try
     {
-        return new Domain(wrap_domain(pimpl_->get_domain_by_handle(handle)));
+        return new Registry::Whois::Domain(wrap_domain(pimpl_->get_domain_by_handle(handle)));
     }
-    catch (const Registry::WhoisImpl::InvalidLabel& e)
+    catch (const Fred::Backend::Whois::InvalidLabel& e)
     {
         throw Registry::Whois::INVALID_LABEL();
     }
-    catch (const Registry::WhoisImpl::ObjectNotExists& e)
+    catch (const Fred::Backend::Whois::ObjectNotExists& e)
     {
         throw Registry::Whois::OBJECT_NOT_FOUND();
     }
-    catch (const Registry::WhoisImpl::TooManyLabels& e)
+    catch (const Fred::Backend::Whois::TooManyLabels& e)
     {
         throw Registry::Whois::TOO_MANY_LABELS();
     }
-    catch (const Registry::WhoisImpl::UnmanagedZone& e)
+    catch (const Fred::Backend::Whois::UnmanagedZone& e)
     {
         throw Registry::Whois::UNMANAGED_ZONE();
     }
     catch (...) { }
 
     //default exception handling
-    throw INTERNAL_SERVER_ERROR();
+    throw Registry::Whois::INTERNAL_SERVER_ERROR();
 }
 
-static DomainSeq* get_domains_by_(
-    const Registry::WhoisImpl::DomainSeq& dom_seq,
+static Registry::Whois::DomainSeq* get_domains_by_(
+    const Fred::Backend::Whois::DomainSeq& dom_seq,
     ::CORBA::Boolean& limit_exceeded)
 {
-    DomainSeq_var result = new DomainSeq;
+    Registry::Whois::DomainSeq_var result = new Registry::Whois::DomainSeq;
     limit_exceeded = dom_seq.limit_exceeded;
     result->length(dom_seq.content.size());
     for (CORBA::ULong i = 0; i < dom_seq.content.size(); ++i)
@@ -621,7 +622,7 @@ static DomainSeq* get_domains_by_(
     return result._retn();
 }
 
-DomainSeq* Server_impl::get_domains_by_registrant(
+Registry::Whois::DomainSeq* Server_impl::get_domains_by_registrant(
     const char* handle,
     ::CORBA::ULong limit,
     ::CORBA::Boolean& limit_exceeded)
@@ -630,21 +631,21 @@ DomainSeq* Server_impl::get_domains_by_registrant(
     {
         return get_domains_by_(pimpl_->get_domains_by_registrant(handle, limit), limit_exceeded);
     }
-    catch (const Registry::WhoisImpl::InvalidLabel& e)
+    catch (const Fred::Backend::Whois::InvalidLabel& e)
     {
         throw Registry::Whois::INVALID_LABEL();
     }
-    catch (const Registry::WhoisImpl::ObjectNotExists& e)
+    catch (const Fred::Backend::Whois::ObjectNotExists& e)
     {
         throw Registry::Whois::OBJECT_NOT_FOUND();
     }
     catch (...) { }
 
     //default exception handling
-    throw INTERNAL_SERVER_ERROR();
+    throw Registry::Whois::INTERNAL_SERVER_ERROR();
 }
 
-DomainSeq* Server_impl::get_domains_by_admin_contact(
+Registry::Whois::DomainSeq* Server_impl::get_domains_by_admin_contact(
     const char* handle,
     ::CORBA::ULong limit,
     ::CORBA::Boolean& limit_exceeded)
@@ -653,21 +654,21 @@ DomainSeq* Server_impl::get_domains_by_admin_contact(
     {
         return get_domains_by_(pimpl_->get_domains_by_admin_contact(handle, limit), limit_exceeded);
     }
-    catch (const Registry::WhoisImpl::InvalidLabel& e)
+    catch (const Fred::Backend::Whois::InvalidLabel& e)
     {
         throw Registry::Whois::INVALID_LABEL();
     }
-    catch (const Registry::WhoisImpl::ObjectNotExists& e)
+    catch (const Fred::Backend::Whois::ObjectNotExists& e)
     {
         throw Registry::Whois::OBJECT_NOT_FOUND();
     }
     catch (...) { }
 
     //default exception handling
-    throw INTERNAL_SERVER_ERROR();
+    throw Registry::Whois::INTERNAL_SERVER_ERROR();
 }
 
-DomainSeq* Server_impl::get_domains_by_nsset(
+Registry::Whois::DomainSeq* Server_impl::get_domains_by_nsset(
     const char* handle,
     ::CORBA::ULong limit,
     ::CORBA::Boolean& limit_exceeded)
@@ -676,21 +677,21 @@ DomainSeq* Server_impl::get_domains_by_nsset(
     {
         return get_domains_by_(pimpl_->get_domains_by_nsset(handle, limit), limit_exceeded);
     }
-    catch (const Registry::WhoisImpl::InvalidLabel& e)
+    catch (const Fred::Backend::Whois::InvalidLabel& e)
     {
         throw Registry::Whois::INVALID_LABEL();
     }
-    catch (const Registry::WhoisImpl::ObjectNotExists& e)
+    catch (const Fred::Backend::Whois::ObjectNotExists& e)
     {
         throw Registry::Whois::OBJECT_NOT_FOUND();
     }
     catch (...) { }
 
     //default exception handling
-    throw INTERNAL_SERVER_ERROR();
+    throw Registry::Whois::INTERNAL_SERVER_ERROR();
 }
 
-DomainSeq* Server_impl::get_domains_by_keyset(
+Registry::Whois::DomainSeq* Server_impl::get_domains_by_keyset(
     const char* handle,
     ::CORBA::ULong limit,
     ::CORBA::Boolean& limit_exceeded)
@@ -699,35 +700,35 @@ DomainSeq* Server_impl::get_domains_by_keyset(
     {
         return get_domains_by_(pimpl_->get_domains_by_keyset(handle, limit), limit_exceeded);
     }
-    catch (const Registry::WhoisImpl::InvalidLabel& e)
+    catch (const Fred::Backend::Whois::InvalidLabel& e)
     {
         throw Registry::Whois::INVALID_LABEL();
     }
-    catch (const Registry::WhoisImpl::ObjectNotExists& e)
+    catch (const Fred::Backend::Whois::ObjectNotExists& e)
     {
         throw Registry::Whois::OBJECT_NOT_FOUND();
     }
     catch (...) { }
 
     //default exception handling
-    throw INTERNAL_SERVER_ERROR();
+    throw Registry::Whois::INTERNAL_SERVER_ERROR();
 }
 
-ObjectStatusDesc wrap_ObjectStatusDesc(const Registry::WhoisImpl::ObjectStatusDesc& osd)
+Registry::Whois::ObjectStatusDesc wrap_ObjectStatusDesc(const Fred::Backend::Whois::ObjectStatusDesc& osd)
 {
-    ObjectStatusDesc result;
+    Registry::Whois::ObjectStatusDesc result;
     result.handle = LibFred::Corba::wrap_string_to_corba_string(osd.handle);
     result.name = LibFred::Corba::wrap_string_to_corba_string(osd.name);
     return result;
 }
 
-static ObjectStatusDescSeq* get_object_status_descriptions(
-    const std::vector<Registry::WhoisImpl::ObjectStatusDesc>& state_vec)
+static Registry::Whois::ObjectStatusDescSeq* get_object_status_descriptions(
+    const std::vector<Fred::Backend::Whois::ObjectStatusDesc>& state_vec)
 {
-    ObjectStatusDescSeq_var result = new ObjectStatusDescSeq;
+    Registry::Whois::ObjectStatusDescSeq_var result = new Registry::Whois::ObjectStatusDescSeq;
     result->length(state_vec.size());
     CORBA::ULong i = 0;
-    for (std::vector<Registry::WhoisImpl::ObjectStatusDesc>::const_iterator cit = state_vec.begin();
+    for (std::vector<Fred::Backend::Whois::ObjectStatusDesc>::const_iterator cit = state_vec.begin();
             cit != state_vec.end(); ++cit, ++i)
     {
         result[i] = wrap_ObjectStatusDesc(*cit);
@@ -735,69 +736,69 @@ static ObjectStatusDescSeq* get_object_status_descriptions(
     return result._retn();
 }
 
-ObjectStatusDescSeq* Server_impl::get_domain_status_descriptions(const char* lang)
+Registry::Whois::ObjectStatusDescSeq* Server_impl::get_domain_status_descriptions(const char* lang)
 {
     try
     {
         return get_object_status_descriptions(pimpl_->get_domain_status_descriptions(lang));
     }
-    catch (const Registry::WhoisImpl::MissingLocalization& e)
+    catch (const Fred::Backend::Whois::MissingLocalization& e)
     {
         throw Registry::Whois::MISSING_LOCALIZATION();
     }
     catch (...) { }
 
     //default exception handling
-    throw INTERNAL_SERVER_ERROR();
+    throw Registry::Whois::INTERNAL_SERVER_ERROR();
 }
 
-ObjectStatusDescSeq* Server_impl::get_contact_status_descriptions(const char* lang)
+Registry::Whois::ObjectStatusDescSeq* Server_impl::get_contact_status_descriptions(const char* lang)
 {
     try
     {
         return get_object_status_descriptions(pimpl_->get_contact_status_descriptions(lang));
     }
-    catch (const Registry::WhoisImpl::MissingLocalization& e)
+    catch (const Fred::Backend::Whois::MissingLocalization& e)
     {
         throw Registry::Whois::MISSING_LOCALIZATION();
     }
     catch (...) { }
 
     //default exception handling
-    throw INTERNAL_SERVER_ERROR();
+    throw Registry::Whois::INTERNAL_SERVER_ERROR();
 }
 
-ObjectStatusDescSeq* Server_impl::get_nsset_status_descriptions(const char* lang)
+Registry::Whois::ObjectStatusDescSeq* Server_impl::get_nsset_status_descriptions(const char* lang)
 {
     try
     {
         return get_object_status_descriptions(pimpl_->get_nsset_status_descriptions(lang));
     }
-    catch (const Registry::WhoisImpl::MissingLocalization& e)
+    catch (const Fred::Backend::Whois::MissingLocalization& e)
     {
         throw Registry::Whois::MISSING_LOCALIZATION();
     }
     catch (...) { }
 
     //default exception handling
-    throw INTERNAL_SERVER_ERROR();
+    throw Registry::Whois::INTERNAL_SERVER_ERROR();
 }
 
-ObjectStatusDescSeq* Server_impl::get_keyset_status_descriptions(const char* lang)
+Registry::Whois::ObjectStatusDescSeq* Server_impl::get_keyset_status_descriptions(const char* lang)
 {
     try
     {
         return get_object_status_descriptions(pimpl_->get_keyset_status_descriptions(lang));
     }
-    catch (const Registry::WhoisImpl::MissingLocalization& e)
+    catch (const Fred::Backend::Whois::MissingLocalization& e)
     {
         throw Registry::Whois::MISSING_LOCALIZATION();
     }
     catch (...) { }
 
     //default exception handling
-    throw INTERNAL_SERVER_ERROR();
+    throw Registry::Whois::INTERNAL_SERVER_ERROR();
 }
 
-}//Whois
-}//Registry
+} // namespace CorbaConversion::Whois
+} // namespace CorbaConversion::

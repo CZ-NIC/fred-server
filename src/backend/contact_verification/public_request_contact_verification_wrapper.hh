@@ -27,8 +27,9 @@
 #include "src/libfred/mailer.hh"
 #include "src/libfred/public_request/public_request.hh"
 
-namespace Registry {
-namespace Contact {
+namespace Fred {
+namespace Backend {
+namespace ContactVerification {
 
 
 /*
@@ -119,8 +120,8 @@ public:
         , type_(_type)
     {
         /* check valid type for contact identification */
-        if ((type_ != LibFred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION )
-            && (type_ != LibFred::PublicRequest::PRT_CONTACT_IDENTIFICATION)) {
+        if ((type_ != Fred::Backend::ContactVerification::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION )
+            && (type_ != Fred::Backend::ContactVerification::PublicRequest::PRT_CONTACT_IDENTIFICATION)) {
             throw std::runtime_error("not valid identification request type");
         }
 
@@ -146,11 +147,9 @@ public:
     }
 };
 
-
-}
-}
-
-
+} // namespace Fred::Backend::ContactVerification
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif //CONTACT_IDENTIFICATION_H_
 

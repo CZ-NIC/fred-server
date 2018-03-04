@@ -12,6 +12,8 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 
+namespace CorbaConversion {
+namespace AdministrativeBlocking {
 
 Registry::Administrative::NullableString* corba_wrap_nullable_string(const Nullable<std::string> &_v)
 {
@@ -94,12 +96,12 @@ Registry::Administrative::StatusDescList* corba_wrap_status_desc_list(const LibF
     return result.release();
 }
 
-Registry::Administrative::DomainIdHandleOwnerChangeList* corba_wrap_owner_change_list(const Registry::Administrative::IdlOwnerChangeList &_owner_change_list)
+Registry::Administrative::DomainIdHandleOwnerChangeList* corba_wrap_owner_change_list(const Fred::Backend::AdministrativeBlocking::IdlOwnerChangeList &_owner_change_list)
 {
     std::unique_ptr< Registry::Administrative::DomainIdHandleOwnerChangeList > result(new Registry::Administrative::DomainIdHandleOwnerChangeList);
     result->length(_owner_change_list.size());
     int n = 0;
-    for (Registry::Administrative::IdlOwnerChangeList::const_iterator pItem = _owner_change_list.begin();
+    for (Fred::Backend::AdministrativeBlocking::IdlOwnerChangeList::const_iterator pItem = _owner_change_list.begin();
          pItem != _owner_change_list.end(); ++n, ++pItem) {
         Registry::Administrative::DomainIdHandleOwnerChange &item = (*result)[n];
         item.domainId = pItem->domain_id;
@@ -112,41 +114,41 @@ Registry::Administrative::DomainIdHandleOwnerChangeList* corba_wrap_owner_change
     return result.release();
 }
 
-Registry::Administrative::INTERNAL_SERVER_ERROR corba_wrap_exception(const Registry::Administrative::EX_INTERNAL_SERVER_ERROR &_e)
+Registry::Administrative::INTERNAL_SERVER_ERROR corba_wrap_exception(const Fred::Backend::AdministrativeBlocking::EX_INTERNAL_SERVER_ERROR &_e)
 {
     return Registry::Administrative::INTERNAL_SERVER_ERROR(corba_wrap_string(_e.what));
 }
 
-Registry::Administrative::DOMAIN_ID_NOT_FOUND corba_wrap_exception(const Registry::Administrative::EX_DOMAIN_ID_NOT_FOUND &_e)
+Registry::Administrative::DOMAIN_ID_NOT_FOUND corba_wrap_exception(const Fred::Backend::AdministrativeBlocking::EX_DOMAIN_ID_NOT_FOUND &_e)
 {
     Registry::Administrative::DOMAIN_ID_NOT_FOUND ex;
     ex.what.length(_e.what.size());
     int n = 0;
-    for (Registry::Administrative::EX_DOMAIN_ID_NOT_FOUND::Type::const_iterator pItem = _e.what.begin();
+    for (Fred::Backend::AdministrativeBlocking::EX_DOMAIN_ID_NOT_FOUND::Type::const_iterator pItem = _e.what.begin();
          pItem != _e.what.end(); ++n, ++pItem) {
         ex.what[n] = *pItem;
     }
     return ex;
 }
 
-Registry::Administrative::UNKNOWN_STATUS corba_wrap_exception(const Registry::Administrative::EX_UNKNOWN_STATUS &_e)
+Registry::Administrative::UNKNOWN_STATUS corba_wrap_exception(const Fred::Backend::AdministrativeBlocking::EX_UNKNOWN_STATUS &_e)
 {
     Registry::Administrative::UNKNOWN_STATUS ex;
     ex.what.length(_e.what.size());
     int n = 0;
-    for (Registry::Administrative::EX_UNKNOWN_STATUS::Type::const_iterator pItem = _e.what.begin();
+    for (Fred::Backend::AdministrativeBlocking::EX_UNKNOWN_STATUS::Type::const_iterator pItem = _e.what.begin();
          pItem != _e.what.end(); ++n, ++pItem) {
         ex.what[n] = corba_wrap_string(*pItem);
     }
     return ex;
 }
 
-Registry::Administrative::DOMAIN_ID_ALREADY_BLOCKED corba_wrap_exception(const Registry::Administrative::EX_DOMAIN_ID_ALREADY_BLOCKED &_e)
+Registry::Administrative::DOMAIN_ID_ALREADY_BLOCKED corba_wrap_exception(const Fred::Backend::AdministrativeBlocking::EX_DOMAIN_ID_ALREADY_BLOCKED &_e)
 {
     Registry::Administrative::DOMAIN_ID_ALREADY_BLOCKED ex;
     ex.what.length(_e.what.size());
     int n = 0;
-    for (Registry::Administrative::EX_DOMAIN_ID_ALREADY_BLOCKED::Type::const_iterator pItem = _e.what.begin();
+    for (Fred::Backend::AdministrativeBlocking::EX_DOMAIN_ID_ALREADY_BLOCKED::Type::const_iterator pItem = _e.what.begin();
          pItem != _e.what.end(); ++n, ++pItem) {
         Registry::Administrative::DomainIdHandle &item = ex.what[n];
         item.domainId = pItem->domain_id;
@@ -155,19 +157,19 @@ Registry::Administrative::DOMAIN_ID_ALREADY_BLOCKED corba_wrap_exception(const R
     return ex;
 }
 
-Registry::Administrative::OWNER_HAS_OTHER_DOMAIN corba_wrap_exception(const Registry::Administrative::EX_OWNER_HAS_OTHER_DOMAIN &_e)
+Registry::Administrative::OWNER_HAS_OTHER_DOMAIN corba_wrap_exception(const Fred::Backend::AdministrativeBlocking::EX_OWNER_HAS_OTHER_DOMAIN &_e)
 {
     Registry::Administrative::OWNER_HAS_OTHER_DOMAIN ex;
     ex.what.length(_e.what.size());
     int n = 0;
-    for (Registry::Administrative::EX_OWNER_HAS_OTHER_DOMAIN::Type::const_iterator pItem = _e.what.begin();
+    for (Fred::Backend::AdministrativeBlocking::EX_OWNER_HAS_OTHER_DOMAIN::Type::const_iterator pItem = _e.what.begin();
          pItem != _e.what.end(); ++n, ++pItem) {
         Registry::Administrative::OwnerDomain &item = ex.what[n];
         item.ownerId = pItem->first;
         item.ownerHandle = corba_wrap_string(pItem->second.owner_handle);
         item.otherDomainList.length(pItem->second.domain.size());
         int n = 0;
-        for (Registry::Administrative::EX_DOMAIN_ID_ALREADY_BLOCKED::Type::const_iterator pDomain = pItem->second.domain.begin();
+        for (Fred::Backend::AdministrativeBlocking::EX_DOMAIN_ID_ALREADY_BLOCKED::Type::const_iterator pDomain = pItem->second.domain.begin();
              pDomain != pItem->second.domain.end(); ++n, ++pDomain) {
             Registry::Administrative::DomainIdHandle &domain = item.otherDomainList[n];
             domain.domainId = pDomain->domain_id;
@@ -177,12 +179,12 @@ Registry::Administrative::OWNER_HAS_OTHER_DOMAIN corba_wrap_exception(const Regi
     return ex;
 }
 
-Registry::Administrative::DOMAIN_ID_NOT_BLOCKED corba_wrap_exception(const Registry::Administrative::EX_DOMAIN_ID_NOT_BLOCKED &_e)
+Registry::Administrative::DOMAIN_ID_NOT_BLOCKED corba_wrap_exception(const Fred::Backend::AdministrativeBlocking::EX_DOMAIN_ID_NOT_BLOCKED &_e)
 {
     Registry::Administrative::DOMAIN_ID_NOT_BLOCKED ex;
     ex.what.length(_e.what.size());
     int n = 0;
-    for (Registry::Administrative::EX_DOMAIN_ID_NOT_BLOCKED::Type::const_iterator pItem = _e.what.begin();
+    for (Fred::Backend::AdministrativeBlocking::EX_DOMAIN_ID_NOT_BLOCKED::Type::const_iterator pItem = _e.what.begin();
          pItem != _e.what.end(); ++n, ++pItem) {
         Registry::Administrative::DomainIdHandle &item = ex.what[n];
         item.domainId = pItem->domain_id;
@@ -191,12 +193,12 @@ Registry::Administrative::DOMAIN_ID_NOT_BLOCKED corba_wrap_exception(const Regis
     return ex;
 }
 
-Registry::Administrative::CONTACT_BLOCK_PROHIBITED corba_wrap_exception(const Registry::Administrative::EX_CONTACT_BLOCK_PROHIBITED &_e)
+Registry::Administrative::CONTACT_BLOCK_PROHIBITED corba_wrap_exception(const Fred::Backend::AdministrativeBlocking::EX_CONTACT_BLOCK_PROHIBITED &_e)
 {
     Registry::Administrative::CONTACT_BLOCK_PROHIBITED ex;
     ex.what.length(_e.what.size());
     int n = 0;
-    for (Registry::Administrative::EX_CONTACT_BLOCK_PROHIBITED::Type::const_iterator pItem = _e.what.begin();
+    for (Fred::Backend::AdministrativeBlocking::EX_CONTACT_BLOCK_PROHIBITED::Type::const_iterator pItem = _e.what.begin();
          pItem != _e.what.end(); ++n, ++pItem) {
         Registry::Administrative::ContactIdHandle &item = ex.what[n];
         item.contactId = pItem->contact_id;
@@ -205,14 +207,14 @@ Registry::Administrative::CONTACT_BLOCK_PROHIBITED corba_wrap_exception(const Re
     return ex;
 }
 
-Registry::Administrative::NEW_OWNER_DOES_NOT_EXISTS corba_wrap_exception(const Registry::Administrative::EX_NEW_OWNER_DOES_NOT_EXISTS &_e)
+Registry::Administrative::NEW_OWNER_DOES_NOT_EXISTS corba_wrap_exception(const Fred::Backend::AdministrativeBlocking::EX_NEW_OWNER_DOES_NOT_EXISTS &_e)
 {
     return Registry::Administrative::NEW_OWNER_DOES_NOT_EXISTS(corba_wrap_string(_e.what));
 }
 
-Registry::Administrative::IdlDomainIdList corba_unwrap_domain_id_list(const Registry::Administrative::DomainIdList &_domain_id_list)
+Fred::Backend::AdministrativeBlocking::IdlDomainIdList corba_unwrap_domain_id_list(const Registry::Administrative::DomainIdList &_domain_id_list)
 {
-    Registry::Administrative::IdlDomainIdList result;
+    Fred::Backend::AdministrativeBlocking::IdlDomainIdList result;
     for (::size_t idx = 0; idx < _domain_id_list.length(); ++idx) {
         result.insert(_domain_id_list[idx]);
     }
@@ -228,17 +230,21 @@ LibFred::StatusList corba_unwrap_status_list(const Registry::Administrative::Sta
     return result;
 }
 
-Registry::Administrative::IdlOwnerBlockMode corba_unwrap_owner_block_mode(Registry::Administrative::OwnerBlockMode _owner_block_mode)
+Fred::Backend::AdministrativeBlocking::IdlOwnerBlockMode corba_unwrap_owner_block_mode(Registry::Administrative::OwnerBlockMode _owner_block_mode)
 {
     switch (_owner_block_mode) {
     case Registry::Administrative::KEEP_OWNER:
-        return Registry::Administrative::OWNER_BLOCK_MODE_KEEP_OWNER;
+        return Fred::Backend::AdministrativeBlocking::OWNER_BLOCK_MODE_KEEP_OWNER;
     case Registry::Administrative::BLOCK_OWNER:
-        return Registry::Administrative::OWNER_BLOCK_MODE_BLOCK_OWNER;
+        return Fred::Backend::AdministrativeBlocking::OWNER_BLOCK_MODE_BLOCK_OWNER;
     case Registry::Administrative::BLOCK_OWNER_COPY:
-        return Registry::Administrative::OWNER_BLOCK_MODE_BLOCK_OWNER_COPY;
+        return Fred::Backend::AdministrativeBlocking::OWNER_BLOCK_MODE_BLOCK_OWNER_COPY;
     default:
         throw std::runtime_error("bad owner_block_mode value");
     }
 }
+
+} // namespace CorbaConversion::AdministrativeBlocking
+} // namespace CorbaConversion
+
 #endif /*CORBA_CONVERT_H_*/

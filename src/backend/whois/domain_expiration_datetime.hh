@@ -5,8 +5,9 @@
 #include "src/util/optional_value.hh"
 #include <boost/date_time/posix_time/posix_time.hpp>
 
-namespace Whois
-{
+namespace Fred {
+namespace Backend {
+namespace Whois {
 
     /**
     * From domain expiration and object state procedure parameters computes
@@ -55,7 +56,9 @@ namespace Whois
         unsigned long long _domain_id
     );
 
-}
+} // namespace Fred::Backend::Whois
+} // namespace Fred::Backend
+} // namespace Fred
 
 
 #endif

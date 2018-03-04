@@ -54,10 +54,9 @@ std::string create_ctx_name(const std::string &_name)
 
 }
 
-namespace Registry
-{
-    namespace Administrative
-    {
+namespace Fred {
+namespace Backend {
+namespace AdministrativeBlocking {
 
         LibFred::GetBlockingStatusDescList::StatusDescList BlockingImpl::getBlockingStatusDescList(const std::string &_lang)
         {
@@ -78,8 +77,8 @@ namespace Registry
             }
         }
 
-        namespace
-        {
+        namespace {
+
             struct OwnerCopy
             {
                 std::string old_owner_handle;
@@ -336,7 +335,7 @@ namespace Registry
                 throw e;
             }
 
-        }
+        } // namespace Fred::Backend::Whois::{anonymous}
 
         IdlOwnerChangeList BlockingImpl::blockDomainsId(
             const IdlDomainIdList &_domain_list,
@@ -952,14 +951,6 @@ namespace Registry
             }
         }
 
-//        void BlockingImpl::unblacklistAndCreateDomains(
-//            const ::Registry::Administrative::DomainList &_domain_list,
-//            const std::string &_owner)
-//        {
-//        }
-
-    }//namespace Administrative
-} // namespace Registry
-
-
-
+} // namespace Fred::Backend::AdministrativeBlocking
+} // namespace Fred::Backend
+} // namespace Fred

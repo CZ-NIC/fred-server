@@ -10,12 +10,9 @@
 #include <memory>
 
 
-namespace Registry
-{
-    namespace Contact
-    {
-        namespace Verification
-        {
+namespace Fred {
+namespace Backend {
+namespace ContactVerification {
 
             struct IDENTIFICATION_FAILED : public std::runtime_error
             {
@@ -110,10 +107,9 @@ namespace Registry
                 std::string getRegistrarName(const std::string & registrar_handle);
 
             };//class ContactVerificationImpl
-        }
-    }
-}
-
+} // namespace Fred::Backend::ContactVerification
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif //CONTACT_VERIFICATION_IMPL_H__
 

@@ -5,7 +5,11 @@
 #include <vector>
 #include <boost/assign/list_of.hpp>
 
-namespace  Admin {
+namespace Fred {
+namespace Backend {
+namespace Admin {
+namespace Contact {
+namespace Verification {
     std::vector<LibFred::ListChecksItem> list_active_checks(const Optional<std::string>& _testsuite_handle) {
         Logging::Context log("list_active_checks");
 
@@ -29,4 +33,8 @@ namespace  Admin {
 
         return result;
     }
-}
+} // namespace Fred::Backend::Admin::Contact::Verification
+} // namespace Fred::Backend::Admin::Contact
+} // namespace Fred::Backend::Admin
+} // namespace Fred::Backend
+} // namespace Fred

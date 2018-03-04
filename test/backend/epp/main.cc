@@ -39,7 +39,7 @@ public:
                                       (HandleArgsPtr(new HandleRegistryArgs))
                                       (HandleArgsPtr(new HandleRifdArgs))
                                       (HandleArgsPtr(new HandleContactVerificationArgs))
-                                      (HandleArgsPtr(new HandleMojeIDArgs))
+                                      (HandleArgsPtr(new HandleMojeIdArgs))
                                       (HandleArgsPtr(new HandleAdminDatabaseArgs)).convert_to_container<HandlerPtrVector>()))
     {
         CfgArgs::init< HandleTestsArgs >(config_handlers)->handle(

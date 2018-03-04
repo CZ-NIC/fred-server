@@ -12,9 +12,13 @@
 #include "src/util/log/context.hh"
 
 
-namespace  Admin {
+namespace Fred {
+namespace Backend {
+namespace Admin {
+namespace Contact {
+namespace Verification {
 
-    std::map< std::string, std::shared_ptr<ContactVerification::Test> > create_test_impl_prototypes(
+    std::map< std::string, std::shared_ptr<Test> > create_test_impl_prototypes(
         std::shared_ptr<LibFred::Mailer::Manager>   _mailer_manager,
         std::shared_ptr<LibFred::Document::Manager> _document_manager,
         std::shared_ptr<LibFred::Messages::Manager> _message_manager,
@@ -22,80 +26,84 @@ namespace  Admin {
     ) {
         Logging::Context log("create_test_impl_prototypes");
 
-        std::map< std::string, std::shared_ptr<ContactVerification::Test> > result;
+        std::map< std::string, std::shared_ptr<Test> > result;
 
         try {
-            result[ContactVerification::TestNameSyntax::registration_name()] =
-                ContactVerification::test_factory::instance_ref()
-                    .create_sh_ptr(ContactVerification::TestNameSyntax::registration_name());
+            result[TestNameSyntax::registration_name()] =
+                test_factory::instance_ref()
+                    .create_sh_ptr(TestNameSyntax::registration_name());
 
-            result[ContactVerification::TestEmailSyntax::registration_name()] =
-                ContactVerification::test_factory::instance_ref()
-                    .create_sh_ptr(ContactVerification::TestEmailSyntax::registration_name());
+            result[TestEmailSyntax::registration_name()] =
+                test_factory::instance_ref()
+                    .create_sh_ptr(TestEmailSyntax::registration_name());
 
-            result[ContactVerification::TestPhoneSyntax::registration_name()] =
-                ContactVerification::test_factory::instance_ref()
-                    .create_sh_ptr(ContactVerification::TestPhoneSyntax::registration_name());
+            result[TestPhoneSyntax::registration_name()] =
+                test_factory::instance_ref()
+                    .create_sh_ptr(TestPhoneSyntax::registration_name());
 
-            result[ContactVerification::TestEmailExistsForManagedZones::registration_name()] =
-                ContactVerification::test_factory::instance_ref()
-                    .create_sh_ptr(ContactVerification::TestEmailExistsForManagedZones::registration_name());
+            result[TestEmailExistsForManagedZones::registration_name()] =
+                test_factory::instance_ref()
+                    .create_sh_ptr(TestEmailExistsForManagedZones::registration_name());
 
             {
-                result[ContactVerification::TestCzAddress::registration_name()] =
-                    ContactVerification::test_factory::instance_ref()
-                        .create_sh_ptr(ContactVerification::TestCzAddress::registration_name());
+                result[TestCzAddress::registration_name()] =
+                    test_factory::instance_ref()
+                        .create_sh_ptr(TestCzAddress::registration_name());
 
-                ContactVerification::TestCzAddress * instance =
-                    dynamic_cast<ContactVerification::TestCzAddress *>(
-                        result[ContactVerification::TestCzAddress::registration_name()].get() );
+                TestCzAddress * instance =
+                    dynamic_cast<TestCzAddress *>(
+                        result[TestCzAddress::registration_name()].get() );
 
                 if(instance == NULL) {
-                    throw Admin::ExceptionTestImplementationError();
+                    throw ExceptionTestImplementationError();
                 }
                 instance->set_mvcr_address_xml_filename(_cz_address_dataset_path);
             }
 
             {
-                result[ContactVerification::TestContactability::registration_name()] =
-                    ContactVerification::test_factory::instance_ref()
-                        .create_sh_ptr(ContactVerification::TestContactability::registration_name());
+                result[TestContactability::registration_name()] =
+                    test_factory::instance_ref()
+                        .create_sh_ptr(TestContactability::registration_name());
 
-                ContactVerification::TestContactability * instance =
-                    dynamic_cast<ContactVerification::TestContactability *>(
-                        result[ContactVerification::TestContactability::registration_name()].get() );
+                TestContactability * instance =
+                    dynamic_cast<TestContactability *>(
+                        result[TestContactability::registration_name()].get() );
 
                 if(instance == NULL) {
-                    throw Admin::ExceptionTestImplementationError();
+                    throw ExceptionTestImplementationError();
                 }
                 instance->set_document_file_manager(_document_manager)
                     .set_email_manager(_mailer_manager)
                     .set_letter_manager(_message_manager );
             }
 
-            result[ContactVerification::TestEmailExists::registration_name()] =
-                ContactVerification::test_factory::instance_ref()
-                    .create_sh_ptr(ContactVerification::TestEmailExists::registration_name());
+            result[TestEmailExists::registration_name()] =
+                test_factory::instance_ref()
+                    .create_sh_ptr(TestEmailExists::registration_name());
 
             {
-                result[ContactVerification::TestSendLetter::registration_name()] =
-                    ContactVerification::test_factory::instance_ref()
-                        .create_sh_ptr(ContactVerification::TestSendLetter::registration_name());
+                result[TestSendLetter::registration_name()] =
+                    test_factory::instance_ref()
+                        .create_sh_ptr(TestSendLetter::registration_name());
 
-                ContactVerification::TestSendLetter * instance =
-                    dynamic_cast<ContactVerification::TestSendLetter *>(
-                        result[ContactVerification::TestSendLetter::registration_name()].get() );
+                TestSendLetter * instance =
+                    dynamic_cast<TestSendLetter *>(
+                        result[TestSendLetter::registration_name()].get() );
 
                 if(instance == NULL) {
-                    throw Admin::ExceptionTestImplementationError();
+                    throw ExceptionTestImplementationError();
                 }
                 instance->set_document_file_manager(_document_manager)
                     .set_letter_manager(_message_manager );
             }
         } catch (const std::bad_cast& ) {
-            throw Admin::ExceptionTestImplementationError();
+            throw ExceptionTestImplementationError();
         }
 
         return result;
     }
-}
+} // namespace Fred::Backend::Admin::Contact::Verification
+} // namespace Fred::Backend::Admin::Contact
+} // namespace Fred::Backend::Admin
+} // namespace Fred::Backend
+} // namespace Fred

@@ -6,7 +6,11 @@
 
 #include <boost/assign/list_of.hpp>
 
-namespace  Admin {
+namespace Fred {
+namespace Backend {
+namespace Admin {
+namespace Contact {
+namespace Verification {
 
     /**
      * @param _is_mail true <=> it is mail; false <=> it is message
@@ -217,4 +221,8 @@ namespace  Admin {
 
         return result;
     }
-}
+} // namespace Fred::Backend::Admin::Contact::Verification
+} // namespace Fred::Backend::Admin::Contact
+} // namespace Fred::Backend::Admin
+} // namespace Fred::Backend
+} // namespace Fred

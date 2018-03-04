@@ -72,18 +72,18 @@ Registry::MojeID::NullableString_var wrap_Nullable_string(const Nullable< std::s
                               new Registry::MojeID::NullableString(src.get_value().c_str()));
 }
 
-void unwrap_Date(const Registry::IsoDate &src, Registry::MojeIDImplData::Birthdate &dst)
+void unwrap_Date(const Registry::IsoDate &src, Fred::Backend::MojeIdImplData::Birthdate &dst)
 {
     dst.value = src.value.in();
 }
 
-void unwrap_NullableIsoDate(const Registry::NullableIsoDate *src_ptr, Nullable< Registry::MojeIDImplData::Birthdate > &dst)
+void unwrap_NullableIsoDate(const Registry::NullableIsoDate *src_ptr, Nullable< Fred::Backend::MojeIdImplData::Birthdate > &dst)
 {
     if (src_ptr == NULL) {
-        dst = Nullable< Registry::MojeIDImplData::Birthdate >();
+        dst = Nullable< Fred::Backend::MojeIdImplData::Birthdate >();
     }
     else {
-        Registry::MojeIDImplData::Birthdate result;
+        Fred::Backend::MojeIdImplData::Birthdate result;
         unwrap_Date(src_ptr->_boxed_in(), result);
         dst = result;
     }
@@ -98,12 +98,12 @@ void wrap_boost_gregorian_date(const boost::gregorian::date &src, Registry::IsoD
     dst.value = wrap_string(boost::gregorian::to_iso_extended_string(src))._retn();
 }
 
-void wrap_Date(const Registry::MojeIDImplData::Birthdate &src, Registry::IsoDate &dst)
+void wrap_Date(const Fred::Backend::MojeIdImplData::Birthdate &src, Registry::IsoDate &dst)
 {
     dst.value = wrap_string(src.value)._retn();
 }
 
-Registry::NullableIsoDate_var wrap_Nullable_Date(const Nullable< Registry::MojeIDImplData::Birthdate > &src)
+Registry::NullableIsoDate_var wrap_Nullable_Date(const Nullable< Fred::Backend::MojeIdImplData::Birthdate > &src)
 {
     if (src.isnull()) {
         return Registry::NullableIsoDate_var();
@@ -123,7 +123,7 @@ Registry::NullableIsoDate_var wrap_Nullable_boost_gregorian_date(const Nullable<
     return result._retn();
 }
 
-void unwrap_Address(const Registry::MojeID::Address &src, Registry::MojeIDImplData::Address &dst)
+void unwrap_Address(const Registry::MojeID::Address &src, Fred::Backend::MojeIdImplData::Address &dst)
 {
     dst.street1 = src.street1.in();
 
@@ -138,19 +138,19 @@ void unwrap_Address(const Registry::MojeID::Address &src, Registry::MojeIDImplDa
     dst.country     = src.country.in();
 }
 
-void unwrap_NullableAddress(const Registry::MojeID::NullableAddress *src_ptr, Nullable< Registry::MojeIDImplData::Address > &dst)
+void unwrap_NullableAddress(const Registry::MojeID::NullableAddress *src_ptr, Nullable< Fred::Backend::MojeIdImplData::Address > &dst)
 {
     if (src_ptr == NULL) {
-        dst = Nullable< Registry::MojeIDImplData::Address >();
+        dst = Nullable< Fred::Backend::MojeIdImplData::Address >();
     }
     else {
-        Registry::MojeIDImplData::Address result;
+        Fred::Backend::MojeIdImplData::Address result;
         unwrap_Address(src_ptr->_boxed_in(), result);
         dst = result;
     }
 }
 
-void wrap_Address(const Registry::MojeIDImplData::Address &src, Registry::MojeID::Address &dst)
+void wrap_Address(const Fred::Backend::MojeIdImplData::Address &src, Registry::MojeID::Address &dst)
 {
     dst.street1 = wrap_string(src.street1)._retn();
 
@@ -165,7 +165,7 @@ void wrap_Address(const Registry::MojeIDImplData::Address &src, Registry::MojeID
     dst.country     = wrap_string(src.country)._retn();
 }
 
-Registry::MojeID::NullableAddress_var wrap_Nullable_Address(const Nullable< Registry::MojeIDImplData::Address > &src)
+Registry::MojeID::NullableAddress_var wrap_Nullable_Address(const Nullable< Fred::Backend::MojeIdImplData::Address > &src)
 {
     if (src.isnull()) {
         return Registry::MojeID::NullableAddress_var();
@@ -175,7 +175,7 @@ Registry::MojeID::NullableAddress_var wrap_Nullable_Address(const Nullable< Regi
     return result._retn();
 }
 
-void unwrap_ShippingAddress(const Registry::MojeID::ShippingAddress &src, Registry::MojeIDImplData::ShippingAddress &dst)
+void unwrap_ShippingAddress(const Registry::MojeID::ShippingAddress &src, Fred::Backend::MojeIdImplData::ShippingAddress &dst)
 {
     unwrap_NullableString(src.company_name.in(), dst.company_name);
 
@@ -192,19 +192,19 @@ void unwrap_ShippingAddress(const Registry::MojeID::ShippingAddress &src, Regist
     dst.country     = src.country.in();
 }
 
-void unwrap_NullableShippingAddress(const Registry::MojeID::NullableShippingAddress *src_ptr, Nullable< Registry::MojeIDImplData::ShippingAddress > &dst)
+void unwrap_NullableShippingAddress(const Registry::MojeID::NullableShippingAddress *src_ptr, Nullable< Fred::Backend::MojeIdImplData::ShippingAddress > &dst)
 {
     if (src_ptr == NULL) {
-        dst = Nullable< Registry::MojeIDImplData::ShippingAddress >();
+        dst = Nullable< Fred::Backend::MojeIdImplData::ShippingAddress >();
     }
     else {
-        Registry::MojeIDImplData::ShippingAddress result;
+        Fred::Backend::MojeIdImplData::ShippingAddress result;
         unwrap_ShippingAddress(src_ptr->_boxed_in(), result);
         dst = result;
     }
 }
 
-void wrap_ShippingAddress(const Registry::MojeIDImplData::ShippingAddress &src, Registry::MojeID::ShippingAddress &dst)
+void wrap_ShippingAddress(const Fred::Backend::MojeIdImplData::ShippingAddress &src, Registry::MojeID::ShippingAddress &dst)
 {
     dst.company_name = wrap_Nullable_string(src.company_name);
 
@@ -221,7 +221,7 @@ void wrap_ShippingAddress(const Registry::MojeIDImplData::ShippingAddress &src, 
     dst.country     = wrap_string(src.country)._retn();
 }
 
-Registry::MojeID::NullableShippingAddress_var wrap_Nullable_ShippingAddress(const Nullable< Registry::MojeIDImplData::ShippingAddress > &src)
+Registry::MojeID::NullableShippingAddress_var wrap_Nullable_ShippingAddress(const Nullable< Fred::Backend::MojeIdImplData::ShippingAddress > &src)
 {
     if (src.isnull()) {
         return Registry::MojeID::NullableShippingAddress_var();
@@ -271,28 +271,28 @@ ValidationResultWasNotSet::ValidationResultWasNotSet()
 {
 }
 
-void wrap_ValidationResult(Registry::MojeIDImplData::ValidationResult::Value src, Registry::MojeID::ValidationResult &dst)
+void wrap_ValidationResult(Fred::Backend::MojeIdImplData::ValidationResult::Value src, Registry::MojeID::ValidationResult &dst)
 {
     switch (src) {
-    case Registry::MojeIDImplData::ValidationResult::OK:
+    case Fred::Backend::MojeIdImplData::ValidationResult::OK:
         dst = Registry::MojeID::OK;
         return;
-    case Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE:
+    case Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE:
         dst = Registry::MojeID::NOT_AVAILABLE;
         return;
-    case Registry::MojeIDImplData::ValidationResult::INVALID:
+    case Fred::Backend::MojeIdImplData::ValidationResult::INVALID:
         dst = Registry::MojeID::INVALID;
         return;
-    case Registry::MojeIDImplData::ValidationResult::REQUIRED:
+    case Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED:
         dst = Registry::MojeID::REQUIRED;
         return;
-    case Registry::MojeIDImplData::ValidationResult::UNKNOWN:
+    case Fred::Backend::MojeIdImplData::ValidationResult::UNKNOWN:
         throw ValidationResultWasNotSet();
     }
     throw NotEnumValidationResultValue();
 }
 
-void wrap_AddressValidationResult(const Registry::MojeIDImplData::AddressValidationResult &src,
+void wrap_AddressValidationResult(const Fred::Backend::MojeIdImplData::AddressValidationResult &src,
                                   Registry::MojeID::AddressValidationResult &dst)
 {
     wrap_ValidationResult(src.street1,     dst.street1);
@@ -301,7 +301,7 @@ void wrap_AddressValidationResult(const Registry::MojeIDImplData::AddressValidat
     wrap_ValidationResult(src.country,     dst.country);
 }
 
-void wrap_MandatoryAddressValidationResult(const Registry::MojeIDImplData::MandatoryAddressValidationResult &src,
+void wrap_MandatoryAddressValidationResult(const Fred::Backend::MojeIdImplData::MandatoryAddressValidationResult &src,
                                            Registry::MojeID::MandatoryAddressValidationResult &dst)
 {
     wrap_ValidationResult(src.address_presence, dst.address_presence);
@@ -311,7 +311,7 @@ void wrap_MandatoryAddressValidationResult(const Registry::MojeIDImplData::Manda
     wrap_ValidationResult(src.country,          dst.country);
 }
 
-void wrap_RegistrationValidationResult(const Registry::MojeIDImplData::RegistrationValidationResult &src,
+void wrap_RegistrationValidationResult(const Fred::Backend::MojeIdImplData::RegistrationValidationResult &src,
                                        Registry::MojeID::Server::REGISTRATION_VALIDATION_ERROR &dst)
 {
     wrap_ValidationResult(src.username,     dst.username);
@@ -333,7 +333,7 @@ void wrap_RegistrationValidationResult(const Registry::MojeIDImplData::Registrat
     wrap_AddressValidationResult(src.shipping3, dst.shipping3);
 }
 
-void wrap_UpdateContactPrepareValidationResult(const Registry::MojeIDImplData::UpdateContactPrepareValidationResult &src,
+void wrap_UpdateContactPrepareValidationResult(const Fred::Backend::MojeIdImplData::UpdateContactPrepareValidationResult &src,
                                                Registry::MojeID::Server::UPDATE_CONTACT_PREPARE_VALIDATION_ERROR &dst)
 {
     wrap_ValidationResult(src.first_name,   dst.first_name);
@@ -353,7 +353,7 @@ void wrap_UpdateContactPrepareValidationResult(const Registry::MojeIDImplData::U
     wrap_AddressValidationResult(src.shipping3, dst.shipping3);
 }
 
-void wrap_CreateValidationRequestValidationResult(const Registry::MojeIDImplData::CreateValidationRequestValidationResult &src,
+void wrap_CreateValidationRequestValidationResult(const Fred::Backend::MojeIdImplData::CreateValidationRequestValidationResult &src,
                                                   Registry::MojeID::Server::CREATE_VALIDATION_REQUEST_VALIDATION_ERROR &dst)
 {
     wrap_ValidationResult(src.first_name, dst.first_name);
@@ -369,14 +369,14 @@ void wrap_CreateValidationRequestValidationResult(const Registry::MojeIDImplData
     wrap_ValidationResult(src.vat_id_num,   dst.vat_id_num);
 }
 
-void wrap_ProcessRegistrationValidationResult(const Registry::MojeIDImplData::ProcessRegistrationValidationResult &src,
+void wrap_ProcessRegistrationValidationResult(const Fred::Backend::MojeIdImplData::ProcessRegistrationValidationResult &src,
                                               Registry::MojeID::Server::PROCESS_REGISTRATION_VALIDATION_ERROR &dst)
 {
     wrap_ValidationResult(src.email, dst.email);
     wrap_ValidationResult(src.phone, dst.phone);
 }
 
-void unwrap_CreateContact(const Registry::MojeID::CreateContact &src, Registry::MojeIDImplData::CreateContact &dst)
+void unwrap_CreateContact(const Registry::MojeID::CreateContact &src, Fred::Backend::MojeIdImplData::CreateContact &dst)
 {
     dst.username   = src.username.in();
     dst.first_name = src.first_name.in();
@@ -410,7 +410,7 @@ void unwrap_CreateContact(const Registry::MojeID::CreateContact &src, Registry::
     unwrap_NullableString(src.fax.in(), dst.fax);
 }
 
-void unwrap_UpdateTransferContact(const Registry::MojeID::UpdateTransferContact &src, Registry::MojeIDImplData::UpdateTransferContact &dst)
+void unwrap_UpdateTransferContact(const Registry::MojeID::UpdateTransferContact &src, Fred::Backend::MojeIdImplData::UpdateTransferContact &dst)
 {
     dst.full_name = src.full_name.in();
 
@@ -434,7 +434,7 @@ void unwrap_UpdateTransferContact(const Registry::MojeID::UpdateTransferContact 
     unwrap_NullableString(src.fax.in(), dst.fax);
 }
 
-void unwrap_UpdateContact(const Registry::MojeID::UpdateContact &src, Registry::MojeIDImplData::UpdateContact &dst)
+void unwrap_UpdateContact(const Registry::MojeID::UpdateContact &src, Fred::Backend::MojeIdImplData::UpdateContact &dst)
 {
     dst.first_name = src.first_name.in();
     dst.last_name  = src.last_name.in();
@@ -465,7 +465,7 @@ void unwrap_UpdateContact(const Registry::MojeID::UpdateContact &src, Registry::
     unwrap_NullableString(src.fax.in(),          dst.fax);
 }
 
-Registry::MojeID::InfoContact_var wrap_InfoContact(const Registry::MojeIDImplData::InfoContact &src)
+Registry::MojeID::InfoContact_var wrap_InfoContact(const Fred::Backend::MojeIdImplData::InfoContact &src)
 {
     Registry::MojeID::InfoContact_var result(new Registry::MojeID::InfoContact());
 
@@ -502,7 +502,7 @@ Registry::MojeID::InfoContact_var wrap_InfoContact(const Registry::MojeIDImplDat
     return result._retn();
 }
 
-void wrap_InfoContactPublishFlags(const Registry::MojeIDImplData::InfoContactPublishFlags &src,
+void wrap_InfoContactPublishFlags(const Fred::Backend::MojeIdImplData::InfoContactPublishFlags &src,
                                   Registry::MojeID::InfoContactPublishFlags &dst)
 {
     int_to_int(src.first_name,   dst.first_name);
@@ -526,7 +526,7 @@ void wrap_InfoContactPublishFlags(const Registry::MojeIDImplData::InfoContactPub
     int_to_int(src.shipping3,    dst.shipping3);
 }
 
-void wrap_ContactStateInfo(const Registry::MojeIDImplData::ContactStateInfo &src, Registry::MojeID::ContactStateInfo &dst)
+void wrap_ContactStateInfo(const Fred::Backend::MojeIdImplData::ContactStateInfo &src, Registry::MojeID::ContactStateInfo &dst)
 {
     int_to_int(src.contact_id, dst.contact_id);
 
@@ -537,20 +537,20 @@ void wrap_ContactStateInfo(const Registry::MojeIDImplData::ContactStateInfo &src
     dst.linked_date         = wrap_Nullable_boost_gregorian_date(src.linked_date)._retn();
 }
 
-Registry::MojeID::ContactStateInfo_var wrap_ContactStateInfo(const Registry::MojeIDImplData::ContactStateInfo &src)
+Registry::MojeID::ContactStateInfo_var wrap_ContactStateInfo(const Fred::Backend::MojeIdImplData::ContactStateInfo &src)
 {
     Registry::MojeID::ContactStateInfo_var result(new Registry::MojeID::ContactStateInfo());
     wrap_ContactStateInfo(src, result.inout());
     return result._retn();
 }
 
-Registry::MojeID::ContactStateInfoList_var wrap_ContactStateInfoList(const Registry::MojeIDImplData::ContactStateInfoList &src)
+Registry::MojeID::ContactStateInfoList_var wrap_ContactStateInfoList(const Fred::Backend::MojeIdImplData::ContactStateInfoList &src)
 {
     Registry::MojeID::ContactStateInfoList_var result(new Registry::MojeID::ContactStateInfoList());
 
     result->length(src.size());
     ::size_t dst_idx = 0;
-    for (Registry::MojeIDImplData::ContactStateInfoList::const_iterator src_ptr = src.begin() ; src_ptr != src.end();
+    for (Fred::Backend::MojeIdImplData::ContactStateInfoList::const_iterator src_ptr = src.begin() ; src_ptr != src.end();
          ++src_ptr, ++dst_idx)
     {
         wrap_ContactStateInfo(*src_ptr, result->operator[](dst_idx));
@@ -558,13 +558,13 @@ Registry::MojeID::ContactStateInfoList_var wrap_ContactStateInfoList(const Regis
     return result._retn();
 }
 
-Registry::MojeID::ContactHandleList_var wrap_ContactHandleList(const Registry::MojeIDImplData::ContactHandleList &src)
+Registry::MojeID::ContactHandleList_var wrap_ContactHandleList(const Fred::Backend::MojeIdImplData::ContactHandleList &src)
 {
     Registry::MojeID::ContactHandleList_var result(new Registry::MojeID::ContactHandleList());
 
     result->length(src.size());
     ::size_t dst_idx = 0;
-    for (Registry::MojeIDImplData::ContactHandleList::const_iterator src_ptr = src.begin() ; src_ptr != src.end();
+    for (Fred::Backend::MojeIdImplData::ContactHandleList::const_iterator src_ptr = src.begin() ; src_ptr != src.end();
          ++src_ptr, ++dst_idx)
     {
         result->operator[](dst_idx) = wrap_string(*src_ptr)._retn();
@@ -572,12 +572,12 @@ Registry::MojeID::ContactHandleList_var wrap_ContactHandleList(const Registry::M
     return result._retn();
 }
 
-void wrap_MessageLimitExceeded(const Registry::MojeIDImplData::MessageLimitExceeded &src, Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED &dst)
+void wrap_MessageLimitExceeded(const Fred::Backend::MojeIdImplData::MessageLimitExceeded &src, Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED &dst)
 {
     dst.limit_expire_datetime = wrap_DateTime(src.limit_expire_datetime);
 }
 
-void raise_REGISTRATION_VALIDATION_ERROR(const Registry::MojeIDImplData::RegistrationValidationResult &src)
+void raise_REGISTRATION_VALIDATION_ERROR(const Fred::Backend::MojeIdImplData::RegistrationValidationResult &src)
 {
     Registry::MojeID::Server::REGISTRATION_VALIDATION_ERROR e;
     try {
@@ -589,7 +589,7 @@ void raise_REGISTRATION_VALIDATION_ERROR(const Registry::MojeIDImplData::Registr
     throw e;
 }
 
-void raise_UPDATE_CONTACT_PREPARE_VALIDATION_ERROR(const Registry::MojeIDImplData::UpdateContactPrepareValidationResult &src)
+void raise_UPDATE_CONTACT_PREPARE_VALIDATION_ERROR(const Fred::Backend::MojeIdImplData::UpdateContactPrepareValidationResult &src)
 {
     Registry::MojeID::Server::UPDATE_CONTACT_PREPARE_VALIDATION_ERROR e;
     try {
@@ -601,7 +601,7 @@ void raise_UPDATE_CONTACT_PREPARE_VALIDATION_ERROR(const Registry::MojeIDImplDat
     throw e;
 }
 
-void raise_MESSAGE_LIMIT_EXCEEDED(const Registry::MojeIDImplData::MessageLimitExceeded &src)
+void raise_MESSAGE_LIMIT_EXCEEDED(const Fred::Backend::MojeIdImplData::MessageLimitExceeded &src)
 {
     Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED e;
     try {
@@ -613,7 +613,7 @@ void raise_MESSAGE_LIMIT_EXCEEDED(const Registry::MojeIDImplData::MessageLimitEx
     throw e;
 }
 
-void raise_CREATE_VALIDATION_REQUEST_VALIDATION_ERROR(const Registry::MojeIDImplData::CreateValidationRequestValidationResult &src)
+void raise_CREATE_VALIDATION_REQUEST_VALIDATION_ERROR(const Fred::Backend::MojeIdImplData::CreateValidationRequestValidationResult &src)
 {
     Registry::MojeID::Server::CREATE_VALIDATION_REQUEST_VALIDATION_ERROR e;
     try {
@@ -625,7 +625,7 @@ void raise_CREATE_VALIDATION_REQUEST_VALIDATION_ERROR(const Registry::MojeIDImpl
     throw e;
 }
 
-void raise_PROCESS_REGISTRATION_VALIDATION_ERROR(const Registry::MojeIDImplData::ProcessRegistrationValidationResult &src)
+void raise_PROCESS_REGISTRATION_VALIDATION_ERROR(const Fred::Backend::MojeIdImplData::ProcessRegistrationValidationResult &src)
 {
     Registry::MojeID::Server::PROCESS_REGISTRATION_VALIDATION_ERROR e;
     try {

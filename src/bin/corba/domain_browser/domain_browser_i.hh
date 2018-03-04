@@ -29,19 +29,27 @@
 #include "src/bin/corba/DomainBrowser.hh"
 #include "src/backend/domain_browser/domain_browser.hh"
 
-namespace Registry
+namespace Fred {
+namespace Backend {
+namespace DomainBrowser {
+
+class DomainBrowser;
+
+} // namespace Fred::Backend::DomainBrowser
+} // namespace Fred::Backend
+} // namespace Fred
+
+namespace CorbaConversion
 {
     namespace DomainBrowser
     {
-
-        class DomainBrowserImpl;//pimpl class
 
         ///domain browser corba interface
         class Server_i: public POA_Registry::DomainBrowser::Server
         {
         private:
             // do not copy
-            const std::unique_ptr<Registry::DomainBrowserImpl::DomainBrowser> pimpl_;
+            const std::unique_ptr<Fred::Backend::DomainBrowser::DomainBrowser> pimpl_;
 
             Server_i(const Server_i&);//no body
             Server_i& operator= (const Server_i&);//no body
@@ -57,73 +65,73 @@ namespace Registry
 
             virtual ~Server_i();
             // methods corresponding to defined IDL attributes and operations
-            ::CORBA::ULongLong getContactId(const char* handle);
+            CORBA::ULongLong getContactId(const char* handle);
 
             Registry::DomainBrowser::DomainList* getDomainList(
-                ::CORBA::ULongLong user_contact_id,
+                CORBA::ULongLong user_contact_id,
                  Registry::DomainBrowser::NullableULongLong* contact_id_ptr,
-                ::CORBA::ULong offset,
-                ::CORBA::Boolean& limit_exceeded);
+                CORBA::ULong offset,
+                CORBA::Boolean& limit_exceeded);
 
             Registry::DomainBrowser::NssetList* getNssetList(
-                ::CORBA::ULongLong user_contact_id,
+                CORBA::ULongLong user_contact_id,
                  Registry::DomainBrowser::NullableULongLong* contact_id_ptr,
-                ::CORBA::ULong offset,
-                ::CORBA::Boolean& limit_exceeded);
+                CORBA::ULong offset,
+                CORBA::Boolean& limit_exceeded);
 
             Registry::DomainBrowser::KeysetList* getKeysetList(
-                ::CORBA::ULongLong user_contact_id,
+                CORBA::ULongLong user_contact_id,
                  Registry::DomainBrowser::NullableULongLong* contact_id_ptr,
-                ::CORBA::ULong offset,
-                ::CORBA::Boolean& limit_exceeded);
+                CORBA::ULong offset,
+                CORBA::Boolean& limit_exceeded);
 
             Registry::DomainBrowser::DomainList* getDomainsForKeyset(
-                ::CORBA::ULongLong user_contact_id,
-                ::CORBA::ULongLong keyset_id,
-                ::CORBA::ULong offset,
-                ::CORBA::Boolean& limit_exceeded);
+                CORBA::ULongLong user_contact_id,
+                CORBA::ULongLong keyset_id,
+                CORBA::ULong offset,
+                CORBA::Boolean& limit_exceeded);
 
             Registry::DomainBrowser::DomainList* getDomainsForNsset(
-                ::CORBA::ULongLong contact_id,
-                ::CORBA::ULongLong nsset_id,
-                ::CORBA::ULong offset,
-                ::CORBA::Boolean& limit_exceeded);
+                CORBA::ULongLong contact_id,
+                CORBA::ULongLong nsset_id,
+                CORBA::ULong offset,
+                CORBA::Boolean& limit_exceeded);
 
             Registry::DomainBrowser::ContactDetail* getContactDetail(
-                ::CORBA::ULongLong user_contact_id,
-                 ::CORBA::ULongLong detail_id,
+                CORBA::ULongLong user_contact_id,
+                 CORBA::ULongLong detail_id,
                 Registry::DomainBrowser::DataAccessLevel& auth_result);
 
             Registry::DomainBrowser::NSSetDetail* getNssetDetail(
-                ::CORBA::ULongLong user_contact_id,
-                 ::CORBA::ULongLong nsset_id,
+                CORBA::ULongLong user_contact_id,
+                 CORBA::ULongLong nsset_id,
                 Registry::DomainBrowser::DataAccessLevel& auth_result);
 
             Registry::DomainBrowser::DomainDetail* getDomainDetail(
-                ::CORBA::ULongLong user_contact_id,
-                 ::CORBA::ULongLong domain_id,
+                CORBA::ULongLong user_contact_id,
+                 CORBA::ULongLong domain_id,
                 Registry::DomainBrowser::DataAccessLevel& auth_result);
 
             Registry::DomainBrowser::KeysetDetail* getKeysetDetail(
-                ::CORBA::ULongLong user_contact_id,
-                 ::CORBA::ULongLong keyset_id,
+                CORBA::ULongLong user_contact_id,
+                 CORBA::ULongLong keyset_id,
                 Registry::DomainBrowser::DataAccessLevel& auth_result);
 
             Registry::DomainBrowser::RegistrarDetail* getRegistrarDetail(
-                ::CORBA::ULongLong user_contact_id,
+                CORBA::ULongLong user_contact_id,
                 const char* handle);
 
-            ::CORBA::Boolean setContactDiscloseFlags(
-                ::CORBA::ULongLong user_contact_id,
+            CORBA::Boolean setContactDiscloseFlags(
+                CORBA::ULongLong user_contact_id,
                 const Registry::DomainBrowser::UpdateContactDiscloseFlags& flags,
-                ::CORBA::ULongLong request_id);
+                CORBA::ULongLong request_id);
 
-            ::CORBA::Boolean setContactAuthInfo(
-                ::CORBA::ULongLong user_contact_id,
+            CORBA::Boolean setContactAuthInfo(
+                CORBA::ULongLong user_contact_id,
                 const char* auth_info,
-                ::CORBA::ULongLong request_id);
+                CORBA::ULongLong request_id);
 
-            ::CORBA::Boolean setObjectBlockStatus(::CORBA::ULongLong user_contact_id,
+            CORBA::Boolean setObjectBlockStatus(CORBA::ULongLong user_contact_id,
                 const char* objtype,
                 const Registry::DomainBrowser::ObjectIdSeq& objects,
                 Registry::DomainBrowser::ObjectBlockType block,
@@ -132,21 +140,22 @@ namespace Registry
             Registry::DomainBrowser::StatusDescList* getPublicStatusDesc(const char* lang);
 
             Registry::DomainBrowser::MergeContactCandidateList* getMergeContactCandidateList(
-                ::CORBA::ULongLong contact_id,
-                ::CORBA::ULong offset,
-                ::CORBA::Boolean& limit_exceeded);
+                CORBA::ULongLong contact_id,
+                CORBA::ULong offset,
+                CORBA::Boolean& limit_exceeded);
 
-            void mergeContacts(::CORBA::ULongLong dst_contact_id,
+            void mergeContacts(CORBA::ULongLong dst_contact_id,
                 const Registry::DomainBrowser::ObjectIdSeq& src_contact_id_list,
-                ::CORBA::ULongLong request_id);
+                CORBA::ULongLong request_id);
 
             void setContactPreferenceForDomainExpirationLetters(
-                ::CORBA::ULongLong user_contact_id,
-                ::CORBA::Boolean send_expiration_letters,
-                ::CORBA::ULongLong request_id);
+                CORBA::ULongLong user_contact_id,
+                CORBA::Boolean send_expiration_letters,
+                CORBA::ULongLong request_id);
 
-        };//class Server_i
-    }//namespace DomainBrowser
-} // namespace Registry
+        };
+
+    } // namespace CorbaConversion::DomainBrowser
+} // namespace CorbaConversion
 
 #endif

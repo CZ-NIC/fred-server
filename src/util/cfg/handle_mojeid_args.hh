@@ -38,10 +38,10 @@
 namespace po = boost::program_options;
 
 /**
- * \class HandleMojeIDArgs
+ * \class HandleMojeIdArgs
  * \brief mojeid backend config
  */
-class HandleMojeIDArgs : public HandleArgs
+class HandleMojeIdArgs : public HandleArgs
 {
 public:
     std::string registrar_handle;

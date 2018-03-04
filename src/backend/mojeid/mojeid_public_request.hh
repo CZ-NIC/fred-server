@@ -26,58 +26,59 @@
 
 #include "src/libfred/public_request/public_request_auth_type_iface.hh"
 
-namespace LibFred {
+namespace Fred {
+namespace Backend {
 
-namespace MojeID {
+namespace MojeId {
 
-std::string contact_transfer_request_generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact);
+std::string contact_transfer_request_generate_passwords(const LibFred::LockedPublicRequestsOfObjectForUpdate &_locked_contact);
 
 std::string contact_identification_generate_passwords();
 
 namespace PublicRequest {
 
-class ContactConditionalIdentification:public PublicRequestAuthTypeIface
+class ContactConditionalIdentification:public LibFred::PublicRequestAuthTypeIface
 {
 public:
     ~ContactConditionalIdentification() { }
     std::string get_public_request_type()const;
-    const PublicRequestAuthTypeIface& iface()const { return *this; }
+    const LibFred::PublicRequestAuthTypeIface& iface()const { return *this; }
     static std::string get_pin1_part(const std::string &_summary_password);
     static std::string get_pin2_part(const std::string &_summary_password);
 private:
     PublicRequestTypes get_public_request_types_to_cancel_on_create()const;
     PublicRequestTypes get_public_request_types_to_cancel_on_update(
         LibFred::PublicRequest::Status::Enum _old_status, LibFred::PublicRequest::Status::Enum _new_status)const;
-    std::string generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const;
+    std::string generate_passwords(const LibFred::LockedPublicRequestsOfObjectForUpdate &_locked_contact)const;
 };
 
-class ContactIdentification:public PublicRequestAuthTypeIface
+class ContactIdentification:public LibFred::PublicRequestAuthTypeIface
 {
 public:
     ~ContactIdentification() { }
-    const PublicRequestAuthTypeIface& iface()const { return *this; }
+    const LibFred::PublicRequestAuthTypeIface& iface()const { return *this; }
     std::string get_public_request_type()const;
 private:
     PublicRequestTypes get_public_request_types_to_cancel_on_create()const;
     PublicRequestTypes get_public_request_types_to_cancel_on_update(
         LibFred::PublicRequest::Status::Enum _old_status, LibFred::PublicRequest::Status::Enum _new_status)const;
-    std::string generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const;
+    std::string generate_passwords(const LibFred::LockedPublicRequestsOfObjectForUpdate &_locked_contact)const;
 };
 
-class ContactReidentification:public PublicRequestAuthTypeIface
+class ContactReidentification:public LibFred::PublicRequestAuthTypeIface
 {
 public:
     ~ContactReidentification() { }
-    const PublicRequestAuthTypeIface& iface()const { return *this; }
+    const LibFred::PublicRequestAuthTypeIface& iface()const { return *this; }
     std::string get_public_request_type()const;
 private:
     PublicRequestTypes get_public_request_types_to_cancel_on_create()const;
     PublicRequestTypes get_public_request_types_to_cancel_on_update(
         LibFred::PublicRequest::Status::Enum _old_status, LibFred::PublicRequest::Status::Enum _new_status)const;
-    std::string generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const;
+    std::string generate_passwords(const LibFred::LockedPublicRequestsOfObjectForUpdate &_locked_contact)const;
 };
 
-class ContactValidation:public PublicRequestTypeIface
+class ContactValidation:public LibFred::PublicRequestTypeIface
 {
 public:
     ~ContactValidation() { }
@@ -89,60 +90,61 @@ private:
         LibFred::PublicRequest::Status::Enum _old_status, LibFred::PublicRequest::Status::Enum _new_status)const;
 };
 
-class ConditionallyIdentifiedContactTransfer:public PublicRequestAuthTypeIface
+class ConditionallyIdentifiedContactTransfer:public LibFred::PublicRequestAuthTypeIface
 {
 public:
     ~ConditionallyIdentifiedContactTransfer() { }
-    const PublicRequestAuthTypeIface& iface()const { return *this; }
+    const LibFred::PublicRequestAuthTypeIface& iface()const { return *this; }
     std::string get_public_request_type()const;
 private:
     PublicRequestTypes get_public_request_types_to_cancel_on_create()const;
     PublicRequestTypes get_public_request_types_to_cancel_on_update(
         LibFred::PublicRequest::Status::Enum _old_status, LibFred::PublicRequest::Status::Enum _new_status)const;
-    std::string generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const;
+    std::string generate_passwords(const LibFred::LockedPublicRequestsOfObjectForUpdate &_locked_contact)const;
 };
 
-class IdentifiedContactTransfer:public PublicRequestAuthTypeIface
+class IdentifiedContactTransfer:public LibFred::PublicRequestAuthTypeIface
 {
 public:
     ~IdentifiedContactTransfer() { }
-    const PublicRequestAuthTypeIface& iface()const { return *this; }
+    const LibFred::PublicRequestAuthTypeIface& iface()const { return *this; }
     std::string get_public_request_type()const;
 private:
     PublicRequestTypes get_public_request_types_to_cancel_on_create()const;
     PublicRequestTypes get_public_request_types_to_cancel_on_update(
         LibFred::PublicRequest::Status::Enum _old_status, LibFred::PublicRequest::Status::Enum _new_status)const;
-    std::string generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const;
+    std::string generate_passwords(const LibFred::LockedPublicRequestsOfObjectForUpdate &_locked_contact)const;
 };
 
-class PrevalidatedUnidentifiedContactTransfer:public PublicRequestAuthTypeIface
+class PrevalidatedUnidentifiedContactTransfer:public LibFred::PublicRequestAuthTypeIface
 {
 public:
     ~PrevalidatedUnidentifiedContactTransfer() { }
-    const PublicRequestAuthTypeIface& iface()const { return *this; }
+    const LibFred::PublicRequestAuthTypeIface& iface()const { return *this; }
     std::string get_public_request_type()const;
 private:
     PublicRequestTypes get_public_request_types_to_cancel_on_create()const;
     PublicRequestTypes get_public_request_types_to_cancel_on_update(
         LibFred::PublicRequest::Status::Enum _old_status, LibFred::PublicRequest::Status::Enum _new_status)const;
-    std::string generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const;
+    std::string generate_passwords(const LibFred::LockedPublicRequestsOfObjectForUpdate &_locked_contact)const;
 };
 
-class PrevalidatedContactTransfer:public PublicRequestAuthTypeIface
+class PrevalidatedContactTransfer:public LibFred::PublicRequestAuthTypeIface
 {
 public:
     ~PrevalidatedContactTransfer() { }
-    const PublicRequestAuthTypeIface& iface()const { return *this; }
+    const LibFred::PublicRequestAuthTypeIface& iface()const { return *this; }
     std::string get_public_request_type()const;
 private:
     PublicRequestTypes get_public_request_types_to_cancel_on_create()const;
     PublicRequestTypes get_public_request_types_to_cancel_on_update(
         LibFred::PublicRequest::Status::Enum _old_status, LibFred::PublicRequest::Status::Enum _new_status)const;
-    std::string generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const;
+    std::string generate_passwords(const LibFred::LockedPublicRequestsOfObjectForUpdate &_locked_contact)const;
 };
 
-}//Fred::MojeID::PublicRequest
-}//Fred::MojeID
-}//Fred
+} // namespace Fred::Backend::MojeId::PublicRequest
+} // namespace Fred::Backend::MojeId
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

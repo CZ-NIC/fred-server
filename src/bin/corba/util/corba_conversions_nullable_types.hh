@@ -10,8 +10,9 @@
  *  conversions to and from CORBA mapping for nullable types
  */
 
-namespace LibFred {
-namespace Corba {
+namespace CorbaConversion {
+namespace Util {
+
 /**
  * @throws std::out_of_range in case input is < 0
  */
@@ -49,7 +50,7 @@ wrap_nullable_corba_type_to_corba_valuetype(const Nullable<CORBA_TYPE>& in)
 }
 
 
-} // namespace LibFred::Corba
-} // namespace LibFred
+} // namespace CorbaConversion::Util
+} // namespace CorbaConversion
 
 #endif

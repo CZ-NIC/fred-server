@@ -16,20 +16,15 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- *  declaration for Registry::MojeIDImplData namespace
- */
-
 #include "src/backend/mojeid/mojeid_impl_data.hh"
 #include "src/backend/mojeid/mojeid_impl_data_conversion.hh"
 #include "src/util/types/birthdate.hh"
 #include "src/libfred/registrable_object/contact/ssntype.hh"
 #include <boost/algorithm/string/trim.hpp>
 
-namespace Registry {
-
-namespace MojeIDImplData {
+namespace Fred {
+namespace Backend {
+namespace MojeIdImplData {
 
 namespace {
 
@@ -126,7 +121,7 @@ void minimal_common_conversion_from_fred(const LibFred::InfoContactData &src, DS
             case LibFred::SSNType::birthday:
             {
                 dst.birth_date =
-                        Registry::MojeIDImplData::Birthdate(
+                        Fred::Backend::MojeIdImplData::Birthdate(
                                 boost::gregorian::to_iso_extended_string(
                                         birthdate_from_string_to_date(src.ssn.get_value())));
                 break;
@@ -249,7 +244,7 @@ void common_conversion_from_fred(const LibFred::InfoContactData &src, DST_INFO_T
     }
 }
 
-} // namespace Registry::MojeIDImplData::{anonymous}
+} // namespace Fred::Backend::MojeIdImplData::{anonymous}
 
 void from_into(const Address &src, LibFred::Contact::PlaceAddress &dst)
 {
@@ -304,5 +299,6 @@ void from_into(const LibFred::InfoContactData &src, InfoContact &dst)
     dst.telephone = src.telephone;
 }
 
-} // namespace Registry::MojeIDImplData
-} // namespace Registry
+} // namespace Fred::Backend::MojeIdImplData
+} // namespace Fred::Backend
+} // namespace Fred

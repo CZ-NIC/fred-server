@@ -53,10 +53,9 @@
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
 
-namespace Registry
-{
-namespace WhoisImpl
-{
+namespace Fred {
+namespace Backend {
+namespace Whois {
 
 static void log_and_rethrow_exception_handler(LibFred::OperationContext& ctx)
 {
@@ -100,8 +99,8 @@ static void log_and_rethrow_exception_handler(LibFred::OperationContext& ctx)
     }
 }
 
-namespace
-{
+namespace {
+
 std::string get_output_timezone() { static const std::string timezone("UTC"); return timezone; }
 
 std::string create_ctx_name(const std::string &_name)
@@ -130,7 +129,8 @@ private:
 };
 
 #define LOGGING_CONTEXT(CTX_VAR, IMPL_OBJ) LogContext CTX_VAR((IMPL_OBJ), create_ctx_function_name(__FUNCTION__))
-} // anonymous namespace
+
+} // namespace Fred::Backend::Whois::{anonymous}
 
 Registrar make_registrar_from_info_data(const LibFred::InfoRegistrarData& ird)
 {
@@ -230,7 +230,7 @@ std::vector<RegistrarGroup> Server_impl::get_registrar_groups()
     LibFred::OperationContextCreator ctx;
     try
     {
-        const std::map<std::string, std::vector<std::string> > groups = ::Whois::get_registrar_groups(ctx);
+        const std::map<std::string, std::vector<std::string> > groups = Fred::Backend::Whois::get_registrar_groups(ctx);
         std::vector<RegistrarGroup> reg_grp_seq;
         reg_grp_seq.reserve(groups.size());
         for (std::map<std::string, std::vector<std::string> >::const_iterator it = groups.begin();
@@ -254,11 +254,11 @@ std::vector<RegistrarCertification> Server_impl::get_registrar_certification_lis
     LibFred::OperationContextCreator ctx;
     try
     {
-        typedef std::vector<Whois::RegistrarCertificationData> CertificateList;
-        const CertificateList v_rcd = ::Whois::get_registrar_certifications(ctx);
+        typedef std::vector<Fred::Backend::Whois::RegistrarCertificationData> CertificateList;
+        const CertificateList v_rcd = get_registrar_certifications(ctx);
         std::vector<RegistrarCertification> result;
         result.reserve(v_rcd.size());
-        BOOST_FOREACH(const Whois::RegistrarCertificationData& it, v_rcd)
+        BOOST_FOREACH(const RegistrarCertificationData& it, v_rcd)
         {
             result.push_back(RegistrarCertification(
                     it.get_registrar_handle(),
@@ -281,7 +281,7 @@ std::vector<std::string> Server_impl::get_managed_zone_list()
     LibFred::OperationContextCreator ctx;
     try
     {
-        return ::Whois::get_managed_zone_list(ctx);
+        return ::Fred::Backend::Whois::get_managed_zone_list(ctx);
     }
     catch (...)
     {
@@ -371,9 +371,9 @@ Contact Server_impl::get_contact_by_handle(const std::string& handle)
     return Contact();
 }
 
-static WhoisImpl::NSSet make_nsset_from_info_data(const LibFred::InfoNssetData& ind, LibFred::OperationContext& ctx)
+static Whois::NSSet make_nsset_from_info_data(const LibFred::InfoNssetData& ind, LibFred::OperationContext& ctx)
 {
-    WhoisImpl::NSSet nss;
+    Whois::NSSet nss;
     nss.changed       = ind.update_time;
     nss.created       = ind.creation_time;
     nss.handle        = ind.handle;
@@ -381,7 +381,7 @@ static WhoisImpl::NSSet make_nsset_from_info_data(const LibFred::InfoNssetData& 
     nss.nservers.reserve(ind.dns_hosts.size());
     BOOST_FOREACH(LibFred::DnsHost dns_host, ind.dns_hosts)
     {
-        nss.nservers.push_back(WhoisImpl::NameServer(dns_host.get_fqdn(), dns_host.get_inet_addr()));
+        nss.nservers.push_back(Whois::NameServer(dns_host.get_fqdn(), dns_host.get_inet_addr()));
     }
     nss.sponsoring_registrar = ind.sponsoring_registrar_handle;
     BOOST_FOREACH(LibFred::ObjectIdHandlePair id_handle_pair, ind.tech_contacts)
@@ -400,7 +400,7 @@ static WhoisImpl::NSSet make_nsset_from_info_data(const LibFred::InfoNssetData& 
     return nss;
 }
 
-WhoisImpl::NSSet Server_impl::get_nsset_by_handle(const std::string& handle)
+Whois::NSSet Server_impl::get_nsset_by_handle(const std::string& handle)
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
@@ -432,7 +432,7 @@ WhoisImpl::NSSet Server_impl::get_nsset_by_handle(const std::string& handle)
         LibFred::OperationContextCreator ctx;
         log_and_rethrow_exception_handler(ctx);
     }
-    return WhoisImpl::NSSet();
+    return Whois::NSSet();
 }
 
 static NSSetSeq get_nssets_by_(
@@ -531,7 +531,7 @@ NameServer Server_impl::get_nameserver_by_fqdn(const std::string& fqdn)
     LibFred::OperationContextCreator ctx;
     try
     {
-        if (::Whois::nameserver_exists(no_root_dot_fqdn, ctx))
+        if (nameserver_exists(no_root_dot_fqdn, ctx))
         {
             NameServer temp;
             temp.fqdn = no_root_dot_fqdn;
@@ -560,7 +560,7 @@ NameServer Server_impl::get_nameserver_by_fqdn(const std::string& fqdn)
     return NameServer();
 }
 
-WhoisImpl::KeySet Server_impl::get_keyset_by_handle(const std::string& handle)
+Whois::KeySet Server_impl::get_keyset_by_handle(const std::string& handle)
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
@@ -571,7 +571,7 @@ WhoisImpl::KeySet Server_impl::get_keyset_by_handle(const std::string& handle)
             LibFred::OperationContextCreator ctx;
             const LibFred::InfoKeysetData ikd =
                     LibFred::InfoKeysetByHandle(handle).exec(ctx, get_output_timezone()).info_keyset_data;
-            WhoisImpl::KeySet ks;
+            Whois::KeySet ks;
             ks.handle               = ikd.handle;
             ks.changed              = ikd.update_time;
             ks.created              = ikd.creation_time;
@@ -651,7 +651,7 @@ KeySetSeq Server_impl::get_keysets_by_tech_c(const std::string& handle, unsigned
         ks_seq.content.reserve(ks_seq_size);
         for (std::size_t idx = 0; idx < ks_seq_size; ++idx)
         {
-            WhoisImpl::KeySet keyset;
+            Whois::KeySet keyset;
             const LibFred::InfoKeysetData &info_keyset_data = ks_info[idx].info_keyset_data;
             keyset.changed = info_keyset_data.update_time;
             keyset.created = info_keyset_data.creation_time;
@@ -697,20 +697,20 @@ KeySetSeq Server_impl::get_keysets_by_tech_c(const std::string& handle, unsigned
     return KeySetSeq();
 }
 
-WhoisImpl::Domain generate_obfuscate_domain_delete_candidate(const std::string& _handle)
+Whois::Domain generate_obfuscate_domain_delete_candidate(const std::string& _handle)
 {
-    WhoisImpl::Domain temp;
+    Whois::Domain temp;
     temp.fqdn = _handle;
     temp.statuses.push_back("deleteCandidate");
     //all the rest is default constructed
     return temp;
 }
 
-static WhoisImpl::Domain make_domain_from_info_data(
+static Whois::Domain make_domain_from_info_data(
     const LibFred::InfoDomainData& idd,
     LibFred::OperationContext& ctx)
 {
-    WhoisImpl::Domain result;
+    Whois::Domain result;
     result.admin_contacts.reserve(idd.admin_contacts.size());
     BOOST_FOREACH(LibFred::ObjectIdHandlePair it, idd.admin_contacts)
     {
@@ -738,19 +738,19 @@ static WhoisImpl::Domain make_domain_from_info_data(
     {
         result.validated_to = idd.enum_domain_validation.get_value().validation_expiration;
         result.validated_to_time_estimate =
-            ::Whois::domain_validation_expiration_datetime_estimate(
+            domain_validation_expiration_datetime_estimate(
                 ctx,
                 idd.enum_domain_validation.get_value().validation_expiration);
         Optional<boost::posix_time::ptime> vtta =
-                ::Whois::domain_validation_expiration_datetime_actual(ctx, idd.id);
+                domain_validation_expiration_datetime_actual(ctx, idd.id);
         if (vtta.isset())
         {
             result.validated_to_time_actual = vtta.get_value();
         }
     }
-    result.expire_time_estimate = ::Whois::domain_expiration_datetime_estimate(ctx, idd.expiration_date);
+    result.expire_time_estimate = domain_expiration_datetime_estimate(ctx, idd.expiration_date);
 
-    Optional<boost::posix_time::ptime> eta = ::Whois::domain_expiration_datetime_actual(ctx, idd.id);
+    Optional<boost::posix_time::ptime> eta = domain_expiration_datetime_actual(ctx, idd.id);
     if (eta.isset())
     {
         result.expire_time_actual = eta.get_value();
@@ -758,7 +758,7 @@ static WhoisImpl::Domain make_domain_from_info_data(
     return result;
 }
 
-WhoisImpl::Domain Server_impl::get_domain_by_handle(const std::string& handle)
+Whois::Domain Server_impl::get_domain_by_handle(const std::string& handle)
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
@@ -778,7 +778,7 @@ WhoisImpl::Domain Server_impl::get_domain_by_handle(const std::string& handle)
             {
                 throw UnmanagedZone();
             }
-            if (::Whois::is_domain_delete_pending(handle, ctx, "Europe/Prague"))
+            if (is_domain_delete_pending(handle, ctx, "Europe/Prague"))
             {
                 return Domain(generate_obfuscate_domain_delete_candidate(no_root_dot_fqdn));
             }
@@ -796,7 +796,7 @@ WhoisImpl::Domain Server_impl::get_domain_by_handle(const std::string& handle)
                 if (check_domain.is_registered(ctx, conflicting_enum_domain))
                 {
                     //returns info of conflicting domain instead of requested domain
-                    if (::Whois::is_domain_delete_pending(conflicting_enum_domain, ctx, "Europe/Prague"))
+                    if (is_domain_delete_pending(conflicting_enum_domain, ctx, "Europe/Prague"))
                     {
                         return Domain(generate_obfuscate_domain_delete_candidate(conflicting_enum_domain));
                     }
@@ -836,7 +836,7 @@ static DomainSeq get_domains_by_(
     domain_seq.content.reserve( (domain_info.size() > limit) ? limit : domain_info.size());
     BOOST_FOREACH(const LibFred::InfoDomainOutput& it, domain_info)
     {
-        if (! ::Whois::is_domain_delete_pending(it.info_domain_data.fqdn, ctx, "Europe/Prague"))
+        if (!is_domain_delete_pending(it.info_domain_data.fqdn, ctx, "Europe/Prague"))
         {
             if (++non_del_pending_domains > limit)
             {
@@ -1023,5 +1023,6 @@ std::vector<ObjectStatusDesc> Server_impl::get_keyset_status_descriptions(const 
     return get_object_status_descriptions(lang, "keyset", *this);
 }
 
-}//WhoisImpl
-}//Registry
+} // namespace Fred::Backend::Whois
+} // namespace Fred::Backend
+} // namespace Fred

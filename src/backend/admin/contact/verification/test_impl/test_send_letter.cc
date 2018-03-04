@@ -35,8 +35,11 @@
 
 #include <utility>
 
+namespace Fred {
+namespace Backend {
 namespace Admin {
-namespace ContactVerification {
+namespace Contact {
+namespace Verification {
 
     FACTORY_MODULE_INIT_DEFI(TestSendLetter_init)
 
@@ -189,5 +192,8 @@ namespace ContactVerification {
                 letter_comm_type_.c_str(),
                 false);
     }
-}
-}
+} // namespace Fred::Backend::Admin::Contact::Verification
+} // namespace Fred::Backend::Admin::Contact
+} // namespace Fred::Backend::Admin
+} // namespace Fred::Backend
+} // namespace Fred

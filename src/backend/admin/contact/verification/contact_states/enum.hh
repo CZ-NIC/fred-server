@@ -29,10 +29,12 @@
 #include <string>
 #include <boost/assign/list_of.hpp>
 
-namespace Admin
-{
-namespace AdminContactVerificationObjectStates
-{
+namespace Fred {
+namespace Backend {
+namespace Admin {
+namespace Contact {
+namespace Verification {
+namespace ContactStates {
     const std::string CONTACT_IN_MANUAL_VERIFICATION        = "contactInManualVerification";
     const std::string CONTACT_PASSED_MANUAL_VERIFICATION    = "contactPassedManualVerification";
     const std::string CONTACT_FAILED_MANUAL_VERIFICATION    = "contactFailedManualVerification";
@@ -49,7 +51,11 @@ namespace AdminContactVerificationObjectStates
             (CONTACT_PASSED_MANUAL_VERIFICATION)
             (CONTACT_FAILED_MANUAL_VERIFICATION);
     }
-}
-}
+} // namespace Fred::Backend::Admin::Contact::Verification::ObjectStates
+} // namespace Fred::Backend::Admin::Contact::Verification
+} // namespace Fred::Backend::Admin::Contact
+} // namespace Fred::Backend::Admin
+} // namespace Fred::Backend
+} // namespace Fred
 #endif // #include guard end
 

@@ -34,8 +34,11 @@
 #include <boost/foreach.hpp>
 #include <boost/regex.hpp>
 
+namespace Fred {
+namespace Backend {
 namespace Admin {
-namespace ContactVerification {
+namespace Contact {
+namespace Verification {
 
     FACTORY_MODULE_INIT_DEFI(TestEmailSyntax_init)
 
@@ -54,5 +57,8 @@ namespace ContactVerification {
 
         return TestRunResult(LibFred::ContactTestStatus::FAIL, std::string("invalid e-mail format") );
     }
-}
-}
+} // namespace Fred::Backend::Admin::Contact::Verification
+} // namespace Fred::Backend::Admin::Contact
+} // namespace Fred::Backend::Admin
+} // namespace Fred::Backend
+} // namespace Fred

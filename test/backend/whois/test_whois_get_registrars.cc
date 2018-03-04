@@ -10,11 +10,11 @@ struct get_my_registrar_list_fixture
 
     get_my_registrar_list_fixture()
     {
-        ::LibFred::OperationContextCreator ctx;
+        LibFred::OperationContextCreator ctx;
         const std::vector<::LibFred::InfoRegistrarOutput> v =
-                ::LibFred::InfoRegistrarAllExceptSystem().exec(ctx, "UTC");
+                LibFred::InfoRegistrarAllExceptSystem().exec(ctx, "UTC");
         //initial registrars
-        BOOST_FOREACH(const ::LibFred::InfoRegistrarOutput& it, v)
+        BOOST_FOREACH(const LibFred::InfoRegistrarOutput& it, v)
         {
             registrar_info[it.info_registrar_data.handle] =
                 it.info_registrar_data;
@@ -22,7 +22,7 @@ struct get_my_registrar_list_fixture
         //new test registrars
         for(unsigned int i=0; i < 10; ++i) //XXX
         {
-            const ::LibFred::InfoRegistrarData& ird =
+            const LibFred::InfoRegistrarData& ird =
                 Test::exec(
                     Test::generate_test_data(
                         Test::CreateX_factory<::LibFred::CreateRegistrar>().make())
@@ -45,14 +45,14 @@ struct get_my_registrar_list_fixture
 
 BOOST_FIXTURE_TEST_CASE(get_nonsystem_registrars, get_my_registrar_list_fixture)
 {
-    std::vector<Registry::WhoisImpl::Registrar> registrar_vec = impl.get_registrars();
+    std::vector<Fred::Backend::Whois::Registrar> registrar_vec = impl.get_registrars();
     BOOST_CHECK(registrar_vec.size() == registrar_info.size());
-    std::map<std::string, ::LibFred::InfoRegistrarData>::const_iterator cit;
-    BOOST_FOREACH(const Registry::WhoisImpl::Registrar& it, registrar_vec)
+    std::map<std::string, LibFred::InfoRegistrarData>::const_iterator cit;
+    BOOST_FOREACH(const Fred::Backend::Whois::Registrar& it, registrar_vec)
     {
         cit = registrar_info.find(it.handle);
         BOOST_REQUIRE(cit != registrar_info.end());
-        const ::LibFred::InfoRegistrarData& found = cit->second;
+        const LibFred::InfoRegistrarData& found = cit->second;
         BOOST_CHECK(it.address.city            == found.city.get_value_or_default());
         BOOST_CHECK(it.address.country_code    == found.country.get_value_or_default());
         BOOST_CHECK(it.address.postal_code     == found.postalcode.get_value_or_default());

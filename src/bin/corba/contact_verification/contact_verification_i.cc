@@ -31,7 +31,7 @@
 #include "src/bin/corba/contact_verification/corba_conversion.hh"
 
 
-namespace Registry
+namespace CorbaConversion
 {
     namespace Contact
     {
@@ -39,7 +39,7 @@ namespace Registry
         {
 
             ContactVerification_i::ContactVerification_i(const std::string &_server_name)
-            : pimpl_(new ContactVerificationImpl(_server_name
+            : pimpl_(new Fred::Backend::ContactVerification::ContactVerificationImpl(_server_name
                     , std::shared_ptr<LibFred::Mailer::Manager>(
                         new MailerManager(CorbaContainer::get_instance()
                         ->getNS()))))
@@ -69,15 +69,15 @@ namespace Registry
 
                 }//try
 
-                catch (Registry::Contact::Verification::OBJECT_NOT_EXISTS&)
+                catch (Fred::Backend::ContactVerification::OBJECT_NOT_EXISTS&)
                 {
                     throw Registry::ContactVerification::OBJECT_NOT_EXISTS();
                 }
-                catch (Registry::Contact::Verification::REGISTRAR_NOT_EXISTS&)
+                catch (Fred::Backend::ContactVerification::REGISTRAR_NOT_EXISTS&)
                 {
                     throw Registry::ContactVerification::REGISTRAR_NOT_EXISTS();
                 }
-                catch (Registry::Contact::Verification::DATA_VALIDATION_ERROR &_ex)
+                catch (Fred::Backend::ContactVerification::DATA_VALIDATION_ERROR &_ex)
                 {
                     throw Registry::ContactVerification::DATA_VALIDATION_ERROR(
                         corba_wrap_validation_error_list(_ex.errors));
@@ -103,24 +103,24 @@ namespace Registry
                             request_id, password, log_id);
                     return cid;
                 }//try
-                catch (Registry::Contact::Verification::IDENTIFICATION_FAILED&)
+                catch (Fred::Backend::ContactVerification::IDENTIFICATION_FAILED&)
                 {
                     throw Registry::ContactVerification::IDENTIFICATION_FAILED();
                 }
-                catch (Registry::Contact::Verification::IDENTIFICATION_PROCESSED&)
+                catch (Fred::Backend::ContactVerification::IDENTIFICATION_PROCESSED&)
                 {
                     throw Registry::ContactVerification::IDENTIFICATION_PROCESSED();
                 }
-                catch (Registry::Contact::Verification::IDENTIFICATION_INVALIDATED&)
+                catch (Fred::Backend::ContactVerification::IDENTIFICATION_INVALIDATED&)
                 {
                     throw Registry::ContactVerification::IDENTIFICATION_INVALIDATED();
                 }
-                catch (Registry::Contact::Verification::OBJECT_CHANGED&)
+                catch (Fred::Backend::ContactVerification::OBJECT_CHANGED&)
                 {
                     throw Registry::ContactVerification::OBJECT_CHANGED();
                 }
 
-                catch (Registry::Contact::Verification::DATA_VALIDATION_ERROR &_ex)
+                catch (Fred::Backend::ContactVerification::DATA_VALIDATION_ERROR &_ex)
                 {
                     throw Registry::ContactVerification::DATA_VALIDATION_ERROR(
                         corba_wrap_validation_error_list(_ex.errors));
@@ -146,27 +146,27 @@ namespace Registry
                         contact_handle, password, log_id);
                     return cid;
                 }//try
-                catch (Registry::Contact::Verification::IDENTIFICATION_FAILED&)
+                catch (Fred::Backend::ContactVerification::IDENTIFICATION_FAILED&)
                 {
                     throw Registry::ContactVerification::IDENTIFICATION_FAILED();
                 }
-                catch (Registry::Contact::Verification::IDENTIFICATION_PROCESSED&)
+                catch (Fred::Backend::ContactVerification::IDENTIFICATION_PROCESSED&)
                 {
                     throw Registry::ContactVerification::IDENTIFICATION_PROCESSED();
                 }
-                catch (Registry::Contact::Verification::IDENTIFICATION_INVALIDATED&)
+                catch (Fred::Backend::ContactVerification::IDENTIFICATION_INVALIDATED&)
                 {
                     throw Registry::ContactVerification::IDENTIFICATION_INVALIDATED();
                 }
-                catch (Registry::Contact::Verification::OBJECT_CHANGED&)
+                catch (Fred::Backend::ContactVerification::OBJECT_CHANGED&)
                 {
                     throw Registry::ContactVerification::OBJECT_CHANGED();
                 }
-                catch (Registry::Contact::Verification::OBJECT_NOT_EXISTS&)
+                catch (Fred::Backend::ContactVerification::OBJECT_NOT_EXISTS&)
                 {
                     throw Registry::ContactVerification::OBJECT_NOT_EXISTS();
                 }
-                catch (Registry::Contact::Verification::DATA_VALIDATION_ERROR &_ex)
+                catch (Fred::Backend::ContactVerification::DATA_VALIDATION_ERROR &_ex)
                 {
                     throw Registry::ContactVerification::DATA_VALIDATION_ERROR(
                         corba_wrap_validation_error_list(_ex.errors));
@@ -189,7 +189,7 @@ namespace Registry
                     std::string registrar_name = pimpl_->getRegistrarName(registrar_handle);
                     return corba_wrap_string(registrar_name.c_str());
                 }
-                catch (Registry::Contact::Verification::OBJECT_NOT_EXISTS&)
+                catch (Fred::Backend::ContactVerification::OBJECT_NOT_EXISTS&)
                 {
                     throw Registry::ContactVerification::OBJECT_NOT_EXISTS();
                 }
@@ -202,7 +202,7 @@ namespace Registry
                     throw Registry::ContactVerification::INTERNAL_SERVER_ERROR();
                 }
             }
-        }
-    }
-}
+        } // namespace CorbaConversion::Contact::Verification
+    } // namespace CorbaConversion::Contact
+} // namespace CorbaConversion
 

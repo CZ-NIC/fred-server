@@ -20,10 +20,12 @@
 #include <boost/algorithm/string/trim.hpp>
 #include <utility>
 
-namespace MojeID {  //MojeID
-namespace Messages {//MojeID::Messages
+namespace Fred {
+namespace Backend {
+namespace MojeId {
+namespace Messages {
 
-namespace {         //MojeID::Messages::{anonymous}
+namespace {
 
 template < CommChannel::Enum >
 struct RequiredStatus
@@ -40,8 +42,8 @@ struct PossibleRequestTypes;
 template < >
 struct PossibleRequestTypes< CommChannel::sms >
 {
-    typedef LibFred::MojeID::PublicRequest::ContactConditionalIdentification        PubReqCCI;
-    typedef LibFred::MojeID::PublicRequest::PrevalidatedUnidentifiedContactTransfer PubReqPUCT;
+    typedef Fred::Backend::MojeId::PublicRequest::ContactConditionalIdentification        PubReqCCI;
+    typedef Fred::Backend::MojeId::PublicRequest::PrevalidatedUnidentifiedContactTransfer PubReqPUCT;
     static std::string value(Database::query_param_list &_params)
     {
         const std::string type[] = {
@@ -89,8 +91,8 @@ struct PossibleRequestTypes< CommChannel::sms >
 template < >
 struct PossibleRequestTypes< CommChannel::letter >
 {
-    typedef LibFred::MojeID::PublicRequest::ContactIdentification   PubReqCI;
-    typedef LibFred::MojeID::PublicRequest::ContactReidentification PubReqCR;
+    typedef Fred::Backend::MojeId::PublicRequest::ContactIdentification   PubReqCI;
+    typedef Fred::Backend::MojeId::PublicRequest::ContactReidentification PubReqCR;
     static std::string value(Database::query_param_list &_params)
     {
         const std::string type[] = {
@@ -139,11 +141,11 @@ struct PossibleRequestTypes< CommChannel::letter >
 template < >
 struct PossibleRequestTypes< CommChannel::email >
 {
-    typedef LibFred::MojeID::PublicRequest::ContactConditionalIdentification        PubReqCCI;
-    typedef LibFred::MojeID::PublicRequest::ConditionallyIdentifiedContactTransfer  PubReqCICT;
-    typedef LibFred::MojeID::PublicRequest::IdentifiedContactTransfer               PubReqICT;
-    typedef LibFred::MojeID::PublicRequest::PrevalidatedContactTransfer             PubReqPCT;
-    typedef LibFred::MojeID::PublicRequest::PrevalidatedUnidentifiedContactTransfer PubReqPUCT;
+    typedef Fred::Backend::MojeId::PublicRequest::ContactConditionalIdentification        PubReqCCI;
+    typedef Fred::Backend::MojeId::PublicRequest::ConditionallyIdentifiedContactTransfer  PubReqCICT;
+    typedef Fred::Backend::MojeId::PublicRequest::IdentifiedContactTransfer               PubReqICT;
+    typedef Fred::Backend::MojeId::PublicRequest::PrevalidatedContactTransfer             PubReqPCT;
+    typedef Fred::Backend::MojeId::PublicRequest::PrevalidatedUnidentifiedContactTransfer PubReqPUCT;
     static std::string value(Database::query_param_list &_params)
     {
         const std::string type[] = {
@@ -448,7 +450,7 @@ template < CommChannel::Enum COMM_CHANNEL, typename PUBLIC_REQUEST_TYPE >
 struct generate_message;
 
 template < >
-struct generate_message< CommChannel::sms, LibFred::MojeID::PublicRequest::ContactConditionalIdentification >
+struct generate_message< CommChannel::sms, Fred::Backend::MojeId::PublicRequest::ContactConditionalIdentification >
 {
     static Generate::MessageId for_given_request(
         LibFred::OperationContext &_ctx,
@@ -473,7 +475,7 @@ struct generate_message< CommChannel::sms, LibFred::MojeID::PublicRequest::Conta
         const std::string contact_phone  = static_cast< std::string >(dbres[0][1]);
         const std::string contact_handle = static_cast< std::string >(dbres[0][2]);
 
-        const std::string pin2 = LibFred::MojeID::PublicRequest::ContactConditionalIdentification::
+        const std::string pin2 = Fred::Backend::MojeId::PublicRequest::ContactConditionalIdentification::
                                      get_pin2_part(password);
         const std::string sms_content = "Potvrzujeme uspesne zalozeni uctu mojeID. "
                                         "Pro aktivaci Vaseho uctu je nutne vlozit kody "
@@ -491,7 +493,7 @@ struct generate_message< CommChannel::sms, LibFred::MojeID::PublicRequest::Conta
 };
 
 template < >
-struct generate_message< CommChannel::sms, LibFred::MojeID::PublicRequest::PrevalidatedUnidentifiedContactTransfer >
+struct generate_message< CommChannel::sms, Fred::Backend::MojeId::PublicRequest::PrevalidatedUnidentifiedContactTransfer >
 {
     static Generate::MessageId for_given_request(
         LibFred::OperationContext &_ctx,
@@ -502,7 +504,7 @@ struct generate_message< CommChannel::sms, LibFred::MojeID::PublicRequest::Preva
         const std::string &_link_hostname_part,
         const Optional< GeneralId > &_contact_history_id)
     {
-        return generate_message< CommChannel::sms, LibFred::MojeID::PublicRequest::ContactConditionalIdentification >::
+        return generate_message< CommChannel::sms, Fred::Backend::MojeId::PublicRequest::ContactConditionalIdentification >::
                    for_given_request(_ctx,
                                      _multimanager,
                                      _locked_request,
@@ -625,7 +627,7 @@ Generate::MessageId send_auth_owner_letter(
 }
 
 template < >
-struct generate_message< CommChannel::letter, LibFred::MojeID::PublicRequest::ContactIdentification >
+struct generate_message< CommChannel::letter, Fred::Backend::MojeId::PublicRequest::ContactIdentification >
 {
     static Generate::MessageId for_given_request(
         LibFred::OperationContext &_ctx,
@@ -706,7 +708,7 @@ struct generate_message< CommChannel::letter, LibFred::MojeID::PublicRequest::Co
 };
 
 template < >
-struct generate_message< CommChannel::letter, LibFred::MojeID::PublicRequest::ContactReidentification >
+struct generate_message< CommChannel::letter, Fred::Backend::MojeId::PublicRequest::ContactReidentification >
 {
     static Generate::MessageId for_given_request(
         LibFred::OperationContext &_ctx,
@@ -858,9 +860,9 @@ Generate::MessageId send_email(
     // mojeid_contact_conditional_identification and mojeid_prevalidated_unidentified_contact_transfer public
     // requests password is composed of PIN1 and PIN2, other public requests password contains only PIN1
     const std::string pin1 =
-        (pub_req_type == LibFred::MojeID::PublicRequest::ContactConditionalIdentification().iface().get_public_request_type()) ||
-        (pub_req_type == LibFred::MojeID::PublicRequest::PrevalidatedUnidentifiedContactTransfer().iface().get_public_request_type())
-        ? LibFred::MojeID::PublicRequest::ContactConditionalIdentification::get_pin1_part(password)//password = PIN1 & PIN2
+        (pub_req_type == Fred::Backend::MojeId::PublicRequest::ContactConditionalIdentification().iface().get_public_request_type()) ||
+        (pub_req_type == Fred::Backend::MojeId::PublicRequest::PrevalidatedUnidentifiedContactTransfer().iface().get_public_request_type())
+        ? Fred::Backend::MojeId::PublicRequest::ContactConditionalIdentification::get_pin1_part(password)//password = PIN1 & PIN2
         : password;                                                                             //password = PIN1
 
     const std::string sender;//default sender from notification system
@@ -915,7 +917,7 @@ Generate::MessageId send_email(
 }
 
 template < >
-struct generate_message< CommChannel::email, LibFred::MojeID::PublicRequest::ContactConditionalIdentification >
+struct generate_message< CommChannel::email, Fred::Backend::MojeId::PublicRequest::ContactConditionalIdentification >
 {
     static Generate::MessageId for_given_request(
         LibFred::OperationContext &_ctx,
@@ -940,7 +942,7 @@ struct generate_message< CommChannel::email, LibFred::MojeID::PublicRequest::Con
 };
 
 template < >
-struct generate_message< CommChannel::email, LibFred::MojeID::PublicRequest::ConditionallyIdentifiedContactTransfer >
+struct generate_message< CommChannel::email, Fred::Backend::MojeId::PublicRequest::ConditionallyIdentifiedContactTransfer >
 {
     static Generate::MessageId for_given_request(
         LibFred::OperationContext &_ctx,
@@ -965,7 +967,7 @@ struct generate_message< CommChannel::email, LibFred::MojeID::PublicRequest::Con
 };
 
 template < >
-struct generate_message< CommChannel::email, LibFred::MojeID::PublicRequest::IdentifiedContactTransfer >
+struct generate_message< CommChannel::email, Fred::Backend::MojeId::PublicRequest::IdentifiedContactTransfer >
 {
     static Generate::MessageId for_given_request(
         LibFred::OperationContext &_ctx,
@@ -990,7 +992,7 @@ struct generate_message< CommChannel::email, LibFred::MojeID::PublicRequest::Ide
 };
 
 template < >
-struct generate_message< CommChannel::email, LibFred::MojeID::PublicRequest::PrevalidatedUnidentifiedContactTransfer >
+struct generate_message< CommChannel::email, Fred::Backend::MojeId::PublicRequest::PrevalidatedUnidentifiedContactTransfer >
 {
     static Generate::MessageId for_given_request(
         LibFred::OperationContext &_ctx,
@@ -1015,7 +1017,7 @@ struct generate_message< CommChannel::email, LibFred::MojeID::PublicRequest::Pre
 };
 
 template < >
-struct generate_message< CommChannel::email, LibFred::MojeID::PublicRequest::PrevalidatedContactTransfer >
+struct generate_message< CommChannel::email, Fred::Backend::MojeId::PublicRequest::PrevalidatedContactTransfer >
 {
     static Generate::MessageId for_given_request(
         LibFred::OperationContext &_ctx,
@@ -1039,7 +1041,7 @@ struct generate_message< CommChannel::email, LibFred::MojeID::PublicRequest::Pre
     }
 };
 
-} // namespace MojeID::Messages::{anonymous}
+} // namespace Fred::Backend::MojeId::Messages::{anonymous}
 
 template < bool X >
 struct Multimanager::traits< LibFred::Document::Manager, X >
@@ -1187,7 +1189,7 @@ Generate::MessageId Generate::Into< COMM_CHANNEL >::for_given_request(
 }
 
 template Generate::MessageId Generate::Into< CommChannel::sms >::
-                             for_given_request< LibFred::MojeID::PublicRequest::ContactConditionalIdentification >(
+                             for_given_request< Fred::Backend::MojeId::PublicRequest::ContactConditionalIdentification >(
         LibFred::OperationContext &_ctx,
         Multimanager &_multimanager,
         const LibFred::LockedPublicRequest &_locked_request,
@@ -1197,7 +1199,7 @@ template Generate::MessageId Generate::Into< CommChannel::sms >::
         const Optional< GeneralId > &_contact_history_id);
 
 template Generate::MessageId Generate::Into< CommChannel::sms >::
-                             for_given_request< LibFred::MojeID::PublicRequest::PrevalidatedUnidentifiedContactTransfer >(
+                             for_given_request< Fred::Backend::MojeId::PublicRequest::PrevalidatedUnidentifiedContactTransfer >(
         LibFred::OperationContext &_ctx,
         Multimanager &_multimanager,
         const LibFred::LockedPublicRequest &_locked_request,
@@ -1207,7 +1209,7 @@ template Generate::MessageId Generate::Into< CommChannel::sms >::
         const Optional< GeneralId > &_contact_history_id);
 
 template Generate::MessageId Generate::Into< CommChannel::letter >::
-                             for_given_request< LibFred::MojeID::PublicRequest::ContactIdentification >(
+                             for_given_request< Fred::Backend::MojeId::PublicRequest::ContactIdentification >(
         LibFred::OperationContext &_ctx,
         Multimanager &_multimanager,
         const LibFred::LockedPublicRequest &_locked_request,
@@ -1217,7 +1219,7 @@ template Generate::MessageId Generate::Into< CommChannel::letter >::
         const Optional< GeneralId > &_contact_history_id);
 
 template Generate::MessageId Generate::Into< CommChannel::letter >::
-                             for_given_request< LibFred::MojeID::PublicRequest::ContactReidentification >(
+                             for_given_request< Fred::Backend::MojeId::PublicRequest::ContactReidentification >(
         LibFred::OperationContext &_ctx,
         Multimanager &_multimanager,
         const LibFred::LockedPublicRequest &_locked_request,
@@ -1227,7 +1229,7 @@ template Generate::MessageId Generate::Into< CommChannel::letter >::
         const Optional< GeneralId > &_contact_history_id);
 
 template Generate::MessageId Generate::Into< CommChannel::email >::
-                             for_given_request< LibFred::MojeID::PublicRequest::ContactConditionalIdentification >(
+                             for_given_request< Fred::Backend::MojeId::PublicRequest::ContactConditionalIdentification >(
         LibFred::OperationContext &_ctx,
         Multimanager &_multimanager,
         const LibFred::LockedPublicRequest &_locked_request,
@@ -1237,7 +1239,7 @@ template Generate::MessageId Generate::Into< CommChannel::email >::
         const Optional< GeneralId > &_contact_history_id);
 
 template Generate::MessageId Generate::Into< CommChannel::email >::
-                             for_given_request< LibFred::MojeID::PublicRequest::ConditionallyIdentifiedContactTransfer >(
+                             for_given_request< Fred::Backend::MojeId::PublicRequest::ConditionallyIdentifiedContactTransfer >(
         LibFred::OperationContext &_ctx,
         Multimanager &_multimanager,
         const LibFred::LockedPublicRequest &_locked_request,
@@ -1247,7 +1249,7 @@ template Generate::MessageId Generate::Into< CommChannel::email >::
         const Optional< GeneralId > &_contact_history_id);
 
 template Generate::MessageId Generate::Into< CommChannel::email >::
-                             for_given_request< LibFred::MojeID::PublicRequest::IdentifiedContactTransfer >(
+                             for_given_request< Fred::Backend::MojeId::PublicRequest::IdentifiedContactTransfer >(
         LibFred::OperationContext &_ctx,
         Multimanager &_multimanager,
         const LibFred::LockedPublicRequest &_locked_request,
@@ -1257,7 +1259,7 @@ template Generate::MessageId Generate::Into< CommChannel::email >::
         const Optional< GeneralId > &_contact_history_id);
 
 template Generate::MessageId Generate::Into< CommChannel::email >::
-                             for_given_request< LibFred::MojeID::PublicRequest::PrevalidatedUnidentifiedContactTransfer >(
+                             for_given_request< Fred::Backend::MojeId::PublicRequest::PrevalidatedUnidentifiedContactTransfer >(
         LibFred::OperationContext &_ctx,
         Multimanager &_multimanager,
         const LibFred::LockedPublicRequest &_locked_request,
@@ -1267,7 +1269,7 @@ template Generate::MessageId Generate::Into< CommChannel::email >::
         const Optional< GeneralId > &_contact_history_id);
 
 template Generate::MessageId Generate::Into< CommChannel::email >::
-                             for_given_request< LibFred::MojeID::PublicRequest::PrevalidatedContactTransfer >(
+                             for_given_request< Fred::Backend::MojeId::PublicRequest::PrevalidatedContactTransfer >(
         LibFred::OperationContext &_ctx,
         Multimanager &_multimanager,
         const LibFred::LockedPublicRequest &_locked_request,
@@ -1276,5 +1278,7 @@ template Generate::MessageId Generate::Into< CommChannel::email >::
         const std::string &_link_hostname_part,
         const Optional< GeneralId > &_contact_history_id);
 
-} // namespace MojeID::Messages
-} // namespace MojeID
+} // namespace Fred::Backend::MojeId::Messages
+} // namespace Fred::Backend::MojeId
+} // namespace Fred::Backend
+} // namespace Fred

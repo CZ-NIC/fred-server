@@ -80,11 +80,11 @@ struct domain_browser_impl_instance_fixture
     unsigned int nsset_list_limit;
     unsigned int keyset_list_limit;
     unsigned int contact_list_limit;
-    Registry::DomainBrowserImpl::DomainBrowser impl;
+    Fred::Backend::DomainBrowser::DomainBrowser impl;
 
     domain_browser_impl_instance_fixture()
     : update_registrar_handle(CfgArgs::instance()
-        ->get_handler_ptr_by_type<HandleMojeIDArgs>()->registrar_handle)//MojeID registrar used for updates in domain browser
+        ->get_handler_ptr_by_type<HandleMojeIdArgs>()->registrar_handle)//MojeId registrar used for updates in domain browser
     , domain_list_limit(CfgArgs::instance()
         ->get_handler_ptr_by_type<HandleDomainBrowserArgs>()->domain_list_limit)//domain list chunk size
     , nsset_list_limit(CfgArgs::instance()
@@ -130,12 +130,12 @@ struct user_contact_fixture
         place.postalcode = "11150";
         place.country = "CZ";
         ::LibFred::CreateContact(user_contact_handle,
-            CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIDArgs>()->registrar_handle)//MojeID registrar
+            CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIdArgs>()->registrar_handle)//MojeId registrar
             .set_name(std::string("USER-CONTACT-HANDLE NAME")+xmark)
             .set_place(place)
             .exec(ctx);
 
-        user_contact_info = ::LibFred::InfoContactByHandle(user_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+        user_contact_info = ::LibFred::InfoContactByHandle(user_contact_handle).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
 
         ctx.commit_transaction();//commit fixture
     }
@@ -203,7 +203,7 @@ struct admin_contact_fixture
             .set_place(place)
             .set_discloseaddress(true)
             .exec(ctx);
-        test_contact_info = ::LibFred::InfoContactByHandle(test_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+        test_contact_info = ::LibFred::InfoContactByHandle(test_contact_handle).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
         ctx.commit_transaction();//commit fixture
     }
     ~admin_contact_fixture()
@@ -230,7 +230,7 @@ struct nsset_fixture
                 (boost::asio::ip::address::from_string("127.1.1.4")))) //add_dns
             ).exec(ctx);
 
-        nsset_info = ::LibFred::InfoNssetByHandle(test_nsset_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+        nsset_info = ::LibFred::InfoNssetByHandle(test_nsset_handle).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
 
         ::LibFred::CreateObjectStateRequestId(nsset_info.info_nsset_data.id,
             Util::set_of<std::string>(::LibFred::ObjectState::SERVER_DELETE_PROHIBITED)).exec(ctx);
@@ -256,7 +256,7 @@ struct keyset_fixture
         .set_dns_keys(Util::vector_of<::LibFred::DnsKey> (::LibFred::DnsKey(257, 3, 5, "AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8")))
                 .exec(ctx);
 
-        keyset_info = ::LibFred::InfoKeysetByHandle(test_keyset_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+        keyset_info = ::LibFred::InfoKeysetByHandle(test_keyset_handle).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
 
         ::LibFred::CreateObjectStateRequestId(keyset_info.info_keyset_data.id,
             Util::set_of<std::string>(::LibFred::ObjectState::SERVER_DELETE_PROHIBITED)).exec(ctx);
@@ -283,8 +283,8 @@ struct get_registrar_fixture
 BOOST_FIXTURE_TEST_CASE(get_registrar_detail, get_registrar_fixture )
 {
     ::LibFred::OperationContextCreator ctx;
-    ::LibFred::InfoRegistrarOutput registrar_info = ::LibFred::InfoRegistrarByHandle(test_registrar_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
-    Registry::DomainBrowserImpl::RegistrarDetail rd = impl.getRegistrarDetail(user_contact_info.info_contact_data.id,
+    ::LibFred::InfoRegistrarOutput registrar_info = ::LibFred::InfoRegistrarByHandle(test_registrar_handle).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
+    Fred::Backend::DomainBrowser::RegistrarDetail rd = impl.getRegistrarDetail(user_contact_info.info_contact_data.id,
             test_registrar_handle);
 
     BOOST_CHECK(rd.id == registrar_info.info_registrar_data.id);
@@ -313,11 +313,11 @@ BOOST_FIXTURE_TEST_CASE(get_registrar_detail_no_user, get_registrar_detail_no_us
     try
     {
         ::LibFred::OperationContextCreator ctx;
-        ::LibFred::InfoRegistrarOutput registrar_info = ::LibFred::InfoRegistrarByHandle(test_registrar_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
-        Registry::DomainBrowserImpl::RegistrarDetail rd = impl.getRegistrarDetail(0, test_registrar_handle);
+        ::LibFred::InfoRegistrarOutput registrar_info = ::LibFred::InfoRegistrarByHandle(test_registrar_handle).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
+        Fred::Backend::DomainBrowser::RegistrarDetail rd = impl.getRegistrarDetail(0, test_registrar_handle);
         BOOST_ERROR("unreported missing user contact");
     }
-    catch( const Registry::DomainBrowserImpl::UserNotExists& ex)
+    catch( const Fred::Backend::DomainBrowser::UserNotExists& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -340,12 +340,12 @@ BOOST_FIXTURE_TEST_CASE(get_registrar_detail_not_mojeid_user, get_registrar_deta
     try
     {
         ::LibFred::OperationContextCreator ctx;
-        ::LibFred::InfoRegistrarOutput registrar_info = ::LibFred::InfoRegistrarByHandle(test_registrar_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
-        Registry::DomainBrowserImpl::RegistrarDetail rd = impl.getRegistrarDetail(user_contact_info.info_contact_data.id,
+        ::LibFred::InfoRegistrarOutput registrar_info = ::LibFred::InfoRegistrarByHandle(test_registrar_handle).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
+        Fred::Backend::DomainBrowser::RegistrarDetail rd = impl.getRegistrarDetail(user_contact_info.info_contact_data.id,
                 test_registrar_handle);
         BOOST_ERROR("unreported mojeidContact state");
     }
-    catch( const Registry::DomainBrowserImpl::UserNotExists& ex)
+    catch( const Fred::Backend::DomainBrowser::UserNotExists& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -365,11 +365,11 @@ BOOST_FIXTURE_TEST_CASE(get_registrar_detail_no_registrar, get_registrar_detail_
     try
     {
         ::LibFred::OperationContextCreator ctx;
-        Registry::DomainBrowserImpl::RegistrarDetail rd = impl.getRegistrarDetail(user_contact_info.info_contact_data.id,
+        Fred::Backend::DomainBrowser::RegistrarDetail rd = impl.getRegistrarDetail(user_contact_info.info_contact_data.id,
                 "NO-NO-REGISTRAR-HANDLE");
         BOOST_ERROR("unreported missing registrar");
     }
-    catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
+    catch( const Fred::Backend::DomainBrowser::ObjectNotExists& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -422,10 +422,10 @@ struct get_my_contact_detail_fixture
 BOOST_FIXTURE_TEST_CASE(get_my_contact_detail, get_my_contact_detail_fixture )
 {
     ::LibFred::OperationContextCreator ctx;
-    ::LibFred::InfoContactOutput my_contact_info = ::LibFred::InfoContactByHandle(user_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
-    ::LibFred::InfoRegistrarOutput sponsoring_registrar_info = ::LibFred::InfoRegistrarByHandle(my_contact_info.info_contact_data.sponsoring_registrar_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+    ::LibFred::InfoContactOutput my_contact_info = ::LibFred::InfoContactByHandle(user_contact_handle).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
+    ::LibFred::InfoRegistrarOutput sponsoring_registrar_info = ::LibFred::InfoRegistrarByHandle(my_contact_info.info_contact_data.sponsoring_registrar_handle).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
 
-    Registry::DomainBrowserImpl::ContactDetail cd = impl.getContactDetail(user_contact_info.info_contact_data.id,
+    Fred::Backend::DomainBrowser::ContactDetail cd = impl.getContactDetail(user_contact_info.info_contact_data.id,
             my_contact_info.info_contact_data.id);
     const ::LibFred::Contact::PlaceAddress mci_place = my_contact_info.info_contact_data.place.get_value_or_default();
     const Nullable<::LibFred::Contact::PlaceAddress> mci_mailing = optional_map_at<Nullable>(my_contact_info.info_contact_data.addresses,::LibFred::ContactAddressType::MAILING);
@@ -478,10 +478,10 @@ struct get_contact_fixture
 BOOST_FIXTURE_TEST_CASE(get_contact_detail, get_contact_fixture )
 {
     ::LibFred::OperationContextCreator ctx;
-    ::LibFred::InfoContactOutput test_contact_info = ::LibFred::InfoContactByHandle(test_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
-    ::LibFred::InfoRegistrarOutput sponsoring_registrar_info = ::LibFred::InfoRegistrarByHandle(test_contact_info.info_contact_data.sponsoring_registrar_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+    ::LibFred::InfoContactOutput test_contact_info = ::LibFred::InfoContactByHandle(test_contact_handle).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
+    ::LibFred::InfoRegistrarOutput sponsoring_registrar_info = ::LibFred::InfoRegistrarByHandle(test_contact_info.info_contact_data.sponsoring_registrar_handle).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
 
-    Registry::DomainBrowserImpl::ContactDetail cd = impl.getContactDetail(user_contact_info.info_contact_data.id,
+    Fred::Backend::DomainBrowser::ContactDetail cd = impl.getContactDetail(user_contact_info.info_contact_data.id,
             test_contact_info.info_contact_data.id);
     const ::LibFred::Contact::PlaceAddress tci_place = test_contact_info.info_contact_data.place.get_value_or_default();
     const Nullable<::LibFred::Contact::PlaceAddress> tci_mailing = optional_map_at<Nullable>(test_contact_info.info_contact_data.addresses,::LibFred::ContactAddressType::MAILING);
@@ -536,12 +536,12 @@ BOOST_FIXTURE_TEST_CASE(get_contact_detail_no_user, get_contact_detail_no_user_f
     try
     {
         ::LibFred::OperationContextCreator ctx;
-        ::LibFred::InfoContactOutput test_contact_info = ::LibFred::InfoContactByHandle(test_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
-        Registry::DomainBrowserImpl::ContactDetail cd = impl.getContactDetail(0,test_contact_info.info_contact_data.id);
+        ::LibFred::InfoContactOutput test_contact_info = ::LibFred::InfoContactByHandle(test_contact_handle).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
+        Fred::Backend::DomainBrowser::ContactDetail cd = impl.getContactDetail(0,test_contact_info.info_contact_data.id);
 
         BOOST_ERROR("unreported missing user contact");
     }
-    catch( const Registry::DomainBrowserImpl::UserNotExists& ex)
+    catch( const Fred::Backend::DomainBrowser::UserNotExists& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -562,12 +562,12 @@ BOOST_FIXTURE_TEST_CASE(get_contact_detail_not_mojeid_user, get_contact_detail_n
     try
     {
         ::LibFred::OperationContextCreator ctx;
-        ::LibFred::InfoContactOutput test_contact_info = ::LibFred::InfoContactByHandle(test_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
-        Registry::DomainBrowserImpl::ContactDetail cd = impl.getContactDetail(user_contact_info.info_contact_data.id,
+        ::LibFred::InfoContactOutput test_contact_info = ::LibFred::InfoContactByHandle(test_contact_handle).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
+        Fred::Backend::DomainBrowser::ContactDetail cd = impl.getContactDetail(user_contact_info.info_contact_data.id,
                 test_contact_info.info_contact_data.id);
         BOOST_ERROR("unreported mojeidContact state");
     }
-    catch( const Registry::DomainBrowserImpl::UserNotExists& ex)
+    catch( const Fred::Backend::DomainBrowser::UserNotExists& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -587,10 +587,10 @@ BOOST_FIXTURE_TEST_CASE(get_contact_detail_no_test_contact, get_contact_detail_n
     try
     {
         ::LibFred::OperationContextCreator ctx;
-        Registry::DomainBrowserImpl::ContactDetail d = impl.getContactDetail(user_contact_info.info_contact_data.id,0);
+        Fred::Backend::DomainBrowser::ContactDetail d = impl.getContactDetail(user_contact_info.info_contact_data.id,0);
         BOOST_ERROR("unreported missing test contact");
     }
-    catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
+    catch( const Fred::Backend::DomainBrowser::ObjectNotExists& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -654,7 +654,7 @@ struct get_my_domain_fixture
                     ).exec(ctx);
 
 
-        ::LibFred::InfoDomainOutput domain_info = ::LibFred::InfoDomainByFqdn(test_fqdn).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+        ::LibFred::InfoDomainOutput domain_info = ::LibFred::InfoDomainByFqdn(test_fqdn).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
 
         ::LibFred::CreateObjectStateRequestId(domain_info.info_domain_data.id,
             Util::set_of<std::string>(::LibFred::ObjectState::SERVER_BLOCKED)).exec(ctx);
@@ -705,15 +705,15 @@ struct get_domain_fixture
 BOOST_FIXTURE_TEST_CASE(get_my_domain_detail, get_my_domain_fixture )
 {
     ::LibFred::OperationContextCreator ctx;
-    ::LibFred::InfoDomainOutput my_domain_info = ::LibFred::InfoDomainByFqdn(test_fqdn).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
-    ::LibFred::InfoRegistrarOutput sponsoring_registrar_info = ::LibFred::InfoRegistrarByHandle(my_domain_info.info_domain_data.sponsoring_registrar_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+    ::LibFred::InfoDomainOutput my_domain_info = ::LibFred::InfoDomainByFqdn(test_fqdn).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
+    ::LibFred::InfoRegistrarOutput sponsoring_registrar_info = ::LibFred::InfoRegistrarByHandle(my_domain_info.info_domain_data.sponsoring_registrar_handle).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
 
-    ::LibFred::InfoNssetOutput nsset_info = ::LibFred::InfoNssetByHandle(test_nsset_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
-    ::LibFred::InfoKeysetOutput keyset_info = ::LibFred::InfoKeysetByHandle(test_keyset_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+    ::LibFred::InfoNssetOutput nsset_info = ::LibFred::InfoNssetByHandle(test_nsset_handle).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
+    ::LibFred::InfoKeysetOutput keyset_info = ::LibFred::InfoKeysetByHandle(test_keyset_handle).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
 
-    ::LibFred::InfoContactOutput admin_contact_info = ::LibFred::InfoContactByHandle(admin_contact_fixture::test_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+    ::LibFred::InfoContactOutput admin_contact_info = ::LibFred::InfoContactByHandle(admin_contact_fixture::test_contact_handle).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
 
-    Registry::DomainBrowserImpl::DomainDetail d = impl.getDomainDetail(user_contact_info.info_contact_data.id,
+    Fred::Backend::DomainBrowser::DomainDetail d = impl.getDomainDetail(user_contact_info.info_contact_data.id,
             my_domain_info.info_domain_data.id);
 
     BOOST_CHECK(d.id == my_domain_info.info_domain_data.id);
@@ -759,10 +759,10 @@ BOOST_FIXTURE_TEST_CASE(get_domain_detail_no_domain, get_domain_detail_no_domain
     try
     {
         ::LibFred::OperationContextCreator ctx;
-        Registry::DomainBrowserImpl::DomainDetail d = impl.getDomainDetail(user_contact_info.info_contact_data.id,0);
+        Fred::Backend::DomainBrowser::DomainDetail d = impl.getDomainDetail(user_contact_info.info_contact_data.id,0);
         BOOST_ERROR("unreported missing test domain");
     }
-    catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
+    catch( const Fred::Backend::DomainBrowser::ObjectNotExists& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -785,11 +785,11 @@ struct get_nsset_fixture
 BOOST_FIXTURE_TEST_CASE(get_nsset_detail, get_nsset_fixture )
 {
     ::LibFred::OperationContextCreator ctx;
-    ::LibFred::InfoNssetOutput nsset_info = ::LibFred::InfoNssetByHandle(test_nsset_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
-    ::LibFred::InfoRegistrarOutput sponsoring_registrar_info = ::LibFred::InfoRegistrarByHandle(nsset_info.info_nsset_data.sponsoring_registrar_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
-    ::LibFred::InfoContactOutput admin_contact_info = ::LibFred::InfoContactByHandle(admin_contact_fixture::test_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+    ::LibFred::InfoNssetOutput nsset_info = ::LibFred::InfoNssetByHandle(test_nsset_handle).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
+    ::LibFred::InfoRegistrarOutput sponsoring_registrar_info = ::LibFred::InfoRegistrarByHandle(nsset_info.info_nsset_data.sponsoring_registrar_handle).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
+    ::LibFred::InfoContactOutput admin_contact_info = ::LibFred::InfoContactByHandle(admin_contact_fixture::test_contact_handle).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
 
-    Registry::DomainBrowserImpl::NssetDetail n = impl.getNssetDetail(user_contact_info.info_contact_data.id,
+    Fred::Backend::DomainBrowser::NssetDetail n = impl.getNssetDetail(user_contact_info.info_contact_data.id,
             nsset_info.info_nsset_data.id);
 
     BOOST_CHECK(n.id == nsset_info.info_nsset_data.id);
@@ -846,10 +846,10 @@ BOOST_FIXTURE_TEST_CASE(get_nsset_detail_no_nsset, get_nsset_detail_no_nsset_fix
     try
     {
         ::LibFred::OperationContextCreator ctx;
-        Registry::DomainBrowserImpl::NssetDetail d = impl.getNssetDetail(user_contact_info.info_contact_data.id,0);
+        Fred::Backend::DomainBrowser::NssetDetail d = impl.getNssetDetail(user_contact_info.info_contact_data.id,0);
         BOOST_ERROR("unreported missing test nsset");
     }
-    catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
+    catch( const Fred::Backend::DomainBrowser::ObjectNotExists& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -873,11 +873,11 @@ struct get_keyset_fixture
 BOOST_FIXTURE_TEST_CASE(get_keyset_detail, get_keyset_fixture )
 {
     ::LibFred::OperationContextCreator ctx;
-    ::LibFred::InfoKeysetOutput keyset_info = ::LibFred::InfoKeysetByHandle(test_keyset_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
-    ::LibFred::InfoRegistrarOutput sponsoring_registrar_info = ::LibFred::InfoRegistrarByHandle(keyset_info.info_keyset_data.sponsoring_registrar_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
-    ::LibFred::InfoContactOutput admin_contact_info = ::LibFred::InfoContactByHandle(admin_contact_fixture::test_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+    ::LibFred::InfoKeysetOutput keyset_info = ::LibFred::InfoKeysetByHandle(test_keyset_handle).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
+    ::LibFred::InfoRegistrarOutput sponsoring_registrar_info = ::LibFred::InfoRegistrarByHandle(keyset_info.info_keyset_data.sponsoring_registrar_handle).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
+    ::LibFred::InfoContactOutput admin_contact_info = ::LibFred::InfoContactByHandle(admin_contact_fixture::test_contact_handle).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
 
-    Registry::DomainBrowserImpl::KeysetDetail k = impl.getKeysetDetail(user_contact_info.info_contact_data.id,
+    Fred::Backend::DomainBrowser::KeysetDetail k = impl.getKeysetDetail(user_contact_info.info_contact_data.id,
             keyset_info.info_keyset_data.id);
 
     BOOST_CHECK(k.id == keyset_info.info_keyset_data.id);
@@ -932,10 +932,10 @@ BOOST_FIXTURE_TEST_CASE(get_keyset_detail_no_keyset, get_keyset_detail_no_keyset
     try
     {
         ::LibFred::OperationContextCreator ctx;
-        Registry::DomainBrowserImpl::KeysetDetail d = impl.getKeysetDetail(user_contact_info.info_contact_data.id,0);
+        Fred::Backend::DomainBrowser::KeysetDetail d = impl.getKeysetDetail(user_contact_info.info_contact_data.id,0);
         BOOST_ERROR("unreported missing test keyset");
     }
-    catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
+    catch( const Fred::Backend::DomainBrowser::ObjectNotExists& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -968,7 +968,7 @@ BOOST_FIXTURE_TEST_CASE(set_contact_disclose_flags, set_contact_disclose_flags_f
 
     ::LibFred::OperationContextCreator ctx;
 
-    Registry::DomainBrowserImpl::ContactDiscloseFlagsToSet set_flags;
+    Fred::Backend::DomainBrowser::ContactDiscloseFlagsToSet set_flags;
     set_flags.address = true;
     set_flags.email = true;
     set_flags.fax = true;
@@ -978,7 +978,7 @@ BOOST_FIXTURE_TEST_CASE(set_contact_disclose_flags, set_contact_disclose_flags_f
     set_flags.vat = true;
     impl.setContactDiscloseFlags(user_contact_info.info_contact_data.id,set_flags, 42);
 
-    ::LibFred::InfoContactOutput my_contact_info = ::LibFred::InfoContactByHandle(user_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+    ::LibFred::InfoContactOutput my_contact_info = ::LibFred::InfoContactByHandle(user_contact_handle).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
     BOOST_CHECK(my_contact_info.info_contact_data.disclosename);
     BOOST_CHECK(my_contact_info.info_contact_data.discloseorganization);
     BOOST_CHECK(my_contact_info.info_contact_data.discloseemail);
@@ -1012,7 +1012,7 @@ BOOST_FIXTURE_TEST_CASE(set_validated_contact_disclose_flags, set_validated_cont
     }
 
     ::LibFred::OperationContextCreator ctx;
-    Registry::DomainBrowserImpl::ContactDiscloseFlagsToSet set_flags;
+    Fred::Backend::DomainBrowser::ContactDiscloseFlagsToSet set_flags;
     set_flags.address = true;
     set_flags.email = true;
     set_flags.fax = true;
@@ -1022,7 +1022,7 @@ BOOST_FIXTURE_TEST_CASE(set_validated_contact_disclose_flags, set_validated_cont
     set_flags.vat = true;
     impl.setContactDiscloseFlags(user_contact_info.info_contact_data.id,set_flags, 0);
 
-    ::LibFred::InfoContactOutput my_contact_info = ::LibFred::InfoContactByHandle(user_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+    ::LibFred::InfoContactOutput my_contact_info = ::LibFred::InfoContactByHandle(user_contact_handle).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
     BOOST_CHECK(my_contact_info.info_contact_data.disclosename);
     BOOST_CHECK(my_contact_info.info_contact_data.discloseorganization);
     BOOST_CHECK(my_contact_info.info_contact_data.discloseemail);
@@ -1047,12 +1047,12 @@ BOOST_FIXTURE_TEST_CASE(set_contact_disclose_flags_user_not_in_mojeid, set_conta
     try
     {
         ::LibFred::OperationContextCreator ctx;
-        Registry::DomainBrowserImpl::ContactDiscloseFlagsToSet set_flags;
+        Fred::Backend::DomainBrowser::ContactDiscloseFlagsToSet set_flags;
         set_flags.email = true;
         impl.setContactDiscloseFlags(user_contact_info.info_contact_data.id,set_flags, 0);
         BOOST_ERROR("unreported missing user");
     }
-    catch( const Registry::DomainBrowserImpl::UserNotExists& ex)
+    catch( const Fred::Backend::DomainBrowser::UserNotExists& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -1073,12 +1073,12 @@ BOOST_FIXTURE_TEST_CASE(set_contact_disclose_flags_user_not_identified, set_cont
     try
     {
         ::LibFred::OperationContextCreator ctx;
-        Registry::DomainBrowserImpl::ContactDiscloseFlagsToSet set_flags;
+        Fred::Backend::DomainBrowser::ContactDiscloseFlagsToSet set_flags;
         set_flags.email = true;
         impl.setContactDiscloseFlags(user_contact_info.info_contact_data.id,set_flags, 0);
         BOOST_ERROR("unreported missing user identification");
     }
-    catch( const Registry::DomainBrowserImpl::AccessDenied& ex)
+    catch( const Fred::Backend::DomainBrowser::AccessDenied& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -1107,12 +1107,12 @@ BOOST_FIXTURE_TEST_CASE(set_contact_disclose_flags_contact_blocked, set_contact_
     try
     {
         ::LibFred::OperationContextCreator ctx;
-        Registry::DomainBrowserImpl::ContactDiscloseFlagsToSet set_flags;
+        Fred::Backend::DomainBrowser::ContactDiscloseFlagsToSet set_flags;
         set_flags.email = true;
         impl.setContactDiscloseFlags(user_contact_info.info_contact_data.id,set_flags, 0);
         BOOST_ERROR("unreported blocked user contact");
     }
-    catch( const Registry::DomainBrowserImpl::ObjectBlocked& ex)
+    catch( const Fred::Backend::DomainBrowser::ObjectBlocked& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -1134,7 +1134,7 @@ BOOST_FIXTURE_TEST_CASE(set_contact_disclose_flags_hide_organization_address, se
         , Util::set_of<std::string>(::LibFred::ObjectState::IDENTIFIED_CONTACT)).exec(ctx);
         ::LibFred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
         ::LibFred::UpdateContactById(user_contact_info.info_contact_data.id
-            , CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIDArgs>()->registrar_handle)
+            , CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIdArgs>()->registrar_handle)
         .set_organization("TestOrganization").exec(ctx);
         ctx.commit_transaction();
     }
@@ -1142,11 +1142,11 @@ BOOST_FIXTURE_TEST_CASE(set_contact_disclose_flags_hide_organization_address, se
     try
     {
         ::LibFred::OperationContextCreator ctx;
-        Registry::DomainBrowserImpl::ContactDiscloseFlagsToSet set_flags;
+        Fred::Backend::DomainBrowser::ContactDiscloseFlagsToSet set_flags;
         impl.setContactDiscloseFlags(user_contact_info.info_contact_data.id,set_flags, 0);
         BOOST_ERROR("unreported hide address of organization");
     }
-    catch( const Registry::DomainBrowserImpl::IncorrectUsage& ex)
+    catch( const Fred::Backend::DomainBrowser::IncorrectUsage& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -1180,7 +1180,7 @@ BOOST_FIXTURE_TEST_CASE(set_contact_authinfo, set_contact_authinfo_fixture )
     BOOST_CHECK(impl.setContactAuthInfo(
         user_contact_info.info_contact_data.id,"newauthinfo", 42));
 
-    ::LibFred::InfoContactOutput my_contact_info = ::LibFred::InfoContactByHandle(user_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+    ::LibFred::InfoContactOutput my_contact_info = ::LibFred::InfoContactByHandle(user_contact_handle).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
     BOOST_CHECK(my_contact_info.info_contact_data.authinfopw.compare("newauthinfo")==0);
     BOOST_CHECK(!my_contact_info.logd_request_id.isnull() && my_contact_info.logd_request_id.get_value() == 42);
 }
@@ -1207,7 +1207,7 @@ BOOST_FIXTURE_TEST_CASE(set_validated_contact_authinfo, set_validated_contact_au
     BOOST_CHECK(impl.setContactAuthInfo(
         user_contact_info.info_contact_data.id,"newauthinfo", 0));
 
-    ::LibFred::InfoContactOutput my_contact_info = ::LibFred::InfoContactByHandle(user_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+    ::LibFred::InfoContactOutput my_contact_info = ::LibFred::InfoContactByHandle(user_contact_handle).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
     BOOST_CHECK(my_contact_info.info_contact_data.authinfopw.compare("newauthinfo")==0);
 }
 
@@ -1228,7 +1228,7 @@ BOOST_FIXTURE_TEST_CASE(set_contact_authinfo_user_not_in_mojeid, set_contact_aut
             user_contact_info.info_contact_data.id,"newauthinfo", 0);
         BOOST_ERROR("unreported missing user");
     }
-    catch( const Registry::DomainBrowserImpl::UserNotExists& ex)
+    catch( const Fred::Backend::DomainBrowser::UserNotExists& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -1252,7 +1252,7 @@ BOOST_FIXTURE_TEST_CASE(set_contact_authinfo_user_not_identified, set_contact_au
             user_contact_info.info_contact_data.id,"newauthinfo", 0);
         BOOST_ERROR("unreported missing user identification");
     }
-    catch( const Registry::DomainBrowserImpl::AccessDenied& ex)
+    catch( const Fred::Backend::DomainBrowser::AccessDenied& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -1283,7 +1283,7 @@ BOOST_FIXTURE_TEST_CASE(set_contact_authinfo_contact_blocked, set_contact_authin
             user_contact_info.info_contact_data.id,"newauthinfo", 0);
         BOOST_ERROR("unreported blocked user contact");
     }
-    catch( const Registry::DomainBrowserImpl::ObjectBlocked& ex)
+    catch( const Fred::Backend::DomainBrowser::ObjectBlocked& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -1351,7 +1351,7 @@ BOOST_FIXTURE_TEST_CASE(set_contact_authinfo_too_long, set_contact_authinfo_too_
             "aaaaaaaaaaaaaa", 0);
         BOOST_ERROR("unreported authinfo too long");
     }
-    catch( const Registry::DomainBrowserImpl::IncorrectUsage& ex)
+    catch( const Fred::Backend::DomainBrowser::IncorrectUsage& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -1388,7 +1388,7 @@ struct registrant_domain_fixture
                     , 0//const Optional<unsigned long long> logd_request_id
                     ).exec(ctx);
 
-        domain_info = ::LibFred::InfoDomainByFqdn(test_fqdn).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+        domain_info = ::LibFred::InfoDomainByFqdn(test_fqdn).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
         ctx.commit_transaction();//commit fixture
     }
 
@@ -1417,7 +1417,7 @@ BOOST_FIXTURE_TEST_CASE(set_registrant_domain_object_block_status, set_registran
     std::vector<std::string> blocked_objects_out;
     impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
         "domain", Util::vector_of<unsigned long long>(domain_info.info_domain_data.id),
-        Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
+        Fred::Backend::DomainBrowser::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
     {
         ::LibFred::OperationContextCreator ctx;
         BOOST_CHECK(::LibFred::ObjectHasState(domain_info.info_domain_data.id, ::LibFred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
@@ -1426,7 +1426,7 @@ BOOST_FIXTURE_TEST_CASE(set_registrant_domain_object_block_status, set_registran
 
     impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
         "domain", Util::vector_of<unsigned long long>(domain_info.info_domain_data.id),
-        Registry::DomainBrowserImpl::UNBLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
+        Fred::Backend::DomainBrowser::UNBLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
 
     {
         ::LibFred::OperationContextCreator ctx;
@@ -1456,7 +1456,7 @@ BOOST_FIXTURE_TEST_CASE(set_registrant_domain_object_block_status_transfer, set_
     std::vector<std::string> blocked_objects_out;
     impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
         "domain", Util::vector_of<unsigned long long>(domain_info.info_domain_data.id),
-        Registry::DomainBrowserImpl::BLOCK_TRANSFER, blocked_objects_out);
+        Fred::Backend::DomainBrowser::BLOCK_TRANSFER, blocked_objects_out);
 
     {
         ::LibFred::OperationContextCreator ctx;
@@ -1466,7 +1466,7 @@ BOOST_FIXTURE_TEST_CASE(set_registrant_domain_object_block_status_transfer, set_
 
     impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
         "domain", Util::vector_of<unsigned long long>(domain_info.info_domain_data.id),
-        Registry::DomainBrowserImpl::UNBLOCK_TRANSFER, blocked_objects_out);
+        Fred::Backend::DomainBrowser::UNBLOCK_TRANSFER, blocked_objects_out);
 
     {
         ::LibFred::OperationContextCreator ctx;
@@ -1502,7 +1502,7 @@ struct admin_domain_fixture
                     , 0//const Optional<unsigned long long> logd_request_id
                     ).exec(ctx);
 
-        domain_info = ::LibFred::InfoDomainByFqdn(test_fqdn).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+        domain_info = ::LibFred::InfoDomainByFqdn(test_fqdn).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
         ctx.commit_transaction();//commit fixture
     }
 
@@ -1530,7 +1530,7 @@ BOOST_FIXTURE_TEST_CASE(set_admin_domain_object_block_status, set_admin_domain_o
     std::vector<std::string> blocked_objects_out;
     impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
         "domain", Util::vector_of<unsigned long long>(domain_info.info_domain_data.id),
-        Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
+        Fred::Backend::DomainBrowser::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
 
     {
         ::LibFred::OperationContextCreator ctx;
@@ -1540,7 +1540,7 @@ BOOST_FIXTURE_TEST_CASE(set_admin_domain_object_block_status, set_admin_domain_o
 
     impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
         "domain", Util::vector_of<unsigned long long>(domain_info.info_domain_data.id),
-        Registry::DomainBrowserImpl::UNBLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
+        Fred::Backend::DomainBrowser::UNBLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
 
     {
         ::LibFred::OperationContextCreator ctx;
@@ -1570,7 +1570,7 @@ BOOST_FIXTURE_TEST_CASE(set_admin_domain_object_block_status_transfer, set_admin
     std::vector<std::string> blocked_objects_out;
     impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
         "domain", Util::vector_of<unsigned long long>(domain_info.info_domain_data.id),
-        Registry::DomainBrowserImpl::BLOCK_TRANSFER, blocked_objects_out);
+        Fred::Backend::DomainBrowser::BLOCK_TRANSFER, blocked_objects_out);
 
     {
         ::LibFred::OperationContextCreator ctx;
@@ -1580,7 +1580,7 @@ BOOST_FIXTURE_TEST_CASE(set_admin_domain_object_block_status_transfer, set_admin
 
     impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
         "domain", Util::vector_of<unsigned long long>(domain_info.info_domain_data.id),
-        Registry::DomainBrowserImpl::UNBLOCK_TRANSFER, blocked_objects_out);
+        Fred::Backend::DomainBrowser::UNBLOCK_TRANSFER, blocked_objects_out);
 
     {
         ::LibFred::OperationContextCreator ctx;
@@ -1612,7 +1612,7 @@ struct admin_nsset_fixture
                     (boost::asio::ip::address::from_string("127.1.1.4")))) //add_dns
             ).exec(ctx);
 
-        nsset_info = ::LibFred::InfoNssetByHandle(test_nsset_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+        nsset_info = ::LibFred::InfoNssetByHandle(test_nsset_handle).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
 
         ::LibFred::CreateObjectStateRequestId(nsset_info.info_nsset_data.id,
             Util::set_of<std::string>(::LibFred::ObjectState::SERVER_DELETE_PROHIBITED)).exec(ctx);
@@ -1646,7 +1646,7 @@ BOOST_FIXTURE_TEST_CASE(set_admin_nsset_object_block_status, set_admin_nsset_obj
     std::vector<std::string> blocked_objects_out;
     impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
         "nsset", Util::vector_of<unsigned long long>(nsset_info.info_nsset_data.id),
-        Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
+        Fred::Backend::DomainBrowser::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
 
     {
         ::LibFred::OperationContextCreator ctx;
@@ -1656,7 +1656,7 @@ BOOST_FIXTURE_TEST_CASE(set_admin_nsset_object_block_status, set_admin_nsset_obj
 
     impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
         "nsset", Util::vector_of<unsigned long long>(nsset_info.info_nsset_data.id),
-        Registry::DomainBrowserImpl::UNBLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
+        Fred::Backend::DomainBrowser::UNBLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
 
     {
         ::LibFred::OperationContextCreator ctx;
@@ -1685,7 +1685,7 @@ BOOST_FIXTURE_TEST_CASE(set_admin_nsset_object_block_status_transfer, set_admin_
     std::vector<std::string> blocked_objects_out;
     impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
         "nsset", Util::vector_of<unsigned long long>(nsset_info.info_nsset_data.id),
-        Registry::DomainBrowserImpl::BLOCK_TRANSFER, blocked_objects_out);
+        Fred::Backend::DomainBrowser::BLOCK_TRANSFER, blocked_objects_out);
 
     {
         ::LibFred::OperationContextCreator ctx;
@@ -1695,7 +1695,7 @@ BOOST_FIXTURE_TEST_CASE(set_admin_nsset_object_block_status_transfer, set_admin_
 
     impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
         "nsset", Util::vector_of<unsigned long long>(nsset_info.info_nsset_data.id),
-        Registry::DomainBrowserImpl::UNBLOCK_TRANSFER, blocked_objects_out);
+        Fred::Backend::DomainBrowser::UNBLOCK_TRANSFER, blocked_objects_out);
 
     {
         ::LibFred::OperationContextCreator ctx;
@@ -1721,7 +1721,7 @@ struct admin_keyset_fixture
         .set_dns_keys(Util::vector_of<::LibFred::DnsKey> (::LibFred::DnsKey(257, 3, 5, "AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8")))
                 .exec(ctx);
 
-        keyset_info = ::LibFred::InfoKeysetByHandle(test_keyset_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+        keyset_info = ::LibFred::InfoKeysetByHandle(test_keyset_handle).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
 
         ::LibFred::CreateObjectStateRequestId(keyset_info.info_keyset_data.id,
             Util::set_of<std::string>(::LibFred::ObjectState::SERVER_DELETE_PROHIBITED)).exec(ctx);
@@ -1754,7 +1754,7 @@ BOOST_FIXTURE_TEST_CASE(set_admin_keyset_object_block_status, set_admin_keyset_o
     std::vector<std::string> blocked_objects_out;
     impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
         "keyset", Util::vector_of<unsigned long long>(keyset_info.info_keyset_data.id),
-        Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
+        Fred::Backend::DomainBrowser::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
 
     {
         ::LibFred::OperationContextCreator ctx;
@@ -1764,7 +1764,7 @@ BOOST_FIXTURE_TEST_CASE(set_admin_keyset_object_block_status, set_admin_keyset_o
 
     impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
         "keyset", Util::vector_of<unsigned long long>(keyset_info.info_keyset_data.id),
-        Registry::DomainBrowserImpl::UNBLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
+        Fred::Backend::DomainBrowser::UNBLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
 
     {
         ::LibFred::OperationContextCreator ctx;
@@ -1793,7 +1793,7 @@ BOOST_FIXTURE_TEST_CASE(set_admin_keyset_object_block_status_transfer, set_admin
     std::vector<std::string> blocked_objects_out;
     impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
         "keyset", Util::vector_of<unsigned long long>(keyset_info.info_keyset_data.id),
-        Registry::DomainBrowserImpl::BLOCK_TRANSFER, blocked_objects_out);
+        Fred::Backend::DomainBrowser::BLOCK_TRANSFER, blocked_objects_out);
 
     {
         ::LibFred::OperationContextCreator ctx;
@@ -1803,7 +1803,7 @@ BOOST_FIXTURE_TEST_CASE(set_admin_keyset_object_block_status_transfer, set_admin
 
     impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
         "keyset", Util::vector_of<unsigned long long>(keyset_info.info_keyset_data.id),
-        Registry::DomainBrowserImpl::UNBLOCK_TRANSFER, blocked_objects_out);
+        Fred::Backend::DomainBrowser::UNBLOCK_TRANSFER, blocked_objects_out);
 
     {
         ::LibFred::OperationContextCreator ctx;
@@ -1834,10 +1834,10 @@ BOOST_FIXTURE_TEST_CASE(set_contact_object_block_status, set_contact_object_bloc
         std::vector<std::string> blocked_objects_out;
         impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
             "contact", Util::vector_of<unsigned long long>(user_contact_info.info_contact_data.id),
-            Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
+            Fred::Backend::DomainBrowser::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
         BOOST_ERROR("unreported objtype contact");
     }
-    catch(const Registry::DomainBrowserImpl::IncorrectUsage& ex)
+    catch(const Fred::Backend::DomainBrowser::IncorrectUsage& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -1858,10 +1858,10 @@ BOOST_FIXTURE_TEST_CASE(set_object_block_status_missing_user_validation, set_obj
         std::vector<std::string> blocked_objects_out;
         impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
             "keyset", Util::vector_of<unsigned long long>(keyset_info.info_keyset_data.id),
-            Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
+            Fred::Backend::DomainBrowser::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
         BOOST_ERROR("unreported missing user validation");
     }
-    catch(const Registry::DomainBrowserImpl::AccessDenied& ex)
+    catch(const Fred::Backend::DomainBrowser::AccessDenied& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -1890,10 +1890,10 @@ BOOST_FIXTURE_TEST_CASE(set_object_block_status_wrong_object_type, set_object_bl
         std::vector<std::string> blocked_objects_out;
         impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
             "wrongtype", Util::vector_of<unsigned long long>(keyset_info.info_keyset_data.id),
-            Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
+            Fred::Backend::DomainBrowser::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
         BOOST_ERROR("unreported wrong object type");
     }
-    catch(const Registry::DomainBrowserImpl::IncorrectUsage& ex)
+    catch(const Fred::Backend::DomainBrowser::IncorrectUsage& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -1920,7 +1920,7 @@ BOOST_FIXTURE_TEST_CASE(set_object_block_status_empty_input, set_object_block_st
     std::vector<std::string> blocked_objects_out;
     BOOST_CHECK(!impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
         "keyset", std::vector<unsigned long long>(),
-        Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out));
+        Fred::Backend::DomainBrowser::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out));
 }
 
 struct set_object_block_status_big_input_fixture
@@ -1945,10 +1945,10 @@ BOOST_FIXTURE_TEST_CASE(set_object_block_status_big_input, set_object_block_stat
         std::vector<std::string> blocked_objects_out;
         impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
             "keyset", std::vector<unsigned long long>(501,keyset_info.info_keyset_data.id),
-            Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
+            Fred::Backend::DomainBrowser::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
         BOOST_ERROR("unreported big input");
     }
-    catch(const Registry::DomainBrowserImpl::IncorrectUsage& ex)
+    catch(const Fred::Backend::DomainBrowser::IncorrectUsage& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -1977,10 +1977,10 @@ BOOST_FIXTURE_TEST_CASE(set_object_block_wrong_object_id, set_object_block_wrong
         std::vector<std::string> blocked_objects_out;
         impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
             "keyset", Util::vector_of<unsigned long long>(keyset_info.info_keyset_data.id)(0u),
-            Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
+            Fred::Backend::DomainBrowser::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
         BOOST_ERROR("unreported wrong object id");
     }
-    catch(const Registry::DomainBrowserImpl::ObjectNotExists& ex)
+    catch(const Fred::Backend::DomainBrowser::ObjectNotExists& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -2023,7 +2023,7 @@ BOOST_FIXTURE_TEST_CASE(set_object_block_blocked_object, set_object_block_blocke
     std::vector<std::string> blocked_objects_out;
     BOOST_CHECK(!impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
         "nsset", Util::vector_of<unsigned long long>(nsset_info.info_nsset_data.id),
-        Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out));
+        Fred::Backend::DomainBrowser::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out));
     BOOST_CHECK(blocked_objects_out.size() == 1);
     BOOST_CHECK(blocked_objects_out.at(0) == nsset_info.info_nsset_data.handle);
 }
@@ -2069,7 +2069,7 @@ struct get_my_domains_fixture
                 , 0//const Optional<unsigned long long> logd_request_id
                 ).exec(ctx);
 
-            domain_info[fqdn.str()]= ::LibFred::InfoDomainByFqdn(fqdn.str()).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+            domain_info[fqdn.str()]= ::LibFred::InfoDomainByFqdn(fqdn.str()).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
 
             if(i%2)
             {
@@ -2093,14 +2093,14 @@ struct get_my_domains_fixture
             ::LibFred::UpdateDomain(fqdn.str(), test_registrar_handle).set_domain_expiration(
                     current_local_day - boost::gregorian::days(1)).exec(ctx);
 
-            domain_info[fqdn.str()]= ::LibFred::InfoDomainByFqdn(fqdn.str()).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+            domain_info[fqdn.str()]= ::LibFred::InfoDomainByFqdn(fqdn.str()).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
         }
 
         {   std::ostringstream fqdn;
             fqdn << "n"<<2<<test_fqdn;
             ::LibFred::UpdateDomain(fqdn.str(), test_registrar_handle).set_domain_expiration(
                     current_local_day - boost::gregorian::days(outzone_protection+1)).exec(ctx);
-            domain_info[fqdn.str()]= ::LibFred::InfoDomainByFqdn(fqdn.str()).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+            domain_info[fqdn.str()]= ::LibFred::InfoDomainByFqdn(fqdn.str()).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
         }
 
         ctx.commit_transaction();//commit fixture
@@ -2116,9 +2116,9 @@ struct get_my_domains_fixture
 BOOST_FIXTURE_TEST_CASE(get_my_domain_list, get_my_domains_fixture )
 {
     ::LibFred::OperationContextCreator ctx;
-    Registry::DomainBrowserImpl::DomainList dl = impl.getDomainList(user_contact_info.info_contact_data.id, Optional<unsigned long long>(),
+    Fred::Backend::DomainBrowser::DomainList dl = impl.getDomainList(user_contact_info.info_contact_data.id, Optional<unsigned long long>(),
         Optional<unsigned long long>(), Optional<unsigned long long>(),0);
-    std::vector<Registry::DomainBrowserImpl::DomainListData> domain_list_out = dl.dld;
+    std::vector<Fred::Backend::DomainBrowser::DomainListData> domain_list_out = dl.dld;
 
     BOOST_CHECK(domain_list_out.at(0).next_state.get_value().state_code == "deleteCandidate");
     BOOST_CHECK(domain_list_out.at(0).next_state.get_value().state_date == (map_at(domain_info,domain_list_out.at(0).fqdn).info_domain_data.expiration_date + boost::gregorian::days(registration_protection)));
@@ -2162,11 +2162,11 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_list, get_my_domains_fixture )
 BOOST_FIXTURE_TEST_CASE(get_my_domain_list_by_contact, get_my_domains_fixture )
 {
     ::LibFred::OperationContextCreator ctx;
-    Registry::DomainBrowserImpl::DomainList dl =  impl.getDomainList(user_contact_info.info_contact_data.id,
+    Fred::Backend::DomainBrowser::DomainList dl =  impl.getDomainList(user_contact_info.info_contact_data.id,
             Optional<unsigned long long>(admin_contact_fixture::test_contact_info.info_contact_data.id),
             Optional<unsigned long long>(),
             Optional<unsigned long long>(),0);
-    std::vector<Registry::DomainBrowserImpl::DomainListData> domain_list_out = dl.dld;
+    std::vector<Fred::Backend::DomainBrowser::DomainListData> domain_list_out = dl.dld;
 
     BOOST_CHECK(domain_list_out.at(0).next_state.get_value().state_code == "deleteCandidate");
     BOOST_CHECK(domain_list_out.at(0).next_state.get_value().state_date == (map_at(domain_info,domain_list_out.at(0).fqdn).info_domain_data.expiration_date + boost::gregorian::days(registration_protection)));
@@ -2218,11 +2218,11 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_list_by_nsset, get_my_domains_fixture )
     }
 
     ::LibFred::OperationContextCreator ctx;
-    Registry::DomainBrowserImpl::DomainList dl =  impl.getDomainList(user_contact_info.info_contact_data.id,
+    Fred::Backend::DomainBrowser::DomainList dl =  impl.getDomainList(user_contact_info.info_contact_data.id,
             Optional<unsigned long long>(),
             Optional<unsigned long long>(nsset_info.info_nsset_data.id),
             Optional<unsigned long long>(),0);
-    std::vector<Registry::DomainBrowserImpl::DomainListData> domain_list_out = dl.dld;
+    std::vector<Fred::Backend::DomainBrowser::DomainListData> domain_list_out = dl.dld;
 
     BOOST_CHECK(domain_list_out.at(0).next_state.get_value().state_code == "deleteCandidate");
     BOOST_CHECK(domain_list_out.at(0).next_state.get_value().state_date == (map_at(domain_info,domain_list_out.at(0).fqdn).info_domain_data.expiration_date + boost::gregorian::days(registration_protection)));
@@ -2273,11 +2273,11 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_list_by_keyset, get_my_domains_fixture )
     }
 
     ::LibFred::OperationContextCreator ctx;
-    Registry::DomainBrowserImpl::DomainList dl = impl.getDomainList(user_contact_info.info_contact_data.id,
+    Fred::Backend::DomainBrowser::DomainList dl = impl.getDomainList(user_contact_info.info_contact_data.id,
             Optional<unsigned long long>(),
             Optional<unsigned long long>(),
             Optional<unsigned long long>(keyset_info.info_keyset_data.id),0);
-    std::vector<Registry::DomainBrowserImpl::DomainListData> domain_list_out = dl.dld;
+    std::vector<Fred::Backend::DomainBrowser::DomainListData> domain_list_out = dl.dld;
 
     BOOST_CHECK(domain_list_out.at(0).next_state.get_value().state_code == "deleteCandidate");
     BOOST_CHECK(domain_list_out.at(0).next_state.get_value().state_date == (map_at(domain_info,domain_list_out.at(0).fqdn).info_domain_data.expiration_date + boost::gregorian::days(registration_protection)));
@@ -2338,7 +2338,7 @@ BOOST_FIXTURE_TEST_CASE(get_domain_list_user_not_in_mojeid, get_domain_list_user
 
         BOOST_ERROR("unreported missing user");
     }
-    catch( const Registry::DomainBrowserImpl::UserNotExists& ex)
+    catch( const Fred::Backend::DomainBrowser::UserNotExists& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -2353,7 +2353,7 @@ BOOST_FIXTURE_TEST_CASE(get_domain_list_for_nsset_user_not_nsset_admin, get_my_d
     try
     {
         ::LibFred::OperationContextCreator ctx;
-        std::vector<Registry::DomainBrowserImpl::DomainListData> domain_list_out;
+        std::vector<Fred::Backend::DomainBrowser::DomainListData> domain_list_out;
         impl.getDomainList(user_contact_info.info_contact_data.id,
             Optional<unsigned long long>(),
             Optional<unsigned long long>(nsset_info.info_nsset_data.id),
@@ -2361,7 +2361,7 @@ BOOST_FIXTURE_TEST_CASE(get_domain_list_for_nsset_user_not_nsset_admin, get_my_d
 
         BOOST_ERROR("unreported missing nsset admin contact");
     }
-    catch( const Registry::DomainBrowserImpl::AccessDenied& ex)
+    catch( const Fred::Backend::DomainBrowser::AccessDenied& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -2376,7 +2376,7 @@ BOOST_FIXTURE_TEST_CASE(get_domain_list_for_keyset_user_not_keyset_admin, get_my
     try
     {
         ::LibFred::OperationContextCreator ctx;
-        std::vector<Registry::DomainBrowserImpl::DomainListData> domain_list_out;
+        std::vector<Fred::Backend::DomainBrowser::DomainListData> domain_list_out;
         impl.getDomainList(user_contact_info.info_contact_data.id,
             Optional<unsigned long long>(),
             Optional<unsigned long long>(),
@@ -2384,7 +2384,7 @@ BOOST_FIXTURE_TEST_CASE(get_domain_list_for_keyset_user_not_keyset_admin, get_my
 
         BOOST_ERROR("unreported missing keyset admin contact");
     }
-    catch( const Registry::DomainBrowserImpl::AccessDenied& ex)
+    catch( const Fred::Backend::DomainBrowser::AccessDenied& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -2399,7 +2399,7 @@ BOOST_FIXTURE_TEST_CASE(get_domain_list_for_not_existing_contact, get_my_domains
     try
     {
         ::LibFred::OperationContextCreator ctx;
-        std::vector<Registry::DomainBrowserImpl::DomainListData> domain_list_out;
+        std::vector<Fred::Backend::DomainBrowser::DomainListData> domain_list_out;
         impl.getDomainList(user_contact_info.info_contact_data.id,
             Optional<unsigned long long>(0),
             Optional<unsigned long long>(),
@@ -2407,7 +2407,7 @@ BOOST_FIXTURE_TEST_CASE(get_domain_list_for_not_existing_contact, get_my_domains
 
         BOOST_ERROR("unreported missing contact");
     }
-    catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
+    catch( const Fred::Backend::DomainBrowser::ObjectNotExists& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -2446,7 +2446,7 @@ struct get_my_nssets_fixture
                         (boost::asio::ip::address::from_string("127.1.1.4")))) //add_dns
                 ).exec(ctx);
 
-            nsset_info[nsset_handle.str()]= ::LibFred::InfoNssetByHandle(nsset_handle.str()).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+            nsset_info[nsset_handle.str()]= ::LibFred::InfoNssetByHandle(nsset_handle.str()).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
 
             if(i%2)
             {
@@ -2476,8 +2476,8 @@ struct get_my_nssets_fixture
 BOOST_FIXTURE_TEST_CASE(get_my_nsset_list, get_my_nssets_fixture )
 {
     ::LibFred::OperationContextCreator ctx;
-    Registry::DomainBrowserImpl::NssetList nl = impl.getNssetList(user_contact_info.info_contact_data.id, Optional<unsigned long long>(),0);
-    std::vector<Registry::DomainBrowserImpl::NssetListData> nsset_list_out = nl.nld;
+    Fred::Backend::DomainBrowser::NssetList nl = impl.getNssetList(user_contact_info.info_contact_data.id, Optional<unsigned long long>(),0);
+    std::vector<Fred::Backend::DomainBrowser::NssetListData> nsset_list_out = nl.nld;
 
     for(unsigned long long i = 0; i < nsset_list_out.size(); ++i)
     {
@@ -2502,9 +2502,9 @@ BOOST_FIXTURE_TEST_CASE(get_my_nsset_list, get_my_nssets_fixture )
 BOOST_FIXTURE_TEST_CASE(get_nsset_list_by_contact, get_my_nssets_fixture )
 {
     ::LibFred::OperationContextCreator ctx;
-    Registry::DomainBrowserImpl::NssetList nl = impl.getNssetList(user_contact_info.info_contact_data.id,
+    Fred::Backend::DomainBrowser::NssetList nl = impl.getNssetList(user_contact_info.info_contact_data.id,
         Optional<unsigned long long>(admin_contact_fixture::test_contact_info.info_contact_data.id), 0);
-    std::vector<Registry::DomainBrowserImpl::NssetListData> nsset_list_out = nl.nld;
+    std::vector<Fred::Backend::DomainBrowser::NssetListData> nsset_list_out = nl.nld;
     for(unsigned long long i = 0; i < nsset_list_out.size(); ++i)
     {
         BOOST_CHECK(nsset_list_out.at(i).id == map_at(nsset_info,nsset_list_out.at(i).handle).info_nsset_data.id);
@@ -2537,7 +2537,7 @@ BOOST_FIXTURE_TEST_CASE(get_nsset_list_for_not_existing_contact, get_my_nssets_f
             Optional<unsigned long long>(0), 0);
         BOOST_ERROR("unreported missing contact");
     }
-    catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
+    catch( const Fred::Backend::DomainBrowser::ObjectNotExists& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -2571,7 +2571,7 @@ struct get_my_keysets_fixture
                 .set_dns_keys(Util::vector_of<::LibFred::DnsKey> (::LibFred::DnsKey(257, 3, 5, "AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8")))
                 .exec(ctx);
 
-            keyset_info[keyset_handle.str()]= ::LibFred::InfoKeysetByHandle(keyset_handle.str()).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+            keyset_info[keyset_handle.str()]= ::LibFred::InfoKeysetByHandle(keyset_handle.str()).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
 
             if(i%2)
             {
@@ -2601,8 +2601,8 @@ struct get_my_keysets_fixture
 BOOST_FIXTURE_TEST_CASE(get_my_keyset_list, get_my_keysets_fixture )
 {
     ::LibFred::OperationContextCreator ctx;
-    Registry::DomainBrowserImpl::KeysetList kl = impl.getKeysetList(user_contact_info.info_contact_data.id, Optional<unsigned long long>(),0);
-    std::vector<Registry::DomainBrowserImpl::KeysetListData> keyset_list_out = kl.kld;
+    Fred::Backend::DomainBrowser::KeysetList kl = impl.getKeysetList(user_contact_info.info_contact_data.id, Optional<unsigned long long>(),0);
+    std::vector<Fred::Backend::DomainBrowser::KeysetListData> keyset_list_out = kl.kld;
     for(unsigned long long i = 0; i < keyset_list_out.size(); ++i)
     {
         BOOST_CHECK(keyset_list_out.at(i).id == map_at(keyset_info,keyset_list_out.at(i).handle).info_keyset_data.id);
@@ -2626,9 +2626,9 @@ BOOST_FIXTURE_TEST_CASE(get_my_keyset_list, get_my_keysets_fixture )
 BOOST_FIXTURE_TEST_CASE(get_keyset_list_by_contact, get_my_keysets_fixture )
 {
     ::LibFred::OperationContextCreator ctx;
-    Registry::DomainBrowserImpl::KeysetList kl = impl.getKeysetList(user_contact_info.info_contact_data.id,
+    Fred::Backend::DomainBrowser::KeysetList kl = impl.getKeysetList(user_contact_info.info_contact_data.id,
         Optional<unsigned long long>(admin_contact_fixture::test_contact_info.info_contact_data.id),0);
-    std::vector<Registry::DomainBrowserImpl::KeysetListData> keyset_list_out = kl.kld;
+    std::vector<Fred::Backend::DomainBrowser::KeysetListData> keyset_list_out = kl.kld;
 
     for(unsigned long long i = 0; i < keyset_list_out.size(); ++i)
     {
@@ -2663,7 +2663,7 @@ BOOST_FIXTURE_TEST_CASE(get_keyset_list_for_not_existing_contact, get_my_keysets
 
         BOOST_ERROR("unreported missing contact");
     }
-    catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
+    catch( const Fred::Backend::DomainBrowser::ObjectNotExists& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -2677,7 +2677,7 @@ BOOST_AUTO_TEST_SUITE(getPublicStatusDesc)
 BOOST_FIXTURE_TEST_CASE(get_public_status_desc, domain_browser_impl_instance_fixture)
 {
     ::LibFred::OperationContextCreator ctx;
-    std::vector<Registry::DomainBrowserImpl::StatusDesc> status_desc_out = impl.getPublicStatusDesc("CS");
+    std::vector<Fred::Backend::DomainBrowser::StatusDesc> status_desc_out = impl.getPublicStatusDesc("CS");
 
     for(unsigned long long i = 0 ; i < status_desc_out.size(); ++i)
     {
@@ -2710,7 +2710,7 @@ BOOST_FIXTURE_TEST_CASE(get_object_id_by_wrong_handle, get_my_contact_object_fix
 
         BOOST_ERROR("unreported wrong handle");
     }
-    catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
+    catch( const Fred::Backend::DomainBrowser::ObjectNotExists& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -2741,12 +2741,12 @@ struct merge_contacts_fixture
             place.postalcode = "11150";
             place.country = "CZ";
             ::LibFred::CreateContact(user_contact_handle,
-                CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIDArgs>()->registrar_handle)//MojeID registrar
+                CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIdArgs>()->registrar_handle)//MojeId registrar
                 .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
                 .set_place(place)
                 .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                 .exec(ctx);
-            user_contact_info = ::LibFred::InfoContactByHandle(user_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+            user_contact_info = ::LibFred::InfoContactByHandle(user_contact_handle).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
             ::LibFred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id, Util::set_of<std::string>(::LibFred::ObjectState::MOJEID_CONTACT)).exec(ctx);
             ::LibFred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
             ctx.commit_transaction();//commit fixture
@@ -3106,7 +3106,7 @@ struct merge_contacts_fixture
                     break;
             }
 
-            contact_info[contact_handle.str()] = ::LibFred::InfoContactByHandle(contact_handle.str()).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+            contact_info[contact_handle.str()] = ::LibFred::InfoContactByHandle(contact_handle.str()).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
             if (merge_candidate)
             {
                 contact_merge_candidates_ids.insert(contact_info.at(contact_handle.str()).info_contact_data.id);
@@ -3131,8 +3131,8 @@ BOOST_AUTO_TEST_SUITE(getMergeContactCandidateList)
 BOOST_FIXTURE_TEST_CASE(get_candidate_contact_list, merge_contacts_fixture )
 {
     ::LibFred::OperationContextCreator ctx;
-    Registry::DomainBrowserImpl::MergeContactCandidateList mcl = impl.getMergeContactCandidateList(user_contact_info.info_contact_data.id, 0);
-    std::vector<Registry::DomainBrowserImpl::MergeContactCandidateData> contact_list_out = mcl.mccl;
+    Fred::Backend::DomainBrowser::MergeContactCandidateList mcl = impl.getMergeContactCandidateList(user_contact_info.info_contact_data.id, 0);
+    std::vector<Fred::Backend::DomainBrowser::MergeContactCandidateData> contact_list_out = mcl.mccl;
 
     BOOST_CHECK(contact_list_out.size() == contact_merge_candidates_ids.size());
 
@@ -3183,7 +3183,7 @@ BOOST_FIXTURE_TEST_CASE(get_candidate_contact_list_user_not_in_mojeid, get_domai
 
         BOOST_ERROR("unreported missing user");
     }
-    catch( const Registry::DomainBrowserImpl::UserNotExists& ex)
+    catch( const Fred::Backend::DomainBrowser::UserNotExists& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -3228,7 +3228,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_user_not_in_mojeid, merge_contacts_user_n
         impl.mergeContacts(user_contact_info.info_contact_data.id,Util::vector_of<unsigned long long>(0), 0);
         BOOST_ERROR("unreported missing user");
     }
-    catch( const Registry::DomainBrowserImpl::UserNotExists& ex)
+    catch( const Fred::Backend::DomainBrowser::UserNotExists& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -3257,12 +3257,12 @@ struct merge_contacts_no_src_contacts_fixture
         place.postalcode = "11150";
         place.country = "CZ";
         ::LibFred::CreateContact(user_contact_handle,
-            CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIDArgs>()->registrar_handle)//MojeID registrar
+            CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIdArgs>()->registrar_handle)//MojeId registrar
             .set_name(std::string("USER-CONTACT-HANDLE NAME")+user_contact_handle_fixture::xmark)
             .set_place(place)
             .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
             .exec(ctx);
-        user_contact_info = ::LibFred::InfoContactByHandle(user_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+        user_contact_info = ::LibFred::InfoContactByHandle(user_contact_handle).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
         ::LibFred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id, Util::set_of<std::string>(::LibFred::ObjectState::MOJEID_CONTACT)).exec(ctx);
         ::LibFred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
         ctx.commit_transaction();//commit fixture
@@ -3280,7 +3280,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_no_src_contacts, merge_contacts_no_src_co
         impl.mergeContacts(user_contact_info.info_contact_data.id,std::vector<unsigned long long>(), 0);
         BOOST_ERROR("unreported missing src contacts");
     }
-    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    catch( const Fred::Backend::DomainBrowser::InvalidContacts& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -3298,7 +3298,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_dst_contacts, merge_contacts_no_src_conta
         impl.mergeContacts(user_contact_info.info_contact_data.id,Util::vector_of<unsigned long long>(user_contact_info.info_contact_data.id), 0);
         BOOST_ERROR("unreported the same src and dest. contacts");
     }
-    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    catch( const Fred::Backend::DomainBrowser::InvalidContacts& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -3317,7 +3317,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_mojeid_src_contact, merge_contacts_fixtur
                 Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"9").info_contact_data.id), 0);
         BOOST_ERROR("unreported invalid contacts");
     }
-    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    catch( const Fred::Backend::DomainBrowser::InvalidContacts& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -3336,7 +3336,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_blocked_src_contact, merge_contacts_fixtu
                 Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"10").info_contact_data.id), 0);
         BOOST_ERROR("unreported invalid contacts");
     }
-    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    catch( const Fred::Backend::DomainBrowser::InvalidContacts& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -3355,7 +3355,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_delete_prohibited_src_contact, merge_cont
                 Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"11").info_contact_data.id), 0);
         BOOST_ERROR("unreported invalid contacts");
     }
-    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    catch( const Fred::Backend::DomainBrowser::InvalidContacts& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -3374,7 +3374,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_name, merge_contac
                 Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"12").info_contact_data.id), 0);
         BOOST_ERROR("unreported invalid contacts");
     }
-    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    catch( const Fred::Backend::DomainBrowser::InvalidContacts& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -3393,7 +3393,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_org, merge_contact
                 Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"13").info_contact_data.id), 0);
         BOOST_ERROR("unreported invalid contacts");
     }
-    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    catch( const Fred::Backend::DomainBrowser::InvalidContacts& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -3412,7 +3412,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_street1, merge_con
                 Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"14").info_contact_data.id), 0);
         BOOST_ERROR("unreported invalid contacts");
     }
-    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    catch( const Fred::Backend::DomainBrowser::InvalidContacts& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -3431,7 +3431,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_city, merge_contac
             Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"17").info_contact_data.id), 0);
         BOOST_ERROR("unreported invalid contacts");
     }
-    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    catch( const Fred::Backend::DomainBrowser::InvalidContacts& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -3450,7 +3450,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_postalcode, merge_
             Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"18").info_contact_data.id), 0);
         BOOST_ERROR("unreported invalid contacts");
     }
-    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    catch( const Fred::Backend::DomainBrowser::InvalidContacts& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -3469,7 +3469,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_country, merge_con
             Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"20").info_contact_data.id), 0);
         BOOST_ERROR("unreported invalid contacts");
     }
-    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    catch( const Fred::Backend::DomainBrowser::InvalidContacts& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -3488,7 +3488,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_email, merge_conta
             Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"21").info_contact_data.id), 0);
         BOOST_ERROR("unreported invalid contacts");
     }
-    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    catch( const Fred::Backend::DomainBrowser::InvalidContacts& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -3507,7 +3507,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_vat, merge_contact
             Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"22").info_contact_data.id), 0);
         BOOST_ERROR("unreported invalid contacts");
     }
-    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    catch( const Fred::Backend::DomainBrowser::InvalidContacts& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
@@ -3526,7 +3526,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_ssn, merge_contact
             Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"23").info_contact_data.id), 0);
         BOOST_ERROR("unreported invalid contacts");
     }
-    catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
+    catch( const Fred::Backend::DomainBrowser::InvalidContacts& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));

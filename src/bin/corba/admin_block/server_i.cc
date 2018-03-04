@@ -33,120 +33,120 @@
 #include <string>
 
 
-namespace Registry
+namespace CorbaConversion
 {
-    namespace Administrative
+    namespace AdministrativeBlocking
     {
 
         Server_i::Server_i(const std::string &_server_name)
-        : bimpl_(new BlockingImpl(_server_name))
+        : bimpl_(new Fred::Backend::AdministrativeBlocking::BlockingImpl(_server_name))
         {}
 
         Server_i::~Server_i()
         {}
 
         //   Methods corresponding to IDL attributes and operations
-        StatusDescList* Server_i::getBlockingStatusDescList(const char* _lang)
+        Registry::Administrative::StatusDescList* Server_i::getBlockingStatusDescList(const char* _lang)
         {
             try {
                 return corba_wrap_status_desc_list(bimpl_->getBlockingStatusDescList(_lang));
             }
-            catch (const EX_INTERNAL_SERVER_ERROR &e) {
+            catch (const Fred::Backend::AdministrativeBlocking::EX_INTERNAL_SERVER_ERROR &e) {
                 throw corba_wrap_exception(e);
             }
         }
 
-        DomainOwnerChangeList* Server_i::blockDomains(
-            const ::Registry::Administrative::DomainList &domain_list,
-            const ::Registry::Administrative::StatusList &status_list,
-            ::Registry::Administrative::OwnerBlockMode owner_block_mode,
+        Registry::Administrative::DomainOwnerChangeList* Server_i::blockDomains(
+            const Registry::Administrative::DomainList &domain_list,
+            const Registry::Administrative::StatusList &status_list,
+            Registry::Administrative::OwnerBlockMode owner_block_mode,
             const char *reason)
         {
             throw std::runtime_error("blockDomains not implemented");
         }
 
-        DomainIdHandleOwnerChangeList* Server_i::blockDomainsId(
-            const ::Registry::Administrative::DomainIdList& domain_list,
-            const ::Registry::Administrative::StatusList& status_list,
-            ::Registry::Administrative::OwnerBlockMode owner_block_mode,
-            ::Registry::NullableIsoDate *block_to_date,
+        Registry::Administrative::DomainIdHandleOwnerChangeList* Server_i::blockDomainsId(
+            const Registry::Administrative::DomainIdList& domain_list,
+            const Registry::Administrative::StatusList& status_list,
+            Registry::Administrative::OwnerBlockMode owner_block_mode,
+            Registry::NullableIsoDate *block_to_date,
             const char* reason,
-            ::CORBA::ULongLong log_req_id)
+            CORBA::ULongLong log_req_id)
         {
             try {
                 return corba_wrap_owner_change_list(bimpl_->blockDomainsId(corba_unwrap_domain_id_list(domain_list),
                                                                            corba_unwrap_status_list(status_list),
                                                                            corba_unwrap_owner_block_mode(owner_block_mode),
-                                                                           CorbaConversion::Util::unwrap_NullableIsoDate_to_Nullable_boost_gregorian_date(block_to_date),
+                                                                           Util::unwrap_NullableIsoDate_to_Nullable_boost_gregorian_date(block_to_date),
                                                                            reason,
                                                                            log_req_id));
             }
-            catch (const EX_DOMAIN_ID_NOT_FOUND &e) {
+            catch (const Fred::Backend::AdministrativeBlocking::EX_DOMAIN_ID_NOT_FOUND &e) {
                 throw corba_wrap_exception(e);
             }
-            catch (const EX_UNKNOWN_STATUS &e) {
+            catch (const Fred::Backend::AdministrativeBlocking::EX_UNKNOWN_STATUS &e) {
                 throw corba_wrap_exception(e);
             }
-            catch (const EX_DOMAIN_ID_ALREADY_BLOCKED &e) {
+            catch (const Fred::Backend::AdministrativeBlocking::EX_DOMAIN_ID_ALREADY_BLOCKED &e) {
                 throw corba_wrap_exception(e);
             }
-            catch (const EX_OWNER_HAS_OTHER_DOMAIN &e) {
+            catch (const Fred::Backend::AdministrativeBlocking::EX_OWNER_HAS_OTHER_DOMAIN &e) {
                 throw corba_wrap_exception(e);
             }
-            catch (const EX_INTERNAL_SERVER_ERROR &e) {
+            catch (const Fred::Backend::AdministrativeBlocking::EX_INTERNAL_SERVER_ERROR &e) {
                 throw corba_wrap_exception(e);
             }
-            catch (const EX_CONTACT_BLOCK_PROHIBITED &e) {
+            catch (const Fred::Backend::AdministrativeBlocking::EX_CONTACT_BLOCK_PROHIBITED &e) {
                 throw corba_wrap_exception(e);
             }
         }
 
         void Server_i::updateBlockDomains(
-            const ::Registry::Administrative::DomainList &domain_list,
-            const ::Registry::Administrative::StatusList &status_list,
+            const Registry::Administrative::DomainList &domain_list,
+            const Registry::Administrative::StatusList &status_list,
             const char *reason)
         {
             throw std::runtime_error("updateBlockDomains not implemented");
         }
         
         void Server_i::updateBlockDomainsId(
-            const ::Registry::Administrative::DomainIdList &domain_list,
-            const ::Registry::Administrative::StatusList &status_list,
-            ::Registry::NullableIsoDate *block_to_date,
+            const Registry::Administrative::DomainIdList &domain_list,
+            const Registry::Administrative::StatusList &status_list,
+            Registry::NullableIsoDate *block_to_date,
             const char *reason,
-            ::CORBA::ULongLong log_req_id)
+            CORBA::ULongLong log_req_id)
         {
             try {
                 bimpl_->updateBlockDomainsId(corba_unwrap_domain_id_list(domain_list),
                                              corba_unwrap_status_list(status_list),
-                                             CorbaConversion::Util::unwrap_NullableIsoDate_to_Nullable_boost_gregorian_date(block_to_date),
+                                             Util::unwrap_NullableIsoDate_to_Nullable_boost_gregorian_date(block_to_date),
                                              reason,
                                              log_req_id);
             }
-            catch (const EX_DOMAIN_ID_NOT_FOUND &e) {
+            catch (const Fred::Backend::AdministrativeBlocking::EX_DOMAIN_ID_NOT_FOUND &e) {
                 throw corba_wrap_exception(e);
             }
-            catch (const EX_UNKNOWN_STATUS &e) {
+            catch (const Fred::Backend::AdministrativeBlocking::EX_UNKNOWN_STATUS &e) {
                 throw corba_wrap_exception(e);
             }
-            catch (const EX_INTERNAL_SERVER_ERROR &e) {
+            catch (const Fred::Backend::AdministrativeBlocking::EX_INTERNAL_SERVER_ERROR &e) {
                 throw corba_wrap_exception(e);
             }
         }
         
         void Server_i::restorePreAdministrativeBlockStates(
-            const ::Registry::Administrative::DomainList &domain_list,
-            ::Registry::Administrative::NullableString *new_owner,
+            const Registry::Administrative::DomainList &domain_list,
+            Registry::Administrative::NullableString *new_owner,
             const char *reason)
         {
             throw std::runtime_error("restorePreAdministrativeBlockStates not implemented");
         }
 
         void Server_i::restorePreAdministrativeBlockStatesId(
-            const ::Registry::Administrative::DomainIdList &domain_list,
-            ::Registry::Administrative::NullableString *new_owner,
+            const Registry::Administrative::DomainIdList &domain_list,
+            Registry::Administrative::NullableString *new_owner,
             const char* reason,
-            ::CORBA::ULongLong log_req_id)
+            CORBA::ULongLong log_req_id)
         {
             try {
                 bimpl_->restorePreAdministrativeBlockStatesId(corba_unwrap_domain_id_list(domain_list),
@@ -154,35 +154,35 @@ namespace Registry
                                                               reason,
                                                               log_req_id);
             }
-            catch (const EX_DOMAIN_ID_NOT_FOUND &e) {
+            catch (const Fred::Backend::AdministrativeBlocking::EX_DOMAIN_ID_NOT_FOUND &e) {
                 throw corba_wrap_exception(e);
             }
-            catch (const EX_DOMAIN_ID_NOT_BLOCKED &e) {
+            catch (const Fred::Backend::AdministrativeBlocking::EX_DOMAIN_ID_NOT_BLOCKED &e) {
                 throw corba_wrap_exception(e);
             }
-            catch (const EX_NEW_OWNER_DOES_NOT_EXISTS &e) {
+            catch (const Fred::Backend::AdministrativeBlocking::EX_NEW_OWNER_DOES_NOT_EXISTS &e) {
                 throw corba_wrap_exception(e);
             }
-            catch (const EX_INTERNAL_SERVER_ERROR &e) {
+            catch (const Fred::Backend::AdministrativeBlocking::EX_INTERNAL_SERVER_ERROR &e) {
                 throw corba_wrap_exception(e);
             }
         }
 
         void Server_i::unblockDomains(
-            const ::Registry::Administrative::DomainList &domain_list,
-            ::Registry::Administrative::NullableString *new_owner,
-            ::CORBA::Boolean remove_admin_c,
+            const Registry::Administrative::DomainList &domain_list,
+            Registry::Administrative::NullableString *new_owner,
+            CORBA::Boolean remove_admin_c,
             const char* reason)
         {
             throw std::runtime_error("unblockDomains not implemented");
         }
         
         void Server_i::unblockDomainsId(
-            const ::Registry::Administrative::DomainIdList &domain_list,
-            ::Registry::Administrative::NullableString *new_owner,
-            ::CORBA::Boolean remove_admin_c,
+            const Registry::Administrative::DomainIdList &domain_list,
+            Registry::Administrative::NullableString *new_owner,
+            CORBA::Boolean remove_admin_c,
             const char* reason,
-            ::CORBA::ULongLong log_req_id)
+            CORBA::ULongLong log_req_id)
         {
             try {
                 bimpl_->unblockDomainsId(corba_unwrap_domain_id_list(domain_list),
@@ -191,81 +191,81 @@ namespace Registry
                                          reason,
                                          log_req_id);
             }
-            catch (const EX_DOMAIN_ID_NOT_FOUND &e) {
+            catch (const Fred::Backend::AdministrativeBlocking::EX_DOMAIN_ID_NOT_FOUND &e) {
                 throw corba_wrap_exception(e);
             }
-            catch (const EX_DOMAIN_ID_NOT_BLOCKED &e) {
+            catch (const Fred::Backend::AdministrativeBlocking::EX_DOMAIN_ID_NOT_BLOCKED &e) {
                 throw corba_wrap_exception(e);
             }
-            catch (const EX_NEW_OWNER_DOES_NOT_EXISTS &e) {
+            catch (const Fred::Backend::AdministrativeBlocking::EX_NEW_OWNER_DOES_NOT_EXISTS &e) {
                 throw corba_wrap_exception(e);
             }
-            catch (const EX_INTERNAL_SERVER_ERROR &e) {
+            catch (const Fred::Backend::AdministrativeBlocking::EX_INTERNAL_SERVER_ERROR &e) {
                 throw corba_wrap_exception(e);
             }
         }
         
         void Server_i::blacklistAndDeleteDomains(
-            const ::Registry::Administrative::DomainList &domain_list,
-            ::Registry::NullableIsoDate *blacklist_to_date)
+            const Registry::Administrative::DomainList &domain_list,
+            Registry::NullableIsoDate *blacklist_to_date)
         {
             throw std::runtime_error("blacklistAndDeleteDomains not implemented");
         }
 
         void Server_i::blacklistAndDeleteDomainsId(
-            const ::Registry::Administrative::DomainIdList &domain_list,
-            ::Registry::NullableIsoDate *blacklist_to_date,
+            const Registry::Administrative::DomainIdList &domain_list,
+            Registry::NullableIsoDate *blacklist_to_date,
             const char* reason,
-            ::CORBA::ULongLong log_req_id)
+            CORBA::ULongLong log_req_id)
         {
             try {
                 bimpl_->blacklistAndDeleteDomainsId(corba_unwrap_domain_id_list(domain_list),
-                                                    CorbaConversion::Util::unwrap_NullableIsoDate_to_Nullable_boost_gregorian_date(blacklist_to_date),
+                                                    Util::unwrap_NullableIsoDate_to_Nullable_boost_gregorian_date(blacklist_to_date),
                                                     reason,
                                                     log_req_id);
             }
-            catch (const EX_DOMAIN_ID_NOT_FOUND &e) {
+            catch (const Fred::Backend::AdministrativeBlocking::EX_DOMAIN_ID_NOT_FOUND &e) {
                 throw corba_wrap_exception(e);
             }
-            catch (const EX_INTERNAL_SERVER_ERROR &e) {
+            catch (const Fred::Backend::AdministrativeBlocking::EX_INTERNAL_SERVER_ERROR &e) {
                 throw corba_wrap_exception(e);
             }
         }
 
         void Server_i::blacklistDomains(
-            const ::Registry::Administrative::DomainList &domain_list,
-            ::Registry::NullableIsoDate *blacklist_to_date,
-            ::CORBA::Boolean with_delete)
+            const Registry::Administrative::DomainList &domain_list,
+            Registry::NullableIsoDate *blacklist_to_date,
+            CORBA::Boolean with_delete)
         {
             throw std::runtime_error("blacklistDomains not implemented");
         }
 
         void Server_i::blacklistDomainsId(
-            const ::Registry::Administrative::DomainIdList &domain_list,
-            ::Registry::NullableIsoDate *blacklist_to_date,
-            ::CORBA::Boolean with_delete,
-            ::CORBA::ULongLong log_req_id)
+            const Registry::Administrative::DomainIdList &domain_list,
+            Registry::NullableIsoDate *blacklist_to_date,
+            CORBA::Boolean with_delete,
+            CORBA::ULongLong log_req_id)
         {
             try {
                 bimpl_->blacklistDomainsId(corba_unwrap_domain_id_list(domain_list),
-                                           CorbaConversion::Util::unwrap_NullableIsoDate_to_Nullable_boost_gregorian_date(blacklist_to_date),
+                                           Util::unwrap_NullableIsoDate_to_Nullable_boost_gregorian_date(blacklist_to_date),
                                            with_delete,
                                            log_req_id);
             }
-            catch (const EX_DOMAIN_ID_NOT_FOUND &e) {
+            catch (const Fred::Backend::AdministrativeBlocking::EX_DOMAIN_ID_NOT_FOUND &e) {
                 throw corba_wrap_exception(e);
             }
-            catch (const EX_INTERNAL_SERVER_ERROR &e) {
+            catch (const Fred::Backend::AdministrativeBlocking::EX_INTERNAL_SERVER_ERROR &e) {
                 throw corba_wrap_exception(e);
             }
         }
 
         void Server_i::unblacklistAndCreateDomains(
-            const ::Registry::Administrative::DomainList &domain_list,
+            const Registry::Administrative::DomainList &domain_list,
             const char* owner)
         {
             throw std::runtime_error("unblacklistAndCreateDomains not implemented");
         }
 
-    }//namespace Administrative
-} // namespace Registry
+    }//namespace AdministrativeBlocking
+} // namespace CorbaConversion

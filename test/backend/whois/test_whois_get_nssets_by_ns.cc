@@ -9,17 +9,17 @@ struct get_nssets_by_ns_fixture
     const std::string test_fqdn;
     const unsigned int test_limit;
     unsigned int nsset_id;
-    std::map<std::string, ::LibFred::InfoNssetData> nsset_info;
+    std::map<std::string, LibFred::InfoNssetData> nsset_info;
     boost::posix_time::ptime now_utc;
 
     get_nssets_by_ns_fixture()
     : test_fqdn("test-fqdn"),
       test_limit(10)
     {
-        ::LibFred::OperationContextCreator ctx;
-        const ::LibFred::InfoRegistrarData registrar = Test::registrar::make(ctx);
-        const ::LibFred::InfoContactData contact     = Test::contact::make(ctx);
-        const ::LibFred::InfoNssetData nsset         = Test::nsset::make(ctx);
+        LibFred::OperationContextCreator ctx;
+        const LibFred::InfoRegistrarData registrar = Test::registrar::make(ctx);
+        const LibFred::InfoContactData contact     = Test::contact::make(ctx);
+        const LibFred::InfoNssetData nsset         = Test::nsset::make(ctx);
         now_utc = boost::posix_time::time_from_string(
                       static_cast<std::string>(
                           ctx.get_conn().exec("SELECT now()::timestamp")[0][0]));
@@ -30,7 +30,7 @@ struct get_nssets_by_ns_fixture
                     boost::asio::ip::address::from_string("192.128.0.1"))));
         for(unsigned int i = 0; i < test_limit; ++i)
         {
-            const ::LibFred::InfoNssetData& ind = Test::exec(
+            const LibFred::InfoNssetData& ind = Test::exec(
                     Test::CreateX_factory<::LibFred::CreateNsset>()
                         .make(registrar.handle)
                         .set_dns_hosts(dns_hosts)
@@ -46,7 +46,7 @@ struct get_nssets_by_ns_fixture
                     .make(registrar.handle)
                     .set_dns_hosts(
                         Util::vector_of<::LibFred::DnsHost>(
-                            ::LibFred::DnsHost(
+                            LibFred::DnsHost(
                                 "other-fqdn",
                                 Util::vector_of<boost::asio::ip::address>(
                                     boost::asio::ip::address::from_string("192.128.1.1")))))
@@ -59,16 +59,16 @@ struct get_nssets_by_ns_fixture
 
 BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns, get_nssets_by_ns_fixture)
 {
-    Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_ns(test_fqdn, test_limit);
+    Fred::Backend::Whois::NSSetSeq nss_s = impl.get_nssets_by_ns(test_fqdn, test_limit);
 
     BOOST_CHECK(!nss_s.limit_exceeded);
     BOOST_CHECK(nss_s.content.size() == test_limit);
-    std::map<std::string, ::LibFred::InfoNssetData>::const_iterator cit;
-    BOOST_FOREACH(const Registry::WhoisImpl::NSSet& it, nss_s.content)
+    std::map<std::string, LibFred::InfoNssetData>::const_iterator cit;
+    BOOST_FOREACH(const Fred::Backend::Whois::NSSet& it, nss_s.content)
     {
         cit = nsset_info.find(it.handle);
         BOOST_REQUIRE(cit != nsset_info.end());
-        const ::LibFred::InfoNssetData& found = cit->second;
+        const LibFred::InfoNssetData& found = cit->second;
         BOOST_REQUIRE(it.handle                          == found.handle);
         BOOST_CHECK(it.created                           == now_utc);
         BOOST_CHECK(it.handle                            == found.handle);
@@ -79,9 +79,9 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns, get_nssets_by_ns_fixture)
         BOOST_CHECK(it.changed.isnull());
         BOOST_CHECK(it.last_transfer.isnull());
 
-        ::LibFred::OperationContextCreator ctx;
-        const std::vector<::LibFred::ObjectStateData> v_osd = ::LibFred::GetObjectStates(nsset_id).exec(ctx);
-        BOOST_FOREACH(const ::LibFred::ObjectStateData& oit, v_osd)
+        LibFred::OperationContextCreator ctx;
+        const std::vector<::LibFred::ObjectStateData> v_osd = LibFred::GetObjectStates(nsset_id).exec(ctx);
+        BOOST_FOREACH(const LibFred::ObjectStateData& oit, v_osd)
         {
             BOOST_CHECK(std::find(it.statuses.begin(), it.statuses.end(), oit.state_name) !=
                             it.statuses.end());
@@ -92,16 +92,16 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns, get_nssets_by_ns_fixture)
 
 BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns_limit_exceeded, get_nssets_by_ns_fixture)
 {
-    Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_ns(test_fqdn, test_limit - 1);
+    Fred::Backend::Whois::NSSetSeq nss_s = impl.get_nssets_by_ns(test_fqdn, test_limit - 1);
 
     BOOST_CHECK(nss_s.limit_exceeded);
     BOOST_CHECK(nss_s.content.size() == test_limit - 1);
-    std::map<std::string, ::LibFred::InfoNssetData>::const_iterator cit;
-    BOOST_FOREACH(const Registry::WhoisImpl::NSSet& it, nss_s.content)
+    std::map<std::string, LibFred::InfoNssetData>::const_iterator cit;
+    BOOST_FOREACH(const Fred::Backend::Whois::NSSet& it, nss_s.content)
     {
         cit = nsset_info.find(it.handle);
         BOOST_REQUIRE(cit != nsset_info.end());
-        const ::LibFred::InfoNssetData& found = cit->second;
+        const LibFred::InfoNssetData& found = cit->second;
         BOOST_REQUIRE(it.handle                          == found.handle);
         BOOST_CHECK(it.created                           == now_utc);
         BOOST_CHECK(it.handle                            == found.handle);
@@ -112,9 +112,9 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns_limit_exceeded, get_nssets_by_ns_fixtur
         BOOST_CHECK(it.changed.isnull());
         BOOST_CHECK(it.last_transfer.isnull());
 
-        ::LibFred::OperationContextCreator ctx;
-        const std::vector<::LibFred::ObjectStateData> v_osd = ::LibFred::GetObjectStates(nsset_id).exec(ctx);
-        BOOST_FOREACH(const ::LibFred::ObjectStateData& oit, v_osd)
+        LibFred::OperationContextCreator ctx;
+        const std::vector<::LibFred::ObjectStateData> v_osd = LibFred::GetObjectStates(nsset_id).exec(ctx);
+        BOOST_FOREACH(const LibFred::ObjectStateData& oit, v_osd)
         {
             BOOST_CHECK(std::find(it.statuses.begin(), it.statuses.end(), oit.state_name) !=
                             it.statuses.end());
@@ -125,12 +125,12 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns_limit_exceeded, get_nssets_by_ns_fixtur
 
 BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns_no_ns, whois_impl_instance_fixture)
 {
-    BOOST_CHECK_THROW(impl.get_nssets_by_ns("fine-fqdn.cz", 1), Registry::WhoisImpl::ObjectNotExists);
+    BOOST_CHECK_THROW(impl.get_nssets_by_ns("fine-fqdn.cz", 1), Fred::Backend::Whois::ObjectNotExists);
 }
 
 BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns_wrong_ns, whois_impl_instance_fixture)
 {
-    BOOST_CHECK_THROW(impl.get_nssets_by_ns(".", 1), Registry::WhoisImpl::InvalidHandle);
+    BOOST_CHECK_THROW(impl.get_nssets_by_ns(".", 1), Fred::Backend::Whois::InvalidHandle);
 }
 
 BOOST_AUTO_TEST_SUITE_END()//get_nssets_by_ns

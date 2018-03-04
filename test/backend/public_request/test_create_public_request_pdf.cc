@@ -46,13 +46,13 @@ public:
         ctx.commit_transaction();
     }
 private:
-    ::LibFred::OperationContextCreator ctx;
+    LibFred::OperationContextCreator ctx;
 public:
-    ::LibFred::InfoContactData contact;
-    Registry::PublicRequestImpl pr;
+    LibFred::InfoContactData contact;
+    Fred::Backend::PublicRequest::PublicRequestImpl pr;
 };
 
-class FakeGenerator : public ::LibFred::Document::Generator
+class FakeGenerator : public LibFred::Document::Generator
 {
 public:
     FakeGenerator() {}
@@ -73,7 +73,7 @@ private:
     std::ostringstream buffer;
 };
 
-class FakeManager : public ::LibFred::Document::Manager
+class FakeManager : public LibFred::Document::Manager
 {
 private:
     struct UnexpectedCall : std::exception
@@ -84,11 +84,11 @@ public:
     virtual ~FakeManager() {}
 
     virtual std::unique_ptr<::LibFred::Document::Generator> createOutputGenerator(
-        ::LibFred::Document::GenerationType type,
+        LibFred::Document::GenerationType type,
         std::ostream& output,
         const std::string& lang) const
     {
-        if (type != ::LibFred::Document::GT_PUBLIC_REQUEST_PDF)
+        if (type != LibFred::Document::GT_PUBLIC_REQUEST_PDF)
         {
             throw std::invalid_argument("only public request pdf may be created from current context");
         }
@@ -101,19 +101,19 @@ public:
     }
 
     virtual std::unique_ptr<::LibFred::Document::Generator> createSavingGenerator(
-        ::LibFred::Document::GenerationType, const std::string&, unsigned, const std::string&)const
+        LibFred::Document::GenerationType, const std::string&, unsigned, const std::string&)const
     {
         throw UnexpectedCall();
     }
 
     virtual void generateDocument(
-        ::LibFred::Document::GenerationType, std::istream&, std::ostream&, const std::string&)const
+        LibFred::Document::GenerationType, std::istream&, std::ostream&, const std::string&)const
     {
         throw UnexpectedCall();
     }
 
     virtual unsigned long long generateDocumentAndSave(
-        ::LibFred::Document::GenerationType, std::istream&, const std::string&, unsigned, const std::string&) const
+        LibFred::Document::GenerationType, std::istream&, const std::string&, unsigned, const std::string&) const
     {
         throw UnexpectedCall();
     }
@@ -121,50 +121,50 @@ public:
 
 BOOST_FIXTURE_TEST_CASE(create_pdf, create_pdf_fixture)
 {
-    ::LibFred::OperationContextCreator ctx;
+    LibFred::OperationContextCreator ctx;
     unsigned long long block_transfer_post = pr.create_block_unblock_request(
-            Registry::PublicRequestImpl::ObjectType::contact,
+            Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::contact,
             contact.handle,
             Optional<unsigned long long>(),
-            Registry::PublicRequestImpl::ConfirmedBy::letter,
-            Registry::PublicRequestImpl::LockRequestType::block_transfer);
+            Fred::Backend::PublicRequest::PublicRequestImpl::ConfirmedBy::letter,
+            Fred::Backend::PublicRequest::PublicRequestImpl::LockRequestType::block_transfer);
     ctx.commit_transaction();
     std::shared_ptr<::LibFred::Document::Manager> manager(new FakeManager);
     const std::string buffer_value = pr.create_public_request_pdf(
             block_transfer_post,
-            Registry::PublicRequestImpl::Language::en,
+            Fred::Backend::PublicRequest::PublicRequestImpl::Language::en,
             manager).data;
     BOOST_TEST_MESSAGE(buffer_value);
 }
 
 BOOST_FIXTURE_TEST_CASE(no_public_request, create_pdf_fixture)
 {
-    ::LibFred::OperationContextCreator ctx;
+    LibFred::OperationContextCreator ctx;
     std::shared_ptr<::LibFred::Document::Manager> manager(new FakeManager);
     BOOST_CHECK_THROW(
             pr.create_public_request_pdf(
                 123,
-                Registry::PublicRequestImpl::Language::en,
+                Fred::Backend::PublicRequest::PublicRequestImpl::Language::en,
                 manager),
-            Registry::PublicRequestImpl::ObjectNotFound);
+            Fred::Backend::PublicRequest::PublicRequestImpl::ObjectNotFound);
 }
 
 BOOST_FIXTURE_TEST_CASE(not_a_post_type, create_pdf_fixture)
 {
-    ::LibFred::OperationContextCreator ctx;
+    LibFred::OperationContextCreator ctx;
     unsigned long long block_transfer_email = pr.create_block_unblock_request(
-            Registry::PublicRequestImpl::ObjectType::contact,
+            Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::contact,
             contact.handle,
             Optional<unsigned long long>(),
-            Registry::PublicRequestImpl::ConfirmedBy::email,
-            Registry::PublicRequestImpl::LockRequestType::block_transfer);
+            Fred::Backend::PublicRequest::PublicRequestImpl::ConfirmedBy::email,
+            Fred::Backend::PublicRequest::PublicRequestImpl::LockRequestType::block_transfer);
     std::shared_ptr<::LibFred::Document::Manager> manager(new FakeManager);
     BOOST_CHECK_THROW(
             pr.create_public_request_pdf(
                 block_transfer_email,
-                Registry::PublicRequestImpl::Language::en,
+                Fred::Backend::PublicRequest::PublicRequestImpl::Language::en,
                 manager),
-            Registry::PublicRequestImpl::InvalidPublicRequestType);
+            Fred::Backend::PublicRequest::PublicRequestImpl::InvalidPublicRequestType);
 }
 
 BOOST_AUTO_TEST_SUITE_END()//TestPublicRequest/CreatePdf

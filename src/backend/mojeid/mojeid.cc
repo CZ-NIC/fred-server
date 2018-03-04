@@ -70,8 +70,9 @@
 #include <boost/mpl/set.hpp>
 #include <utility>
 
-namespace Registry {
-namespace MojeID {
+namespace Fred {
+namespace Backend {
+namespace MojeId {
 
 namespace {
 
@@ -90,7 +91,7 @@ std::string create_ctx_function_name(const char *fnc)
 class LogContext
 {
 public:
-    LogContext(const MojeIDImpl &_impl, const std::string &_op_name)
+    LogContext(const MojeIdImpl &_impl, const std::string &_op_name)
     :   ctx_server_(create_ctx_name(_impl.get_server_name())),
         ctx_operation_(_op_name)
     {
@@ -105,7 +106,7 @@ private:
 std::string get_mojeid_registrar_handle()
 {
     const std::string handle =
-        CfgArgs::instance()->get_handler_ptr_by_type< HandleMojeIDArgs >()->registrar_handle;
+        CfgArgs::instance()->get_handler_ptr_by_type< HandleMojeIdArgs >()->registrar_handle;
     if (!handle.empty()) {
         return handle;
     }
@@ -125,7 +126,7 @@ std::string get_mojeid_registrar_handle()
 }
 
 void set_create_contact_arguments(
-    const MojeIDImplData::CreateContact &_contact,
+    const MojeIdImplData::CreateContact &_contact,
     LibFred::CreateContact &_arguments)
 {
     _arguments.set_name(_contact.first_name + " " + _contact.last_name);
@@ -202,7 +203,7 @@ void set_create_contact_arguments(
 }
 
 void check_sent_letters_limit(LibFred::OperationContext &_ctx,
-                              MojeIDImpl::ContactId _contact_id,
+                              MojeIdImpl::ContactId _contact_id,
                               unsigned _max_sent_letters,
                               unsigned _watched_period_in_days)
 {
@@ -224,7 +225,7 @@ void check_sent_letters_limit(LibFred::OperationContext &_ctx,
                                   (_max_sent_letters)         // used as $2::INTEGER
                                   (_watched_period_in_days)); // used as $3::TEXT
     if (0 < result.size()) {
-        MojeIDImplData::MessageLimitExceeded e;
+        MojeIdImplData::MessageLimitExceeded e;
         e.limit_expire_datetime = boost::posix_time::time_from_string(static_cast< std::string >(result[0][0]));
         throw e;
     }
@@ -232,7 +233,7 @@ void check_sent_letters_limit(LibFred::OperationContext &_ctx,
 
 namespace check_limits {
 
-class sent_letters:public ::MojeID::Messages::Generate::message_checker
+class sent_letters:public Messages::Generate::message_checker
 {
 public:
     sent_letters(unsigned _max_sent_letters,
@@ -240,8 +241,8 @@ public:
     :   max_sent_letters_(_max_sent_letters),
         watched_period_in_days_(_watched_period_in_days)
     { }
-    sent_letters(const HandleMojeIDArgs *_server_conf_ptr = CfgArgs::instance()->
-                                                            get_handler_ptr_by_type< HandleMojeIDArgs >())
+    sent_letters(const HandleMojeIdArgs *_server_conf_ptr = CfgArgs::instance()->
+                                                            get_handler_ptr_by_type< HandleMojeIdArgs >())
     :   max_sent_letters_(_server_conf_ptr->letter_limit_count),
         watched_period_in_days_(_server_conf_ptr->letter_limit_interval)
     { }
@@ -257,7 +258,7 @@ private:
     const unsigned watched_period_in_days_;
 };
 
-} // namespace Registry::MojeID::check_limits
+} // namespace Fred::Backend::MojeId::check_limits
 
 template < typename T >
 bool differs(const Nullable< T > &a, const Nullable< T > &b)
@@ -328,14 +329,14 @@ bool validated_data_changed(const LibFred::InfoContactData &_c1, const LibFred::
 
 bool notification_enabled()
 {
-    return CfgArgs::instance()->get_handler_ptr_by_type< HandleMojeIDArgs >()->notify_commands;
+    return CfgArgs::instance()->get_handler_ptr_by_type< HandleMojeIdArgs >()->notify_commands;
 }
 
 void notify(LibFred::OperationContext&        _ctx,
         const Notification::notified_event _event,
         unsigned long long                 _done_by_registrar,
         unsigned long long                 _object_historyid_post_change,
-        LogRequestId                       _log_request_id)
+        MojeIdImpl::LogRequestId                       _log_request_id)
 {
     if (notification_enabled()) {
         Notification::enqueue_notification(_ctx, _event, _done_by_registrar, _object_historyid_post_change,
@@ -398,138 +399,140 @@ struct PubReqType
     };
 };
 
-}//Registry::MojeID::{anonymous}
-}//Registry::MojeID
-}//Registry
+} // namespace Fred::Backend::MojeId::{anonymous}
+} // namespace Fred::Backend::MojeId
+} // namespace Fred::Backend
+} // namespace Fred
 
 namespace Conversion {
 namespace Enums {
 
-inline std::string to_db_handle(Registry::MojeID::MessageType::Enum value)
+inline std::string to_db_handle(Fred::Backend::MojeId::MessageType::Enum value)
 {
     switch (value)
     {
-        case Registry::MojeID::MessageType::domain_expiration:         return "domain_expiration";
-        case Registry::MojeID::MessageType::mojeid_pin2:               return "mojeid_pin2";
-        case Registry::MojeID::MessageType::mojeid_pin3:               return "mojeid_pin3";
-        case Registry::MojeID::MessageType::mojeid_sms_change:         return "mojeid_sms_change";
-        case Registry::MojeID::MessageType::monitoring:                return "monitoring";
-        case Registry::MojeID::MessageType::contact_verification_pin2: return "contact_verification_pin2";
-        case Registry::MojeID::MessageType::contact_verification_pin3: return "contact_verification_pin3";
-        case Registry::MojeID::MessageType::mojeid_pin3_reminder:      return "mojeid_pin3_reminder";
-        case Registry::MojeID::MessageType::contact_check_notice:      return "contact_check_notice";
-        case Registry::MojeID::MessageType::contact_check_thank_you:   return "contact_check_thank_you";
-        case Registry::MojeID::MessageType::mojeid_card:               return "mojeid_card";
+        case Fred::Backend::MojeId::MessageType::domain_expiration:         return "domain_expiration";
+        case Fred::Backend::MojeId::MessageType::mojeid_pin2:               return "mojeid_pin2";
+        case Fred::Backend::MojeId::MessageType::mojeid_pin3:               return "mojeid_pin3";
+        case Fred::Backend::MojeId::MessageType::mojeid_sms_change:         return "mojeid_sms_change";
+        case Fred::Backend::MojeId::MessageType::monitoring:                return "monitoring";
+        case Fred::Backend::MojeId::MessageType::contact_verification_pin2: return "contact_verification_pin2";
+        case Fred::Backend::MojeId::MessageType::contact_verification_pin3: return "contact_verification_pin3";
+        case Fred::Backend::MojeId::MessageType::mojeid_pin3_reminder:      return "mojeid_pin3_reminder";
+        case Fred::Backend::MojeId::MessageType::contact_check_notice:      return "contact_check_notice";
+        case Fred::Backend::MojeId::MessageType::contact_check_thank_you:   return "contact_check_thank_you";
+        case Fred::Backend::MojeId::MessageType::mojeid_card:               return "mojeid_card";
     }
-    throw std::invalid_argument("value doesn't exist in Registry::MojeID::MessageType::{anonymous}::Enum");
+    throw std::invalid_argument("value doesn't exist in Fred::Backend::MojeId::MessageType::{anonymous}::Enum");
 }
 
 template < >
-inline Registry::MojeID::MessageType::Enum from_db_handle< Registry::MojeID::MessageType >(const std::string &db_handle)
+inline Fred::Backend::MojeId::MessageType::Enum from_db_handle< Fred::Backend::MojeId::MessageType >(const std::string &db_handle)
 {
-    if (to_db_handle(Registry::MojeID::MessageType::domain_expiration) == db_handle) { return Registry::MojeID::MessageType::domain_expiration; }
-    if (to_db_handle(Registry::MojeID::MessageType::mojeid_pin2) == db_handle) { return Registry::MojeID::MessageType::mojeid_pin2; }
-    if (to_db_handle(Registry::MojeID::MessageType::mojeid_pin3) == db_handle) { return Registry::MojeID::MessageType::mojeid_pin3; }
-    if (to_db_handle(Registry::MojeID::MessageType::mojeid_sms_change) == db_handle) { return Registry::MojeID::MessageType::mojeid_sms_change; }
-    if (to_db_handle(Registry::MojeID::MessageType::monitoring) == db_handle) { return Registry::MojeID::MessageType::monitoring; }
-    if (to_db_handle(Registry::MojeID::MessageType::contact_verification_pin2) == db_handle) { return Registry::MojeID::MessageType::contact_verification_pin2; }
-    if (to_db_handle(Registry::MojeID::MessageType::contact_verification_pin3) == db_handle) { return Registry::MojeID::MessageType::contact_verification_pin3; }
-    if (to_db_handle(Registry::MojeID::MessageType::mojeid_pin3_reminder) == db_handle) { return Registry::MojeID::MessageType::mojeid_pin3_reminder; }
-    if (to_db_handle(Registry::MojeID::MessageType::contact_check_notice) == db_handle) { return Registry::MojeID::MessageType::contact_check_notice; }
-    if (to_db_handle(Registry::MojeID::MessageType::contact_check_thank_you) == db_handle) { return Registry::MojeID::MessageType::contact_check_thank_you; }
-    if (to_db_handle(Registry::MojeID::MessageType::mojeid_card) == db_handle) { return Registry::MojeID::MessageType::mojeid_card; }
-    throw std::invalid_argument("handle \"" + db_handle + "\" isn't convertible to Registry::MojeID::MessageType::{anonymous}::Enum");
+    if (to_db_handle(Fred::Backend::MojeId::MessageType::domain_expiration) == db_handle) { return Fred::Backend::MojeId::MessageType::domain_expiration; }
+    if (to_db_handle(Fred::Backend::MojeId::MessageType::mojeid_pin2) == db_handle) { return Fred::Backend::MojeId::MessageType::mojeid_pin2; }
+    if (to_db_handle(Fred::Backend::MojeId::MessageType::mojeid_pin3) == db_handle) { return Fred::Backend::MojeId::MessageType::mojeid_pin3; }
+    if (to_db_handle(Fred::Backend::MojeId::MessageType::mojeid_sms_change) == db_handle) { return Fred::Backend::MojeId::MessageType::mojeid_sms_change; }
+    if (to_db_handle(Fred::Backend::MojeId::MessageType::monitoring) == db_handle) { return Fred::Backend::MojeId::MessageType::monitoring; }
+    if (to_db_handle(Fred::Backend::MojeId::MessageType::contact_verification_pin2) == db_handle) { return Fred::Backend::MojeId::MessageType::contact_verification_pin2; }
+    if (to_db_handle(Fred::Backend::MojeId::MessageType::contact_verification_pin3) == db_handle) { return Fred::Backend::MojeId::MessageType::contact_verification_pin3; }
+    if (to_db_handle(Fred::Backend::MojeId::MessageType::mojeid_pin3_reminder) == db_handle) { return Fred::Backend::MojeId::MessageType::mojeid_pin3_reminder; }
+    if (to_db_handle(Fred::Backend::MojeId::MessageType::contact_check_notice) == db_handle) { return Fred::Backend::MojeId::MessageType::contact_check_notice; }
+    if (to_db_handle(Fred::Backend::MojeId::MessageType::contact_check_thank_you) == db_handle) { return Fred::Backend::MojeId::MessageType::contact_check_thank_you; }
+    if (to_db_handle(Fred::Backend::MojeId::MessageType::mojeid_card) == db_handle) { return Fred::Backend::MojeId::MessageType::mojeid_card; }
+    throw std::invalid_argument("handle \"" + db_handle + "\" isn't convertible to Fred::Backend::MojeId::MessageType::{anonymous}::Enum");
 }
 
-inline std::string to_db_handle(Registry::MojeID::CommType::Enum value)
+inline std::string to_db_handle(Fred::Backend::MojeId::CommType::Enum value)
 {
     switch (value)
     {
-        case Registry::MojeID::CommType::email:             return "email";
-        case Registry::MojeID::CommType::letter:            return "letter";
-        case Registry::MojeID::CommType::sms:               return "sms";
-        case Registry::MojeID::CommType::registered_letter: return "registered_letter";
+        case Fred::Backend::MojeId::CommType::email:             return "email";
+        case Fred::Backend::MojeId::CommType::letter:            return "letter";
+        case Fred::Backend::MojeId::CommType::sms:               return "sms";
+        case Fred::Backend::MojeId::CommType::registered_letter: return "registered_letter";
     }
-    throw std::invalid_argument("value doesn't exist in Registry::MojeID::CommType::{anonymous}::Enum");
+    throw std::invalid_argument("value doesn't exist in Fred::Backend::MojeId::CommType::{anonymous}::Enum");
 }
 
 template < >
-inline Registry::MojeID::CommType::Enum from_db_handle< Registry::MojeID::CommType >(const std::string &db_handle)
+inline Fred::Backend::MojeId::CommType::Enum from_db_handle< Fred::Backend::MojeId::CommType >(const std::string &db_handle)
 {
-    if (to_db_handle(Registry::MojeID::CommType::email) == db_handle) { return Registry::MojeID::CommType::email; }
-    if (to_db_handle(Registry::MojeID::CommType::letter) == db_handle) { return Registry::MojeID::CommType::letter; }
-    if (to_db_handle(Registry::MojeID::CommType::sms) == db_handle) { return Registry::MojeID::CommType::sms; }
-    if (to_db_handle(Registry::MojeID::CommType::registered_letter) == db_handle) { return Registry::MojeID::CommType::registered_letter; }
-    throw std::invalid_argument("handle \"" + db_handle + "\" isn't convertible to Registry::MojeID::CommType::{anonymous}::Enum");
+    if (to_db_handle(Fred::Backend::MojeId::CommType::email) == db_handle) { return Fred::Backend::MojeId::CommType::email; }
+    if (to_db_handle(Fred::Backend::MojeId::CommType::letter) == db_handle) { return Fred::Backend::MojeId::CommType::letter; }
+    if (to_db_handle(Fred::Backend::MojeId::CommType::sms) == db_handle) { return Fred::Backend::MojeId::CommType::sms; }
+    if (to_db_handle(Fred::Backend::MojeId::CommType::registered_letter) == db_handle) { return Fred::Backend::MojeId::CommType::registered_letter; }
+    throw std::invalid_argument("handle \"" + db_handle + "\" isn't convertible to Fred::Backend::MojeId::CommType::{anonymous}::Enum");
 }
 
-inline std::string to_db_handle(Registry::MojeID::SendStatus::Enum value)
+inline std::string to_db_handle(Fred::Backend::MojeId::SendStatus::Enum value)
 {
     switch (value)
     {
-        case Registry::MojeID::SendStatus::ready:                return "ready";
-        case Registry::MojeID::SendStatus::waiting_confirmation: return "waiting_confirmation";
-        case Registry::MojeID::SendStatus::no_processing:        return "no_processing";
-        case Registry::MojeID::SendStatus::send_failed:          return "send_failed";
-        case Registry::MojeID::SendStatus::sent:                 return "sent";
-        case Registry::MojeID::SendStatus::being_sent:           return "being_sent";
-        case Registry::MojeID::SendStatus::undelivered:          return "undelivered";
+        case Fred::Backend::MojeId::SendStatus::ready:                return "ready";
+        case Fred::Backend::MojeId::SendStatus::waiting_confirmation: return "waiting_confirmation";
+        case Fred::Backend::MojeId::SendStatus::no_processing:        return "no_processing";
+        case Fred::Backend::MojeId::SendStatus::send_failed:          return "send_failed";
+        case Fred::Backend::MojeId::SendStatus::sent:                 return "sent";
+        case Fred::Backend::MojeId::SendStatus::being_sent:           return "being_sent";
+        case Fred::Backend::MojeId::SendStatus::undelivered:          return "undelivered";
     }
-    throw std::invalid_argument("value doesn't exist in Registry::MojeID::SendStatus::{anonymous}::Enum");
+    throw std::invalid_argument("value doesn't exist in Fred::Backend::MojeId::SendStatus::{anonymous}::Enum");
 }
 
 template < >
-inline Registry::MojeID::SendStatus::Enum from_db_handle< Registry::MojeID::SendStatus >(const std::string &db_handle)
+inline Fred::Backend::MojeId::SendStatus::Enum from_db_handle< Fred::Backend::MojeId::SendStatus >(const std::string &db_handle)
 {
-    if (to_db_handle(Registry::MojeID::SendStatus::ready) == db_handle) { return Registry::MojeID::SendStatus::ready; }
-    if (to_db_handle(Registry::MojeID::SendStatus::waiting_confirmation) == db_handle) { return Registry::MojeID::SendStatus::waiting_confirmation; }
-    if (to_db_handle(Registry::MojeID::SendStatus::no_processing) == db_handle) { return Registry::MojeID::SendStatus::no_processing; }
-    if (to_db_handle(Registry::MojeID::SendStatus::send_failed) == db_handle) { return Registry::MojeID::SendStatus::send_failed; }
-    if (to_db_handle(Registry::MojeID::SendStatus::sent) == db_handle) { return Registry::MojeID::SendStatus::sent; }
-    if (to_db_handle(Registry::MojeID::SendStatus::being_sent) == db_handle) { return Registry::MojeID::SendStatus::being_sent; }
-    if (to_db_handle(Registry::MojeID::SendStatus::undelivered) == db_handle) { return Registry::MojeID::SendStatus::undelivered; }
-    throw std::invalid_argument("handle \"" + db_handle + "\" isn't convertible to Registry::MojeID::SendStatus::{anonymous}::Enum");
+    if (to_db_handle(Fred::Backend::MojeId::SendStatus::ready) == db_handle) { return Fred::Backend::MojeId::SendStatus::ready; }
+    if (to_db_handle(Fred::Backend::MojeId::SendStatus::waiting_confirmation) == db_handle) { return Fred::Backend::MojeId::SendStatus::waiting_confirmation; }
+    if (to_db_handle(Fred::Backend::MojeId::SendStatus::no_processing) == db_handle) { return Fred::Backend::MojeId::SendStatus::no_processing; }
+    if (to_db_handle(Fred::Backend::MojeId::SendStatus::send_failed) == db_handle) { return Fred::Backend::MojeId::SendStatus::send_failed; }
+    if (to_db_handle(Fred::Backend::MojeId::SendStatus::sent) == db_handle) { return Fred::Backend::MojeId::SendStatus::sent; }
+    if (to_db_handle(Fred::Backend::MojeId::SendStatus::being_sent) == db_handle) { return Fred::Backend::MojeId::SendStatus::being_sent; }
+    if (to_db_handle(Fred::Backend::MojeId::SendStatus::undelivered) == db_handle) { return Fred::Backend::MojeId::SendStatus::undelivered; }
+    throw std::invalid_argument("handle \"" + db_handle + "\" isn't convertible to Fred::Backend::MojeId::SendStatus::{anonymous}::Enum");
 }
 
-inline std::string to_db_handle(Registry::MojeID::PubReqType::Enum value)
+inline std::string to_db_handle(Fred::Backend::MojeId::PubReqType::Enum value)
 {
     switch (value)
     {
-        case Registry::MojeID::PubReqType::contact_conditional_identification:
-            return LibFred::MojeID::PublicRequest::ContactConditionalIdentification().get_public_request_type();
-        case Registry::MojeID::PubReqType::conditionally_identified_contact_transfer:
-            return LibFred::MojeID::PublicRequest::ConditionallyIdentifiedContactTransfer().get_public_request_type();
-        case Registry::MojeID::PubReqType::identified_contact_transfer:
-            return LibFred::MojeID::PublicRequest::IdentifiedContactTransfer().get_public_request_type();
-        case Registry::MojeID::PubReqType::prevalidated_contact_transfer:
-            return LibFred::MojeID::PublicRequest::PrevalidatedContactTransfer().get_public_request_type();
-        case Registry::MojeID::PubReqType::prevalidated_unidentified_contact_transfer:
-            return LibFred::MojeID::PublicRequest::PrevalidatedUnidentifiedContactTransfer().get_public_request_type();
+        case Fred::Backend::MojeId::PubReqType::contact_conditional_identification:
+            return Fred::Backend::MojeId::PublicRequest::ContactConditionalIdentification().get_public_request_type();
+        case Fred::Backend::MojeId::PubReqType::conditionally_identified_contact_transfer:
+            return Fred::Backend::MojeId::PublicRequest::ConditionallyIdentifiedContactTransfer().get_public_request_type();
+        case Fred::Backend::MojeId::PubReqType::identified_contact_transfer:
+            return Fred::Backend::MojeId::PublicRequest::IdentifiedContactTransfer().get_public_request_type();
+        case Fred::Backend::MojeId::PubReqType::prevalidated_contact_transfer:
+            return Fred::Backend::MojeId::PublicRequest::PrevalidatedContactTransfer().get_public_request_type();
+        case Fred::Backend::MojeId::PubReqType::prevalidated_unidentified_contact_transfer:
+            return Fred::Backend::MojeId::PublicRequest::PrevalidatedUnidentifiedContactTransfer().get_public_request_type();
     }
-    throw std::invalid_argument("value doesn't exist in Registry::MojeID::PubReqType::{anonymous}::Enum");
+    throw std::invalid_argument("value doesn't exist in Fred::Backend::MojeId::PubReqType::{anonymous}::Enum");
 }
 
 template < >
-inline Registry::MojeID::PubReqType::Enum from_db_handle< Registry::MojeID::PubReqType >(const std::string &db_handle)
+inline Fred::Backend::MojeId::PubReqType::Enum from_db_handle< Fred::Backend::MojeId::PubReqType >(const std::string &db_handle)
 {
-    if (to_db_handle(Registry::MojeID::PubReqType::contact_conditional_identification) == db_handle) { return Registry::MojeID::PubReqType::contact_conditional_identification; }
-    if (to_db_handle(Registry::MojeID::PubReqType::conditionally_identified_contact_transfer) == db_handle) { return Registry::MojeID::PubReqType::conditionally_identified_contact_transfer; }
-    if (to_db_handle(Registry::MojeID::PubReqType::identified_contact_transfer) == db_handle) { return Registry::MojeID::PubReqType::identified_contact_transfer; }
-    if (to_db_handle(Registry::MojeID::PubReqType::prevalidated_contact_transfer) == db_handle) { return Registry::MojeID::PubReqType::prevalidated_contact_transfer; }
-    if (to_db_handle(Registry::MojeID::PubReqType::prevalidated_unidentified_contact_transfer) == db_handle) { return Registry::MojeID::PubReqType::prevalidated_unidentified_contact_transfer; }
-    throw std::invalid_argument("handle \"" + db_handle + "\" isn't convertible to Registry::MojeID::PubReqType::{anonymous}::Enum");
+    if (to_db_handle(Fred::Backend::MojeId::PubReqType::contact_conditional_identification) == db_handle) { return Fred::Backend::MojeId::PubReqType::contact_conditional_identification; }
+    if (to_db_handle(Fred::Backend::MojeId::PubReqType::conditionally_identified_contact_transfer) == db_handle) { return Fred::Backend::MojeId::PubReqType::conditionally_identified_contact_transfer; }
+    if (to_db_handle(Fred::Backend::MojeId::PubReqType::identified_contact_transfer) == db_handle) { return Fred::Backend::MojeId::PubReqType::identified_contact_transfer; }
+    if (to_db_handle(Fred::Backend::MojeId::PubReqType::prevalidated_contact_transfer) == db_handle) { return Fred::Backend::MojeId::PubReqType::prevalidated_contact_transfer; }
+    if (to_db_handle(Fred::Backend::MojeId::PubReqType::prevalidated_unidentified_contact_transfer) == db_handle) { return Fred::Backend::MojeId::PubReqType::prevalidated_unidentified_contact_transfer; }
+    throw std::invalid_argument("handle \"" + db_handle + "\" isn't convertible to Fred::Backend::MojeId::PubReqType::{anonymous}::Enum");
 }
 
 } // namespace Conversion::Enums
 } // namespace Conversion
 
-namespace Registry {
-namespace MojeID {
+namespace Fred {
+namespace Backend {
+namespace MojeId {
 
 namespace {
 
 template < MessageType::Enum MT, CommType::Enum CT >
-::size_t cancel_message_sending(LibFred::OperationContext &_ctx, MojeIDImpl::ContactId _contact_id)
+::size_t cancel_message_sending(LibFred::OperationContext &_ctx, MojeIdImpl::ContactId _contact_id)
 {
     const Database::Result result = _ctx.get_conn().exec_params(
         "UPDATE message_archive ma "
@@ -581,30 +584,30 @@ bool identified_data_changed(const LibFred::InfoContactData &_c1, const LibFred:
     return false;
 }
 
-typedef data_storage< std::string, MojeIDImpl::ContactId >::safe prepare_transaction_storage;
+typedef data_storage< std::string, MojeIdImpl::ContactId >::safe prepare_transaction_storage;
 typedef prepare_transaction_storage::object_type::data_not_found prepare_transaction_data_not_found;
 
-}//Registry::MojeID::{anonymous}
+} // namespace Fred::Backend::MojeId::{anonymous}
 
-MojeIDImpl::MojeIDImpl(const std::string &_server_name)
+MojeIdImpl::MojeIdImpl(const std::string &_server_name)
 :   server_name_(_server_name),
     mojeid_registrar_handle_(get_mojeid_registrar_handle()),
     mojeid_registrar_id_(get_mojeid_registrar_id(mojeid_registrar_handle_))
 {
     LogContext log_ctx(*this, "init");
-}//MojeIDImpl::MojeIDImpl
+}
 
-MojeIDImpl::~MojeIDImpl()
+MojeIdImpl::~MojeIdImpl()
 {
 }
 
-const std::string& MojeIDImpl::get_server_name()const
+const std::string& MojeIdImpl::get_server_name()const
 {
     return server_name_;
 }
 
-void MojeIDImpl::get_unregistrable_contact_handles(
-        MojeIDImplData::ContactHandleList &_result)const
+void MojeIdImpl::get_unregistrable_contact_handles(
+        MojeIdImplData::ContactHandleList &_result)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
@@ -640,20 +643,20 @@ void MojeIDImpl::get_unregistrable_contact_handles(
 
 namespace {
 
-Optional< LogRequestId > get_optional_log_request_id(LogRequestId _log_request_id)
+Optional<MojeIdImpl::LogRequestId> get_optional_log_request_id(MojeIdImpl::LogRequestId _log_request_id)
 {
     if (0 < _log_request_id) {
         return _log_request_id;
     }
-    return Optional< LogRequestId >();
+    return Optional<MojeIdImpl::LogRequestId>();
 }
 
-}
+} // namespace Fred::Backend::MojeId::{anonymous}
 
-MojeIDImpl::ContactId MojeIDImpl::create_contact_prepare(
-        const MojeIDImplData::CreateContact &_contact,
+MojeIdImpl::ContactId MojeIdImpl::create_contact_prepare(
+        const MojeIdImplData::CreateContact &_contact,
         const std::string &_trans_id,
-        LogRequestId _log_request_id,
+        MojeIdImpl::LogRequestId _log_request_id,
         std::string &_ident)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
@@ -664,12 +667,12 @@ MojeIDImpl::ContactId MojeIDImpl::create_contact_prepare(
         LibFred::InfoContactData info_contact_data;
         from_into(_contact, info_contact_data);
         {
-            const MojeIDImplInternal::CheckCreateContactPrepare check_contact_data(
-                LibFred::make_args(info_contact_data),
-                LibFred::make_args(info_contact_data, ctx));
+            const MojeIdImplInternal::CheckCreateContactPrepare check_contact_data(
+                make_args(info_contact_data),
+                make_args(info_contact_data, ctx));
 
             if (!check_contact_data.success()) {
-                MojeIDImplInternal::raise(check_contact_data);
+                MojeIdImplInternal::raise(check_contact_data);
             }
         }
 
@@ -684,7 +687,7 @@ MojeIDImpl::ContactId MojeIDImpl::create_contact_prepare(
         LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_contact(ctx, new_contact.create_object_result.object_id);
         {
             const LibFred::CreatePublicRequestAuth::Result result = op_create_pub_req.exec(
-                locked_contact, LibFred::MojeID::PublicRequest::ContactConditionalIdentification().iface(),
+                locked_contact, Fred::Backend::MojeId::PublicRequest::ContactConditionalIdentification().iface(),
                 get_optional_log_request_id(_log_request_id));
             _ident = result.identification;
             notify(ctx, Notification::created,
@@ -694,7 +697,7 @@ MojeIDImpl::ContactId MojeIDImpl::create_contact_prepare(
         ctx.commit_transaction();
         return new_contact.create_object_result.object_id;
     }
-    catch (const MojeIDImplData::RegistrationValidationResult &e) {
+    catch (const MojeIdImplData::RegistrationValidationResult &e) {
         LOGGER(PACKAGE).info("request failed (incorrect input data)");
         throw;
     }
@@ -716,7 +719,7 @@ LibFred::CreatePublicRequestAuth::Result action_transfer_contact_prepare(
     const LibFred::InfoContactData &_contact,
     const LibFred::LockedPublicRequestsOfObjectForUpdate &_locked_contact,
     unsigned long long _registrar_id,
-    LogRequestId _log_request_id)
+    MojeIdImpl::LogRequestId _log_request_id)
 {
     LibFred::CreatePublicRequestAuth op_create_pub_req;
     if (!_contact.notifyemail.isnull()) {
@@ -729,13 +732,13 @@ LibFred::CreatePublicRequestAuth::Result action_transfer_contact_prepare(
     return result;
 }
 
-}
+} // namespace Fred::Backend::MojeId::{anonymous}
 
-void MojeIDImpl::transfer_contact_prepare(
+void MojeIdImpl::transfer_contact_prepare(
         const std::string &_handle,
         const std::string &_trans_id,
-        LogRequestId _log_request_id,
-        MojeIDImplData::InfoContact &_contact,
+        MojeIdImpl::LogRequestId _log_request_id,
+        MojeIdImplData::InfoContact &_contact,
         std::string &_ident)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
@@ -746,16 +749,16 @@ void MojeIDImpl::transfer_contact_prepare(
         const LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_contact(ctx, contact.id);
         const LibFred::ObjectStatesInfo states(LibFred::GetObjectStates(contact.id).exec(ctx));
         {
-            const MojeIDImplInternal::CheckTransferContactPrepareStates check_result(states);
+            const MojeIdImplInternal::CheckTransferContactPrepareStates check_result(states);
             if (!check_result.success()) {
-                MojeIDImplInternal::raise(check_result);
+                MojeIdImplInternal::raise(check_result);
             }
         }
         {
-            const MojeIDImplInternal::CheckMojeIDRegistration check_result(
-                LibFred::make_args(contact), LibFred::make_args(contact, ctx));
+            const MojeIdImplInternal::CheckMojeIdRegistration check_result(
+                make_args(contact), make_args(contact, ctx));
             if (!check_result.success()) {
-                MojeIDImplInternal::raise(check_result);
+                MojeIdImplInternal::raise(check_result);
             }
         }
 
@@ -765,7 +768,7 @@ void MojeIDImpl::transfer_contact_prepare(
             states.absents(LibFred::Object_State::validated_contact))
         {
             pub_req_result = action_transfer_contact_prepare(
-                LibFred::MojeID::PublicRequest::ContactConditionalIdentification(),
+                Fred::Backend::MojeId::PublicRequest::ContactConditionalIdentification(),
                 _trans_id, contact, locked_contact, mojeid_registrar_id_, _log_request_id);
         }
         else if (states.presents(LibFred::Object_State::conditionally_identified_contact) &&
@@ -773,7 +776,7 @@ void MojeIDImpl::transfer_contact_prepare(
                  states.absents(LibFred::Object_State::validated_contact))
         {
             pub_req_result = action_transfer_contact_prepare(
-                LibFred::MojeID::PublicRequest::ConditionallyIdentifiedContactTransfer(),
+                Fred::Backend::MojeId::PublicRequest::ConditionallyIdentifiedContactTransfer(),
                 _trans_id, contact, locked_contact, mojeid_registrar_id_, _log_request_id);
         }
         else if (states.presents(LibFred::Object_State::conditionally_identified_contact) &&
@@ -781,7 +784,7 @@ void MojeIDImpl::transfer_contact_prepare(
                  states.absents(LibFred::Object_State::validated_contact))
         {
             pub_req_result = action_transfer_contact_prepare(
-                LibFred::MojeID::PublicRequest::IdentifiedContactTransfer(),
+                Fred::Backend::MojeId::PublicRequest::IdentifiedContactTransfer(),
                 _trans_id, contact, locked_contact, mojeid_registrar_id_, _log_request_id);
         }
 
@@ -790,26 +793,26 @@ void MojeIDImpl::transfer_contact_prepare(
         _ident = pub_req_result.identification;
         return;
     }
-    catch (const MojeIDImplData::AlreadyMojeidContact&) {
+    catch (const MojeIdImplData::AlreadyMojeidContact&) {
         LOGGER(PACKAGE).info("request failed (incorrect input data - AlreadyMojeidContact)");
         throw;
     }
-    catch (const MojeIDImplData::ObjectAdminBlocked&) {
+    catch (const MojeIdImplData::ObjectAdminBlocked&) {
         LOGGER(PACKAGE).info("request failed (incorrect input data - ObjectAdminBlocked)");
         throw;
     }
-    catch (const MojeIDImplData::ObjectUserBlocked&) {
+    catch (const MojeIdImplData::ObjectUserBlocked&) {
         LOGGER(PACKAGE).info("request failed (incorrect input data - ObjectUserBlocked)");
         throw;
     }
-    catch (const MojeIDImplData::RegistrationValidationResult&) {
+    catch (const MojeIdImplData::RegistrationValidationResult&) {
         LOGGER(PACKAGE).info("request failed (incorrect input data - RegistrationValidationResult)");
         throw;
     }
     catch (const LibFred::InfoContactByHandle::Exception &e) {
         if (e.is_set_unknown_contact_handle()) {
             LOGGER(PACKAGE).info("request failed (incorrect input data)");
-            throw MojeIDImplData::ObjectDoesntExist();
+            throw MojeIdImplData::ObjectDoesntExist();
         }
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
         throw;
@@ -895,13 +898,13 @@ void set_update_contact_op(const LibFred::InfoContactDiff &_data_changes,
     }
 }
 
-}
+} // namespace Fred::Backend::MojeId::{anonymous}
 
-void MojeIDImpl::update_contact_prepare(
+void MojeIdImpl::update_contact_prepare(
         ContactId _contact_id,
-        const MojeIDImplData::UpdateContact &_new_data,
+        const MojeIdImplData::UpdateContact &_new_data,
         const std::string &_trans_id,
-        LogRequestId _log_request_id)const
+        MojeIdImpl::LogRequestId _log_request_id)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
@@ -912,7 +915,7 @@ void MojeIDImpl::update_contact_prepare(
         LibFred::OperationContextTwoPhaseCommitCreator ctx(_trans_id);
         const LibFred::ObjectStatesInfo states(LibFred::GetObjectStates(new_data.id).exec(ctx));
         if (states.absents(LibFred::Object_State::mojeid_contact)) {
-            throw MojeIDImplData::ObjectDoesntExist();
+            throw MojeIdImplData::ObjectDoesntExist();
         }
         const LibFred::InfoContactData current_data = LibFred::InfoContactById(new_data.id).exec(ctx).info_contact_data;
         const LibFred::InfoContactDiff data_changes = LibFred::diff_contact_data(current_data, new_data);
@@ -970,8 +973,8 @@ void MojeIDImpl::update_contact_prepare(
                     reidentification_needed = true;
                 }
             }
-            const HandleMojeIDArgs *const server_conf_ptr = CfgArgs::instance()->
-                                                                get_handler_ptr_by_type< HandleMojeIDArgs >();
+            const HandleMojeIdArgs *const server_conf_ptr = CfgArgs::instance()->
+                                                                get_handler_ptr_by_type< HandleMojeIdArgs >();
             check_sent_letters_limit(ctx,
                                      new_data.id,
                                      server_conf_ptr->letter_limit_count,
@@ -981,12 +984,12 @@ void MojeIDImpl::update_contact_prepare(
             create_public_request_op.set_registrar_id(mojeid_registrar_id_);
             create_public_request_op.exec(
                 locked_contact,
-                reidentification_needed ? LibFred::MojeID::PublicRequest::ContactReidentification().iface()
-                                        : LibFred::MojeID::PublicRequest::ContactIdentification().iface(),
+                reidentification_needed ? Fred::Backend::MojeId::PublicRequest::ContactReidentification().iface()
+                                        : Fred::Backend::MojeId::PublicRequest::ContactIdentification().iface(),
                 get_optional_log_request_id(_log_request_id));
         }
         {
-            const MojeIDImplInternal::CheckUpdateContactPrepare check_contact_data(new_data);
+            const MojeIdImplInternal::CheckUpdateContactPrepare check_contact_data(new_data);
             if (!check_contact_data.success()) {
                 throw check_contact_data;
             }
@@ -1041,22 +1044,22 @@ void MojeIDImpl::update_contact_prepare(
     catch (const LibFred::InfoContactById::Exception &e) {
         if (e.is_set_unknown_object_id()) {
             LOGGER(PACKAGE).info("request failed (InfoContactById::Exception - unknown_object_id)");
-            throw MojeIDImplData::ObjectDoesntExist();
+            throw MojeIdImplData::ObjectDoesntExist();
         }
         LOGGER(PACKAGE).error("request failed (InfoContactById::Exception)");
         throw;
     }
-    catch (const MojeIDImplData::ObjectDoesntExist &e) {
+    catch (const MojeIdImplData::ObjectDoesntExist &e) {
         LOGGER(PACKAGE).info("request failed (ObjectDoesntExist)");
         throw;
     }
-    catch (const MojeIDImplData::MessageLimitExceeded &e) {
+    catch (const MojeIdImplData::MessageLimitExceeded &e) {
         LOGGER(PACKAGE).info(e.as_string());
         throw;
     }
-    catch (const MojeIDImplInternal::CheckUpdateContactPrepare &e) {
+    catch (const MojeIdImplInternal::CheckUpdateContactPrepare &e) {
         LOGGER(PACKAGE).info("request failed (CheckUpdateContactPrepare)");
-        MojeIDImplInternal::raise(e);
+        MojeIdImplInternal::raise(e);
     }
     catch (const std::exception &e) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
@@ -1068,11 +1071,11 @@ void MojeIDImpl::update_contact_prepare(
     }
 }
 
-MojeIDImplData::InfoContact MojeIDImpl::update_transfer_contact_prepare(
+MojeIdImplData::InfoContact MojeIdImpl::update_transfer_contact_prepare(
         const std::string &_username,
-        const MojeIDImplData::UpdateTransferContact &_new_data,
+        const MojeIdImplData::UpdateTransferContact &_new_data,
         const std::string &_trans_id,
-        LogRequestId _log_request_id,
+        MojeIdImpl::LogRequestId _log_request_id,
         std::string &_ident)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
@@ -1087,9 +1090,9 @@ MojeIDImplData::InfoContact MojeIDImpl::update_transfer_contact_prepare(
         new_data.handle = current_data.handle;
         const LibFred::ObjectStatesInfo states(LibFred::GetObjectStates(new_data.id).exec(ctx));
         {
-            const MojeIDImplInternal::CheckTransferContactPrepareStates check_result(states);
+            const MojeIdImplInternal::CheckTransferContactPrepareStates check_result(states);
             if (!check_result.success()) {
-                MojeIDImplInternal::raise(check_result);
+                MojeIdImplInternal::raise(check_result);
             }
         }
         check_limits::sent_letters()(ctx, current_data.id);
@@ -1148,7 +1151,7 @@ MojeIDImplData::InfoContact MojeIDImpl::update_transfer_contact_prepare(
                     }
                     catch (const LibFred::CancelObjectStateRequestId::Exception &e) {
                         if (e.is_set_object_id_not_found()) {
-                            throw MojeIDImplData::ObjectDoesntExist();
+                            throw MojeIdImplData::ObjectDoesntExist();
                         }
                         if (e.is_set_state_not_found()) {
                             LOGGER(PACKAGE).info("unable clear state " + e.get_state_not_found());
@@ -1161,10 +1164,10 @@ MojeIDImplData::InfoContact MojeIDImpl::update_transfer_contact_prepare(
             }
 
             {
-                const MojeIDImplInternal::CheckUpdateTransferContactPrepare result_of_check(new_data);
+                const MojeIdImplInternal::CheckUpdateTransferContactPrepare result_of_check(new_data);
 
                 if (!result_of_check.success()) {
-                    MojeIDImplInternal::raise(result_of_check);
+                    MojeIdImplInternal::raise(result_of_check);
                 }
             }
             if (current_data.sponsoring_registrar_handle != mojeid_registrar_handle_) {
@@ -1172,7 +1175,7 @@ MojeIDImplData::InfoContact MojeIDImpl::update_transfer_contact_prepare(
                                                           mojeid_registrar_handle_,
                                                           current_data.authinfopw,
                                                           0 < _log_request_id ? _log_request_id
-                                                                              : Nullable< LogRequestId >());
+                                                                              : Nullable<MojeIdImpl::LogRequestId>());
                 //transfer contact to 'REG-MOJEID' sponsoring registrar
                 const unsigned long long history_id = transfer_contact_op.exec(ctx);
                 notify(ctx, Notification::transferred,
@@ -1199,16 +1202,16 @@ MojeIDImplData::InfoContact MojeIDImpl::update_transfer_contact_prepare(
             op_create_pub_req.exec(
                 locked_contact,
                 //for 'conditionallyIdentifiedContact' or 'identifiedContact' create 'mojeid_prevalidated_contact_transfer' public request
-                is_cond_identified ? LibFred::MojeID::PublicRequest::PrevalidatedContactTransfer().iface()
+                is_cond_identified ? Fred::Backend::MojeId::PublicRequest::PrevalidatedContactTransfer().iface()
                 //in other cases create 'mojeid_prevalidated_unidentified_contact_transfer' public request
-                                   : LibFred::MojeID::PublicRequest::PrevalidatedUnidentifiedContactTransfer().iface(),
+                                   : Fred::Backend::MojeId::PublicRequest::PrevalidatedUnidentifiedContactTransfer().iface(),
                 get_optional_log_request_id(_log_request_id));
 
         notify(ctx, Notification::updated, mojeid_registrar_id_, history_id, _log_request_id);
         //second phase commit will change contact states
         prepare_transaction_storage()->store(_trans_id, current_data.id);
 
-        MojeIDImplData::InfoContact changed_data;
+        MojeIdImplData::InfoContact changed_data;
         from_into(LibFred::InfoContactById(current_data.id).exec(ctx).info_contact_data, changed_data);
         ctx.commit_transaction();
         _ident = result.identification;
@@ -1218,32 +1221,32 @@ MojeIDImplData::InfoContact MojeIDImpl::update_transfer_contact_prepare(
         //check contact is registered, throw OBJECT_NOT_EXISTS if isn't
         if (e.is_set_unknown_contact_handle()) {
             LOGGER(PACKAGE).info("request failed (InfoContactByHandle::Exception) - unknown_contact_handle");
-            throw MojeIDImplData::ObjectDoesntExist();
+            throw MojeIdImplData::ObjectDoesntExist();
         }
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
-    catch (const MojeIDImplData::RegistrationValidationResult&) {
+    catch (const MojeIdImplData::RegistrationValidationResult&) {
         LOGGER(PACKAGE).info("request failed (RegistrationValidationResult)");
         throw;
     }
-    catch (const MojeIDImplData::AlreadyMojeidContact&) {
+    catch (const MojeIdImplData::AlreadyMojeidContact&) {
         LOGGER(PACKAGE).info("request failed (AlreadyMojeidContact)");
         throw;
     }
-    catch (const MojeIDImplData::ObjectAdminBlocked&) {
+    catch (const MojeIdImplData::ObjectAdminBlocked&) {
         LOGGER(PACKAGE).info("request failed (ObjectAdminBlocked)");
         throw;
     }
-    catch (const MojeIDImplData::ObjectUserBlocked&) {
+    catch (const MojeIdImplData::ObjectUserBlocked&) {
         LOGGER(PACKAGE).info("request failed (ObjectUserBlocked)");
         throw;
     }
-    catch (const MojeIDImplData::MessageLimitExceeded &e) {
+    catch (const MojeIdImplData::MessageLimitExceeded &e) {
         LOGGER(PACKAGE).info(e.as_string());
         throw;
     }
-    catch (const MojeIDImplData::ObjectDoesntExist &e) {
+    catch (const MojeIdImplData::ObjectDoesntExist &e) {
         LOGGER(PACKAGE).info("request failed (ObjectDoesntExist)");
         throw;
     }
@@ -1264,7 +1267,7 @@ LibFred::UpdatePublicRequest::Result set_status(
     const LibFred::PublicRequestTypeIface &_request_type,
     LibFred::PublicRequest::Status::Enum _status,
     const std::string &_reason,
-    MojeIDImpl::LogRequestId _log_request_id)
+    MojeIdImpl::LogRequestId _log_request_id)
 {
     LibFred::UpdatePublicRequest op_update_public_request;
     op_update_public_request.set_status(_status);
@@ -1278,7 +1281,7 @@ LibFred::UpdatePublicRequest::Result answer(
     const LibFred::LockedPublicRequestForUpdate &_locked_request,
     const LibFred::PublicRequestTypeIface &_request_type,
     const std::string &_reason,
-    MojeIDImpl::LogRequestId _log_request_id)
+    MojeIdImpl::LogRequestId _log_request_id)
 {
     return set_status(_locked_request, _request_type, LibFred::PublicRequest::Status::answered, _reason, _log_request_id);
 }
@@ -1287,28 +1290,28 @@ LibFred::UpdatePublicRequest::Result invalidate(
     const LibFred::LockedPublicRequestForUpdate &_locked_request,
     const LibFred::PublicRequestTypeIface &_request_type,
     const std::string &_reason,
-    MojeIDImpl::LogRequestId _log_request_id)
+    MojeIdImpl::LogRequestId _log_request_id)
 {
     return set_status(_locked_request, _request_type, LibFred::PublicRequest::Status::invalidated, _reason, _log_request_id);
 }
 
 //ticket #15587 hack
-void invalid_birthday_looks_like_no_birthday(MojeIDImplData::InfoContact &_data)
+void invalid_birthday_looks_like_no_birthday(MojeIdImplData::InfoContact &_data)
 {
     if (!_data.birth_date.isnull()) {
         const boost::gregorian::date invalid_date(boost::gregorian::not_a_date_time);
         const std::string invalid_date_str = boost::gregorian::to_iso_extended_string(invalid_date);
         if (_data.birth_date.get_value().value == invalid_date_str) { //make believe that invalid birthday
-            _data.birth_date = Nullable< MojeIDImplData::Birthdate >();    //is no birthday
+            _data.birth_date = Nullable< MojeIdImplData::Birthdate >();    //is no birthday
         }
     }
 }
 
-} // namespace Registry::MojeID::{anonymous}
+} // namespace Fred::Backend::MojeId::{anonymous}
 
-void MojeIDImpl::info_contact(
+void MojeIdImpl::info_contact(
         const std::string &_username,
-        MojeIDImplData::InfoContact &_result)const
+        MojeIdImplData::InfoContact &_result)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
@@ -1322,7 +1325,7 @@ void MojeIDImpl::info_contact(
     catch (const LibFred::InfoContactByHandle::Exception &e) {
         if (e.is_set_unknown_contact_handle()) {
             LOGGER(PACKAGE).info("request failed (ObjectDoesntExist)");
-            throw MojeIDImplData::ObjectDoesntExist();
+            throw MojeIdImplData::ObjectDoesntExist();
         }
         LOGGER(PACKAGE).error("request failed (LibFred::InfoContactByHandle failure)");
         throw;
@@ -1337,9 +1340,9 @@ void MojeIDImpl::info_contact(
     }
 }
 
-void MojeIDImpl::get_contact_info_publish_flags(
+void MojeIdImpl::get_contact_info_publish_flags(
         ContactId _contact_id,
-        MojeIDImplData::InfoContactPublishFlags &_flags)const
+        MojeIdImplData::InfoContactPublishFlags &_flags)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
@@ -1396,7 +1399,7 @@ void MojeIDImpl::get_contact_info_publish_flags(
     catch (const LibFred::InfoContactById::Exception &e) {
         if (e.is_set_unknown_object_id()) {
             LOGGER(PACKAGE).info("request failed (incorrect input data)");
-            throw MojeIDImplData::ObjectDoesntExist();
+            throw MojeIdImplData::ObjectDoesntExist();
         }
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
         throw;
@@ -1411,10 +1414,10 @@ void MojeIDImpl::get_contact_info_publish_flags(
     }
 }
 
-MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
+MojeIdImpl::ContactId MojeIdImpl::process_registration_request(
         const std::string &_ident_request_id,
         const std::string &_password,
-        LogRequestId _log_request_id)const
+        MojeIdImpl::LogRequestId _log_request_id)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
@@ -1427,7 +1430,7 @@ MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
                        LibFred::FakePublicRequestForInvalidating(pub_req_info.get_type()).iface(),
                        "no object associated with this public request",
                        _log_request_id);
-            throw MojeIDImplData::IdentificationRequestDoesntExist();
+            throw MojeIdImplData::IdentificationRequestDoesntExist();
         }
         const LibFred::ObjectId contact_id = pub_req_info.get_object_id().get_value();
         const LibFred::ObjectStatesInfo states(LibFred::GetObjectStates(contact_id).exec(ctx));
@@ -1437,9 +1440,9 @@ MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
             case LibFred::PublicRequest::Status::active:
                 break;
             case LibFred::PublicRequest::Status::answered:
-                throw MojeIDImplData::IdentificationAlreadyProcessed();
+                throw MojeIdImplData::IdentificationAlreadyProcessed();
             case LibFred::PublicRequest::Status::invalidated:
-                throw MojeIDImplData::IdentificationAlreadyInvalidated();
+                throw MojeIdImplData::IdentificationAlreadyInvalidated();
             }
 
             LibFred::StatusList to_set;
@@ -1486,11 +1489,11 @@ MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
                            LibFred::FakePublicRequestForInvalidating(pub_req_info.get_type()).iface(),
                            "contact data changed after the public request had been created",
                            _log_request_id);
-                throw MojeIDImplData::ContactChanged();
+                throw MojeIdImplData::ContactChanged();
             }
 
             if (!pub_req_info.check_password(_password)) {
-                throw MojeIDImplData::IdentificationFailed();
+                throw MojeIdImplData::IdentificationFailed();
             }
 
             to_set.insert(Conversion::Enums::to_db_handle(LibFred::Object_State::server_delete_prohibited));
@@ -1502,9 +1505,9 @@ MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
 
             const LibFred::InfoContactData contact = LibFred::InfoContactById(contact_id).exec(ctx).info_contact_data;
             {
-                const MojeIDImplInternal::CheckProcessRegistrationValidation check_result(contact);
+                const MojeIdImplInternal::CheckProcessRegistrationValidation check_result(contact);
                 if (!check_result.success()) {
-                    MojeIDImplInternal::raise(check_result);
+                    MojeIdImplInternal::raise(check_result);
                 }
             }
             if (contact.sponsoring_registrar_handle != mojeid_registrar_handle_) {
@@ -1512,7 +1515,7 @@ MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
                                                           mojeid_registrar_handle_,
                                                           contact.authinfopw,
                                                           0 < _log_request_id ? _log_request_id
-                                                                              : Nullable< LogRequestId >());
+                                                                              : Nullable<MojeIdImpl::LogRequestId>());
                 //transfer contact to 'REG-MOJEID' sponsoring registrar
                 const unsigned long long history_id = transfer_contact_op.exec(ctx);
                 notify(ctx, Notification::transferred,
@@ -1522,14 +1525,14 @@ MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
             }
             answer(locked_request,
                    pub_req_type == PubReqType::contact_conditional_identification
-                   ? LibFred::MojeID::PublicRequest::ContactConditionalIdentification().iface()
+                   ? Fred::Backend::MojeId::PublicRequest::ContactConditionalIdentification().iface()
                    : pub_req_type == PubReqType::prevalidated_unidentified_contact_transfer
-                     ? LibFred::MojeID::PublicRequest::PrevalidatedUnidentifiedContactTransfer().iface()
+                     ? Fred::Backend::MojeId::PublicRequest::PrevalidatedUnidentifiedContactTransfer().iface()
                      : pub_req_type == PubReqType::conditionally_identified_contact_transfer
-                       ? LibFred::MojeID::PublicRequest::ConditionallyIdentifiedContactTransfer().iface()
+                       ? Fred::Backend::MojeId::PublicRequest::ConditionallyIdentifiedContactTransfer().iface()
                        : pub_req_type == PubReqType::identified_contact_transfer
-                         ? LibFred::MojeID::PublicRequest::IdentifiedContactTransfer().iface()
-                         : LibFred::MojeID::PublicRequest::PrevalidatedContactTransfer().iface(),
+                         ? Fred::Backend::MojeId::PublicRequest::IdentifiedContactTransfer().iface()
+                         : Fred::Backend::MojeId::PublicRequest::PrevalidatedContactTransfer().iface(),
                    "successfully processed",
                    _log_request_id);
 
@@ -1539,7 +1542,7 @@ MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
                 op_create_pub_req.set_registrar_id(mojeid_registrar_id_);
                 LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_contact(ctx, contact_id);
                 const LibFred::CreatePublicRequestAuth::Result result = op_create_pub_req.exec(
-                    locked_contact, LibFred::MojeID::PublicRequest::ContactIdentification().iface(),
+                    locked_contact, Fred::Backend::MojeId::PublicRequest::ContactIdentification().iface(),
                     get_optional_log_request_id(_log_request_id));
             }
 
@@ -1547,39 +1550,39 @@ MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
 
             return contact_id;
         }
-        catch (const MojeIDImplData::IdentificationFailed&) {
+        catch (const MojeIdImplData::IdentificationFailed&) {
             ctx.commit_transaction();
             throw;
         }
-        catch (const MojeIDImplData::ContactChanged&) {
+        catch (const MojeIdImplData::ContactChanged&) {
             ctx.commit_transaction();
             throw;
         }
     }
-    catch (const MojeIDImplData::IdentificationRequestDoesntExist&) {
+    catch (const MojeIdImplData::IdentificationRequestDoesntExist&) {
         LOGGER(PACKAGE).info("request failed (identification request doesn't exist)");
         throw;
     }
-    catch (const MojeIDImplData::IdentificationFailed&) {
+    catch (const MojeIdImplData::IdentificationFailed&) {
         LOGGER(PACKAGE).info("request failed (identification failed)");
         throw;
     }
-    catch (const MojeIDImplData::ContactChanged&) {
+    catch (const MojeIdImplData::ContactChanged&) {
         LOGGER(PACKAGE).info("request failed (contact changed)");
         throw;
     }
-    catch (const MojeIDImplData::ProcessRegistrationValidationResult&) {
+    catch (const MojeIdImplData::ProcessRegistrationValidationResult&) {
         LOGGER(PACKAGE).info("request failed (incorrect data)");
         throw;
     }
-    catch (const MojeIDImplData::IdentificationAlreadyProcessed&) {
+    catch (const MojeIdImplData::IdentificationAlreadyProcessed&) {
         LOGGER(PACKAGE).info("request failed (IdentificationAlreadyProcessed)");
         throw;
     }
     catch (const LibFred::PublicRequestLockGuardByIdentification::Exception &e) {
         if (e.is_set_public_request_doesnt_exist()) {
             LOGGER(PACKAGE).info(boost::format("request failed (%1%)") % e.what());
-            throw MojeIDImplData::IdentificationRequestDoesntExist();
+            throw MojeIdImplData::IdentificationRequestDoesntExist();
         }
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
         throw std::runtime_error(e.what());
@@ -1587,7 +1590,7 @@ MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
     catch (const LibFred::InfoContactById::Exception &e) {
         if (e.is_set_unknown_object_id()) {
             LOGGER(PACKAGE).info(boost::format("request failed (%1%)") % e.what());
-            throw MojeIDImplData::IdentificationFailed();
+            throw MojeIdImplData::IdentificationFailed();
         }
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
         throw;
@@ -1602,10 +1605,10 @@ MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
     }
 }
 
-void MojeIDImpl::process_identification_request(
+void MojeIdImpl::process_identification_request(
         ContactId _contact_id,
         const std::string &_password,
-        LogRequestId _log_request_id)const
+        MojeIdImpl::LogRequestId _log_request_id)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
@@ -1616,7 +1619,7 @@ void MojeIDImpl::process_identification_request(
         bool reidentification;
         try {
             public_request_id = LibFred::GetActivePublicRequest(
-                LibFred::MojeID::PublicRequest::ContactIdentification())
+                Fred::Backend::MojeId::PublicRequest::ContactIdentification())
                 .exec(ctx, locked_contact, _log_request_id);
             reidentification = false;
         }
@@ -1626,29 +1629,29 @@ void MojeIDImpl::process_identification_request(
             }
             try {
                 public_request_id = LibFred::GetActivePublicRequest(
-                    LibFred::MojeID::PublicRequest::ContactReidentification())
+                    Fred::Backend::MojeId::PublicRequest::ContactReidentification())
                     .exec(ctx, locked_contact, _log_request_id);
                 reidentification = true;
             }
             catch (const LibFred::GetActivePublicRequest::Exception &e) {
                 if (e.is_set_no_request_found()) {
-                    throw MojeIDImplData::IdentificationRequestDoesntExist();
+                    throw MojeIdImplData::IdentificationRequestDoesntExist();
                 }
                 throw;
             }
         }
         const LibFred::ObjectStatesInfo states(LibFred::GetObjectStates(_contact_id).exec(ctx));
         if (states.absents(LibFred::Object_State::mojeid_contact)) {
-            throw MojeIDImplData::ObjectDoesntExist();
+            throw MojeIdImplData::ObjectDoesntExist();
         }
         if (states.absents(LibFred::Object_State::conditionally_identified_contact)) {
             throw std::runtime_error("state conditionallyIdentifiedContact missing");
         }
         if (states.presents(LibFred::Object_State::identified_contact)) {
-            throw MojeIDImplData::IdentificationAlreadyProcessed();
+            throw MojeIdImplData::IdentificationAlreadyProcessed();
         }
         if (states.presents(LibFred::Object_State::server_blocked)) {
-            throw MojeIDImplData::ObjectAdminBlocked();
+            throw MojeIdImplData::ObjectAdminBlocked();
         }
         if (states.absents(LibFred::Object_State::server_transfer_prohibited) ||
             states.absents(LibFred::Object_State::server_update_prohibited)   ||
@@ -1659,32 +1662,32 @@ void MojeIDImpl::process_identification_request(
 
         LibFred::PublicRequestLockGuardById locked_request(ctx, public_request_id);
         if (!LibFred::PublicRequestAuthInfo(ctx, locked_request).check_password(_password)) {
-            throw MojeIDImplData::IdentificationFailed();
+            throw MojeIdImplData::IdentificationFailed();
         }
         LibFred::StatusList to_set;
         to_set.insert(Conversion::Enums::to_db_handle(LibFred::Object_State::identified_contact));
         LibFred::CreateObjectStateRequestId(_contact_id, to_set).exec(ctx);
         LibFred::PerformObjectStateRequest(_contact_id).exec(ctx);
         answer(locked_request,
-               reidentification ? LibFred::MojeID::PublicRequest::ContactReidentification().iface()
-                                : LibFred::MojeID::PublicRequest::ContactIdentification().iface(),
+               reidentification ? Fred::Backend::MojeId::PublicRequest::ContactReidentification().iface()
+                                : Fred::Backend::MojeId::PublicRequest::ContactIdentification().iface(),
                "successfully processed",
                _log_request_id);
         ctx.commit_transaction();
     }
-    catch (const MojeIDImplData::IdentificationRequestDoesntExist&) {
+    catch (const MojeIdImplData::IdentificationRequestDoesntExist&) {
         LOGGER(PACKAGE).info("request failed (IdentificationRequestDoesntExist)");
         throw;
     }
-    catch (const MojeIDImplData::ObjectDoesntExist&) {
+    catch (const MojeIdImplData::ObjectDoesntExist&) {
         LOGGER(PACKAGE).info("request failed (ObjectDoesntExist)");
         throw;
     }
-    catch (const MojeIDImplData::IdentificationAlreadyProcessed&) {
+    catch (const MojeIdImplData::IdentificationAlreadyProcessed&) {
         LOGGER(PACKAGE).info("request failed (IdentificationAlreadyProcessed)");
         throw;
     }
-    catch (const MojeIDImplData::IdentificationFailed&) {
+    catch (const MojeIdImplData::IdentificationFailed&) {
         LOGGER(PACKAGE).info("request failed (IdentificationFailed)");
         throw;
     }
@@ -1698,7 +1701,7 @@ void MojeIDImpl::process_identification_request(
     }
 }
 
-void MojeIDImpl::commit_prepared_transaction(const std::string &_trans_id)const
+void MojeIdImpl::commit_prepared_transaction(const std::string &_trans_id)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
@@ -1734,7 +1737,7 @@ void MojeIDImpl::commit_prepared_transaction(const std::string &_trans_id)const
     }
 
     try {
-        const HandleMojeIDArgs *const server_conf_ptr = CfgArgs::instance()->get_handler_ptr_by_type< HandleMojeIDArgs >();
+        const HandleMojeIdArgs *const server_conf_ptr = CfgArgs::instance()->get_handler_ptr_by_type< HandleMojeIdArgs >();
         if (server_conf_ptr->auto_sms_generation) {
             this->generate_sms_messages();
         }
@@ -1749,7 +1752,7 @@ void MojeIDImpl::commit_prepared_transaction(const std::string &_trans_id)const
     }
 
     try {
-        const HandleMojeIDArgs *const server_conf_ptr = CfgArgs::instance()->get_handler_ptr_by_type< HandleMojeIDArgs >();
+        const HandleMojeIdArgs *const server_conf_ptr = CfgArgs::instance()->get_handler_ptr_by_type< HandleMojeIdArgs >();
         if (server_conf_ptr->auto_email_generation) {
             this->generate_email_messages();
         }
@@ -1764,7 +1767,7 @@ void MojeIDImpl::commit_prepared_transaction(const std::string &_trans_id)const
     }
 }
 
-void MojeIDImpl::rollback_prepared_transaction(const std::string &_trans_id)const
+void MojeIdImpl::rollback_prepared_transaction(const std::string &_trans_id)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
@@ -1802,9 +1805,9 @@ std::string birthdate_into_czech_date(const std::string &_birthdate)
     return out.str();
 }
 
-}
+} // namespace Fred::Backend::MojeId::{anonymous}
 
-Fred::Backend::Buffer MojeIDImpl::get_validation_pdf(ContactId _contact_id)const
+Fred::Backend::Buffer MojeIdImpl::get_validation_pdf(ContactId _contact_id)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
@@ -1831,10 +1834,10 @@ Fred::Backend::Buffer MojeIDImpl::get_validation_pdf(ContactId _contact_id)const
                   "EXISTS(SELECT 1 FROM public_request_objects_map WHERE request_id=pr.id AND object_id=c.id)",
             Database::query_param_list
                 (Conversion::Enums::to_db_handle(LibFred::PublicRequest::Status::active))
-                (LibFred::MojeID::PublicRequest::ContactValidation().get_public_request_type())
+                (Fred::Backend::MojeId::PublicRequest::ContactValidation().get_public_request_type())
                 (_contact_id));
         if (res.size() <= 0) {
-            throw MojeIDImplData::ObjectDoesntExist();
+            throw MojeIdImplData::ObjectDoesntExist();
         }
         const HandleRegistryArgs *const reg_conf =
             CfgArgs::instance()->get_handler_ptr_by_type< HandleRegistryArgs >();
@@ -1883,12 +1886,12 @@ Fred::Backend::Buffer MojeIDImpl::get_validation_pdf(ContactId _contact_id)const
     catch (const LibFred::PublicRequestsOfObjectLockGuardByObjectId::Exception &e) {
         if (e.is_set_object_doesnt_exist()) {
             LOGGER(PACKAGE).info(boost::format("contact doesn't exist (%1%)") % e.what());
-            throw MojeIDImplData::ObjectDoesntExist();
+            throw MojeIdImplData::ObjectDoesntExist();
         }
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
-    catch (const MojeIDImplData::ObjectDoesntExist&) {
+    catch (const MojeIdImplData::ObjectDoesntExist&) {
         LOGGER(PACKAGE).info("request doesn't exist (ObjectDoesntExist)");
         throw;
     }
@@ -1900,11 +1903,11 @@ Fred::Backend::Buffer MojeIDImpl::get_validation_pdf(ContactId _contact_id)const
         LOGGER(PACKAGE).error("request failed (unknown error)");
         throw;
     }
-}//MojeIDImpl::get_validation_pdf
+}//MojeIdImpl::get_validation_pdf
 
-void MojeIDImpl::create_validation_request(
+void MojeIdImpl::create_validation_request(
         ContactId _contact_id,
-        LogRequestId _log_request_id)const
+        MojeIdImpl::LogRequestId _log_request_id)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
@@ -1912,9 +1915,9 @@ void MojeIDImpl::create_validation_request(
         LibFred::OperationContextCreator ctx;
         const LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_contact(ctx, _contact_id);
         try {
-            LibFred::GetActivePublicRequest(LibFred::MojeID::PublicRequest::ContactValidation())
+            LibFred::GetActivePublicRequest(Fred::Backend::MojeId::PublicRequest::ContactValidation())
                 .exec(ctx, locked_contact, _log_request_id);
-            throw MojeIDImplData::ValidationRequestExists();
+            throw MojeIdImplData::ValidationRequestExists();
         }
         catch (const LibFred::GetActivePublicRequest::Exception &e) {
             if (!e.is_set_no_request_found()) {
@@ -1923,21 +1926,21 @@ void MojeIDImpl::create_validation_request(
         }
         const LibFred::ObjectStatesInfo states(LibFred::GetObjectStates(_contact_id).exec(ctx));
         if (states.presents(LibFred::Object_State::validated_contact)) {
-            throw MojeIDImplData::ValidationAlreadyProcessed();
+            throw MojeIdImplData::ValidationAlreadyProcessed();
         }
         if (states.absents(LibFred::Object_State::mojeid_contact)) {
-            throw MojeIDImplData::ObjectDoesntExist();
+            throw MojeIdImplData::ObjectDoesntExist();
         }
         const LibFred::InfoContactData contact_data = LibFred::InfoContactById(_contact_id).exec(ctx).info_contact_data;
         {
-            const MojeIDImplInternal::CheckCreateValidationRequest check_create_validation_request(contact_data);
+            const MojeIdImplInternal::CheckCreateValidationRequest check_create_validation_request(contact_data);
             if (!check_create_validation_request.success()) {
-                MojeIDImplInternal::raise(check_create_validation_request);
+                MojeIdImplInternal::raise(check_create_validation_request);
             }
         }
         LibFred::CreatePublicRequest().set_registrar_id(mojeid_registrar_id_)
                                    .exec(locked_contact,
-                                         LibFred::MojeID::PublicRequest::ContactValidation().iface(),
+                                         Fred::Backend::MojeId::PublicRequest::ContactValidation().iface(),
                                          get_optional_log_request_id(_log_request_id));
         ctx.commit_transaction();
         return;
@@ -1945,24 +1948,24 @@ void MojeIDImpl::create_validation_request(
     catch (const LibFred::PublicRequestsOfObjectLockGuardByObjectId::Exception &e) {
         if (e.is_set_object_doesnt_exist()) {
             LOGGER(PACKAGE).info(boost::format("contact doesn't exist (%1%)") % e.what());
-            throw MojeIDImplData::ObjectDoesntExist();
+            throw MojeIdImplData::ObjectDoesntExist();
         }
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
-    catch (const MojeIDImplData::ObjectDoesntExist&) {
+    catch (const MojeIdImplData::ObjectDoesntExist&) {
         LOGGER(PACKAGE).info("contact doesn't exist (ObjectDoesntExist)");
         throw;
     }
-    catch (const MojeIDImplData::ValidationRequestExists&) {
+    catch (const MojeIdImplData::ValidationRequestExists&) {
         LOGGER(PACKAGE).info("unable to create new request (ValidationRequestExists)");
         throw;
     }
-    catch (const MojeIDImplData::ValidationAlreadyProcessed&) {
+    catch (const MojeIdImplData::ValidationAlreadyProcessed&) {
         LOGGER(PACKAGE).info("contact already validated (ValidationAlreadyProcessed)");
         throw;
     }
-    catch (const MojeIDImplData::CreateValidationRequestValidationResult&) {
+    catch (const MojeIdImplData::CreateValidationRequestValidationResult&) {
         LOGGER(PACKAGE).info("request failed (CreateValidationRequestValidationResult)");
         throw;
     }
@@ -1976,9 +1979,9 @@ void MojeIDImpl::create_validation_request(
     }
 }
 
-void MojeIDImpl::validate_contact(
+void MojeIdImpl::validate_contact(
         ContactId _contact_id,
-        LogRequestId _log_request_id)const
+        MojeIdImpl::LogRequestId _log_request_id)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
@@ -1987,29 +1990,29 @@ void MojeIDImpl::validate_contact(
         const LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_contact(ctx, _contact_id);
         const LibFred::ObjectStatesInfo states(LibFred::GetObjectStates(_contact_id).exec(ctx));
         if (states.presents(LibFred::Object_State::validated_contact)) {
-            throw MojeIDImplData::ValidationAlreadyProcessed();
+            throw MojeIdImplData::ValidationAlreadyProcessed();
         }
         if (states.absents(LibFred::Object_State::mojeid_contact)) {
-            throw MojeIDImplData::ObjectDoesntExist();
+            throw MojeIdImplData::ObjectDoesntExist();
         }
         const LibFred::InfoContactData contact_data = LibFred::InfoContactById(_contact_id).exec(ctx).info_contact_data;
         {
-            const MojeIDImplInternal::CheckCreateValidationRequest check_create_validation_request(contact_data);
+            const MojeIdImplInternal::CheckCreateValidationRequest check_create_validation_request(contact_data);
             if (!check_create_validation_request.success()) {
-                MojeIDImplInternal::raise(check_create_validation_request);
+                MojeIdImplInternal::raise(check_create_validation_request);
             }
         }
         const LibFred::PublicRequestId public_request_id =
             LibFred::CreatePublicRequest().set_registrar_id(mojeid_registrar_id_)
                                        .exec(locked_contact,
-                                             LibFred::MojeID::PublicRequest::ContactValidation().iface(),
+                                             Fred::Backend::MojeId::PublicRequest::ContactValidation().iface(),
                                              get_optional_log_request_id(_log_request_id));
         const LibFred::PublicRequestLockGuardById locked_request(ctx, public_request_id);
         LibFred::UpdatePublicRequest().set_registrar_id(mojeid_registrar_id_)
                                    .set_status(LibFred::PublicRequest::Status::answered)
-                                   .set_reason("MojeID validate_contact function has been called")
+                                   .set_reason("MojeId validate_contact function has been called")
                                    .exec(locked_request,
-                                         LibFred::MojeID::PublicRequest::ContactValidation().iface(),
+                                         Fred::Backend::MojeId::PublicRequest::ContactValidation().iface(),
                                          get_optional_log_request_id(_log_request_id));
         LibFred::StatusList to_set;
         to_set.insert(Conversion::Enums::to_db_handle(LibFred::Object_State::validated_contact));
@@ -2021,20 +2024,20 @@ void MojeIDImpl::validate_contact(
     catch (const LibFred::PublicRequestsOfObjectLockGuardByObjectId::Exception &e) {
         if (e.is_set_object_doesnt_exist()) {
             LOGGER(PACKAGE).info(boost::format("contact doesn't exist (%1%)") % e.what());
-            throw MojeIDImplData::ObjectDoesntExist();
+            throw MojeIdImplData::ObjectDoesntExist();
         }
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
-    catch (const MojeIDImplData::ObjectDoesntExist&) {
+    catch (const MojeIdImplData::ObjectDoesntExist&) {
         LOGGER(PACKAGE).info("contact doesn't exist (ObjectDoesntExist)");
         throw;
     }
-    catch (const MojeIDImplData::ValidationAlreadyProcessed&) {
+    catch (const MojeIdImplData::ValidationAlreadyProcessed&) {
         LOGGER(PACKAGE).info("contact already validated (ValidationAlreadyProcessed)");
         throw;
     }
-    catch (const MojeIDImplData::CreateValidationRequestValidationResult&) {
+    catch (const MojeIdImplData::CreateValidationRequestValidationResult&) {
         LOGGER(PACKAGE).info("request failed (CreateValidationRequestValidationResult)");
         throw;
     }
@@ -2053,7 +2056,7 @@ namespace {
 typedef bool IsNotNull;
 
 IsNotNull add_state(const Database::Value &_valid_from, LibFred::Object_State::Enum _state,
-                    Registry::MojeIDImplData::ContactStateInfo &_data)
+                    MojeIdImplData::ContactStateInfo &_data)
 {
     if (_valid_from.isnull()) {
         return false;
@@ -2079,11 +2082,11 @@ IsNotNull add_state(const Database::Value &_valid_from, LibFred::Object_State::E
     return true;
 }
 
-}
+} // namespace Fred::Backend::MojeId::{anonymous}
 
-void MojeIDImpl::get_contacts_state_changes(
+void MojeIdImpl::get_contacts_state_changes(
     unsigned long _last_hours,
-    MojeIDImplData::ContactStateInfoList &_result)const
+    MojeIdImplData::ContactStateInfoList &_result)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
@@ -2130,7 +2133,7 @@ void MojeIDImpl::get_contacts_state_changes(
         _result.clear();
         _result.reserve(rcontacts.size());
         for (::size_t idx = 0; idx < rcontacts.size(); ++idx) {
-            Registry::MojeIDImplData::ContactStateInfo data;
+            MojeIdImplData::ContactStateInfo data;
             data.contact_id = static_cast< ContactId >(rcontacts[idx][0]);
             if (!add_state(rcontacts[idx][1], LibFred::Object_State::conditionally_identified_contact, data)) {
                 std::ostringstream msg;
@@ -2161,9 +2164,9 @@ void MojeIDImpl::get_contacts_state_changes(
     }
 }
 
-void MojeIDImpl::get_contact_state(
+void MojeIdImpl::get_contact_state(
     ContactId _contact_id,
-    MojeIDImplData::ContactStateInfo &_result)const
+    MojeIdImplData::ContactStateInfo &_result)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
@@ -2199,7 +2202,7 @@ void MojeIDImpl::get_contact_state(
             "WHERE c.id=$2::BIGINT", params);
 
         if (rcontact.size() == 0) {
-            throw MojeIDImplData::ObjectDoesntExist();
+            throw MojeIdImplData::ObjectDoesntExist();
         }
 
         if (1 < rcontact.size()) {
@@ -2209,12 +2212,12 @@ void MojeIDImpl::get_contact_state(
         }
 
         if (static_cast< bool >(rcontact[0][0])) { // contact's registrar missing
-            throw MojeIDImplData::ObjectDoesntExist();
+            throw MojeIdImplData::ObjectDoesntExist();
         }
 
         _result.contact_id = _contact_id;
         if (!add_state(rcontact[0][1], LibFred::Object_State::mojeid_contact, _result)) {
-            throw MojeIDImplData::ObjectDoesntExist();
+            throw MojeIdImplData::ObjectDoesntExist();
         }
         if (!add_state(rcontact[0][2], LibFred::Object_State::conditionally_identified_contact, _result)) {
             std::ostringstream msg;
@@ -2226,7 +2229,7 @@ void MojeIDImpl::get_contact_state(
         add_state(rcontact[0][4], LibFred::Object_State::validated_contact, _result);
         add_state(rcontact[0][5], LibFred::Object_State::linked, _result);
     }//try
-    catch (const MojeIDImplData::ObjectDoesntExist&) {
+    catch (const MojeIdImplData::ObjectDoesntExist&) {
         LOGGER(PACKAGE).info("ObjectDoesntExist");
         throw;
     }
@@ -2240,10 +2243,10 @@ void MojeIDImpl::get_contact_state(
     }
 }
 
-void MojeIDImpl::cancel_account_prepare(
+void MojeIdImpl::cancel_account_prepare(
         ContactId _contact_id,
         const std::string &_trans_id,
-        LogRequestId _log_request_id)const
+        MojeIdImpl::LogRequestId _log_request_id)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
@@ -2253,7 +2256,7 @@ void MojeIDImpl::cancel_account_prepare(
         const LibFred::ObjectStatesInfo states(LibFred::GetObjectStates(_contact_id).exec(ctx));
 
         if (states.absents(LibFred::Object_State::mojeid_contact)) {
-            throw MojeIDImplData::ObjectDoesntExist();
+            throw MojeIdImplData::ObjectDoesntExist();
         }
 
         if (!(states.presents(LibFred::Object_State::validated_contact)  ||
@@ -2303,7 +2306,7 @@ void MojeIDImpl::cancel_account_prepare(
                                    .set_reason("cancel_account_prepare call")
                                    .set_registrar_id(ctx, mojeid_registrar_handle_)
                                    .exec(locked_contact,
-                                         LibFred::MojeID::PublicRequest::ContactValidation(),
+                                         Fred::Backend::MojeId::PublicRequest::ContactValidation(),
                                          get_optional_log_request_id(_log_request_id));
         prepare_transaction_storage()->store(_trans_id, _contact_id);
         ctx.commit_transaction();
@@ -2312,12 +2315,12 @@ void MojeIDImpl::cancel_account_prepare(
     catch (const LibFred::PublicRequestsOfObjectLockGuardByObjectId::Exception &e) {
         if (e.is_set_object_doesnt_exist()) {
             LOGGER(PACKAGE).info(boost::format("contact doesn't exist (%1%)") % e.what());
-            throw MojeIDImplData::ObjectDoesntExist();
+            throw MojeIdImplData::ObjectDoesntExist();
         }
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
-    catch (const MojeIDImplData::ObjectDoesntExist&) {
+    catch (const MojeIdImplData::ObjectDoesntExist&) {
         LOGGER(PACKAGE).info("contact doesn't exist (ObjectDoesntExist)");
         throw;
     }
@@ -2331,9 +2334,9 @@ void MojeIDImpl::cancel_account_prepare(
     }
 }
 
-void MojeIDImpl::send_new_pin3(
+void MojeIdImpl::send_new_pin3(
     ContactId _contact_id,
-    LogRequestId _log_request_id)const
+    MojeIdImpl::LogRequestId _log_request_id)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
@@ -2344,14 +2347,14 @@ void MojeIDImpl::send_new_pin3(
         if (states.presents(LibFred::Object_State::identified_contact)) {
             // nothing to send if contact is identified
             // IdentificationRequestDoesntExist isn't error in frontend
-            throw MojeIDImplData::IdentificationRequestDoesntExist();
+            throw MojeIdImplData::IdentificationRequestDoesntExist();
         }
         if (states.absents(LibFred::Object_State::mojeid_contact)) {
-            throw MojeIDImplData::ObjectDoesntExist();
+            throw MojeIdImplData::ObjectDoesntExist();
         }
         bool has_identification_request = false;
         try {
-            const LibFred::MojeID::PublicRequest::ContactIdentification type;
+            const Fred::Backend::MojeId::PublicRequest::ContactIdentification type;
             LibFred::GetActivePublicRequest get_active_public_request_op(type.iface());
             while (true) {
                 const LibFred::PublicRequestId request_id = get_active_public_request_op.exec(ctx, locked_object);
@@ -2372,7 +2375,7 @@ void MojeIDImpl::send_new_pin3(
 
         bool has_reidentification_request = false;
         try {
-            const LibFred::MojeID::PublicRequest::ContactReidentification type;
+            const Fred::Backend::MojeId::PublicRequest::ContactReidentification type;
             LibFred::GetActivePublicRequest get_active_public_request_op(type.iface());
             while (true) {
                 const LibFred::PublicRequestId request_id = get_active_public_request_op.exec(ctx, locked_object);
@@ -2392,10 +2395,10 @@ void MojeIDImpl::send_new_pin3(
         }
 
         if (!has_identification_request && !has_reidentification_request) {
-            throw MojeIDImplData::IdentificationRequestDoesntExist();
+            throw MojeIdImplData::IdentificationRequestDoesntExist();
         }
 
-        const HandleMojeIDArgs *const server_conf_ptr = CfgArgs::instance()->get_handler_ptr_by_type< HandleMojeIDArgs >();
+        const HandleMojeIdArgs *const server_conf_ptr = CfgArgs::instance()->get_handler_ptr_by_type< HandleMojeIdArgs >();
         check_sent_letters_limit(ctx,
                                  _contact_id,
                                  server_conf_ptr->letter_limit_count,
@@ -2408,29 +2411,29 @@ void MojeIDImpl::send_new_pin3(
             create_public_request_op.exec(
                 locked_object,
                 has_reidentification_request
-                ? LibFred::MojeID::PublicRequest::ContactReidentification().iface()
-                : LibFred::MojeID::PublicRequest::ContactIdentification().iface(),
+                ? Fred::Backend::MojeId::PublicRequest::ContactReidentification().iface()
+                : Fred::Backend::MojeId::PublicRequest::ContactIdentification().iface(),
                 get_optional_log_request_id(_log_request_id));
         ctx.commit_transaction();
         return;
     }
-    catch (const MojeIDImplData::ObjectDoesntExist &e) {
+    catch (const MojeIdImplData::ObjectDoesntExist &e) {
         LOGGER(PACKAGE).info("ObjectDoesntExist");
         throw;
     }
-    catch (const MojeIDImplData::MessageLimitExceeded &e) {
+    catch (const MojeIdImplData::MessageLimitExceeded &e) {
         LOGGER(PACKAGE).info(e.as_string());
         throw;
     }
     catch (const LibFred::PublicRequestsOfObjectLockGuardByObjectId::Exception &e) {
         if (e.is_set_object_doesnt_exist()) {
             LOGGER(PACKAGE).info(e.what());
-            throw MojeIDImplData::ObjectDoesntExist();
+            throw MojeIdImplData::ObjectDoesntExist();
         }
         LOGGER(PACKAGE).error(e.what());
         throw;
     }
-    catch (const MojeIDImplData::IdentificationRequestDoesntExist&) {
+    catch (const MojeIdImplData::IdentificationRequestDoesntExist&) {
         LOGGER(PACKAGE).info("IdentificationRequestDoesntExist");
         throw;
     }
@@ -2444,9 +2447,9 @@ void MojeIDImpl::send_new_pin3(
     }
 }
 
-void MojeIDImpl::send_mojeid_card(
+void MojeIdImpl::send_mojeid_card(
     ContactId _contact_id,
-    LogRequestId _log_request_id)const
+    MojeIdImpl::LogRequestId _log_request_id)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
@@ -2454,13 +2457,13 @@ void MojeIDImpl::send_mojeid_card(
         LibFred::OperationContextCreator ctx;
         const LibFred::ObjectStatesInfo states(LibFred::GetObjectStates(_contact_id).exec(ctx));
         if (states.absents(LibFred::Object_State::mojeid_contact)) {
-            throw MojeIDImplData::ObjectDoesntExist();
+            throw MojeIdImplData::ObjectDoesntExist();
         }
-        const HandleMojeIDArgs *const server_conf_ptr = CfgArgs::instance()->
-                                                            get_handler_ptr_by_type< HandleMojeIDArgs >();
+        const HandleMojeIdArgs *const server_conf_ptr = CfgArgs::instance()->
+                                                            get_handler_ptr_by_type< HandleMojeIdArgs >();
         const LibFred::InfoContactData data = LibFred::InfoContactById(_contact_id).exec(ctx).info_contact_data;
         const LibFred::Messages::ManagerPtr manager_ptr = LibFred::Messages::create_manager();
-        MojeIDImpl::send_mojeid_card(
+        MojeIdImpl::send_mojeid_card(
             ctx,
             manager_ptr.get(),
             data,
@@ -2471,11 +2474,11 @@ void MojeIDImpl::send_mojeid_card(
             states.presents(LibFred::Object_State::validated_contact));
         ctx.commit_transaction();
     }
-    catch (const MojeIDImplData::ObjectDoesntExist&) {
+    catch (const MojeIdImplData::ObjectDoesntExist&) {
         LOGGER(PACKAGE).info("ObjectDoesntExist");
         throw;
     }
-    catch (const MojeIDImplData::MessageLimitExceeded &e) {
+    catch (const MojeIdImplData::MessageLimitExceeded &e) {
         LOGGER(PACKAGE).info(e.as_string());
         throw;
     }
@@ -2489,15 +2492,15 @@ void MojeIDImpl::send_mojeid_card(
     }
 }
 
-void MojeIDImpl::generate_sms_messages()const
+void MojeIdImpl::generate_sms_messages()const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
     try {
         LibFred::OperationContextCreator ctx;
-        typedef ::MojeID::Messages::CommChannel CommChannel;
-        ::MojeID::Messages::DefaultMultimanager multimanager;
-        ::MojeID::Messages::Generate::Into< CommChannel::sms >::for_new_requests(ctx, multimanager);
+        typedef Messages::CommChannel CommChannel;
+        Messages::DefaultMultimanager multimanager;
+        Messages::Generate::Into< CommChannel::sms >::for_new_requests(ctx, multimanager);
         ctx.commit_transaction();
         return;
     }
@@ -2511,13 +2514,13 @@ void MojeIDImpl::generate_sms_messages()const
     }
 }
 
-void MojeIDImpl::enable_sms_messages_generation(bool enable)const
+void MojeIdImpl::enable_sms_messages_generation(bool enable)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
     try {
         LibFred::OperationContextCreator ctx;
-        ::MojeID::Messages::Generate::enable< ::MojeID::Messages::CommChannel::sms >(ctx, enable);
+        Messages::Generate::enable< Messages::CommChannel::sms >(ctx, enable);
         ctx.commit_transaction();
         return;
     }
@@ -2531,15 +2534,15 @@ void MojeIDImpl::enable_sms_messages_generation(bool enable)const
     }
 }
 
-void MojeIDImpl::generate_letter_messages()const
+void MojeIdImpl::generate_letter_messages()const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
     try {
         LibFred::OperationContextCreator ctx;
-        typedef ::MojeID::Messages::CommChannel CommChannel;
-        ::MojeID::Messages::DefaultMultimanager multimanager;
-        ::MojeID::Messages::Generate::Into< CommChannel::letter >::for_new_requests(
+        typedef Messages::CommChannel CommChannel;
+        Messages::DefaultMultimanager multimanager;
+        Messages::Generate::Into< CommChannel::letter >::for_new_requests(
             ctx, multimanager, check_limits::sent_letters());
         ctx.commit_transaction();
         return;
@@ -2554,13 +2557,13 @@ void MojeIDImpl::generate_letter_messages()const
     }
 }
 
-void MojeIDImpl::enable_letter_messages_generation(bool enable)const
+void MojeIdImpl::enable_letter_messages_generation(bool enable)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
     try {
         LibFred::OperationContextCreator ctx;
-        ::MojeID::Messages::Generate::enable< ::MojeID::Messages::CommChannel::letter >(ctx, enable);
+        Messages::Generate::enable< Messages::CommChannel::letter >(ctx, enable);
         ctx.commit_transaction();
         return;
     }
@@ -2574,19 +2577,19 @@ void MojeIDImpl::enable_letter_messages_generation(bool enable)const
     }
 }
 
-void MojeIDImpl::generate_email_messages()const
+void MojeIdImpl::generate_email_messages()const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
     try {
         LibFred::OperationContextCreator ctx;
-        typedef ::MojeID::Messages::CommChannel CommChannel;
-        const std::string link_hostname_part = CfgArgs::instance()->get_handler_ptr_by_type< HandleMojeIDArgs >()->hostname;
-        ::MojeID::Messages::DefaultMultimanager multimanager;
-        ::MojeID::Messages::Generate::Into< CommChannel::email >::for_new_requests(
+        typedef Messages::CommChannel CommChannel;
+        const std::string link_hostname_part = CfgArgs::instance()->get_handler_ptr_by_type< HandleMojeIdArgs >()->hostname;
+        Messages::DefaultMultimanager multimanager;
+        Messages::Generate::Into< CommChannel::email >::for_new_requests(
             ctx,
             multimanager,
-            ::MojeID::Messages::Generate::message_checker_always_success(),
+            Messages::Generate::message_checker_always_success(),
             link_hostname_part);
         ctx.commit_transaction();
         return;
@@ -2601,13 +2604,13 @@ void MojeIDImpl::generate_email_messages()const
     }
 }
 
-void MojeIDImpl::enable_email_messages_generation(bool enable)const
+void MojeIdImpl::enable_email_messages_generation(bool enable)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
     try {
         LibFred::OperationContextCreator ctx;
-        ::MojeID::Messages::Generate::enable< ::MojeID::Messages::CommChannel::email >(ctx, enable);
+        Messages::Generate::enable< Messages::CommChannel::email >(ctx, enable);
         ctx.commit_transaction();
         return;
     }
@@ -2621,13 +2624,13 @@ void MojeIDImpl::enable_email_messages_generation(bool enable)const
     }
 }
 
-MojeIDImpl::MessageId MojeIDImpl::send_mojeid_card(
+MojeIdImpl::MessageId MojeIdImpl::send_mojeid_card(
     LibFred::OperationContext &_ctx,
     LibFred::Messages::Manager *_msg_manager_ptr,
     const LibFred::InfoContactData &_data,
     unsigned _limit_count,
     unsigned _limit_interval,
-    LogRequestId _log_request_id,
+    MojeIdImpl::LogRequestId _log_request_id,
     const Optional< boost::posix_time::ptime > &_letter_time,
     const Optional< bool > &_validated_contact)
 {
@@ -2745,5 +2748,6 @@ MojeIDImpl::MessageId MojeIDImpl::send_mojeid_card(
     return message_id;
 }
 
-} // namespace Registry::MojeID
-} // namespace Registry
+} // namespace Fred::Backend::MojeId
+} // namespace Fred::Backend
+} // namespace Fred

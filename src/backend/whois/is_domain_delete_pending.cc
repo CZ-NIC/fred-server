@@ -1,5 +1,7 @@
 #include "src/backend/whois/is_domain_delete_pending.hh"
 
+namespace Fred {
+namespace Backend {
 namespace Whois {
 
     bool is_domain_delete_pending(const std::string &_fqdn, LibFred::OperationContext& _ctx, const std::string& _timezone) {
@@ -80,4 +82,6 @@ namespace Whois {
             return false;
         }
     }
-}
+} // namespace Fred::Backend::Whois
+} // namespace Fred::Backend
+} // namespace Fred

@@ -16,7 +16,11 @@
 #include <boost/assign/list_of.hpp>
 #include <boost/foreach.hpp>
 
-namespace  Admin {
+namespace Fred {
+namespace Backend {
+namespace Admin {
+namespace Contact {
+namespace Verification {
     resolve_check::resolve_check(
         const uuid&                     _check_handle,
         const std::string&              _status_handle,
@@ -48,7 +52,7 @@ namespace  Admin {
                         .check_state_history.rbegin()->status_handle
                 ) == allowed_statuses.end()
             ) {
-                throw Admin::ExceptionCheckNotUpdateable();
+                throw ExceptionCheckNotUpdateable();
             }
         }
 
@@ -62,7 +66,7 @@ namespace  Admin {
                     status_handle_
                 ) == allowed_statuses.end()
             ) {
-                throw Admin::ExceptionCheckNotUpdateable();
+                throw ExceptionCheckNotUpdateable();
             }
         }
 
@@ -86,10 +90,10 @@ namespace  Admin {
                 postprocess_thank_you_check(_ctx, check_handle_);
             }
         } catch (const LibFred::ExceptionUnknownCheckHandle& ) {
-            throw Admin::ExceptionUnknownCheckHandle();
+            throw ExceptionUnknownCheckHandle();
 
         } catch (const LibFred::ExceptionUnknownCheckStatusHandle& ) {
-            throw Admin::ExceptionUnknownCheckStatusHandle();
+            throw ExceptionUnknownCheckStatusHandle();
         }
     }
 
@@ -108,10 +112,10 @@ namespace  Admin {
         const std::string& new_handle = check_info.check_state_history.rbegin()->status_handle;
         if( new_handle == LibFred::ContactCheckStatus::OK ) {
 
-            AdminContactVerificationObjectStates::cancel_all_states(_ctx, contact_info.info_contact_data.id);
+            ContactStates::cancel_all_states(_ctx, contact_info.info_contact_data.id);
 
             std::set<std::string> status;
-            status.insert(Admin::AdminContactVerificationObjectStates::CONTACT_PASSED_MANUAL_VERIFICATION);
+            status.insert(ContactStates::CONTACT_PASSED_MANUAL_VERIFICATION);
 
             std::set<unsigned long long> state_request_ids;
             state_request_ids.insert(
@@ -122,7 +126,7 @@ namespace  Admin {
                 .second
             );
 
-            Admin::add_related_object_state_requests(_ctx, _check_handle, state_request_ids);
+            add_related_object_state_requests(_ctx, _check_handle, state_request_ids);
         }
 
         LibFred::PerformObjectStateRequest(contact_info.info_contact_data.id).exec(_ctx);
@@ -152,13 +156,13 @@ namespace  Admin {
             return;
         }
 
-        AdminContactVerificationObjectStates::cancel_all_states(_ctx, contact_info.info_contact_data.id);
+        ContactStates::cancel_all_states(_ctx, contact_info.info_contact_data.id);
 
         if( new_handle == LibFred::ContactCheckStatus::OK
             ||
             new_handle == LibFred::ContactCheckStatus::FAIL
         ) {
-            using namespace Admin::AdminContactVerificationObjectStates;
+            using namespace ContactStates;
 
             std::set<std::string> status;
 
@@ -174,7 +178,7 @@ namespace  Admin {
                 .second
             );
 
-            Admin::add_related_object_state_requests(_ctx, _check_handle, state_request_ids);
+            add_related_object_state_requests(_ctx, _check_handle, state_request_ids);
         }
 
         LibFred::PerformObjectStateRequest(contact_info.info_contact_data.id).exec(_ctx);
@@ -187,4 +191,8 @@ namespace  Admin {
         // it is exactly the same
         postprocess_automatic_check(_ctx, _check_handle);
     }
-}
+} // namespace Fred::Backend::Admin::Contact::Verification
+} // namespace Fred::Backend::Admin::Contact
+} // namespace Fred::Backend::Admin
+} // namespace Fred::Backend
+} // namespace Fred

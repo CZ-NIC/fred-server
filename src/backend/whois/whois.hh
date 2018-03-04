@@ -37,10 +37,9 @@
 #include <string>
 #include <vector>
 
-namespace Registry
-{
-namespace WhoisImpl
-{
+namespace Fred {
+namespace Backend {
+namespace Whois {
 
 struct PlaceAddress
 {
@@ -718,7 +717,8 @@ private:
     const std::string server_name;
 };//Server_impl
 
-}//WhoisImpl
-}//Registry
+} // namespace Fred::Backend::Whois
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif /* _WHOIS_H_3513138416434634 */

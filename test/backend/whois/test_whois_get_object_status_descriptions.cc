@@ -12,7 +12,7 @@ struct object_status_descriptions_fixture
 : whois_impl_instance_fixture
 {
     typedef std::map<std::string, std::string> map_type;
-    typedef Registry::WhoisImpl::ObjectStatusDesc StatusDesc;
+    typedef Fred::Backend::Whois::ObjectStatusDesc StatusDesc;
     const std::string test_lang;
     std::string object_name;
     map_type statuses;
@@ -21,7 +21,7 @@ struct object_status_descriptions_fixture
     object_status_descriptions_fixture()
     : test_lang("EN")
     {
-        ::LibFred::OperationContextCreator ctx;
+        LibFred::OperationContextCreator ctx;
         statuses["expired"] = "description of expired";
         statuses["unguarded"] = "description of unguarded";
         statuses["serverTransferProhibited"] = "description of serverTransferProhibited";
@@ -116,9 +116,9 @@ typedef boost::mpl::list<domain_type, contact_type, nsset_type, keyset_type> tes
 /*get_domain_status_descriptions*/
 BOOST_FIXTURE_TEST_CASE_TEMPLATE(gdsd, T, test_types, T)
 {
-    ::LibFred::OperationContextCreator ctx;
+    LibFred::OperationContextCreator ctx;
     std::vector<::LibFred::ObjectStateDescription> states =
-                        ::LibFred::GetObjectStateDescriptions(T::test_lang)
+                        LibFred::GetObjectStateDescriptions(T::test_lang)
                             .set_object_type(T::object_name)
                             .set_external()
                             .exec(ctx);
@@ -143,7 +143,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(gdsdm, T, test_types, T)
                     T::object_name +
                     " state must not have a localization");
     }
-    catch(const Registry::WhoisImpl::MissingLocalization& ex)
+    catch(const Fred::Backend::Whois::MissingLocalization& ex)
     {
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));

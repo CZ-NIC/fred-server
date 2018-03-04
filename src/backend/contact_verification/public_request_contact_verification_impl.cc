@@ -12,18 +12,20 @@
 
 #include <stdexcept>
 
-namespace LibFred {
+namespace Fred {
+namespace Backend {
+namespace ContactVerification {
 namespace PublicRequest {
 
 FACTORY_MODULE_INIT_DEFI(contact_verification)
 
 class ConditionalContactIdentification
         : public LibFred::PublicRequest::PublicRequestAuthImpl
-        , public Util::FactoryAutoRegister<PublicRequest
+        , public Util::FactoryAutoRegister<LibFred::PublicRequest::PublicRequest
               , ConditionalContactIdentification>
 {
     LibFred::Contact::Verification::ConditionalContactIdentificationImpl cond_contact_identification_impl;
-    ContactVerificationPassword contact_verification_passwd_;
+    LibFred::PublicRequest::ContactVerificationPassword contact_verification_passwd_;
 
 public:
     ConditionalContactIdentification()
@@ -43,7 +45,7 @@ public:
         if (!this->getId())
         {
             /* if there is another open CCI close it */
-            cancel_public_request(
+            LibFred::PublicRequest::cancel_public_request(
                 this->getObject(0).id,
                 PRT_CONTACT_CONDITIONAL_IDENTIFICATION ,
                 this->getRequestId());
@@ -67,7 +69,7 @@ public:
         LibFred::update_object_states(this->getObject(0).id);
 
         /* make new request for finishing contact identification */
-        PublicRequestAuthPtr new_request(dynamic_cast<PublicRequestAuth*>(
+        LibFred::PublicRequest::PublicRequestAuthPtr new_request(dynamic_cast<PublicRequestAuth*>(
                 this->get_manager_ptr()->createRequest(
                         PRT_CONTACT_IDENTIFICATION)));
         if (new_request)
@@ -97,7 +99,7 @@ public:
 
     static std::string registration_name()
     {
-        return LibFred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION;
+        return Fred::Backend::ContactVerification::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION;
     }
 };
 
@@ -105,10 +107,10 @@ public:
 
 class ContactIdentification
         : public LibFred::PublicRequest::PublicRequestAuthImpl
-        , public Util::FactoryAutoRegister<PublicRequest, ContactIdentification>
+        , public Util::FactoryAutoRegister<LibFred::PublicRequest::PublicRequest, ContactIdentification>
 {
     LibFred::Contact::Verification::ContactIdentificationImpl contact_identification_impl;
-    ContactVerificationPassword contact_verification_passwd_;
+    LibFred::PublicRequest::ContactVerificationPassword contact_verification_passwd_;
 public:
     ContactIdentification()
     : contact_identification_impl(this
@@ -127,9 +129,9 @@ public:
         if (!this->getId())
         {
             /* if there is another open CI close it */
-            cancel_public_request(
+            LibFred::PublicRequest::cancel_public_request(
                     this->getObject(0).id,
-                    LibFred::PublicRequest::PRT_CONTACT_IDENTIFICATION,
+                    Fred::Backend::ContactVerification::PublicRequest::PRT_CONTACT_IDENTIFICATION,
                 this->getRequestId());
         }
         PublicRequestAuthImpl::save();
@@ -166,9 +168,11 @@ public:
 
     static std::string registration_name()
     {
-        return LibFred::PublicRequest::PRT_CONTACT_IDENTIFICATION;
+        return Fred::Backend::ContactVerification::PublicRequest::PRT_CONTACT_IDENTIFICATION;
     }
 };
 
-}
-}
+} // namespace Fred::Backend::ContactVerification::PublicRequest
+} // namespace Fred::Backend::ContactVerification
+} // namespace Fred::Backend
+} // namespace Fred

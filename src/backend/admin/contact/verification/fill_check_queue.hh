@@ -30,8 +30,12 @@
 
 #include "src/util/optional_value.hh"
 
+namespace Fred {
+namespace Backend {
 namespace Admin {
-namespace ContactVerificationQueue {
+namespace Contact {
+namespace Verification {
+namespace Queue {
 
     enum allowed_contact_roles {
         owner, admin_c, tech_c
@@ -95,8 +99,12 @@ namespace ContactVerificationQueue {
 
             std::vector<enqueued_check> exec();
     };
-}
-}
+} // namespace Fred::Backend::Admin::Contact::Verification::Queue
+} // namespace Fred::Backend::Admin::Contact::Verification
+} // namespace Fred::Backend::Admin::Contact
+} // namespace Fred::Backend::Admin
+} // namespace Fred::Backend
+} // namespace Fred
 
 
 #endif

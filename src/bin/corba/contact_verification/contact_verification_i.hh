@@ -29,19 +29,28 @@
 #include <memory>
 #include <string>
 
-namespace Registry
+namespace Fred {
+namespace Backend {
+namespace ContactVerification {
+
+class ContactVerificationImpl;
+
+} // namespace Fred::Backend::ContactVerification
+} // namespace Fred::Backend
+} // namespace Fred
+
+namespace CorbaConversion
 {
     namespace Contact
     {
         namespace Verification
         {
-            class ContactVerificationImpl;//pimpl class
 
             class ContactVerification_i: public POA_Registry::ContactVerification
             {
             private:
                 // do not copy
-                const std::unique_ptr<ContactVerificationImpl> pimpl_;
+                const std::unique_ptr<Fred::Backend::ContactVerification::ContactVerificationImpl> pimpl_;
                 ContactVerification_i(const ContactVerification_i&);//no body
                 ContactVerification_i& operator= (const ContactVerification_i&);//no body
 
@@ -70,9 +79,9 @@ namespace Registry
               char* getRegistrarName(const char* registrar_handle);
 
             };//class ContactVerification_i
-        }
-    }
-}
+        } // namespace CorbaConversion::Contact::Verification
+    } // namespace CorbaConversion::Contact
+} // namespace CorbaConversion
 
 #endif //CONTACT_VERIFICATION_I_H__
 

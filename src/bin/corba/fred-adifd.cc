@@ -122,8 +122,8 @@ int main(int argc, char *argv[])
                     , adifd_args_ptr->adifd_session_garbage
             ));
 
-        std::unique_ptr<Registry::AdminContactVerification::Server_i>
-            admin_contact_verification_server(new(Registry::AdminContactVerification::Server_i));
+        std::unique_ptr<CorbaConversion::AdminContactVerification::Server_i>
+            admin_contact_verification_server(new(CorbaConversion::AdminContactVerification::Server_i));
 
             // create session use values from config
             LOGGER(PACKAGE).info(boost::format(
@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
             ->register_server(admin_contact_verification_server.release(), "AdminContactVerification");
 
         CorbaContainer::get_instance()
-            ->register_server(new Registry::Administrative::Server_i(server_name), "AdminBlocking");
+            ->register_server(new CorbaConversion::AdministrativeBlocking::Server_i(server_name), "AdminBlocking");
 
         CorbaContainer::get_instance()
             ->register_server(new Registry::Notification::Server_i(server_name), "Notification");

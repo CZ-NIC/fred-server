@@ -6,9 +6,13 @@
 #include <map>
 #include "src/libfred/opcontext.hh"
 
+namespace Fred {
+namespace Backend {
 namespace Whois {
     //maps registrar_group to list of registrar handles, current registrar group members
     std::map<std::string, std::vector<std::string> > get_registrar_groups(
         LibFred::OperationContext& ctx);
-}
+} // namespace Fred::Backend::Whois
+} // namespace Fred::Backend
+} // namespace Fred
 #endif

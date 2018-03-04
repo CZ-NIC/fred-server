@@ -67,7 +67,7 @@ struct ObjectDeleteCandidate:std::exception
 
 
 } // namespace Fred::Backend::RecordStatement
-} // namespace Fred::Backend::RecordStatement
+} // namespace Fred::Backend
 } // namespace Fred
 
 #endif

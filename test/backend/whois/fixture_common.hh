@@ -12,7 +12,7 @@
 
 struct whois_impl_instance_fixture : Test::instantiate_db_template
 {
-    Registry::WhoisImpl::Server_impl impl;
+    Fred::Backend::Whois::Server_impl impl;
 
     whois_impl_instance_fixture()
     : impl("test-whois")

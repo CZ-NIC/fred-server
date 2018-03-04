@@ -39,7 +39,7 @@ boost::assign::list_of
     (HandleArgsPtr(new HandleDatabaseArgs))
     (HandleArgsPtr(new HandleCorbaNameServiceArgs))
     (HandleArgsPtr(new HandleRegistryArgs))
-    (HandleArgsPtr(new HandleMojeIDArgs))
+    (HandleArgsPtr(new HandleMojeIdArgs))
     (HandleArgsPtr(new HandleDomainBrowserArgs));
 
 
@@ -69,9 +69,9 @@ int main(int argc, char *argv[])
         //CORBA init
         corba_init();
 
-        //MojeID registrar used for updates in domain browser
+        //MojeId registrar used for updates in domain browser
         std::string update_registrar_handle = CfgArgs::instance()
-            ->get_handler_ptr_by_type<HandleMojeIDArgs>()->registrar_handle;
+            ->get_handler_ptr_by_type<HandleMojeIdArgs>()->registrar_handle;
 
         //domain list chunk size
         unsigned int domain_list_limit = CfgArgs::instance()
@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
 
         //create server object with poa and nameservice registration
         CorbaContainer::get_instance()
-            ->register_server(new Registry::DomainBrowser::Server_i(server_name, update_registrar_handle,
+            ->register_server(new CorbaConversion::DomainBrowser::Server_i(server_name, update_registrar_handle,
                     domain_list_limit, nsset_list_limit, keyset_list_limit, contact_list_limit)
             , "DomainBrowser");
         run_server(CfgArgs::instance(), CorbaContainer::get_instance());

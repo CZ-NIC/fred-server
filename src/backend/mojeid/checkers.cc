@@ -29,7 +29,8 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/algorithm/string/trim.hpp>
 
-namespace LibFred {
+namespace Fred {
+namespace Backend {
 
 namespace {
 
@@ -69,7 +70,7 @@ bool email_absent_or_valid(const Nullable< std::string > &_email)
            ((Util::get_utf8_char_len(email) <= MAX_MOJEID_EMAIL_LENGTH) && DjangoEmailFormat().check(email));
 }
 
-}//Fred::{anonymous}
+} // namespace Fred::Backend::{anonymous}
 
 namespace GeneralCheck
 {
@@ -129,7 +130,7 @@ contact_email_validity::contact_email_validity(const Nullable< std::string > &_e
 contact_email_availability::contact_email_availability(
     const Nullable< std::string > &_email,
     unsigned long long _id,
-    OperationContext &_ctx)
+    LibFred::OperationContext &_ctx)
 :   absent(contact_email_presence(_email).absent),
     used_recently(!absent)
 {
@@ -169,7 +170,7 @@ contact_phone_validity::contact_phone_validity(const Nullable< std::string > &_t
 contact_phone_availability::contact_phone_availability(
     const Nullable< std::string > &_telephone,
     unsigned long long _id,
-    OperationContext &_ctx)
+    LibFred::OperationContext &_ctx)
 :   absent(contact_phone_presence(_telephone).absent),
     used_recently(!absent)
 {
@@ -197,7 +198,7 @@ contact_fax_validity::contact_fax_validity(const Nullable< std::string > &_fax)
 {
 }
 
-namespace MojeID {
+namespace MojeId {
 
 const boost::regex username_pattern("[0-9A-Za-z](-?[0-9A-Za-z])*");
 
@@ -215,7 +216,7 @@ contact_username::contact_username(const std::string &_handle)
 
 contact_username_availability::contact_username_availability(
     const std::string &_handle,
-    OperationContext &_ctx)
+    LibFred::OperationContext &_ctx)
 {
     const Database::Result dbres = _ctx.get_conn().exec_params(
         "SELECT erdate IS NULL AS taken,"
@@ -236,18 +237,18 @@ namespace {
 
 bool ssntype_present(
     const Nullable< std::string > &_ssntype_current,
-    SSNType::Enum _ssntype_required)
+    LibFred::SSNType::Enum _ssntype_required)
 {
     return !_ssntype_current.isnull() &&
            (_ssntype_current.get_value() == Conversion::Enums::to_db_handle(_ssntype_required));
 }
 
-}//Fred::GeneralCheck::MojeID::{anonymous}
+} // Fred::Backend::GeneralCheck::MojeId::{anonymous}
 
 contact_birthday::contact_birthday(
     const Nullable< std::string > &_ssntype,
     const Nullable< std::string > &_ssn)
-:   absent(!ssntype_present(_ssntype, SSNType::birthday)),
+:   absent(!ssntype_present(_ssntype, LibFred::SSNType::birthday)),
     invalid(!contact_birthday_validity(_ssntype, _ssn).success())
 {
 }
@@ -257,7 +258,7 @@ contact_birthday_validity::contact_birthday_validity(
     const Nullable< std::string > &_ssn)
 {
     try {
-        invalid = ssntype_present(_ssntype, SSNType::birthday)
+        invalid = ssntype_present(_ssntype, LibFred::SSNType::birthday)
             && birthdate_from_string_to_date(_ssn.get_value()).is_special();
     }
     catch (...) {
@@ -268,14 +269,14 @@ contact_birthday_validity::contact_birthday_validity(
 contact_vat_id_presence::contact_vat_id_presence(
     const Nullable< std::string > &_ssntype,
     const Nullable< std::string > &_ssn)
-:   absent(!ssntype_present(_ssntype, SSNType::ico) || absent_or_empty(_ssn))
+:   absent(!ssntype_present(_ssntype, LibFred::SSNType::ico) || absent_or_empty(_ssn))
 {
 }
 
-}//Fred::GeneralCheck::MojeID
-}//Fred::GeneralCheck
+} // namespace Fred::GeneralCheck::MojeId
+} // namespace Fred::GeneralCheck
 
-check_contact_place_address::check_contact_place_address(const InfoContactData &_data)
+check_contact_place_address::check_contact_place_address(const LibFred::InfoContactData &_data)
 :   GeneralCheck::contact_optional_address(_data.place.isnull()),
     absent(_data.place.isnull())
 {
@@ -287,10 +288,10 @@ check_contact_place_address::check_contact_place_address(const InfoContactData &
     }
 }
 
-check_contact_addresses::check_contact_addresses(const InfoContactData &_data, ContactAddressType _address_type)
+check_contact_addresses::check_contact_addresses(const LibFred::InfoContactData &_data, LibFred::ContactAddressType _address_type)
 :   GeneralCheck::contact_optional_address(true)
 {
-    ContactAddressList::const_iterator addr_ptr = _data.addresses.find(_address_type);
+    LibFred::ContactAddressList::const_iterator addr_ptr = _data.addresses.find(_address_type);
     if (addr_ptr != _data.addresses.end()) {
         this->GeneralCheck::contact_optional_address::operator()(addr_ptr->second.street1,
                                                                  addr_ptr->second.city,
@@ -299,9 +300,9 @@ check_contact_addresses::check_contact_addresses(const InfoContactData &_data, C
     }
 }
 
-namespace MojeID {
+namespace MojeId {
 
-check_contact_ssn::check_contact_ssn(const InfoContactData &_data)
+check_contact_ssn::check_contact_ssn(const LibFred::InfoContactData &_data)
 {
     const bool ssn_has_to_be_birthday = _data.organization.isnull() ||
                                         _data.organization.get_value().empty();
@@ -321,5 +322,6 @@ check_contact_ssn::check_contact_ssn(const InfoContactData &_data)
     }
 }
 
-}//Fred::MojeID
-}//Fred
+} // namespace Fred::Backend::MojeId
+} // namespace Fred::Backend
+} // namespace Fred

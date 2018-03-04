@@ -16,7 +16,11 @@
 
 #include <boost/algorithm/string/join.hpp>
 
-namespace  Admin {
+namespace Fred {
+namespace Backend {
+namespace Admin {
+namespace Contact {
+namespace Verification {
 
     std::string request_check_enqueueing(
         LibFred::OperationContext&         _ctx,
@@ -35,9 +39,9 @@ namespace  Admin {
 
             return created_handle;
         } catch (const LibFred::ExceptionUnknownContactId& ) {
-            throw Admin::ExceptionUnknownContactId();
+            throw ExceptionUnknownContactId();
         } catch (const LibFred::ExceptionUnknownTestsuiteHandle& ) {
-            throw Admin::ExceptionUnknownTestsuiteHandle();
+            throw ExceptionUnknownTestsuiteHandle();
         }
     }
 
@@ -55,11 +59,11 @@ namespace  Admin {
                 uuid::from_string(_check_handle)
             ).exec(_ctx);
         } catch(...) {
-            throw Admin::ExceptionCheckNotUpdateable();
+            throw ExceptionCheckNotUpdateable();
         }
 
         if(info.check_state_history.rbegin()->status_handle != LibFred::ContactCheckStatus::ENQUEUE_REQ) {
-            throw Admin::ExceptionCheckNotUpdateable();
+            throw ExceptionCheckNotUpdateable();
         }
 
         try {
@@ -99,7 +103,7 @@ namespace  Admin {
             }
 
         } catch (const LibFred::ExceptionUnknownCheckHandle& ) {
-            throw Admin::ExceptionUnknownCheckHandle();
+            throw ExceptionUnknownCheckHandle();
 
         }
     }
@@ -157,4 +161,8 @@ namespace  Admin {
 
         return Optional<std::string>();
     }
-}
+} // namespace Fred::Backend::Admin::Contact::Verification
+} // namespace Fred::Backend::Admin::Contact
+} // namespace Fred::Backend::Admin
+} // namespace Fred::Backend
+} // namespace Fred

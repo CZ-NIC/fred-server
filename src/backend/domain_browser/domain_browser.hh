@@ -36,10 +36,9 @@
 #include "src/util/db/nullable.hh"
 #include "src/util/optional_value.hh"
 
-namespace Registry
-{
-    namespace DomainBrowserImpl
-    {
+namespace Fred {
+namespace Backend {
+namespace DomainBrowser {
 
         /**
          * Registry object id, handle and name data.
@@ -768,7 +767,8 @@ namespace Registry
 
         };//class DomainBrowser
 
-    }//namespace DomainBrowserImpl
-} // namespace Registry
+} // namespace Fred::Backend::DomainBrowser
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

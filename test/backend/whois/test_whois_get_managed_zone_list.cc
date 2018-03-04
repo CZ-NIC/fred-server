@@ -15,7 +15,7 @@ struct managed_zone_list_fixture
     managed_zone_list_fixture()
     {
         ::LibFred::OperationContextCreator ctx;
-        fixture_zones = Whois::get_managed_zone_list(ctx);
+        fixture_zones = Fred::Backend::Whois::get_managed_zone_list(ctx);
         RandomDataGenerator rdg;
         for (int i = 0; i < 5; ++i)
         {

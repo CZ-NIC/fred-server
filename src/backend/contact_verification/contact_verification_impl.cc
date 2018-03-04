@@ -35,19 +35,16 @@ static const std::string create_ctx_name(const std::string &_name)
     return str(boost::format("%1%-<%2%>")% _name % Random::integer(0, 10000));
 }
 
-namespace Registry
-{
-    namespace Contact
-    {
-        namespace Verification
-        {
-            static Registry::Contact::Verification::DATA_VALIDATION_ERROR
+namespace Fred {
+namespace Backend {
+namespace ContactVerification {
+            static Fred::Backend::ContactVerification::DATA_VALIDATION_ERROR
             create_data_validation_error_not_available()
             {
-                Registry::Contact::Verification::FIELD_ERROR_MAP errors;
+                Fred::Backend::ContactVerification::FIELD_ERROR_MAP errors;
                 errors[LibFred::Contact::Verification::field_status]
-                       = Registry::Contact::Verification::VALIDATION_ERROR::NOT_AVAILABLE;
-                return Registry::Contact::Verification::DATA_VALIDATION_ERROR(errors);
+                       = Fred::Backend::ContactVerification::VALIDATION_ERROR::NOT_AVAILABLE;
+                return Fred::Backend::ContactVerification::DATA_VALIDATION_ERROR(errors);
             }
 
             static void log_data_validation_error(const LibFred::Contact::Verification::DataValidationError& _ex)
@@ -61,10 +58,10 @@ namespace Registry
                 LOGGER(PACKAGE).warning(msg);
             }
 
-            static void log_data_validation_error(const Registry::Contact::Verification::DATA_VALIDATION_ERROR& _ex)
+            static void log_data_validation_error(const Fred::Backend::ContactVerification::DATA_VALIDATION_ERROR& _ex)
             {
-                std::string msg("Registry::Contact::Verification::DATA_VALIDATION_ERROR:");
-                for (Registry::Contact::Verification::FIELD_ERROR_MAP::const_iterator it = _ex.errors.begin()
+                std::string msg("Fred::Backend::ContactVerification::DATA_VALIDATION_ERROR:");
+                for (Fred::Backend::ContactVerification::FIELD_ERROR_MAP::const_iterator it = _ex.errors.begin()
                         ; it != _ex.errors.end(); ++it) {
                     msg+=std::string("  ")+(it->first);
                     msg+=std::string(" ")+ boost::lexical_cast<std::string>(it->second);
@@ -72,30 +69,30 @@ namespace Registry
                 LOGGER(PACKAGE).warning(msg);
             }
 
-            static Registry::Contact::Verification::DATA_VALIDATION_ERROR
+            static Fred::Backend::ContactVerification::DATA_VALIDATION_ERROR
             translate_data_validation_error(LibFred::Contact::Verification::DataValidationError& _ex)
             {
-                Registry::Contact::Verification::FIELD_ERROR_MAP fem;
+                Fred::Backend::ContactVerification::FIELD_ERROR_MAP fem;
                 for (LibFred::Contact::Verification::FieldErrorMap::const_iterator it = _ex.errors.begin()
                         ; it != _ex.errors.end(); ++it)
                 {
                     switch (it->second)
                     {
                         case LibFred::Contact::Verification::NOT_AVAILABLE:
-                            fem[it->first]= Registry::Contact::Verification::VALIDATION_ERROR::NOT_AVAILABLE;
+                            fem[it->first]= Fred::Backend::ContactVerification::VALIDATION_ERROR::NOT_AVAILABLE;
                             break;
                         case LibFred::Contact::Verification::INVALID:
-                            fem[it->first]= Registry::Contact::Verification::VALIDATION_ERROR::INVALID;
+                            fem[it->first]= Fred::Backend::ContactVerification::VALIDATION_ERROR::INVALID;
                             break;
                         case LibFred::Contact::Verification::REQUIRED:
-                            fem[it->first]= Registry::Contact::Verification::VALIDATION_ERROR::REQUIRED;
+                            fem[it->first]= Fred::Backend::ContactVerification::VALIDATION_ERROR::REQUIRED;
                             break;
                         default:
                             throw std::runtime_error("unknown validation error type");
                             break;
-                    }//switch
-                }//for
-                return Registry::Contact::Verification::DATA_VALIDATION_ERROR(fem);
+                    }
+                }
+                return Fred::Backend::ContactVerification::DATA_VALIDATION_ERROR(fem);
             }
 
 
@@ -114,8 +111,8 @@ namespace Registry
                     // factory_check - required keys are in factory
                     FactoryHaveSupersetOfKeysChecker<LibFred::PublicRequest::Factory>
                     ::KeyVector required_keys = boost::assign::list_of
-                        (LibFred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION )
-                        (LibFred::PublicRequest::PRT_CONTACT_IDENTIFICATION);
+                        (PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION )
+                        (PublicRequest::PRT_CONTACT_IDENTIFICATION);
 
                     FactoryHaveSupersetOfKeysChecker<LibFred::PublicRequest::Factory>
                         (required_keys).check();
@@ -129,7 +126,7 @@ namespace Registry
                     LOGGER(PACKAGE).alert(_ex.what());
                     throw;
                 }
-            }//ContactVerificationImpl::ContactVerificationImpl
+            }
 
             ContactVerificationImpl::~ContactVerificationImpl(){}
 
@@ -157,7 +154,7 @@ namespace Registry
                             "SELECT id FROM registrar WHERE handle=$1::text",
                             Database::query_param_list(registrar_handle));
                     if(res_reg.size() == 0) {
-                        throw Registry::Contact::Verification::REGISTRAR_NOT_EXISTS();
+                        throw Fred::Backend::ContactVerification::REGISTRAR_NOT_EXISTS();
                     }
 
                     unsigned long long registrar_id = res_reg[0][0];
@@ -173,11 +170,11 @@ namespace Registry
                     if (check_result != LibFred::Contact::Manager::CA_REGISTRED)
                     {
                         LOGGER(PACKAGE).warning("checkAvail CA_REGISTRED");
-                        throw Registry::Contact::Verification::OBJECT_NOT_EXISTS();
+                        throw Fred::Backend::ContactVerification::OBJECT_NOT_EXISTS();
                     }
 
                     //create request
-                    LibFred::PublicRequest::Type type = LibFred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION ;
+                    LibFred::PublicRequest::Type type = PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION ;
                     ContactIdentificationRequestPtr new_request(mailer_,type);
                     new_request->setRegistrarId(registrar_id);
                     new_request->setRequestId(log_id);
@@ -188,7 +185,7 @@ namespace Registry
 
                     std::vector<LibFred::PublicRequest::Type> request_type_list
                         = Util::vector_of<LibFred::PublicRequest::Type>
-                    (LibFred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION );
+                    (PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION );
 
                     ContactIdentificationRequestManagerPtr request_manager(mailer_);
                     request_id = request_manager->getPublicRequestAuthIdentification(
@@ -208,7 +205,7 @@ namespace Registry
                     log_data_validation_error(_ex);
                     throw translate_data_validation_error(_ex);
                 }
-                catch (const Registry::Contact::Verification::OBJECT_NOT_EXISTS& _ex)
+                catch (const Fred::Backend::ContactVerification::OBJECT_NOT_EXISTS& _ex)
                 {
                     throw;
                 }
@@ -227,7 +224,7 @@ namespace Registry
                     LOGGER(PACKAGE).error("unknown exception");
                     throw;
                 }
-            }//ContactVerificationImpl::createConditionalIdentification
+            }
 
             unsigned long long ContactVerificationImpl::processConditionalIdentification(
                     const std::string & request_id
@@ -257,16 +254,16 @@ namespace Registry
                     {
                         LOGGER(PACKAGE).warning(std::string("unable to find request with identification: ")
                             + request_id);
-                        throw Registry::Contact::Verification::IDENTIFICATION_FAILED();
+                        throw Fred::Backend::ContactVerification::IDENTIFICATION_FAILED();
                     }
 
                     std::string request_type = static_cast<std::string>(res_req[0][0]);
 
-                    if(request_type != LibFred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION )
+                    if(request_type != PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION )
                     {
                         LOGGER(PACKAGE).warning(std::string("wrong type of request: ")
                             + request_type);
-                        throw Registry::Contact::Verification::IDENTIFICATION_FAILED();
+                        throw Fred::Backend::ContactVerification::IDENTIFICATION_FAILED();
                     }
 
                     LOGGER(PACKAGE).info(boost::format("request data --"
@@ -290,25 +287,25 @@ namespace Registry
                 catch (LibFred::PublicRequest::PublicRequestAuth::NotAuthenticated&)
                 {
                     LOGGER(PACKAGE).warning("PublicRequestAuth::NotAuthenticated");
-                    throw Registry::Contact::Verification::IDENTIFICATION_FAILED();
+                    throw Fred::Backend::ContactVerification::IDENTIFICATION_FAILED();
                 }
                 catch (LibFred::PublicRequest::AlreadyProcessed &_ex)
                 {
                     if(_ex.success)
                     {
                         LOGGER(PACKAGE).warning("PublicRequest::AlreadyProcessed true");
-                        throw Registry::Contact::Verification::IDENTIFICATION_PROCESSED();
+                        throw Fred::Backend::ContactVerification::IDENTIFICATION_PROCESSED();
                     }
                     else
                     {
                         LOGGER(PACKAGE).warning("PublicRequest::AlreadyProcessed false");
-                        throw Registry::Contact::Verification::IDENTIFICATION_INVALIDATED();
+                        throw Fred::Backend::ContactVerification::IDENTIFICATION_INVALIDATED();
                     }
                 }
                 catch (LibFred::PublicRequest::ObjectChanged &)
                 {
                     LOGGER(PACKAGE).warning("Object changed");
-                    throw Registry::Contact::Verification::OBJECT_CHANGED();
+                    throw Fred::Backend::ContactVerification::OBJECT_CHANGED();
                 }
                 catch (LibFred::PublicRequest::NotApplicable &_ex)
                 {
@@ -325,7 +322,7 @@ namespace Registry
                     LOGGER(PACKAGE).error("unknown exception");
                     throw;
                 }
-            }//ContactVerificationImpl::processConditionalIdentification
+            }
 
             unsigned long long ContactVerificationImpl::processIdentification(
                     const std::string & contact_handle
@@ -355,20 +352,20 @@ namespace Registry
                     if (check_result != LibFred::Contact::Manager::CA_REGISTRED)
                     {
                         LOGGER(PACKAGE).warning("checkAvail CA_REGISTRED");
-                        throw Registry::Contact::Verification::OBJECT_NOT_EXISTS();
+                        throw Fred::Backend::ContactVerification::OBJECT_NOT_EXISTS();
                     }
 
                     ContactIdentificationRequestManagerPtr request_manager(mailer_);
 
                     std::vector<LibFred::PublicRequest::Type> request_type_list =
                         Util::vector_of<LibFred::PublicRequest::Type>
-                            (LibFred::PublicRequest::PRT_CONTACT_IDENTIFICATION);
+                            (PublicRequest::PRT_CONTACT_IDENTIFICATION);
 
                     if (request_manager->checkAlreadyProcessedPublicRequest(
                         cinfo.id, request_type_list))
                     {
                         LOGGER(PACKAGE).warning("Found already processed request");
-                        throw Registry::Contact::Verification::IDENTIFICATION_PROCESSED();
+                        throw Fred::Backend::ContactVerification::IDENTIFICATION_PROCESSED();
                     }
 
                     const LibFred::Contact::Verification::State contact_state =
@@ -378,10 +375,10 @@ namespace Registry
                         LOGGER(PACKAGE).warning("Lost 'conditionallyIdentifiedContact' state");
                         LibFred::PublicRequest::cancel_public_request(
                             cinfo.id,
-                            LibFred::PublicRequest::PRT_CONTACT_IDENTIFICATION,
+                            PublicRequest::PRT_CONTACT_IDENTIFICATION,
                             log_id);
                         trans.commit();
-                        throw Registry::Contact::Verification::IDENTIFICATION_INVALIDATED();
+                        throw Fred::Backend::ContactVerification::IDENTIFICATION_INVALIDATED();
                     }
 
                     std::string request_id = request_manager->getPublicRequestAuthIdentification(
@@ -392,8 +389,8 @@ namespace Registry
                     trans.commit();
 
                     return cinfo.id;
-                }//try
-                catch (const Registry::Contact::Verification::OBJECT_NOT_EXISTS& _ex)
+                }
+                catch (const Fred::Backend::ContactVerification::OBJECT_NOT_EXISTS& _ex)
                 {
                     throw;
                 }
@@ -402,7 +399,7 @@ namespace Registry
                     log_data_validation_error(_ex);
                     throw translate_data_validation_error(_ex);
                 }
-                catch (const Registry::Contact::Verification::DATA_VALIDATION_ERROR& _ex)
+                catch (const Fred::Backend::ContactVerification::DATA_VALIDATION_ERROR& _ex)
                 {
                     log_data_validation_error(_ex);
                     throw;
@@ -410,44 +407,44 @@ namespace Registry
                 catch (LibFred::NOT_FOUND& _ex)
                 {
                     LOGGER(PACKAGE).warning(_ex.what());
-                    throw Registry::Contact::Verification::IDENTIFICATION_FAILED();
+                    throw Fred::Backend::ContactVerification::IDENTIFICATION_FAILED();
                 }
                 catch (LibFred::PublicRequest::PublicRequestAuth::NotAuthenticated&)
                 {
                     LOGGER(PACKAGE).warning("PublicRequestAuth::NotAuthenticated");
-                    throw Registry::Contact::Verification::IDENTIFICATION_FAILED();
+                    throw Fred::Backend::ContactVerification::IDENTIFICATION_FAILED();
                 }
                 catch (LibFred::PublicRequest::AlreadyProcessed &_ex)
                 {
                     if(_ex.success)
                     {
                         LOGGER(PACKAGE).warning("PublicRequest::AlreadyProcessed true");
-                        throw Registry::Contact::Verification::IDENTIFICATION_PROCESSED();
+                        throw Fred::Backend::ContactVerification::IDENTIFICATION_PROCESSED();
                     }
                     else
                     {
                         LOGGER(PACKAGE).warning("PublicRequest::AlreadyProcessed false");
-                        throw Registry::Contact::Verification::IDENTIFICATION_INVALIDATED();
+                        throw Fred::Backend::ContactVerification::IDENTIFICATION_INVALIDATED();
                     }
                 }
                 catch (LibFred::PublicRequest::ObjectChanged &)
                 {
                     LOGGER(PACKAGE).warning("Object changed");
-                    throw Registry::Contact::Verification::OBJECT_CHANGED();
+                    throw Fred::Backend::ContactVerification::OBJECT_CHANGED();
                 }
                 catch (LibFred::PublicRequest::NotApplicable &_ex)
                 {
                     LOGGER(PACKAGE).warning(_ex.what());
                     throw create_data_validation_error_not_available();
                 }
-                catch (const Registry::Contact::Verification::IDENTIFICATION_PROCESSED& )
+                catch (const Fred::Backend::ContactVerification::IDENTIFICATION_PROCESSED& )
                 {
                     /* Exception is throw directly from the block above and already logged as warning.
                      * This catch clause just prevents it to be caught by general block below and logged as error.
                      */
                     throw;
                 }
-                catch (Registry::Contact::Verification::IDENTIFICATION_INVALIDATED&)
+                catch (Fred::Backend::ContactVerification::IDENTIFICATION_INVALIDATED&)
                 {
                     /* Exception is throw directly from the block above and already logged as warning.
                      * This catch clause just prevents it to be caught by general block below and logged as error.
@@ -492,11 +489,11 @@ namespace Registry
                     else
                     {
                         LOGGER(PACKAGE).warning("registrar not found");
-                        throw Registry::Contact::Verification::OBJECT_NOT_EXISTS();
+                        throw Fred::Backend::ContactVerification::OBJECT_NOT_EXISTS();
                     }
                     return registrar_name;
-                }//try
-                catch (const Registry::Contact::Verification::OBJECT_NOT_EXISTS& _ex)
+                }
+                catch (const Fred::Backend::ContactVerification::OBJECT_NOT_EXISTS& _ex)
                 {
                     throw;
                 }
@@ -511,7 +508,6 @@ namespace Registry
                     throw;
                 }
             }
-        }
-    }
-}
-
+} // namespace Fred::Backend::ContactVerification
+} // namespace Fred::Backend
+} // namespace Fred

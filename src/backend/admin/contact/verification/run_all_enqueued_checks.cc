@@ -24,7 +24,11 @@
 
 #include "src/util/log/context.hh"
 
-namespace  Admin {
+namespace Fred {
+namespace Backend {
+namespace Admin {
+namespace Contact {
+namespace Verification {
 
     static Optional<std::string> lock_some_enqueued_check(LibFred::OperationContext& ctx) {
         Database::Result locked_check_res = ctx.get_conn().exec_params(
@@ -232,10 +236,10 @@ namespace  Admin {
             check_info.contact_history_id
         ).exec(_ctx);
 
-        AdminContactVerificationObjectStates::cancel_all_states(_ctx, contact_info.info_contact_data.id);
+        ContactStates::cancel_all_states(_ctx, contact_info.info_contact_data.id);
 
         std::set<std::string> status;
-        status.insert(Admin::AdminContactVerificationObjectStates::CONTACT_IN_MANUAL_VERIFICATION);
+        status.insert(ContactStates::CONTACT_IN_MANUAL_VERIFICATION);
 
         std::set<unsigned long long> state_request_ids;
         state_request_ids.insert(
@@ -248,7 +252,7 @@ namespace  Admin {
 
         LibFred::PerformObjectStateRequest(contact_info.info_contact_data.id).exec(_ctx);
 
-        Admin::add_related_object_state_requests(_ctx, _check_handle, state_request_ids);
+        add_related_object_state_requests(_ctx, _check_handle, state_request_ids);
     }
 
     static void preprocess_thank_you_check(
@@ -284,7 +288,7 @@ namespace  Admin {
 
     static void run_test(
         LibFred::OperationContext&             ctx,
-        const std::map<std::string, std::shared_ptr<Admin::ContactVerification::Test> >&
+        const std::map<std::string, std::shared_ptr<Test> >&
                                             _tests,
         const uuid&                         _check_handle,
         const std::string&                  _test_handle,
@@ -292,7 +296,7 @@ namespace  Admin {
         std::set<unsigned long long>&       _related_message_ids,
         Optional<unsigned long long>        _logd_request_id
     ) {
-        ContactVerification::Test::TestRunResult temp_result = _tests.at(_test_handle)->run(LibFred::InfoContactCheck(_check_handle).exec(ctx).contact_history_id);
+        Test::TestRunResult temp_result = _tests.at(_test_handle)->run(LibFred::InfoContactCheck(_check_handle).exec(ctx).contact_history_id);
 
         LibFred::UpdateContactTest(
             _check_handle,
@@ -313,7 +317,7 @@ namespace  Admin {
     }
 
     std::vector<std::string> run_all_enqueued_checks(
-        const std::map<std::string, std::shared_ptr<Admin::ContactVerification::Test> >& _tests,
+        const std::map<std::string, std::shared_ptr<Test> >& _tests,
         Optional<unsigned long long> _logd_request_id
     ) {
         Logging::Context log("run_all_enqueued_checks");
@@ -398,8 +402,8 @@ namespace  Admin {
                     ctx_test_preprocess.commit_transaction();
                 }
 
-                Admin::add_related_messages(ctx_check_process, check_uuid_to_process, related_message_ids);
-                Admin::add_related_mail(ctx_check_process, check_uuid_to_process, related_mail_ids);
+                add_related_messages(ctx_check_process, check_uuid_to_process, related_message_ids);
+                add_related_mail(ctx_check_process, check_uuid_to_process, related_mail_ids);
 
                 ctx_check_process.commit_transaction();
             }
@@ -417,4 +421,8 @@ namespace  Admin {
 
         return handles;
     }
-}
+} // namespace Fred::Backend::Admin::Contact::Verification
+} // namespace Fred::Backend::Admin::Contact
+} // namespace Fred::Backend::Admin
+} // namespace Fred::Backend
+} // namespace Fred

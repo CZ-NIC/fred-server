@@ -36,25 +36,26 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 
-namespace Registry {
-namespace MojeID {
+namespace Fred {
+namespace Backend {
+namespace MojeId {
 
-class MojeIDImpl
+class MojeIdImpl
 {
 public:
     typedef unsigned long long ContactId;
     typedef unsigned long long MessageId;
     typedef unsigned long long LogRequestId;
-    MojeIDImpl(const std::string &_server_name);
-    ~MojeIDImpl();
+    MojeIdImpl(const std::string &_server_name);
+    ~MojeIdImpl();
 
     const std::string& get_server_name()const;
 
     void get_unregistrable_contact_handles(
-        MojeIDImplData::ContactHandleList &_result)const;
+        MojeIdImplData::ContactHandleList &_result)const;
 
     ContactId create_contact_prepare(
-        const MojeIDImplData::CreateContact &_contact,
+        const MojeIdImplData::CreateContact &_contact,
         const std::string &_trans_id,
         LogRequestId _log_request_id,
         std::string &_ident)const;
@@ -63,29 +64,29 @@ public:
         const std::string &_handle,
         const std::string &_trans_id,
         LogRequestId _log_request_id,
-        MojeIDImplData::InfoContact &_contact,
+        MojeIdImplData::InfoContact &_contact,
         std::string &_ident)const;
 
     void update_contact_prepare(
         ContactId contact_id,
-        const MojeIDImplData::UpdateContact &_new_data,
+        const MojeIdImplData::UpdateContact &_new_data,
         const std::string &_trans_id,
         LogRequestId _log_request_id)const;
 
-    MojeIDImplData::InfoContact update_transfer_contact_prepare(
+    MojeIdImplData::InfoContact update_transfer_contact_prepare(
         const std::string &_username,
-        const MojeIDImplData::UpdateTransferContact &_new_data,
+        const MojeIdImplData::UpdateTransferContact &_new_data,
         const std::string &_trans_id,
         LogRequestId _log_request_id,
         std::string &_ident)const;
 
     void info_contact(
         const std::string &_username,
-        MojeIDImplData::InfoContact &_result)const;
+        MojeIdImplData::InfoContact &_result)const;
 
     void get_contact_info_publish_flags(
         ContactId _contact_id,
-        MojeIDImplData::InfoContactPublishFlags &_flags)const;
+        MojeIdImplData::InfoContactPublishFlags &_flags)const;
 
     void commit_prepared_transaction(const std::string &_trans_id)const;
 
@@ -113,11 +114,11 @@ public:
 
     void get_contacts_state_changes(
         unsigned long _last_hours,
-        MojeIDImplData::ContactStateInfoList &_result)const;
+        MojeIdImplData::ContactStateInfoList &_result)const;
 
     void get_contact_state(
         ContactId _contact_id,
-        MojeIDImplData::ContactStateInfo &_result)const;
+        MojeIdImplData::ContactStateInfo &_result)const;
 
     void cancel_account_prepare(
         ContactId _contact_id,
@@ -154,9 +155,10 @@ private:
     const std::string server_name_;
     const std::string mojeid_registrar_handle_;
     const ::size_t mojeid_registrar_id_;
-};//class MojeIDImpl
+};
 
-} // namespace Registry::MojeID
-} // namespace Registry
+} // namespace Fred::Backend::MojeId
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

@@ -31,7 +31,11 @@
 #include "src/libfred/opcontext.hh"
 #include "src/util/optional_value.hh"
 
+namespace Fred {
+namespace Backend {
 namespace Admin {
+namespace Contact {
+namespace Verification {
 
     /**
      * Creates new check for specified contact with specified testsuite with status ENQUEUE_REQ
@@ -99,7 +103,11 @@ namespace Admin {
         unsigned long long              _contact_id,
         const std::string&              _testsuite_handle,
         Optional<unsigned long long>    _logd_request_id = Optional<unsigned long long>());
-}
+} // namespace Fred::Backend::Admin::Contact::Verification
+} // namespace Fred::Backend::Admin::Contact
+} // namespace Fred::Backend::Admin
+} // namespace Fred::Backend
+} // namespace Fred
 
 
 #endif

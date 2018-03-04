@@ -1,7 +1,8 @@
 #include "src/bin/corba/util/corba_conversions_nullable_types.hh"
 
-namespace LibFred {
-namespace Corba {
+
+namespace CorbaConversion {
+namespace Util {
 
 Registry::NullableULongLong* wrap_nullable_ulonglong(const Nullable<long long>& in)
 {
@@ -89,6 +90,5 @@ Optional<std::string> unwrap_nullable_string_to_optional(const Registry::Nullabl
             );
 }
 
-
-} // namespace LibFred::Corba
-} // namespace LibFred
+} // namespace CorbaConversion::Util
+} // namespace CorbaConversion

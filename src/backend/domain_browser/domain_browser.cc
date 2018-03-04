@@ -55,10 +55,10 @@
 
 #include "src/backend/domain_browser/domain_browser.hh"
 
-namespace Registry
-{
-    namespace DomainBrowserImpl
-    {
+namespace Fred {
+namespace Backend {
+namespace DomainBrowser {
+
         const std::string DomainBrowser::output_timezone("UTC");
         /**
          * String for logging context
@@ -1609,7 +1609,7 @@ namespace Registry
             try
             {
                 LibFred::InfoContactOutput dst = check_user_contact_id<UserNotExists>(ctx, dst_contact_id, output_timezone);
-                if(contact_list.empty()) throw Registry::DomainBrowserImpl::InvalidContacts();
+                if(contact_list.empty()) throw Fred::Backend::DomainBrowser::InvalidContacts();
 
                 //get src contact handle
                 Database::query_param_list params;
@@ -1708,6 +1708,7 @@ namespace Registry
             }
         }
 
-    }//namespace DomainBrowserImpl
-} // namespace Registry
+} // namespace Fred::Backend::DomainBrowser
+} // namespace Fred::Backend
+} // namespace Fred
 

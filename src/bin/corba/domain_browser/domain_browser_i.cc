@@ -34,7 +34,7 @@
 #include <boost/date_time/gregorian/gregorian.hpp>
 
 
-namespace Registry
+namespace CorbaConversion
 {
     namespace DomainBrowser
     {
@@ -44,7 +44,7 @@ namespace Registry
             unsigned int _nsset_list_limit,
             unsigned int _keyset_list_limit,
             unsigned int _contact_list_limit)
-        : pimpl_(new Registry::DomainBrowserImpl::DomainBrowser(_server_name,
+        : pimpl_(new Fred::Backend::DomainBrowser::DomainBrowser(_server_name,
                     _update_registrar_handle, _domain_list_limit,
                     _nsset_list_limit, _keyset_list_limit, _contact_list_limit))
         {}
@@ -53,14 +53,14 @@ namespace Registry
         {}
 
         //   Methods corresponding to IDL attributes and operations
-        ::CORBA::ULongLong Server_i::getContactId(const char* handle)
+        CORBA::ULongLong Server_i::getContactId(const char* handle)
         {
             try
             {
                 unsigned long long id = pimpl_->getContactId(LibFred::Corba::unwrap_string_from_const_char_ptr(handle));
                 return id;
             }//try
-            catch (const Registry::DomainBrowserImpl::ObjectNotExists&)
+            catch (const Fred::Backend::DomainBrowser::ObjectNotExists&)
             {
                 throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
             }
@@ -72,32 +72,32 @@ namespace Registry
         }
 
         Nullable<Registry::DomainBrowser::NextDomainState> corba_wrap_nullable_next_domain_state
-            (const Nullable<Registry::DomainBrowserImpl::NextDomainState>& in)
+            (const Nullable<Fred::Backend::DomainBrowser::NextDomainState>& in)
         {
             if(in.isnull()) return Nullable<Registry::DomainBrowser::NextDomainState>();
 
             Registry::DomainBrowser::NextDomainState ret;
-            Registry::DomainBrowserImpl::NextDomainState next_state = in.get_value();
+            Fred::Backend::DomainBrowser::NextDomainState next_state = in.get_value();
 
             ret.state_code = LibFred::Corba::wrap_string_to_corba_string(next_state.state_code);
-            ret.state_date = CorbaConversion::Util::wrap_boost_gregorian_date_to_IsoDate(next_state.state_date);
+            ret.state_date = Util::wrap_boost_gregorian_date_to_IsoDate(next_state.state_date);
             return Nullable<Registry::DomainBrowser::NextDomainState>(ret);
         }
 
-        DomainList_var corba_wrap_domain_list(const std::vector<Registry::DomainBrowserImpl::DomainListData>& domain_list)
+        Registry::DomainBrowser::DomainList_var corba_wrap_domain_list(const std::vector<Fred::Backend::DomainBrowser::DomainListData>& domain_list)
         {
-            DomainList_var dl = new DomainList;
+            Registry::DomainBrowser::DomainList_var dl = new Registry::DomainBrowser::DomainList;
             dl->length(domain_list.size());
             for(unsigned long long i = 0 ; i < domain_list.size(); ++i)
             {
-                DomainListData dld;
+                Registry::DomainBrowser::DomainListData dld;
                 dld.id = domain_list.at(i).id;
                 dld.fqdn = LibFred::Corba::wrap_string_to_corba_string(domain_list.at(i).fqdn);
                 dld.external_importance = domain_list.at(i).external_importance;
 
                 Registry::DomainBrowser::NextDomainState corba_next_domain_state;
 
-                dld.next_state = LibFred::Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableNextDomainState>(
+                dld.next_state = Util::wrap_nullable_corba_type_to_corba_valuetype<Registry::DomainBrowser::NullableNextDomainState>(
                     corba_wrap_nullable_next_domain_state(domain_list.at(i).next_state));
 
                 dld.have_keyset = domain_list.at(i).have_keyset;
@@ -119,24 +119,24 @@ namespace Registry
         }
 
         Registry::DomainBrowser::DomainList* Server_i::getDomainList(
-            ::CORBA::ULongLong user_contact_id,
+            CORBA::ULongLong user_contact_id,
              Registry::DomainBrowser::NullableULongLong* contact_id_ptr,
-            ::CORBA::ULong offset,
-            ::CORBA::Boolean& limit_exceeded)
+            CORBA::ULong offset,
+            CORBA::Boolean& limit_exceeded)
         {
             try
             {
-                Registry::DomainBrowserImpl::DomainList dl = pimpl_->getDomainList(user_contact_id,
+                Fred::Backend::DomainBrowser::DomainList dl = pimpl_->getDomainList(user_contact_id,
                     (contact_id_ptr) ? Optional<unsigned long long>(contact_id_ptr->_value()) : Optional<unsigned long long>(),
                     Optional<unsigned long long>(), Optional<unsigned long long>(), offset);
                 limit_exceeded = dl.limit_exceeded;
                 return corba_wrap_domain_list(dl.dld)._retn();
             }
-            catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
+            catch (const Fred::Backend::DomainBrowser::ObjectNotExists& )
             {
                 throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
             }
-            catch (const Registry::DomainBrowserImpl::UserNotExists& )
+            catch (const Fred::Backend::DomainBrowser::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
             }
@@ -147,14 +147,14 @@ namespace Registry
         }
 
 
-        NssetList_var corba_wrap_nsset_list(const std::vector<Registry::DomainBrowserImpl::NssetListData>& nsset_list)
+        Registry::DomainBrowser::NssetList_var corba_wrap_nsset_list(const std::vector<Fred::Backend::DomainBrowser::NssetListData>& nsset_list)
         {
-            NssetList_var nl = new NssetList;
+            Registry::DomainBrowser::NssetList_var nl = new Registry::DomainBrowser::NssetList;
             nl->length(nsset_list.size());
 
             for(unsigned long long i = 0 ; i < nsset_list.size(); ++i)
             {
-                NssetListData nld;
+                Registry::DomainBrowser::NssetListData nld;
                 nld.id = nsset_list.at(i).id;
                 nld.handle = LibFred::Corba::wrap_string_to_corba_string(nsset_list.at(i).handle);
                 nld.domain_count = nsset_list.at(i).domain_count;
@@ -174,24 +174,24 @@ namespace Registry
         }
 
         Registry::DomainBrowser::NssetList* Server_i::getNssetList(
-            ::CORBA::ULongLong user_contact_id,
+            CORBA::ULongLong user_contact_id,
              Registry::DomainBrowser::NullableULongLong* contact_id_ptr,
-            ::CORBA::ULong offset,
-            ::CORBA::Boolean& limit_exceeded)
+            CORBA::ULong offset,
+            CORBA::Boolean& limit_exceeded)
         {
             try
             {
-                Registry::DomainBrowserImpl::NssetList nl = pimpl_->getNssetList(user_contact_id,
+                Fred::Backend::DomainBrowser::NssetList nl = pimpl_->getNssetList(user_contact_id,
                     (contact_id_ptr) ? Optional<unsigned long long>(contact_id_ptr->_value()) : Optional<unsigned long long>(),
                     offset);
                 limit_exceeded = nl.limit_exceeded;
                 return corba_wrap_nsset_list(nl.nld)._retn();
             }
-            catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
+            catch (const Fred::Backend::DomainBrowser::ObjectNotExists& )
             {
                 throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
             }
-            catch (const Registry::DomainBrowserImpl::UserNotExists& )
+            catch (const Fred::Backend::DomainBrowser::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
             }
@@ -201,14 +201,14 @@ namespace Registry
             }
         }
 
-        KeysetList_var corba_wrap_keyset_list(const std::vector<Registry::DomainBrowserImpl::KeysetListData>& keyset_list)
+        Registry::DomainBrowser::KeysetList_var corba_wrap_keyset_list(const std::vector<Fred::Backend::DomainBrowser::KeysetListData>& keyset_list)
         {
-            KeysetList_var kl = new KeysetList;
+            Registry::DomainBrowser::KeysetList_var kl = new Registry::DomainBrowser::KeysetList;
             kl->length(keyset_list.size());
 
             for(unsigned long long i = 0 ; i < keyset_list.size(); ++i)
             {
-                KeysetListData kld;
+                Registry::DomainBrowser::KeysetListData kld;
                 kld.id = keyset_list.at(i).id;
                 kld.handle = LibFred::Corba::wrap_string_to_corba_string(keyset_list.at(i).handle);
                 kld.domain_count = keyset_list.at(i).domain_count;
@@ -228,24 +228,24 @@ namespace Registry
         }
 
         Registry::DomainBrowser::KeysetList* Server_i::getKeysetList(
-            ::CORBA::ULongLong user_contact_id,
+            CORBA::ULongLong user_contact_id,
              Registry::DomainBrowser::NullableULongLong* contact_id_ptr,
-            ::CORBA::ULong offset,
-             ::CORBA::Boolean& limit_exceeded)
+            CORBA::ULong offset,
+             CORBA::Boolean& limit_exceeded)
         {
             try
             {
-                Registry::DomainBrowserImpl::KeysetList kl = pimpl_->getKeysetList(user_contact_id,
+                Fred::Backend::DomainBrowser::KeysetList kl = pimpl_->getKeysetList(user_contact_id,
                     (contact_id_ptr) ? Optional<unsigned long long>(contact_id_ptr->_value()) : Optional<unsigned long long>(),
                     offset);
                 limit_exceeded = kl.limit_exceeded;
                 return corba_wrap_keyset_list(kl.kld)._retn();
             }
-            catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
+            catch (const Fred::Backend::DomainBrowser::ObjectNotExists& )
             {
                 throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
             }
-            catch (const Registry::DomainBrowserImpl::UserNotExists& )
+            catch (const Fred::Backend::DomainBrowser::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
             }
@@ -256,25 +256,25 @@ namespace Registry
         }
 
         Registry::DomainBrowser::DomainList*  Server_i::getDomainsForKeyset(
-            ::CORBA::ULongLong user_contact_id,
-            ::CORBA::ULongLong keyset_id,
-            ::CORBA::ULong offset,
-            ::CORBA::Boolean& limit_exceeded)
+            CORBA::ULongLong user_contact_id,
+            CORBA::ULongLong keyset_id,
+            CORBA::ULong offset,
+            CORBA::Boolean& limit_exceeded)
         {
             try
             {
-                Registry::DomainBrowserImpl::DomainList dl = pimpl_->getDomainList(user_contact_id,
+                Fred::Backend::DomainBrowser::DomainList dl = pimpl_->getDomainList(user_contact_id,
                         Optional<unsigned long long>(),
                         Optional<unsigned long long>(),
                         Optional<unsigned long long>(keyset_id), offset);
                 limit_exceeded = dl.limit_exceeded;
                 return corba_wrap_domain_list(dl.dld)._retn();
             }
-            catch (const Registry::DomainBrowserImpl::AccessDenied&)
+            catch (const Fred::Backend::DomainBrowser::AccessDenied&)
             {
                 throw Registry::DomainBrowser::ACCESS_DENIED();
             }
-            catch (const Registry::DomainBrowserImpl::UserNotExists& )
+            catch (const Fred::Backend::DomainBrowser::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
             }
@@ -285,25 +285,25 @@ namespace Registry
         }
 
         Registry::DomainBrowser::DomainList* Server_i::getDomainsForNsset(
-            ::CORBA::ULongLong user_contact_id,
-            ::CORBA::ULongLong nsset_id,
-            ::CORBA::ULong offset,
-            ::CORBA::Boolean& limit_exceeded)
+            CORBA::ULongLong user_contact_id,
+            CORBA::ULongLong nsset_id,
+            CORBA::ULong offset,
+            CORBA::Boolean& limit_exceeded)
         {
             try
             {
-                Registry::DomainBrowserImpl::DomainList dl = pimpl_->getDomainList(user_contact_id,
+                Fred::Backend::DomainBrowser::DomainList dl = pimpl_->getDomainList(user_contact_id,
                         Optional<unsigned long long>(),
                         Optional<unsigned long long>(nsset_id),
                         Optional<unsigned long long>(), offset);
                 limit_exceeded = dl.limit_exceeded;
                 return corba_wrap_domain_list(dl.dld)._retn();
             }
-            catch (const Registry::DomainBrowserImpl::AccessDenied&)
+            catch (const Fred::Backend::DomainBrowser::AccessDenied&)
             {
                 throw Registry::DomainBrowser::ACCESS_DENIED();
             }
-            catch (const Registry::DomainBrowserImpl::UserNotExists& )
+            catch (const Fred::Backend::DomainBrowser::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
             }
@@ -322,11 +322,11 @@ namespace Registry
             LibFred::Contact::PlaceAddress mailing_addr = in.get_value();
 
             ret.street1 = LibFred::Corba::wrap_string_to_corba_string(mailing_addr.street1);
-            ret.street2 = LibFred::Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableString>(
+            ret.street2 = Util::wrap_nullable_corba_type_to_corba_valuetype<Registry::DomainBrowser::NullableString>(
                 LibFred::Corba::wrap_optional_string_to_nullable_corba_string(mailing_addr.street2));
-            ret.street3 = LibFred::Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableString>(
+            ret.street3 = Util::wrap_nullable_corba_type_to_corba_valuetype<Registry::DomainBrowser::NullableString>(
                 LibFred::Corba::wrap_optional_string_to_nullable_corba_string(mailing_addr.street3));
-            ret.state = LibFred::Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableString>(
+            ret.state = Util::wrap_nullable_corba_type_to_corba_valuetype<Registry::DomainBrowser::NullableString>(
                 LibFred::Corba::wrap_optional_string_to_nullable_corba_string(mailing_addr.stateorprovince));
             ret.postal_code = LibFred::Corba::wrap_string_to_corba_string(mailing_addr.postalcode);
             ret.city = LibFred::Corba::wrap_string_to_corba_string(mailing_addr.city);
@@ -336,16 +336,16 @@ namespace Registry
         }
 
         Registry::DomainBrowser::ContactDetail* Server_i::getContactDetail(
-            ::CORBA::ULongLong user_contact_id,
-             ::CORBA::ULongLong detail_id,
+            CORBA::ULongLong user_contact_id,
+             CORBA::ULongLong detail_id,
             Registry::DomainBrowser::DataAccessLevel& auth_result)
         {
             try
             {
-                Registry::DomainBrowserImpl::ContactDetail detail_impl
+                Fred::Backend::DomainBrowser::ContactDetail detail_impl
                     = pimpl_->getContactDetail(user_contact_id, detail_id);
 
-                ContactDetail_var contact_detail = new ContactDetail;
+                Registry::DomainBrowser::ContactDetail_var contact_detail = new Registry::DomainBrowser::ContactDetail;
                 contact_detail->id = detail_impl.id;
                 contact_detail->handle = LibFred::Corba::wrap_string_to_corba_string(detail_impl.handle);
                 contact_detail->roid = LibFred::Corba::wrap_string_to_corba_string(detail_impl.roid);
@@ -364,17 +364,17 @@ namespace Registry
                 contact_detail->organization = LibFred::Corba::wrap_string_to_corba_string(detail_impl.organization.get_value_or_default());
 
                 contact_detail->permanent_address.street1 = LibFred::Corba::wrap_string_to_corba_string(detail_impl.permanent_address.street1);
-                contact_detail->permanent_address.street2 = LibFred::Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableString>(
+                contact_detail->permanent_address.street2 = Util::wrap_nullable_corba_type_to_corba_valuetype<Registry::DomainBrowser::NullableString>(
                     LibFred::Corba::wrap_optional_string_to_nullable_corba_string(detail_impl.permanent_address.street2));
-                contact_detail->permanent_address.street3 = LibFred::Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableString>(
+                contact_detail->permanent_address.street3 = Util::wrap_nullable_corba_type_to_corba_valuetype<Registry::DomainBrowser::NullableString>(
                     LibFred::Corba::wrap_optional_string_to_nullable_corba_string(detail_impl.permanent_address.street3));
-                contact_detail->permanent_address.state = LibFred::Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableString>(
+                contact_detail->permanent_address.state = Util::wrap_nullable_corba_type_to_corba_valuetype<Registry::DomainBrowser::NullableString>(
                     LibFred::Corba::wrap_optional_string_to_nullable_corba_string(detail_impl.permanent_address.stateorprovince));
                 contact_detail->permanent_address.postal_code = LibFred::Corba::wrap_string_to_corba_string(detail_impl.permanent_address.postalcode);
                 contact_detail->permanent_address.city = LibFred::Corba::wrap_string_to_corba_string(detail_impl.permanent_address.city);
                 contact_detail->permanent_address.country = LibFred::Corba::wrap_string_to_corba_string(detail_impl.permanent_address.country);
 
-                contact_detail->mailing_address= LibFred::Corba::wrap_nullable_corba_type_to_corba_valuetype<NullablePlaceAddress>(
+                contact_detail->mailing_address = Util::wrap_nullable_corba_type_to_corba_valuetype<Registry::DomainBrowser::NullablePlaceAddress>(
                     corba_wrap_nullable_placeaddress(detail_impl.mailing_address));
 
                 contact_detail->telephone = LibFred::Corba::wrap_string_to_corba_string(detail_impl.telephone.get_value_or_default());
@@ -402,22 +402,22 @@ namespace Registry
 
                 if(detail_impl.is_owner)
                 {
-                    auth_result = PRIVATE_DATA;
+                    auth_result = Registry::DomainBrowser::PRIVATE_DATA;
                 }
                 else
                 {
-                    auth_result = PUBLIC_DATA;
+                    auth_result = Registry::DomainBrowser::PUBLIC_DATA;
                 }
 
-                contact_detail->warning_letter = LibFred::Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableBoolean>(detail_impl.warning_letter);
+                contact_detail->warning_letter = Util::wrap_nullable_corba_type_to_corba_valuetype<Registry::DomainBrowser::NullableBoolean>(detail_impl.warning_letter);
 
                 return contact_detail._retn();
             }
-            catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
+            catch (const Fred::Backend::DomainBrowser::ObjectNotExists& )
             {
                 throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
             }
-            catch (const Registry::DomainBrowserImpl::UserNotExists& )
+            catch (const Fred::Backend::DomainBrowser::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
             }
@@ -428,16 +428,16 @@ namespace Registry
         }
 
         Registry::DomainBrowser::NSSetDetail* Server_i::getNssetDetail(
-            ::CORBA::ULongLong user_contact_id,
-             ::CORBA::ULongLong nsset_id,
+            CORBA::ULongLong user_contact_id,
+             CORBA::ULongLong nsset_id,
             Registry::DomainBrowser::DataAccessLevel& auth_result)
         {
             try
             {
-                Registry::DomainBrowserImpl::NssetDetail detail_impl
+                Fred::Backend::DomainBrowser::NssetDetail detail_impl
                     = pimpl_->getNssetDetail(user_contact_id, nsset_id);
 
-                NSSetDetail_var nsset_detail = new NSSetDetail;
+                Registry::DomainBrowser::NSSetDetail_var nsset_detail = new Registry::DomainBrowser::NSSetDetail;
 
                 nsset_detail->id = detail_impl.id;
                 nsset_detail->handle = LibFred::Corba::wrap_string_to_corba_string(detail_impl.handle);
@@ -494,20 +494,20 @@ namespace Registry
 
                 if(detail_impl.is_owner)
                 {
-                    auth_result = PRIVATE_DATA;
+                    auth_result = Registry::DomainBrowser::PRIVATE_DATA;
                 }
                 else
                 {
-                    auth_result = PUBLIC_DATA;
+                    auth_result = Registry::DomainBrowser::PUBLIC_DATA;
                 }
 
                 return nsset_detail._retn();
             }
-            catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
+            catch (const Fred::Backend::DomainBrowser::ObjectNotExists& )
             {
                 throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
             }
-            catch (const Registry::DomainBrowserImpl::UserNotExists& )
+            catch (const Fred::Backend::DomainBrowser::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
             }
@@ -518,16 +518,16 @@ namespace Registry
         }
 
         Registry::DomainBrowser::DomainDetail* Server_i::getDomainDetail(
-            ::CORBA::ULongLong user_contact_id,
-             ::CORBA::ULongLong domain_id,
+            CORBA::ULongLong user_contact_id,
+             CORBA::ULongLong domain_id,
             Registry::DomainBrowser::DataAccessLevel& auth_result)
         {
             try
             {
-                Registry::DomainBrowserImpl::DomainDetail detail_impl
+                Fred::Backend::DomainBrowser::DomainDetail detail_impl
                     = pimpl_->getDomainDetail(user_contact_id, domain_id);
 
-                DomainDetail_var domain_detail = new DomainDetail;
+                Registry::DomainBrowser::DomainDetail_var domain_detail = new Registry::DomainBrowser::DomainDetail;
                 domain_detail->id = detail_impl.id;
                 domain_detail->fqdn = LibFred::Corba::wrap_string_to_corba_string(detail_impl.fqdn);
                 domain_detail->roid = LibFred::Corba::wrap_string_to_corba_string(detail_impl.roid);
@@ -587,20 +587,20 @@ namespace Registry
 
                 if(detail_impl.is_owner || detail_impl.is_admin)
                 {
-                    auth_result = PRIVATE_DATA;
+                    auth_result = Registry::DomainBrowser::PRIVATE_DATA;
                 }
                 else
                 {
-                    auth_result = PUBLIC_DATA;
+                    auth_result = Registry::DomainBrowser::PUBLIC_DATA;
                 }
 
                 return domain_detail._retn();
             }
-            catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
+            catch (const Fred::Backend::DomainBrowser::ObjectNotExists& )
             {
                 throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
             }
-            catch (const Registry::DomainBrowserImpl::UserNotExists& )
+            catch (const Fred::Backend::DomainBrowser::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
             }
@@ -611,16 +611,16 @@ namespace Registry
         }
 
         Registry::DomainBrowser::KeysetDetail* Server_i::getKeysetDetail(
-            ::CORBA::ULongLong user_contact_id,
-             ::CORBA::ULongLong keyset_id,
+            CORBA::ULongLong user_contact_id,
+             CORBA::ULongLong keyset_id,
             Registry::DomainBrowser::DataAccessLevel& auth_result)
         {
             try
             {
-                Registry::DomainBrowserImpl::KeysetDetail detail_impl
+                Fred::Backend::DomainBrowser::KeysetDetail detail_impl
                     = pimpl_->getKeysetDetail(user_contact_id, keyset_id);
 
-                KeysetDetail_var keyset_detail = new KeysetDetail;
+                Registry::DomainBrowser::KeysetDetail_var keyset_detail = new Registry::DomainBrowser::KeysetDetail;
 
                 keyset_detail->id = detail_impl.id;
                 keyset_detail->handle = LibFred::Corba::wrap_string_to_corba_string(detail_impl.handle);
@@ -670,20 +670,20 @@ namespace Registry
 
                 if(detail_impl.is_owner)
                 {
-                    auth_result = PRIVATE_DATA;
+                    auth_result = Registry::DomainBrowser::PRIVATE_DATA;
                 }
                 else
                 {
-                    auth_result = PUBLIC_DATA;
+                    auth_result = Registry::DomainBrowser::PUBLIC_DATA;
                 }
 
                 return keyset_detail._retn();
             }
-            catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
+            catch (const Fred::Backend::DomainBrowser::ObjectNotExists& )
             {
                 throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
             }
-            catch (const Registry::DomainBrowserImpl::UserNotExists& )
+            catch (const Fred::Backend::DomainBrowser::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
             }
@@ -694,15 +694,15 @@ namespace Registry
         }
 
         Registry::DomainBrowser::RegistrarDetail* Server_i::getRegistrarDetail(
-            ::CORBA::ULongLong user_contact_id,
+            CORBA::ULongLong user_contact_id,
             const char* handle)
         {
             try
             {
-                Registry::DomainBrowserImpl::RegistrarDetail detail_impl
+                Fred::Backend::DomainBrowser::RegistrarDetail detail_impl
                     = pimpl_->getRegistrarDetail(user_contact_id, handle);
 
-                RegistrarDetail_var registrar_detail = new RegistrarDetail;
+                Registry::DomainBrowser::RegistrarDetail_var registrar_detail = new Registry::DomainBrowser::RegistrarDetail;
                 registrar_detail->id = detail_impl.id;
                 registrar_detail->handle = LibFred::Corba::wrap_string_to_corba_string(detail_impl.handle);
                 registrar_detail->name = LibFred::Corba::wrap_string_to_corba_string(detail_impl.name);
@@ -713,11 +713,11 @@ namespace Registry
 
                 return registrar_detail._retn();
             }
-            catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
+            catch (const Fred::Backend::DomainBrowser::ObjectNotExists& )
             {
                 throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
             }
-            catch (const Registry::DomainBrowserImpl::UserNotExists& )
+            catch (const Fred::Backend::DomainBrowser::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
             }
@@ -727,14 +727,14 @@ namespace Registry
             }
         }
 
-        ::CORBA::Boolean Server_i::setContactDiscloseFlags(
-            ::CORBA::ULongLong user_contact_id,
+        CORBA::Boolean Server_i::setContactDiscloseFlags(
+            CORBA::ULongLong user_contact_id,
             const Registry::DomainBrowser::UpdateContactDiscloseFlags& flags,
-            ::CORBA::ULongLong request_id)
+            CORBA::ULongLong request_id)
         {
             try
             {
-                Registry::DomainBrowserImpl::ContactDiscloseFlagsToSet flags_;
+                Fred::Backend::DomainBrowser::ContactDiscloseFlagsToSet flags_;
                 flags_.email = flags.email;
                 flags_.address = flags.address;
                 flags_.telephone = flags.telephone;
@@ -744,19 +744,19 @@ namespace Registry
                 flags_.notify_email = flags.notify_email;
                 return pimpl_->setContactDiscloseFlags(user_contact_id, flags_, request_id);
             }
-            catch (const Registry::DomainBrowserImpl::UserNotExists& )
+            catch (const Fred::Backend::DomainBrowser::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
             }
-            catch (const Registry::DomainBrowserImpl::IncorrectUsage& )
+            catch (const Fred::Backend::DomainBrowser::IncorrectUsage& )
             {
                 throw Registry::DomainBrowser::INCORRECT_USAGE();
             }
-            catch (const Registry::DomainBrowserImpl::ObjectBlocked& )
+            catch (const Fred::Backend::DomainBrowser::ObjectBlocked& )
             {
                 throw Registry::DomainBrowser::OBJECT_BLOCKED();
             }
-            catch (const Registry::DomainBrowserImpl::AccessDenied& )
+            catch (const Fred::Backend::DomainBrowser::AccessDenied& )
             {
                 throw Registry::DomainBrowser::ACCESS_DENIED();
             }
@@ -766,28 +766,28 @@ namespace Registry
             }
         }
 
-        ::CORBA::Boolean Server_i::setContactAuthInfo(
-            ::CORBA::ULongLong user_contact_id,
+        CORBA::Boolean Server_i::setContactAuthInfo(
+            CORBA::ULongLong user_contact_id,
             const char* auth_info,
-            ::CORBA::ULongLong request_id)
+            CORBA::ULongLong request_id)
         {
             try
             {
                 return pimpl_->setContactAuthInfo(user_contact_id, auth_info, request_id);
             }
-            catch (const Registry::DomainBrowserImpl::UserNotExists& )
+            catch (const Fred::Backend::DomainBrowser::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
             }
-            catch (const Registry::DomainBrowserImpl::IncorrectUsage& )
+            catch (const Fred::Backend::DomainBrowser::IncorrectUsage& )
             {
                 throw Registry::DomainBrowser::INCORRECT_USAGE();
             }
-            catch (const Registry::DomainBrowserImpl::ObjectBlocked& )
+            catch (const Fred::Backend::DomainBrowser::ObjectBlocked& )
             {
                 throw Registry::DomainBrowser::OBJECT_BLOCKED();
             }
-            catch (const Registry::DomainBrowserImpl::AccessDenied& )
+            catch (const Fred::Backend::DomainBrowser::AccessDenied& )
             {
                 throw Registry::DomainBrowser::ACCESS_DENIED();
             }
@@ -797,8 +797,8 @@ namespace Registry
             }
         }
 
-        ::CORBA::Boolean Server_i::setObjectBlockStatus(
-            ::CORBA::ULongLong user_contact_id,
+        CORBA::Boolean Server_i::setObjectBlockStatus(
+            CORBA::ULongLong user_contact_id,
             const char* objtype,
             const Registry::DomainBrowser::ObjectIdSeq& objects,
             Registry::DomainBrowser::ObjectBlockType block,
@@ -815,11 +815,11 @@ namespace Registry
                 std::vector<std::string> blocked_objects;
 
                 bool ret = pimpl_->setObjectBlockStatus(user_contact_id, objtype, objects_id,
-                        (block == Registry::DomainBrowser::BLOCK_TRANSFER) ? Registry::DomainBrowserImpl::BLOCK_TRANSFER
-                        : (block == Registry::DomainBrowser::UNBLOCK_TRANSFER) ? Registry::DomainBrowserImpl::UNBLOCK_TRANSFER
-                        : (block == Registry::DomainBrowser::BLOCK_TRANSFER_AND_UPDATE) ? Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE
-                        : (block == Registry::DomainBrowser::UNBLOCK_TRANSFER_AND_UPDATE) ? Registry::DomainBrowserImpl::UNBLOCK_TRANSFER_AND_UPDATE
-                        : Registry::DomainBrowserImpl::INVALID_BLOCK_TYPE
+                        (block == Registry::DomainBrowser::BLOCK_TRANSFER) ? Fred::Backend::DomainBrowser::BLOCK_TRANSFER
+                        : (block == Registry::DomainBrowser::UNBLOCK_TRANSFER) ? Fred::Backend::DomainBrowser::UNBLOCK_TRANSFER
+                        : (block == Registry::DomainBrowser::BLOCK_TRANSFER_AND_UPDATE) ? Fred::Backend::DomainBrowser::BLOCK_TRANSFER_AND_UPDATE
+                        : (block == Registry::DomainBrowser::UNBLOCK_TRANSFER_AND_UPDATE) ? Fred::Backend::DomainBrowser::UNBLOCK_TRANSFER_AND_UPDATE
+                        : Fred::Backend::DomainBrowser::INVALID_BLOCK_TYPE
                         , blocked_objects);
 
                 Registry::DomainBrowser::RefusedObjectHandleSequence_var change_prohibited_var = new Registry::DomainBrowser::RefusedObjectHandleSequence;
@@ -832,19 +832,19 @@ namespace Registry
                 change_prohibited = change_prohibited_var._retn();//transfer ownership to the out parameter, no exceptions allowed after this point
                 return ret;
             }
-            catch (const Registry::DomainBrowserImpl::ObjectNotExists& )
+            catch (const Fred::Backend::DomainBrowser::ObjectNotExists& )
             {
                 throw Registry::DomainBrowser::OBJECT_NOT_EXISTS();
             }
-            catch (const Registry::DomainBrowserImpl::UserNotExists& )
+            catch (const Fred::Backend::DomainBrowser::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
             }
-            catch (const Registry::DomainBrowserImpl::IncorrectUsage& )
+            catch (const Fred::Backend::DomainBrowser::IncorrectUsage& )
             {
                 throw Registry::DomainBrowser::INCORRECT_USAGE();
             }
-            catch (const Registry::DomainBrowserImpl::AccessDenied& )
+            catch (const Fred::Backend::DomainBrowser::AccessDenied& )
             {
                 throw Registry::DomainBrowser::ACCESS_DENIED();
             }
@@ -858,7 +858,7 @@ namespace Registry
         {
             try
             {
-                std::vector<Registry::DomainBrowserImpl::StatusDesc> status_description = pimpl_->getPublicStatusDesc(lang);
+                std::vector<Fred::Backend::DomainBrowser::StatusDesc> status_description = pimpl_->getPublicStatusDesc(lang);
                 Registry::DomainBrowser::StatusDescList_var status_description_var = new Registry::DomainBrowser::StatusDescList;
                 status_description_var->length(status_description.size());
                 for(std::size_t i = 0; i < status_description.size(); ++i)
@@ -874,14 +874,14 @@ namespace Registry
             }
         }
 
-        MergeContactCandidateList_var corba_wrap_merge_contact_candidate_list(const std::vector<Registry::DomainBrowserImpl::MergeContactCandidateData>& candidate_list)
+        Registry::DomainBrowser::MergeContactCandidateList_var corba_wrap_merge_contact_candidate_list(const std::vector<Fred::Backend::DomainBrowser::MergeContactCandidateData>& candidate_list)
         {
-            MergeContactCandidateList_var cl = new MergeContactCandidateList;
+            Registry::DomainBrowser::MergeContactCandidateList_var cl = new Registry::DomainBrowser::MergeContactCandidateList;
             cl->length(candidate_list.size());
 
             for(unsigned long long i = 0 ; i < candidate_list.size(); ++i)
             {
-                MergeContactCandidateData cld;
+                Registry::DomainBrowser::MergeContactCandidateData cld;
                 cld.id = candidate_list.at(i).id;
                 cld.handle = LibFred::Corba::wrap_string_to_corba_string(candidate_list.at(i).handle);
                 cld.domain_count = candidate_list.at(i).domain_count;
@@ -898,16 +898,16 @@ namespace Registry
 
 
         Registry::DomainBrowser::MergeContactCandidateList* Server_i::getMergeContactCandidateList(
-            ::CORBA::ULongLong user_contact_id,
-            ::CORBA::ULong offset, ::CORBA::Boolean& limit_exceeded)
+            CORBA::ULongLong user_contact_id,
+            CORBA::ULong offset, CORBA::Boolean& limit_exceeded)
         {
             try
             {
-                Registry::DomainBrowserImpl::MergeContactCandidateList mcl = pimpl_->getMergeContactCandidateList(user_contact_id, offset);
+                Fred::Backend::DomainBrowser::MergeContactCandidateList mcl = pimpl_->getMergeContactCandidateList(user_contact_id, offset);
                 limit_exceeded = mcl.limit_exceeded;
                 return corba_wrap_merge_contact_candidate_list(mcl.mccl)._retn();
             }
-            catch (const Registry::DomainBrowserImpl::UserNotExists& )
+            catch (const Fred::Backend::DomainBrowser::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
             }
@@ -917,9 +917,9 @@ namespace Registry
             }
         }
 
-        void Server_i::mergeContacts(::CORBA::ULongLong dst_contact_id,
+        void Server_i::mergeContacts(CORBA::ULongLong dst_contact_id,
             const Registry::DomainBrowser::ObjectIdSeq& src_contact_id_list,
-            ::CORBA::ULongLong request_id)
+            CORBA::ULongLong request_id)
         {
             try
             {
@@ -931,11 +931,11 @@ namespace Registry
                 }
                 pimpl_->mergeContacts(dst_contact_id, contact_list, request_id);
             }
-            catch (const Registry::DomainBrowserImpl::UserNotExists& )
+            catch (const Fred::Backend::DomainBrowser::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
             }
-            catch (const Registry::DomainBrowserImpl::InvalidContacts& )
+            catch (const Fred::Backend::DomainBrowser::InvalidContacts& )
             {
                 throw Registry::DomainBrowser::INVALID_CONTACTS();
             }
@@ -946,23 +946,23 @@ namespace Registry
         }
 
         void Server_i::setContactPreferenceForDomainExpirationLetters(
-            ::CORBA::ULongLong user_contact_id,
-             ::CORBA::Boolean send_expiration_letters,
-            ::CORBA::ULongLong request_id)
+            CORBA::ULongLong user_contact_id,
+            CORBA::Boolean send_expiration_letters,
+            CORBA::ULongLong request_id)
         {
             try
             {
                 return pimpl_->setContactPreferenceForDomainExpirationLetters(user_contact_id, send_expiration_letters, request_id);
             }
-            catch (const Registry::DomainBrowserImpl::UserNotExists& )
+            catch (const Fred::Backend::DomainBrowser::UserNotExists& )
             {
                 throw Registry::DomainBrowser::USER_NOT_EXISTS();
             }
-            catch (const Registry::DomainBrowserImpl::ObjectBlocked& )
+            catch (const Fred::Backend::DomainBrowser::ObjectBlocked& )
             {
                 throw Registry::DomainBrowser::OBJECT_BLOCKED();
             }
-            catch (const Registry::DomainBrowserImpl::AccessDenied& )
+            catch (const Fred::Backend::DomainBrowser::AccessDenied& )
             {
                 throw Registry::DomainBrowser::ACCESS_DENIED();
             }
@@ -974,5 +974,5 @@ namespace Registry
         }
 
 
-    }//namespace DomainBrowser
-} // namespace Registry
+    } // namespace CorbaConversion::DomainBrowser
+} // namespace CorbaConversion

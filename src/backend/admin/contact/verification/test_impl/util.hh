@@ -28,12 +28,12 @@
 
 #include <string>
 
-namespace Admin
-{
-namespace ContactVerification
-{
-namespace Util
-{
+namespace Fred {
+namespace Backend {
+namespace Admin {
+namespace Contact {
+namespace Verification {
+namespace Util {
 
     /**
      * @param country_code 2 char uppercase country code
@@ -62,8 +62,11 @@ namespace Util
         }
     }
 
-}
-}
-}
+} // namespace Fred::Backend::Admin::Contact::Verification::Util
+} // namespace Fred::Backend::Admin::Contact::Verification
+} // namespace Fred::Backend::Admin::Contact
+} // namespace Fred::Backend::Admin
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

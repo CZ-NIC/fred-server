@@ -29,7 +29,11 @@
 #include "src/libfred/opcontext.hh"
 #include "src/util/optional_value.hh"
 
+namespace Fred {
+namespace Backend {
 namespace Admin {
+namespace Contact {
+namespace Verification {
 
     /**
      * Deletes domains owned by contact which MANUAL check FAILED.
@@ -46,7 +50,11 @@ namespace Admin {
     void delete_domains_of_invalid_contact(
         LibFred::OperationContext& _ctx,
         const uuid&             _check_handle);
-}
 
+} // namespace Fred::Backend::Admin::Contact::Verification
+} // namespace Fred::Backend::Admin::Contact
+} // namespace Fred::Backend::Admin
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

@@ -361,7 +361,7 @@ LibFred::InfoContactData info_contact_by_handle(const std::string& handle, LibFr
 {
     try
     {
-        // TODO admin_contact_verification_modification AdminContactVerificationObjectStates::conditionally_cancel_final_states( ) relies on this exclusive lock
+        // TODO admin_contact_verification_modification Fred::Backend::Admin::Contact::Verification::ContactStates::conditionally_cancel_final_states( ) relies on this exclusive lock
         return LibFred::InfoContactByHandle(handle).set_lock().exec(ctx).info_contact_data;
     }
     catch (const LibFred::InfoContactByHandle::Exception& e)

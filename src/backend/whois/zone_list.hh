@@ -5,9 +5,13 @@
 #include <vector>
 #include "src/libfred/opcontext.hh"
 
+namespace Fred {
+namespace Backend {
 namespace Whois {
     //list of managed zone names
     std::vector<std::string> get_managed_zone_list(
         LibFred::OperationContext& ctx);
-}
+} // namespace Fred::Backend::Whois
+} // namespace Fred::Backend
+} // namespace Fred
 #endif

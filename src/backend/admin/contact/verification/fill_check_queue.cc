@@ -17,8 +17,12 @@
 
 #include "src/util/log/context.hh"
 
-namespace  Admin {
-namespace ContactVerificationQueue {
+namespace Fred {
+namespace Backend {
+namespace Admin {
+namespace Contact {
+namespace Verification {
+namespace Queue {
 
     std::string to_string(allowed_contact_roles _in) {
         switch(_in) {
@@ -411,5 +415,9 @@ namespace ContactVerificationQueue {
 
         return result;
     }
-}
-}
+} // namespace Fred::Backend::Admin::Contact::Verification::Queue
+} // namespace Fred::Backend::Admin::Contact::Verification
+} // namespace Fred::Backend::Admin::Contact
+} // namespace Fred::Backend::Admin
+} // namespace Fred::Backend
+} // namespace Fred

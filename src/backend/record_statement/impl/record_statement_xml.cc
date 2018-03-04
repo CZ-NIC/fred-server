@@ -568,7 +568,7 @@ boost::optional<KeysetPrintoutInputData> make_historic_keyset_data(
     return retval;
 }
 
-} // namespace LibFred::Backend::RecordStatement::Impl
-} // namespace LibFred::Backend::RecordStatement::Impl
-} // namespace LibFred::Backend
-} // namespace LibFred
+} // namespace Fred::Backend::RecordStatement::Impl
+} // namespace Fred::Backend::RecordStatement
+} // namespace Fred::Backend
+} // namespace Fred

@@ -35,7 +35,9 @@
 #include <memory>
 #include <boost/noncopyable.hpp>
 
-namespace MojeID {
+namespace Fred {
+namespace Backend {
+namespace MojeId {
 namespace Messages {
 
 typedef unsigned long long GeneralId;
@@ -121,7 +123,9 @@ public:
     static void enable(LibFred::OperationContext &_ctx, bool flag);
 };
 
-} // namespace MojeID::Messages
-} // namespace MojeID
+} // namespace Fred::Backend::MojeId::Messages
+} // namespace Fred::Backend::MojeId
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

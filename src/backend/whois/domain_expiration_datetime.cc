@@ -3,8 +3,9 @@
 #include "src/libfred/object_state/object_state_name.hh"
 
 
-namespace Whois
-{
+namespace Fred {
+namespace Backend {
+namespace Whois {
 
 namespace {
 
@@ -101,4 +102,6 @@ namespace {
         return get_object_state_valid_from(_ctx, _domain_id, LibFred::ObjectState::NOT_VALIDATED);
     }
 
-}
+} // namespace Fred::Backend::Whois
+} // namespace Fred::Backend
+} // namespace Fred

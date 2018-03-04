@@ -26,13 +26,22 @@
 
 #include "src/bin/corba/Buffer.hh"
 #include "src/bin/corba/PublicRequest.hh"
+#include "src/backend/public_request/public_request.hh"
 
 #include <memory>
 #include <string>
 
-namespace Registry {
+namespace Fred {
+namespace Backend {
+namespace PublicRequest {
 
 class PublicRequestImpl;
+
+} // Fred::Backend::PublicRequest
+} // Fred::Backend
+} // Fred
+
+namespace CorbaConversion {
 
 namespace PublicRequest {
 
@@ -43,35 +52,35 @@ public:
 
     virtual ~Server_i();
 
-    ::CORBA::ULongLong create_authinfo_request_registry_email(
-        ObjectType_PR::Type object_type,
+    CORBA::ULongLong create_authinfo_request_registry_email(
+        Registry::PublicRequest::ObjectType_PR::Type object_type,
         const char* object_handle,
-        NullableULongLong* log_request_id);
+        Registry::NullableULongLong* log_request_id);
 
-    ::CORBA::ULongLong create_authinfo_request_non_registry_email(
-        ObjectType_PR::Type object_type,
+    CORBA::ULongLong create_authinfo_request_non_registry_email(
+        Registry::PublicRequest::ObjectType_PR::Type object_type,
         const char* object_handle,
-        NullableULongLong* log_request_id,
-        ConfirmedBy::Type confirmation_method,
+        Registry::NullableULongLong* log_request_id,
+        Registry::PublicRequest::ConfirmedBy::Type confirmation_method,
         const char* specified_email);
 
-    ::CORBA::ULongLong create_block_unblock_request(
-        ObjectType_PR::Type object_type,
+    CORBA::ULongLong create_block_unblock_request(
+        Registry::PublicRequest::ObjectType_PR::Type object_type,
         const char* object_handle,
-        NullableULongLong* log_request_id,
-        ConfirmedBy::Type confirmation_method,
-        LockRequestType::Type lock_request_type);
+        Registry::NullableULongLong* log_request_id,
+        Registry::PublicRequest::ConfirmedBy::Type confirmation_method,
+        Registry::PublicRequest::LockRequestType::Type lock_request_type);
 
-    Buffer* create_public_request_pdf(CORBA::ULongLong public_request_id, Language::Type lang);
+    Registry::Buffer* create_public_request_pdf(CORBA::ULongLong public_request_id, Registry::PublicRequest::Language::Type lang);
 
 private:
-    const std::unique_ptr<PublicRequestImpl> pimpl_;
+    const std::unique_ptr<Fred::Backend::PublicRequest::PublicRequestImpl> pimpl_;
 
     Server_i(const Server_i&); // no body
     Server_i& operator= (const Server_i&); // no body
 };
 
-} // namespace Registry::PublicRequest
-} // namespace Registry
+} // namespace CorbaConversion::PublicRequest
+} // namespace CorbaConversion
 
 #endif

@@ -36,8 +36,9 @@
 #include <boost/mpl/void.hpp>
 #include <boost/regex.hpp>
 
-/// Fred
-namespace LibFred {
+namespace Fred {
+namespace Backend {
+namespace MojeId {
 
 /**
  * Encapsulates up to 5 function arguments into one object.
@@ -519,6 +520,8 @@ struct Check< typename boost::mpl::clear< boost::mpl::list< > >::type, CHECK_WRA
     bool success()const { return true; }
 };
 
-}//Fred
+} // namespace Fred::Backend::MojeId
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

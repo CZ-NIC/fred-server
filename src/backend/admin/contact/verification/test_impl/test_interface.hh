@@ -41,9 +41,11 @@
 #include <set>
 #include <string>
 
-namespace Admin
-{
-namespace ContactVerification{
+namespace Fred {
+namespace Backend {
+namespace Admin {
+namespace Contact {
+namespace Verification {
 
     class Test {
         public:
@@ -97,7 +99,10 @@ namespace ContactVerification{
     :   Util::FactoryAutoRegister<Test, Test_impl>,
         Util::FactoryAutoRegister<TestDataProvider_intf, TestDataProvider<Test_impl> >
     { };
-}
-}
+} // namespace Fred::Backend::Admin::Contact::Verification
+} // namespace Fred::Backend::Admin::Contact
+} // namespace Fred::Backend::Admin
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

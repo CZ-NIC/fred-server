@@ -108,13 +108,13 @@ int main(int argc, char *argv[])
                 server_name,
                 registry_args_ptr->restricted_handles));
 
-        std::unique_ptr<Registry::Whois::Server_impl> my_whois2(new Registry::Whois::Server_impl("Whois2"));
+        std::unique_ptr<CorbaConversion::Whois::Server_impl> my_whois2(new CorbaConversion::Whois::Server_impl("Whois2"));
 
-        std::unique_ptr<Registry::PublicRequest::Server_i> my_public_request(
-                new Registry::PublicRequest::Server_i(server_name));
+        std::unique_ptr<CorbaConversion::PublicRequest::Server_i> my_public_request(
+                new CorbaConversion::PublicRequest::Server_i(server_name));
 
-        std::unique_ptr<Registry::Contact::Verification::ContactVerification_i> contact_vrf_iface(
-                new Registry::Contact::Verification::ContactVerification_i("fred-pifd-cv"));
+        std::unique_ptr<CorbaConversion::Contact::Verification::ContactVerification_i> contact_vrf_iface(
+                new CorbaConversion::Contact::Verification::ContactVerification_i("fred-pifd-cv"));
 
         //create server object with poa and nameservice registration
         CorbaContainer::get_instance()

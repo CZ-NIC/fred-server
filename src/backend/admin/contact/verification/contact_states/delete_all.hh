@@ -33,10 +33,12 @@
 
 #include <string>
 
-namespace Admin
-{
-namespace AdminContactVerificationObjectStates
-{
+namespace Fred {
+namespace Backend {
+namespace Admin {
+namespace Contact {
+namespace Verification {
+namespace ContactStates {
     /* OperationContext versions */
     bool conditionally_cancel_final_states(
         LibFred::OperationContext& ctx,
@@ -73,7 +75,11 @@ namespace AdminContactVerificationObjectStates
     bool conditionally_cancel_final_states_legacy(
         unsigned long long contact_id
     );
-}
-}
+} // namespace Fred::Backend::Admin::Contact::Verification::ContactStates
+} // namespace Fred::Backend::Admin::Contact::Verification
+} // namespace Fred::Backend::Admin::Contact
+} // namespace Fred::Backend::Admin
+} // namespace Fred::Backend
+} // namespace Fred
 #endif // #include guard end
 

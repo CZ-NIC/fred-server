@@ -5,6 +5,8 @@
 #include <vector>
 #include "src/libfred/opcontext.hh"
 
+namespace Fred {
+namespace Backend {
 namespace Whois {
 
     class RegistrarCertificationData
@@ -47,5 +49,9 @@ namespace Whois {
     //list of current registrar certification data
     std::vector<RegistrarCertificationData> get_registrar_certifications(
         LibFred::OperationContext& ctx);
-}
+
+} // namespace Fred::Backend::Whois
+} // namespace Fred::Backend
+} // namespace Fred
+
 #endif

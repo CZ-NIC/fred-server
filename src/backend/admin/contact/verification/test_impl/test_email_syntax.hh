@@ -29,10 +29,11 @@
 
 #include "src/backend/admin/contact/verification/test_impl/test_interface.hh"
 
-namespace Admin
-{
-namespace ContactVerification
-{
+namespace Fred {
+namespace Backend {
+namespace Admin {
+namespace Contact {
+namespace Verification {
     FACTORY_MODULE_INIT_DECL(TestEmailSyntax_init)
 
     class TestEmailSyntax
@@ -82,7 +83,10 @@ namespace ContactVerification
             return boost::assign::list_of(email_);
         }
     };
-}
-}
+} // namespace Fred::Backend::Admin::Contact::Verification
+} // namespace Fred::Backend::Admin::Contact
+} // namespace Fred::Backend::Admin
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

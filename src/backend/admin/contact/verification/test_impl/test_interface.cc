@@ -18,8 +18,11 @@
 
 #include "src/backend/admin/contact/verification/test_impl/test_interface.hh"
 
+namespace Fred {
+namespace Backend {
 namespace Admin {
-namespace ContactVerification {
+namespace Contact {
+namespace Verification {
     Test::TestRunResult::TestRunResult(
         const std::string&                   _status,
         const Optional<std::string>&         _error_msg,
@@ -46,5 +49,8 @@ namespace ContactVerification {
 
         return *this;
     }
-}
-}
+} // namespace Fred::Backend::Admin::Contact::Verification
+} // namespace Fred::Backend::Admin::Contact
+} // namespace Fred::Backend::Admin
+} // namespace Fred::Backend
+} // namespace Fred

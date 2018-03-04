@@ -39,10 +39,11 @@
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/assign/list_of.hpp>
 
-namespace Admin
-{
-namespace ContactVerification
-{
+namespace Fred {
+namespace Backend {
+namespace Admin {
+namespace Contact {
+namespace Verification {
     FACTORY_MODULE_INIT_DECL(TestContactability_init)
 
     class TestContactability
@@ -146,7 +147,10 @@ namespace ContactVerification
                 (country_);
         }
     };
-}
-}
+} // namespace Fred::Backend::Admin::Contact::Verification
+} // namespace Fred::Backend::Admin::Contact
+} // namespace Fred::Backend::Admin
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

@@ -13,7 +13,14 @@
 #include "src/libfred/registrable_object/contact/verification/update_test.hh"
 #include "src/util/log/context.hh"
 
-namespace  Admin {
+#include <utility>
+#include <vector>
+
+namespace Fred {
+namespace Backend {
+namespace Admin {
+namespace Contact {
+namespace Verification {
     void update_tests(
         LibFred::OperationContext&                  _ctx,
         const uuid&                             _check_handle,
@@ -32,7 +39,7 @@ namespace  Admin {
                     .check_state_history.rbegin()->status_handle
             ) == allowed_statuses.end()
         ) {
-            throw Admin::ExceptionCheckNotUpdateable();
+            throw ExceptionCheckNotUpdateable();
         }
 
         try {
@@ -49,13 +56,17 @@ namespace  Admin {
                 ).exec(_ctx);
             }
         } catch(const LibFred::ExceptionUnknownCheckHandle&) {
-            throw Admin::ExceptionUnknownCheckHandle();
+            throw ExceptionUnknownCheckHandle();
         } catch(const LibFred::ExceptionUnknownTestHandle&) {
-            throw Admin::ExceptionUnknownTestHandle();
+            throw ExceptionUnknownTestHandle();
         } catch(const LibFred::ExceptionUnknownCheckTestPair&) {
-            throw Admin::ExceptionUnknownCheckTestPair();
+            throw ExceptionUnknownCheckTestPair();
         } catch(const LibFred::ExceptionUnknownTestStatusHandle&) {
-            throw Admin::ExceptionUnknownTestStatusHandle();
+            throw ExceptionUnknownTestStatusHandle();
         }
     }
-}
+} // namespace Fred::Backend::Admin::Contact::Verification
+} // namespace Fred::Backend::Admin::Contact
+} // namespace Fred::Backend::Admin
+} // namespace Fred::Backend
+} // namespace Fred

@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE(test_Resolved_status)
         Optional<unsigned long long>()
     ).exec(ctx);
 
-    Admin::resolve_check(
+    Fred::Backend::Admin::Contact::Verification::resolve_check(
         uuid::from_string( check.check_handle_ ),
         ::LibFred::ContactCheckStatus::OK,
         Optional<unsigned long long>()
@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE(test_Resolved_logd_request_id)
         36477
     ).exec(ctx);
 
-    Admin::resolve_check(
+    Fred::Backend::Admin::Contact::Verification::resolve_check(
         uuid::from_string( check.check_handle_ ),
         ::LibFred::ContactCheckStatus::OK,
         36478
@@ -162,7 +162,7 @@ BOOST_AUTO_TEST_CASE(test_Resolving_manual_suite_postprocessing)
         Optional<unsigned long long>()
     ).exec(ctx);
 
-    Admin::resolve_check(
+    Fred::Backend::Admin::Contact::Verification::resolve_check(
         uuid::from_string( fail_check.check_handle_ ),
         ::LibFred::ContactCheckStatus::FAIL,
         Optional<unsigned long long>()
@@ -179,7 +179,7 @@ BOOST_AUTO_TEST_CASE(test_Resolving_manual_suite_postprocessing)
         Optional<unsigned long long>()
     ).exec(ctx);
 
-    Admin::resolve_check(
+    Fred::Backend::Admin::Contact::Verification::resolve_check(
         uuid::from_string( ok_check.check_handle_ ),
         ::LibFred::ContactCheckStatus::OK,
         Optional<unsigned long long>()
@@ -208,7 +208,7 @@ BOOST_AUTO_TEST_CASE(test_Resolving_automatic_suite_postprocessing)
         Optional<unsigned long long>()
     ).exec(ctx);
 
-    Admin::resolve_check(
+    Fred::Backend::Admin::Contact::Verification::resolve_check(
         uuid::from_string( fail_check.check_handle_ ),
         ::LibFred::ContactCheckStatus::FAIL,
         Optional<unsigned long long>()
@@ -225,7 +225,7 @@ BOOST_AUTO_TEST_CASE(test_Resolving_automatic_suite_postprocessing)
         Optional<unsigned long long>()
     ).exec(ctx);
 
-    Admin::resolve_check(
+    Fred::Backend::Admin::Contact::Verification::resolve_check(
         uuid::from_string( ok_check.check_handle_ ),
         ::LibFred::ContactCheckStatus::OK,
         Optional<unsigned long long>()

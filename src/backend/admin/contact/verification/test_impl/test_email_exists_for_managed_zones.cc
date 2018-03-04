@@ -29,8 +29,11 @@
 #include <arpa/nameser.h>
 #include <resolv.h>
 
+namespace Fred {
+namespace Backend {
 namespace Admin {
-namespace ContactVerification {
+namespace Contact {
+namespace Verification {
 
     FACTORY_MODULE_INIT_DEFI(TestEmailExistsForManagedZones_init)
 
@@ -196,5 +199,8 @@ namespace ContactVerification {
 
         return TestRunResult( LibFred::ContactTestStatus::OK);
     }
-}
-}
+} // namespace Fred::Backend::Admin::Contact::Verification
+} // namespace Fred::Backend::Admin::Contact
+} // namespace Fred::Backend::Admin
+} // namespace Fred::Backend
+} // namespace Fred

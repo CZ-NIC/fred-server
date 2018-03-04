@@ -54,7 +54,7 @@
 #include <utility>
 #include <vector>
 
-class DummyTestReturning: public Admin::ContactVerification::Test {
+class DummyTestReturning: public Fred::Backend::Admin::Contact::Verification::Test {
         std::string handle;
         std::string description;
         long id;
@@ -95,7 +95,7 @@ class DummyTestReturning: public Admin::ContactVerification::Test {
 };
 
 /* Jack the Thrower */
-class DummyThrowingTest: public Admin::ContactVerification::Test {
+class DummyThrowingTest: public Fred::Backend::Admin::Contact::Verification::Test {
     std::string handle_;
     std::string description_;
     long id_;

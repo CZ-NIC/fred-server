@@ -39,7 +39,9 @@
 #include <string>
 #include <vector>
 
-namespace Registry {
+namespace Fred {
+namespace Backend {
+namespace PublicRequest {
 
 class PublicRequestImpl
 {
@@ -192,6 +194,8 @@ private:
     const std::string server_name_;
 };
 
-} // namespace Registry
+} // namespace Fred::Backend::PublicRequest
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

@@ -6,7 +6,7 @@
 
 #include <string>
 
-namespace Registry
+namespace CorbaConversion
 {
 namespace Whois
 {
@@ -15,75 +15,78 @@ class Server_impl : public POA_Registry::Whois::WhoisIntf
 {
 public:
     Server_impl(const std::string& server_name_)
-    : pimpl_(new Registry::WhoisImpl::Server_impl(server_name_))
-    {}
+    : pimpl_(new Fred::Backend::Whois::Server_impl(server_name_))
+    {
+    }
 
-    virtual ~Server_impl() {}
+    virtual ~Server_impl()
+    {
+    }
 
-    Registrar* get_registrar_by_handle(const char* handle);
+    Registry::Whois::Registrar* get_registrar_by_handle(const char* handle);
 
-    RegistrarSeq* get_registrars();
+    Registry::Whois::RegistrarSeq* get_registrars();
 
-    RegistrarGroupList* get_registrar_groups();
+    Registry::Whois::RegistrarGroupList* get_registrar_groups();
 
-    RegistrarCertificationList* get_registrar_certification_list();
+    Registry::Whois::RegistrarCertificationList* get_registrar_certification_list();
 
-    ZoneFqdnList* get_managed_zone_list();
+    Registry::Whois::ZoneFqdnList* get_managed_zone_list();
 
-    Contact* get_contact_by_handle(const char* handle);
+    Registry::Whois::Contact* get_contact_by_handle(const char* handle);
 
-    NSSet* get_nsset_by_handle(const char* handle);
+    Registry::Whois::NSSet* get_nsset_by_handle(const char* handle);
 
-    NSSetSeq* get_nssets_by_ns(
+    Registry::Whois::NSSetSeq* get_nssets_by_ns(
         const char* handle,
-        ::CORBA::ULong limit,
-        ::CORBA::Boolean& limit_exceeded);
+        CORBA::ULong limit,
+        CORBA::Boolean& limit_exceeded);
 
-    NSSetSeq* get_nssets_by_tech_c(
+    Registry::Whois::NSSetSeq* get_nssets_by_tech_c(
         const char* handle,
-        ::CORBA::ULong limit,
-        ::CORBA::Boolean& limit_exceeded);
+        CORBA::ULong limit,
+        CORBA::Boolean& limit_exceeded);
 
-    NameServer* get_nameserver_by_fqdn(const char* handle);
+    Registry::Whois::NameServer* get_nameserver_by_fqdn(const char* handle);
 
-    KeySet* get_keyset_by_handle(const char* handle);
+    Registry::Whois::KeySet* get_keyset_by_handle(const char* handle);
 
-    KeySetSeq* get_keysets_by_tech_c(
+    Registry::Whois::KeySetSeq* get_keysets_by_tech_c(
         const char* handle,
-        ::CORBA::ULong limit,
-        ::CORBA::Boolean& limit_exceeded);
+        CORBA::ULong limit,
+        CORBA::Boolean& limit_exceeded);
 
-    Domain* get_domain_by_handle(const char* handle);
+    Registry::Whois::Domain* get_domain_by_handle(const char* handle);
 
-    DomainSeq* get_domains_by_registrant(
+    Registry::Whois::DomainSeq* get_domains_by_registrant(
         const char* handle,
-        ::CORBA::ULong limit,
-        ::CORBA::Boolean& limit_exceeded);
+        CORBA::ULong limit,
+        CORBA::Boolean& limit_exceeded);
 
-    DomainSeq* get_domains_by_admin_contact(
+    Registry::Whois::DomainSeq* get_domains_by_admin_contact(
         const char* handle,
-        ::CORBA::ULong limit,
-        ::CORBA::Boolean& limit_exceeded);
+        CORBA::ULong limit,
+        CORBA::Boolean& limit_exceeded);
 
-    DomainSeq* get_domains_by_nsset(
+    Registry::Whois::DomainSeq* get_domains_by_nsset(
         const char* handle,
-        ::CORBA::ULong limit,
-        ::CORBA::Boolean& limit_exceeded);
+        CORBA::ULong limit,
+        CORBA::Boolean& limit_exceeded);
 
-    DomainSeq* get_domains_by_keyset(
+    Registry::Whois::DomainSeq* get_domains_by_keyset(
         const char* handle,
-        ::CORBA::ULong limit,
-        ::CORBA::Boolean& limit_exceeded);
+        CORBA::ULong limit,
+        CORBA::Boolean& limit_exceeded);
 
-    ObjectStatusDescSeq* get_domain_status_descriptions(const char* lang);
-    ObjectStatusDescSeq* get_contact_status_descriptions(const char* lang);
-    ObjectStatusDescSeq* get_nsset_status_descriptions(const char* lang);
-    ObjectStatusDescSeq* get_keyset_status_descriptions(const char* lang);
+    Registry::Whois::ObjectStatusDescSeq* get_domain_status_descriptions(const char* lang);
+    Registry::Whois::ObjectStatusDescSeq* get_contact_status_descriptions(const char* lang);
+    Registry::Whois::ObjectStatusDescSeq* get_nsset_status_descriptions(const char* lang);
+    Registry::Whois::ObjectStatusDescSeq* get_keyset_status_descriptions(const char* lang);
 
 private:
-    const std::unique_ptr<Registry::WhoisImpl::Server_impl> pimpl_;
+    const std::unique_ptr<Fred::Backend::Whois::Server_impl> pimpl_;
 };
 
-} // namespace Whois
+} // namespace Registry::Whois
 } // namespace Registry
 #endif

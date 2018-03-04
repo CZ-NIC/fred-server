@@ -1,6 +1,8 @@
 #include "src/backend/whois/nameserver_exists.hh"
 
 
+namespace Fred {
+namespace Backend {
 namespace Whois {
     bool nameserver_exists(const std::string& ns_fqdn, LibFred::OperationContext& ctx ) {
 
@@ -10,4 +12,6 @@ namespace Whois {
                 Database::query_param_list(ns_fqdn)
             ).size() > 0;
     }
-}
+} // namespace Fred::Backend::Whois
+} // namespace Fred::Backend
+} // namespace Fred

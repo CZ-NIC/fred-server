@@ -16,22 +16,15 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- *  declaration for Registry::MojeIDImplData namespace
- */
-
 #ifndef MOJEID_IMPL_DATA_HH_6021A798220F424AAA6327B3E2F0C458
 #define MOJEID_IMPL_DATA_HH_6021A798220F424AAA6327B3E2F0C458
 
 #include "src/util/db/nullable.hh"
 #include <sstream>
 
-namespace Registry
-{
-
-namespace MojeIDImplData
-{
+namespace Fred {
+namespace Backend {
+namespace MojeIdImplData {
 
 typedef unsigned long long ContactId;
 
@@ -402,7 +395,8 @@ struct ValidationAlreadyProcessed:Exception
     const char* what()const noexcept { return "ValidationAlreadyProcessed"; }
 };
 
-} // namespace Registry::MojeIDImplData
-} // namespace Registry
+} // namespace Fred::Backend::MojeIdImplData
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

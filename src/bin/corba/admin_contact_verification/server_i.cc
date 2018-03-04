@@ -67,7 +67,11 @@ static inline std::string create_log_server_id(const std::string& _server_name) 
     return _server_name + "-" + RandomDataGenerator().xnumstring(5);
 }
 
-namespace Corba {
+namespace CorbaConversion
+{
+    namespace AdminContactVerification
+    {
+
     static void wrap_check_detail(const LibFred::InfoContactCheckOutput& in, Registry::AdminContactVerification::ContactCheckDetail_var& out) {
         typedef LibFred::InfoContactCheckOutput::ContactCheckState ContactCheckState;
         typedef LibFred::InfoContactCheckOutput::ContactTestResultData ContactTestData;
@@ -91,7 +95,7 @@ namespace Corba {
         out->contact_handle =       LibFred::Corba::wrap_string(contact_info_historical.info_contact_data.handle);
         out->contact_id =           contact_info_historical.info_contact_data.id;
         out->checked_contact_hid =  in.contact_history_id;
-        out->created =              CorbaConversion::Util::wrap_boost_posix_time_ptime_to_IsoDateTime(in.local_create_time);
+        out->created =              Util::wrap_boost_posix_time_ptime_to_IsoDateTime(in.local_create_time);
 
         out->status_history.length(in.check_state_history.size());
         unsigned long check_seq_i(0);
@@ -101,8 +105,8 @@ namespace Corba {
             ++check_it, ++check_seq_i
         ) {
             out->status_history[check_seq_i].status =           LibFred::Corba::wrap_string(check_it->status_handle);
-            out->status_history[check_seq_i].update =           CorbaConversion::Util::wrap_boost_posix_time_ptime_to_IsoDateTime(check_it->local_update_time);
-            out->status_history[check_seq_i].logd_request_id =  LibFred::Corba::wrap_nullable_ulonglong(check_it->logd_request_id);
+            out->status_history[check_seq_i].update =           Util::wrap_boost_posix_time_ptime_to_IsoDateTime(check_it->local_update_time);
+            out->status_history[check_seq_i].logd_request_id =  Util::wrap_nullable_ulonglong(check_it->logd_request_id);
         }
 
         out->test_list.length(in.tests.size());
@@ -114,13 +118,13 @@ namespace Corba {
             ++test_it, ++test_seq_i
         ) {
             std::vector<std::string> tested_values =
-                Admin::ContactVerification::test_data_provider_factory::instance_ref()
+                Fred::Backend::Admin::Contact::Verification::test_data_provider_factory::instance_ref()
                     .create_sh_ptr(test_it->test_handle)
                     ->init_data(in.contact_history_id)
                         .get_string_data();
 
             std::vector<std::string> current_values =
-                Admin::ContactVerification::test_data_provider_factory::instance_ref()
+                Fred::Backend::Admin::Contact::Verification::test_data_provider_factory::instance_ref()
                     .create_sh_ptr(test_it->test_handle)
                     ->init_data(contact_info_current.info_contact_data.historyid)
                         .get_string_data();
@@ -146,7 +150,7 @@ namespace Corba {
             }
 
             out->test_list[test_seq_i].test_handle = LibFred::Corba::wrap_string(test_it->test_handle);
-            out->test_list[test_seq_i].created = CorbaConversion::Util::wrap_boost_posix_time_ptime_to_IsoDateTime(test_it->local_create_time);
+            out->test_list[test_seq_i].created = Util::wrap_boost_posix_time_ptime_to_IsoDateTime(test_it->local_create_time);
 
             out->test_list[test_seq_i].status_history.length(test_it->state_history.size());
             testhistory_seq_i= 0;
@@ -164,10 +168,10 @@ namespace Corba {
                         : LibFred::Corba::wrap_string(testhistory_it->error_msg.get_value_or_default());
 
                 out->test_list[test_seq_i].status_history[testhistory_seq_i].update
-                    = CorbaConversion::Util::wrap_boost_posix_time_ptime_to_IsoDateTime(testhistory_it->local_update_time);
+                    = Util::wrap_boost_posix_time_ptime_to_IsoDateTime(testhistory_it->local_update_time);
 
                 out->test_list[test_seq_i].status_history[testhistory_seq_i].logd_request_id
-                    = LibFred::Corba::wrap_nullable_ulonglong(testhistory_it->logd_request_id);
+                    = Util::wrap_nullable_ulonglong(testhistory_it->logd_request_id);
             }
         }
     }
@@ -183,10 +187,10 @@ namespace Corba {
             out[list_index].contact_handle =        LibFred::Corba::wrap_string(it->contact_handle);
             out[list_index].contact_id =            it->contact_id;
             out[list_index].checked_contact_hid =   it->contact_history_id;
-            out[list_index].created =               CorbaConversion::Util::wrap_boost_posix_time_ptime_to_IsoDateTime(it->local_create_time);
-            out[list_index].updated =               CorbaConversion::Util::wrap_boost_posix_time_ptime_to_IsoDateTime(it->local_update_time);
-            out[list_index].last_contact_update =   CorbaConversion::Util::wrap_boost_posix_time_ptime_to_IsoDateTime(it->local_last_contact_update);
-            out[list_index].last_test_finished =    CorbaConversion::Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(it->last_test_finished_local_time);
+            out[list_index].created =               Util::wrap_boost_posix_time_ptime_to_IsoDateTime(it->local_create_time);
+            out[list_index].updated =               Util::wrap_boost_posix_time_ptime_to_IsoDateTime(it->local_update_time);
+            out[list_index].last_contact_update =   Util::wrap_boost_posix_time_ptime_to_IsoDateTime(it->local_last_contact_update);
+            out[list_index].last_test_finished =    Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(it->last_test_finished_local_time);
             out[list_index].current_status =        LibFred::Corba::wrap_string(it->status_handle);
         }
     }
@@ -262,39 +266,34 @@ namespace Corba {
     }
 
     static void wrap_messages(
-        const std::vector<Admin::related_message>& in,
+        const std::vector<Fred::Backend::Admin::Contact::Verification::related_message>& in,
         Registry::AdminContactVerification::MessageSeq_var& out
     ) {
         out->length(in.size());
 
         long list_index = 0;
-        for(std::vector<Admin::related_message>::const_iterator it = in.begin();
+        for(std::vector<Fred::Backend::Admin::Contact::Verification::related_message>::const_iterator it = in.begin();
             it != in.end();
             ++it, ++list_index
         ) {
             out[list_index].id              = it->id;
             out[list_index].type_handle     = LibFred::Corba::wrap_string(it->comm_type);
             out[list_index].content_handle  = LibFred::Corba::wrap_string(it->content_type);
-            out[list_index].created         = CorbaConversion::Util::wrap_boost_posix_time_ptime_to_IsoDateTime(it->created);
-            out[list_index].updated         = CorbaConversion::Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(it->update);
+            out[list_index].created         = Util::wrap_boost_posix_time_ptime_to_IsoDateTime(it->created);
+            out[list_index].updated         = Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(it->update);
             out[list_index].status          = LibFred::Corba::wrap_string(it->status_name);
         }
     }
-}
 
-namespace Registry
-{
-    namespace AdminContactVerification
-    {
-        ContactCheckDetail* Server_i::getContactCheckDetail(const char* check_handle) {
+        Registry::AdminContactVerification::ContactCheckDetail* Server_i::getContactCheckDetail(const char* check_handle) {
             Logging::Context log_server(create_log_server_id(server_name_));
             Logging::Context log_method("getContactCheckDetail");
 
             try {
-                ContactCheckDetail_var result(new ContactCheckDetail);
+                Registry::AdminContactVerification::ContactCheckDetail_var result(new Registry::AdminContactVerification::ContactCheckDetail);
                 LibFred::OperationContextCreator ctx;
 
-                Corba::wrap_check_detail(
+                wrap_check_detail(
                     LibFred::InfoContactCheck(
                         uuid::from_string( LibFred::Corba::unwrap_string(check_handle) )
                     ).exec(ctx),
@@ -303,20 +302,20 @@ namespace Registry
 
                 return result._retn();
             } catch (const uuid::ExceptionInvalidUuid&) {
-                throw INVALID_CHECK_HANDLE();
-            } catch (const Admin::ExceptionUnknownCheckHandle&) {
-                throw UNKNOWN_CHECK_HANDLE();
+                throw Registry::AdminContactVerification::INVALID_CHECK_HANDLE();
+            } catch (const Fred::Backend::Admin::Contact::Verification::ExceptionUnknownCheckHandle&) {
+                throw Registry::AdminContactVerification::UNKNOWN_CHECK_HANDLE();
             } catch (...) {
-                throw INTERNAL_SERVER_ERROR();
+                throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
             }
         }
 
-        ContactCheckList* Server_i::getChecksOfContact(::CORBA::ULongLong contact_id, NullableString* testsuite, ::CORBA::ULong max_item_count) {
+        Registry::AdminContactVerification::ContactCheckList* Server_i::getChecksOfContact(CORBA::ULongLong contact_id, Registry::NullableString* testsuite, CORBA::ULong max_item_count) {
             Logging::Context log_server(create_log_server_id(server_name_));
             Logging::Context log_method("getChecksOfContact");
 
             try {
-                ContactCheckList_var result(new ContactCheckList);
+                Registry::AdminContactVerification::ContactCheckList_var result(new Registry::AdminContactVerification::ContactCheckList);
                 LibFred::OperationContextCreator ctx;
                 LibFred::ListContactChecks list_checks;
 
@@ -324,80 +323,80 @@ namespace Registry
                     .set_max_item_count(static_cast<unsigned long>(max_item_count))
                     .set_contact_id( static_cast<unsigned long long>(contact_id) );
 
-                Optional<std::string> testsuite_unwrapped = LibFred::Corba::unwrap_nullable_string_to_optional(testsuite);
+                Optional<std::string> testsuite_unwrapped = Util::unwrap_nullable_string_to_optional(testsuite);
                 if(testsuite_unwrapped.isset()) {
                     list_checks.set_testsuite_handle(testsuite_unwrapped.get_value());
                 }
 
-                Corba::wrap_check_list(
+                wrap_check_list(
                     list_checks.exec(ctx),
                     result
                 );
 
                 return result._retn();
             } catch (...) {
-                throw INTERNAL_SERVER_ERROR();
+                throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
             }
         }
 
-        ContactCheckList* Server_i::getActiveChecks(NullableString* testsuite) {
+        Registry::AdminContactVerification::ContactCheckList* Server_i::getActiveChecks(Registry::NullableString* testsuite) {
             Logging::Context log_server(create_log_server_id(server_name_));
             Logging::Context log_method("getActiveChecks");
 
             try {
-                ContactCheckList_var result(new ContactCheckList);
+                Registry::AdminContactVerification::ContactCheckList_var result(new Registry::AdminContactVerification::ContactCheckList);
 
-                Corba::wrap_check_list(
-                    Admin::list_active_checks( LibFred::Corba::unwrap_nullable_string_to_optional(testsuite) ),
+                wrap_check_list(
+                    Fred::Backend::Admin::Contact::Verification::list_active_checks(Util::unwrap_nullable_string_to_optional(testsuite)),
                     result
                 );
 
                 return result._retn();
             } catch (...) {
-                throw INTERNAL_SERVER_ERROR();
+                throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
             }
         }
 
-        void Server_i::updateContactCheckTests(const char* check_handle, const TestUpdateSeq& changes, ::CORBA::ULongLong logd_request_id){
+        void Server_i::updateContactCheckTests(const char* check_handle, const Registry::AdminContactVerification::TestUpdateSeq& changes, CORBA::ULongLong logd_request_id){
             Logging::Context log_server(create_log_server_id(server_name_));
             Logging::Context log_method("updateContactCheckTests");
 
             try {
                 LibFred::OperationContextCreator ctx;
 
-                Admin::update_tests(
+                Fred::Backend::Admin::Contact::Verification::update_tests(
                     ctx,
                     uuid::from_string( LibFred::Corba::unwrap_string(check_handle) ),
-                    Corba::unwrap_test_change_sequence(changes),
+                    unwrap_test_change_sequence(changes),
                     logd_request_id
                 );
 
                 ctx.commit_transaction();
             } catch (const uuid::ExceptionInvalidUuid&) {
-                throw INVALID_CHECK_HANDLE();
-            } catch(const Admin::ExceptionUnknownCheckHandle&) {
-                throw UNKNOWN_CHECK_HANDLE();
-            } catch(const Admin::ExceptionUnknownTestHandle&) {
-                throw UNKNOWN_TEST_HANDLE();
-            } catch(const Admin::ExceptionUnknownCheckTestPair&) {
-                throw UNKNOWN_CHECK_TEST_PAIR();
-            } catch(const Admin::ExceptionUnknownTestStatusHandle&) {
-                throw UNKNOWN_TEST_STATUS_HANDLE();
-            } catch(const Admin::ExceptionCheckNotUpdateable&) {
-                throw CHECK_NOT_UPDATEABLE();
+                throw Registry::AdminContactVerification::INVALID_CHECK_HANDLE();
+            } catch(const Fred::Backend::Admin::Contact::Verification::ExceptionUnknownCheckHandle&) {
+                throw Registry::AdminContactVerification::UNKNOWN_CHECK_HANDLE();
+            } catch(const Fred::Backend::Admin::Contact::Verification::ExceptionUnknownTestHandle&) {
+                throw Registry::AdminContactVerification::UNKNOWN_TEST_HANDLE();
+            } catch(const Fred::Backend::Admin::Contact::Verification::ExceptionUnknownCheckTestPair&) {
+                throw Registry::AdminContactVerification::UNKNOWN_CHECK_TEST_PAIR();
+            } catch(const Fred::Backend::Admin::Contact::Verification::ExceptionUnknownTestStatusHandle&) {
+                throw Registry::AdminContactVerification::UNKNOWN_TEST_STATUS_HANDLE();
+            } catch(const Fred::Backend::Admin::Contact::Verification::ExceptionCheckNotUpdateable&) {
+                throw Registry::AdminContactVerification::CHECK_NOT_UPDATEABLE();
             } catch (...) {
-                throw INTERNAL_SERVER_ERROR();
+                throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
             }
         }
 
-        void Server_i::resolveContactCheckStatus(const char* check_handle, const char* status, ::CORBA::ULongLong logd_request_id){
+        void Server_i::resolveContactCheckStatus(const char* check_handle, const char* status, CORBA::ULongLong logd_request_id){
             Logging::Context log_server(create_log_server_id(server_name_));
             Logging::Context log_method("resolveContactCheckStatus");
 
             try {
                 LibFred::OperationContextCreator ctx;
 
-                Admin::resolve_check(
+                Fred::Backend::Admin::Contact::Verification::resolve_check(
                     uuid::from_string( LibFred::Corba::unwrap_string(check_handle) ),
                     LibFred::Corba::unwrap_string(status),
                     logd_request_id
@@ -405,15 +404,15 @@ namespace Registry
 
                 ctx.commit_transaction();
             } catch (const uuid::ExceptionInvalidUuid&) {
-                throw INVALID_CHECK_HANDLE();
-            } catch(const Admin::ExceptionUnknownCheckHandle&) {
-                throw UNKNOWN_CHECK_HANDLE();
-            } catch(const Admin::ExceptionUnknownCheckStatusHandle&) {
-                throw UNKNOWN_CHECK_STATUS_HANDLE();
-            } catch(const Admin::ExceptionCheckNotUpdateable&) {
-                throw CHECK_NOT_UPDATEABLE();
+                throw Registry::AdminContactVerification::INVALID_CHECK_HANDLE();
+            } catch(const Fred::Backend::Admin::Contact::Verification::ExceptionUnknownCheckHandle&) {
+                throw Registry::AdminContactVerification::UNKNOWN_CHECK_HANDLE();
+            } catch(const Fred::Backend::Admin::Contact::Verification::ExceptionUnknownCheckStatusHandle&) {
+                throw Registry::AdminContactVerification::UNKNOWN_CHECK_STATUS_HANDLE();
+            } catch(const Fred::Backend::Admin::Contact::Verification::ExceptionCheckNotUpdateable&) {
+                throw Registry::AdminContactVerification::CHECK_NOT_UPDATEABLE();
             } catch (...) {
-                throw INTERNAL_SERVER_ERROR();
+                throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
             }
         }
 
@@ -424,30 +423,30 @@ namespace Registry
             try {
                 LibFred::OperationContextCreator ctx;
 
-                Admin::delete_domains_of_invalid_contact(
+                Fred::Backend::Admin::Contact::Verification::delete_domains_of_invalid_contact(
                     ctx,
                     uuid::from_string( LibFred::Corba::unwrap_string(check_handle) )
                 );
 
                 ctx.commit_transaction();
             } catch (const uuid::ExceptionInvalidUuid&) {
-                throw INVALID_CHECK_HANDLE();
-            } catch (const Admin::ExceptionUnknownCheckHandle&) {
-                throw UNKNOWN_CHECK_HANDLE();
-            } catch (const Admin::ExceptionIncorrectTestsuite&) {
-                throw INCORRECT_TESTSUITE();
-            } catch (const Admin::ExceptionIncorrectCheckStatus&) {
-                throw INCORRECT_CHECK_STATUS();
-            } catch (const Admin::ExceptionIncorrectContactStatus&) {
-                throw INCORRECT_CONTACT_STATUS();
-            } catch (const Admin::ExceptionDomainsAlreadyDeleted&) {
-                throw DOMAINS_ALREADY_DELETED();
+                throw Registry::AdminContactVerification::INVALID_CHECK_HANDLE();
+            } catch (const Fred::Backend::Admin::Contact::Verification::ExceptionUnknownCheckHandle&) {
+                throw Registry::AdminContactVerification::UNKNOWN_CHECK_HANDLE();
+            } catch (const Fred::Backend::Admin::Contact::Verification::ExceptionIncorrectTestsuite&) {
+                throw Registry::AdminContactVerification::INCORRECT_TESTSUITE();
+            } catch (const Fred::Backend::Admin::Contact::Verification::ExceptionIncorrectCheckStatus&) {
+                throw Registry::AdminContactVerification::INCORRECT_CHECK_STATUS();
+            } catch (const Fred::Backend::Admin::Contact::Verification::ExceptionIncorrectContactStatus&) {
+                throw Registry::AdminContactVerification::INCORRECT_CONTACT_STATUS();
+            } catch (const Fred::Backend::Admin::Contact::Verification::ExceptionDomainsAlreadyDeleted&) {
+                throw Registry::AdminContactVerification::DOMAINS_ALREADY_DELETED();
             } catch (...) {
-                throw INTERNAL_SERVER_ERROR();
+                throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
             }
         }
 
-        char* Server_i::requestEnqueueingContactCheck(::CORBA::ULongLong contact_id, const char* testsuite_handle, ::CORBA::ULongLong logd_request_id) {
+        char* Server_i::requestEnqueueingContactCheck(CORBA::ULongLong contact_id, const char* testsuite_handle, CORBA::ULongLong logd_request_id) {
             Logging::Context log_server(create_log_server_id(server_name_));
             Logging::Context log_method("requestEnqueueingContactCheck");
 
@@ -456,7 +455,7 @@ namespace Registry
 
                 std::string created_handle;
 
-                created_handle = Admin::request_check_enqueueing(
+                created_handle = Fred::Backend::Admin::Contact::Verification::request_check_enqueueing(
                     ctx,
                     contact_id,
                     LibFred::Corba::unwrap_string(testsuite_handle),
@@ -467,22 +466,22 @@ namespace Registry
 
                 return CORBA::string_dup(created_handle.c_str());
             } catch(const LibFred::ExceptionUnknownContactId&) {
-                throw UNKNOWN_CONTACT_ID();
+                throw Registry::AdminContactVerification::UNKNOWN_CONTACT_ID();
             } catch(const LibFred::ExceptionUnknownTestsuiteHandle&) {
-                throw UNKNOWN_TESTSUITE_HANDLE();
+                throw Registry::AdminContactVerification::UNKNOWN_TESTSUITE_HANDLE();
             } catch (...) {
-                throw INTERNAL_SERVER_ERROR();
+                throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
             }
         }
 
-        void Server_i::confirmEnqueueingContactCheck(const char* check_handle, ::CORBA::ULongLong logd_request_id) {
+        void Server_i::confirmEnqueueingContactCheck(const char* check_handle, CORBA::ULongLong logd_request_id) {
             Logging::Context log_server(create_log_server_id(server_name_));
             Logging::Context log_method("confirmEnqueueingContactCheck");
 
             try {
                 LibFred::OperationContextCreator ctx;
 
-                Admin::confirm_check_enqueueing(
+                Fred::Backend::Admin::Contact::Verification::confirm_check_enqueueing(
                     ctx,
                     uuid::from_string( LibFred::Corba::unwrap_string(check_handle) ),
                     logd_request_id
@@ -491,17 +490,17 @@ namespace Registry
                 ctx.commit_transaction();
 
             } catch (const uuid::ExceptionInvalidUuid&) {
-                throw INVALID_CHECK_HANDLE();
+                throw Registry::AdminContactVerification::INVALID_CHECK_HANDLE();
             } catch (const LibFred::ExceptionUnknownCheckHandle&) {
-                throw UNKNOWN_CHECK_HANDLE();
-            } catch(const Admin::ExceptionCheckNotUpdateable&) {
-                throw CHECK_NOT_UPDATEABLE();
+                throw Registry::AdminContactVerification::UNKNOWN_CHECK_HANDLE();
+            } catch(const Fred::Backend::Admin::Contact::Verification::ExceptionCheckNotUpdateable&) {
+                throw Registry::AdminContactVerification::CHECK_NOT_UPDATEABLE();
             } catch (...) {
-                throw INTERNAL_SERVER_ERROR();
+                throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
             }
         }
 
-        char* Server_i::enqueueContactCheck(::CORBA::ULongLong contact_id, const char* testsuite_handle, ::CORBA::ULongLong logd_request_id){
+        char* Server_i::enqueueContactCheck(CORBA::ULongLong contact_id, const char* testsuite_handle, CORBA::ULongLong logd_request_id){
             Logging::Context log_server(create_log_server_id(server_name_));
             Logging::Context log_method("enqueueContactCheck");
 
@@ -510,7 +509,7 @@ namespace Registry
 
                 std::string created_handle;
 
-                created_handle = Admin::enqueue_check(
+                created_handle = Fred::Backend::Admin::Contact::Verification::enqueue_check(
                     ctx,
                     contact_id,
                     LibFred::Corba::unwrap_string(testsuite_handle),
@@ -520,26 +519,26 @@ namespace Registry
                 ctx.commit_transaction();
 
                 return CORBA::string_dup(created_handle.c_str());
-            } catch(const Admin::ExceptionUnknownContactId&) {
-                throw UNKNOWN_CONTACT_ID();
-            } catch(const Admin::ExceptionUnknownTestsuiteHandle&) {
-                throw UNKNOWN_TESTSUITE_HANDLE();
+            } catch(const Fred::Backend::Admin::Contact::Verification::ExceptionUnknownContactId&) {
+                throw Registry::AdminContactVerification::UNKNOWN_CONTACT_ID();
+            } catch(const Fred::Backend::Admin::Contact::Verification::ExceptionUnknownTestsuiteHandle&) {
+                throw Registry::AdminContactVerification::UNKNOWN_TESTSUITE_HANDLE();
             } catch (...) {
-                throw INTERNAL_SERVER_ERROR();
+                throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
             }
         }
 
-        MessageSeq* Server_i::getContactCheckMessages(::CORBA::ULongLong contact_id) {
+        Registry::AdminContactVerification::MessageSeq* Server_i::getContactCheckMessages(CORBA::ULongLong contact_id) {
             Logging::Context log_server(create_log_server_id(server_name_));
             Logging::Context log_method("getContactCheckMessages");
 
             try {
-                MessageSeq_var result(new MessageSeq);
+                Registry::AdminContactVerification::MessageSeq_var result(new Registry::AdminContactVerification::MessageSeq);
 
                 LibFred::OperationContextCreator ctx;
 
-                Corba::wrap_messages(
-                    Admin::get_related_messages(
+                wrap_messages(
+                    Fred::Backend::Admin::Contact::Verification::get_related_messages(
                         ctx,
                         contact_id
                     ),
@@ -549,20 +548,20 @@ namespace Registry
                 return result._retn();
 
             } catch (const uuid::ExceptionInvalidUuid&) {
-                throw INVALID_CHECK_HANDLE();
+                throw Registry::AdminContactVerification::INVALID_CHECK_HANDLE();
             } catch (...) {
-                throw INTERNAL_SERVER_ERROR();
+                throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
             }
         }
 
-        ContactTestStatusDefSeq* Server_i::listTestStatusDefs(const char* lang) {
+        Registry::AdminContactVerification::ContactTestStatusDefSeq* Server_i::listTestStatusDefs(const char* lang) {
             Logging::Context log_server(create_log_server_id(server_name_));
             Logging::Context log_method("listTestStatusDefs");
 
             try {
-                ContactTestStatusDefSeq_var result (new ContactTestStatusDefSeq);
+                Registry::AdminContactVerification::ContactTestStatusDefSeq_var result (new Registry::AdminContactVerification::ContactTestStatusDefSeq);
 
-                Corba::wrap_test_statuses(
+                wrap_test_statuses(
                     LibFred::list_test_result_statuses(
                         LibFred::Corba::unwrap_string(lang)),
                     result
@@ -570,18 +569,18 @@ namespace Registry
 
                 return result._retn();
             } catch (...) {
-                throw INTERNAL_SERVER_ERROR();
+                throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
             }
         }
 
-        ContactCheckStatusDefSeq* Server_i::listCheckStatusDefs(const char* lang) {
+        Registry::AdminContactVerification::ContactCheckStatusDefSeq* Server_i::listCheckStatusDefs(const char* lang) {
             Logging::Context log_server(create_log_server_id(server_name_));
             Logging::Context log_method("listCheckStatusDefs");
 
             try {
-                ContactCheckStatusDefSeq_var result (new ContactCheckStatusDefSeq);
+                Registry::AdminContactVerification::ContactCheckStatusDefSeq_var result (new Registry::AdminContactVerification::ContactCheckStatusDefSeq);
 
-                Corba::wrap_check_statuses(
+                wrap_check_statuses(
                     LibFred::list_check_statuses(
                         LibFred::Corba::unwrap_string(lang)),
                     result
@@ -589,11 +588,11 @@ namespace Registry
 
                 return result._retn();
             } catch (...) {
-                throw INTERNAL_SERVER_ERROR();
+                throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
             }
         }
 
-        ContactTestDefSeq* Server_i::listTestDefs(
+        Registry::AdminContactVerification::ContactTestDefSeq* Server_i::listTestDefs(
             const char* lang,
             Registry::NullableString* testsuite_handle
         ) {
@@ -601,30 +600,30 @@ namespace Registry
             Logging::Context log_method("listTestDefs");
 
             try {
-                ContactTestDefSeq_var result (new ContactTestDefSeq);
+                Registry::AdminContactVerification::ContactTestDefSeq_var result (new Registry::AdminContactVerification::ContactTestDefSeq);
 
-                Corba::wrap_test_definitions(
+                wrap_test_definitions(
                     LibFred::list_test_definitions(
                         LibFred::Corba::unwrap_string(lang),
-                        LibFred::Corba::unwrap_nullable_string(testsuite_handle).get_value_or_default()
+                        Util::unwrap_nullable_string(testsuite_handle).get_value_or_default()
                     ),
                     result
                 );
 
                 return result._retn();
             } catch (...) {
-                throw INTERNAL_SERVER_ERROR();
+                throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
             }
         }
 
-        ContactTestSuiteDefSeq* Server_i::listTestSuiteDefs(const char* lang) {
+        Registry::AdminContactVerification::ContactTestSuiteDefSeq* Server_i::listTestSuiteDefs(const char* lang) {
             Logging::Context log_server(create_log_server_id(server_name_));
             Logging::Context log_method("listTestSuiteDefs");
 
             try {
-                ContactTestSuiteDefSeq_var result (new ContactTestSuiteDefSeq);
+                Registry::AdminContactVerification::ContactTestSuiteDefSeq_var result (new Registry::AdminContactVerification::ContactTestSuiteDefSeq);
 
-                Corba::wrap_testsuite_definitions(
+                wrap_testsuite_definitions(
                     LibFred::list_testsuite_definitions(
                         LibFred::Corba::unwrap_string(lang)),
                     result
@@ -632,8 +631,9 @@ namespace Registry
 
                 return result._retn();
             } catch (...) {
-                throw INTERNAL_SERVER_ERROR();
+                throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
             }
         }
-    }
-}
+    } // namespace CorbaConversion::AdminContactVerification
+} // namespace CorbaConversion
+

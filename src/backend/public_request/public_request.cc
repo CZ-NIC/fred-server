@@ -30,8 +30,11 @@
 #include <sstream>
 #include <utility>
 
-namespace Registry {
-namespace PublicRequestType {
+namespace Fred {
+namespace Backend {
+namespace PublicRequest {
+
+namespace Type {
 
 namespace {
 
@@ -169,8 +172,8 @@ LibFred::PublicRequestTypeIface::PublicRequestTypes get_block_unblock_public_req
     return res;
 }
 
-} // namespace Registry::PublicRequestType::{anonymous}
-} // namespace Registry::PublicRequestType
+} // namespace Fred::Backend::PublicRequest::Type::{anonymous}
+} // namespace Fred::Backend::PublicRequest::Type
 
 namespace {
 
@@ -405,7 +408,7 @@ void check_authinfo_request_permission(const LibFred::ObjectStatesInfo& states)
     }
 }
 
-} // namespace Registry::{anonymous}
+} // namespace Fred::Backend::PublicRequest::{anonymous}
 
 PublicRequestImpl::PublicRequestImpl(const std::string &_server_name)
     : server_name_(_server_name)
@@ -433,7 +436,7 @@ unsigned long long PublicRequestImpl::create_authinfo_request_registry_email(
     {
         unsigned long long object_id;
         unsigned long long public_request_id;
-        const PublicRequestType::AuthinfoAuto public_request_type;
+        const Type::AuthinfoAuto public_request_type;
         {
             LibFred::OperationContextCreator ctx;
             object_id = get_id_of_registered_object(ctx, object_type, object_handle);
@@ -541,14 +544,14 @@ unsigned long long PublicRequestImpl::create_authinfo_request_non_registry_email
             case ConfirmedBy::email:
             {
                 const unsigned long long request_id =
-                        create_public_request_op.exec(locked_object, PublicRequestType::AuthinfoEmail(), log_request_id);
+                        create_public_request_op.exec(locked_object, Type::AuthinfoEmail(), log_request_id);
                 ctx.commit_transaction();
                 return request_id;
             }
             case ConfirmedBy::letter:
             {
                 const unsigned long long request_id =
-                        create_public_request_op.exec(locked_object, PublicRequestType::AuthinfoPost(), log_request_id);
+                        create_public_request_op.exec(locked_object, Type::AuthinfoPost(), log_request_id);
                 ctx.commit_transaction();
                 return request_id;
             }
@@ -608,7 +611,7 @@ const LibFred::PublicRequestTypeIface& get_public_request_type(PublicRequestImpl
     throw std::runtime_error("unexpected confirmation method");
 }
 
-} // namespace Registry::{anonymous}
+} // namespace Fred::Backend::PublicRequest::{anonymous}
 
 unsigned long long PublicRequestImpl::create_block_unblock_request(
     ObjectType::Enum object_type,
@@ -640,7 +643,7 @@ unsigned long long PublicRequestImpl::create_block_unblock_request(
                 const unsigned long long request_id =
                         LibFred::CreatePublicRequest().exec(
                                 locked_object,
-                                get_public_request_type<PublicRequestType::Block::Transfer>(confirmation_method),
+                                get_public_request_type<Type::Block::Transfer>(confirmation_method),
                                 log_request_id);
                 ctx.commit_transaction();
                 return request_id;
@@ -655,7 +658,7 @@ unsigned long long PublicRequestImpl::create_block_unblock_request(
                 const unsigned long long request_id =
                         LibFred::CreatePublicRequest().exec(
                                 locked_object,
-                                get_public_request_type<PublicRequestType::Block::Changes>(confirmation_method),
+                                get_public_request_type<Type::Block::Changes>(confirmation_method),
                                 log_request_id);
                 ctx.commit_transaction();
                 return request_id;
@@ -673,7 +676,7 @@ unsigned long long PublicRequestImpl::create_block_unblock_request(
                 const unsigned long long request_id =
                         LibFred::CreatePublicRequest().exec(
                                 locked_object,
-                                get_public_request_type<PublicRequestType::Unblock::Transfer>(confirmation_method),
+                                get_public_request_type<Type::Unblock::Transfer>(confirmation_method),
                                 log_request_id);
                 ctx.commit_transaction();
                 return request_id;
@@ -691,7 +694,7 @@ unsigned long long PublicRequestImpl::create_block_unblock_request(
                 const unsigned long long request_id =
                         LibFred::CreatePublicRequest().exec(
                                 locked_object,
-                                get_public_request_type<PublicRequestType::Unblock::Changes>(confirmation_method),
+                                get_public_request_type<Type::Unblock::Changes>(confirmation_method),
                                 log_request_id);
                 ctx.commit_transaction();
                 return request_id;
@@ -751,11 +754,11 @@ namespace {
 std::map<std::string, unsigned char> get_public_request_type_to_post_type_dictionary()
 {
     std::map<std::string, unsigned char> dictionary;
-    if (dictionary.insert(std::make_pair(PublicRequestType::AuthinfoPost().get_public_request_type(), 1)).second &&
-        dictionary.insert(std::make_pair(PublicRequestType::Block::Transfer::ByPost().get_public_request_type(), 2)).second &&
-        dictionary.insert(std::make_pair(PublicRequestType::Unblock::Transfer::ByPost().get_public_request_type(), 3)).second &&
-        dictionary.insert(std::make_pair(PublicRequestType::Block::Changes::ByPost().get_public_request_type(), 4)).second &&
-        dictionary.insert(std::make_pair(PublicRequestType::Unblock::Changes::ByPost().get_public_request_type(), 5)).second)
+    if (dictionary.insert(std::make_pair(Type::AuthinfoPost().get_public_request_type(), 1)).second &&
+        dictionary.insert(std::make_pair(Type::Block::Transfer::ByPost().get_public_request_type(), 2)).second &&
+        dictionary.insert(std::make_pair(Type::Unblock::Transfer::ByPost().get_public_request_type(), 3)).second &&
+        dictionary.insert(std::make_pair(Type::Block::Changes::ByPost().get_public_request_type(), 4)).second &&
+        dictionary.insert(std::make_pair(Type::Unblock::Changes::ByPost().get_public_request_type(), 5)).second)
     {
         return dictionary;
     }
@@ -785,7 +788,7 @@ std::string language_to_lang_code(PublicRequestImpl::Language::Enum lang)
     throw std::invalid_argument("language code not found");
 }
 
-} // namespace Registry::{anonymous}
+} // namespace Fred::Backend::PublicRequest::{anonymous}
 
 Fred::Backend::Buffer PublicRequestImpl::create_public_request_pdf(
     unsigned long long public_request_id,
@@ -869,4 +872,6 @@ std::shared_ptr<LibFred::Document::Manager> PublicRequestImpl::get_default_docum
                     CorbaContainer::get_instance()->getNS()->getHostName()));
 }
 
-} // namespace Registry
+} // namespace Fred::Backend::PublicRequest
+} // namespace Fred::Backend
+} // namespace Fred

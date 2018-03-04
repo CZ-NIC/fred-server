@@ -34,7 +34,11 @@
 #include <utility>
 #include <string>
 
+namespace Fred {
+namespace Backend {
 namespace Admin {
+namespace Contact {
+namespace Verification {
     using std::vector;
     using std::pair;
     using std::string;
@@ -56,6 +60,10 @@ namespace Admin {
         const vector<pair<string, string> >&    _test_statuses,
         unsigned long long                      _logd_request_id);
 
-}
+} // namespace Fred::Backend::Admin::Contact::Verification
+} // namespace Fred::Backend::Admin::Contact
+} // namespace Fred::Backend::Admin
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

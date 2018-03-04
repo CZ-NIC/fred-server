@@ -38,10 +38,11 @@
 #include <libxml/xpathInternals.h>
 #include <libxml/tree.h>
 
-namespace Admin
-{
-namespace ContactVerification
-{
+namespace Fred {
+namespace Backend {
+namespace Admin {
+namespace Contact {
+namespace Verification {
     FACTORY_MODULE_INIT_DECL(TestCzAddress_init)
 
     class TestCzAddress
@@ -117,7 +118,10 @@ namespace ContactVerification
                 (country_);
         }
     };
-}
-}
+} // namespace Fred::Backend::Admin::Contact::Verification
+} // namespace Fred::Backend::Admin::Contact
+} // namespace Fred::Backend::Admin
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

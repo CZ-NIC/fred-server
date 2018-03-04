@@ -40,7 +40,7 @@ boost::assign::list_of
     (HandleArgsPtr(new HandleDatabaseArgs))
     (HandleArgsPtr(new HandleCorbaNameServiceArgs))
     (HandleArgsPtr(new HandleRegistryArgs))
-    (HandleArgsPtr(new HandleMojeIDArgs))
+    (HandleArgsPtr(new HandleMojeIdArgs))
     (HandleArgsPtr(new HandleContactVerificationArgs));
 
 
@@ -71,8 +71,8 @@ int main(int argc, char *argv[])
 
         //create server object with poa and nameservice registration
         CorbaContainer::get_instance()->register_server(
-            new Registry::MojeID::Server_i(server_name),
-            Registry::MojeID::service_name);
+            new Registry::MojeId::Server_i(server_name),
+            Registry::MojeId::service_name);
         run_server(CfgArgs::instance(), CorbaContainer::get_instance());
         return EXIT_SUCCESS;
     }//try

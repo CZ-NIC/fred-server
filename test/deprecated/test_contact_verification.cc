@@ -304,8 +304,8 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
             , ns_args_ptr->nameservice_context);
 
     std::shared_ptr<::LibFred::Mailer::Manager> mm( new MailerManager(CorbaContainer::get_instance()->getNS()));
-    const std::unique_ptr<Registry::Contact::Verification::ContactVerificationImpl> cv(
-        new Registry::Contact::Verification::ContactVerificationImpl(server_name, mm));
+    const std::unique_ptr<Fred::Backend::ContactVerification::ContactVerificationImpl> cv(
+        new Fred::Backend::ContactVerification::ContactVerificationImpl(server_name, mm));
 
     std::string registrar_handle = "REG-FRED_A";
     ::LibFred::Contact::Verification::Contact fcvc;
@@ -364,8 +364,8 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
 
     //check new cci request
     check_public_request_on_contact(fcvc
-            , ::LibFred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION
-            , ::LibFred::PublicRequest::PRS_NEW);
+            , Fred::Backend::ContactVerification::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION
+            , LibFred::PublicRequest::PRS_NEW);
 
     {
         //get db connection
@@ -382,7 +382,7 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
                 " where pra.identification = $1::text and eprt.name = $2::text "
                 " and mt.type='contact_verification_pin2' "
             , Database::query_param_list(another_request_id)
-                (::LibFred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION));
+                (Fred::Backend::ContactVerification::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION));
         BOOST_CHECK((res_cci_sms.size() == 1));
 
         //check pin1 email
@@ -396,7 +396,7 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
                 " where pra.identification = $1::text and eprt.name = $2::text "
                 " and mt.name = 'conditional_contact_identification' "
             , Database::query_param_list(another_request_id)
-                (::LibFred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION));
+                (Fred::Backend::ContactVerification::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION));
         BOOST_CHECK((res_cci_email.size() == 1));
     }
 
@@ -427,13 +427,13 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
 
     //check answered cci request
     check_public_request_on_contact(fcvc
-            , ::LibFred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION
-            , ::LibFred::PublicRequest::PRS_ANSWERED);
+            , Fred::Backend::ContactVerification::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION
+            , LibFred::PublicRequest::PRS_ANSWERED);
 
     //check new ci request
     check_public_request_on_contact(fcvc
-            , ::LibFred::PublicRequest::PRT_CONTACT_IDENTIFICATION
-            , ::LibFred::PublicRequest::PRS_NEW);
+            , Fred::Backend::ContactVerification::PublicRequest::PRT_CONTACT_IDENTIFICATION
+            , LibFred::PublicRequest::PRS_NEW);
 
     {
         //get db connection
@@ -452,7 +452,7 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
                 " where obr.name = $1::text and eprt.name = $2::text and "
                 " mt.type='contact_verification_pin3' "
             , Database::query_param_list(fcvc.handle)
-                (::LibFred::PublicRequest::PRT_CONTACT_IDENTIFICATION));
+                (Fred::Backend::ContactVerification::PublicRequest::PRT_CONTACT_IDENTIFICATION));
         BOOST_CHECK((res_ci_letter.size() == 1));
 
         //check conditionally identified contact state
@@ -478,7 +478,7 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
             " where obr.name = $1::text "//'TESTCV-HANDLE356681'
             " and eprt.name = $2::text "//'contact_identification'
             , Database::query_param_list(fcvc.handle)
-                (::LibFred::PublicRequest::PRT_CONTACT_IDENTIFICATION));
+                (Fred::Backend::ContactVerification::PublicRequest::PRT_CONTACT_IDENTIFICATION));
         if(res_pass.size() == 1)
         {
             password = std::string(res_pass[0][0]);
@@ -495,8 +495,8 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
 
     //check answered ci request
     check_public_request_on_contact(fcvc
-            , ::LibFred::PublicRequest::PRT_CONTACT_IDENTIFICATION
-            , ::LibFred::PublicRequest::PRS_ANSWERED);
+            , Fred::Backend::ContactVerification::PublicRequest::PRT_CONTACT_IDENTIFICATION
+            , LibFred::PublicRequest::PRS_ANSWERED);
 
     {
         //get db connection
@@ -649,8 +649,8 @@ public:
         try
         {
             std::shared_ptr<::LibFred::Mailer::Manager> mm( new MailerManager(CorbaContainer::get_instance()->getNS()));
-            const std::unique_ptr<Registry::Contact::Verification::ContactVerificationImpl> cv(
-                new Registry::Contact::Verification::ContactVerificationImpl(server_name, mm));
+            const std::unique_ptr<Fred::Backend::ContactVerification::ContactVerificationImpl> cv(
+                new Fred::Backend::ContactVerification::ContactVerificationImpl(server_name, mm));
             unsigned long long request_id =0;
             std::string another_request_id;
 
@@ -676,8 +676,8 @@ public:
 
                 //check new cci request
                 check_public_request_on_contact(fixture_ptr_->fcvc
-                        , ::LibFred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION
-                        , ::LibFred::PublicRequest::PRS_NEW);
+                        , Fred::Backend::ContactVerification::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION
+                        , LibFred::PublicRequest::PRS_NEW);
 
                 //check invalidated cci request
                 Database::Result res_invalid_cci_request = conn.exec_params(
@@ -689,7 +689,7 @@ public:
                     " join enum_public_request_type eprt on pr.request_type = eprt.id "
                     " where obr.name = $1::text and eprt.name = $2::text and eprs.name = 'invalidated'"
                     , Database::query_param_list(fixture_ptr_->fcvc.handle)
-                        (::LibFred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION));
+                        (Fred::Backend::ContactVerification::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION));
                 BOOST_CHECK(res_invalid_cci_request.size() == (sb_ptr_->thread_number - 1));
 
                 //check pin2 sms
@@ -703,7 +703,7 @@ public:
                         " where pra.identification = $1::text and eprt.name = $2::text "
                         " and mt.type='contact_verification_pin2' "
                     , Database::query_param_list(another_request_id)
-                        (::LibFred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION));
+                        (Fred::Backend::ContactVerification::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION));
                 BOOST_CHECK((res_cci_sms.size() == 1));
 
                 //check pin1 email
@@ -717,7 +717,7 @@ public:
                         " where pra.identification = $1::text and eprt.name = $2::text "
                         " and mt.name = 'conditional_contact_identification' "
                     , Database::query_param_list(another_request_id)
-                        (::LibFred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION));
+                        (Fred::Backend::ContactVerification::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION));
                 BOOST_CHECK((res_cci_email.size() == 1));
             }
 
@@ -748,12 +748,12 @@ public:
 
             sb_ptr_->barrier1.wait();//wait for other synced threads
 
-            if(my_public_request_status == ::LibFred::PublicRequest::PRS_NEW)
+            if(my_public_request_status == LibFred::PublicRequest::PRS_NEW)
             {
                 fixture_ptr_->my_new_another_request_id = another_request_id;
                 fixture_ptr_->my_new_password = mypassword;
             }
-            else if(my_public_request_status == ::LibFred::PublicRequest::PRS_INVALID)
+            else if(my_public_request_status == LibFred::PublicRequest::PRS_INVALID)
             {
             BOOST_CHECK_EXCEPTION(cv->processConditionalIdentification(another_request_id
                     , mypassword, request_id)
@@ -791,13 +791,13 @@ public:
 
                 //check cci request answered (1)
                 check_public_request_on_contact(fixture_ptr_->fcvc
-                        , ::LibFred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION
-                        , ::LibFred::PublicRequest::PRS_ANSWERED);
+                        , Fred::Backend::ContactVerification::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION
+                        , LibFred::PublicRequest::PRS_ANSWERED);
 
                 //check ci request new 0
                 check_public_request_on_contact(fixture_ptr_->fcvc
-                        , ::LibFred::PublicRequest::PRT_CONTACT_IDENTIFICATION
-                        , ::LibFred::PublicRequest::PRS_NEW);
+                        , Fred::Backend::ContactVerification::PublicRequest::PRT_CONTACT_IDENTIFICATION
+                        , LibFred::PublicRequest::PRS_NEW);
 
                 //check pin3 letter
                 Database::Result res_ci_letter = conn.exec_params(
@@ -812,7 +812,7 @@ public:
                         " where obr.name = $1::text and eprt.name = $2::text and "
                         " mt.type='contact_verification_pin3' "
                     , Database::query_param_list(fixture_ptr_->fcvc.handle)
-                        (::LibFred::PublicRequest::PRT_CONTACT_IDENTIFICATION));
+                        (Fred::Backend::ContactVerification::PublicRequest::PRT_CONTACT_IDENTIFICATION));
                 BOOST_CHECK((res_ci_letter.size() == 1));
 
                 //check conditionally identified contact state
@@ -833,7 +833,7 @@ public:
                     " where obr.name = $1::text "
                     " and eprt.name = $2::text "//'contact_identification'
                     , Database::query_param_list(fixture_ptr_->fcvc.handle)
-                        (::LibFred::PublicRequest::PRT_CONTACT_IDENTIFICATION));
+                        (Fred::Backend::ContactVerification::PublicRequest::PRT_CONTACT_IDENTIFICATION));
 
                 BOOST_REQUIRE(res_ci_request_password.size() == 1);
 
@@ -869,8 +869,8 @@ public:
 
                 //check ci request answered (1)
                 check_public_request_on_contact(fixture_ptr_->fcvc
-                        , ::LibFred::PublicRequest::PRT_CONTACT_IDENTIFICATION
-                        , ::LibFred::PublicRequest::PRS_ANSWERED);
+                        , Fred::Backend::ContactVerification::PublicRequest::PRT_CONTACT_IDENTIFICATION
+                        , LibFred::PublicRequest::PRS_ANSWERED);
 
                 //check identified contact state
                 BOOST_CHECK(::LibFred::object_has_state(
@@ -973,8 +973,8 @@ BOOST_AUTO_TEST_CASE( test_contact_create_update_info )
         ns_args_ptr->nameservice_context);
 
     std::shared_ptr< ::LibFred::Mailer::Manager > mm(new MailerManager(CorbaContainer::get_instance()->getNS()));
-    const std::unique_ptr< Registry::Contact::Verification::ContactVerificationImpl > cv(
-        new Registry::Contact::Verification::ContactVerificationImpl(server_name, mm));
+    const std::unique_ptr< Fred::Backend::ContactVerification::ContactVerificationImpl > cv(
+        new Fred::Backend::ContactVerification::ContactVerificationImpl(server_name, mm));
 
     //get db connection
     Database::Connection conn = Database::Manager::acquire();

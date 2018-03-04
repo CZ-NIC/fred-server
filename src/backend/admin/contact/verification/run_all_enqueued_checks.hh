@@ -31,7 +31,11 @@
 
 #include "src/backend/admin/contact/verification/test_impl/test_interface.hh"
 
+namespace Fred {
+namespace Backend {
 namespace Admin {
+namespace Contact {
+namespace Verification {
 
     /**
      * Randomly (by happenstance, not even pseudo-random) runs all enqueued checks one by one
@@ -40,8 +44,12 @@ namespace Admin {
      * @return handles of executed (finalized) check ordered by execution (first in vector - first executed)
      */
     std::vector<std::string> run_all_enqueued_checks(
-        const std::map<std::string, std::shared_ptr<Admin::ContactVerification::Test> >& _tests,
+        const std::map<std::string, std::shared_ptr<Test> >& _tests,
         Optional<unsigned long long> _logd_request_id = Optional<unsigned long long>());
-}
+} // namespace Fred::Backend::Admin::Contact::Verification
+} // namespace Fred::Backend::Admin::Contact
+} // namespace Fred::Backend::Admin
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif
