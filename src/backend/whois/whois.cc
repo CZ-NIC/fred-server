@@ -697,15 +697,6 @@ KeySetSeq Server_impl::get_keysets_by_tech_c(const std::string& handle, unsigned
     return KeySetSeq();
 }
 
-Whois::Domain generate_obfuscate_domain_delete_candidate(const std::string& _handle)
-{
-    Whois::Domain temp;
-    temp.fqdn = _handle;
-    temp.statuses.push_back("deleteCandidate");
-    //all the rest is default constructed
-    return temp;
-}
-
 static Whois::Domain make_domain_from_info_data(
     const LibFred::InfoDomainData& idd,
     LibFred::OperationContext& ctx)
@@ -780,7 +771,7 @@ Whois::Domain Server_impl::get_domain_by_handle(const std::string& handle)
             }
             if (is_domain_delete_pending(handle, ctx, "Europe/Prague"))
             {
-                return Domain(generate_obfuscate_domain_delete_candidate(no_root_dot_fqdn));
+                throw ObjectDeleteCandidate();
             }
             return make_domain_from_info_data(
                     LibFred::InfoDomainByFqdn(no_root_dot_fqdn)
@@ -798,7 +789,7 @@ Whois::Domain Server_impl::get_domain_by_handle(const std::string& handle)
                     //returns info of conflicting domain instead of requested domain
                     if (is_domain_delete_pending(conflicting_enum_domain, ctx, "Europe/Prague"))
                     {
-                        return Domain(generate_obfuscate_domain_delete_candidate(conflicting_enum_domain));
+                        throw ObjectDeleteCandidate();
                     }
                     return make_domain_from_info_data(
                             LibFred::InfoDomainByFqdn(conflicting_enum_domain)

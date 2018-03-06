@@ -594,6 +594,10 @@ Registry::Whois::Domain* Server_impl::get_domain_by_handle(const char* handle)
     {
         throw Registry::Whois::OBJECT_NOT_FOUND();
     }
+    catch (const Fred::Backend::Whois::ObjectDeleteCandidate& e)
+    {
+        throw Registry::Whois::OBJECT_DELETE_CANDIDATE();
+    }
     catch (const Fred::Backend::Whois::TooManyLabels& e)
     {
         throw Registry::Whois::TOO_MANY_LABELS();

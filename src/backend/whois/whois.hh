@@ -504,6 +504,15 @@ struct ObjectNotExists : Exception
 };
 
 /**
+ * Object requested by ID was not found.
+ * Requested object could have been deleted or set into inappropriate state.
+ */
+struct ObjectDeleteCandidate : Exception
+{
+    const char* what() const noexcept { return "registry object with specified ID is a delete candidate"; }
+};
+
+/**
  * Object requested by handle was not found.
  * Requested object could have been deleted or set into inappropriate state.
  */
