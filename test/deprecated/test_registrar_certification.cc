@@ -71,14 +71,17 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_simple )
         cert_manager_ref = admin_ref->getCertificationManager();
 
         ccReg::TID cid1 =
-                cert_manager_ref->createCertification(1
-                , makeCorbaDate(boost::gregorian::date(2010, 1, 30))
-                ,makeCorbaDate(boost::gregorian::date(2011, 1, 30)),3,model_files.getId());
+                cert_manager_ref->createCertification(
+                        1, 
+                        makeCorbaDate(boost::gregorian::day_clock::local_day()),
+                        makeCorbaDate(boost::gregorian::day_clock::local_day() + boost::gregorian::years(1)),
+                        3,
+                        model_files.getId());
         std::string query8 (
-                "select * from registrar_certification "
+                "select id from registrar_certification "
                 "where registrar_id = 1  "
-                "and valid_from = to_date('2010-01-30','YYYY-MM-DD') "
-                "and valid_until = to_date('2011-01-30','YYYY-MM-DD') "
+                "and valid_from = now()::date "
+                "and valid_until = (now() + interval '1 year')::date "
                 "and classification = 3 ");
 	BOOST_TEST_MESSAGE( "exec query: "<< query8 );
         Database::Result res8 = conn.exec( query8 );
@@ -86,22 +89,22 @@ BOOST_AUTO_TEST_CASE( test_registrar_certification_simple )
 
         cert_manager_ref->updateCertification(cid1,4,model_files.getId());
         std::string query10 (
-                "select * from registrar_certification "
+                "select id from registrar_certification "
                 "where registrar_id = 1  "
-                "and valid_from = to_date('2010-01-30','YYYY-MM-DD') "
-                "and valid_until = to_date('2011-01-30','YYYY-MM-DD') "
+                "and valid_from = now()::date "
+                "and valid_until = (now() + interval '1 year')::date "
                 "and classification = 4 ");
 	BOOST_TEST_MESSAGE( "exec query: "<< query10 );
         Database::Result res10 = conn.exec( query10 );
         BOOST_REQUIRE_EQUAL(7*res10.size() , 7);
 
-        cert_manager_ref->shortenCertification(cid1
-                , makeCorbaDate(boost::gregorian::date(2010, 1, 30)));
+        cert_manager_ref->shortenCertification(cid1,
+                makeCorbaDate(boost::gregorian::day_clock::local_day()));
         std::string query11 (
-                "select * from registrar_certification "
+                "select id from registrar_certification "
                 "where registrar_id = 1  "
-                "and valid_from = to_date('2010-01-30','YYYY-MM-DD') "
-                "and valid_until = to_date('2010-01-30','YYYY-MM-DD') "
+                "and valid_from = now()::date "
+                "and valid_until = now()::date "
                 "and classification = 4 ");
 	BOOST_TEST_MESSAGE( "exec query: "<< query11 );
         Database::Result res11 = conn.exec( query11 );

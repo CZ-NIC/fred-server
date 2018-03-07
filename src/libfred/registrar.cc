@@ -43,6 +43,12 @@
 #include "src/util/log/context.hh"
 #include "src/util/log/logger.hh"
 #include "src/util/password_storage.hh"
+
+#include "src/libfred/registrar/certification/create_registrar_certification.hh"
+#include "src/libfred/registrar/certification/update_registrar_certification.hh"
+#include "src/libfred/registrar/certification/get_registrar_certifications.hh"
+#include "src/libfred/registrar/certification/registrar_certification_type.hh"
+
 #include "src/util/subprocess.hh"
 #include "src/util/types/money.hh"
 
@@ -1507,28 +1513,26 @@ public:
     }
 
     ///create registrar certification
-    virtual unsigned long long createRegistrarCertification( const TID& registrar_id
-        , const Database::Date &valid_from
-        , const Database::Date &valid_until
-        , const RegCertClass classification
-        , const TID& eval_file_id)
+    virtual unsigned long long createRegistrarCertification( const TID& registrar_id_,
+        const Database::Date& valid_from_,
+        const Database::Date& valid_until_,
+        const RegCertClass classification_,
+        const TID& eval_file_id_)
     {
         try
         {
-            ModelRegistrarCertification mrc;
-            mrc.setRegistrarId(registrar_id);
-            mrc.setValidFrom(valid_from);
-            mrc.setValidUntil(valid_until);
-            mrc.setClassification(classification);
-            mrc.setEvalFileId(eval_file_id);
-            mrc.insert();
-            return mrc.getId();
-        }//try
+            OperationContextCreator ctx;
+            const unsigned long long id = CreateRegistrarCertification(registrar_id_,
+                        valid_from_, valid_until_, classification_, eval_file_id_)
+                    .exec(ctx);
+            ctx.commit_transaction();
+            return id;
+        }
         catch (...)
         {
             LOGGER(PACKAGE).error("createRegistrarCertification: an error has occured");
             throw;
-        }//catch (...)
+        }
     }
 
     ///create registrar certification by handle
@@ -1573,74 +1577,59 @@ public:
 
 
     ///shorten registrar certification
-    virtual void shortenRegistrarCertification( const TID& certification_id
-        , const Database::Date &valid_until)
+    virtual void shortenRegistrarCertification( const TID& certification_id_,
+        const Database::Date& valid_until_)
     {
         try
         {
-            ModelRegistrarCertification mrc;
-            mrc.setId(certification_id);
-            mrc.setValidUntil(valid_until);
-            mrc.update();
-        }//try
+            OperationContextCreator ctx;
+            UpdateRegistrarCertification(certification_id_, valid_until_).exec(ctx);
+            ctx.commit_transaction();
+        }
         catch (...)
         {
             LOGGER(PACKAGE).error("shortenRegistrarCertification: an error has occured");
             throw;
-        }//catch (...)
+        }
     }
 
     ///update registrar certification
-    virtual void updateRegistrarCertification( const TID& certification_id
-        , const RegCertClass classification
-        , const TID& eval_file_id)
+    virtual void updateRegistrarCertification( const TID& certification_id_,
+        const RegCertClass classification_,
+        const TID& eval_file_id_)
     {
         try
         {
-            ModelRegistrarCertification mrc;
-            mrc.setId(certification_id);
-            mrc.setClassification(classification);
-            mrc.setEvalFileId(eval_file_id);
-            mrc.update();
-        }//try
+            OperationContextCreator ctx;//TODO checking namespace
+            UpdateRegistrarCertification(certification_id_, classification_, eval_file_id_).exec(ctx);
+            ctx.commit_transaction();
+        }
         catch (...)
         {
             LOGGER(PACKAGE).error("updateRegistrarCertification: an error has occured");
             throw;
-        }//catch (...)
+        }
     }
 
     ///get registrar certification
-    virtual CertificationSeq getRegistrarCertifications( const TID& registrar_id)
+    virtual CertificationSeq getRegistrarCertifications( const TID& registrar_id_)
     {
-        Database::Connection conn = Database::Manager::acquire();
-
-        checkRegistrarExists(registrar_id);
-
-        CertificationSeq ret;//returned
-
-        std::stringstream query;
-        query << "select id, valid_from, valid_until, classification, eval_file_id "
-            << "from registrar_certification where registrar_id='"
-            << conn.escape(boost::lexical_cast<std::string>(registrar_id))
-            << "' order by valid_from desc, id desc";
-
-        Database::Result res = conn.exec(query.str());
-        ret.reserve(res.size());
-        for (Database::Result::Iterator it = res.begin(); it != res.end(); ++it)
+        OperationContextCreator ctx;
+        std::vector<CertificationData> result;
+        const std::vector<RegistrarCertification> registrar_certifications = GetRegistrarCertifications(registrar_id_).exec(ctx);
+        result.reserve(registrar_certifications.size());
+        BOOST_FOREACH(RegistrarCertification it, registrar_certifications)
         {
-          Database::Row::Iterator col = (*it).begin();
-          CertificationData cd;
-          cd.id = *col;
-          cd.valid_from = *(++col);
-          cd.valid_until = *(++col);
-          cd.classification = static_cast<RegCertClass>(static_cast<int>(*(++col)));
-          cd.eval_file_id = *(++col);
-
-          ret.push_back(cd);
-        }//for res
-        return ret;
-    }//getRegistrarCertification
+            CertificationData cd;
+            cd.id = it.id;
+            cd.valid_from = it.valid_from;
+            cd.valid_until = it.valid_until;
+            cd.classification = static_cast<RegCertClass>(it.classification);
+            cd.eval_file_id = it.eval_file_id;
+            result.push_back(cd);
+        }
+        return result;
+    }
 
     ///create membership of registrar in group
     virtual unsigned long long createRegistrarGroupMembership( const TID& registrar_id
