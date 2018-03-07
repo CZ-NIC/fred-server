@@ -521,21 +521,9 @@ BOOST_FIXTURE_TEST_CASE(delete_candidate, delete_candidate_fixture)
 {
     LibFred::OperationContextCreator ctx;
     LibFred::InfoDomainData idd = LibFred::InfoDomainByFqdn(delete_fqdn).exec(ctx, "UTC").info_domain_data;
-    Fred::Backend::Whois::Domain dom = impl.get_domain_by_handle(delete_fqdn);
-    BOOST_CHECK(dom.fqdn == idd.fqdn);
-    BOOST_CHECK(dom.changed.isnull());
-    BOOST_CHECK(dom.last_transfer.isnull());
-    BOOST_CHECK(dom.validated_to.isnull());
-    BOOST_CHECK(dom.statuses.size()      == 1);
-    BOOST_CHECK(dom.statuses.at(0)       == "deleteCandidate");
-    BOOST_CHECK(dom.registered           == boost::posix_time::ptime(not_a_date_time));
-    BOOST_CHECK(dom.registrant           == "");
-    BOOST_CHECK(dom.sponsoring_registrar == "");
-    BOOST_CHECK(dom.expire               == boost::gregorian::date(not_a_date_time));
-    BOOST_CHECK(dom.keyset               == "");
-    BOOST_CHECK(dom.nsset                == "");
-    BOOST_CHECK(dom.admin_contacts.empty());
-
+    BOOST_CHECK_THROW(
+            Fred::Backend::Whois::Domain dom = impl.get_domain_by_handle(delete_fqdn),
+            Fred::Backend::Whois::ObjectDeleteCandidate);
 }
 
 struct child_parent_fixture
@@ -746,25 +734,9 @@ struct del_can_child_parent_fixture
 
 BOOST_FIXTURE_TEST_CASE(del_can_child_parent, del_can_child_parent_fixture)
 {
-    Fred::Backend::Whois::Domain dom = impl.get_domain_by_handle(child);
-
-    BOOST_CHECK(dom.fqdn == parent);
-    BOOST_CHECK(dom.changed.isnull());
-    BOOST_CHECK(dom.last_transfer.isnull());
-    BOOST_CHECK(dom.validated_to.isnull());
-    BOOST_CHECK(dom.admin_contacts.empty());
-    BOOST_CHECK(dom.statuses.size() == 1);
-    BOOST_CHECK(dom.statuses.at(0)  == "deleteCandidate");
-    BOOST_CHECK(dom.registered      == boost::posix_time::ptime(not_a_date_time));
-    BOOST_CHECK(dom.registrant      == "");
-    BOOST_CHECK(dom.expire          == boost::gregorian::date(not_a_date_time));
-    BOOST_CHECK(dom.keyset          == "");
-    BOOST_CHECK(dom.nsset           == "");
-    BOOST_CHECK(dom.sponsoring_registrar == "");
-    BOOST_CHECK(dom.expire_time_estimate == boost::posix_time::ptime(not_a_date_time));
-    BOOST_CHECK(dom.expire_time_actual.isnull());
-    BOOST_CHECK(dom.validated_to_time_estimate.isnull());
-    BOOST_CHECK(dom.validated_to_time_actual.isnull());
+    BOOST_CHECK_THROW(
+            Fred::Backend::Whois::Domain dom = impl.get_domain_by_handle(child),
+            Fred::Backend::Whois::ObjectDeleteCandidate);
 }
 
 struct del_can_parent_child_fixture
@@ -825,25 +797,9 @@ struct del_can_parent_child_fixture
 
 BOOST_FIXTURE_TEST_CASE(del_can_parent_child, del_can_parent_child_fixture)
 {
-    Fred::Backend::Whois::Domain dom = impl.get_domain_by_handle(parent);
-
-    BOOST_CHECK(dom.fqdn == child);
-    BOOST_CHECK(dom.changed.isnull());
-    BOOST_CHECK(dom.last_transfer.isnull());
-    BOOST_CHECK(dom.validated_to.isnull());
-    BOOST_CHECK(dom.admin_contacts.empty());
-    BOOST_CHECK(dom.statuses.size() == 1);
-    BOOST_CHECK(dom.statuses.at(0)  == "deleteCandidate");
-    BOOST_CHECK(dom.registered      == boost::posix_time::ptime(not_a_date_time));
-    BOOST_CHECK(dom.registrant      == "");
-    BOOST_CHECK(dom.expire          == boost::gregorian::date(not_a_date_time));
-    BOOST_CHECK(dom.keyset          == "");
-    BOOST_CHECK(dom.nsset           == "");
-    BOOST_CHECK(dom.sponsoring_registrar == "");
-    BOOST_CHECK(dom.expire_time_estimate == boost::posix_time::ptime(not_a_date_time));
-    BOOST_CHECK(dom.expire_time_actual.isnull());
-    BOOST_CHECK(dom.validated_to_time_estimate.isnull());
-    BOOST_CHECK(dom.validated_to_time_actual.isnull());
+    BOOST_CHECK_THROW(
+            Fred::Backend::Whois::Domain dom = impl.get_domain_by_handle(parent),
+            Fred::Backend::Whois::ObjectDeleteCandidate);
 }
 
 BOOST_AUTO_TEST_SUITE_END()//get_domain_by_handle
