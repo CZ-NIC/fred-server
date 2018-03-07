@@ -39,48 +39,45 @@ class ContactVerificationImpl;
 } // namespace Fred::Backend
 } // namespace Fred
 
-namespace CorbaConversion
+namespace CorbaConversion {
+namespace Contact {
+namespace Verification {
+
+class ContactVerification_i : public POA_Registry::ContactVerification
 {
-    namespace Contact
-    {
-        namespace Verification
-        {
+private:
+    // do not copy
+    const std::unique_ptr<Fred::Backend::ContactVerification::ContactVerificationImpl> pimpl_;
+    ContactVerification_i(const ContactVerification_i&); //no body
+    ContactVerification_i& operator=(const ContactVerification_i&); //no body
 
-            class ContactVerification_i: public POA_Registry::ContactVerification
-            {
-            private:
-                // do not copy
-                const std::unique_ptr<Fred::Backend::ContactVerification::ContactVerificationImpl> pimpl_;
-                ContactVerification_i(const ContactVerification_i&);//no body
-                ContactVerification_i& operator= (const ContactVerification_i&);//no body
+public:
+    // standard constructor
+    ContactVerification_i(const std::string& _server_name);
+    virtual ~ContactVerification_i();
 
-            public:
-              // standard constructor
-              ContactVerification_i(const std::string &_server_name);
-              virtual ~ContactVerification_i();
+    // methods corresponding to defined IDL attributes and operations
+    ::CORBA::ULongLong createConditionalIdentification(
+            const char* contact_handle,
+            const char* registrar_handle,
+            ::CORBA::ULongLong log_id,
+            ::CORBA::String_out request_id);
 
-              // methods corresponding to defined IDL attributes and operations
-              ::CORBA::ULongLong createConditionalIdentification(
-                      const char* contact_handle
-                      , const char* registrar_handle
-                      , ::CORBA::ULongLong log_id
-                      , ::CORBA::String_out request_id);
+    ::CORBA::ULongLong processConditionalIdentification(
+            const char* request_id,
+            const char* password,
+            ::CORBA::ULongLong log_id);
 
-              ::CORBA::ULongLong processConditionalIdentification(
-                      const char* request_id
-                      , const char* password
-                      , ::CORBA::ULongLong log_id);
+    ::CORBA::ULongLong processIdentification(
+            const char* contact_handle,
+            const char* password,
+            ::CORBA::ULongLong log_id);
 
-              ::CORBA::ULongLong processIdentification(
-                      const char* contact_handle
-                      , const char* password
-                      , ::CORBA::ULongLong log_id);
+    char* getRegistrarName(const char* registrar_handle);
 
-              char* getRegistrarName(const char* registrar_handle);
-
-            };//class ContactVerification_i
-        } // namespace CorbaConversion::Contact::Verification
-    } // namespace CorbaConversion::Contact
+}; //class ContactVerification_i
+} // namespace CorbaConversion::Contact::Verification
+} // namespace CorbaConversion::Contact
 } // namespace CorbaConversion
 
 #endif //CONTACT_VERIFICATION_I_H__

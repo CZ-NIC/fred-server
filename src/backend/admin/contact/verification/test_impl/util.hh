@@ -35,32 +35,35 @@ namespace Contact {
 namespace Verification {
 namespace Util {
 
-    /**
-     * @param country_code 2 char uppercase country code
-     * @returns English name of country specified by country_code
-     * @throws std::runtime_error in case no country with country_code is found
-     */
+/**
+ * @param country_code 2 char uppercase country code
+ * @returns English name of country specified by country_code
+ * @throws std::runtime_error in case no country with country_code is found
+ */
 
-    inline std::string get_country_name(
+inline std::string get_country_name(
         LibFred::OperationContext& ctx,
-        const std::string& country_code
-    ) {
-        try {
-            Database::Result country_res = ctx.get_conn().exec_params(
+        const std::string& country_code)
+{
+    try
+    {
+        Database::Result country_res = ctx.get_conn().exec_params(
                 "SELECT country FROM enum_country WHERE id = $1::text ",
-                Database::query_param_list(country_code)
-            );
+                Database::query_param_list(country_code));
 
-            if(country_res.size() != 1) {
-                throw 123; /* goto catch */
-            }
-
-            return static_cast<std::string>(country_res[0]["country"]);
-
-        } catch(...) {
-            throw std::runtime_error("failed to get country name");
+        if (country_res.size() != 1)
+        {
+            throw 123;     /* goto catch */
         }
+
+        return static_cast<std::string>(country_res[0]["country"]);
+
     }
+    catch (...)
+    {
+        throw std::runtime_error("failed to get country name");
+    }
+}
 
 } // namespace Fred::Backend::Admin::Contact::Verification::Util
 } // namespace Fred::Backend::Admin::Contact::Verification

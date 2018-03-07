@@ -26,10 +26,12 @@ namespace RecordStatement {
 namespace Impl {
 
 Factory::Factory()
-{ }
+{
+}
 
 Factory::~Factory()
-{ }
+{
+}
 
 Factory::RegisteredProducers& Factory::get_registered_producers()
 {

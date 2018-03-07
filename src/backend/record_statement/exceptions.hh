@@ -34,35 +34,35 @@ namespace RecordStatement {
  * Internal server error.
  * Unexpected failure, requires maintenance.
  */
-struct InternalServerError:std::exception
+struct InternalServerError : std::exception
 {
     /**
      * Returns failure description.
      * @return string with the general cause of the current error.
      */
-    const char* what()const noexcept;
+    const char* what() const noexcept;
 };
 
 /**
  * Requested object was not found.
  * Requested object could have been deleted or set into inappropriate state.
  */
-struct ObjectNotFound:std::exception
+struct ObjectNotFound : std::exception
 {
     /**
      * Returns failure description.
      * @return string with the general cause of the current error.
      */
-    const char* what()const noexcept;
+    const char* what() const noexcept;
 };
 
-struct ObjectDeleteCandidate:std::exception
+struct ObjectDeleteCandidate : std::exception
 {
     /**
      * Returns failure description.
      * @return string with the general cause of the current error.
      */
-    const char* what()const noexcept;
+    const char* what() const noexcept;
 };
 
 

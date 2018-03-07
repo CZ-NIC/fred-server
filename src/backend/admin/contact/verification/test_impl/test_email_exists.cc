@@ -24,10 +24,10 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/scoped_array.hpp>
 
-#include <sys/types.h>
-#include <netinet/in.h>
 #include <arpa/nameser.h>
+#include <netinet/in.h>
 #include <resolv.h>
+#include <sys/types.h>
 
 namespace Fred {
 namespace Backend {
@@ -35,87 +35,104 @@ namespace Admin {
 namespace Contact {
 namespace Verification {
 
-    FACTORY_MODULE_INIT_DEFI(TestEmailExists_init)
+FACTORY_MODULE_INIT_DEFI(TestEmailExists_init)
 
-    Test::TestRunResult TestEmailExists::run(unsigned long long _history_id) const {
-        using std::string;
+Test::TestRunResult TestEmailExists::run(unsigned long long _history_id) const
+{
+    using std::string;
 
-        TestDataProvider<TestEmailExists> data;
-        data.init_data(_history_id);
+    TestDataProvider<TestEmailExists> data;
+    data.init_data(_history_id);
 
-        boost::trim(data.email_);
+    boost::trim(data.email_);
 
-        std::vector<std::string> emails;
-        boost::algorithm::split(
+    std::vector<std::string> emails;
+    boost::algorithm::split(
             emails,
             data.email_,
-            boost::is_any_of(",")
-        );
+            boost::is_any_of(","));
 
-        std::vector<std::string> invalid_emails;
+    std::vector<std::string> invalid_emails;
 
-        for(std::vector<std::string>::const_iterator it = emails.begin();
-            it != emails.end();
-            ++it
-        ) {
-            string email = boost::trim_copy(*it);
+    for (std::vector<std::string>::const_iterator it = emails.begin();
+         it != emails.end();
+         ++it
+         )
+    {
+        string email = boost::trim_copy(*it);
 
-            if(email.empty()) {
-                invalid_emails.push_back("\"" + *it + "\"");
-                continue;
-            }
+        if (email.empty())
+        {
+            invalid_emails.push_back("\"" + *it + "\"");
+            continue;
+        }
 
-            string host;
-            try {
-                host = email.substr(email.find('@') + 1);   // +1 <=> cut the '@' as well
-            } catch(...) {
-                invalid_emails.push_back(*it);
-                continue;
-            }
+        string host;
+        try
+        {
+            host = email.substr(email.find('@') + 1); // +1 <=> cut the '@' as well
+        }
+        catch (...)
+        {
+            invalid_emails.push_back(*it);
+            continue;
+        }
 
-            unsigned char* buffer_ptr;
-            static const unsigned int buffer_length = 12;   // DNS header is rumored to have 12 bytes
+        unsigned char* buffer_ptr;
+        static const unsigned int buffer_length = 12; // DNS header is rumored to have 12 bytes
 
-            try {
-                buffer_ptr = new unsigned char[buffer_length];
-            } catch(const std::exception&) {
-                return TestRunResult( LibFred::ContactTestStatus::ERROR, string("runtime error") );
-            }
-            boost::scoped_array<unsigned char> buffer_scoped(buffer_ptr);
-            buffer_ptr = NULL;
+        try
+        {
+            buffer_ptr = new unsigned char[buffer_length];
+        }
+        catch (const std::exception&)
+        {
+            return TestRunResult(
+                    LibFred::ContactTestStatus::ERROR,
+                    string("runtime error"));
+        }
+        boost::scoped_array<unsigned char> buffer_scoped(buffer_ptr);
+        buffer_ptr = NULL;
 
-            // MX test
-            if( res_query(
+        // MX test
+        if (res_query(
                     host.c_str(),
                     C_IN,
                     T_MX,
                     buffer_scoped.get(),
-                    buffer_length
-                ) == -1
-            ) {
-                // fallback to A record test
-                memset(buffer_scoped.get(), 0, buffer_length);
+                    buffer_length) == -1)
+        {
+            // fallback to A record test
+            memset(
+                    buffer_scoped.get(),
+                    0,
+                    buffer_length);
 
-                if( res_query(
+            if (res_query(
                         host.c_str(),
                         C_IN,
                         T_A,
                         buffer_scoped.get(),
-                        buffer_length
-                    ) == -1
-                ) {
-                    invalid_emails.push_back(*it);
-                    continue;
-                }
+                        buffer_length) == -1)
+            {
+                invalid_emails.push_back(*it);
+                continue;
             }
         }
-
-        if( !invalid_emails.empty() ) {
-            return TestRunResult (LibFred::ContactTestStatus::FAIL, "hostname in emails: " + boost::join(invalid_emails, ",") + " couldn't be resolved");
-        }
-
-        return TestRunResult( LibFred::ContactTestStatus::OK);
     }
+
+    if (!invalid_emails.empty())
+    {
+        return TestRunResult(
+                LibFred::ContactTestStatus::FAIL,
+                "hostname in emails: " +
+                        boost::join(invalid_emails, ",") +
+                        " couldn't be resolved");
+    }
+
+    return TestRunResult(LibFred::ContactTestStatus::OK);
+}
+
 } // namespace Fred::Backend::Admin::Contact::Verification
 } // namespace Fred::Backend::Admin::Contact
 } // namespace Fred::Backend::Admin

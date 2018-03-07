@@ -4,7 +4,6 @@
 #include "src/libfred/public_request/public_request.hh"
 #include "src/util/factory.hh"
 
-
 namespace Fred {
 namespace Backend {
 namespace ContactVerification {

@@ -56,7 +56,7 @@ wrap_boost_posix_time_ptime_to_IsoDateTime(
         Registry::IsoDateTime& dst);
 
 Registry::NullableIsoDateTime_var
-        wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(
+wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(
         const Nullable<boost::posix_time::ptime>& src);
 
 } // namespace CorbaConversion::Util

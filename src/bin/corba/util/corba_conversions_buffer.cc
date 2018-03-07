@@ -27,13 +27,16 @@ namespace Util {
 Registry::Buffer_var wrap_Buffer(const Fred::Backend::Buffer& _src)
 {
     Registry::Buffer_var result(new Registry::Buffer());
-    try {
+    try
+    {
         result->data.length(_src.data.size());
-        if (!_src.data.empty()) {
+        if (!_src.data.empty())
+        {
             std::memcpy(result->data.get_buffer(), _src.data.c_str(), _src.data.size());
         }
     }
-    catch (...) {
+    catch (...)
+    {
         throw std::runtime_error("memory allocation failed");
     }
     return result._retn();

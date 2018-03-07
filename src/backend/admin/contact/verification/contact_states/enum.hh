@@ -25,9 +25,10 @@
 #ifndef ENUM_HH_5A2AA128050749E194A29DEF54A4DF92
 #define ENUM_HH_5A2AA128050749E194A29DEF54A4DF92
 
-#include <vector>
-#include <string>
 #include <boost/assign/list_of.hpp>
+
+#include <string>
+#include <vector>
 
 namespace Fred {
 namespace Backend {
@@ -35,27 +36,29 @@ namespace Admin {
 namespace Contact {
 namespace Verification {
 namespace ContactStates {
-    const std::string CONTACT_IN_MANUAL_VERIFICATION        = "contactInManualVerification";
-    const std::string CONTACT_PASSED_MANUAL_VERIFICATION    = "contactPassedManualVerification";
-    const std::string CONTACT_FAILED_MANUAL_VERIFICATION    = "contactFailedManualVerification";
 
-    inline std::vector<std::string> get_all() {
-        return boost::assign::list_of
-            (CONTACT_IN_MANUAL_VERIFICATION)
-            (CONTACT_PASSED_MANUAL_VERIFICATION)
-            (CONTACT_FAILED_MANUAL_VERIFICATION);
-    }
+const std::string CONTACT_IN_MANUAL_VERIFICATION        = "contactInManualVerification";
+const std::string CONTACT_PASSED_MANUAL_VERIFICATION    = "contactPassedManualVerification";
+const std::string CONTACT_FAILED_MANUAL_VERIFICATION    = "contactFailedManualVerification";
 
-    inline std::vector<std::string> get_final() {
-        return boost::assign::list_of
-            (CONTACT_PASSED_MANUAL_VERIFICATION)
-            (CONTACT_FAILED_MANUAL_VERIFICATION);
-    }
+inline std::vector<std::string> get_all()
+{
+    return boost::assign::list_of(CONTACT_IN_MANUAL_VERIFICATION)(CONTACT_PASSED_MANUAL_VERIFICATION)(
+            CONTACT_FAILED_MANUAL_VERIFICATION);
+}
+
+
+inline std::vector<std::string> get_final()
+{
+    return boost::assign::list_of(CONTACT_PASSED_MANUAL_VERIFICATION)(CONTACT_FAILED_MANUAL_VERIFICATION);
+}
+
+
 } // namespace Fred::Backend::Admin::Contact::Verification::ObjectStates
 } // namespace Fred::Backend::Admin::Contact::Verification
 } // namespace Fred::Backend::Admin::Contact
 } // namespace Fred::Backend::Admin
 } // namespace Fred::Backend
 } // namespace Fred
-#endif // #include guard end
 
+#endif // #include guard end

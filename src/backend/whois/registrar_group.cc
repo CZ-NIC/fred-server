@@ -4,10 +4,12 @@
 namespace Fred {
 namespace Backend {
 namespace Whois {
-    std::map<std::string, std::vector<std::string> > get_registrar_groups(
+
+std::map<std::string, std::vector<std::string> > get_registrar_groups(
         LibFred::OperationContext& ctx)
-    {
-        Database::Result registrar_groups_res = ctx.get_conn().exec(
+{
+    Database::Result registrar_groups_res = ctx.get_conn().exec(
+            // clang-format off
         "SELECT rg.short_name AS registrar_group, "
                 "r.handle AS registrar_handle "
             "FROM registrar_group rg "
@@ -18,15 +20,17 @@ namespace Whois {
                     "AND (rgm.member_until IS NULL "
                         "OR (rgm.member_until >= CURRENT_DATE "
                         "AND rgm.member_from <> rgm.member_until))");
+    // clang-format on
 
-        std::map<std::string, std::vector<std::string> > ret;
-        for(unsigned long long i = 0; i < registrar_groups_res.size(); ++i)
-        {
-            ret[static_cast<std::string>(registrar_groups_res[i]["registrar_group"])].push_back(
+    std::map<std::string, std::vector<std::string> > ret;
+    for (unsigned long long i = 0; i < registrar_groups_res.size(); ++i)
+    {
+        ret[static_cast<std::string>(registrar_groups_res[i]["registrar_group"])].push_back(
                 static_cast<std::string>(registrar_groups_res[i]["registrar_handle"]));
-        }
-        return ret;
     }
+    return ret;
+}
+
 } // namespace Fred::Backend::Whois
 } // namespace Fred::Backend
 } // namespace Fred

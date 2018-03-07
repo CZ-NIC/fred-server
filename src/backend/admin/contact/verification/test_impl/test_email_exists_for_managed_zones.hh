@@ -33,34 +33,45 @@ namespace Backend {
 namespace Admin {
 namespace Contact {
 namespace Verification {
-    FACTORY_MODULE_INIT_DECL(TestEmailExistsForManagedZones_init)
 
-    class TestEmailExistsForManagedZones
-    : public
-        Test,
-        test_auto_registration<TestEmailExistsForManagedZones>
+FACTORY_MODULE_INIT_DECL(TestEmailExistsForManagedZones_init)
+
+class TestEmailExistsForManagedZones
+        : public Test,
+          test_auto_registration<TestEmailExistsForManagedZones>
+{
+public:
+    virtual TestRunResult run(unsigned long long _history_id) const;
+
+    static std::string registration_name()
     {
-        public:
-            virtual TestRunResult run(unsigned long long _history_id) const;
-            static std::string registration_name() { return "email_existence_in_managed_zones"; }
-    };
+        return "email_existence_in_managed_zones";
+    }
 
-    template<> struct TestDataProvider<TestEmailExistsForManagedZones>
-    : TestDataProvider_common,
-      _inheritTestRegName<TestEmailExistsForManagedZones>
+};
+
+template <>
+struct TestDataProvider<TestEmailExistsForManagedZones>
+        : TestDataProvider_common,
+          _inheritTestRegName<TestEmailExistsForManagedZones>
+{
+    std::string email_;
+
+    virtual void store_data(const LibFred::InfoContactOutput& _data)
     {
-        std::string email_;
-
-        virtual void store_data(const LibFred::InfoContactOutput& _data) {
-            if( !_data.info_contact_data.email.isnull() ) {
-                email_ = _data.info_contact_data.email.get_value_or_default();
-            }
+        if (!_data.info_contact_data.email.isnull())
+        {
+            email_ = _data.info_contact_data.email.get_value_or_default();
         }
+    }
 
-        virtual std::vector<std::string> get_string_data() const {
-            return boost::assign::list_of(email_);
-        }
-    };
+    virtual std::vector<std::string> get_string_data() const
+    {
+        return boost::assign::list_of(email_);
+    }
+
+};
+
 } // namespace Fred::Backend::Admin::Contact::Verification
 } // namespace Fred::Backend::Admin::Contact
 } // namespace Fred::Backend::Admin

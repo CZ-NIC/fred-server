@@ -32,104 +32,237 @@
 #include "src/util/corba_conversion.hh"
 #include "src/util/db/nullable.hh"
 
-namespace CorbaConversion
-{
+namespace CorbaConversion {
 
-void unwrap_NullableString(const Registry::MojeID::NullableString *src_ptr, Nullable< std::string > &dst);
-Registry::MojeID::NullableString_var wrap_Nullable_string(const Nullable< std::string > &src);
+void unwrap_NullableString(
+        const Registry::MojeID::NullableString* src_ptr,
+        Nullable<std::string>& dst);
 
-void unwrap_Date(const Registry::IsoDate &src, Fred::Backend::MojeIdImplData::Birthdate &dst);
-void unwrap_NullableIsoDate(const Registry::NullableIsoDate *src_ptr, Nullable< Fred::Backend::MojeIdImplData::Birthdate > &dst);
-void wrap_boost_gregorian_date(const boost::gregorian::date &src, Registry::IsoDate &dst);
-void wrap_Date(const Fred::Backend::MojeIdImplData::Birthdate &src, Registry::IsoDate &dst);
-Registry::NullableIsoDate_var wrap_Nullable_Date(const Nullable< Fred::Backend::MojeIdImplData::Birthdate > &src);
-Registry::NullableIsoDate_var wrap_Nullable_boost_gregorian_date(const Nullable< boost::gregorian::date > &src);
 
-void unwrap_Address(const Registry::MojeID::Address &src, Fred::Backend::MojeIdImplData::Address &dst);
-void unwrap_NullableAddress(const Registry::MojeID::NullableAddress *src_ptr, Nullable< Fred::Backend::MojeIdImplData::Address > &dst);
-void wrap_Address(const Fred::Backend::MojeIdImplData::Address &src, Registry::MojeID::Address &dst);
-Registry::MojeID::NullableAddress_var wrap_Nullable_Address(const Nullable< Fred::Backend::MojeIdImplData::Address > &src);
+Registry::MojeID::NullableString_var wrap_Nullable_string(const Nullable<std::string>& src);
 
-void unwrap_ShippingAddress(const Registry::MojeID::ShippingAddress &src, Fred::Backend::MojeIdImplData::ShippingAddress &dst);
-void unwrap_NullableShippingAddress(const Registry::MojeID::NullableShippingAddress *src_ptr, Nullable< Fred::Backend::MojeIdImplData::ShippingAddress > &dst);
-void wrap_ShippingAddress(const Fred::Backend::MojeIdImplData::ShippingAddress &src, Registry::MojeID::ShippingAddress &dst);
-Registry::MojeID::NullableShippingAddress_var wrap_Nullable_ShippingAddress(const Nullable< Fred::Backend::MojeIdImplData::ShippingAddress > &src);
+
+void unwrap_Date(
+        const Registry::IsoDate& src,
+        Fred::Backend::MojeIdImplData::Birthdate& dst);
+
+
+void unwrap_NullableIsoDate(
+        const Registry::NullableIsoDate* src_ptr,
+        Nullable<Fred::Backend::MojeIdImplData::Birthdate>& dst);
+
+
+void wrap_boost_gregorian_date(
+        const boost::gregorian::date& src,
+        Registry::IsoDate& dst);
+
+
+void wrap_Date(
+        const Fred::Backend::MojeIdImplData::Birthdate& src,
+        Registry::IsoDate& dst);
+
+
+Registry::NullableIsoDate_var wrap_Nullable_Date(
+        const Nullable<Fred::Backend::MojeIdImplData::Birthdate>& src);
+
+
+Registry::NullableIsoDate_var wrap_Nullable_boost_gregorian_date(const Nullable<boost::gregorian::date>& src);
+
+
+void unwrap_Address(
+        const Registry::MojeID::Address& src,
+        Fred::Backend::MojeIdImplData::Address& dst);
+
+
+void unwrap_NullableAddress(
+        const Registry::MojeID::NullableAddress* src_ptr,
+        Nullable<Fred::Backend::MojeIdImplData::Address>& dst);
+
+
+void wrap_Address(
+        const Fred::Backend::MojeIdImplData::Address& src,
+        Registry::MojeID::Address& dst);
+
+
+Registry::MojeID::NullableAddress_var wrap_Nullable_Address(
+        const Nullable<Fred::Backend::MojeIdImplData::Address>& src);
+
+
+void unwrap_ShippingAddress(
+        const Registry::MojeID::ShippingAddress& src,
+        Fred::Backend::MojeIdImplData::ShippingAddress& dst);
+
+
+void unwrap_NullableShippingAddress(
+        const Registry::MojeID::NullableShippingAddress* src_ptr,
+        Nullable<Fred::Backend::MojeIdImplData::ShippingAddress>& dst);
+
+
+void wrap_ShippingAddress(
+        const Fred::Backend::MojeIdImplData::ShippingAddress& src,
+        Registry::MojeID::ShippingAddress& dst);
+
+
+Registry::MojeID::NullableShippingAddress_var wrap_Nullable_ShippingAddress(
+        const Nullable<Fred::Backend::MojeIdImplData::ShippingAddress>& src);
+
 
 /**
  * Exception if argument is special
  */
-struct ArgumentIsSpecial:std::invalid_argument
+struct ArgumentIsSpecial
+    : std::invalid_argument
 {
+
+
     ArgumentIsSpecial();
-    virtual ~ArgumentIsSpecial() {}
+
+
+    virtual ~ArgumentIsSpecial()
+    {
+    }
+
 };
 
-void unwrap_DateTime(const Registry::IsoDateTime &src, boost::posix_time::ptime &dst);
-Registry::IsoDateTime_var wrap_DateTime(const boost::posix_time::ptime &src);
+void unwrap_DateTime(
+        const Registry::IsoDateTime& src,
+        boost::posix_time::ptime& dst);
+
+
+Registry::IsoDateTime_var wrap_DateTime(const boost::posix_time::ptime& src);
+
 
 /**
  * Exception if argument value is not enum ValidationResult value
  */
-struct NotEnumValidationResultValue:std::invalid_argument
+struct NotEnumValidationResultValue
+    : std::invalid_argument
 {
+
+
     NotEnumValidationResultValue();
-    virtual ~NotEnumValidationResultValue() {}
+
+
+    virtual ~NotEnumValidationResultValue()
+    {
+    }
+
 };
 
 /**
  * Exception if argument value indicate that its value was never set
  */
-struct ValidationResultWasNotSet:std::invalid_argument
+struct ValidationResultWasNotSet
+    : std::invalid_argument
 {
+
+
     ValidationResultWasNotSet();
-    virtual ~ValidationResultWasNotSet() {}
+
+
+    virtual ~ValidationResultWasNotSet()
+    {
+    }
+
 };
 
-void wrap_ValidationResult(Fred::Backend::MojeIdImplData::ValidationResult::Value src, Registry::MojeID::ValidationResult &dst);
+void wrap_ValidationResult(
+        Fred::Backend::MojeIdImplData::ValidationResult::Value src,
+        Registry::MojeID::ValidationResult& dst);
 
-void wrap_AddressValidationResult(const Fred::Backend::MojeIdImplData::AddressValidationResult &src,
-                                  Registry::MojeID::AddressValidationResult &dst);
 
-void wrap_MandatoryAddressValidationResult(const Fred::Backend::MojeIdImplData::MandatoryAddressValidationResult &src,
-                                           Registry::MojeID::MandatoryAddressValidationResult &dst);
+void wrap_AddressValidationResult(
+        const Fred::Backend::MojeIdImplData::AddressValidationResult& src,
+        Registry::MojeID::AddressValidationResult& dst);
 
-void wrap_RegistrationValidationResult(const Fred::Backend::MojeIdImplData::RegistrationValidationResult &src,
-                                       Registry::MojeID::Server::REGISTRATION_VALIDATION_ERROR &dst);
 
-void wrap_UpdateContactPrepareValidationResult(const Fred::Backend::MojeIdImplData::UpdateContactPrepareValidationResult &src,
-                                               Registry::MojeID::Server::UPDATE_CONTACT_PREPARE_VALIDATION_ERROR &dst);
+void wrap_MandatoryAddressValidationResult(
+        const Fred::Backend::MojeIdImplData::MandatoryAddressValidationResult& src,
+        Registry::MojeID::MandatoryAddressValidationResult& dst);
 
-void wrap_CreateValidationRequestValidationResult(const Fred::Backend::MojeIdImplData::CreateValidationRequestValidationResult &src,
-                                                  Registry::MojeID::Server::CREATE_VALIDATION_REQUEST_VALIDATION_ERROR &dst);
 
-void wrap_ProcessRegistrationValidationResult(const Fred::Backend::MojeIdImplData::ProcessRegistrationValidationResult &src,
-                                              Registry::MojeID::Server::PROCESS_REGISTRATION_VALIDATION_ERROR &dst);
+void wrap_RegistrationValidationResult(
+        const Fred::Backend::MojeIdImplData::RegistrationValidationResult& src,
+        Registry::MojeID::Server::REGISTRATION_VALIDATION_ERROR& dst);
 
-void unwrap_CreateContact(const Registry::MojeID::CreateContact &src, Fred::Backend::MojeIdImplData::CreateContact &dst);
 
-void unwrap_UpdateContact(const Registry::MojeID::UpdateContact &src, Fred::Backend::MojeIdImplData::UpdateContact &dst);
+void wrap_UpdateContactPrepareValidationResult(
+        const Fred::Backend::MojeIdImplData::UpdateContactPrepareValidationResult& src,
+        Registry::MojeID::Server::UPDATE_CONTACT_PREPARE_VALIDATION_ERROR& dst);
 
-void unwrap_UpdateTransferContact(const Registry::MojeID::UpdateTransferContact &src, Fred::Backend::MojeIdImplData::UpdateTransferContact &dst);
 
-Registry::MojeID::InfoContact_var wrap_InfoContact(const Fred::Backend::MojeIdImplData::InfoContact &src);
+void wrap_CreateValidationRequestValidationResult(
+        const Fred::Backend::MojeIdImplData::CreateValidationRequestValidationResult& src,
+        Registry::MojeID::Server::CREATE_VALIDATION_REQUEST_VALIDATION_ERROR& dst);
 
-void wrap_InfoContactPublishFlags(const Fred::Backend::MojeIdImplData::InfoContactPublishFlags &src,
-                                  Registry::MojeID::InfoContactPublishFlags &dst);
 
-void wrap_ContactStateInfo(const Fred::Backend::MojeIdImplData::ContactStateInfo &src, Registry::MojeID::ContactStateInfo &dst);
-Registry::MojeID::ContactStateInfo_var wrap_ContactStateInfo(const Fred::Backend::MojeIdImplData::ContactStateInfo &src);
+void wrap_ProcessRegistrationValidationResult(
+        const Fred::Backend::MojeIdImplData::ProcessRegistrationValidationResult& src,
+        Registry::MojeID::Server::PROCESS_REGISTRATION_VALIDATION_ERROR& dst);
 
-Registry::MojeID::ContactStateInfoList_var wrap_ContactStateInfoList(const Fred::Backend::MojeIdImplData::ContactStateInfoList &src);
 
-Registry::MojeID::ContactHandleList_var wrap_ContactHandleList(const Fred::Backend::MojeIdImplData::ContactHandleList &src);
+void unwrap_CreateContact(
+        const Registry::MojeID::CreateContact& src,
+        Fred::Backend::MojeIdImplData::CreateContact& dst);
 
-void wrap_MessageLimitExceeded(const Fred::Backend::MojeIdImplData::MessageLimitExceeded &src, Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED &dst);
 
-void raise_REGISTRATION_VALIDATION_ERROR(const Fred::Backend::MojeIdImplData::RegistrationValidationResult &src);
-void raise_UPDATE_CONTACT_PREPARE_VALIDATION_ERROR(const Fred::Backend::MojeIdImplData::UpdateContactPrepareValidationResult &src);
-void raise_MESSAGE_LIMIT_EXCEEDED(const Fred::Backend::MojeIdImplData::MessageLimitExceeded &src);
-void raise_CREATE_VALIDATION_REQUEST_VALIDATION_ERROR(const Fred::Backend::MojeIdImplData::CreateValidationRequestValidationResult &src);
-void raise_PROCESS_REGISTRATION_VALIDATION_ERROR(const Fred::Backend::MojeIdImplData::ProcessRegistrationValidationResult &src);
+void unwrap_UpdateContact(
+        const Registry::MojeID::UpdateContact& src,
+        Fred::Backend::MojeIdImplData::UpdateContact& dst);
+
+
+void unwrap_UpdateTransferContact(
+        const Registry::MojeID::UpdateTransferContact& src,
+        Fred::Backend::MojeIdImplData::UpdateTransferContact& dst);
+
+
+Registry::MojeID::InfoContact_var wrap_InfoContact(const Fred::Backend::MojeIdImplData::InfoContact& src);
+
+
+void wrap_InfoContactPublishFlags(
+        const Fred::Backend::MojeIdImplData::InfoContactPublishFlags& src,
+        Registry::MojeID::InfoContactPublishFlags& dst);
+
+
+void wrap_ContactStateInfo(
+        const Fred::Backend::MojeIdImplData::ContactStateInfo& src,
+        Registry::MojeID::ContactStateInfo& dst);
+
+
+Registry::MojeID::ContactStateInfo_var wrap_ContactStateInfo(
+        const Fred::Backend::MojeIdImplData::ContactStateInfo& src);
+
+
+Registry::MojeID::ContactStateInfoList_var wrap_ContactStateInfoList(
+        const Fred::Backend::MojeIdImplData::ContactStateInfoList& src);
+
+
+Registry::MojeID::ContactHandleList_var wrap_ContactHandleList(
+        const Fred::Backend::MojeIdImplData::ContactHandleList& src);
+
+
+void wrap_MessageLimitExceeded(
+        const Fred::Backend::MojeIdImplData::MessageLimitExceeded& src,
+        Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED& dst);
+
+
+void raise_REGISTRATION_VALIDATION_ERROR(
+        const Fred::Backend::MojeIdImplData::RegistrationValidationResult& src);
+
+
+void raise_UPDATE_CONTACT_PREPARE_VALIDATION_ERROR(
+        const Fred::Backend::MojeIdImplData::UpdateContactPrepareValidationResult& src);
+
+
+void raise_MESSAGE_LIMIT_EXCEEDED(const Fred::Backend::MojeIdImplData::MessageLimitExceeded& src);
+
+
+void raise_CREATE_VALIDATION_REQUEST_VALIDATION_ERROR(
+        const Fred::Backend::MojeIdImplData::CreateValidationRequestValidationResult& src);
+
+
+void raise_PROCESS_REGISTRATION_VALIDATION_ERROR(
+        const Fred::Backend::MojeIdImplData::ProcessRegistrationValidationResult& src);
 
 } // namespace CorbaConversion
 

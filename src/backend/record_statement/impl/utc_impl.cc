@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/backend/record_statement/record_statement.hh"
 #include "src/backend/record_statement/impl/templates_impl.hh"
+#include "src/backend/record_statement/record_statement.hh"
 #include "src/util/tz/utc.hh"
 
 namespace Fred {

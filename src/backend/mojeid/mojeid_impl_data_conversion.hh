@@ -26,17 +26,17 @@ namespace Fred {
 namespace Backend {
 namespace MojeIdImplData {
 
-void from_into(const Address         &src, LibFred::Contact::PlaceAddress &dst);
-void from_into(const ShippingAddress &src, LibFred::ContactAddress        &dst);
+void from_into(const Address& src, LibFred::Contact::PlaceAddress& dst);
+void from_into(const ShippingAddress& src, LibFred::ContactAddress& dst);
 
-void from_into(const LibFred::Contact::PlaceAddress &src, Address         &dst);
-void from_into(const LibFred::ContactAddress        &src, ShippingAddress &dst);
+void from_into(const LibFred::Contact::PlaceAddress& src, Address& dst);
+void from_into(const LibFred::ContactAddress& src, ShippingAddress& dst);
 
-void from_into(const CreateContact &src,         LibFred::InfoContactData &dst);
-void from_into(const UpdateContact &src,         LibFred::InfoContactData &dst);
-void from_into(const UpdateTransferContact &src, LibFred::InfoContactData &dst);
+void from_into(const CreateContact& src, LibFred::InfoContactData& dst);
+void from_into(const UpdateContact& src, LibFred::InfoContactData& dst);
+void from_into(const UpdateTransferContact& src, LibFred::InfoContactData& dst);
 
-void from_into(const LibFred::InfoContactData &src, InfoContact &dst);
+void from_into(const LibFred::InfoContactData& src, InfoContact& dst);
 
 } // namespace Fred::Backend::MojeIdImplData
 } // namespace Fred::Backend

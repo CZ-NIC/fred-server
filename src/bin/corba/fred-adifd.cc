@@ -73,8 +73,7 @@ boost::assign::list_of
     (HandleArgsPtr(new HandleDatabaseArgs))
     (HandleArgsPtr(new HandleCorbaNameServiceArgs))
     (HandleArgsPtr(new HandleRegistryArgs))
-    (HandleArgsPtr(new HandleAdifdArgs))
-    ;
+    (HandleArgsPtr(new HandleAdifdArgs));
 
 int main(int argc, char *argv[])
 {

@@ -17,9 +17,9 @@
  */
 
 /**
-*  @file
-*  header of admin contact verification wrapper over corba
-*/
+ *  @file
+ *  header of admin contact verification wrapper over corba
+ */
 #ifndef SERVER_I_HH_A8647A097EF94EDE84D4B3AD5B608FDD
 #define SERVER_I_HH_A8647A097EF94EDE84D4B3AD5B608FDD
 
@@ -28,48 +28,91 @@
 
 #include <string>
 
-namespace CorbaConversion
+namespace CorbaConversion {
+namespace AdminContactVerification {
+
+class Server_i
+    : public POA_Registry::AdminContactVerification::Server
 {
-    namespace AdminContactVerification
+private:
+    const std::string server_name_;
+
+
+    // do not copy
+    Server_i(const Server_i&); // no definition
+
+    Server_i& operator=(const Server_i&); // no definition
+
+
+public:
+
+
+    Server_i()
+        : server_name_("fred-adifd")
     {
-        /// corba interface
-        class Server_i : public POA_Registry::AdminContactVerification::Server  {
-            private:
-                const std::string server_name_;
-                // do not copy
-                Server_i(const Server_i&); // no definition
-                Server_i& operator= (const Server_i&); // no definition
+    }
 
-            public:
-                Server_i()
-                    : server_name_("fred-adifd")
-                { }
-                virtual ~Server_i(){ }
 
-                // Methods corresponding to IDL attributes and operations
-                virtual Registry::AdminContactVerification::ContactCheckDetail* getContactCheckDetail(const char* check_handle);
+    virtual ~Server_i()
+    {
+    }
 
-                virtual Registry::AdminContactVerification::ContactCheckList* getChecksOfContact(::CORBA::ULongLong contact_id, Registry::NullableString* testsuite, ::CORBA::ULong max_item_count);
-                virtual Registry::AdminContactVerification::ContactCheckList* getActiveChecks(Registry::NullableString* testsuite);
+    // Methods corresponding to IDL attributes and operations
+    virtual Registry::AdminContactVerification::ContactCheckDetail* getContactCheckDetail(
+            const char* check_handle);
 
-                virtual void updateContactCheckTests(const char* check_handle, const Registry::AdminContactVerification::TestUpdateSeq& changes, ::CORBA::ULongLong logd_request_id);
+    virtual Registry::AdminContactVerification::ContactCheckList* getChecksOfContact(
+            ::CORBA::ULongLong contact_id,
+            Registry::NullableString* testsuite,
+            ::CORBA::ULong max_item_count);
 
-                virtual void resolveContactCheckStatus(const char* check_handle, const char* status, ::CORBA::ULongLong logd_request_id);
+    virtual Registry::AdminContactVerification::ContactCheckList* getActiveChecks(
+            Registry::NullableString* testsuite);
 
-                virtual void deleteDomainsAfterFailedManualCheck(const char* check_handle);
+    virtual void updateContactCheckTests(
+            const char* check_handle,
+            const Registry::AdminContactVerification::TestUpdateSeq& changes,
+            ::CORBA::ULongLong logd_request_id);
 
-                virtual char* requestEnqueueingContactCheck(::CORBA::ULongLong contact_id, const char* testsuite_handle, ::CORBA::ULongLong logd_request_id);
-                virtual void confirmEnqueueingContactCheck(const char* check_handle, ::CORBA::ULongLong logd_request_id);
-                virtual char* enqueueContactCheck(::CORBA::ULongLong contact_id, const char* testsuite_handle, ::CORBA::ULongLong logd_request_id);
+    virtual void resolveContactCheckStatus(
+            const char* check_handle,
+            const char* status,
+            ::CORBA::ULongLong logd_request_id);
 
-                virtual Registry::AdminContactVerification::MessageSeq* getContactCheckMessages(::CORBA::ULongLong contact_id);
+    virtual void deleteDomainsAfterFailedManualCheck(const char* check_handle);
 
-                virtual Registry::AdminContactVerification::ContactTestStatusDefSeq* listTestStatusDefs(const char* lang);
-                virtual Registry::AdminContactVerification::ContactCheckStatusDefSeq* listCheckStatusDefs(const char* lang);
-                virtual Registry::AdminContactVerification::ContactTestDefSeq* listTestDefs(const char* lang, Registry::NullableString* testsuite_handle);
-                virtual Registry::AdminContactVerification::ContactTestSuiteDefSeq* listTestSuiteDefs(const char* lang);
-        };
-    } // namespace CorbaConversion::AdminContactVerification
+    virtual char* requestEnqueueingContactCheck(
+            ::CORBA::ULongLong contact_id,
+            const char* testsuite_handle,
+            ::CORBA::ULongLong logd_request_id);
+
+    virtual void confirmEnqueueingContactCheck(
+            const char* check_handle,
+            ::CORBA::ULongLong logd_request_id);
+
+    virtual char* enqueueContactCheck(
+            ::CORBA::ULongLong contact_id,
+            const char* testsuite_handle,
+            ::CORBA::ULongLong logd_request_id);
+
+    virtual Registry::AdminContactVerification::MessageSeq* getContactCheckMessages(
+            ::CORBA::ULongLong contact_id);
+
+    virtual Registry::AdminContactVerification::ContactTestStatusDefSeq* listTestStatusDefs(const char* lang);
+
+    virtual Registry::AdminContactVerification::ContactCheckStatusDefSeq* listCheckStatusDefs(
+            const char* lang);
+
+    virtual Registry::AdminContactVerification::ContactTestDefSeq* listTestDefs(
+            const char* lang,
+            Registry::NullableString* testsuite_handle);
+
+    virtual Registry::AdminContactVerification::ContactTestSuiteDefSeq* listTestSuiteDefs(const char* lang);
+
+
+};
+
+} // namespace CorbaConversion::AdminContactVerification
 } // namespace CorbaConversion
 
 #endif

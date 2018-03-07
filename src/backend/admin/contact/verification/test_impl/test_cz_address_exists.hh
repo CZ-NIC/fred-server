@@ -26,23 +26,24 @@
 
 #include "src/backend/admin/contact/verification/test_impl/test_interface.hh"
 
-#include <string>
-#include <vector>
-#include <utility>
-
-#include <boost/algorithm/string/trim.hpp>
-#include <boost/assign/list_of.hpp>
-
 #include <libxml/parser.h>
 #include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>
 #include <libxml/tree.h>
+
+#include <boost/algorithm/string/trim.hpp>
+#include <boost/assign/list_of.hpp>
+
+#include <string>
+#include <vector>
+#include <utility>
 
 namespace Fred {
 namespace Backend {
 namespace Admin {
 namespace Contact {
 namespace Verification {
+
     FACTORY_MODULE_INIT_DECL(TestCzAddress_init)
 
     class TestCzAddress

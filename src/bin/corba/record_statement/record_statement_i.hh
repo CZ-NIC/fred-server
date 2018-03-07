@@ -49,14 +49,14 @@ namespace Registry {
 namespace RecordStatement {
 
 ///record statement corba interface
-class Server_i:public POA_Registry::RecordStatement::Server
+class Server_i : public POA_Registry::RecordStatement::Server
 {
 public:
     Server_i(
-        const std::string &_server_name,
-        const std::shared_ptr<LibFred::Document::Manager>& _doc_manager,
-        const std::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager,
-        const std::string& _registry_timezone);
+            const std::string& _server_name,
+            const std::shared_ptr<LibFred::Document::Manager>& _doc_manager,
+            const std::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager,
+            const std::string& _registry_timezone);
     virtual ~Server_i();
 
     // methods corresponding to defined IDL attributes and operations
@@ -84,11 +84,12 @@ public:
     void send_keyset_printout(const char* _handle);
 
     void send_contact_printout(const char* _handle);
+
 private:
     // do not copy
     Fred::Backend::RecordStatement::RecordStatementImpl* const impl_;
-    Server_i(const Server_i&);//no body
-    Server_i& operator=(const Server_i&);//no body
+    Server_i(const Server_i&); //no body
+    Server_i& operator=(const Server_i&); //no body
 };
 
 } // namespace Registry::RecordStatement

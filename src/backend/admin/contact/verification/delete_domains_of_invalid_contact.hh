@@ -35,21 +35,22 @@ namespace Admin {
 namespace Contact {
 namespace Verification {
 
-    /**
-     * Deletes domains owned by contact which MANUAL check FAILED.
-     * If check IS NOT MANUAL or the result is NOT FAILED then does nothing.
-     *
-     * Creates Delete Domain Poll Message as sideeffect and stores the relation between the message and check.
-     *
-     * @throws Admin::ExceptionUnknownCheckHandle
-     * @throws Admin::ExceptionIncorrectTestsuite
-     * @throws Admin::ExceptionIncorrectCheckStatus
-     * @throws Admin::ExceptionIncorrectContactStatus
-     * @throws Admin::ExceptionDomainsAlreadyDeleted
-     */
-    void delete_domains_of_invalid_contact(
+/**
+ * Deletes domains owned by contact which MANUAL check FAILED.
+ * If check IS NOT MANUAL or the result is NOT FAILED then does nothing.
+ *
+ * Creates Delete Domain Poll Message as sideeffect and stores the relation between the message and check.
+ *
+ * @throws Admin::ExceptionUnknownCheckHandle
+ * @throws Admin::ExceptionIncorrectTestsuite
+ * @throws Admin::ExceptionIncorrectCheckStatus
+ * @throws Admin::ExceptionIncorrectContactStatus
+ * @throws Admin::ExceptionDomainsAlreadyDeleted
+ */
+void delete_domains_of_invalid_contact(
         LibFred::OperationContext& _ctx,
-        const uuid&             _check_handle);
+        const uuid& _check_handle);
+
 
 } // namespace Fred::Backend::Admin::Contact::Verification
 } // namespace Fred::Backend::Admin::Contact

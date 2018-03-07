@@ -1,6 +1,5 @@
 #include "src/backend/whois/registrar_certification.hh"
 
-
 namespace Fred {
 namespace Backend {
 namespace Whois {
@@ -11,6 +10,7 @@ namespace Whois {
         std::vector<RegistrarCertificationData> ret;
 
         Database::Result registrar_certs_res = ctx.get_conn().exec(
+            // clang-format off
             "SELECT DISTINCT ON (r.handle)"
                 " r.handle AS registrar_handle,"
                 " rc.classification AS score,"
@@ -20,6 +20,7 @@ namespace Whois {
                 " AND rc.valid_from <= CURRENT_DATE"
                 " AND rc.valid_until >= CURRENT_DATE"
             " ORDER BY r.handle, rc.valid_from DESC");
+            // clang-format on
 
         ret.reserve(registrar_certs_res.size());
         for(unsigned long long i = 0; i < registrar_certs_res.size(); ++i)
@@ -32,6 +33,7 @@ namespace Whois {
         }
         return ret;
     }
+
 } // namespace Fred::Backend::Whois
 } // namespace Fred::Backend
 } // namespace Fred

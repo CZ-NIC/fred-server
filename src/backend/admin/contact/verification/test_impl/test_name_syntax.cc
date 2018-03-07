@@ -36,20 +36,27 @@ namespace Admin {
 namespace Contact {
 namespace Verification {
 
-    FACTORY_MODULE_INIT_DEFI(TestNameSyntax_init)
+FACTORY_MODULE_INIT_DEFI(TestNameSyntax_init)
 
-    Test::TestRunResult TestNameSyntax::run(unsigned long long _history_id) const {
-        TestDataProvider<TestNameSyntax> data;
-        data.init_data(_history_id);
+Test::TestRunResult TestNameSyntax::run(unsigned long long _history_id) const
+{
+    TestDataProvider<TestNameSyntax> data;
+    data.init_data(_history_id);
 
-        std::string name =  boost::algorithm::trim_copy(static_cast<std::string>(data.name_));
+    std::string name =  boost::algorithm::trim_copy(static_cast<std::string>(data.name_));
 
-        if( name.find(' ') == std::string::npos ) {
-            return TestRunResult(LibFred::ContactTestStatus::FAIL, std::string("name has to contain at least two words separated by space") );
-        } else {
-            return TestRunResult(LibFred::ContactTestStatus::OK );
-        }
+    if (name.find(' ') == std::string::npos)
+    {
+        return TestRunResult(
+                LibFred::ContactTestStatus::FAIL,
+                std::string("name has to contain at least two words separated by space"));
     }
+    else
+    {
+        return TestRunResult(LibFred::ContactTestStatus::OK);
+    }
+}
+
 } // namespace Fred::Backend::Admin::Contact::Verification
 } // namespace Fred::Backend::Admin::Contact
 } // namespace Fred::Backend::Admin

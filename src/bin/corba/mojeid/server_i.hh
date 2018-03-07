@@ -27,15 +27,15 @@
 #include "src/bin/corba/Buffer.hh"
 #include "src/bin/corba/MojeID.hh"
 #include "src/bin/corba/mojeid/service_name.hh"
+#include <boost/utility.hpp>
 #include <memory>
 #include <string>
-#include <boost/utility.hpp>
 
 namespace Fred {
 namespace Backend {
 namespace MojeId {
 
-class MojeIdImpl;//backend implementation class
+class MojeIdImpl; //backend implementation class
 
 } // namespace Fred::Backend::MojeId
 } // namespace Fred::Backend
@@ -45,104 +45,105 @@ namespace Registry {
 namespace MojeId {
 
 ///mojeid corba interface
-class Server_i: private boost::noncopyable,
-                public POA_Registry::MojeID::Server
+class Server_i : private boost::noncopyable,
+                 public POA_Registry::MojeID::Server
 {
 public:
     // standard constructor
-    Server_i(const std::string &_server_name);
+    Server_i(const std::string& _server_name);
     virtual ~Server_i();
     // methods corresponding to defined IDL attributes and operations
     Registry::MojeID::ContactId create_contact_prepare(
-        const Registry::MojeID::CreateContact &c,
-        const char *trans_id,
-        Registry::MojeID::LogRequestId log_request_id,
-        ::CORBA::String_out ident);
+            const Registry::MojeID::CreateContact& c,
+            const char* trans_id,
+            Registry::MojeID::LogRequestId log_request_id,
+            CORBA::String_out ident);
 
     Registry::MojeID::InfoContact* transfer_contact_prepare(
-        const char *handle,
-        const char *trans_id,
-        Registry::MojeID::LogRequestId log_request_id,
-        ::CORBA::String_out ident);
+            const char* handle,
+            const char* trans_id,
+            Registry::MojeID::LogRequestId log_request_id,
+            CORBA::String_out ident);
 
     void update_contact_prepare(
-        Registry::MojeID::ContactId contact_id,
-        const Registry::MojeID::UpdateContact &c,
-        const char *trans_id,
-        Registry::MojeID::LogRequestId log_request_id);
+            Registry::MojeID::ContactId contact_id,
+            const Registry::MojeID::UpdateContact& c,
+            const char* trans_id,
+            Registry::MojeID::LogRequestId log_request_id);
 
     Registry::MojeID::InfoContact* update_transfer_contact_prepare(
-        const char* username,
-        const Registry::MojeID::UpdateTransferContact& contact_data,
-        const char* trans_id,
-        Registry::MojeID::LogRequestId log_request_id,
-        ::CORBA::String_out ident);
+            const char* username,
+            const Registry::MojeID::UpdateTransferContact& contact_data,
+            const char* trans_id,
+            Registry::MojeID::LogRequestId log_request_id,
+            CORBA::String_out ident);
 
     Registry::MojeID::InfoContact* info_contact(
-        const char *username);
+            const char* username);
 
     Registry::MojeID::InfoContactPublishFlags get_contact_info_publish_flags(
-        Registry::MojeID::ContactId contact_id);
+            Registry::MojeID::ContactId contact_id);
 
     Registry::MojeID::ContactId process_registration_request(
-        const char *ident_request_id,
-        const char *password,
-        Registry::MojeID::LogRequestId log_request_id);
+            const char* ident_request_id,
+            const char* password,
+            Registry::MojeID::LogRequestId log_request_id);
 
     void process_identification_request(
-        Registry::MojeID::ContactId contact_id,
-        const char *password,
-        Registry::MojeID::LogRequestId log_request_id);
+            Registry::MojeID::ContactId contact_id,
+            const char* password,
+            Registry::MojeID::LogRequestId log_request_id);
 
     void commit_prepared_transaction(
-        const char *trans_id);
+            const char* trans_id);
 
     void rollback_prepared_transaction(
-        const char *trans_id);
+            const char* trans_id);
 
     Registry::Buffer* get_validation_pdf(
-        Registry::MojeID::ContactId contact_id);
+            Registry::MojeID::ContactId contact_id);
 
     void create_validation_request(
-        Registry::MojeID::ContactId contact_id,
-        Registry::MojeID::LogRequestId log_request_id);
+            Registry::MojeID::ContactId contact_id,
+            Registry::MojeID::LogRequestId log_request_id);
 
     void validate_contact(
-        Registry::MojeID::ContactId contact_id,
-        Registry::MojeID::LogRequestId log_request_id);
+            Registry::MojeID::ContactId contact_id,
+            Registry::MojeID::LogRequestId log_request_id);
 
     Registry::MojeID::ContactStateInfoList* get_contacts_state_changes(
-        ::CORBA::ULong last_hours);
+            CORBA::ULong last_hours);
 
     Registry::MojeID::ContactStateInfo* get_contact_state(
-        Registry::MojeID::ContactId contact_id);
+            Registry::MojeID::ContactId contact_id);
 
     void cancel_account_prepare(
-        Registry::MojeID::ContactId contact_id,
-        const char *trans_id,
-        Registry::MojeID::LogRequestId log_request_id);
+            Registry::MojeID::ContactId contact_id,
+            const char* trans_id,
+            Registry::MojeID::LogRequestId log_request_id);
 
     Registry::MojeID::ContactHandleList* get_unregistrable_handles();
 
     void send_new_pin3(
-        Registry::MojeID::ContactId contact_id,
-        Registry::MojeID::LogRequestId log_request_id);
+            Registry::MojeID::ContactId contact_id,
+            Registry::MojeID::LogRequestId log_request_id);
 
     void send_mojeid_card(
-        Registry::MojeID::ContactId contact_id,
-        Registry::MojeID::LogRequestId log_request_id);
+            Registry::MojeID::ContactId contact_id,
+            Registry::MojeID::LogRequestId log_request_id);
 
     void generate_sms_messages();
-    void enable_sms_messages_generation(::CORBA::Boolean enable);
+    void enable_sms_messages_generation(CORBA::Boolean enable);
 
     void generate_email_messages();
-    void enable_email_messages_generation(::CORBA::Boolean enable);
+    void enable_email_messages_generation(CORBA::Boolean enable);
 
     void generate_letter_messages();
-    void enable_letter_messages_generation(::CORBA::Boolean enable);
+    void enable_letter_messages_generation(CORBA::Boolean enable);
+
 private:
     const std::unique_ptr<Fred::Backend::MojeId::MojeIdImpl> impl_ptr_;
-};//class Server_i
+}; //class Server_i
 
 } // namespace Registry::MojeId
 } // namespace Registry

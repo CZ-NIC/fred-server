@@ -18,40 +18,39 @@
 
 #include "src/backend/whois/whois.hh"
 
-#include "src/backend/whois/zone_list.hh"
-#include "src/backend/whois/is_domain_delete_pending.hh"
 #include "src/backend/whois/domain_expiration_datetime.hh"
+#include "src/backend/whois/is_domain_delete_pending.hh"
 #include "src/backend/whois/nameserver_exists.hh"
-#include "src/backend/whois/registrar_group.hh"
 #include "src/backend/whois/registrar_certification.hh"
-
-#include "src/libfred/registrar/info_registrar_output.hh"
-#include "src/libfred/registrar/info_registrar.hh"
-#include "src/libfred/registrar/check_registrar.hh"
+#include "src/backend/whois/registrar_group.hh"
+#include "src/backend/whois/zone_list.hh"
+#include "src/libfred/object/check_handle.hh"
+#include "src/libfred/object_state/get_object_state_descriptions.hh"
+#include "src/libfred/object_state/get_object_states.hh"
+#include "src/libfred/registrable_object/contact/check_contact.hh"
+#include "src/libfred/registrable_object/contact/info_contact.hh"
+#include "src/libfred/registrable_object/contact/info_contact_data.hh"
 #include "src/libfred/registrable_object/domain/check_domain.hh"
 #include "src/libfred/registrable_object/domain/domain_name.hh"
 #include "src/libfred/registrable_object/domain/info_domain.hh"
 #include "src/libfred/registrable_object/domain/info_domain_data.hh"
-#include "src/libfred/registrable_object/contact/check_contact.hh"
-#include "src/libfred/object_state/get_object_states.hh"
-#include "src/libfred/object_state/get_object_state_descriptions.hh"
-
-#include "src/libfred/registrable_object/contact/info_contact_data.hh"
-#include "src/libfred/registrable_object/contact/info_contact.hh"
-#include "src/libfred/registrable_object/nsset/info_nsset_data.hh"
-#include "src/libfred/registrable_object/nsset/info_nsset.hh"
-#include "src/libfred/registrable_object/nsset/nsset_dns_host.hh"
+#include "src/libfred/registrable_object/keyset/check_keyset.hh"
 #include "src/libfred/registrable_object/keyset/info_keyset.hh"
 #include "src/libfred/registrable_object/keyset/info_keyset_data.hh"
-#include "src/libfred/registrable_object/keyset/check_keyset.hh"
 #include "src/libfred/registrable_object/keyset/keyset_dns_key.hh"
-#include "src/libfred/object/check_handle.hh"
+#include "src/libfred/registrable_object/nsset/info_nsset.hh"
+#include "src/libfred/registrable_object/nsset/info_nsset_data.hh"
+#include "src/libfred/registrable_object/nsset/nsset_dns_host.hh"
+#include "src/libfred/registrar/check_registrar.hh"
+#include "src/libfred/registrar/info_registrar.hh"
+#include "src/libfred/registrar/info_registrar_output.hh"
 #include "src/util/log/context.hh"
 #include "src/util/random.hh"
 
-#include <algorithm>
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
+
+#include <algorithm>
 
 namespace Fred {
 namespace Backend {

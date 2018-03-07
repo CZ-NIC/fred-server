@@ -30,9 +30,9 @@
 #include "src/libfred/documents.hh"
 #include "src/libfred/mailer.hh"
 #include "src/libfred/opcontext.hh"
+#include "src/libfred/registrable_object/contact/place_address.hh"
 #include "src/libfred/registrable_object/domain/enum_validation_extension.hh"
 #include "src/libfred/registrable_object/nsset/nsset_dns_host.hh"
-#include "src/libfred/registrable_object/contact/place_address.hh"
 #include "src/util/db/nullable.hh"
 #include "src/util/optional_value.hh"
 #include "src/util/timezones.hh"
@@ -56,120 +56,123 @@ public:
             const std::string& _server_name,
             const std::shared_ptr<LibFred::Document::Manager>& _doc_manager,
             const std::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager,
-            const std::string& _handle_of_registry_timezone);//"Europe/Prague" or "UTC"
+            const std::string& _handle_of_registry_timezone); //"Europe/Prague" or "UTC"
     virtual ~RecordStatementImpl();
 
     /**
      * Get server name
      * @return name for logging context
      */
-    const std::string& get_server_name()const;
+    const std::string& get_server_name() const;
 
     template <Purpose::Enum _purpose>
     Buffer domain_printout(
-            const std::string& _fqdn)const;
+            const std::string& _fqdn) const;
 
     Buffer nsset_printout(
-            const std::string& _handle)const;
+            const std::string& _handle) const;
 
     Buffer keyset_printout(
-            const std::string& _handle)const;
+            const std::string& _handle) const;
 
     template <Purpose::Enum _purpose>
     Buffer contact_printout(
-            const std::string& _handle)const;
+            const std::string& _handle) const;
 
     Buffer historic_domain_printout(
             const std::string& _fqdn,
-            const Tz::LocalTimestamp& _valid_at)const;
+            const Tz::LocalTimestamp& _valid_at) const;
 
     Buffer historic_nsset_printout(
             const std::string& _handle,
-            const Tz::LocalTimestamp& _valid_at)const;
+            const Tz::LocalTimestamp& _valid_at) const;
 
     Buffer historic_keyset_printout(
             const std::string& _handle,
-            const Tz::LocalTimestamp& _valid_at)const;
+            const Tz::LocalTimestamp& _valid_at) const;
 
     Buffer historic_contact_printout(
             const std::string& _handle,
-            const Tz::LocalTimestamp& _valid_at)const;
+            const Tz::LocalTimestamp& _valid_at) const;
 
     template <Purpose::Enum _purpose>
     void send_domain_printout(
-            const std::string& _fqdn)const;
+            const std::string& _fqdn) const;
 
     void send_nsset_printout(
-            const std::string& _handle)const;
+            const std::string& _handle) const;
 
     void send_keyset_printout(
-            const std::string& _handle)const;
+            const std::string& _handle) const;
 
     template <Purpose::Enum _purpose>
     void send_contact_printout(
-            const std::string& _handle)const;
+            const std::string& _handle) const;
 
     class WithExternalContext
     {
     public:
-        virtual ~WithExternalContext() { }
+        virtual ~WithExternalContext()
+        {
+        }
 
         virtual Buffer domain_printout(
                 LibFred::OperationContext& _ctx,
                 const std::string& _fqdn,
-                Purpose::Enum _purpose)const = 0;
+                Purpose::Enum _purpose) const = 0;
 
         virtual Buffer nsset_printout(
                 LibFred::OperationContext& _ctx,
-                const std::string& _handle)const = 0;
+                const std::string& _handle) const = 0;
 
         virtual Buffer keyset_printout(
                 LibFred::OperationContext& _ctx,
-                const std::string& _handle)const = 0;
+                const std::string& _handle) const = 0;
 
         virtual Buffer contact_printout(
                 LibFred::OperationContext& _ctx,
                 const std::string& _handle,
-                Purpose::Enum _purpose)const = 0;
+                Purpose::Enum _purpose) const = 0;
 
         virtual Buffer historic_domain_printout(
                 LibFred::OperationContext& _ctx,
                 const std::string& _fqdn,
-                const Tz::LocalTimestamp& _valid_at)const = 0;
+                const Tz::LocalTimestamp& _valid_at) const = 0;
 
         virtual Buffer historic_nsset_printout(
                 LibFred::OperationContext& _ctx,
                 const std::string& _handle,
-                const Tz::LocalTimestamp& _valid_at)const = 0;
+                const Tz::LocalTimestamp& _valid_at) const = 0;
 
         virtual Buffer historic_keyset_printout(
                 LibFred::OperationContext& _ctx,
                 const std::string& _handle,
-                const Tz::LocalTimestamp& _valid_at)const = 0;
+                const Tz::LocalTimestamp& _valid_at) const = 0;
 
         virtual Buffer historic_contact_printout(
                 LibFred::OperationContext& _ctx,
                 const std::string& _handle,
-                const Tz::LocalTimestamp& _valid_at)const = 0;
+                const Tz::LocalTimestamp& _valid_at) const = 0;
 
         virtual void send_domain_printout(
                 LibFred::OperationContext& _ctx,
                 const std::string& _fqdn,
-                Purpose::Enum _purpose)const = 0;
+                Purpose::Enum _purpose) const = 0;
 
         virtual void send_nsset_printout(
                 LibFred::OperationContext& _ctx,
-                const std::string& _handle)const = 0;
+                const std::string& _handle) const = 0;
 
         virtual void send_keyset_printout(
                 LibFred::OperationContext& _ctx,
-                const std::string& _handle)const = 0;
+                const std::string& _handle) const = 0;
 
         virtual void send_contact_printout(
                 LibFred::OperationContext& _ctx,
                 const std::string& _handle,
-                Purpose::Enum _purpose)const = 0;
+                Purpose::Enum _purpose) const = 0;
     };
+
 private:
     std::string server_name_;
     std::shared_ptr<WithExternalContext> impl_;

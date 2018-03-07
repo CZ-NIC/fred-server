@@ -33,35 +33,48 @@ namespace Backend {
 namespace Admin {
 namespace Contact {
 namespace Verification {
-    FACTORY_MODULE_INIT_DECL(TestNameSyntax_init)
 
-    class TestNameSyntax
+FACTORY_MODULE_INIT_DECL(TestNameSyntax_init)
+
+class TestNameSyntax
     : public
-        Test,
-        test_auto_registration<TestNameSyntax>
+      Test,
+          test_auto_registration<TestNameSyntax>
+{
+
+public:
+    virtual TestRunResult run(unsigned long long _history_id) const;
+
+
+    static std::string registration_name()
     {
+        return "name_syntax";
+    }
 
-        public:
-            virtual TestRunResult run(unsigned long long _history_id) const;
-            static std::string registration_name() { return "name_syntax"; }
-    };
+};
 
-    template<> struct TestDataProvider<TestNameSyntax>
+template <>
+struct TestDataProvider<TestNameSyntax>
     : TestDataProvider_common,
       _inheritTestRegName<TestNameSyntax>
+{
+    std::string name_;
+
+    virtual void store_data(const LibFred::InfoContactOutput& _data)
     {
-        std::string name_;
-
-        virtual void store_data(const LibFred::InfoContactOutput& _data) {
-            if( !_data.info_contact_data.name.isnull() ) {
-                name_ = _data.info_contact_data.name.get_value_or_default();
-            }
+        if (!_data.info_contact_data.name.isnull())
+        {
+            name_ = _data.info_contact_data.name.get_value_or_default();
         }
+    }
 
-        virtual std::vector<std::string> get_string_data() const {
-            return boost::assign::list_of(name_);
-        }
-    };
+    virtual std::vector<std::string> get_string_data() const
+    {
+        return boost::assign::list_of(name_);
+    }
+
+};
+
 } // namespace Fred::Backend::Admin::Contact::Verification
 } // namespace Fred::Backend::Admin::Contact
 } // namespace Fred::Backend::Admin

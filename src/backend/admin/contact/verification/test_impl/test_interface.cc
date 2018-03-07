@@ -23,32 +23,41 @@ namespace Backend {
 namespace Admin {
 namespace Contact {
 namespace Verification {
-    Test::TestRunResult::TestRunResult(
+
+Test::TestRunResult::TestRunResult(
         const std::string&                   _status,
         const Optional<std::string>&         _error_msg,
         // XXX hopefuly one day related mail and messages will be unified
         const std::set<unsigned long long>&  _related_mail_archive_ids,
-        const std::set<unsigned long long>&  _related_message_archive_ids
-    ) :
-        status(_status),
-        error_message(_error_msg),
-        related_mail_archive_ids(_related_mail_archive_ids),
-        related_message_archive_ids(_related_message_archive_ids)
-    { }
+        const std::set<unsigned long long>&  _related_message_archive_ids)
+    : status(_status),
+      error_message(_error_msg),
+      related_mail_archive_ids(_related_mail_archive_ids),
+      related_message_archive_ids(_related_message_archive_ids)
+{
+}
 
-    Test::~Test() { }
 
-    LibFred::InfoContactOutput TestDataProvider_common::get_data(unsigned long long _contact_history_id) {
-        LibFred::OperationContextCreator ctx;
+Test::~Test()
+{
+}
 
-        return LibFred::InfoContactHistoryByHistoryid(_contact_history_id).exec(ctx);
-    }
 
-    TestDataProvider_intf& TestDataProvider_common::init_data(unsigned long long _contact_history_id) {
-        this->store_data(this->get_data(_contact_history_id));
+LibFred::InfoContactOutput TestDataProvider_common::get_data(unsigned long long _contact_history_id)
+{
+    LibFred::OperationContextCreator ctx;
 
-        return *this;
-    }
+    return LibFred::InfoContactHistoryByHistoryid(_contact_history_id).exec(ctx);
+}
+
+
+TestDataProvider_intf& TestDataProvider_common::init_data(unsigned long long _contact_history_id)
+{
+    this->store_data(this->get_data(_contact_history_id));
+
+    return *this;
+}
+
 } // namespace Fred::Backend::Admin::Contact::Verification
 } // namespace Fred::Backend::Admin::Contact
 } // namespace Fred::Backend::Admin

@@ -1,29 +1,34 @@
 #include "src/bin/corba/public_request/server_i.hh"
-#include "src/bin/corba/util/corba_conversions_string.hh"
-#include "src/bin/corba/util/corba_conversions_buffer.hh"
 #include "src/backend/buffer.hh"
 #include "src/backend/public_request/public_request.hh"
-#include "src/libfred/public_request/create_public_request.hh"
-#include "src/libfred/mailer.hh"
+#include "src/bin/corba/util/corba_conversions_buffer.hh"
+#include "src/bin/corba/util/corba_conversions_string.hh"
 #include "src/libfred/documents.hh"
-#include "src/util/optional_value.hh"
+#include "src/libfred/mailer.hh"
+#include "src/libfred/public_request/create_public_request.hh"
 #include "src/util/corba_conversion.hh"
+#include "src/util/optional_value.hh"
 
 #include <map>
 #include <stdexcept>
 
 namespace CorbaConversion {
 namespace PublicRequest {
+
 namespace {
 
 Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::Enum unwrap_objecttype_pr_to_objecttype(Registry::PublicRequest::ObjectType_PR::Type object_type)
 {
     switch (object_type)
     {
-        case Registry::PublicRequest::ObjectType_PR::contact: return Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::contact;
-        case Registry::PublicRequest::ObjectType_PR::nsset: return Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::nsset;
-        case Registry::PublicRequest::ObjectType_PR::domain: return Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::domain;
-        case Registry::PublicRequest::ObjectType_PR::keyset: return Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::keyset;
+        case Registry::PublicRequest::ObjectType_PR::contact:
+            return Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::contact;
+        case Registry::PublicRequest::ObjectType_PR::nsset:
+            return Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::nsset;
+        case Registry::PublicRequest::ObjectType_PR::domain:
+            return Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::domain;
+        case Registry::PublicRequest::ObjectType_PR::keyset:
+            return Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::keyset;
     }
     throw std::invalid_argument("value doesn't exist in Registry::PublicRequest::ObjectType_PR");
 }
@@ -51,9 +56,9 @@ Server_i::~Server_i()
 }
 
 ::CORBA::ULongLong Server_i::create_authinfo_request_registry_email(
-    Registry::PublicRequest::ObjectType_PR::Type object_type,
-    const char* object_handle,
-    Registry::NullableULongLong* log_request_id)
+        Registry::PublicRequest::ObjectType_PR::Type object_type,
+        const char* object_handle,
+        Registry::NullableULongLong* log_request_id)
 {
     try
     {
@@ -110,11 +115,11 @@ Fred::Backend::PublicRequest::PublicRequestImpl::ConfirmedBy::Enum unwrap_confir
 } // namespace CorbaConversion::PublicRequest::{anonymous}
 
 CORBA::ULongLong Server_i::create_authinfo_request_non_registry_email(
-    Registry::PublicRequest::ObjectType_PR::Type object_type,
-    const char* object_handle,
-    Registry::NullableULongLong* log_request_id,
-    Registry::PublicRequest::ConfirmedBy::Type confirmation_method,
-    const char* specified_email)
+        Registry::PublicRequest::ObjectType_PR::Type object_type,
+        const char* object_handle,
+        Registry::NullableULongLong* log_request_id,
+        Registry::PublicRequest::ConfirmedBy::Type confirmation_method,
+        const char* specified_email)
 {
     try
     {
@@ -176,11 +181,11 @@ Fred::Backend::PublicRequest::PublicRequestImpl::LockRequestType::Enum unwrap_lo
 } // namespace CorbaConversion::PublicRequest::{anonymous}
 
 CORBA::ULongLong Server_i::create_block_unblock_request(
-    Registry::PublicRequest::ObjectType_PR::Type object_type,
-    const char* object_handle,
-    Registry::NullableULongLong* log_request_id,
-    Registry::PublicRequest::ConfirmedBy::Type confirmation_method,
-    Registry::PublicRequest::LockRequestType::Type lock_request_type)
+        Registry::PublicRequest::ObjectType_PR::Type object_type,
+        const char* object_handle,
+        Registry::NullableULongLong* log_request_id,
+        Registry::PublicRequest::ConfirmedBy::Type confirmation_method,
+        Registry::PublicRequest::LockRequestType::Type lock_request_type)
 {
     try
     {
@@ -242,8 +247,10 @@ Fred::Backend::PublicRequest::PublicRequestImpl::Language::Enum unwrap_language_
 {
     switch (lang)
     {
-        case Registry::PublicRequest::Language::cs: return Fred::Backend::PublicRequest::PublicRequestImpl::Language::cs;
-        case Registry::PublicRequest::Language::en: return Fred::Backend::PublicRequest::PublicRequestImpl::Language::en;
+        case Registry::PublicRequest::Language::cs:
+            return Fred::Backend::PublicRequest::PublicRequestImpl::Language::cs;
+        case Registry::PublicRequest::Language::en:
+            return Fred::Backend::PublicRequest::PublicRequestImpl::Language::en;
     }
     throw std::invalid_argument("language code not found");
 }

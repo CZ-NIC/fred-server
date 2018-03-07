@@ -24,10 +24,10 @@
 #ifndef RUN_ALL_ENQUEUED_CHECKS_HH_98FF71CFFEEF434FAD74FEBACFD1DAE5
 #define RUN_ALL_ENQUEUED_CHECKS_HH_98FF71CFFEEF434FAD74FEBACFD1DAE5
 
-#include <vector>
-#include <string>
 #include <map>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "src/backend/admin/contact/verification/test_impl/test_interface.hh"
 
@@ -37,15 +37,17 @@ namespace Admin {
 namespace Contact {
 namespace Verification {
 
-    /**
-     * Randomly (by happenstance, not even pseudo-random) runs all enqueued checks one by one
-     *
-     * @param _tests map of test objects denoted by their name
-     * @return handles of executed (finalized) check ordered by execution (first in vector - first executed)
-     */
-    std::vector<std::string> run_all_enqueued_checks(
-        const std::map<std::string, std::shared_ptr<Test> >& _tests,
+/**
+ * Randomly (by happenstance, not even pseudo-random) runs all enqueued checks one by one
+ *
+ * @param _tests map of test objects denoted by their name
+ * @return handles of executed (finalized) check ordered by execution (first in vector - first executed)
+ */
+std::vector<std::string> run_all_enqueued_checks(
+        const std::map<std::string, std::shared_ptr<Test>>& _tests,
         Optional<unsigned long long> _logd_request_id = Optional<unsigned long long>());
+
+
 } // namespace Fred::Backend::Admin::Contact::Verification
 } // namespace Fred::Backend::Admin::Contact
 } // namespace Fred::Backend::Admin

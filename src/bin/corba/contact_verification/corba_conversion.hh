@@ -8,10 +8,10 @@
 #include "src/libfred/contact_verification/contact.hh"
 #include "src/libfred/contact_verification/contact_verification_validators.hh"
 
-#include <string>
 #include <boost/algorithm/string.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 
+#include <string>
 
 Registry::ContactVerification::ValidationError corba_wrap_validation_error(
         const Fred::Backend::ContactVerification::VALIDATION_ERROR::Type &_value)
@@ -47,5 +47,4 @@ Registry::ContactVerification::ValidationErrorList_var corba_wrap_validation_err
 }
 
 
-#endif //CONTACT_VERIFICATION_CORBA_CONVERTION_H_
-
+#endif
