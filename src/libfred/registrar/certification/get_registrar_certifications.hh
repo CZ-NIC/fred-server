@@ -35,7 +35,7 @@ namespace Registrar {
 class GetRegistrarCertifications
 {
 public:
-    GetRegistrarCertifications(unsigned long long _registrar_id)
+    explicit GetRegistrarCertifications(unsigned long long _registrar_id)
         : registrar_id_(_registrar_id)
         {}
 

@@ -37,7 +37,7 @@ std::vector<RegistrarCertification> GetRegistrarCertifications::exec(OperationCo
             rc.valid_until = *(++col);
             rc.classification = *(++col);
             rc.eval_file_id = *(++col);
-            result.push_back(rc);
+            result.push_back(std::move(rc));
         }
         return result;
     }
@@ -48,10 +48,10 @@ std::vector<RegistrarCertification> GetRegistrarCertifications::exec(OperationCo
     }
     catch (...)
     {
-        LOGGER(PACKAGE).info("Unknown error");
+        LOGGER(PACKAGE).info("Failed to get registrar certifications due to unknown exception");
         throw;
     }
 }
 
 } // namespace Registrar
-} // namespace Fred
+} // namespace LibFred

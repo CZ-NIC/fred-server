@@ -1513,112 +1513,105 @@ public:
     }
 
     ///create registrar certification
-    virtual unsigned long long createRegistrarCertification( const TID& registrar_id_,
-        const Database::Date& valid_from_,
-        const Database::Date& valid_until_,
-        const RegCertClass classification_,
-        const TID& eval_file_id_)
+    unsigned long long createRegistrarCertification(const TID _registrar_id,
+        const Database::Date& _valid_from,
+        const Database::Date& _valid_until,
+        const RegCertClass _classification,
+        const TID _eval_file_id) final override
     {
         try
         {
             OperationContextCreator ctx;
-            const unsigned long long id = CreateRegistrarCertification(registrar_id_,
-                        valid_from_, valid_until_, classification_, eval_file_id_)
+            const unsigned long long id = CreateRegistrarCertification(_registrar_id,
+                        _valid_from, _valid_until, _classification, _eval_file_id)
                     .exec(ctx);
             ctx.commit_transaction();
             return id;
         }
         catch (...)
         {
-            LOGGER(PACKAGE).error("createRegistrarCertification: an error has occured");
+            LOGGER(PACKAGE).error("createRegistrarCertification: an error has occurred");
             throw;
         }
     }
 
     ///create registrar certification by handle
-    virtual unsigned long long createRegistrarCertification( const std::string& registrar_handle
-        , const Database::Date &valid_from
-        , const Database::Date &valid_until
-        , const RegCertClass classification
-        , const TID& eval_file_id)
+    unsigned long long createRegistrarCertification(const std::string& _registrar_handle,
+            const Database::Date& _valid_from,
+            const Database::Date& _valid_until,
+            const RegCertClass _classification,
+            const TID _eval_file_id) final override
     {
         try
         {
             TID registrar_id = 0;
 
-            Database::Connection conn = Database::Manager::acquire();
-
-            std::stringstream sql;
-            sql << "SELECT id FROM registrar WHERE handle = UPPER('"
-                    << conn.escape(registrar_handle) << "')";
-
-            Database::Result res = conn.exec(sql.str());
-            if((res.size() > 0)&&(res[0].size() > 0))
+            OperationContextCreator ctx;
+            const Database::Result res = ctx.get_conn().exec_params(
+                    "SELECT id FROM registrar WHERE handle = UPPER($1:text)",
+                    Database::query_param_list(_registrar_handle));
+            if ((res.size() > 0) && (res[0].size() > 0))
             {
                 registrar_id = res[0][0];
             }
             else
-                throw std::runtime_error(
-                        "createRegistrarCertification error: SELECT id "
-                        "FROM registrar "
-                        "WHERE handle = UPPER(<registrar_handle>) "
-                        "returned empty result ");
+            {
+                throw std::runtime_error("createRegistrarCertification: failed to find registrar in database");
+            }
 
-            return createRegistrarCertification(registrar_id
-                    , valid_from, valid_until
-                    , classification, eval_file_id);
-        }//try
+            return createRegistrarCertification(registrar_id, _valid_from, _valid_until, _classification, _eval_file_id);
+        }
         catch (...)
         {
-            LOGGER(PACKAGE).error("createRegistrarCertification: an error has occured");
+            LOGGER(PACKAGE).error("createRegistrarCertification: an error has occurred");
             throw;
-        }//catch (...)
+        }
     }
 
 
     ///shorten registrar certification
-    virtual void shortenRegistrarCertification( const TID& certification_id_,
-        const Database::Date& valid_until_)
+    void shortenRegistrarCertification(const TID _certification_id,
+        const Database::Date& _valid_until) final override
     {
         try
         {
             OperationContextCreator ctx;
-            UpdateRegistrarCertification(certification_id_, valid_until_).exec(ctx);
+            UpdateRegistrarCertification(_certification_id, _valid_until).exec(ctx);
             ctx.commit_transaction();
         }
         catch (...)
         {
-            LOGGER(PACKAGE).error("shortenRegistrarCertification: an error has occured");
+            LOGGER(PACKAGE).error("shortenRegistrarCertification: an error has occurred");
             throw;
         }
     }
 
     ///update registrar certification
-    virtual void updateRegistrarCertification( const TID& certification_id_,
-        const RegCertClass classification_,
-        const TID& eval_file_id_)
+    void updateRegistrarCertification(const TID _certification_id,
+        const RegCertClass _classification,
+        const TID _eval_file_id) final override
     {
         try
         {
             OperationContextCreator ctx;//TODO checking namespace
-            UpdateRegistrarCertification(certification_id_, classification_, eval_file_id_).exec(ctx);
+            UpdateRegistrarCertification(_certification_id, _classification, _eval_file_id).exec(ctx);
             ctx.commit_transaction();
         }
         catch (...)
         {
-            LOGGER(PACKAGE).error("updateRegistrarCertification: an error has occured");
+            LOGGER(PACKAGE).error("updateRegistrarCertification: an error has occurred");
             throw;
         }
     }
 
     ///get registrar certification
-    virtual CertificationSeq getRegistrarCertifications( const TID& registrar_id_)
+    CertificationSeq getRegistrarCertifications(const TID _registrar_id) final override
     {
         OperationContextCreator ctx;
         std::vector<CertificationData> result;
-        const std::vector<RegistrarCertification> registrar_certifications = GetRegistrarCertifications(registrar_id_).exec(ctx);
+        const std::vector<RegistrarCertification> registrar_certifications = GetRegistrarCertifications(_registrar_id).exec(ctx);
         result.reserve(registrar_certifications.size());
-        BOOST_FOREACH(RegistrarCertification it, registrar_certifications)
+        for (const auto& it : registrar_certifications)
         {
             CertificationData cd;
             cd.id = it.id;
@@ -1626,7 +1619,7 @@ public:
             cd.valid_until = it.valid_until;
             cd.classification = static_cast<RegCertClass>(it.classification);
             cd.eval_file_id = it.eval_file_id;
-            result.push_back(cd);
+            result.push_back(std::move(cd));
         }
         return result;
     }

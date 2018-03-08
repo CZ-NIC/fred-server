@@ -35,35 +35,31 @@ class UpdateRegistrarCertification
 {
 public:
     UpdateRegistrarCertification(
-            const unsigned long long _certification_id,
-            const boost::gregorian::date _valid_until)
+            unsigned long long _certification_id,
+            boost::gregorian::date _valid_until)
     : certification_id_(_certification_id),
-      valid_until_(_valid_until),
-      valid_until_set_(true)
+      valid_until_(_valid_until)
     {}
 
     UpdateRegistrarCertification(
-            const unsigned long long _certification_id,
-            const int _classification,
-            const unsigned long long _eval_file_id)
+            unsigned long long _certification_id,
+            int _classification,
+            unsigned long long _eval_file_id)
     : certification_id_(_certification_id),
       classification_(_classification),
-      eval_file_id_(_eval_file_id),
-      valid_until_set_(false)
+      eval_file_id_(_eval_file_id)
     {}
 
     void exec(OperationContext& _ctx);
 
 private:
     unsigned long long certification_id_;
-    boost::gregorian::date valid_until_;
-    int classification_;
-    unsigned long long eval_file_id_;
-    bool valid_until_set_;
-
+    boost::optional<boost::gregorian::date> valid_until_;
+    boost::optional<int> classification_;
+    boost::optional<unsigned long long> eval_file_id_;
 };
 
 } // namespace Registrar
-} // namespace Fred
+} // namespace LibFred
 
 #endif

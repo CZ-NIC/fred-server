@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE(registrar_not_found)
 {
     LibFred::OperationContextCreator ctx;
     Database::Result reg_id = ctx.get_conn().exec(
-            "select nextval('registrar_id_seq'::regclass)");
+            "SELECT nextval('registrar_id_seq'::regclass)");
     BOOST_CHECK_THROW(
         LibFred::Registrar::GetRegistrarCertifications(static_cast<int>(reg_id[0][0]) + 1).exec(ctx),
         RegistrarNotFound);

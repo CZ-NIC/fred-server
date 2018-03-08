@@ -395,26 +395,26 @@ public:
   virtual void updateRegistrarGroup(const TID _group_id,
             const std::string& _group_name) = 0;
   ///create registrar certification
-  virtual unsigned long long createRegistrarCertification( const TID& registrar_id
-      , const Database::Date &valid_from
-      , const Database::Date &valid_until
-      , const RegCertClass classification
-      , const TID& eval_file_id) =0;
+  virtual unsigned long long createRegistrarCertification(TID _registrar_id,
+          const Database::Date& _valid_from,
+          const Database::Date& _valid_until,
+          const RegCertClass _classification,
+          TID _eval_file_id) = 0;
   ///create registrar certification by handle
-  virtual unsigned long long createRegistrarCertification( const std::string& registrar_handle
-          , const Database::Date &valid_from
-          , const Database::Date &valid_until
-          , const RegCertClass classification
-          , const TID& eval_file_id) =0;
+  virtual unsigned long long createRegistrarCertification(const std::string& _registrar_handle,
+          const Database::Date& _valid_from,
+          const Database::Date& _valid_until,
+          const RegCertClass _classification,
+          TID _eval_file_id) = 0;
   ///shorten registrar certification
-  virtual void shortenRegistrarCertification( const TID& certification_id
-      , const Database::Date &valid_until) =0;
+  virtual void shortenRegistrarCertification(const TID _certification_id,
+          const Database::Date& _valid_until) = 0;
   ///update registrar certification
-  virtual void updateRegistrarCertification( const TID& certification_id
-      , const RegCertClass classification
-      , const TID& eval_file_id) =0;
+  virtual void updateRegistrarCertification(const TID _certification_id,
+          const RegCertClass _classification,
+          TID _eval_file_id) = 0;
   ///get registrar certifications
-  virtual CertificationSeq getRegistrarCertifications( const TID& registrar_id) =0;
+  virtual CertificationSeq getRegistrarCertifications(const TID _registrar_id) = 0;
 
   ///create membership of registrar in group
   virtual unsigned long long createRegistrarGroupMembership( const TID& registrar_id

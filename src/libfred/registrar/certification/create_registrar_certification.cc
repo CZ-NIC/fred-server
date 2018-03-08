@@ -38,7 +38,11 @@ unsigned long long CreateRegistrarCertification::exec(OperationContext& _ctx)
             throw OverlappingRange();
         }
 
-        if (classification_ < 0 || classification_ > 5)
+        constexpr unsigned short min_classification_value = 0;
+        constexpr unsigned short max_classification_value = 5;
+
+        const bool is_clasification_out_of_range = (classification_ < min_classification_value || classification_ > max_classification_value);
+        if (is_clasification_out_of_range)
         {
             throw ScoreOutOfRange();
         }
@@ -60,10 +64,10 @@ unsigned long long CreateRegistrarCertification::exec(OperationContext& _ctx)
     }
     catch (...)
     {
-        LOGGER(PACKAGE).info("Unknown error");
+        LOGGER(PACKAGE).info("Failed to create registrar certification due to unknown exception");
         throw;
     }
 }
 
 } // namespace Registrar
-} // namespace Fred
+} // namespace LibFred

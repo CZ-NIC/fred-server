@@ -12,11 +12,11 @@ void UpdateRegistrarCertification::exec(OperationContext& _ctx)
     try
     {
         Database::ParamQuery query = Database::ParamQuery("UPDATE registrar_certification SET ");
-        if (valid_until_set_)
+        if (valid_until_)
         {
             const Database::Result cert_in_past = _ctx.get_conn().exec_params(
                     "SELECT now()::date > $1::date",
-                    Database::query_param_list(valid_until_));
+                    Database::query_param_list(*valid_until_));
             if (cert_in_past[0][0])
             {
                 throw CertificationInPast();
@@ -28,28 +28,32 @@ void UpdateRegistrarCertification::exec(OperationContext& _ctx)
                     Database::query_param_list(certification_id_));
             const boost::gregorian::date old_from = from_until[0][0];
             const boost::gregorian::date old_until = from_until[0][1];
-            if (old_until < valid_until_)
+            if (old_until < *valid_until_)
             {
                 throw CertificationExtension();
             }
-            if (old_from > valid_until_)
+            if (old_from > *valid_until_)
             {
                 throw WrongIntervalOrder();
             }
 
             query = query("valid_until = ")
-                .param_date(valid_until_);
+                .param_date(*valid_until_);
         }
         else
         {
-            if (classification_ < 0 || classification_ > 5)
+            constexpr unsigned short min_classification_value = 0;
+            constexpr unsigned short max_classification_value = 5;
+
+            const bool is_clasification_out_of_range = (*classification_ < min_classification_value || *classification_ > max_classification_value);
+            if (is_clasification_out_of_range)
             {
                 throw ScoreOutOfRange();
             }
             query = query("classification = ")
-                .param(classification_, "integer")
+                .param(*classification_, "integer")
                 (", eval_file_id = ")
-                .param_bigint(eval_file_id_);
+                .param_bigint(*eval_file_id_);
         }
         query = query(" WHERE id = ")
             .param_bigint(certification_id_);
@@ -63,10 +67,10 @@ void UpdateRegistrarCertification::exec(OperationContext& _ctx)
     }
     catch (...)
     {
-        LOGGER(PACKAGE).info("Unknown error");
+        LOGGER(PACKAGE).info("Failed to update registrar certification due to an unknown exception");
         throw;
     }
 }
 
 } // namespace Registrar
-} // namespace Fred
+} // namespace LibFred
