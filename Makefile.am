@@ -1038,6 +1038,10 @@ src_libfred_libfred_a_SOURCES = \
 		src/libfred/registrar/get_registrar_handles.hh \
 		src/libfred/registrar/check_registrar.hh \
 		src/libfred/registrar/check_registrar.cc \
+		src/libfred/registrar/group/create_registrar_group.cc \
+		src/libfred/registrar/group/update_registrar_group.cc \
+		src/libfred/registrar/group/cancel_registrar_group.cc \
+		src/libfred/registrar/group/get_registrar_groups.cc \
 		src/libfred/registrar/zone_credit.hh \
 		src/libfred/registrar/zone_credit.cc \
 		src/libfred/registrar/registrar_zone_credit.hh \
@@ -3509,6 +3513,10 @@ test_test_libfred_SOURCES = \
 		test/libfred/registrar/test_get_registrar_zone_credit.cc \
 		test/libfred/registrar/test_info_registrar.cc \
 		test/libfred/registrar/test_create_registrar.cc \
+		test/libfred/registrar/group/test_create.cc \
+		test/libfred/registrar/group/test_update.cc \
+		test/libfred/registrar/group/test_cancel.cc \
+		test/libfred/registrar/group/test_get.cc \
 		test/libfred/contact/test_delete_contact.cc \
 		test/libfred/contact/test_create_contact.cc \
 		test/libfred/contact/test_info_contact.cc \

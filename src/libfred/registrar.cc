@@ -16,45 +16,48 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/util/password_storage.hh"
-
-#include <boost/date_time/posix_time/time_parsers.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/regex.hpp>
-#include <boost/lexical_cast.hpp>
-#include <memory>
-#include <utility>
-#include <vector>
-#include <algorithm>
-#include <functional>
-#include <stdexcept>
-
-
-#include "src/libfred/registrar.hh"
-#include "src/libfred/common_impl.hh"
-//#include "sql.h"
-#include "src/deprecated/util/dbsql.hh"
-#include "src/deprecated/util/log.hh"
-#include "src/util/types/money.hh"
-
+// deprecated headers
 #include "src/deprecated/model/model_filters.hh"
-#include "src/util/log/logger.hh"
-#include "src/util/log/context.hh"
-
 #include "src/libfred/model_registrar_acl.hh"
-#include "src/libfred/model_registrar.hh"
 #include "src/libfred/model_registrar_certification.hh"
 #include "src/libfred/model_registrar_group.hh"
 #include "src/libfred/model_registrar_group_map.hh"
+#include "src/libfred/model_registrar.hh"
 
+
+#include "src/libfred/registrar/group/cancel_registrar_group.hh"
+#include "src/libfred/registrar/group/create_registrar_group.hh"
+#include "src/libfred/registrar/group/get_registrar_groups.hh"
+#include "src/libfred/registrar/group/update_registrar_group.hh"
+
+#include "src/deprecated/util/dbsql.hh"
+#include "src/deprecated/util/log.hh"
+#include "src/libfred/common_impl.hh"
+#include "src/libfred/credit.hh"
+#include "src/libfred/opcontext.hh"
+#include "src/libfred/registrable_object/domain.hh"
+#include "src/libfred/registrar.hh"
 #include "src/libfred/zone.hh"
-#include "src/util/subprocess.hh"
-
 // for getRequestFeeParametres
 #include "src/libfred/invoicing/invoice.hh"
 
-#include "src/libfred/registrable_object/domain.hh"
-#include "src/libfred/credit.hh"
+#include "src/util/log/context.hh"
+#include "src/util/log/logger.hh"
+#include "src/util/password_storage.hh"
+#include "src/util/subprocess.hh"
+#include "src/util/types/money.hh"
+
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/posix_time/time_parsers.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/regex.hpp>
+
+#include <algorithm>
+#include <functional>
+#include <memory>
+#include <stdexcept>
+#include <utility>
+#include <vector>
 
 namespace LibFred {
 namespace Registrar {
@@ -1430,56 +1433,78 @@ public:
     }
 
     ///create registrar group
-    virtual unsigned long long createRegistrarGroup(const std::string &group_name)
+    unsigned long long createRegistrarGroup(const std::string& _group_name) final override
     {
         try
         {
-            ModelRegistrarGroup mrg;
-            mrg.setShortName(group_name);
-            mrg.insert();
-            return mrg.getId();
-        }//try
+            LibFred::OperationContextCreator ctx;
+            const unsigned long long id = LibFred::Registrar::CreateRegistrarGroup(_group_name).exec(ctx);
+            ctx.commit_transaction();
+            return id;
+        }
         catch (...)
         {
-            LOGGER(PACKAGE).error("createRegistrarGroup: an error has occured");
+            LOGGER(PACKAGE).error("createRegistrarGroup: an error has occurred");
             throw;
-        }//catch (...)
+        }
     }
+
     ///cancel registrar group
-    virtual void cancelRegistrarGroup(const TID& group_id)
+    void cancelRegistrarGroup(const TID _group_id) final override
     {
         try
         {
-            ModelRegistrarGroup mrg;
-            mrg.setId(group_id);
-            Database::DateTime now(
-                    boost::posix_time::microsec_clock::universal_time());
-            mrg.setCancelled(now);
-            mrg.update();
-        }//try
+            LibFred::OperationContextCreator ctx;
+            LibFred::Registrar::CancelRegistrarGroup(_group_id).exec(ctx);
+            ctx.commit_transaction();
+        }
         catch (...)
         {
-            LOGGER(PACKAGE).error("cancelRegistrarGroup: an error has occured");
+            LOGGER(PACKAGE).error("cancelRegistrarGroup: an error has occurred");
             throw;
-        }//catch (...)
+        }
     }
 
     ///update registrar group
-    virtual void updateRegistrarGroup(const TID& group_id
-            , const std::string &group_name)
+    void updateRegistrarGroup(const TID _group_id,
+            const std::string& _group_name) final override
     {
         try
         {
-            ModelRegistrarGroup mrg;
-            mrg.setId(group_id);
-            mrg.setShortName(group_name);
-            mrg.update();
-        }//try
+            LibFred::OperationContextCreator ctx;
+            LibFred::Registrar::UpdateRegistrarGroup(_group_id, _group_name).exec(ctx);
+            ctx.commit_transaction();
+        }
         catch (...)
         {
-            LOGGER(PACKAGE).error("updateRegistrarGroup: an error has occured");
+            LOGGER(PACKAGE).error("updateRegistrarGroup: an error has occurred");
             throw;
-        }//catch (...)
+        }
+    }
+
+    GroupSeq getRegistrarGroups() final override
+    {
+        try
+        {
+            LibFred::OperationContextCreator ctx;
+            GroupSeq result;
+            const std::vector<RegistrarGroup> registrar_groups = LibFred::Registrar::GetRegistrarGroups().exec(ctx);
+            result.reserve(registrar_groups.size());
+            for (const auto& it : registrar_groups)
+            {
+                GroupData gd;
+                gd.id = it.id;
+                gd.name = it.name;
+                gd.cancelled = it.cancelled;
+                result.push_back(std::move(gd));
+            }
+            return result;
+        }
+        catch (...)
+        {
+            LOGGER(PACKAGE).error("getRegistrarGroups: an error has occurred");
+            throw;
+        }
     }
 
     ///create registrar certification
@@ -1758,30 +1783,6 @@ public:
           }//catch (...)
       }
 
-      virtual GroupSeq getRegistrarGroups()
-      {
-          Database::Connection conn = Database::Manager::acquire();
-
-          GroupSeq ret;//returned
-
-          std::stringstream query;
-          query << "select id, short_name, cancelled from registrar_group "
-                  << "order by cancelled, short_name";
-
-          Database::Result res = conn.exec(query.str());
-          ret.reserve(res.size());
-          for (Database::Result::Iterator it = res.begin(); it != res.end(); ++it)
-          {
-            Database::Row::Iterator col = (*it).begin();
-            GroupData gd;
-            gd.id = *col;
-            gd.name = std::string(*(++col));
-            gd.cancelled = *(++col);
-
-            ret.push_back(gd);
-          }//for res
-          return ret;
-      }
 
       ///get membership by registrar
       virtual MembershipByRegistrarSeq getMembershipByRegistrar( const TID& registrar_id)
