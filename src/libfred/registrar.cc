@@ -20,7 +20,6 @@
 #include "src/deprecated/model/model_filters.hh"
 #include "src/libfred/model_registrar_acl.hh"
 #include "src/libfred/model_registrar_certification.hh"
-#include "src/libfred/model_registrar_group.hh"
 #include "src/libfred/model_registrar_group_map.hh"
 #include "src/libfred/model_registrar.hh"
 
