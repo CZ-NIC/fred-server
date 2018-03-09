@@ -511,9 +511,16 @@ Buffer ImplementationWithin<T>::domain_printout(
         const std::string& _fqdn,
         Purpose::Enum _purpose)const
 {
-    if (is_delete_candidate(_ctx, LibFred::get_id_of_registered<LibFred::Object_Type::domain>(_ctx, _fqdn)))
+    try
     {
-        throw ObjectDeleteCandidate();
+        if (is_delete_candidate(_ctx, LibFred::get_id_of_registered<LibFred::Object_Type::domain>(_ctx, _fqdn)))
+        {
+            throw ObjectDeleteCandidate();
+        }
+    }
+    catch (const LibFred::UnknownObject&)
+    {
+        throw ObjectNotFound();
     }
 
     std::stringstream xml_document;
@@ -533,9 +540,16 @@ Buffer ImplementationWithin<T>::nsset_printout(
         LibFred::OperationContext& _ctx,
         const std::string& _handle)const
 {
-    if (is_delete_candidate(_ctx, LibFred::get_id_of_registered<LibFred::Object_Type::nsset>(_ctx, _handle)))
+    try
     {
-        throw ObjectDeleteCandidate();
+        if (is_delete_candidate(_ctx, LibFred::get_id_of_registered<LibFred::Object_Type::nsset>(_ctx, _handle)))
+        {
+            throw ObjectDeleteCandidate();
+        }
+    }
+    catch (const LibFred::UnknownObject&)
+    {
+        throw ObjectNotFound();
     }
 
     std::stringstream xml_document;
@@ -552,9 +566,16 @@ Buffer ImplementationWithin<T>::keyset_printout(
         LibFred::OperationContext& _ctx,
         const std::string& _handle)const
 {
-    if (is_delete_candidate(_ctx, LibFred::get_id_of_registered<LibFred::Object_Type::keyset>(_ctx, _handle)))
+    try
     {
-        throw ObjectDeleteCandidate();
+        if (is_delete_candidate(_ctx, LibFred::get_id_of_registered<LibFred::Object_Type::keyset>(_ctx, _handle)))
+        {
+            throw ObjectDeleteCandidate();
+        }
+    }
+    catch (const LibFred::UnknownObject&)
+    {
+        throw ObjectNotFound();
     }
 
     std::stringstream xml_document;
@@ -573,9 +594,16 @@ Buffer ImplementationWithin<T>::contact_printout(
         Purpose::Enum _purpose)const
 {
 
-    if (is_delete_candidate(_ctx, LibFred::get_id_of_registered<LibFred::Object_Type::contact>(_ctx, _handle)))
+    try
     {
-        throw ObjectDeleteCandidate();
+        if (is_delete_candidate(_ctx, LibFred::get_id_of_registered<LibFred::Object_Type::contact>(_ctx, _handle)))
+        {
+            throw ObjectDeleteCandidate();
+        }
+    }
+    catch (const LibFred::UnknownObject&)
+    {
+        throw ObjectNotFound();
     }
 
     std::stringstream xml_document;
@@ -775,9 +803,16 @@ void ImplementationWithin<T>::send_domain_printout(
         const std::string& _fqdn,
         Purpose::Enum _purpose)const
 {
-    if (is_delete_candidate(_ctx, LibFred::get_id_of_registered<LibFred::Object_Type::domain>(_ctx, _fqdn)))
+    try
     {
-        throw ObjectDeleteCandidate();
+        if (is_delete_candidate(_ctx, LibFred::get_id_of_registered<LibFred::Object_Type::domain>(_ctx, _fqdn)))
+        {
+            throw ObjectDeleteCandidate();
+        }
+    }
+    catch (const LibFred::UnknownObject&)
+    {
+        throw ObjectNotFound();
     }
 
     const XmlWithData printout_data =
@@ -836,9 +871,16 @@ void ImplementationWithin<T>::send_nsset_printout(
         LibFred::OperationContext& _ctx,
         const std::string& _handle)const
 {
-    if (is_delete_candidate(_ctx, LibFred::get_id_of_registered<LibFred::Object_Type::nsset>(_ctx, _handle)))
+    try
     {
-        throw ObjectDeleteCandidate();
+        if (is_delete_candidate(_ctx, LibFred::get_id_of_registered<LibFred::Object_Type::nsset>(_ctx, _handle)))
+        {
+            throw ObjectDeleteCandidate();
+        }
+    }
+    catch (const LibFred::UnknownObject&)
+    {
+        throw ObjectNotFound();
     }
 
     const XmlWithData printout_data =
@@ -898,9 +940,16 @@ void ImplementationWithin<T>::send_keyset_printout(
         LibFred::OperationContext& _ctx,
         const std::string& _handle)const
 {
-    if (is_delete_candidate(_ctx, LibFred::get_id_of_registered<LibFred::Object_Type::keyset>(_ctx, _handle)))
+    try
     {
-        throw ObjectDeleteCandidate();
+        if (is_delete_candidate(_ctx, LibFred::get_id_of_registered<LibFred::Object_Type::keyset>(_ctx, _handle)))
+        {
+            throw ObjectDeleteCandidate();
+        }
+    }
+    catch (const LibFred::UnknownObject&)
+    {
+        throw ObjectNotFound();
     }
 
     const XmlWithData printout_data =
@@ -961,9 +1010,16 @@ void ImplementationWithin<T>::send_contact_printout(
         const std::string& _handle,
         Purpose::Enum _purpose)const
 {
-    if (is_delete_candidate(_ctx, LibFred::get_id_of_registered<LibFred::Object_Type::contact>(_ctx, _handle)))
+    try
     {
-        throw ObjectDeleteCandidate();
+        if (is_delete_candidate(_ctx, LibFred::get_id_of_registered<LibFred::Object_Type::contact>(_ctx, _handle)))
+        {
+            throw ObjectDeleteCandidate();
+        }
+    }
+    catch (const LibFred::UnknownObject&)
+    {
+        throw ObjectNotFound();
     }
 
     const XmlWithData printout_data =
