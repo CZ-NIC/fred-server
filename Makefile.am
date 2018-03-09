@@ -793,8 +793,6 @@ src_libfred_libfred_a_SOURCES = \
 		src/libfred/model_zone_soa.hh \
 		src/libfred/model_price_list.cc \
 		src/libfred/model_price_list.hh \
-		src/libfred/model_registrar_certification.hh \
-		src/libfred/model_registrar_certification.cc \
 		src/libfred/model_registrar_group_map.hh \
 		src/libfred/model_registrar_group_map.cc \
 		src/libfred/registrable_object/domain.cc \

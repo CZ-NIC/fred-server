@@ -51,7 +51,7 @@ struct test_get_certifications_fixture : virtual public Test::instantiate_db_tem
         int score = 1;
         LibFred::Registrar::RegistrarCertification rc;
         rc.valid_until = boost::gregorian::day_clock::local_day();
-        for (int i = 0; i < certifications_amount; ++i)
+        for (unsigned int i = 0; i < certifications_amount; ++i)
         {
             rc.valid_from = rc.valid_until + boost::gregorian::date_duration(1);
             rc.valid_until = rc.valid_from + boost::gregorian::date_duration(1);
@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE(get_registrar_certifications)
     std::vector<LibFred::Registrar::RegistrarCertification> result = LibFred::Registrar::GetRegistrarCertifications(test_registrar.id).exec(ctx);
 
     BOOST_CHECK(result.size() == certifications_amount);
-    for (int i = 0; i < certifications_amount; ++i)
+    for (unsigned int i = 0; i < certifications_amount; ++i)
     {
         BOOST_CHECK(reg_certs.at(i) == result.at(i));
     }

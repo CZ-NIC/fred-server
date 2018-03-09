@@ -17,38 +17,34 @@
  */
 
 // deprecated headers
+#include "src/deprecated/util/dbsql.hh"
+#include "src/deprecated/util/log.hh"
 #include "src/deprecated/model/model_filters.hh"
 #include "src/libfred/model_registrar_acl.hh"
-#include "src/libfred/model_registrar_certification.hh"
 #include "src/libfred/model_registrar_group_map.hh"
 #include "src/libfred/model_registrar.hh"
-
 
 #include "src/libfred/registrar/group/cancel_registrar_group.hh"
 #include "src/libfred/registrar/group/create_registrar_group.hh"
 #include "src/libfred/registrar/group/get_registrar_groups.hh"
 #include "src/libfred/registrar/group/update_registrar_group.hh"
 
-#include "src/deprecated/util/dbsql.hh"
-#include "src/deprecated/util/log.hh"
+#include "src/libfred/registrar/certification/create_registrar_certification.hh"
+#include "src/libfred/registrar/certification/get_registrar_certifications.hh"
+#include "src/libfred/registrar/certification/registrar_certification_type.hh"
+#include "src/libfred/registrar/certification/update_registrar_certification.hh"
+
 #include "src/libfred/common_impl.hh"
 #include "src/libfred/credit.hh"
 #include "src/libfred/opcontext.hh"
 #include "src/libfred/registrable_object/domain.hh"
 #include "src/libfred/registrar.hh"
 #include "src/libfred/zone.hh"
-// for getRequestFeeParametres
 #include "src/libfred/invoicing/invoice.hh"
 
 #include "src/util/log/context.hh"
 #include "src/util/log/logger.hh"
 #include "src/util/password_storage.hh"
-
-#include "src/libfred/registrar/certification/create_registrar_certification.hh"
-#include "src/libfred/registrar/certification/update_registrar_certification.hh"
-#include "src/libfred/registrar/certification/get_registrar_certifications.hh"
-#include "src/libfred/registrar/certification/registrar_certification_type.hh"
-
 #include "src/util/subprocess.hh"
 #include "src/util/types/money.hh"
 
@@ -63,6 +59,7 @@
 #include <stdexcept>
 #include <utility>
 #include <vector>
+
 
 namespace LibFred {
 namespace Registrar {
