@@ -21,13 +21,16 @@
 #include "src/deprecated/util/log.hh"
 #include "src/deprecated/model/model_filters.hh"
 #include "src/libfred/model_registrar_acl.hh"
-#include "src/libfred/model_registrar_group_map.hh"
 #include "src/libfred/model_registrar.hh"
 
 #include "src/libfred/registrar/group/cancel_registrar_group.hh"
 #include "src/libfred/registrar/group/create_registrar_group.hh"
 #include "src/libfred/registrar/group/get_registrar_groups.hh"
 #include "src/libfred/registrar/group/update_registrar_group.hh"
+#include "src/libfred/registrar/group/membership/create_registrar_group_membership.hh"
+#include "src/libfred/registrar/group/membership/end_registrar_group_membership.hh"
+#include "src/libfred/registrar/group/membership/info_group_membership_by_group.hh"
+#include "src/libfred/registrar/group/membership/info_group_membership_by_registrar.hh"
 
 #include "src/libfred/registrar/certification/create_registrar_certification.hh"
 #include "src/libfred/registrar/certification/get_registrar_certifications.hh"
@@ -1508,6 +1511,7 @@ public:
         }
     }
 
+
     ///create registrar certification
     unsigned long long createRegistrarCertification(const TID _registrar_id,
         const Database::Date& _valid_from,
@@ -1621,27 +1625,33 @@ public:
     }
 
     ///create membership of registrar in group
-    virtual unsigned long long createRegistrarGroupMembership( const TID& registrar_id
-        , const TID& registrar_group_id
-        , const Database::Date &member_from
-        , const Database::Date &member_until)
+    unsigned long long createRegistrarGroupMembership(const TID& _registrar_id,
+        const TID& _registrar_group_id,
+        const Database::Date& _member_from,
+        const Database::Date& _member_until) final override
     {
         try
         {
-            ModelRegistrarGroupMap mrgm;
-            mrgm.setRegistrarId(registrar_id);
-            mrgm.setRegistrarGroupId(registrar_group_id);
-            mrgm.setMemberFrom(member_from);
-            if (member_until != Database::Date())
-                mrgm.setMemberUntil(member_until);
-            mrgm.insert();
-            return mrgm.getId();
-        }//try
+            LibFred::OperationContextCreator ctx;
+            Optional<boost::gregorian::date> until_arg;
+            if (! _member_until.get().is_not_a_date())
+            {
+                until_arg = _member_until.get();
+            }
+            unsigned long long id = LibFred::Registrar::CreateRegistrarGroupMembership(
+                    _registrar_id,
+                    _registrar_group_id,
+                    _member_from,
+                    until_arg)
+                .exec(ctx);
+            ctx.commit_transaction();
+            return id;
+        }
         catch (...)
         {
             LOGGER(PACKAGE).error("createRegistrarGroupMembership: an error has occured");
             throw;
-        }//catch (...)
+        }
     }
 
     ///create membership of registrar in group by name
@@ -1703,7 +1713,7 @@ public:
 
 
     ///update membership of registrar in group
-    virtual void updateRegistrarGroupMembership( const TID& mebership_id
+    virtual void updateRegistrarGroupMembership( const TID& membership_id
         , const TID& registrar_id
         , const TID& registrar_group_id
         , const Database::Date &member_from
@@ -1712,7 +1722,7 @@ public:
         try
         {
             ModelRegistrarGroupMap mrgm;
-            mrgm.setId(mebership_id);
+            mrgm.setId(membership_id);
             mrgm.setRegistrarId(registrar_id);
             mrgm.setRegistrarGroupId(registrar_group_id);
             if (member_from != Database::Date())
@@ -1729,95 +1739,60 @@ public:
     }
 
     ///end of registrar membership in group
-      virtual void endRegistrarGroupMembership(const TID& registrar_id
-          , const TID& registrar_group_id)
+      void endRegistrarGroupMembership(const TID& _registrar_id,
+          const TID& _registrar_group_id) final override
       {
           try
           {
-              Database::Connection conn = Database::Manager::acquire();
-              Database::Transaction tx(conn);
-              std::string lock_query
-                  ("LOCK TABLE registrar_group_map IN ACCESS EXCLUSIVE MODE");
-              conn.exec(lock_query);
-
-              std::stringstream query;
-              query << "update registrar_group_map set member_until = CURRENT_DATE"
-              << " where id = (select id from registrar_group_map where"
-              << " registrar_id = "
-              << conn.escape(boost::lexical_cast<std::string>(registrar_id))
-              << " and registrar_group_id = "
-              << conn.escape(boost::lexical_cast<std::string>(registrar_group_id))
-              << " order by member_from desc, id desc limit 1)"  ;
-
-              conn.exec(query.str());
-
-              tx.commit();
-          }//try
+              LibFred::OperationContextCreator ctx;
+              LibFred::Registrar::EndRegistrarGroupMembership(_registrar_id, _registrar_group_id).exec(ctx);
+              ctx.commit_transaction();
+          }
           catch (...)
           {
               LOGGER(PACKAGE).error("endRegistrarGroupMembership: an error has occured");
               throw;
-          }//catch (...)
+          }
       }
 
 
       ///get membership by registrar
-      virtual MembershipByRegistrarSeq getMembershipByRegistrar( const TID& registrar_id)
+      MembershipByRegistrarSeq getMembershipByRegistrar(const TID& registrar_id) final override
       {
-          Database::Connection conn = Database::Manager::acquire();
-
-          MembershipByRegistrarSeq ret;//returned
-
-          std::stringstream query;
-          query << "select id, registrar_group_id, member_from, member_until "
-              << "from registrar_group_map where registrar_id='"
-              << conn.escape(boost::lexical_cast<std::string>(registrar_id))
-              << "' order by member_from desc, id desc";
-
-          Database::Result res = conn.exec(query.str());
-          ret.reserve(res.size());
-          for (Database::Result::Iterator it = res.begin(); it != res.end(); ++it)
+          LibFred::OperationContextCreator ctx;
+          std::vector<GroupMembershipByRegistrar> info = LibFred::Registrar::InfoGroupMembershipByRegistrar(registrar_id).exec(ctx);
+          MembershipByRegistrarSeq result;
+          result.reserve(info.size());
+          BOOST_FOREACH(const GroupMembershipByRegistrar& it, info)
           {
-            Database::Row::Iterator col = (*it).begin();
-            MembershipByRegistrar mbr;
-            mbr.id = *col;
-            mbr.group_id = *(++col);
-            mbr.member_from = *(++col);
-            mbr.member_until = *(++col);
-
-            ret.push_back(mbr);
-          }//for res
-          return ret;
-      }//getMembershipByRegistrar
+              MembershipByRegistrar mbr;
+              mbr.id = it.membership_id;
+              mbr.group_id = it.group_id;
+              mbr.member_from = it.member_from;
+              mbr.member_until = it.member_until;
+              result.push_back(mbr);
+          }
+          return result;
+      }
 
       ///get membership by groups
-      virtual MembershipByGroupSeq getMembershipByGroup( const TID& group_id)
+      MembershipByGroupSeq getMembershipByGroup( const TID& group_id) final override
       {
-          Database::Connection conn = Database::Manager::acquire();
-
-          MembershipByGroupSeq ret;//returned
-
-          std::stringstream query;
-          query << "select id, registrar_id, member_from, member_until "
-              << "from registrar_group_map where registrar_group_id='"
-              << conn.escape(boost::lexical_cast<std::string>(group_id))
-              << "' order by member_from desc, id desc";
-
-          Database::Result res = conn.exec(query.str());
-          ret.reserve(res.size());
-          for (Database::Result::Iterator it = res.begin(); it != res.end(); ++it)
+          LibFred::OperationContextCreator ctx;
+          std::vector<GroupMembershipByGroup> info = LibFred::Registrar::InfoGroupMembershipByGroup(group_id).exec(ctx);
+          MembershipByGroupSeq result;
+          result.reserve(info.size());
+          BOOST_FOREACH(const GroupMembershipByGroup& it, info)
           {
-            Database::Row::Iterator col = (*it).begin();
-            MembershipByGroup mbg;
-            mbg.id = *col;
-            mbg.registrar_id = *(++col);
-            mbg.member_from = *(++col);
-            mbg.member_until = *(++col);
-
-            ret.push_back(mbg);
-          }//for res
-          return ret;
-      }//getMembershipByGroup
+              MembershipByGroup mbg;
+              mbg.id = it.membership_id;
+              mbg.registrar_id = it.registrar_id;
+              mbg.member_from = it.member_from;
+              mbg.member_until = it.member_until;
+              result.push_back(mbg);
+          }
+          return result;
+      }
 
       // this method relies that records in registrar_disconnect table don't overlap
       // and it doesn't take ownership of epp_cli pointer
