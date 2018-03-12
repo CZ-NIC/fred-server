@@ -124,14 +124,6 @@ struct ArgumentIsSpecial
 
 };
 
-void unwrap_DateTime(
-        const Registry::IsoDateTime& src,
-        boost::posix_time::ptime& dst);
-
-
-Registry::IsoDateTime_var wrap_DateTime(const boost::posix_time::ptime& src);
-
-
 /**
  * Exception if argument value is not enum ValidationResult value
  */

@@ -21,12 +21,13 @@
  *  implementation for MojeID CORBA conversion
  */
 
-#include "src/bin/corba/mojeid/mojeid_corba_conversion.hh"
-
 #include "src/backend/buffer.hh"
 #include "src/bin/corba/IsoDate.hh"
 #include "src/bin/corba/MojeID.hh"
 #include "src/bin/corba/NullableIsoDate.hh"
+#include "src/bin/corba/mojeid/mojeid_corba_conversion.hh"
+#include "src/bin/corba/util/corba_conversions_isodate.hh"
+#include "src/bin/corba/util/corba_conversions_isodatetime.hh"
 
 #include <boost/lexical_cast.hpp>
 
@@ -96,40 +97,19 @@ void unwrap_NullableIsoDate(const Registry::NullableIsoDate* src_ptr, Nullable<F
     }
 }
 
-void wrap_boost_gregorian_date(const boost::gregorian::date& src, Registry::IsoDate& dst)
-{
-    if (src.is_special())
-    {
-        throw ArgumentIsSpecial();
-    }
-
-    dst.value = wrap_string(boost::gregorian::to_iso_extended_string(src))._retn();
-}
-
-void wrap_Date(const Fred::Backend::MojeIdImplData::Birthdate& src, Registry::IsoDate& dst)
+void wrap_Birthdate(const Fred::Backend::MojeIdImplData::Birthdate& src, Registry::IsoDate& dst)
 {
     dst.value = wrap_string(src.value)._retn();
 }
 
-Registry::NullableIsoDate_var wrap_Nullable_Date(const Nullable<Fred::Backend::MojeIdImplData::Birthdate>& src)
+Registry::NullableIsoDate_var wrap_Nullable_Birthdate(const Nullable<Fred::Backend::MojeIdImplData::Birthdate>& src)
 {
     if (src.isnull())
     {
         return Registry::NullableIsoDate_var();
     }
     Registry::NullableIsoDate_var result(new Registry::NullableIsoDate());
-    wrap_Date(src.get_value(), result.in()->_value());
-    return result._retn();
-}
-
-Registry::NullableIsoDate_var wrap_Nullable_boost_gregorian_date(const Nullable<boost::gregorian::date>& src)
-{
-    if (src.isnull())
-    {
-        return Registry::NullableIsoDate_var();
-    }
-    Registry::NullableIsoDate_var result(new Registry::NullableIsoDate());
-    wrap_boost_gregorian_date(src.get_value(), result.in()->_value());
+    wrap_Birthdate(src.get_value(), result.in()->_value());
     return result._retn();
 }
 
@@ -250,35 +230,6 @@ Registry::MojeID::NullableShippingAddress_var wrap_Nullable_ShippingAddress(cons
 ArgumentIsSpecial::ArgumentIsSpecial()
     : std::invalid_argument("argument is special")
 {
-}
-
-void unwrap_DateTime(const Registry::IsoDateTime& src, boost::posix_time::ptime& dst)
-{
-    const std::string value = src.value.in();
-    try
-    {
-        dst = boost::date_time::parse_delimited_time<ptime>(value, 'T');
-    }
-    catch (const boost::bad_lexical_cast& e)
-    { //special values usually lead to bad_lexical_cast exception
-        throw ArgumentIsSpecial(); //really special :-)
-    }
-    if (dst.is_special())
-    {
-        throw ArgumentIsSpecial();
-    }
-}
-
-Registry::IsoDateTime_var wrap_DateTime(const boost::posix_time::ptime& src)
-{
-    if (src.is_special())
-    {
-        throw ArgumentIsSpecial();
-    }
-
-    Registry::IsoDateTime_var result(new Registry::IsoDateTime());
-    result.inout().value = wrap_string(boost::posix_time::to_iso_extended_string(src))._retn();
-    return result._retn();
 }
 
 NotEnumValidationResultValue::NotEnumValidationResultValue()
@@ -498,7 +449,7 @@ Registry::MojeID::InfoContact_var wrap_InfoContact(const Fred::Backend::MojeIdIm
     result->organization = wrap_Nullable_string(src.organization);
     result->vat_reg_num = wrap_Nullable_string(src.vat_reg_num);
 
-    result->birth_date = wrap_Nullable_Date(src.birth_date)._retn();
+    result->birth_date = wrap_Nullable_Birthdate(src.birth_date)._retn();
 
     result->id_card_num = wrap_Nullable_string(src.id_card_num);
     result->passport_num = wrap_Nullable_string(src.passport_num);
@@ -551,11 +502,11 @@ void wrap_ContactStateInfo(const Fred::Backend::MojeIdImplData::ContactStateInfo
 {
     int_to_int(src.contact_id, dst.contact_id);
 
-    dst.mojeid_activation_datetime = wrap_DateTime(src.mojeid_activation_datetime);
+    dst.mojeid_activation_datetime = Util::wrap_boost_posix_time_ptime_to_IsoDateTime(src.mojeid_activation_datetime);
 
-    dst.identification_date = wrap_Nullable_boost_gregorian_date(src.identification_date)._retn();
-    dst.validation_date = wrap_Nullable_boost_gregorian_date(src.validation_date)._retn();
-    dst.linked_date = wrap_Nullable_boost_gregorian_date(src.linked_date)._retn();
+    dst.identification_date = Util::wrap_Nullable_boost_gregorian_date_to_NullableIsoDate(src.identification_date)._retn();
+    dst.validation_date = Util::wrap_Nullable_boost_gregorian_date_to_NullableIsoDate(src.validation_date)._retn();
+    dst.linked_date = Util::wrap_Nullable_boost_gregorian_date_to_NullableIsoDate(src.linked_date)._retn();
 }
 
 Registry::MojeID::ContactStateInfo_var wrap_ContactStateInfo(const Fred::Backend::MojeIdImplData::ContactStateInfo& src)
@@ -595,7 +546,7 @@ Registry::MojeID::ContactHandleList_var wrap_ContactHandleList(const Fred::Backe
 
 void wrap_MessageLimitExceeded(const Fred::Backend::MojeIdImplData::MessageLimitExceeded& src, Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED& dst)
 {
-    dst.limit_expire_datetime = wrap_DateTime(src.limit_expire_datetime);
+    dst.limit_expire_datetime = Util::wrap_boost_posix_time_ptime_to_IsoDateTime(src.limit_expire_datetime);
 }
 
 void raise_REGISTRATION_VALIDATION_ERROR(const Fred::Backend::MojeIdImplData::RegistrationValidationResult& src)

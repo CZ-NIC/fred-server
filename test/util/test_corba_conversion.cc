@@ -39,6 +39,8 @@
 #include "src/util/corba_conversion.hh"
 
 #include "src/bin/corba/corba_conversion_test.hh"
+#include "src/bin/corba/util/corba_conversions_isodate.hh"
+#include "src/bin/corba/util/corba_conversions_isodatetime.hh"
 #include "src/bin/corba/mojeid/mojeid_corba_conversion.hh"
 #include "src/bin/corba/util/corba_conversions_buffer.hh"
 
@@ -177,15 +179,15 @@ BOOST_AUTO_TEST_CASE(test_mojeid_date)
     BOOST_CHECK(date_as_string == "2015-12-10");
 
     Registry::IsoDate idl_date;
-    CorbaConversion::wrap_boost_gregorian_date(date, idl_date);
+    CorbaConversion::Util::wrap_boost_gregorian_date_to_IsoDate(date, idl_date);
     BOOST_CHECK(idl_date.value.in() == date_as_string);
 
     Fred::Backend::MojeIdImplData::Birthdate impl_date;
     CorbaConversion::unwrap_Date(idl_date, impl_date);
     BOOST_CHECK(impl_date.value == date_as_string);
 
-    BOOST_CHECK_THROW(CorbaConversion::wrap_boost_gregorian_date(boost::gregorian::date(), idl_date),
-                      CorbaConversion::ArgumentIsSpecial);
+    BOOST_CHECK_THROW(CorbaConversion::Util::wrap_boost_gregorian_date_to_IsoDate(boost::gregorian::date(), idl_date),
+                      std::runtime_error);
 }
 
 BOOST_AUTO_TEST_CASE(test_mojeid_datetime)
@@ -194,18 +196,10 @@ BOOST_AUTO_TEST_CASE(test_mojeid_datetime)
     static const std::string time_as_string = boost::posix_time::to_iso_extended_string(time);
     BOOST_CHECK(time_as_string == "2015-12-10T00:00:00");
 
-    Registry::IsoDateTime_var idl_time = CorbaConversion::wrap_DateTime(time)._retn();
-    BOOST_CHECK(idl_time->value.in() == time_as_string);
+    Registry::IsoDateTime idl_time = CorbaConversion::Util::wrap_boost_posix_time_ptime_to_IsoDateTime(time);
+    BOOST_CHECK(idl_time.value.in() == time_as_string);
 
-    boost::posix_time::ptime impl_time;
-    CorbaConversion::unwrap_DateTime(idl_time.in(), impl_time);
-    BOOST_CHECK(impl_time == time);
-
-    BOOST_CHECK_THROW(CorbaConversion::wrap_DateTime(boost::posix_time::ptime()), CorbaConversion::ArgumentIsSpecial);
-
-    static const boost::posix_time::ptime special_time = boost::posix_time::ptime(boost::posix_time::not_a_date_time);
-    idl_time->value = boost::posix_time::to_iso_extended_string(special_time).c_str();
-    BOOST_CHECK_THROW(CorbaConversion::unwrap_DateTime(idl_time, impl_time), CorbaConversion::ArgumentIsSpecial);
+    BOOST_CHECK_THROW(CorbaConversion::Util::wrap_boost_posix_time_ptime_to_IsoDateTime(boost::posix_time::ptime()), std::runtime_error);
 }
 
 BOOST_AUTO_TEST_CASE(test_mojeid_nullabledate)
@@ -215,11 +209,11 @@ BOOST_AUTO_TEST_CASE(test_mojeid_nullabledate)
     BOOST_CHECK(date_as_string == "2015-12-10");
     static const Nullable< boost::gregorian::date > nnd(date);
 
-    const Registry::NullableIsoDate_var nd1 = CorbaConversion::wrap_Nullable_boost_gregorian_date(nnd)._retn();
+    const Registry::NullableIsoDate_var nd1 = CorbaConversion::Util::wrap_Nullable_boost_gregorian_date_to_NullableIsoDate(nnd)._retn();
     BOOST_CHECK(std::string(nd1->value()) == date_as_string);
 
     static const Nullable< boost::gregorian::date > nd;
-    const Registry::NullableIsoDate_var nd2 = CorbaConversion::wrap_Nullable_boost_gregorian_date(nd)._retn();
+    const Registry::NullableIsoDate_var nd2 = CorbaConversion::Util::wrap_Nullable_boost_gregorian_date_to_NullableIsoDate(nd)._retn();
     BOOST_CHECK(nd2.in() == NULL);
 
     Nullable< Fred::Backend::MojeIdImplData::Birthdate > res1;
@@ -448,10 +442,6 @@ BOOST_AUTO_TEST_CASE(test_mojeid_message_limit_exceeded)
 
     Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED res;
     CorbaConversion::wrap_MessageLimitExceeded(msg, res);
-
-    boost::posix_time::ptime limit_expire_datetime;
-    CorbaConversion::unwrap_DateTime(res.limit_expire_datetime, limit_expire_datetime);
-    BOOST_CHECK(limit_expire_datetime == msg.limit_expire_datetime);
 }
 
 BOOST_AUTO_TEST_CASE(test_mojeid_registration_validation_error)
@@ -719,7 +709,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_create_contact)
     cc.last_name = CorbaConversion::wrap_string("last_name")._retn();
     cc.organization = CorbaConversion::wrap_Nullable_string("org")._retn();
     cc.vat_reg_num = CorbaConversion::wrap_Nullable_string("vat_reg_num")._retn();
-    cc.birth_date = CorbaConversion::wrap_Nullable_boost_gregorian_date(boost::gregorian::date(2015,12,10))._retn();
+    cc.birth_date = CorbaConversion::Util::wrap_Nullable_boost_gregorian_date_to_NullableIsoDate(boost::gregorian::date(2015,12,10))._retn();
     cc.id_card_num = CorbaConversion::wrap_Nullable_string("id_card_num")._retn();
     cc.passport_num = CorbaConversion::wrap_Nullable_string("passport_num")._retn();
     cc.ssn_id_num = CorbaConversion::wrap_Nullable_string("ssn_id_num")._retn();
@@ -1276,7 +1266,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_update_contact)
     uc.last_name = CorbaConversion::wrap_string("last_name")._retn();
     uc.organization = CorbaConversion::wrap_Nullable_string("org")._retn();
     uc.vat_reg_num = CorbaConversion::wrap_Nullable_string("vat_reg_num")._retn();
-    uc.birth_date = CorbaConversion::wrap_Nullable_boost_gregorian_date(boost::gregorian::date(2015,12,10))._retn();
+    uc.birth_date = CorbaConversion::Util::wrap_Nullable_boost_gregorian_date_to_NullableIsoDate(boost::gregorian::date(2015,12,10))._retn();
     uc.id_card_num = CorbaConversion::wrap_Nullable_string("id_card_num")._retn();
     uc.passport_num = CorbaConversion::wrap_Nullable_string("passport_num")._retn();
     uc.ssn_id_num = CorbaConversion::wrap_Nullable_string("ssn_id_num")._retn();
@@ -1425,7 +1415,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_set_contact)
 
     sc.organization = CorbaConversion::wrap_Nullable_string("org")._retn();
     sc.vat_reg_num = CorbaConversion::wrap_Nullable_string("vat_reg_num")._retn();
-    sc.birth_date = CorbaConversion::wrap_Nullable_boost_gregorian_date(boost::gregorian::date(2015,12,10))._retn();
+    sc.birth_date = CorbaConversion::Util::wrap_Nullable_boost_gregorian_date_to_NullableIsoDate(boost::gregorian::date(2015,12,10))._retn();
     sc.vat_id_num = CorbaConversion::wrap_Nullable_string("vat_id_num")._retn();
     {
         Fred::Backend::MojeIdImplData::Address addr_impl;

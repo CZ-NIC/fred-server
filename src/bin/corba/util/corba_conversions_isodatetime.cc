@@ -29,40 +29,6 @@
 namespace CorbaConversion {
 namespace Util {
 
-boost::posix_time::ptime
-unwrap_IsoDateTime_to_boost_posix_time_ptime(
-        const Registry::IsoDateTime src)
-{
-    return time_from_string(src.value.in());
-}
-
-void
-unwrap_IsoDateTime_to_boost_posix_time_ptime(
-        const Registry::IsoDateTime src,
-        boost::posix_time::ptime& dst)
-{
-    dst = unwrap_IsoDateTime_to_boost_posix_time_ptime(src);
-}
-
-Nullable<boost::posix_time::ptime>
-unwrap_NullableIsoDateTime_to_Nullable_boost_posix_time_ptime(
-        const Registry::NullableIsoDateTime* src_ptr)
-{
-    if (src_ptr == nullptr)
-    {
-        return Nullable<boost::posix_time::ptime>();
-    }
-    return unwrap_IsoDateTime_to_boost_posix_time_ptime(src_ptr->_boxed_in());
-}
-
-void
-unwrap_NullableIsoDateTime_to_Nullable_boost_posix_time_ptime(
-        const Registry::NullableIsoDateTime* src_ptr,
-        Nullable<boost::posix_time::ptime>& dst)
-{
-    unwrap_NullableIsoDateTime_to_Nullable_boost_posix_time_ptime(src_ptr);
-}
-
 Registry::IsoDateTime
 wrap_boost_posix_time_ptime_to_IsoDateTime(
         const boost::posix_time::ptime& src)
