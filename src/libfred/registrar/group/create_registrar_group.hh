@@ -45,7 +45,7 @@ private:
 
 };
 
-} // namespace LibFred
 } // namespace Registrar
+} // namespace LibFred
 
 #endif

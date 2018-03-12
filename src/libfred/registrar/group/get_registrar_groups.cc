@@ -32,5 +32,5 @@ std::vector<RegistrarGroup> GetRegistrarGroups::exec(OperationContext& _ctx)
     }
 }
 
-} // namespace LibFred
 } // namespace Registrar
+} // namespace LibFred
