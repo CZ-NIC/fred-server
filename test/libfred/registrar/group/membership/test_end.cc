@@ -16,39 +16,39 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/fredlib/registrar/group/create_registrar_group.h"
-#include "src/fredlib/registrar/group/membership/create_registrar_group_membership.h"
-#include "src/fredlib/registrar/group/membership/end_registrar_group_membership.h"
-#include "src/fredlib/registrar/group/membership/exceptions.h"
+#include "src/libfred/registrar/group/create_registrar_group.hh"
+#include "src/libfred/registrar/group/membership/create_registrar_group_membership.hh"
+#include "src/libfred/registrar/group/membership/end_registrar_group_membership.hh"
+#include "src/libfred/registrar/group/membership/exceptions.hh"
 
-#include "src/fredlib/opcontext.h"
-#include "src/fredlib/db_settings.h"
-#include "tests/setup/fixtures.h"
-#include "tests/setup/fixtures_utils.h"
+#include "src/libfred/opcontext.hh"
+#include "src/libfred/db_settings.hh"
+#include "test/setup/fixtures.hh"
+#include "test/setup/fixtures_utils.hh"
 
 #include <boost/test/unit_test.hpp>
 
 using namespace boost::gregorian;
 
-struct test_end_membership_fixture : virtual public Test::Fixture::instantiate_db_template
+struct test_end_membership_fixture : virtual public Test::instantiate_db_template
 {
     unsigned long long group_id;
     unsigned long long past_group_id;
     unsigned long long mem_id;
     unsigned long long past_mem_id;
-    Fred::InfoRegistrarData reg;
+    LibFred::InfoRegistrarData reg;
     date today;
 
     test_end_membership_fixture()
     : today(day_clock::universal_day())
     {
-        Fred::OperationContextCreator ctx;
+        LibFred::OperationContextCreator ctx;
         reg = Test::registrar::make(ctx);
-        group_id = Fred::CreateRegistrarGroup("test_reg_grp").exec(ctx);
-        mem_id = Fred::CreateRegistrarGroupMembership(reg.id, group_id, today).exec(ctx);
+        group_id = LibFred::Registrar::CreateRegistrarGroup("test_reg_grp").exec(ctx);
+        mem_id = LibFred::Registrar::CreateRegistrarGroupMembership(reg.id, group_id, today).exec(ctx);
 
-        past_group_id = Fred::CreateRegistrarGroup("past_test_reg_grp").exec(ctx);
-        past_mem_id = Fred::CreateRegistrarGroupMembership(
+        past_group_id = LibFred::Registrar::CreateRegistrarGroup("past_test_reg_grp").exec(ctx);
+        past_mem_id = LibFred::Registrar::CreateRegistrarGroupMembership(
                 reg.id,
                 past_group_id,
                 today - date_duration(1),
@@ -62,8 +62,8 @@ BOOST_FIXTURE_TEST_SUITE(TestEndRegistrarGroupMembership, test_end_membership_fi
 
 BOOST_AUTO_TEST_CASE(end_group_membership)
 {
-    Fred::OperationContextCreator ctx;
-    Fred::EndRegistrarGroupMembership(reg.id, group_id).exec(ctx);
+    LibFred::OperationContextCreator ctx;
+    LibFred::Registrar::EndRegistrarGroupMembership(reg.id, group_id).exec(ctx);
     Database::Result result = ctx.get_conn().exec_params(
             "SELECT registrar_id, registrar_group_id, member_from, member_until "
             "FROM registrar_group_map "
@@ -77,16 +77,16 @@ BOOST_AUTO_TEST_CASE(end_group_membership)
 
 BOOST_AUTO_TEST_CASE(membership_not_found)
 {
-    Fred::OperationContextCreator ctx;
+    LibFred::OperationContextCreator ctx;
     BOOST_CHECK_THROW(
-        Fred::EndRegistrarGroupMembership(reg.id, 123456).exec(ctx),
+        LibFred::Registrar::EndRegistrarGroupMembership(reg.id, 123456).exec(ctx),
         MembershipNotFound);
     BOOST_CHECK_THROW(
-        Fred::EndRegistrarGroupMembership(123456, group_id).exec(ctx),
+        LibFred::Registrar::EndRegistrarGroupMembership(123456, group_id).exec(ctx),
         MembershipNotFound);
     BOOST_CHECK_THROW(
-        Fred::EndRegistrarGroupMembership(reg.id, past_group_id).exec(ctx),
+        LibFred::Registrar::EndRegistrarGroupMembership(reg.id, past_group_id).exec(ctx),
         MembershipNotFound);
 }
 
-BOOST_AUTO_TEST_SUITE_END(); //TestEndRegistrarGroupMembership
+BOOST_AUTO_TEST_SUITE_END();

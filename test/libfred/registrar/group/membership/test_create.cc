@@ -16,14 +16,14 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/fredlib/registrar/group/create_registrar_group.h"
-#include "src/fredlib/registrar/group/membership/create_registrar_group_membership.h"
-#include "src/fredlib/registrar/group/membership/exceptions.h"
+#include "src/libfred/registrar/group/create_registrar_group.hh"
+#include "src/libfred/registrar/group/membership/create_registrar_group_membership.hh"
+#include "src/libfred/registrar/group/membership/exceptions.hh"
 
-#include "src/fredlib/opcontext.h"
-#include "src/fredlib/db_settings.h"
-#include "tests/setup/fixtures.h"
-#include "tests/setup/fixtures_utils.h"
+#include "src/libfred/opcontext.hh"
+#include "src/libfred/db_settings.hh"
+#include "test/setup/fixtures.hh"
+#include "test/setup/fixtures_utils.hh"
 
 #include <boost/test/unit_test.hpp>
 
@@ -31,18 +31,18 @@
 
 using namespace boost::gregorian;
 
-struct test_create_membership_fixture : virtual public Test::Fixture::instantiate_db_template
+struct test_create_membership_fixture : virtual public Test::instantiate_db_template
 {
     unsigned long long group_id;
-    Fred::InfoRegistrarData reg;
+    LibFred::InfoRegistrarData reg;
     date today;
 
     test_create_membership_fixture()
     : today(day_clock::universal_day())
     {
-        Fred::OperationContextCreator ctx;
+        LibFred::OperationContextCreator ctx;
         reg = Test::registrar::make(ctx);
-        group_id = Fred::CreateRegistrarGroup("test-reg_grp").exec(ctx);
+        group_id = LibFred::Registrar::CreateRegistrarGroup("test-reg_grp").exec(ctx);
         ctx.commit_transaction();
     }
 };
@@ -51,9 +51,9 @@ BOOST_FIXTURE_TEST_SUITE(TestCreateRegistrarGroupMembership, test_create_members
 
 BOOST_AUTO_TEST_CASE(create_group_membership)
 {
-    Fred::OperationContextCreator ctx;
+    LibFred::OperationContextCreator ctx;
     unsigned long long mem_id =
-        Fred::CreateRegistrarGroupMembership(reg.id, group_id, today, today).exec(ctx);
+        LibFred::Registrar::CreateRegistrarGroupMembership(reg.id, group_id, today, today).exec(ctx);
     Database::Result result = ctx.get_conn().exec_params(
             "SELECT registrar_id, registrar_group_id, member_from, member_until "
             "FROM registrar_group_map "
@@ -67,8 +67,8 @@ BOOST_AUTO_TEST_CASE(create_group_membership)
 
 BOOST_AUTO_TEST_CASE(inifite_membership_cut)
 {
-    Fred::OperationContextCreator ctx;
-    unsigned long long mem_id1 = Fred::CreateRegistrarGroupMembership(
+    LibFred::OperationContextCreator ctx;
+    unsigned long long mem_id1 = LibFred::Registrar::CreateRegistrarGroupMembership(
             reg.id,
             group_id,
             today)
@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE(inifite_membership_cut)
 
     date tomorrow = today + date_duration(1);
     unsigned long long mem_id2 =
-        Fred::CreateRegistrarGroupMembership(reg.id, group_id, tomorrow).exec(ctx);
+        LibFred::Registrar::CreateRegistrarGroupMembership(reg.id, group_id, tomorrow).exec(ctx);
 
     result1 = ctx.get_conn().exec_params(query, Database::query_param_list(mem_id1));
     BOOST_CHECK(reg.id == static_cast<unsigned long long>(result1[0][0]));
@@ -106,20 +106,20 @@ BOOST_AUTO_TEST_CASE(inifite_membership_cut)
 
 BOOST_AUTO_TEST_CASE(wrong_interval_order)
 {
-    Fred::OperationContextCreator ctx;
+    LibFred::OperationContextCreator ctx;
     BOOST_CHECK_THROW(
-        Fred::CreateRegistrarGroupMembership(reg.id, group_id, today, today - date_duration(1)).exec(ctx),
+        LibFred::Registrar::CreateRegistrarGroupMembership(reg.id, group_id, today, today - date_duration(1)).exec(ctx),
         WrongIntervalOrder);
 }
 
 BOOST_AUTO_TEST_CASE(interval_intersection)
 {
-    Fred::OperationContextCreator ctx;
-    Fred::CreateRegistrarGroupMembership(reg.id, group_id, today, today).exec(ctx);
+    LibFred::OperationContextCreator ctx;
+    LibFred::Registrar::CreateRegistrarGroupMembership(reg.id, group_id, today, today).exec(ctx);
 
     BOOST_CHECK_THROW(
-        Fred::CreateRegistrarGroupMembership(reg.id, group_id, today - date_duration(1), today).exec(ctx),
+        LibFred::Registrar::CreateRegistrarGroupMembership(reg.id, group_id, today - date_duration(1), today).exec(ctx),
         IntervalIntersection);
 }
 
-BOOST_AUTO_TEST_SUITE_END(); //TestCreateRegistrarGroupMembership
+BOOST_AUTO_TEST_SUITE_END();
