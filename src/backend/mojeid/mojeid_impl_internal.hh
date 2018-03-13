@@ -26,139 +26,152 @@
 
 #include "src/backend/mojeid/mojeid_checkers.hh"
 
-namespace Registry {
-namespace MojeIDImplInternal {
+namespace Fred {
+namespace Backend {
+namespace MojeIdImplInternal {
 
 struct check_contact_optional_addresses
-:   LibFred::check_contact_addresses_mailing,
-    LibFred::check_contact_addresses_billing,
-    LibFred::check_contact_addresses_shipping,
-    LibFred::check_contact_addresses_shipping2,
-    LibFred::check_contact_addresses_shipping3
+        : check_contact_addresses_mailing,
+          check_contact_addresses_billing,
+          check_contact_addresses_shipping,
+          check_contact_addresses_shipping2,
+          check_contact_addresses_shipping3
 {
-    check_contact_optional_addresses(const LibFred::InfoContactData &_data)
-    :   LibFred::check_contact_addresses_mailing(_data),
-        LibFred::check_contact_addresses_billing(_data),
-        LibFred::check_contact_addresses_shipping(_data),
-        LibFred::check_contact_addresses_shipping2(_data),
-        LibFred::check_contact_addresses_shipping3(_data)
-    { }
-    bool success()const
+    check_contact_optional_addresses(const LibFred::InfoContactData& _data)
+        : ::Fred::Backend::check_contact_addresses_mailing(_data),
+          ::Fred::Backend::check_contact_addresses_billing(_data),
+          ::Fred::Backend::check_contact_addresses_shipping(_data),
+          ::Fred::Backend::check_contact_addresses_shipping2(_data),
+          ::Fred::Backend::check_contact_addresses_shipping3(_data)
     {
-        return this->LibFred::check_contact_addresses_mailing::success()   &&
-               this->LibFred::check_contact_addresses_billing::success()   &&
-               this->LibFred::check_contact_addresses_shipping::success()  &&
-               this->LibFred::check_contact_addresses_shipping2::success() &&
-               this->LibFred::check_contact_addresses_shipping3::success();
+    }
+    bool success() const
+    {
+        return this->::Fred::Backend::check_contact_addresses_mailing::success() &&
+               this->::Fred::Backend::check_contact_addresses_billing::success() &&
+               this->::Fred::Backend::check_contact_addresses_shipping::success() &&
+               this->::Fred::Backend::check_contact_addresses_shipping2::success() &&
+               this->::Fred::Backend::check_contact_addresses_shipping3::success();
     }
 };
 
-typedef boost::mpl::list< LibFred::MojeID::check_contact_username,
-                          LibFred::check_contact_name,
-                          LibFred::MojeID::check_contact_birthday_validity,
-                          LibFred::check_contact_email_presence,
-                          LibFred::check_contact_email_validity,
-                          LibFred::check_contact_notifyemail_validity,
-                          LibFred::check_contact_phone_presence,
-                          LibFred::check_contact_phone_validity,
-                          LibFred::check_contact_fax_validity,
-                          LibFred::check_contact_place_address,
-                          check_contact_optional_addresses > check_mojeid_registration;
+typedef boost::mpl::list<Fred::Backend::MojeId::check_contact_username,
+            Fred::Backend::check_contact_name,
+            Fred::Backend::MojeId::check_contact_birthday_validity,
+            Fred::Backend::check_contact_email_presence,
+            Fred::Backend::check_contact_email_validity,
+            Fred::Backend::check_contact_notifyemail_validity,
+            Fred::Backend::check_contact_phone_presence,
+            Fred::Backend::check_contact_phone_validity,
+            Fred::Backend::check_contact_fax_validity,
+            Fred::Backend::check_contact_place_address,
+            check_contact_optional_addresses>
+        check_mojeid_registration;
 
-typedef boost::mpl::list< LibFred::check_contact_email_availability,
-                          LibFred::check_contact_phone_availability > check_mojeid_registration_ctx;
+typedef boost::mpl::list<Fred::Backend::check_contact_email_availability,
+            Fred::Backend::check_contact_phone_availability>
+        check_mojeid_registration_ctx;
 
-typedef LibFred::Check< boost::mpl::list< check_mojeid_registration,
-                                       check_mojeid_registration_ctx > > CheckMojeIDRegistration;
+typedef MojeId::Check<boost::mpl::list<check_mojeid_registration,
+            check_mojeid_registration_ctx>>
+        CheckMojeIdRegistration;
 
-void raise(const CheckMojeIDRegistration &result);
-
-
-typedef boost::mpl::list< LibFred::MojeID::Check::states_before_transfer_into_mojeid > check_transfer_contact_prepare_presence;
-
-typedef LibFred::Check< check_transfer_contact_prepare_presence > CheckTransferContactPrepareStates;
-
-void raise(const CheckTransferContactPrepareStates &result);
+void raise(const CheckMojeIdRegistration& result);
 
 
-typedef boost::mpl::list< LibFred::MojeID::check_contact_username,
-                          LibFred::check_contact_name,
-                          LibFred::MojeID::check_contact_birthday_validity,
-                          LibFred::check_contact_email_presence,
-                          LibFred::check_contact_email_validity,
-                          LibFred::check_contact_notifyemail_validity,
-                          LibFred::check_contact_phone_presence,
-                          LibFred::check_contact_phone_validity,
-                          LibFred::check_contact_fax_validity,
-                          LibFred::check_contact_place_address,
-                          check_contact_optional_addresses > check_mojeid_create_contact;
+typedef boost::mpl::list<Fred::Backend::MojeId::states_before_transfer_into_mojeid> check_transfer_contact_prepare_presence;
 
-typedef boost::mpl::list< LibFred::MojeID::check_contact_username_availability,
-                          LibFred::check_contact_email_availability,
-                          LibFred::check_contact_phone_availability > check_mojeid_create_contact_ctx;
+typedef MojeId::Check<check_transfer_contact_prepare_presence> CheckTransferContactPrepareStates;
 
-typedef LibFred::Check< boost::mpl::list< check_mojeid_create_contact,
-                                       check_mojeid_create_contact_ctx > > CheckCreateContactPrepare;
-
-void raise(const CheckCreateContactPrepare &result);
+void raise(const CheckTransferContactPrepareStates& result);
 
 
-typedef boost::mpl::list< LibFred::check_contact_name,
-                          LibFred::MojeID::check_contact_birthday_validity,
-                          LibFred::check_contact_email_presence,
-                          LibFred::check_contact_email_validity,
-                          LibFred::check_contact_notifyemail_validity,
-                          LibFred::check_contact_phone_validity,
-                          LibFred::check_contact_fax_validity,
-                          LibFred::check_contact_place_address,
-                          check_contact_optional_addresses > check_update_contact_prepare;
+typedef boost::mpl::list<Fred::Backend::MojeId::check_contact_username,
+            Fred::Backend::check_contact_name,
+            Fred::Backend::MojeId::check_contact_birthday_validity,
+            Fred::Backend::check_contact_email_presence,
+            Fred::Backend::check_contact_email_validity,
+            Fred::Backend::check_contact_notifyemail_validity,
+            Fred::Backend::check_contact_phone_presence,
+            Fred::Backend::check_contact_phone_validity,
+            Fred::Backend::check_contact_fax_validity,
+            Fred::Backend::check_contact_place_address,
+            check_contact_optional_addresses>
+        check_mojeid_create_contact;
 
-typedef LibFred::Check< check_update_contact_prepare > CheckUpdateContactPrepare;
+typedef boost::mpl::list<Fred::Backend::MojeId::check_contact_username_availability,
+            Fred::Backend::check_contact_email_availability,
+            Fred::Backend::check_contact_phone_availability>
+        check_mojeid_create_contact_ctx;
 
-void raise(const CheckUpdateContactPrepare &result);
+typedef MojeId::Check<boost::mpl::list<check_mojeid_create_contact,
+        check_mojeid_create_contact_ctx> >
+        CheckCreateContactPrepare;
 
-
-typedef boost::mpl::list< LibFred::check_contact_name,
-                          LibFred::check_contact_place_address,
-                          LibFred::check_contact_email_presence,
-                          LibFred::check_contact_email_validity,
-                          LibFred::check_contact_phone_validity,
-                          LibFred::check_contact_notifyemail_validity,
-                          LibFred::check_contact_fax_validity,
-                          LibFred::MojeID::check_contact_ssn > check_create_validation_request;
-
-typedef LibFred::Check< check_create_validation_request > CheckCreateValidationRequest;
-
-void raise(const CheckCreateValidationRequest &result);
+void raise(const CheckCreateContactPrepare& result);
 
 
-typedef boost::mpl::list< LibFred::MojeID::check_contact_username,
-                          LibFred::check_contact_name,
-                          LibFred::MojeID::check_contact_ssn,
-                          LibFred::check_contact_email_presence,
-                          LibFred::check_contact_email_validity,
-                          LibFred::check_contact_notifyemail_validity,
-                          LibFred::check_contact_phone_presence,
-                          LibFred::check_contact_phone_validity,
-                          LibFred::check_contact_fax_validity,
-                          LibFred::check_contact_place_address,
-                          check_contact_optional_addresses > check_update_transfer_contact_prepare;
+typedef boost::mpl::list<Fred::Backend::check_contact_name,
+            Fred::Backend::MojeId::check_contact_birthday_validity,
+            Fred::Backend::check_contact_email_presence,
+            Fred::Backend::check_contact_email_validity,
+            Fred::Backend::check_contact_notifyemail_validity,
+            Fred::Backend::check_contact_phone_validity,
+            Fred::Backend::check_contact_fax_validity,
+            Fred::Backend::check_contact_place_address,
+            check_contact_optional_addresses>
+        check_update_contact_prepare;
 
-typedef LibFred::Check< check_update_transfer_contact_prepare > CheckUpdateTransferContactPrepare;
+typedef MojeId::Check<check_update_contact_prepare> CheckUpdateContactPrepare;
 
-void raise(const CheckUpdateTransferContactPrepare &result);
+void raise(const CheckUpdateContactPrepare& result);
 
 
-typedef boost::mpl::list< LibFred::check_contact_email_presence,
-                          LibFred::check_contact_email_validity,
-                          LibFred::check_contact_phone_presence,
-                          LibFred::check_contact_phone_validity > check_process_registration_validation;
+typedef boost::mpl::list<Fred::Backend::check_contact_name,
+            Fred::Backend::check_contact_place_address,
+            Fred::Backend::check_contact_email_presence,
+            Fred::Backend::check_contact_email_validity,
+            Fred::Backend::check_contact_phone_validity,
+            Fred::Backend::check_contact_notifyemail_validity,
+            Fred::Backend::check_contact_fax_validity,
+            Fred::Backend::MojeId::check_contact_ssn>
+        check_create_validation_request;
 
-typedef LibFred::Check< check_process_registration_validation > CheckProcessRegistrationValidation;
+typedef MojeId::Check<check_create_validation_request> CheckCreateValidationRequest;
 
-void raise(const CheckProcessRegistrationValidation &result);
+void raise(const CheckCreateValidationRequest& result);
 
-} // namespace Registry::MojeIDImplInternal
-} // namespace Registry
+
+typedef boost::mpl::list<Fred::Backend::MojeId::check_contact_username,
+            Fred::Backend::check_contact_name,
+            Fred::Backend::MojeId::check_contact_ssn,
+            Fred::Backend::check_contact_email_presence,
+            Fred::Backend::check_contact_email_validity,
+            Fred::Backend::check_contact_notifyemail_validity,
+            Fred::Backend::check_contact_phone_presence,
+            Fred::Backend::check_contact_phone_validity,
+            Fred::Backend::check_contact_fax_validity,
+            Fred::Backend::check_contact_place_address,
+            check_contact_optional_addresses>
+        check_update_transfer_contact_prepare;
+
+typedef MojeId::Check<check_update_transfer_contact_prepare> CheckUpdateTransferContactPrepare;
+
+void raise(const CheckUpdateTransferContactPrepare& result);
+
+
+typedef boost::mpl::list<Fred::Backend::check_contact_email_presence,
+            Fred::Backend::check_contact_email_validity,
+            Fred::Backend::check_contact_phone_presence,
+            Fred::Backend::check_contact_phone_validity>
+        check_process_registration_validation;
+
+typedef MojeId::Check<check_process_registration_validation> CheckProcessRegistrationValidation;
+
+void raise(const CheckProcessRegistrationValidation& result);
+
+} // namespace Fred::Backend::MojeIdImplInternal
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

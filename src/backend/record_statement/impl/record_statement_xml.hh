@@ -25,35 +25,36 @@
 #define RECORD_STATEMENT_XML_HH_A3016D5B689542E6948999BE031F3AAD
 
 #include "src/libfred/documents.hh"
-#include "src/libfred/opcontext.hh"
 #include "src/libfred/object/object_type.hh"
+#include "src/libfred/opcontext.hh"
 #include "src/libfred/registrable_object/contact/info_contact.hh"
 #include "src/libfred/registrable_object/contact/place_address.hh"
 #include "src/libfred/registrable_object/domain/enum_validation_extension.hh"
 #include "src/libfred/registrable_object/domain/info_domain.hh"
-#include "src/libfred/registrable_object/nsset/nsset_dns_host.hh"
-#include "src/libfred/registrable_object/nsset/info_nsset.hh"
 #include "src/libfred/registrable_object/keyset/info_keyset.hh"
+#include "src/libfred/registrable_object/nsset/info_nsset.hh"
+#include "src/libfred/registrable_object/nsset/nsset_dns_host.hh"
 #include "src/libfred/registrar/info_registrar.hh"
 
 #include "src/backend/record_statement/record_statement.hh"
 
-#include "src/util/xmlgen.hh"
 #include "src/util/db/nullable.hh"
 #include "src/util/optional_value.hh"
-#include "src/util/tz/local_timestamp.hh"
 #include "src/util/tz/get_psql_handle_of.hh"
+#include "src/util/tz/local_timestamp.hh"
 #include "src/util/tz/utc.hh"
+#include "src/util/xmlgen.hh"
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/optional.hpp>
 
-#include <string>
 #include <set>
+#include <string>
 #include <vector>
 
-namespace LibFred {
+namespace Fred {
+namespace Backend {
 namespace RecordStatement {
 namespace Impl {
 
@@ -86,7 +87,7 @@ std::string domain_printout_xml(
         LibFred::OperationContext& ctx,
         const LibFred::InfoDomainOutput& info,
         const Tz::LocalTimestamp& valid_at,
-        Registry::RecordStatement::Purpose::Enum purpose,
+        Purpose::Enum purpose,
         const LibFred::InfoContactOutput& registrant_info,
         const std::vector<LibFred::InfoContactOutput>& admin_contact_info,
         const LibFred::InfoRegistrarOutput& sponsoring_registrar_info,
@@ -107,7 +108,7 @@ std::string contact_printout_xml(
         LibFred::OperationContext& ctx,
         const LibFred::InfoContactOutput& info,
         const Tz::LocalTimestamp& valid_at,
-        Registry::RecordStatement::Purpose::Enum purpose,
+        Purpose::Enum purpose,
         const LibFred::InfoRegistrarOutput& sponsoring_registrar_info,
         const std::set<std::string>& external_states);
 
@@ -123,7 +124,7 @@ template <typename REGISTRY_TIMEZONE>
 XmlWithData domain_printout_xml_with_data(
         LibFred::OperationContext& ctx,
         const std::string& fqdn,
-        Registry::RecordStatement::Purpose::Enum purpose);
+        Purpose::Enum purpose);
 
 template <typename REGISTRY_TIMEZONE>
 XmlWithData nsset_printout_xml_with_data(
@@ -139,7 +140,7 @@ template <typename REGISTRY_TIMEZONE>
 XmlWithData contact_printout_xml_with_data(
         LibFred::OperationContext& ctx,
         const std::string& handle,
-        Registry::RecordStatement::Purpose::Enum purpose);
+        Purpose::Enum purpose);
 
 std::set<std::string> make_external_states(
         unsigned long long object_id,
@@ -174,99 +175,101 @@ class DbDateTimeArithmetic
 public:
     DbDateTimeArithmetic(LibFred::OperationContext& _ctx);
     template <typename SRC_TIMEZONE>
-    Tz::LocalTimestamp within(const boost::posix_time::ptime& _local_time)const
+    Tz::LocalTimestamp within(const boost::posix_time::ptime& _local_time) const
     {
         return this->append_offset(_local_time, Tz::get_psql_handle_of<SRC_TIMEZONE>());
     }
     template <typename DST_TIMEZONE>
     Tz::LocalTimestamp into(
             const boost::posix_time::ptime& _src_local_time,
-            ::int16_t _src_timezone_offset_in_minutes)const
+            ::int16_t _src_timezone_offset_in_minutes) const
     {
         return this->convert_into_other_timezone(
                 _src_local_time,
                 _src_timezone_offset_in_minutes,
                 Tz::get_psql_handle_of<DST_TIMEZONE>());
     }
+
 private:
     Tz::LocalTimestamp append_offset(
             const boost::posix_time::ptime& _local_time,
-            const std::string& _timezone_handle)const;
+            const std::string& _timezone_handle) const;
     Tz::LocalTimestamp convert_into_other_timezone(
             const boost::posix_time::ptime& _src_local_time,
             ::int16_t _src_timezone_offset_in_minutes,
-            const std::string& _dst_timezone_handle)const;
+            const std::string& _dst_timezone_handle) const;
     LibFred::OperationContext& ctx_;
 };
 
 template <typename T>
-class ImplementationWithin:public Registry::RecordStatement::RecordStatementImpl::WithExternalContext
+class ImplementationWithin : public RecordStatementImpl::WithExternalContext
 {
 public:
     typedef T RegistryTimeZone;
     ImplementationWithin(
-            const boost::shared_ptr<LibFred::Document::Manager>& _doc_manager,
-            const boost::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager);
+            const std::shared_ptr<LibFred::Document::Manager>& _doc_manager,
+            const std::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager);
     ~ImplementationWithin();
 
-    Registry::RecordStatement::PdfBufferImpl domain_printout(
+    Buffer domain_printout(
             LibFred::OperationContext& _ctx,
             const std::string& _fqdn,
-            Registry::RecordStatement::Purpose::Enum _purpose)const;
+            Purpose::Enum _purpose) const;
 
-    Registry::RecordStatement::PdfBufferImpl nsset_printout(
+    Buffer nsset_printout(
             LibFred::OperationContext& _ctx,
-            const std::string& _handle)const;
+            const std::string& _handle) const;
 
-    Registry::RecordStatement::PdfBufferImpl keyset_printout(
+    Buffer keyset_printout(
             LibFred::OperationContext& _ctx,
-            const std::string& _handle)const;
+            const std::string& _handle) const;
 
-    Registry::RecordStatement::PdfBufferImpl contact_printout(
+    Buffer contact_printout(
             LibFred::OperationContext& _ctx,
             const std::string& _handle,
-            Registry::RecordStatement::Purpose::Enum _purpose)const;
+            Purpose::Enum _purpose) const;
 
-    Registry::RecordStatement::PdfBufferImpl historic_domain_printout(
+    Buffer historic_domain_printout(
             LibFred::OperationContext& _ctx,
             const std::string& _fqdn,
-            const Tz::LocalTimestamp& _valid_at)const;
+            const Tz::LocalTimestamp& _valid_at) const;
 
-    Registry::RecordStatement::PdfBufferImpl historic_nsset_printout(
+    Buffer historic_nsset_printout(
             LibFred::OperationContext& _ctx,
             const std::string& _handle,
-            const Tz::LocalTimestamp& _valid_at)const;
+            const Tz::LocalTimestamp& _valid_at) const;
 
-    Registry::RecordStatement::PdfBufferImpl historic_keyset_printout(
+    Buffer historic_keyset_printout(
             LibFred::OperationContext& _ctx,
             const std::string& _handle,
-            const Tz::LocalTimestamp& _valid_at)const;
+            const Tz::LocalTimestamp& _valid_at) const;
 
-    Registry::RecordStatement::PdfBufferImpl historic_contact_printout(
+    Buffer historic_contact_printout(
             LibFred::OperationContext& _ctx,
             const std::string& _handle,
-            const Tz::LocalTimestamp& _valid_at)const;
+            const Tz::LocalTimestamp& _valid_at) const;
 
     void send_domain_printout(
             LibFred::OperationContext& _ctx,
             const std::string& _fqdn,
-            Registry::RecordStatement::Purpose::Enum _purpose)const;
+            Purpose::Enum _purpose) const;
 
     void send_nsset_printout(
             LibFred::OperationContext& _ctx,
-            const std::string& _handle)const;
+            const std::string& _handle) const;
 
     void send_keyset_printout(
             LibFred::OperationContext& _ctx,
-            const std::string& _handle)const;
+            const std::string& _handle) const;
 
     void send_contact_printout(
             LibFred::OperationContext& _ctx,
             const std::string& _handle,
-            Registry::RecordStatement::Purpose::Enum _purpose)const;
+            Purpose::Enum _purpose) const;
+
 private:
-    boost::shared_ptr<LibFred::Document::Manager> doc_manager_;
-    boost::shared_ptr<LibFred::Mailer::Manager> mailer_manager_;
+    std::shared_ptr<LibFred::Document::Manager> doc_manager_;
+    std::shared_ptr<LibFred::Mailer::Manager> mailer_manager_;
 };
 
 template <LibFred::Object_Type::Enum object_type>
@@ -297,8 +300,9 @@ boost::optional<KeysetPrintoutInputData> make_historic_keyset_data(
         const Tz::LocalTimestamp& timestamp, //for keyset tech contact and keyset states history
         LibFred::OperationContext& ctx);
 
-} // namespace LibFred::RecordStatement::Impl
-} // namespace LibFred::RecordStatement
-} // namespace LibFred
+} // namespace Fred::Backend::RecordStatement::Impl
+} // namespace Fred::Backend::RecordStatement
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

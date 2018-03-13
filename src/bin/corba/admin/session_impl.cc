@@ -23,6 +23,7 @@
 #include <utility>
 #include "src/bin/corba/Admin.hh"
 
+#include "src/bin/corba/admin/public_request_mojeid.hh"
 #include "src/bin/corba/admin/session_impl.hh"
 #include "src/deprecated/util/log.hh"
 #include "src/deprecated/util/dbsql.hh"
@@ -1606,34 +1607,34 @@ Registry::PublicRequest::Detail* ccReg_Session_i::createPublicRequestDetail(LibF
   else if (_request->getType() == LibFred::PublicRequest::PRT_UNBLOCK_TRANSFER_POST_PIF) {
       detail->type = Registry::PublicRequest::PRT_UNBLOCK_TRANSFER_POST_PIF;
   }
-  else if (_request->getType() == "mojeid_contact_conditional_identification") {
+  else if (_request->getType() == CorbaConversion::Admin::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION) {
       detail->type = Registry::PublicRequest::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION;
   }
-  else if (_request->getType() == "mojeid_contact_identification") {
+  else if (_request->getType() == CorbaConversion::Admin::PRT_MOJEID_CONTACT_IDENTIFICATION) {
       detail->type = Registry::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION;
   }
-  else if (_request->getType() == "mojeid_contact_validation") {
+  else if (_request->getType() == CorbaConversion::Admin::PRT_MOJEID_CONTACT_VALIDATION) {
       detail->type = Registry::PublicRequest::PRT_MOJEID_CONTACT_VALIDATION;
   }
-  else if (_request->getType() == LibFred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION ) {
+  else if (_request->getType() == Fred::Backend::ContactVerification::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION ) {
       detail->type = Registry::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION ;
   }
-  else if (_request->getType() == LibFred::PublicRequest::PRT_CONTACT_IDENTIFICATION) {
+  else if (_request->getType() == Fred::Backend::ContactVerification::PublicRequest::PRT_CONTACT_IDENTIFICATION) {
       detail->type = Registry::PublicRequest::PRT_CONTACT_IDENTIFICATION;
   }
-  else if (_request->getType() == "mojeid_conditionally_identified_contact_transfer") {
+  else if (_request->getType() == CorbaConversion::Admin::PRT_MOJEID_CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER) {
       detail->type = Registry::PublicRequest::PRT_MOJEID_CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER;
   }
-  else if (_request->getType() == "mojeid_identified_contact_transfer") {
+  else if (_request->getType() == CorbaConversion::Admin::PRT_MOJEID_IDENTIFIED_CONTACT_TRANSFER) {
       detail->type = Registry::PublicRequest::PRT_MOJEID_IDENTIFIED_CONTACT_TRANSFER;
   }
-  else if (_request->getType() == "mojeid_contact_reidentification") {
+  else if (_request->getType() == CorbaConversion::Admin::PRT_MOJEID_CONTACT_REIDENTIFICATION) {
       detail->type = Registry::PublicRequest::PRT_MOJEID_CONTACT_REIDENTIFICATION;
   }
-  else if (_request->getType() == "mojeid_prevalidated_unidentified_contact_transfer") {
+  else if (_request->getType() == CorbaConversion::Admin::PRT_MOJEID_CONTACT_PREVALIDATED_UNIDENTIFIED_TRANSFER) {
       detail->type = Registry::PublicRequest::PRT_MOJEID_PREVALIDATED_UNIDENTIFIED_CONTACT_TRANSFER;
   }
-  else if (_request->getType() == "mojeid_prevalidated_contact_transfer") {
+  else if (_request->getType() == CorbaConversion::Admin::PRT_MOJEID_CONTACT_PREVALIDATED_TRANSFER) {
       detail->type = Registry::PublicRequest::PRT_MOJEID_PREVALIDATED_CONTACT_TRANSFER;
   }
   else {

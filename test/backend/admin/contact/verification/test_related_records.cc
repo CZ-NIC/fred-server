@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_CASE(test_Ids_of_added_related_mail)
 
     ::LibFred::OperationContextCreator ctx;
 
-    Admin::add_related_mail(
+    Fred::Backend::Admin::Contact::Verification::add_related_mail(
         ctx,
         uuid::from_string( check.check_handle_ ),
         added_mail_archive_ids);
@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE(test_Ids_of_added_related_messages)
 
     ::LibFred::OperationContextCreator ctx;
 
-    Admin::add_related_messages(
+    Fred::Backend::Admin::Contact::Verification::add_related_messages(
         ctx,
         uuid::from_string( check.check_handle_ ),
         added_message_archive_ids);
@@ -151,7 +151,7 @@ BOOST_AUTO_TEST_CASE(test_Ids_of_added_related_object_state_request)
 
     ::LibFred::OperationContextCreator ctx;
 
-    Admin::add_related_object_state_requests(
+    Fred::Backend::Admin::Contact::Verification::add_related_object_state_requests(
         ctx,
         uuid::from_string( check.check_handle_ ),
         added_object_state_request_ids);

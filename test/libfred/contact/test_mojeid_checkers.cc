@@ -38,7 +38,7 @@ struct test_contact_checkers_fixture : public Test::instantiate_db_template
         WITH_THE_SAME_PHONE = 2,
         NUMBER_OF_CONTACTS = 3
     };
-    ::LibFred::InfoContactData contact[NUMBER_OF_CONTACTS];
+    LibFred::InfoContactData contact[NUMBER_OF_CONTACTS];
     ::size_t contact_with_the_same_email_os_id;
     ::size_t contact_with_the_same_phone_os_id;
 
@@ -68,18 +68,18 @@ struct test_contact_checkers_fixture : public Test::instantiate_db_template
             "+420.987654322",
             "+420.987654321" //the same as main
         };
-        ::LibFred::OperationContextCreator ctx;
+        LibFred::OperationContextCreator ctx;
         const std::string registrar_handle = static_cast< std::string >(ctx.get_conn().exec(
             "SELECT handle FROM registrar WHERE system ORDER BY id LIMIT 1")[0][0]);
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
 
-        ::LibFred::Contact::PlaceAddress place;
+        LibFred::Contact::PlaceAddress place;
         place.street1    = "Uličnická 1";
         place.city       = "Praha 1";
         place.postalcode = "11150";
         place.country    = "CZ";
         for (int idx = 0; idx < NUMBER_OF_CONTACTS; ++idx) {
-            ::LibFred::CreateContact(test_contact_handle[idx], registrar_handle)
+            LibFred::CreateContact(test_contact_handle[idx], registrar_handle)
                 .set_name(test_contact_name[idx])
                 .set_place(place)
                 .set_email(test_contact_email[idx])
@@ -87,7 +87,7 @@ struct test_contact_checkers_fixture : public Test::instantiate_db_template
                 .set_ssntype("BIRTHDAY")
                 .set_ssn("1980-02-29")
                 .exec(ctx);
-            contact[idx] = ::LibFred::InfoContactByHandle(test_contact_handle[idx]).exec(ctx).info_contact_data;
+            contact[idx] = LibFred::InfoContactByHandle(test_contact_handle[idx]).exec(ctx).info_contact_data;
         }
         Database::Result dbres = ctx.get_conn().exec_params(
             "INSERT INTO object_state (object_id,state_id,valid_from,valid_to,ohid_from,ohid_to) "
@@ -115,33 +115,33 @@ struct test_contact_checkers_fixture : public Test::instantiate_db_template
     }
     ~test_contact_checkers_fixture()
     {}
-    typedef boost::mpl::list< ::LibFred::check_contact_name,
-                              ::LibFred::check_contact_mailing_address,
-                              ::LibFred::check_contact_email_presence,
-                              ::LibFred::check_contact_email_validity,
-                              ::LibFred::check_contact_phone_presence,
-                              ::LibFred::check_contact_phone_validity,
-                              ::LibFred::check_contact_fax_validity,
-                              ::LibFred::MojeID::check_contact_username,
-                              ::LibFred::MojeID::check_contact_birthday > list_of_checks_contact;
-    typedef boost::mpl::list< ::LibFred::check_contact_email_availability,
-                              ::LibFred::check_contact_phone_availability > list_of_checks_contact_ctx;
-    typedef ::LibFred::Check< boost::mpl::list< list_of_checks_contact,
+    typedef boost::mpl::list<Fred::Backend::check_contact_name,
+                             Fred::Backend::check_contact_mailing_address,
+                             Fred::Backend::check_contact_email_presence,
+                             Fred::Backend::check_contact_email_validity,
+                             Fred::Backend::check_contact_phone_presence,
+                             Fred::Backend::check_contact_phone_validity,
+                             Fred::Backend::check_contact_fax_validity,
+                             Fred::Backend::MojeId::check_contact_username,
+                             Fred::Backend::MojeId::check_contact_birthday > list_of_checks_contact;
+    typedef boost::mpl::list<Fred::Backend::check_contact_email_availability,
+                             Fred::Backend::check_contact_phone_availability > list_of_checks_contact_ctx;
+    typedef Fred::Backend::MojeId::Check< boost::mpl::list< list_of_checks_contact,
                                            list_of_checks_contact_ctx > > SumCheck;
-    typedef SumCheck::ChangeWrapper< ::LibFred::check_wrapper_break_on_first_error >::type SumCheckWithException;
+    typedef SumCheck::ChangeWrapper<Fred::Backend::MojeId::check_wrapper_break_on_first_error >::type SumCheckWithException;
 };
 
 
 BOOST_FIXTURE_TEST_SUITE(TestContactCheckers, test_contact_checkers_fixture)
 
 /**
- * test ::LibFred::SSNType conversion functions
+ * testFred::Backend::SSNType conversion functions
  */
 BOOST_AUTO_TEST_CASE(fred_ssntype_conversions)
 {
-    ::LibFred::OperationContextCreator ctx;
+    LibFred::OperationContextCreator ctx;
     static const char *const sql = "SELECT type FROM enum_ssntype";
-    enum_to_db_handle_conversion_test< ::LibFred::SSNType, 6 >(ctx, sql);
+    enum_to_db_handle_conversion_test<LibFred::SSNType, 6 >(ctx, sql);
 }
 
 /**
@@ -150,20 +150,20 @@ BOOST_AUTO_TEST_CASE(fred_ssntype_conversions)
 BOOST_AUTO_TEST_CASE(check_all_without_exceptions)
 {
     try {
-        ::LibFred::OperationContextCreator ctx;
-        const SumCheck result(::LibFred::make_args(contact[MAIN]), ::LibFred::make_args(contact[MAIN], ctx));
+        LibFred::OperationContextCreator ctx;
+        const SumCheck result(Fred::Backend::MojeId::make_args(contact[MAIN]), Fred::Backend::MojeId::make_args(contact[MAIN], ctx));
         BOOST_CHECK(result.success());
-        BOOST_CHECK(result.LibFred::check_contact_name::success());
-        BOOST_CHECK(result.LibFred::check_contact_mailing_address::success());
-        BOOST_CHECK(result.LibFred::check_contact_email_presence::success());
-        BOOST_CHECK(result.LibFred::check_contact_email_validity::success());
-        BOOST_CHECK(result.LibFred::check_contact_phone_presence::success());
-        BOOST_CHECK(result.LibFred::check_contact_phone_validity::success());
-        BOOST_CHECK(result.LibFred::check_contact_fax_validity::success());
-        BOOST_CHECK(result.LibFred::MojeID::check_contact_username::success());
-        BOOST_CHECK(result.LibFred::MojeID::check_contact_birthday::success());
-        BOOST_CHECK(result.LibFred::check_contact_email_availability::success());
-        BOOST_CHECK(result.LibFred::check_contact_phone_availability::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_name::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_mailing_address::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_email_presence::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_email_validity::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_phone_presence::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_phone_validity::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_fax_validity::success());
+        BOOST_CHECK(result.Fred::Backend::MojeId::check_contact_username::success());
+        BOOST_CHECK(result.Fred::Backend::MojeId::check_contact_birthday::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_email_availability::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_phone_availability::success());
     }
     catch (const std::exception &e) {
         BOOST_FAIL("unexpected exception: " << e.what());
@@ -176,51 +176,51 @@ BOOST_AUTO_TEST_CASE(check_all_without_exceptions)
 BOOST_AUTO_TEST_CASE(check_all_with_exceptions)
 {
     try {
-        ::LibFred::OperationContextCreator ctx;
-        const SumCheckWithException result(::LibFred::make_args(contact[MAIN]), ::LibFred::make_args(contact[MAIN], ctx));
+        LibFred::OperationContextCreator ctx;
+        const SumCheckWithException result(Fred::Backend::MojeId::make_args(contact[MAIN]), Fred::Backend::MojeId::make_args(contact[MAIN], ctx));
         BOOST_CHECK(result.success());
     }
-    catch (const ::LibFred::check_contact_name &e) {
+    catch (const Fred::Backend::check_contact_name &e) {
         BOOST_FAIL("Fred::check_contact_name failure");
         BOOST_CHECK(!e.success());
     }
-    catch (const ::LibFred::check_contact_mailing_address &e) {
+    catch (const Fred::Backend::check_contact_mailing_address &e) {
         BOOST_FAIL("Fred::check_contact_mailing_address failure");
         BOOST_CHECK(!e.success());
     }
-    catch (const ::LibFred::check_contact_email_presence &e) {
+    catch (const Fred::Backend::check_contact_email_presence &e) {
         BOOST_FAIL("Fred::check_contact_email_presence failure");
         BOOST_CHECK(!e.success());
     }
-    catch (const ::LibFred::check_contact_email_validity &e) {
+    catch (const Fred::Backend::check_contact_email_validity &e) {
         BOOST_FAIL("Fred::check_contact_email_validity failure: " + contact[MAIN].email.get_value_or_default());
         BOOST_CHECK(!e.success());
     }
-    catch (const ::LibFred::check_contact_phone_presence &e) {
+    catch (const Fred::Backend::check_contact_phone_presence &e) {
         BOOST_FAIL("Fred::check_contact_phone_presence failure");
         BOOST_CHECK(!e.success());
     }
-    catch (const ::LibFred::check_contact_phone_validity &e) {
+    catch (const Fred::Backend::check_contact_phone_validity &e) {
         BOOST_FAIL("Fred::check_contact_phone_validity failure");
         BOOST_CHECK(!e.success());
     }
-    catch (const ::LibFred::check_contact_fax_validity &e) {
+    catch (const Fred::Backend::check_contact_fax_validity &e) {
         BOOST_FAIL("Fred::check_contact_fax_validity failure");
         BOOST_CHECK(!e.success());
     }
-    catch (const ::LibFred::MojeID::check_contact_username &e) {
-        BOOST_FAIL("Fred::MojeID::check_contact_username failure");
+    catch (const Fred::Backend::MojeId::check_contact_username &e) {
+        BOOST_FAIL("Fred::MojeId::check_contact_username failure");
         BOOST_CHECK(!e.success());
     }
-    catch (const ::LibFred::MojeID::check_contact_birthday &e) {
-        BOOST_FAIL("Fred::MojeID::check_contact_birthday");
+    catch (const Fred::Backend::MojeId::check_contact_birthday &e) {
+        BOOST_FAIL("Fred::MojeId::check_contact_birthday");
         BOOST_CHECK(!e.success());
     }
-    catch (const ::LibFred::check_contact_email_availability &e) {
+    catch (const Fred::Backend::check_contact_email_availability &e) {
         BOOST_FAIL("Fred::check_contact_email_availability failure");
         BOOST_CHECK(!e.success());
     }
-    catch (const ::LibFred::check_contact_phone_availability &e) {
+    catch (const Fred::Backend::check_contact_phone_availability &e) {
         BOOST_FAIL("Fred::check_contact_phone_availability failure");
         BOOST_CHECK(!e.success());
     }
@@ -249,74 +249,74 @@ BOOST_AUTO_TEST_CASE(check_contact_name)
     static const TestData *const data_end = data + (sizeof(data) / sizeof(*data));
     BOOST_ASSERT(( (sizeof(data) / sizeof(*data)) == 8 ));
     for (const TestData *data_ptr = data; data_ptr < data_end; ++data_ptr) {
-        ::LibFred::OperationContextCreator ctx;
+        LibFred::OperationContextCreator ctx;
         contact[MAIN].name = data_ptr->name;
-        const SumCheck result(::LibFred::make_args(contact[MAIN]), ::LibFred::make_args(contact[MAIN], ctx));
+        const SumCheck result(Fred::Backend::MojeId::make_args(contact[MAIN]), Fred::Backend::MojeId::make_args(contact[MAIN], ctx));
         BOOST_CHECK(result.success() == data_ptr->result);
-        BOOST_CHECK(result.LibFred::check_contact_name::success() == data_ptr->result);
-        BOOST_CHECK(result.LibFred::check_contact_mailing_address::success());
-        BOOST_CHECK(result.LibFred::check_contact_email_presence::success());
-        BOOST_CHECK(result.LibFred::check_contact_email_validity::success());
-        BOOST_CHECK(result.LibFred::check_contact_phone_presence::success());
-        BOOST_CHECK(result.LibFred::check_contact_phone_validity::success());
-        BOOST_CHECK(result.LibFred::check_contact_fax_validity::success());
-        BOOST_CHECK(result.LibFred::MojeID::check_contact_username::success());
-        BOOST_CHECK(result.LibFred::MojeID::check_contact_birthday::success());
-        BOOST_CHECK(result.LibFred::check_contact_email_availability::success());
-        BOOST_CHECK(result.LibFred::check_contact_phone_availability::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_name::success() == data_ptr->result);
+        BOOST_CHECK(result.Fred::Backend::check_contact_mailing_address::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_email_presence::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_email_validity::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_phone_presence::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_phone_validity::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_fax_validity::success());
+        BOOST_CHECK(result.Fred::Backend::MojeId::check_contact_username::success());
+        BOOST_CHECK(result.Fred::Backend::MojeId::check_contact_birthday::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_email_availability::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_phone_availability::success());
         const ::size_t idx = data_ptr - data;
         switch (idx)
         {
         case 0 ... 3:
-            BOOST_CHECK(result.LibFred::check_contact_name::first_name_absent);
-            BOOST_CHECK(result.LibFred::check_contact_name::last_name_absent);
+            BOOST_CHECK(result.Fred::Backend::check_contact_name::first_name_absent);
+            BOOST_CHECK(result.Fred::Backend::check_contact_name::last_name_absent);
             break;
         case 4 ... 5:
-            BOOST_CHECK(!result.LibFred::check_contact_name::first_name_absent);
-            BOOST_CHECK(result.LibFred::check_contact_name::last_name_absent);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_name::first_name_absent);
+            BOOST_CHECK(result.Fred::Backend::check_contact_name::last_name_absent);
             break;
         case 6 ... 7:
-            BOOST_CHECK(!result.LibFred::check_contact_name::first_name_absent);
-            BOOST_CHECK(!result.LibFred::check_contact_name::last_name_absent);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_name::first_name_absent);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_name::last_name_absent);
             break;
         }
 
         try {
-            const SumCheckWithException result(::LibFred::make_args(contact[MAIN]), ::LibFred::make_args(contact[MAIN], ctx));
+            const SumCheckWithException result(Fred::Backend::MojeId::make_args(contact[MAIN]), Fred::Backend::MojeId::make_args(contact[MAIN], ctx));
             BOOST_CHECK(data_ptr->result);
             BOOST_CHECK(result.success());
         }
-        catch (const ::LibFred::check_contact_mailing_address&) {
+        catch (const Fred::Backend::check_contact_mailing_address&) {
             BOOST_FAIL("Fred::check_contact_mailing_address failure");
         }
-        catch (const ::LibFred::check_contact_email_presence&) {
+        catch (const Fred::Backend::check_contact_email_presence&) {
             BOOST_FAIL("Fred::check_contact_email_presence failure");
         }
-        catch (const ::LibFred::check_contact_email_validity&) {
+        catch (const Fred::Backend::check_contact_email_validity&) {
             BOOST_FAIL("Fred::check_contact_email_validity failure");
         }
-        catch (const ::LibFred::check_contact_phone_presence&) {
+        catch (const Fred::Backend::check_contact_phone_presence&) {
             BOOST_FAIL("Fred::check_contact_phone_presence failure");
         }
-        catch (const ::LibFred::check_contact_phone_validity&) {
+        catch (const Fred::Backend::check_contact_phone_validity&) {
             BOOST_FAIL("Fred::check_contact_phone_validity failure");
         }
-        catch (const ::LibFred::check_contact_fax_validity&) {
+        catch (const Fred::Backend::check_contact_fax_validity&) {
             BOOST_FAIL("Fred::check_contact_fax_validity failure");
         }
-        catch (const ::LibFred::MojeID::check_contact_username&) {
-            BOOST_FAIL("Fred::MojeID::check_contact_username failure");
+        catch (const Fred::Backend::MojeId::check_contact_username&) {
+            BOOST_FAIL("Fred::MojeId::check_contact_username failure");
         }
-        catch (const ::LibFred::MojeID::check_contact_birthday&) {
-            BOOST_FAIL("Fred::MojeID::check_contact_birthday");
+        catch (const Fred::Backend::MojeId::check_contact_birthday&) {
+            BOOST_FAIL("Fred::MojeId::check_contact_birthday");
         }
-        catch (const ::LibFred::check_contact_email_availability&) {
+        catch (const Fred::Backend::check_contact_email_availability&) {
             BOOST_FAIL("Fred::check_contact_email_availability failure");
         }
-        catch (const ::LibFred::check_contact_phone_availability&) {
+        catch (const Fred::Backend::check_contact_phone_availability&) {
             BOOST_FAIL("Fred::check_contact_phone_availability failure");
         }
-        catch (const ::LibFred::check_contact_name &e) {
+        catch (const Fred::Backend::check_contact_name &e) {
             BOOST_CHECK(!data_ptr->result);
             BOOST_CHECK(!e.success());
             switch (idx)
@@ -338,11 +338,11 @@ BOOST_AUTO_TEST_CASE(check_contact_name)
 
 BOOST_AUTO_TEST_CASE(check_contact_mailing_address)
 {
-    const ::LibFred::InfoContactData::Address valid_addr = contact[MAIN].get_address< ::LibFred::ContactAddressType::MAILING >();
+    const LibFred::InfoContactData::Address valid_addr = contact[MAIN].get_address< LibFred::ContactAddressType::MAILING >();
     for (int idx = 0; idx < 13; ++idx) {
-        ::LibFred::OperationContextCreator ctx;
-        contact[MAIN].addresses[::LibFred::ContactAddressType::MAILING] = valid_addr;
-        ::LibFred::ContactAddress &addr = contact[MAIN].addresses[::LibFred::ContactAddressType::MAILING];
+        LibFred::OperationContextCreator ctx;
+        contact[MAIN].addresses[LibFred::ContactAddressType::MAILING] = valid_addr;
+        LibFred::ContactAddress &addr = contact[MAIN].addresses[LibFred::ContactAddressType::MAILING];
         bool result_success = false;
         switch (idx)
         {
@@ -386,89 +386,89 @@ BOOST_AUTO_TEST_CASE(check_contact_mailing_address)
             result_success = true;
             break;
         }
-        const SumCheck result(::LibFred::make_args(contact[MAIN]), ::LibFred::make_args(contact[MAIN], ctx));
+        const SumCheck result(Fred::Backend::MojeId::make_args(contact[MAIN]), Fred::Backend::MojeId::make_args(contact[MAIN], ctx));
         BOOST_CHECK(result.success() == result_success);
-        BOOST_CHECK(result.LibFred::check_contact_name::success());
-        BOOST_CHECK(result.LibFred::check_contact_mailing_address::success() == result_success);
-        BOOST_CHECK(result.LibFred::check_contact_email_presence::success());
-        BOOST_CHECK(result.LibFred::check_contact_email_validity::success());
-        BOOST_CHECK(result.LibFred::check_contact_phone_presence::success());
-        BOOST_CHECK(result.LibFred::check_contact_phone_validity::success());
-        BOOST_CHECK(result.LibFred::check_contact_fax_validity::success());
-        BOOST_CHECK(result.LibFred::MojeID::check_contact_username::success());
-        BOOST_CHECK(result.LibFred::MojeID::check_contact_birthday::success());
-        BOOST_CHECK(result.LibFred::check_contact_email_availability::success());
-        BOOST_CHECK(result.LibFred::check_contact_phone_availability::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_name::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_mailing_address::success() == result_success);
+        BOOST_CHECK(result.Fred::Backend::check_contact_email_presence::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_email_validity::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_phone_presence::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_phone_validity::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_fax_validity::success());
+        BOOST_CHECK(result.Fred::Backend::MojeId::check_contact_username::success());
+        BOOST_CHECK(result.Fred::Backend::MojeId::check_contact_birthday::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_email_availability::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_phone_availability::success());
         switch (idx)
         {
         case 0 ... 2:
-            BOOST_CHECK(result.LibFred::check_contact_mailing_address::street1_absent);
-            BOOST_CHECK(!result.LibFred::check_contact_mailing_address::city_absent);
-            BOOST_CHECK(!result.LibFred::check_contact_mailing_address::postalcode_absent);
-            BOOST_CHECK(!result.LibFred::check_contact_mailing_address::country_absent);
+            BOOST_CHECK(result.Fred::Backend::check_contact_mailing_address::street1_absent);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_mailing_address::city_absent);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_mailing_address::postalcode_absent);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_mailing_address::country_absent);
             break;
         case 3 ... 5:
-            BOOST_CHECK(!result.LibFred::check_contact_mailing_address::street1_absent);
-            BOOST_CHECK(result.LibFred::check_contact_mailing_address::city_absent);
-            BOOST_CHECK(!result.LibFred::check_contact_mailing_address::postalcode_absent);
-            BOOST_CHECK(!result.LibFred::check_contact_mailing_address::country_absent);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_mailing_address::street1_absent);
+            BOOST_CHECK(result.Fred::Backend::check_contact_mailing_address::city_absent);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_mailing_address::postalcode_absent);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_mailing_address::country_absent);
             break;
         case 6 ... 8:
-            BOOST_CHECK(!result.LibFred::check_contact_mailing_address::street1_absent);
-            BOOST_CHECK(!result.LibFred::check_contact_mailing_address::city_absent);
-            BOOST_CHECK(result.LibFred::check_contact_mailing_address::postalcode_absent);
-            BOOST_CHECK(!result.LibFred::check_contact_mailing_address::country_absent);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_mailing_address::street1_absent);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_mailing_address::city_absent);
+            BOOST_CHECK(result.Fred::Backend::check_contact_mailing_address::postalcode_absent);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_mailing_address::country_absent);
             break;
         case 9 ... 11:
-            BOOST_CHECK(!result.LibFred::check_contact_mailing_address::street1_absent);
-            BOOST_CHECK(!result.LibFred::check_contact_mailing_address::city_absent);
-            BOOST_CHECK(!result.LibFred::check_contact_mailing_address::postalcode_absent);
-            BOOST_CHECK(result.LibFred::check_contact_mailing_address::country_absent);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_mailing_address::street1_absent);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_mailing_address::city_absent);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_mailing_address::postalcode_absent);
+            BOOST_CHECK(result.Fred::Backend::check_contact_mailing_address::country_absent);
             break;
         case 12:
-            BOOST_CHECK(!result.LibFred::check_contact_mailing_address::street1_absent);
-            BOOST_CHECK(!result.LibFred::check_contact_mailing_address::city_absent);
-            BOOST_CHECK(!result.LibFred::check_contact_mailing_address::postalcode_absent);
-            BOOST_CHECK(!result.LibFred::check_contact_mailing_address::country_absent);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_mailing_address::street1_absent);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_mailing_address::city_absent);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_mailing_address::postalcode_absent);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_mailing_address::country_absent);
             break;
         }
 
         try {
-            const SumCheckWithException result(::LibFred::make_args(contact[MAIN]), ::LibFred::make_args(contact[MAIN], ctx));
+            const SumCheckWithException result(Fred::Backend::MojeId::make_args(contact[MAIN]), Fred::Backend::MojeId::make_args(contact[MAIN], ctx));
             BOOST_CHECK(result_success);
             BOOST_CHECK(result.success());
         }
-        catch (const ::LibFred::check_contact_name&) {
+        catch (const Fred::Backend::check_contact_name&) {
             BOOST_FAIL("Fred::check_contact_name failure");
         }
-        catch (const ::LibFred::check_contact_email_presence&) {
+        catch (const Fred::Backend::check_contact_email_presence&) {
             BOOST_FAIL("Fred::check_contact_email_presence failure");
         }
-        catch (const ::LibFred::check_contact_email_validity&) {
+        catch (const Fred::Backend::check_contact_email_validity&) {
             BOOST_FAIL("Fred::check_contact_email_validity failure");
         }
-        catch (const ::LibFred::check_contact_phone_presence&) {
+        catch (const Fred::Backend::check_contact_phone_presence&) {
             BOOST_FAIL("Fred::check_contact_phone_presence failure");
         }
-        catch (const ::LibFred::check_contact_phone_validity&) {
+        catch (const Fred::Backend::check_contact_phone_validity&) {
             BOOST_FAIL("Fred::check_contact_phone_validity failure");
         }
-        catch (const ::LibFred::check_contact_fax_validity&) {
+        catch (const Fred::Backend::check_contact_fax_validity&) {
             BOOST_FAIL("Fred::check_contact_fax_validity failure");
         }
-        catch (const ::LibFred::MojeID::check_contact_username&) {
-            BOOST_FAIL("Fred::MojeID::check_contact_username failure");
+        catch (const Fred::Backend::MojeId::check_contact_username&) {
+            BOOST_FAIL("Fred::MojeId::check_contact_username failure");
         }
-        catch (const ::LibFred::MojeID::check_contact_birthday&) {
-            BOOST_FAIL("Fred::MojeID::check_contact_birthday");
+        catch (const Fred::Backend::MojeId::check_contact_birthday&) {
+            BOOST_FAIL("Fred::MojeId::check_contact_birthday");
         }
-        catch (const ::LibFred::check_contact_email_availability&) {
+        catch (const Fred::Backend::check_contact_email_availability&) {
             BOOST_FAIL("Fred::check_contact_email_availability failure");
         }
-        catch (const ::LibFred::check_contact_phone_availability&) {
+        catch (const Fred::Backend::check_contact_phone_availability&) {
             BOOST_FAIL("Fred::check_contact_phone_availability failure");
         }
-        catch (const ::LibFred::check_contact_mailing_address &e) {
+        catch (const Fred::Backend::check_contact_mailing_address &e) {
             BOOST_CHECK(!result_success);
             BOOST_CHECK(!e.success());
             switch (idx)
@@ -546,7 +546,7 @@ BOOST_AUTO_TEST_CASE(check_contact_email)
     static const TestData *const data_end = data + (sizeof(data) / sizeof(*data));
     BOOST_ASSERT(( (sizeof(data) / sizeof(*data)) == 12 ));
     for (const TestData *data_ptr = data; data_ptr < data_end; ++data_ptr) {
-        ::LibFred::OperationContextCreator ctx;
+        LibFred::OperationContextCreator ctx;
         const ::size_t idx = data_ptr - data;
         if (idx == 11) {
             ctx.get_conn().exec_params(
@@ -554,78 +554,78 @@ BOOST_AUTO_TEST_CASE(check_contact_email)
                 Database::query_param_list(contact_with_the_same_email_os_id));
         }
         contact[MAIN].email = data_ptr->email;
-        const SumCheck result(::LibFred::make_args(contact[MAIN]), ::LibFred::make_args(contact[MAIN], ctx));
+        const SumCheck result(Fred::Backend::MojeId::make_args(contact[MAIN]), Fred::Backend::MojeId::make_args(contact[MAIN], ctx));
         BOOST_CHECK(result.success() == data_ptr->success());
-        BOOST_CHECK(result.LibFred::check_contact_name::success());
-        BOOST_CHECK(result.LibFred::check_contact_mailing_address::success());
-        BOOST_CHECK(result.LibFred::check_contact_email_presence::success() == data_ptr->present);
-        BOOST_CHECK(result.LibFred::check_contact_email_validity::success() == data_ptr->valid);
-        BOOST_CHECK(result.LibFred::check_contact_phone_presence::success());
-        BOOST_CHECK(result.LibFred::check_contact_phone_validity::success());
-        BOOST_CHECK(result.LibFred::check_contact_fax_validity::success());
-        BOOST_CHECK(result.LibFred::MojeID::check_contact_username::success());
-        BOOST_CHECK(result.LibFred::MojeID::check_contact_birthday::success());
-        BOOST_CHECK(result.LibFred::check_contact_email_availability::success() == data_ptr->available);
-        BOOST_CHECK(result.LibFred::check_contact_phone_availability::success());
-        BOOST_CHECK(result.LibFred::check_contact_email_presence::absent == result.LibFred::check_contact_email_availability::absent);
+        BOOST_CHECK(result.Fred::Backend::check_contact_name::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_mailing_address::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_email_presence::success() == data_ptr->present);
+        BOOST_CHECK(result.Fred::Backend::check_contact_email_validity::success() == data_ptr->valid);
+        BOOST_CHECK(result.Fred::Backend::check_contact_phone_presence::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_phone_validity::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_fax_validity::success());
+        BOOST_CHECK(result.Fred::Backend::MojeId::check_contact_username::success());
+        BOOST_CHECK(result.Fred::Backend::MojeId::check_contact_birthday::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_email_availability::success() == data_ptr->available);
+        BOOST_CHECK(result.Fred::Backend::check_contact_phone_availability::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_email_presence::absent == result.Fred::Backend::check_contact_email_availability::absent);
         switch (idx)
         {
         case 0:
-            BOOST_CHECK(!result.LibFred::check_contact_email_presence::absent);
-            BOOST_CHECK(result.LibFred::check_contact_email_validity::invalid);
-            BOOST_CHECK(!result.LibFred::check_contact_email_availability::absent);
-            BOOST_CHECK(!result.LibFred::check_contact_email_availability::used_recently);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_email_presence::absent);
+            BOOST_CHECK(result.Fred::Backend::check_contact_email_validity::invalid);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_email_availability::absent);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_email_availability::used_recently);
             break;
         case 1 ... 4:
-            BOOST_CHECK(result.LibFred::check_contact_email_presence::absent);
-            BOOST_CHECK(!result.LibFred::check_contact_email_validity::invalid);
-            BOOST_CHECK(result.LibFred::check_contact_email_availability::absent);
-            BOOST_CHECK(!result.LibFred::check_contact_email_availability::used_recently);
+            BOOST_CHECK(result.Fred::Backend::check_contact_email_presence::absent);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_email_validity::invalid);
+            BOOST_CHECK(result.Fred::Backend::check_contact_email_availability::absent);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_email_availability::used_recently);
             break;
         case 5 ... 10:
-            BOOST_CHECK(!result.LibFred::check_contact_email_presence::absent);
-            BOOST_CHECK(!result.LibFred::check_contact_email_validity::invalid);
-            BOOST_CHECK(!result.LibFred::check_contact_email_availability::absent);
-            BOOST_CHECK(!result.LibFred::check_contact_email_availability::used_recently);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_email_presence::absent);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_email_validity::invalid);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_email_availability::absent);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_email_availability::used_recently);
             break;
         case 11:
-            BOOST_CHECK(!result.LibFred::check_contact_email_presence::absent);
-            BOOST_CHECK(!result.LibFred::check_contact_email_validity::invalid);
-            BOOST_CHECK(!result.LibFred::check_contact_email_availability::absent);
-            BOOST_CHECK(result.LibFred::check_contact_email_availability::used_recently);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_email_presence::absent);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_email_validity::invalid);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_email_availability::absent);
+            BOOST_CHECK(result.Fred::Backend::check_contact_email_availability::used_recently);
             break;
         }
 
         try {
-            const SumCheckWithException result(::LibFred::make_args(contact[MAIN]), ::LibFred::make_args(contact[MAIN], ctx));
+            const SumCheckWithException result(Fred::Backend::MojeId::make_args(contact[MAIN]), Fred::Backend::MojeId::make_args(contact[MAIN], ctx));
             BOOST_CHECK(data_ptr->success());
             BOOST_CHECK(result.success());
         }
-        catch (const ::LibFred::check_contact_name&) {
+        catch (const Fred::Backend::check_contact_name&) {
             BOOST_FAIL("Fred::check_contact_name failure");
         }
-        catch (const ::LibFred::check_contact_mailing_address&) {
+        catch (const Fred::Backend::check_contact_mailing_address&) {
             BOOST_FAIL("Fred::check_contact_mailing_address failure");
         }
-        catch (const ::LibFred::check_contact_phone_presence&) {
+        catch (const Fred::Backend::check_contact_phone_presence&) {
             BOOST_FAIL("Fred::check_contact_phone_presence failure");
         }
-        catch (const ::LibFred::check_contact_phone_validity&) {
+        catch (const Fred::Backend::check_contact_phone_validity&) {
             BOOST_FAIL("Fred::check_contact_phone_validity failure");
         }
-        catch (const ::LibFred::check_contact_fax_validity&) {
+        catch (const Fred::Backend::check_contact_fax_validity&) {
             BOOST_FAIL("Fred::check_contact_fax_validity failure");
         }
-        catch (const ::LibFred::MojeID::check_contact_username&) {
-            BOOST_FAIL("Fred::MojeID::check_contact_username failure");
+        catch (const Fred::Backend::MojeId::check_contact_username&) {
+            BOOST_FAIL("Fred::MojeId::check_contact_username failure");
         }
-        catch (const ::LibFred::MojeID::check_contact_birthday&) {
-            BOOST_FAIL("Fred::MojeID::check_contact_birthday");
+        catch (const Fred::Backend::MojeId::check_contact_birthday&) {
+            BOOST_FAIL("Fred::MojeId::check_contact_birthday");
         }
-        catch (const ::LibFred::check_contact_phone_availability&) {
+        catch (const Fred::Backend::check_contact_phone_availability&) {
             BOOST_FAIL("Fred::check_contact_phone_availability failure");
         }
-        catch (const ::LibFred::check_contact_email_availability &e) {
+        catch (const Fred::Backend::check_contact_email_availability &e) {
             BOOST_CHECK(!data_ptr->success());
             BOOST_CHECK(!e.success());
             switch (idx)
@@ -638,7 +638,7 @@ BOOST_AUTO_TEST_CASE(check_contact_email)
                 BOOST_FAIL("test " << idx << " may be valid");
             }
         }
-        catch (const ::LibFred::check_contact_email_validity &e) {
+        catch (const Fred::Backend::check_contact_email_validity &e) {
             BOOST_CHECK(!data_ptr->success());
             BOOST_CHECK(!e.success());
             switch (idx)
@@ -650,7 +650,7 @@ BOOST_AUTO_TEST_CASE(check_contact_email)
                 BOOST_FAIL("test " << idx << " may be valid");
             }
         }
-        catch (const ::LibFred::check_contact_email_presence &e) {
+        catch (const Fred::Backend::check_contact_email_presence &e) {
             BOOST_CHECK(!data_ptr->success());
             BOOST_CHECK(!e.success());
             switch (idx)
@@ -697,7 +697,7 @@ BOOST_AUTO_TEST_CASE(check_contact_phone)
     static const TestData *const data_end = data + (sizeof(data) / sizeof(*data));
     BOOST_ASSERT(( (sizeof(data) / sizeof(*data)) == 14 ));
     for (const TestData *data_ptr = data; data_ptr < data_end; ++data_ptr) {
-        ::LibFred::OperationContextCreator ctx;
+        LibFred::OperationContextCreator ctx;
         const ::size_t idx = data_ptr - data;
         if (idx == 13) {
             ctx.get_conn().exec_params(
@@ -705,78 +705,78 @@ BOOST_AUTO_TEST_CASE(check_contact_phone)
                 Database::query_param_list(contact_with_the_same_phone_os_id));
         }
         contact[MAIN].telephone = data_ptr->phone;
-        const SumCheck result(::LibFred::make_args(contact[MAIN]), ::LibFred::make_args(contact[MAIN], ctx));
+        const SumCheck result(Fred::Backend::MojeId::make_args(contact[MAIN]), Fred::Backend::MojeId::make_args(contact[MAIN], ctx));
         BOOST_CHECK(result.success() == data_ptr->success());
-        BOOST_CHECK(result.LibFred::check_contact_name::success());
-        BOOST_CHECK(result.LibFred::check_contact_mailing_address::success());
-        BOOST_CHECK(result.LibFred::check_contact_email_presence::success());
-        BOOST_CHECK(result.LibFred::check_contact_email_validity::success());
-        BOOST_CHECK(result.LibFred::check_contact_phone_presence::success() == data_ptr->present);
-        BOOST_CHECK(result.LibFred::check_contact_phone_validity::success() == data_ptr->valid);
-        BOOST_CHECK(result.LibFred::check_contact_fax_validity::success());
-        BOOST_CHECK(result.LibFred::MojeID::check_contact_username::success());
-        BOOST_CHECK(result.LibFred::MojeID::check_contact_birthday::success());
-        BOOST_CHECK(result.LibFred::check_contact_email_availability::success());
-        BOOST_CHECK(result.LibFred::check_contact_phone_availability::success() == data_ptr->available);
-        BOOST_CHECK(result.LibFred::check_contact_phone_presence::absent == result.LibFred::check_contact_phone_availability::absent);
+        BOOST_CHECK(result.Fred::Backend::check_contact_name::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_mailing_address::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_email_presence::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_email_validity::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_phone_presence::success() == data_ptr->present);
+        BOOST_CHECK(result.Fred::Backend::check_contact_phone_validity::success() == data_ptr->valid);
+        BOOST_CHECK(result.Fred::Backend::check_contact_fax_validity::success());
+        BOOST_CHECK(result.Fred::Backend::MojeId::check_contact_username::success());
+        BOOST_CHECK(result.Fred::Backend::MojeId::check_contact_birthday::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_email_availability::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_phone_availability::success() == data_ptr->available);
+        BOOST_CHECK(result.Fred::Backend::check_contact_phone_presence::absent == result.Fred::Backend::check_contact_phone_availability::absent);
         switch (idx)
         {
         case 0 ... 3:
-            BOOST_CHECK(result.LibFred::check_contact_phone_presence::absent);
-            BOOST_CHECK(!result.LibFred::check_contact_phone_validity::invalid);
-            BOOST_CHECK(result.LibFred::check_contact_phone_availability::absent);
-            BOOST_CHECK(!result.LibFred::check_contact_phone_availability::used_recently);
+            BOOST_CHECK(result.Fred::Backend::check_contact_phone_presence::absent);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_phone_validity::invalid);
+            BOOST_CHECK(result.Fred::Backend::check_contact_phone_availability::absent);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_phone_availability::used_recently);
             break;
         case 4 ... 9:
-            BOOST_CHECK(!result.LibFred::check_contact_phone_presence::absent);
-            BOOST_CHECK(result.LibFred::check_contact_phone_validity::invalid);
-            BOOST_CHECK(!result.LibFred::check_contact_phone_availability::absent);
-            BOOST_CHECK(!result.LibFred::check_contact_phone_availability::used_recently);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_phone_presence::absent);
+            BOOST_CHECK(result.Fred::Backend::check_contact_phone_validity::invalid);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_phone_availability::absent);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_phone_availability::used_recently);
             break;
         case 10 ... 12:
-            BOOST_CHECK(!result.LibFred::check_contact_phone_presence::absent);
-            BOOST_CHECK(!result.LibFred::check_contact_phone_validity::invalid);
-            BOOST_CHECK(!result.LibFred::check_contact_phone_availability::absent);
-            BOOST_CHECK(!result.LibFred::check_contact_phone_availability::used_recently);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_phone_presence::absent);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_phone_validity::invalid);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_phone_availability::absent);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_phone_availability::used_recently);
             break;
         case 13:
-            BOOST_CHECK(!result.LibFred::check_contact_phone_presence::absent);
-            BOOST_CHECK(!result.LibFred::check_contact_phone_validity::invalid);
-            BOOST_CHECK(!result.LibFred::check_contact_phone_availability::absent);
-            BOOST_CHECK(result.LibFred::check_contact_phone_availability::used_recently);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_phone_presence::absent);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_phone_validity::invalid);
+            BOOST_CHECK(!result.Fred::Backend::check_contact_phone_availability::absent);
+            BOOST_CHECK(result.Fred::Backend::check_contact_phone_availability::used_recently);
             break;
         }
 
         try {
-            const SumCheckWithException result(::LibFred::make_args(contact[MAIN]), ::LibFred::make_args(contact[MAIN], ctx));
+            const SumCheckWithException result(Fred::Backend::MojeId::make_args(contact[MAIN]), Fred::Backend::MojeId::make_args(contact[MAIN], ctx));
             BOOST_CHECK(data_ptr->success());
             BOOST_CHECK(result.success());
         }
-        catch (const ::LibFred::check_contact_name&) {
+        catch (const Fred::Backend::check_contact_name&) {
             BOOST_FAIL("Fred::check_contact_name failure");
         }
-        catch (const ::LibFred::check_contact_mailing_address&) {
+        catch (const Fred::Backend::check_contact_mailing_address&) {
             BOOST_FAIL("Fred::check_contact_mailing_address failure");
         }
-        catch (const ::LibFred::check_contact_email_presence&) {
+        catch (const Fred::Backend::check_contact_email_presence&) {
             BOOST_FAIL("Fred::check_contact_email_presence failure");
         }
-        catch (const ::LibFred::check_contact_email_validity&) {
+        catch (const Fred::Backend::check_contact_email_validity&) {
             BOOST_FAIL("Fred::check_contact_email_validity failure");
         }
-        catch (const ::LibFred::check_contact_fax_validity&) {
+        catch (const Fred::Backend::check_contact_fax_validity&) {
             BOOST_FAIL("Fred::check_contact_fax_validity failure");
         }
-        catch (const ::LibFred::MojeID::check_contact_username&) {
-            BOOST_FAIL("Fred::MojeID::check_contact_username failure");
+        catch (const Fred::Backend::MojeId::check_contact_username&) {
+            BOOST_FAIL("Fred::MojeId::check_contact_username failure");
         }
-        catch (const ::LibFred::MojeID::check_contact_birthday&) {
-            BOOST_FAIL("Fred::MojeID::check_contact_birthday");
+        catch (const Fred::Backend::MojeId::check_contact_birthday&) {
+            BOOST_FAIL("Fred::MojeId::check_contact_birthday");
         }
-        catch (const ::LibFred::check_contact_email_availability&) {
+        catch (const Fred::Backend::check_contact_email_availability&) {
             BOOST_FAIL("Fred::check_contact_email_availability failure");
         }
-        catch (const ::LibFred::check_contact_phone_availability &e) {
+        catch (const Fred::Backend::check_contact_phone_availability &e) {
             BOOST_CHECK(!data_ptr->success());
             BOOST_CHECK(!e.success());
             switch (idx)
@@ -789,7 +789,7 @@ BOOST_AUTO_TEST_CASE(check_contact_phone)
                 BOOST_FAIL("test " << idx << " may be valid");
             }
         }
-        catch (const ::LibFred::check_contact_phone_validity &e) {
+        catch (const Fred::Backend::check_contact_phone_validity &e) {
             BOOST_CHECK(!data_ptr->success());
             BOOST_CHECK(!e.success());
             switch (idx)
@@ -801,7 +801,7 @@ BOOST_AUTO_TEST_CASE(check_contact_phone)
                 BOOST_FAIL("test " << idx << " may be valid");
             }
         }
-        catch (const ::LibFred::check_contact_phone_presence &e) {
+        catch (const Fred::Backend::check_contact_phone_presence &e) {
             BOOST_CHECK(!data_ptr->success());
             BOOST_CHECK(!e.success());
             switch (idx)
@@ -844,59 +844,59 @@ BOOST_AUTO_TEST_CASE(check_contact_fax)
     static const TestData *const data_end = data + (sizeof(data) / sizeof(*data));
     BOOST_ASSERT(( (sizeof(data) / sizeof(*data)) == 13 ));
     for (const TestData *data_ptr = data; data_ptr < data_end; ++data_ptr) {
-        ::LibFred::OperationContextCreator ctx;
+        LibFred::OperationContextCreator ctx;
         contact[MAIN].fax = data_ptr->fax;
-        const SumCheck result(::LibFred::make_args(contact[MAIN]), ::LibFred::make_args(contact[MAIN], ctx));
+        const SumCheck result(Fred::Backend::MojeId::make_args(contact[MAIN]), Fred::Backend::MojeId::make_args(contact[MAIN], ctx));
         BOOST_CHECK(result.success() == data_ptr->result);
-        BOOST_CHECK(result.LibFred::check_contact_name::success());
-        BOOST_CHECK(result.LibFred::check_contact_mailing_address::success());
-        BOOST_CHECK(result.LibFred::check_contact_email_presence::success());
-        BOOST_CHECK(result.LibFred::check_contact_email_validity::success());
-        BOOST_CHECK(result.LibFred::check_contact_phone_presence::success());
-        BOOST_CHECK(result.LibFred::check_contact_phone_validity::success());
-        BOOST_CHECK(result.LibFred::check_contact_fax_validity::success() == data_ptr->result);
-        BOOST_CHECK(result.LibFred::check_contact_fax_validity::invalid == !data_ptr->result);
-        BOOST_CHECK(result.LibFred::MojeID::check_contact_username::success());
-        BOOST_CHECK(result.LibFred::MojeID::check_contact_birthday::success());
-        BOOST_CHECK(result.LibFred::check_contact_email_availability::success());
-        BOOST_CHECK(result.LibFred::check_contact_phone_availability::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_name::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_mailing_address::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_email_presence::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_email_validity::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_phone_presence::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_phone_validity::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_fax_validity::success() == data_ptr->result);
+        BOOST_CHECK(result.Fred::Backend::check_contact_fax_validity::invalid == !data_ptr->result);
+        BOOST_CHECK(result.Fred::Backend::MojeId::check_contact_username::success());
+        BOOST_CHECK(result.Fred::Backend::MojeId::check_contact_birthday::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_email_availability::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_phone_availability::success());
 
         try {
-            const SumCheckWithException result(::LibFred::make_args(contact[MAIN]), ::LibFred::make_args(contact[MAIN], ctx));
+            const SumCheckWithException result(Fred::Backend::MojeId::make_args(contact[MAIN]), Fred::Backend::MojeId::make_args(contact[MAIN], ctx));
             BOOST_CHECK(data_ptr->result);
             BOOST_CHECK(result.success());
         }
-        catch (const ::LibFred::check_contact_name&) {
+        catch (const Fred::Backend::check_contact_name&) {
             BOOST_FAIL("Fred::check_contact_name failure");
         }
-        catch (const ::LibFred::check_contact_mailing_address&) {
+        catch (const Fred::Backend::check_contact_mailing_address&) {
             BOOST_FAIL("Fred::check_contact_mailing_address failure");
         }
-        catch (const ::LibFred::check_contact_email_presence&) {
+        catch (const Fred::Backend::check_contact_email_presence&) {
             BOOST_FAIL("Fred::check_contact_email_presence failure");
         }
-        catch (const ::LibFred::check_contact_email_validity&) {
+        catch (const Fred::Backend::check_contact_email_validity&) {
             BOOST_FAIL("Fred::check_contact_email_validity failure");
         }
-        catch (const ::LibFred::check_contact_phone_presence&) {
+        catch (const Fred::Backend::check_contact_phone_presence&) {
             BOOST_FAIL("Fred::check_contact_phone_presence failure");
         }
-        catch (const ::LibFred::check_contact_phone_validity&) {
+        catch (const Fred::Backend::check_contact_phone_validity&) {
             BOOST_FAIL("Fred::check_contact_phone_validity failure");
         }
-        catch (const ::LibFred::MojeID::check_contact_username&) {
-            BOOST_FAIL("Fred::MojeID::check_contact_username failure");
+        catch (const Fred::Backend::MojeId::check_contact_username&) {
+            BOOST_FAIL("Fred::MojeId::check_contact_username failure");
         }
-        catch (const ::LibFred::MojeID::check_contact_birthday&) {
-            BOOST_FAIL("Fred::MojeID::check_contact_birthday");
+        catch (const Fred::Backend::MojeId::check_contact_birthday&) {
+            BOOST_FAIL("Fred::MojeId::check_contact_birthday");
         }
-        catch (const ::LibFred::check_contact_email_availability&) {
+        catch (const Fred::Backend::check_contact_email_availability&) {
             BOOST_FAIL("Fred::check_contact_email_availability failure");
         }
-        catch (const ::LibFred::check_contact_phone_availability&) {
+        catch (const Fred::Backend::check_contact_phone_availability&) {
             BOOST_FAIL("Fred::check_contact_phone_availability failure");
         }
-        catch (const ::LibFred::check_contact_fax_validity &e) {
+        catch (const Fred::Backend::check_contact_fax_validity &e) {
             BOOST_CHECK(!data_ptr->result);
             BOOST_CHECK(!e.success());
             const ::size_t idx = data_ptr - data;
@@ -932,7 +932,7 @@ BOOST_AUTO_TEST_CASE(check_contact_username)
         TestData("FRANTISEK-", true, false),
         TestData("-FRANTISEK-", true, false),
         TestData("FRANTI--SEK", true, false),
-        TestData(std::string(::LibFred::GeneralCheck::MojeID::USERNAME_LENGTH_LIMIT + 1, 'A'), true, false),
+        TestData(std::string(Fred::Backend::GeneralCheck::MojeId::USERNAME_LENGTH_LIMIT + 1, 'A'), true, false),
         TestData("FRANTISEK", true, true),
         TestData("F-ANT-SEK", true, true),
         TestData("Frant1Sek", true, true),
@@ -942,65 +942,65 @@ BOOST_AUTO_TEST_CASE(check_contact_username)
         TestData("z", true, true),
         TestData("0", true, true),
         TestData("9", true, true),
-        TestData(std::string(::LibFred::GeneralCheck::MojeID::USERNAME_LENGTH_LIMIT, 'A'), true, true)
+        TestData(std::string(Fred::Backend::GeneralCheck::MojeId::USERNAME_LENGTH_LIMIT, 'A'), true, true)
     };
     static const TestData *const data_end = data + (sizeof(data) / sizeof(*data));
     BOOST_ASSERT(( (sizeof(data) / sizeof(*data)) == 19 ));
     for (const TestData *data_ptr = data; data_ptr < data_end; ++data_ptr) {
-        ::LibFred::OperationContextCreator ctx;
+        LibFred::OperationContextCreator ctx;
         contact[MAIN].handle = data_ptr->username;
-        const SumCheck result(::LibFred::make_args(contact[MAIN]), ::LibFred::make_args(contact[MAIN], ctx));
+        const SumCheck result(Fred::Backend::MojeId::make_args(contact[MAIN]), Fred::Backend::MojeId::make_args(contact[MAIN], ctx));
         BOOST_CHECK(result.success() == data_ptr->success());
-        BOOST_CHECK(result.LibFred::check_contact_name::success());
-        BOOST_CHECK(result.LibFred::check_contact_mailing_address::success());
-        BOOST_CHECK(result.LibFred::check_contact_email_presence::success());
-        BOOST_CHECK(result.LibFred::check_contact_email_validity::success());
-        BOOST_CHECK(result.LibFred::check_contact_phone_presence::success());
-        BOOST_CHECK(result.LibFred::check_contact_phone_validity::success());
-        BOOST_CHECK(result.LibFred::check_contact_fax_validity::success());
-        BOOST_CHECK(result.LibFred::MojeID::check_contact_username::success() == data_ptr->success());
-        BOOST_CHECK(result.LibFred::MojeID::check_contact_username::absent == !data_ptr->present);
-        BOOST_CHECK(result.LibFred::MojeID::check_contact_username::invalid == !data_ptr->valid);
-        BOOST_CHECK(result.LibFred::MojeID::check_contact_birthday::success());
-        BOOST_CHECK(result.LibFred::check_contact_email_availability::success());
-        BOOST_CHECK(result.LibFred::check_contact_phone_availability::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_name::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_mailing_address::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_email_presence::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_email_validity::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_phone_presence::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_phone_validity::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_fax_validity::success());
+        BOOST_CHECK(result.Fred::Backend::MojeId::check_contact_username::success() == data_ptr->success());
+        BOOST_CHECK(result.Fred::Backend::MojeId::check_contact_username::absent == !data_ptr->present);
+        BOOST_CHECK(result.Fred::Backend::MojeId::check_contact_username::invalid == !data_ptr->valid);
+        BOOST_CHECK(result.Fred::Backend::MojeId::check_contact_birthday::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_email_availability::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_phone_availability::success());
 
         try {
-            const SumCheckWithException result(::LibFred::make_args(contact[MAIN]), ::LibFred::make_args(contact[MAIN], ctx));
+            const SumCheckWithException result(Fred::Backend::MojeId::make_args(contact[MAIN]), Fred::Backend::MojeId::make_args(contact[MAIN], ctx));
             BOOST_CHECK(data_ptr->success());
             BOOST_CHECK(result.success());
         }
-        catch (const ::LibFred::check_contact_name&) {
+        catch (const Fred::Backend::check_contact_name&) {
             BOOST_FAIL("Fred::check_contact_name failure");
         }
-        catch (const ::LibFred::check_contact_mailing_address&) {
+        catch (const Fred::Backend::check_contact_mailing_address&) {
             BOOST_FAIL("Fred::check_contact_mailing_address failure");
         }
-        catch (const ::LibFred::check_contact_email_presence&) {
+        catch (const Fred::Backend::check_contact_email_presence&) {
             BOOST_FAIL("Fred::check_contact_email_presence failure");
         }
-        catch (const ::LibFred::check_contact_email_validity&) {
+        catch (const Fred::Backend::check_contact_email_validity&) {
             BOOST_FAIL("Fred::check_contact_email_validity failure");
         }
-        catch (const ::LibFred::check_contact_phone_presence&) {
+        catch (const Fred::Backend::check_contact_phone_presence&) {
             BOOST_FAIL("Fred::check_contact_phone_presence failure");
         }
-        catch (const ::LibFred::check_contact_phone_validity&) {
+        catch (const Fred::Backend::check_contact_phone_validity&) {
             BOOST_FAIL("Fred::check_contact_phone_validity failure");
         }
-        catch (const ::LibFred::check_contact_fax_validity&) {
+        catch (const Fred::Backend::check_contact_fax_validity&) {
             BOOST_FAIL("Fred::check_contact_fax_validity failure");
         }
-        catch (const ::LibFred::MojeID::check_contact_birthday&) {
-            BOOST_FAIL("Fred::MojeID::check_contact_birthday failure");
+        catch (const Fred::Backend::MojeId::check_contact_birthday&) {
+            BOOST_FAIL("Fred::MojeId::check_contact_birthday failure");
         }
-        catch (const ::LibFred::check_contact_email_availability&) {
+        catch (const Fred::Backend::check_contact_email_availability&) {
             BOOST_FAIL("Fred::check_contact_email_availability failure");
         }
-        catch (const ::LibFred::check_contact_phone_availability&) {
+        catch (const Fred::Backend::check_contact_phone_availability&) {
             BOOST_FAIL("Fred::check_contact_phone_availability failure");
         }
-        catch (const ::LibFred::MojeID::check_contact_username &e) {
+        catch (const Fred::Backend::MojeId::check_contact_username &e) {
             BOOST_CHECK(!data_ptr->success());
             BOOST_CHECK(!e.success());
             const ::size_t idx = data_ptr - data;
@@ -1053,61 +1053,61 @@ BOOST_AUTO_TEST_CASE(check_contact_birthday)
     static const TestData *const data_end = data + (sizeof(data) / sizeof(*data));
     BOOST_ASSERT(( (sizeof(data) / sizeof(*data)) == 11 ));
     for (const TestData *data_ptr = data; data_ptr < data_end; ++data_ptr) {
-        ::LibFred::OperationContextCreator ctx;
+        LibFred::OperationContextCreator ctx;
         contact[MAIN].ssntype = data_ptr->ssntype;
         contact[MAIN].ssn = data_ptr->ssn;
-        const SumCheck result(::LibFred::make_args(contact[MAIN]), ::LibFred::make_args(contact[MAIN], ctx));
+        const SumCheck result(Fred::Backend::MojeId::make_args(contact[MAIN]), Fred::Backend::MojeId::make_args(contact[MAIN], ctx));
         BOOST_CHECK(result.success() == data_ptr->success());
-        BOOST_CHECK(result.LibFred::check_contact_name::success());
-        BOOST_CHECK(result.LibFred::check_contact_mailing_address::success());
-        BOOST_CHECK(result.LibFred::check_contact_email_presence::success());
-        BOOST_CHECK(result.LibFred::check_contact_email_validity::success());
-        BOOST_CHECK(result.LibFred::check_contact_phone_presence::success());
-        BOOST_CHECK(result.LibFred::check_contact_phone_validity::success());
-        BOOST_CHECK(result.LibFred::check_contact_fax_validity::success());
-        BOOST_CHECK(result.LibFred::MojeID::check_contact_username::success());
-        BOOST_CHECK(result.LibFred::MojeID::check_contact_birthday::success() == data_ptr->success());
-        BOOST_CHECK(result.LibFred::MojeID::check_contact_birthday::absent    == !data_ptr->present);
-        BOOST_CHECK(result.LibFred::MojeID::check_contact_birthday::invalid   == !data_ptr->valid);
-        BOOST_CHECK(result.LibFred::check_contact_email_availability::success());
-        BOOST_CHECK(result.LibFred::check_contact_phone_availability::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_name::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_mailing_address::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_email_presence::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_email_validity::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_phone_presence::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_phone_validity::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_fax_validity::success());
+        BOOST_CHECK(result.Fred::Backend::MojeId::check_contact_username::success());
+        BOOST_CHECK(result.Fred::Backend::MojeId::check_contact_birthday::success() == data_ptr->success());
+        BOOST_CHECK(result.Fred::Backend::MojeId::check_contact_birthday::absent    == !data_ptr->present);
+        BOOST_CHECK(result.Fred::Backend::MojeId::check_contact_birthday::invalid   == !data_ptr->valid);
+        BOOST_CHECK(result.Fred::Backend::check_contact_email_availability::success());
+        BOOST_CHECK(result.Fred::Backend::check_contact_phone_availability::success());
 
         try {
-            const SumCheckWithException result(::LibFred::make_args(contact[MAIN]), ::LibFred::make_args(contact[MAIN], ctx));
+            const SumCheckWithException result(Fred::Backend::MojeId::make_args(contact[MAIN]), Fred::Backend::MojeId::make_args(contact[MAIN], ctx));
             BOOST_CHECK(data_ptr->success());
             BOOST_CHECK(result.success());
         }
-        catch (const ::LibFred::check_contact_name&) {
+        catch (const Fred::Backend::check_contact_name&) {
             BOOST_FAIL("Fred::check_contact_name failure");
         }
-        catch (const ::LibFred::check_contact_mailing_address&) {
+        catch (const Fred::Backend::check_contact_mailing_address&) {
             BOOST_FAIL("Fred::check_contact_mailing_address failure");
         }
-        catch (const ::LibFred::check_contact_email_presence&) {
+        catch (const Fred::Backend::check_contact_email_presence&) {
             BOOST_FAIL("Fred::check_contact_email_presence failure");
         }
-        catch (const ::LibFred::check_contact_email_validity&) {
+        catch (const Fred::Backend::check_contact_email_validity&) {
             BOOST_FAIL("Fred::check_contact_email_validity failure");
         }
-        catch (const ::LibFred::check_contact_phone_presence&) {
+        catch (const Fred::Backend::check_contact_phone_presence&) {
             BOOST_FAIL("Fred::check_contact_phone_presence failure");
         }
-        catch (const ::LibFred::check_contact_phone_validity&) {
+        catch (const Fred::Backend::check_contact_phone_validity&) {
             BOOST_FAIL("Fred::check_contact_phone_validity failure");
         }
-        catch (const ::LibFred::check_contact_fax_validity&) {
+        catch (const Fred::Backend::check_contact_fax_validity&) {
             BOOST_FAIL("Fred::check_contact_fax_validity failure");
         }
-        catch (const ::LibFred::MojeID::check_contact_username&) {
-            BOOST_FAIL("Fred::MojeID::check_contact_birthday failure");
+        catch (const Fred::Backend::MojeId::check_contact_username&) {
+            BOOST_FAIL("Fred::MojeId::check_contact_birthday failure");
         }
-        catch (const ::LibFred::check_contact_email_availability&) {
+        catch (const Fred::Backend::check_contact_email_availability&) {
             BOOST_FAIL("Fred::check_contact_email_availability failure");
         }
-        catch (const ::LibFred::check_contact_phone_availability&) {
+        catch (const Fred::Backend::check_contact_phone_availability&) {
             BOOST_FAIL("Fred::check_contact_phone_availability failure");
         }
-        catch (const ::LibFred::MojeID::check_contact_birthday &e) {
+        catch (const Fred::Backend::MojeId::check_contact_birthday &e) {
             BOOST_CHECK(!data_ptr->success());
             BOOST_CHECK(!e.success());
             const ::size_t idx = data_ptr - data;

@@ -23,186 +23,184 @@
 */
 
 #include "src/bin/corba/contact_verification/contact_verification_i.hh"
-#include "src/util/corba_wrapper_decl.hh"
 #include "src/backend/contact_verification/contact_verification_impl.hh"
-#include "src/bin/corba/mailer_manager.hh"
 #include "src/bin/corba/ContactVerification.hh"
-#include <string>
 #include "src/bin/corba/contact_verification/corba_conversion.hh"
+#include "src/bin/corba/mailer_manager.hh"
+#include "src/util/corba_wrapper_decl.hh"
 
+#include <string>
 
-namespace Registry
+namespace CorbaConversion {
+namespace Contact {
+namespace Verification {
+
+ContactVerification_i::ContactVerification_i(const std::string& _server_name)
+    : pimpl_(new Fred::Backend::ContactVerification::ContactVerificationImpl(
+                    _server_name,
+                    std::shared_ptr<LibFred::Mailer::Manager>(new MailerManager(CorbaContainer::get_instance()->getNS()))))
 {
-    namespace Contact
+}
+
+ContactVerification_i::~ContactVerification_i()
+{
+}
+
+
+// methods corresponding to defined IDL attributes and operations
+::CORBA::ULongLong ContactVerification_i::createConditionalIdentification(
+        const char* contact_handle,
+        const char* registrar_handle,
+        ::CORBA::ULongLong log_id,
+        ::CORBA::String_out request_id)
+{
+    try
     {
-        namespace Verification
-        {
+        std::string request_id_;
 
-            ContactVerification_i::ContactVerification_i(const std::string &_server_name)
-            : pimpl_(new ContactVerificationImpl(_server_name
-                    , std::shared_ptr<LibFred::Mailer::Manager>(
-                        new MailerManager(CorbaContainer::get_instance()
-                        ->getNS()))))
-            {}
+        unsigned long long cid = pimpl_->createConditionalIdentification(
+                contact_handle, registrar_handle, log_id, request_id_);
 
-            ContactVerification_i::~ContactVerification_i()
-            {}
+        request_id = corba_wrap_string(request_id_.c_str());
 
+        return cid;
 
-            // methods corresponding to defined IDL attributes and operations
-            ::CORBA::ULongLong ContactVerification_i::createConditionalIdentification(
-                    const char* contact_handle
-                    , const char* registrar_handle
-                    , ::CORBA::ULongLong log_id
-                    , ::CORBA::String_out request_id)
-            {
-                try
-                {
-                    std::string request_id_;
+    } //try
 
-                    unsigned long long cid =  pimpl_->createConditionalIdentification(
-                            contact_handle, registrar_handle, log_id, request_id_);
-
-                    request_id = corba_wrap_string(request_id_.c_str());
-
-                    return cid;
-
-                }//try
-
-                catch (Registry::Contact::Verification::OBJECT_NOT_EXISTS&)
-                {
-                    throw Registry::ContactVerification::OBJECT_NOT_EXISTS();
-                }
-                catch (Registry::Contact::Verification::REGISTRAR_NOT_EXISTS&)
-                {
-                    throw Registry::ContactVerification::REGISTRAR_NOT_EXISTS();
-                }
-                catch (Registry::Contact::Verification::DATA_VALIDATION_ERROR &_ex)
-                {
-                    throw Registry::ContactVerification::DATA_VALIDATION_ERROR(
-                        corba_wrap_validation_error_list(_ex.errors));
-                }
-                catch (std::exception &_ex)
-                {
-                    throw Registry::ContactVerification::INTERNAL_SERVER_ERROR(_ex.what());
-                }
-                catch (...)
-                {
-                    throw Registry::ContactVerification::INTERNAL_SERVER_ERROR();
-                }
-            }
-
-            ::CORBA::ULongLong ContactVerification_i::processConditionalIdentification(
-                    const char* request_id
-                    , const char* password
-                    , ::CORBA::ULongLong log_id)
-            {
-                try
-                {
-                    unsigned long long cid =  pimpl_->processConditionalIdentification(
-                            request_id, password, log_id);
-                    return cid;
-                }//try
-                catch (Registry::Contact::Verification::IDENTIFICATION_FAILED&)
-                {
-                    throw Registry::ContactVerification::IDENTIFICATION_FAILED();
-                }
-                catch (Registry::Contact::Verification::IDENTIFICATION_PROCESSED&)
-                {
-                    throw Registry::ContactVerification::IDENTIFICATION_PROCESSED();
-                }
-                catch (Registry::Contact::Verification::IDENTIFICATION_INVALIDATED&)
-                {
-                    throw Registry::ContactVerification::IDENTIFICATION_INVALIDATED();
-                }
-                catch (Registry::Contact::Verification::OBJECT_CHANGED&)
-                {
-                    throw Registry::ContactVerification::OBJECT_CHANGED();
-                }
-
-                catch (Registry::Contact::Verification::DATA_VALIDATION_ERROR &_ex)
-                {
-                    throw Registry::ContactVerification::DATA_VALIDATION_ERROR(
-                        corba_wrap_validation_error_list(_ex.errors));
-                }
-                catch (std::exception &_ex)
-                {
-                    throw Registry::ContactVerification::INTERNAL_SERVER_ERROR(_ex.what());
-                }
-                catch (...)
-                {
-                    throw Registry::ContactVerification::INTERNAL_SERVER_ERROR();
-                }
-            }
-
-            ::CORBA::ULongLong ContactVerification_i::processIdentification(
-                    const char* contact_handle
-                    , const char* password
-                    , ::CORBA::ULongLong log_id)
-            {
-                try
-                {
-                    unsigned long long cid =  pimpl_->processIdentification(
-                        contact_handle, password, log_id);
-                    return cid;
-                }//try
-                catch (Registry::Contact::Verification::IDENTIFICATION_FAILED&)
-                {
-                    throw Registry::ContactVerification::IDENTIFICATION_FAILED();
-                }
-                catch (Registry::Contact::Verification::IDENTIFICATION_PROCESSED&)
-                {
-                    throw Registry::ContactVerification::IDENTIFICATION_PROCESSED();
-                }
-                catch (Registry::Contact::Verification::IDENTIFICATION_INVALIDATED&)
-                {
-                    throw Registry::ContactVerification::IDENTIFICATION_INVALIDATED();
-                }
-                catch (Registry::Contact::Verification::OBJECT_CHANGED&)
-                {
-                    throw Registry::ContactVerification::OBJECT_CHANGED();
-                }
-                catch (Registry::Contact::Verification::OBJECT_NOT_EXISTS&)
-                {
-                    throw Registry::ContactVerification::OBJECT_NOT_EXISTS();
-                }
-                catch (Registry::Contact::Verification::DATA_VALIDATION_ERROR &_ex)
-                {
-                    throw Registry::ContactVerification::DATA_VALIDATION_ERROR(
-                        corba_wrap_validation_error_list(_ex.errors));
-                }
-                catch (std::exception &_ex)
-                {
-                    throw Registry::ContactVerification::INTERNAL_SERVER_ERROR(_ex.what());
-                }
-                catch (...)
-                {
-                    throw Registry::ContactVerification::INTERNAL_SERVER_ERROR();
-                }
-            }
-
-            char* ContactVerification_i::getRegistrarName(
-                    const char* registrar_handle)
-            {
-                try
-                {
-                    std::string registrar_name = pimpl_->getRegistrarName(registrar_handle);
-                    return corba_wrap_string(registrar_name.c_str());
-                }
-                catch (Registry::Contact::Verification::OBJECT_NOT_EXISTS&)
-                {
-                    throw Registry::ContactVerification::OBJECT_NOT_EXISTS();
-                }
-                catch (std::exception &_ex)
-                {
-                    throw Registry::ContactVerification::INTERNAL_SERVER_ERROR(_ex.what());
-                }
-                catch (...)
-                {
-                    throw Registry::ContactVerification::INTERNAL_SERVER_ERROR();
-                }
-            }
-        }
+    catch (Fred::Backend::ContactVerification::OBJECT_NOT_EXISTS&)
+    {
+        throw Registry::ContactVerification::OBJECT_NOT_EXISTS();
+    }
+    catch (Fred::Backend::ContactVerification::REGISTRAR_NOT_EXISTS&)
+    {
+        throw Registry::ContactVerification::REGISTRAR_NOT_EXISTS();
+    }
+    catch (Fred::Backend::ContactVerification::DATA_VALIDATION_ERROR& _ex)
+    {
+        throw Registry::ContactVerification::DATA_VALIDATION_ERROR(
+                corba_wrap_validation_error_list(_ex.errors));
+    }
+    catch (std::exception& _ex)
+    {
+        throw Registry::ContactVerification::INTERNAL_SERVER_ERROR(_ex.what());
+    }
+    catch (...)
+    {
+        throw Registry::ContactVerification::INTERNAL_SERVER_ERROR();
     }
 }
+
+::CORBA::ULongLong ContactVerification_i::processConditionalIdentification(
+        const char* request_id,
+        const char* password,
+        ::CORBA::ULongLong log_id)
+{
+    try
+    {
+        unsigned long long cid = pimpl_->processConditionalIdentification(
+                request_id, password, log_id);
+        return cid;
+    } //try
+    catch (Fred::Backend::ContactVerification::IDENTIFICATION_FAILED&)
+    {
+        throw Registry::ContactVerification::IDENTIFICATION_FAILED();
+    }
+    catch (Fred::Backend::ContactVerification::IDENTIFICATION_PROCESSED&)
+    {
+        throw Registry::ContactVerification::IDENTIFICATION_PROCESSED();
+    }
+    catch (Fred::Backend::ContactVerification::IDENTIFICATION_INVALIDATED&)
+    {
+        throw Registry::ContactVerification::IDENTIFICATION_INVALIDATED();
+    }
+    catch (Fred::Backend::ContactVerification::OBJECT_CHANGED&)
+    {
+        throw Registry::ContactVerification::OBJECT_CHANGED();
+    }
+
+    catch (Fred::Backend::ContactVerification::DATA_VALIDATION_ERROR& _ex)
+    {
+        throw Registry::ContactVerification::DATA_VALIDATION_ERROR(
+                corba_wrap_validation_error_list(_ex.errors));
+    }
+    catch (std::exception& _ex)
+    {
+        throw Registry::ContactVerification::INTERNAL_SERVER_ERROR(_ex.what());
+    }
+    catch (...)
+    {
+        throw Registry::ContactVerification::INTERNAL_SERVER_ERROR();
+    }
+}
+
+::CORBA::ULongLong ContactVerification_i::processIdentification(
+        const char* contact_handle,
+        const char* password,
+        ::CORBA::ULongLong log_id)
+{
+    try
+    {
+        unsigned long long cid = pimpl_->processIdentification(
+                contact_handle, password, log_id);
+        return cid;
+    } //try
+    catch (Fred::Backend::ContactVerification::IDENTIFICATION_FAILED&)
+    {
+        throw Registry::ContactVerification::IDENTIFICATION_FAILED();
+    }
+    catch (Fred::Backend::ContactVerification::IDENTIFICATION_PROCESSED&)
+    {
+        throw Registry::ContactVerification::IDENTIFICATION_PROCESSED();
+    }
+    catch (Fred::Backend::ContactVerification::IDENTIFICATION_INVALIDATED&)
+    {
+        throw Registry::ContactVerification::IDENTIFICATION_INVALIDATED();
+    }
+    catch (Fred::Backend::ContactVerification::OBJECT_CHANGED&)
+    {
+        throw Registry::ContactVerification::OBJECT_CHANGED();
+    }
+    catch (Fred::Backend::ContactVerification::OBJECT_NOT_EXISTS&)
+    {
+        throw Registry::ContactVerification::OBJECT_NOT_EXISTS();
+    }
+    catch (Fred::Backend::ContactVerification::DATA_VALIDATION_ERROR& _ex)
+    {
+        throw Registry::ContactVerification::DATA_VALIDATION_ERROR(
+                corba_wrap_validation_error_list(_ex.errors));
+    }
+    catch (std::exception& _ex)
+    {
+        throw Registry::ContactVerification::INTERNAL_SERVER_ERROR(_ex.what());
+    }
+    catch (...)
+    {
+        throw Registry::ContactVerification::INTERNAL_SERVER_ERROR();
+    }
+}
+
+char* ContactVerification_i::getRegistrarName(
+        const char* registrar_handle)
+{
+    try
+    {
+        std::string registrar_name = pimpl_->getRegistrarName(registrar_handle);
+        return corba_wrap_string(registrar_name.c_str());
+    }
+    catch (Fred::Backend::ContactVerification::OBJECT_NOT_EXISTS&)
+    {
+        throw Registry::ContactVerification::OBJECT_NOT_EXISTS();
+    }
+    catch (std::exception& _ex)
+    {
+        throw Registry::ContactVerification::INTERNAL_SERVER_ERROR(_ex.what());
+    }
+    catch (...)
+    {
+        throw Registry::ContactVerification::INTERNAL_SERVER_ERROR();
+    }
+}
+} // namespace CorbaConversion::Contact::Verification
+} // namespace CorbaConversion::Contact
+} // namespace CorbaConversion
 

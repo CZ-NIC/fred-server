@@ -25,35 +25,36 @@
 #define MOJEID_CHECKERS_HH_717A66E63EE24C88BEE864D37E955CBA
 
 #include "src/backend/mojeid/checkers.hh"
-#include "src/libfred/registrable_object/contact/info_contact_data.hh"
 #include "src/libfred/object/object_states_info.hh"
+#include "src/libfred/registrable_object/contact/info_contact_data.hh"
 
-namespace LibFred {
-namespace MojeID {
-namespace Check {
+namespace Fred {
+namespace Backend {
+namespace MojeId {
 
 struct states_before_transfer_into_mojeid
 {
-    states_before_transfer_into_mojeid(const ObjectStatesInfo &_states_info)
-    :   server_user_blocked   (_states_info.presents(Object_State::server_transfer_prohibited) ||
-                               _states_info.presents(Object_State::server_update_prohibited) ||
-                               _states_info.presents(Object_State::server_delete_prohibited)),
-        server_admin_blocked  (_states_info.presents(Object_State::server_blocked)),
-        mojeid_contact_present(_states_info.presents(Object_State::mojeid_contact))
-    { }
-    bool success()const
+    states_before_transfer_into_mojeid(const LibFred::ObjectStatesInfo& _states_info)
+        : server_user_blocked(_states_info.presents(LibFred::Object_State::server_transfer_prohibited) ||
+                              _states_info.presents(LibFred::Object_State::server_update_prohibited) ||
+                              _states_info.presents(LibFred::Object_State::server_delete_prohibited)),
+          server_admin_blocked(_states_info.presents(LibFred::Object_State::server_blocked)),
+          mojeid_contact_present(_states_info.presents(LibFred::Object_State::mojeid_contact))
+    {
+    }
+    bool success() const
     {
         return !(server_user_blocked ||
                  server_admin_blocked ||
                  mojeid_contact_present);
     }
-    bool server_user_blocked:1;
-    bool server_admin_blocked:1;
-    bool mojeid_contact_present:1;
+    bool server_user_blocked : 1;
+    bool server_admin_blocked : 1;
+    bool mojeid_contact_present : 1;
 };
 
-}//Fred::MojeID::Check
-}//Fred::MojeID
-}//Fred
+} // namespace Fred::Backend::MojeId
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

@@ -70,7 +70,7 @@ BOOST_AUTO_TEST_CASE(test_Deleting_domains)
         ).exec(ctx);
     }
 
-    std::string check_handle = Admin::enqueue_check(
+    std::string check_handle = Fred::Backend::Admin::Contact::Verification::enqueue_check(
         ctx,
         contact.info_data.id,
         ::LibFred::TestsuiteHandle::MANUAL);
@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE(test_Deleting_domains)
         Optional<unsigned long long>()
     ).exec(ctx);
 
-    Admin::resolve_check(
+    Fred::Backend::Admin::Contact::Verification::resolve_check(
         uuid::from_string( check_handle ),
         ::LibFred::ContactCheckStatus::FAIL,
         Optional<unsigned long long>()
@@ -89,7 +89,7 @@ BOOST_AUTO_TEST_CASE(test_Deleting_domains)
 
     // end of setup
 
-    Admin::delete_domains_of_invalid_contact(
+    Fred::Backend::Admin::Contact::Verification::delete_domains_of_invalid_contact(
         ctx,
         uuid::from_string( check_handle) );
 

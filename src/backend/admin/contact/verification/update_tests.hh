@@ -26,36 +26,46 @@
 
 #include "src/backend/admin/contact/verification/exceptions.hh"
 
+#include "src/libfred/opcontext.hh"
 #include "src/util/db/nullable.hh"
 #include "src/util/optional_value.hh"
-#include "src/libfred/opcontext.hh"
 
-#include <vector>
-#include <utility>
 #include <string>
+#include <utility>
+#include <vector>
 
+namespace Fred {
+namespace Backend {
 namespace Admin {
-    using std::vector;
-    using std::pair;
-    using std::string;
-    /**
-     * setting new statuses to tests of check
-     *
-     * @param _test_statuses are test_handle, test_status_handle pairs
-     *
-     * @throws Admin::ExceptionUnknownCheckHandle
-     * @throws Admin::ExceptionUnknownTestHandle
-     * @throws Admin::ExceptionUnknownCheckTestPair
-     * @throws Admin::ExceptionUnknownTestStatusHandle
-     * @throws Admin::ExceptionCheckNotUpdateable
-     */
+namespace Contact {
+namespace Verification {
 
-    void update_tests(
+using std::vector;
+using std::pair;
+using std::string;
+
+/**
+ * setting new statuses to tests of check
+ *
+ * @param _test_statuses are test_handle, test_status_handle pairs
+ *
+ * @throws Admin::ExceptionUnknownCheckHandle
+ * @throws Admin::ExceptionUnknownTestHandle
+ * @throws Admin::ExceptionUnknownCheckTestPair
+ * @throws Admin::ExceptionUnknownTestStatusHandle
+ * @throws Admin::ExceptionCheckNotUpdateable
+ */
+
+void update_tests(
         LibFred::OperationContext&                 _ctx,
         const uuid&                             _check_handle,
         const vector<pair<string, string> >&    _test_statuses,
-        unsigned long long                      _logd_request_id);
+        unsigned long long _logd_request_id);
 
-}
+} // namespace Fred::Backend::Admin::Contact::Verification
+} // namespace Fred::Backend::Admin::Contact
+} // namespace Fred::Backend::Admin
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

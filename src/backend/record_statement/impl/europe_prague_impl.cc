@@ -19,12 +19,14 @@
 #include "src/backend/record_statement/impl/templates_impl.hh"
 #include "src/util/tz/europe/prague.hh"
 
-namespace LibFred {
+namespace Fred {
+namespace Backend {
 namespace RecordStatement {
 namespace Impl {
 
 template class InstanceOfNecessaryImpl<Tz::Europe::Prague>;
 
-} // namespace LibFred::RecordStatement::Impl
-} // namespace LibFred::RecordStatement
-} // namespace LibFred
+} // namespace Fred::Backend::RecordStatement::Impl
+} // namespace Fred::Backend::RecordStatement
+} // namespace Fred::Backend
+} // namespace Fred

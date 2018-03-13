@@ -28,39 +28,54 @@
 
 #include <boost/assign/list_of.hpp>
 
-namespace Admin
+namespace Fred {
+namespace Backend {
+namespace Admin {
+namespace Contact {
+namespace Verification {
+
+FACTORY_MODULE_INIT_DECL(TestEmailExists_init)
+
+class TestEmailExists
+        : public Test,
+          test_auto_registration<TestEmailExists>
 {
-namespace ContactVerification
+public:
+    virtual TestRunResult run(unsigned long long _history_id) const;
+
+    static std::string registration_name()
+    {
+        return "email_host_existence";
+    }
+
+};
+
+template <>
+struct TestDataProvider<TestEmailExists>
+        : TestDataProvider_common,
+          _inheritTestRegName<TestEmailExists>
 {
-    FACTORY_MODULE_INIT_DECL(TestEmailExists_init)
+    std::string email_;
 
-    class TestEmailExists
-    : public
-        Test,
-        test_auto_registration<TestEmailExists>
+    virtual void store_data(const LibFred::InfoContactOutput& _data)
     {
-        public:
-            virtual TestRunResult run(unsigned long long _history_id) const;
-            static std::string registration_name() { return "email_host_existence"; }
-    };
+        if (!_data.info_contact_data.email.isnull())
+        {
+            email_ = _data.info_contact_data.email.get_value_or_default();
+        }
+    }
 
-    template<> struct TestDataProvider<TestEmailExists>
-    : TestDataProvider_common,
-      _inheritTestRegName<TestEmailExists>
+    virtual std::vector<std::string> get_string_data() const
     {
-        std::string email_;
+        return boost::assign::list_of(email_);
+    }
 
-        virtual void store_data(const LibFred::InfoContactOutput& _data) {
-            if( !_data.info_contact_data.email.isnull() ) {
-                email_ = _data.info_contact_data.email.get_value_or_default();
-            }
-        }
+};
 
-        virtual std::vector<std::string> get_string_data() const {
-            return boost::assign::list_of(email_);
-        }
-    };
-}
-}
+} // namespace Fred::Backend::Admin::Contact::Verification
+} // namespace Fred::Backend::Admin::Contact
+} // namespace Fred::Backend::Admin
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

@@ -9,23 +9,23 @@ struct get_nsset_by_handle_fixture
     const std::string test_nsset_handle;
     unsigned long long id;
     boost::posix_time::ptime now_utc;
-    ::LibFred::InfoNssetData nsset;
+    LibFred::InfoNssetData nsset;
 
     get_nsset_by_handle_fixture()
     : test_nsset_handle("TEST-NSSET")
     {
-        ::LibFred::OperationContextCreator ctx;
-        const ::LibFred::InfoContactData contact = Test::contact::make(ctx);
+        LibFred::OperationContextCreator ctx;
+        const LibFred::InfoContactData contact = Test::contact::make(ctx);
         nsset = Test::exec(
                     Test::CreateX_factory<::LibFred::CreateNsset>()
                         .make(Test::registrar::make(ctx).handle, test_nsset_handle)
                         .set_dns_hosts(
                             Util::vector_of<::LibFred::DnsHost>(
-                                ::LibFred::DnsHost(
+                                LibFred::DnsHost(
                                     "some-nameserver-1.cz",
                                     Util::vector_of<boost::asio::ip::address>(
                                         boost::asio::ip::address::from_string("192.128.0.1"))))(
-                                ::LibFred::DnsHost(
+                                LibFred::DnsHost(
                                     "some-nameserver-2.cz",
                                     Util::vector_of<boost::asio::ip::address>(
                                         boost::asio::ip::address::from_string("192.128.0.21"))(
@@ -44,7 +44,7 @@ struct get_nsset_by_handle_fixture
 
 namespace {
 
-bool is_member(const std::string &_fqdn, const std::vector< ::LibFred::DnsHost > &_hosts)
+bool is_member(const std::string &_fqdn, const std::vector< LibFred::DnsHost > &_hosts)
 {
     for (::size_t idx = 0; idx < _hosts.size(); ++idx)
     {
@@ -56,7 +56,7 @@ bool is_member(const std::string &_fqdn, const std::vector< ::LibFred::DnsHost >
     return false;
 }
 
-const ::LibFred::DnsHost& get_member(const std::string &_fqdn, const std::vector< ::LibFred::DnsHost > &_hosts)
+const LibFred::DnsHost& get_member(const std::string &_fqdn, const std::vector< LibFred::DnsHost > &_hosts)
 {
     for (::size_t idx = 0; idx < _hosts.size(); ++idx)
     {
@@ -84,7 +84,7 @@ bool is_member(const boost::asio::ip::address &_address, const std::vector< boos
 
 BOOST_FIXTURE_TEST_CASE(get_nsset_by_handle, get_nsset_by_handle_fixture)
 {
-    Registry::WhoisImpl::NSSet nss = impl.get_nsset_by_handle(test_nsset_handle);
+    Fred::Backend::Whois::NSSet nss = impl.get_nsset_by_handle(test_nsset_handle);
 
     BOOST_CHECK(nss.changed.isnull());
     BOOST_CHECK(nss.last_transfer.isnull());
@@ -97,7 +97,7 @@ BOOST_FIXTURE_TEST_CASE(get_nsset_by_handle, get_nsset_by_handle_fixture)
         BOOST_CHECK(has_dns_host);
         if (has_dns_host)
         {
-            const ::LibFred::DnsHost &dns_host = get_member(nss.nservers[nserver_idx].fqdn, nsset.dns_hosts);
+            const LibFred::DnsHost &dns_host = get_member(nss.nservers[nserver_idx].fqdn, nsset.dns_hosts);
             BOOST_CHECK(nss.nservers[nserver_idx].ip_addresses.size() == dns_host.get_inet_addr().size());
             for (::size_t addr_idx = 0; addr_idx < nss.nservers[nserver_idx].ip_addresses.size(); ++addr_idx)
             {
@@ -108,9 +108,9 @@ BOOST_FIXTURE_TEST_CASE(get_nsset_by_handle, get_nsset_by_handle_fixture)
     BOOST_CHECK(nss.sponsoring_registrar == nsset.sponsoring_registrar_handle);
     BOOST_CHECK(nss.tech_contacts.at(0) == nsset.tech_contacts.at(0).handle);
 
-    ::LibFred::OperationContextCreator ctx;
-    const std::vector<::LibFred::ObjectStateData> v_osd = ::LibFred::GetObjectStates(id).exec(ctx);
-    BOOST_FOREACH(const ::LibFred::ObjectStateData& it, v_osd)
+    LibFred::OperationContextCreator ctx;
+    const std::vector<::LibFred::ObjectStateData> v_osd = LibFred::GetObjectStates(id).exec(ctx);
+    BOOST_FOREACH(const LibFred::ObjectStateData& it, v_osd)
     {
         BOOST_CHECK(std::find(nss.statuses.begin(), nss.statuses.end(), it.state_name) !=
                 nss.statuses.end());
@@ -120,12 +120,12 @@ BOOST_FIXTURE_TEST_CASE(get_nsset_by_handle, get_nsset_by_handle_fixture)
 
 BOOST_FIXTURE_TEST_CASE(get_nsset_by_handle_no_nsset, whois_impl_instance_fixture)
 {
-    BOOST_CHECK_THROW(impl.get_nsset_by_handle("fine-nsset-handle"), Registry::WhoisImpl::ObjectNotExists);
+    BOOST_CHECK_THROW(impl.get_nsset_by_handle("fine-nsset-handle"), Fred::Backend::Whois::ObjectNotExists);
 }
 
 BOOST_FIXTURE_TEST_CASE(get_nsset_by_handle_wrong_nsset, whois_impl_instance_fixture)
 {
-    BOOST_CHECK_THROW(impl.get_nsset_by_handle(""), Registry::WhoisImpl::InvalidHandle);
+    BOOST_CHECK_THROW(impl.get_nsset_by_handle(""), Fred::Backend::Whois::InvalidHandle);
 }
 
 BOOST_AUTO_TEST_SUITE_END()//get_nsset_by_handle

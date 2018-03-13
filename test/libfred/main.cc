@@ -42,7 +42,7 @@ namespace Test {
                     (HandleArgsPtr(new HandleRegistryArgs))
                     (HandleArgsPtr(new HandleRifdArgs))
                     (HandleArgsPtr(new HandleContactVerificationArgs))
-                    (HandleArgsPtr(new HandleMojeIDArgs))
+                    (HandleArgsPtr(new HandleMojeIdArgs))
                     (HandleArgsPtr(new HandleAdminDatabaseArgs)).convert_to_container<HandlerPtrVector>();
 
             namespace boost_args_ns = boost::unit_test::framework;

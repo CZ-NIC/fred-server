@@ -78,8 +78,7 @@ void conditionally_cancel_contact_verification_states(
                   "obr.type=get_object_type_id($2::TEXT) AND "
                   "obr.erdate IS NULL",
             // clang-format on
-            Database::query_param_list(_contact_id)
-                (type_of_object));
+            Database::query_param_list(_contact_id)(type_of_object));
     if (contact_change_res.size() != 1)
     {
         throw std::runtime_error(
@@ -94,11 +93,12 @@ void conditionally_cancel_contact_verification_states(
             LibFred::StatusList states_to_cancel;
             states_to_cancel.insert(
                     Conversion::Enums::to_db_handle(
-                            LibFred::Object_State::conditionally_identified_contact));
-            states_to_cancel.insert(
-                    Conversion::Enums::to_db_handle(
-                            LibFred::Object_State::identified_contact));
-            LibFred::CancelObjectStateRequestId(_contact_id, states_to_cancel).exec(_ctx);
+                            LibFred::Object_State::
+                            conditionally_identified_contact));
+            states_to_cancel.insert(Conversion::Enums::to_db_handle(LibFred::Object_State::identified_contact));
+            LibFred::CancelObjectStateRequestId(
+                    _contact_id,
+                    states_to_cancel).exec(_ctx);
         }
         catch (const LibFred::CancelObjectStateRequestId::Exception& e)
         {
@@ -131,20 +131,17 @@ public:
     {
     }
 
-
     DbSavepoint& release()
     {
         ctx_.get_conn().exec("RELEASE SAVEPOINT " + name_);
         return *this;
     }
 
-
     DbSavepoint& rollback()
     {
         ctx_.get_conn().exec("ROLLBACK TO " + name_);
         return *this;
     }
-
 
 private:
     LibFred::OperationContext& ctx_;
@@ -169,15 +166,19 @@ void update_contact_post_hooks(
 
         LibFred::PerformObjectStateRequest(contact_id).exec(_ctx);
 
-        conditionally_cancel_contact_verification_states(_ctx, contact_id);
+        conditionally_cancel_contact_verification_states(
+                _ctx,
+                contact_id);
 
         LibFred::PerformObjectStateRequest(contact_id).exec(_ctx);
         // admin contact verification Ticket #10935
-        if (Admin::AdminContactVerificationObjectStates::conditionally_cancel_final_states(_ctx, contact_id))
+        if (Fred::Backend::Admin::Contact::Verification::ContactStates::conditionally_cancel_final_states(
+                    _ctx,
+                    contact_id))
         {
             if (_epp_update_contact_enqueue_check)
             {
-                Admin::enqueue_check_if_no_other_exists(
+                Fred::Backend::Admin::Contact::Verification::enqueue_check_if_no_other_exists(
                         _ctx,
                         contact_id,
                         LibFred::TestsuiteHandle::AUTOMATIC,

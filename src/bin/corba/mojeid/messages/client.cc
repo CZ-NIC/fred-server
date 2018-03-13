@@ -161,7 +161,7 @@ CORBA::Object_ptr get_object_reference(CORBA::ORB_ptr orb,
     name[0].id   = nameservice_context.c_str();
     
     name[1].kind = cos_naming_kind_object;
-    name[1].id   = Registry::MojeID::service_name.c_str();
+    name[1].id   = Registry::MojeId::service_name.c_str();
     // Note on kind: The kind field is used to indicate the type
     // of the object. This is to avoid conventions such as that used
     // by files (name.type -- e.g. test.ps = postscript etc.)

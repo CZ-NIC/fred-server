@@ -16,34 +16,30 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- *  declaration for Registry::MojeIDImplData namespace
- */
-
 #ifndef MOJEID_IMPL_DATA_CONVERSION_HH_3FFB13E7D2574A12916DF3E34D830D12
 #define MOJEID_IMPL_DATA_CONVERSION_HH_3FFB13E7D2574A12916DF3E34D830D12
 
 #include "src/backend/mojeid/mojeid_impl_data.hh"
 #include "src/libfred/registrable_object/contact/info_contact_data.hh"
 
-namespace Registry {
+namespace Fred {
+namespace Backend {
+namespace MojeIdImplData {
 
-namespace MojeIDImplData {
+void from_into(const Address& src, LibFred::Contact::PlaceAddress& dst);
+void from_into(const ShippingAddress& src, LibFred::ContactAddress& dst);
 
-void from_into(const Address         &src, LibFred::Contact::PlaceAddress &dst);
-void from_into(const ShippingAddress &src, LibFred::ContactAddress        &dst);
+void from_into(const LibFred::Contact::PlaceAddress& src, Address& dst);
+void from_into(const LibFred::ContactAddress& src, ShippingAddress& dst);
 
-void from_into(const LibFred::Contact::PlaceAddress &src, Address         &dst);
-void from_into(const LibFred::ContactAddress        &src, ShippingAddress &dst);
+void from_into(const CreateContact& src, LibFred::InfoContactData& dst);
+void from_into(const UpdateContact& src, LibFred::InfoContactData& dst);
+void from_into(const UpdateTransferContact& src, LibFred::InfoContactData& dst);
 
-void from_into(const CreateContact &src,         LibFred::InfoContactData &dst);
-void from_into(const UpdateContact &src,         LibFred::InfoContactData &dst);
-void from_into(const UpdateTransferContact &src, LibFred::InfoContactData &dst);
+void from_into(const LibFred::InfoContactData& src, InfoContact& dst);
 
-void from_into(const LibFred::InfoContactData &src, InfoContact &dst);
-
-} // namespace Registry::MojeIDImplData
-} // namespace Registry
+} // namespace Fred::Backend::MojeIdImplData
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

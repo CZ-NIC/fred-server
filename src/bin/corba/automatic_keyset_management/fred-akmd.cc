@@ -40,7 +40,6 @@
 #include "src/util/setup_server.hh"
 
 #include <boost/assign/list_of.hpp>
-#include <boost/shared_ptr.hpp>
 
 #include <cstdlib>
 #include <iostream>

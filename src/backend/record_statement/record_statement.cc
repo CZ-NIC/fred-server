@@ -23,46 +23,47 @@
 
 #include "src/backend/record_statement/record_statement.hh"
 
-#include "src/backend/record_statement/impl/record_statement_xml.hh"
+#include "src/backend/buffer.hh"
 #include "src/backend/record_statement/impl/factory.hh"
-
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/zone/zone.hh"
+#include "src/backend/record_statement/impl/record_statement_xml.hh"
 #include "src/libfred/object/object_type.hh"
 #include "src/libfred/object_state/get_object_states.hh"
+#include "src/libfred/opcontext.hh"
 #include "src/libfred/registrable_object/contact/info_contact.hh"
 #include "src/libfred/registrable_object/domain/info_domain.hh"
-#include "src/libfred/registrable_object/nsset/info_nsset.hh"
 #include "src/libfred/registrable_object/keyset/info_keyset.hh"
+#include "src/libfred/registrable_object/nsset/info_nsset.hh"
 #include "src/libfred/registrar/info_registrar.hh"
+#include "src/libfred/zone/zone.hh"
 #include "src/util/log/context.hh"
-#include "src/util/util.hh"
-#include "src/util/subprocess.hh"
 #include "src/util/random.hh"
+#include "src/util/subprocess.hh"
+#include "src/util/util.hh"
 
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include <cstring>
-#include <string>
-#include <set>
-#include <vector>
 #include <algorithm>
+#include <cstring>
+#include <set>
 #include <sstream>
 #include <stdexcept>
+#include <string>
+#include <vector>
 
 
-namespace Registry {
+namespace Fred {
+namespace Backend {
 namespace RecordStatement {
 
 namespace {
 
-std::string create_ctx_name(const std::string &_name)
+std::string create_ctx_name(const std::string& _name)
 {
     return str(boost::format("%1%-<%2%>") % _name % Random::integer(0, 10000));
 }
 
-std::string create_ctx_function_name(const char *fnc)
+std::string create_ctx_function_name(const char* fnc)
 {
     std::string name(fnc);
     std::replace(name.begin(), name.end(), '_', '-');
@@ -72,12 +73,13 @@ std::string create_ctx_function_name(const char *fnc)
 class LogContext
 {
 public:
-    LogContext(const RecordStatementImpl &_impl, const std::string &_op_name)
-    :   ctx_server_(create_ctx_name(_impl.get_server_name())),
-        ctx_interface_("record-statement"),
-        ctx_operation_(_op_name)
+    LogContext(const RecordStatementImpl& _impl, const std::string& _op_name)
+        : ctx_server_(create_ctx_name(_impl.get_server_name())),
+          ctx_interface_("record-statement"),
+          ctx_operation_(_op_name)
     {
     }
+
 private:
     Logging::Context ctx_server_;
     Logging::Context ctx_interface_;
@@ -85,37 +87,34 @@ private:
 };
 
 #define LOGGING_CONTEXT(CTX_VAR, IMPL_OBJ) LogContext CTX_VAR((IMPL_OBJ), create_ctx_function_name(__FUNCTION__))
-
 }
 
 
-PdfBufferImpl::PdfBufferImpl(const std::string& s)
-    : value(s)
-{ }
-
 RecordStatementImpl::RecordStatementImpl(
-        const std::string &_server_name,
-        const boost::shared_ptr<LibFred::Document::Manager>& _doc_manager,
-        const boost::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager,
+        const std::string& _server_name,
+        const std::shared_ptr<LibFred::Document::Manager>& _doc_manager,
+        const std::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager,
         const std::string& _registry_timezone)
     : server_name_(_server_name),
-      impl_(LibFred::RecordStatement::Impl::Factory::produce(
+      impl_(Impl::Factory::produce(
               _registry_timezone,
               _doc_manager,
               _mailer_manager))
-{ }
+{
+}
 
 RecordStatementImpl::~RecordStatementImpl()
-{ }
+{
+}
 
-const std::string& RecordStatementImpl::get_server_name()const
+const std::string& RecordStatementImpl::get_server_name() const
 {
     return server_name_;
 }
 
 template <Purpose::Enum _purpose>
-PdfBufferImpl RecordStatementImpl::domain_printout(
-        const std::string& _fqdn)const
+Buffer RecordStatementImpl::domain_printout(
+        const std::string& _fqdn) const
 {
     LOGGING_CONTEXT(log_ctx, *this);
     try
@@ -135,11 +134,11 @@ PdfBufferImpl RecordStatementImpl::domain_printout(
     }
 }
 
-template PdfBufferImpl RecordStatementImpl::domain_printout<Purpose::private_printout>(const std::string&)const;
-template PdfBufferImpl RecordStatementImpl::domain_printout<Purpose::public_printout>(const std::string&)const;
+template Buffer RecordStatementImpl::domain_printout<Purpose::private_printout>(const std::string&) const;
+template Buffer RecordStatementImpl::domain_printout<Purpose::public_printout>(const std::string&) const;
 
-PdfBufferImpl RecordStatementImpl::nsset_printout(
-        const std::string& _handle)const
+Buffer RecordStatementImpl::nsset_printout(
+        const std::string& _handle) const
 {
     LOGGING_CONTEXT(log_ctx, *this);
     try
@@ -159,8 +158,8 @@ PdfBufferImpl RecordStatementImpl::nsset_printout(
     }
 }
 
-PdfBufferImpl RecordStatementImpl::keyset_printout(
-        const std::string& _handle)const
+Buffer RecordStatementImpl::keyset_printout(
+        const std::string& _handle) const
 {
     LOGGING_CONTEXT(log_ctx, *this);
     try
@@ -181,8 +180,8 @@ PdfBufferImpl RecordStatementImpl::keyset_printout(
 }
 
 template <Purpose::Enum _purpose>
-PdfBufferImpl RecordStatementImpl::contact_printout(
-        const std::string& _handle)const
+Buffer RecordStatementImpl::contact_printout(
+        const std::string& _handle) const
 {
     LOGGING_CONTEXT(log_ctx, *this);
     try
@@ -202,12 +201,12 @@ PdfBufferImpl RecordStatementImpl::contact_printout(
     }
 }
 
-template PdfBufferImpl RecordStatementImpl::contact_printout<Purpose::private_printout>(const std::string&)const;
-template PdfBufferImpl RecordStatementImpl::contact_printout<Purpose::public_printout>(const std::string&)const;
+template Buffer RecordStatementImpl::contact_printout<Purpose::private_printout>(const std::string&) const;
+template Buffer RecordStatementImpl::contact_printout<Purpose::public_printout>(const std::string&) const;
 
-PdfBufferImpl RecordStatementImpl::historic_domain_printout(
+Buffer RecordStatementImpl::historic_domain_printout(
         const std::string& _fqdn,
-        const Tz::LocalTimestamp& _valid_at)const
+        const Tz::LocalTimestamp& _valid_at) const
 {
     LOGGING_CONTEXT(log_ctx, *this);
     try
@@ -227,9 +226,9 @@ PdfBufferImpl RecordStatementImpl::historic_domain_printout(
     }
 }
 
-PdfBufferImpl RecordStatementImpl::historic_nsset_printout(
+Buffer RecordStatementImpl::historic_nsset_printout(
         const std::string& _handle,
-        const Tz::LocalTimestamp& _valid_at)const
+        const Tz::LocalTimestamp& _valid_at) const
 {
     LOGGING_CONTEXT(log_ctx, *this);
     try
@@ -249,9 +248,9 @@ PdfBufferImpl RecordStatementImpl::historic_nsset_printout(
     }
 }
 
-PdfBufferImpl RecordStatementImpl::historic_keyset_printout(
+Buffer RecordStatementImpl::historic_keyset_printout(
         const std::string& _handle,
-        const Tz::LocalTimestamp& _valid_at)const
+        const Tz::LocalTimestamp& _valid_at) const
 {
     LOGGING_CONTEXT(log_ctx, *this);
     try
@@ -271,9 +270,9 @@ PdfBufferImpl RecordStatementImpl::historic_keyset_printout(
     }
 }
 
-PdfBufferImpl RecordStatementImpl::historic_contact_printout(
+Buffer RecordStatementImpl::historic_contact_printout(
         const std::string& _handle,
-        const Tz::LocalTimestamp& _valid_at)const
+        const Tz::LocalTimestamp& _valid_at) const
 {
     LOGGING_CONTEXT(log_ctx, *this);
     try
@@ -295,7 +294,7 @@ PdfBufferImpl RecordStatementImpl::historic_contact_printout(
 
 template <Purpose::Enum _purpose>
 void RecordStatementImpl::send_domain_printout(
-        const std::string& _fqdn)const
+        const std::string& _fqdn) const
 {
     LOGGING_CONTEXT(log_ctx, *this);
     try
@@ -315,11 +314,11 @@ void RecordStatementImpl::send_domain_printout(
     }
 }
 
-template void RecordStatementImpl::send_domain_printout<Purpose::private_printout>(const std::string&)const;
-template void RecordStatementImpl::send_domain_printout<Purpose::public_printout>(const std::string&)const;
+template void RecordStatementImpl::send_domain_printout<Purpose::private_printout>(const std::string&) const;
+template void RecordStatementImpl::send_domain_printout<Purpose::public_printout>(const std::string&) const;
 
 void RecordStatementImpl::send_nsset_printout(
-        const std::string& _handle)const
+        const std::string& _handle) const
 {
     LOGGING_CONTEXT(log_ctx, *this);
     try
@@ -340,7 +339,7 @@ void RecordStatementImpl::send_nsset_printout(
 }
 
 void RecordStatementImpl::send_keyset_printout(
-        const std::string& _handle)const
+        const std::string& _handle) const
 {
     LOGGING_CONTEXT(log_ctx, *this);
     try
@@ -362,7 +361,7 @@ void RecordStatementImpl::send_keyset_printout(
 
 template <Purpose::Enum _purpose>
 void RecordStatementImpl::send_contact_printout(
-        const std::string& _handle)const
+        const std::string& _handle) const
 {
     LOGGING_CONTEXT(log_ctx, *this);
     try
@@ -382,8 +381,9 @@ void RecordStatementImpl::send_contact_printout(
     }
 }
 
-template void RecordStatementImpl::send_contact_printout<Purpose::private_printout>(const std::string&)const;
-template void RecordStatementImpl::send_contact_printout<Purpose::public_printout>(const std::string&)const;
+template void RecordStatementImpl::send_contact_printout<Purpose::private_printout>(const std::string&) const;
+template void RecordStatementImpl::send_contact_printout<Purpose::public_printout>(const std::string&) const;
 
-} // namespace Registry::RecordStatement
-} // namespace Registry
+} // namespace Fred::Backend::RecordStatement
+} // namespace Fred::Backend
+} // namespace Fred

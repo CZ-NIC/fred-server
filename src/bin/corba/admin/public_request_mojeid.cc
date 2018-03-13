@@ -1,19 +1,19 @@
 #include "src/bin/corba/admin/public_request_mojeid.hh"
-#include "src/libfred/public_request/public_request_impl.hh"
-#include "src/libfred/contact_verification/contact_verification_state.hh"
 
-#include "src/util/types/birthdate.hh"
-#include "src/libfred/object_states.hh"
+#include "src/libfred/contact_verification/contact_verification_state.hh"
 #include "src/libfred/mailer.hh"
 #include "src/libfred/object_states.hh"
+#include "src/libfred/object_states.hh"
+#include "src/libfred/public_request/public_request_impl.hh"
+#include "src/util/types/birthdate.hh"
 
-namespace LibFred {
-namespace PublicRequest {
+namespace CorbaConversion {
+namespace Admin {
 
 FACTORY_MODULE_INIT_DEFI(mojeid)
 
-class MojeIDPublicRequestBase
-:   public LibFred::PublicRequest::PublicRequestAuthImpl
+class MojeIdPublicRequestBase
+        : public LibFred::PublicRequest::PublicRequestAuthImpl
 {
 public:
     void sendPasswords()
@@ -27,91 +27,91 @@ public:
     }
 };
 
-class MojeIDCCI
-:   public MojeIDPublicRequestBase,
-    public Util::FactoryAutoRegister< PublicRequest, MojeIDCCI >
+class MojeIdCCI
+        : public MojeIdPublicRequestBase,
+          public Util::FactoryAutoRegister<LibFred::PublicRequest::PublicRequest, MojeIdCCI>
 {
 public:
     static std::string registration_name()
     {
-        return PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION;
+        return CorbaConversion::Admin::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION;
     }
 };
 
-class MojeIDCI
-:   public MojeIDPublicRequestBase,
-    public Util::FactoryAutoRegister< PublicRequest, MojeIDCI >
+class MojeIdCI
+        : public MojeIdPublicRequestBase,
+          public Util::FactoryAutoRegister<LibFred::PublicRequest::PublicRequest, MojeIdCI>
 {
 public:
     static std::string registration_name()
     {
-        return PRT_MOJEID_CONTACT_IDENTIFICATION;
+        return CorbaConversion::Admin::PRT_MOJEID_CONTACT_IDENTIFICATION;
     }
 };
 
-class MojeIDCICT
-:   public MojeIDPublicRequestBase,
-    public Util::FactoryAutoRegister< PublicRequest, MojeIDCICT >
+class MojeIdCICT
+        : public MojeIdPublicRequestBase,
+          public Util::FactoryAutoRegister<LibFred::PublicRequest::PublicRequest, MojeIdCICT>
 {
 public:
     static std::string registration_name()
     {
-        return PRT_MOJEID_CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER;
+        return CorbaConversion::Admin::PRT_MOJEID_CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER;
     }
 };
 
-class MojeIDICT
-:   public MojeIDPublicRequestBase,
-    public Util::FactoryAutoRegister< PublicRequest, MojeIDICT >
+class MojeIdICT
+        : public MojeIdPublicRequestBase,
+          public Util::FactoryAutoRegister<LibFred::PublicRequest::PublicRequest, MojeIdICT>
 {
 public:
     static std::string registration_name()
     {
-        return PRT_MOJEID_IDENTIFIED_CONTACT_TRANSFER;
+        return CorbaConversion::Admin::PRT_MOJEID_IDENTIFIED_CONTACT_TRANSFER;
     }
 };
 
-class MojeIDCRI
-:   public MojeIDPublicRequestBase,
-    public Util::FactoryAutoRegister< PublicRequest, MojeIDCRI >
+class MojeIdCRI
+        : public MojeIdPublicRequestBase,
+          public Util::FactoryAutoRegister<LibFred::PublicRequest::PublicRequest, MojeIdCRI>
 {
 public:
     static std::string registration_name()
     {
-        return PRT_MOJEID_CONTACT_REIDENTIFICATION;
+        return CorbaConversion::Admin::PRT_MOJEID_CONTACT_REIDENTIFICATION;
     }
 };
 
-class MojeIDCPUT
-:   public MojeIDPublicRequestBase,
-    public Util::FactoryAutoRegister< PublicRequest, MojeIDCPUT >
+class MojeIdCPUT
+        : public MojeIdPublicRequestBase,
+          public Util::FactoryAutoRegister<LibFred::PublicRequest::PublicRequest, MojeIdCPUT>
 {
 public:
     static std::string registration_name()
     {
-        return PRT_MOJEID_CONTACT_PREVALIDATED_UNIDENTIFIED_TRANSFER;
+        return CorbaConversion::Admin::PRT_MOJEID_CONTACT_PREVALIDATED_UNIDENTIFIED_TRANSFER;
     }
 };
 
-class MojeIDCPT
-:   public MojeIDPublicRequestBase,
-    public Util::FactoryAutoRegister< PublicRequest, MojeIDCPT >
+class MojeIdCPT
+        : public MojeIdPublicRequestBase,
+          public Util::FactoryAutoRegister<LibFred::PublicRequest::PublicRequest, MojeIdCPT>
 {
 public:
     static std::string registration_name()
     {
-        return PRT_MOJEID_CONTACT_PREVALIDATED_TRANSFER;
+        return CorbaConversion::Admin::PRT_MOJEID_CONTACT_PREVALIDATED_TRANSFER;
     }
 };
 
-class MojeIDCV
-:   public PublicRequestImpl,
-    public Util::FactoryAutoRegister< PublicRequest, MojeIDCV >
+class MojeIdCV
+        : public LibFred::PublicRequest::PublicRequestImpl,
+          public Util::FactoryAutoRegister<LibFred::PublicRequest::PublicRequest, MojeIdCV>
 {
 public:
     static std::string registration_name()
     {
-        return PRT_MOJEID_CONTACT_VALIDATION;
+        return CorbaConversion::Admin::PRT_MOJEID_CONTACT_VALIDATION;
     }
 
     bool check() const
@@ -140,69 +140,75 @@ public:
 
         const unsigned long long oid = this->getObject(0).id;
 
-        const Contact::Verification::State contact_state =
-            Contact::Verification::get_contact_verification_state(oid);
-        if (contact_state.has_all(Contact::Verification::State::ciVm) ||
-           !contact_state.has_all(Contact::Verification::State::CivM)) {
-            throw NotApplicable("pre_insert_checks: failed!");
+        const LibFred::Contact::Verification::State contact_state =
+                LibFred::Contact::Verification::get_contact_verification_state(oid);
+        if (contact_state.has_all(LibFred::Contact::Verification::State::ciVm) ||
+                !contact_state.has_all(LibFred::Contact::Verification::State::CivM))
+        {
+            throw LibFred::PublicRequest::NotApplicable("pre_insert_checks: failed!");
         }
 
         /* set new state */
-        insertNewStateRequest(this->getId(), oid, "validatedContact");
+        LibFred::PublicRequest::insertNewStateRequest(this->getId(), oid, "validatedContact");
         ::LibFred::update_object_states(oid);
         tx.commit();
     }
 
-    void fillTemplateParams(::LibFred::Mailer::Parameters &params)const
+    void fillTemplateParams(::LibFred::Mailer::Parameters& params) const
     {
         params["reqdate"] = stringify(this->getCreateTime().date());
-        params["reqid"]   = stringify(this->getId());
+        params["reqid"] = stringify(this->getId());
 
-        if (this->getObjectSize()) {
-            params["type"]   = stringify(this->getObject(0).type);
+        if (this->getObjectSize())
+        {
+            params["type"] = stringify(this->getObject(0).type);
             params["handle"] = this->getObject(0).handle;
         }
 
         Database::Connection conn = Database::Manager::acquire();
         Database::Result res = conn.exec_params(
-            "SELECT c.name,c.organization,c.ssn,"
-                   "(SELECT type FROM enum_ssntype WHERE id=c.ssntype),"
-                   "CONCAT_WS(', ',NULLIF(BTRIM(c.street1),''),NULLIF(BTRIM(c.street2),''),"
-                                  "NULLIF(BTRIM(c.street3),''),NULLIF(BTRIM(c.postalcode),''),"
-                                  "NULLIF(BTRIM(c.city),''),c.country) "
-            "FROM public_request pr "
-            "JOIN public_request_objects_map prom ON prom.request_id=pr.id "
-            "JOIN contact c ON c.id=prom.object_id "
-            "WHERE pr.id=$1::INTEGER", Database::query_param_list(this->getId()));
-        if (res.size() == 1) {
-            const std::string ssn      = res[0][2].isnull() ? std::string()
-                                                            : static_cast< std::string >(res[0][2]);
+                // clang-format off
+                "SELECT c.name,c.organization,c.ssn,"
+                       "(SELECT type FROM enum_ssntype WHERE id=c.ssntype),"
+                       "CONCAT_WS(', ',NULLIF(BTRIM(c.street1),''),NULLIF(BTRIM(c.street2),''),"
+                                      "NULLIF(BTRIM(c.street3),''),NULLIF(BTRIM(c.postalcode),''),"
+                                      "NULLIF(BTRIM(c.city),''),c.country) "
+                "FROM public_request pr "
+                "JOIN public_request_objects_map prom ON prom.request_id=pr.id "
+                "JOIN contact c ON c.id=prom.object_id "
+                "WHERE pr.id=$1::INTEGER", Database::query_param_list(this->getId()));
+                // clang-format on
+        if (res.size() == 1)
+        {
+            const std::string ssn = res[0][2].isnull() ? std::string()
+                                                       : static_cast<std::string>(res[0][2]);
             const std::string ssn_type = res[0][3].isnull() ? std::string()
-                                                            : static_cast< std::string >(res[0][3]);
-            params["name"]      = res[0][0].isnull() ? std::string() : static_cast< std::string >(res[0][0]);
-            params["org"]       = res[0][1].isnull() ? std::string() : static_cast< std::string >(res[0][1]);
-            params["ic"]        = ssn_type == "ICO" ? ssn : std::string();
+                                                            : static_cast<std::string>(res[0][3]);
+            params["name"] = res[0][0].isnull() ? std::string() : static_cast<std::string>(res[0][0]);
+            params["org"] = res[0][1].isnull() ? std::string() : static_cast<std::string>(res[0][1]);
+            params["ic"] = ssn_type == "ICO" ? ssn : std::string();
             params["birthdate"] = (ssn_type == "BIRTHDAY") && !ssn.empty()
-                                  ? stringify(birthdate_from_string_to_date(ssn))
-                                  : std::string();
-            params["address"]   = res[0][4].isnull() ? std::string() : static_cast< std::string >(res[0][4]);
-            params["status"]    = this->getStatus() == PRS_ANSWERED ? "1" : "2";
+                                          ? stringify(birthdate_from_string_to_date(ssn))
+                                          : std::string();
+            params["address"] = res[0][4].isnull() ? std::string() : static_cast<std::string>(res[0][4]);
+            params["status"] = this->getStatus() == LibFred::PublicRequest::PRS_ANSWERED ? "1" : "2";
         }
     }
 
-    std::string getTemplateName()const
+    std::string getTemplateName() const
     {
         return "mojeid_validation";
     }
 
     void save()
     {
-        if (this->getId() == 0) {
+        if (this->getId() == 0)
+        {
             throw std::runtime_error("insert new request disabled");
         }
         PublicRequestImpl::save();
     }
 };
 
-}
-}
+} // namespace CorbaConversion::Admin
+} // namespace CorbaConversion

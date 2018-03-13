@@ -5,9 +5,15 @@
 
 #include "src/libfred/opcontext.hh"
 
+namespace Fred {
+namespace Backend {
 namespace Whois {
-    bool nameserver_exists(
+
+bool nameserver_exists(
         const std::string& ns_fqdn,
         LibFred::OperationContext& ctx);
-}
+
+} // namespace Fred::Backend::Whois
+} // namespace Fred::Backend
+} // namespace Fred
 #endif

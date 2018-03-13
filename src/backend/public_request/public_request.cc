@@ -1,35 +1,40 @@
 #include "src/backend/public_request/public_request.hh"
-#include "src/libfred/public_request/create_public_request.hh"
-#include "src/libfred/public_request/update_public_request.hh"
-#include "src/libfred/object/object_state.hh"
+
+#include "src/backend/buffer.hh"
 #include "src/libfred/object/get_id_of_registered.hh"
-#include "src/libfred/object_state/get_object_states.hh"
+#include "src/libfred/object/object_state.hh"
 #include "src/libfred/object/object_states_info.hh"
+#include "src/libfred/object_state/get_object_states.hh"
+#include "src/libfred/public_request/create_public_request.hh"
+#include "src/libfred/public_request/info_public_request.hh"
+#include "src/libfred/public_request/public_request_lock_guard.hh"
 #include "src/libfred/public_request/public_request_status.hh"
 #include "src/libfred/public_request/public_request_type_iface.hh"
-#include "src/libfred/public_request/public_request_lock_guard.hh"
-#include "src/libfred/public_request/info_public_request.hh"
-#include "src/util/cfg/handle_registry_args.hh"
+#include "src/libfred/public_request/update_public_request.hh"
 #include "src/util/cfg/config_handler_decl.hh"
+#include "src/util/cfg/handle_registry_args.hh"
 #include "src/util/corba_wrapper_decl.hh"
-#include "src/util/types/stringify.hh"
 #include "src/util/db/query_param.hh"
 #include "src/util/log/context.hh"
 #include "src/util/random.hh"
+#include "src/util/types/stringify.hh"
 
-#include <boost/format.hpp>
+#include <boost/algorithm/string/trim.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/foreach.hpp>
-#include <boost/algorithm/string/trim.hpp>
+#include <boost/format.hpp>
 
-#include <set>
 #include <map>
-#include <stdexcept>
+#include <set>
 #include <sstream>
+#include <stdexcept>
 #include <utility>
 
-namespace Registry {
-namespace PublicRequestType {
+namespace Fred {
+namespace Backend {
+namespace PublicRequest {
+
+namespace Type {
 
 namespace {
 
@@ -41,8 +46,15 @@ struct ImplementedBy
     {
     public:
         typedef T Type;
-        Named():implementation_() { }
-        std::string get_public_request_type() const { return name; }
+        Named()
+            : implementation_()
+        {
+        }
+        std::string get_public_request_type() const
+        {
+            return name;
+        }
+
     private:
         PublicRequestTypes get_public_request_types_to_cancel_on_create() const
         {
@@ -50,7 +62,7 @@ struct ImplementedBy
         }
         PublicRequestTypes get_public_request_types_to_cancel_on_update(
                 LibFred::PublicRequest::Status::Enum _old_status,
-                LibFred::PublicRequest::Status::Enum _new_status)const
+                LibFred::PublicRequest::Status::Enum _new_status) const
         {
             return implementation_.template get_public_request_types_to_cancel_on_update<Named>(
                     _old_status,
@@ -64,7 +76,7 @@ struct ImplementedBy
 struct AuthinfoImplementation
 {
     template <typename T>
-    LibFred::PublicRequestTypeIface::PublicRequestTypes get_public_request_types_to_cancel_on_create()const
+    LibFred::PublicRequestTypeIface::PublicRequestTypes get_public_request_types_to_cancel_on_create() const
     {
         LibFred::PublicRequestTypeIface::PublicRequestTypes res;
         res.insert(LibFred::PublicRequestTypeIface::IfacePtr(new T));
@@ -73,7 +85,7 @@ struct AuthinfoImplementation
     template <typename T>
     LibFred::PublicRequestTypeIface::PublicRequestTypes get_public_request_types_to_cancel_on_update(
             LibFred::PublicRequest::Status::Enum,
-            LibFred::PublicRequest::Status::Enum)const
+            LibFred::PublicRequest::Status::Enum) const
     {
         return LibFred::PublicRequestTypeIface::PublicRequestTypes();
     };
@@ -96,14 +108,14 @@ LibFred::PublicRequestTypeIface::PublicRequestTypes get_block_unblock_public_req
 struct BlockUnblockImplementation
 {
     template <typename>
-    LibFred::PublicRequestTypeIface::PublicRequestTypes get_public_request_types_to_cancel_on_create()const
+    LibFred::PublicRequestTypeIface::PublicRequestTypes get_public_request_types_to_cancel_on_create() const
     {
         return get_block_unblock_public_request_types_to_cancel_on_create();
     }
     template <typename T>
     LibFred::PublicRequestTypeIface::PublicRequestTypes get_public_request_types_to_cancel_on_update(
             LibFred::PublicRequest::Status::Enum,
-            LibFred::PublicRequest::Status::Enum)const
+            LibFred::PublicRequest::Status::Enum) const
     {
         return LibFred::PublicRequestTypeIface::PublicRequestTypes();
     };
@@ -167,17 +179,17 @@ LibFred::PublicRequestTypeIface::PublicRequestTypes get_block_unblock_public_req
     return res;
 }
 
-} // namespace Registry::PublicRequestType::{anonymous}
-} // namespace Registry::PublicRequestType
+} // namespace Fred::Backend::PublicRequest::Type::{anonymous}
+} // namespace Fred::Backend::PublicRequest::Type
 
 namespace {
 
-std::string create_ctx_name(const std::string &_name)
+std::string create_ctx_name(const std::string& _name)
 {
     return str(boost::format("%1%-<%2%>") % _name % Random::integer(0, 10000));
 }
 
-std::string create_ctx_function_name(const char *fnc)
+std::string create_ctx_function_name(const char* fnc)
 {
     std::string name(fnc);
     std::replace(name.begin(), name.end(), '_', '-');
@@ -187,12 +199,13 @@ std::string create_ctx_function_name(const char *fnc)
 class LogContext
 {
 public:
-    LogContext(const PublicRequestImpl &_impl, const std::string &_op_name)
-    :   ctx_server_(create_ctx_name(_impl.get_server_name())),
-        ctx_interface_("PublicRequest"),
-        ctx_operation_(_op_name)
+    LogContext(const PublicRequestImpl& _impl, const std::string& _op_name)
+        : ctx_server_(create_ctx_name(_impl.get_server_name())),
+          ctx_interface_("PublicRequest"),
+          ctx_operation_(_op_name)
     {
     }
+
 private:
     Logging::Context ctx_server_;
     Logging::Context ctx_interface_;
@@ -218,30 +231,35 @@ struct EmailData
         : recipient_email_addresses(_recipient_email_addresses),
           template_name(_template_name),
           template_parameters(_template_parameters)
-    {}
+    {
+    }
     const std::set<std::string> recipient_email_addresses;
     const std::string template_name;
     const std::map<std::string, std::string> template_parameters;
 };
 
-struct FailedToSendMailToRecipient:std::exception
+struct FailedToSendMailToRecipient : std::exception
 {
-    const char* what()const noexcept { return "failed to send mail to recipient"; }
+    const char* what() const noexcept
+    {
+        return "failed to send mail to recipient";
+    }
 };
 
 unsigned long long send_joined_addresses_email(
-    std::shared_ptr<LibFred::Mailer::Manager> mailer,
-    const EmailData& data)
+        std::shared_ptr<LibFred::Mailer::Manager> mailer,
+        const EmailData& data)
 {
     std::set<std::string> trimmed_recipient_email_addresses;
-    BOOST_FOREACH(const std::string& email, data.recipient_email_addresses)
+    BOOST_FOREACH (const std::string& email, data.recipient_email_addresses)
     {
         trimmed_recipient_email_addresses.insert(boost::trim_copy(email));
     }
 
     std::ostringstream recipients;
     for (std::set<std::string>::const_iterator address_ptr = trimmed_recipient_email_addresses.begin();
-         address_ptr != trimmed_recipient_email_addresses.end(); ++address_ptr)
+            address_ptr != trimmed_recipient_email_addresses.end();
+            ++address_ptr)
     {
         recipients << *address_ptr << ' ';
     }
@@ -263,10 +281,10 @@ unsigned long long send_joined_addresses_email(
 }
 
 unsigned long long send_authinfo(
-    unsigned long long public_request_id,
-    const std::string& handle,
-    PublicRequestImpl::ObjectType::Enum object_type,
-    std::shared_ptr<LibFred::Mailer::Manager> manager)
+        unsigned long long public_request_id,
+        const std::string& handle,
+        PublicRequestImpl::ObjectType::Enum object_type,
+        std::shared_ptr<LibFred::Mailer::Manager> manager)
 {
     LibFred::OperationContextCreator ctx;
     LibFred::Mailer::Parameters email_template_params;
@@ -293,6 +311,7 @@ unsigned long long send_authinfo(
     switch (object_type)
     {
         case PublicRequestImpl::ObjectType::contact:
+            // clang-format off
             sql = "SELECT o.authinfopw,TRIM(c.email) "
                   "FROM object o "
                   "JOIN object_registry obr ON obr.id=o.id "
@@ -301,10 +320,12 @@ unsigned long long send_authinfo(
                         "obr.type=get_object_type_id($2::TEXT) AND "
                         "obr.erdate IS NULL AND "
                         "COALESCE(TRIM(c.email),'')<>''";
+            // clang-format on
             object_type_handle = Conversion::Enums::to_db_handle(LibFred::Object_Type::contact);
             email_template_params.insert(LibFred::Mailer::Parameters::value_type("type", "1"));
             break;
         case PublicRequestImpl::ObjectType::nsset:
+            // clang-format off
             sql = "SELECT o.authinfopw,TRIM(c.email) "
                   "FROM object o "
                   "JOIN object_registry obr ON obr.id=o.id "
@@ -315,10 +336,12 @@ unsigned long long send_authinfo(
                         "obr.type=get_object_type_id($2::TEXT) AND "
                         "obr.erdate IS NULL AND "
                         "COALESCE(TRIM(c.email),'')<>''";
+            // clang-format on
             object_type_handle = Conversion::Enums::to_db_handle(LibFred::Object_Type::nsset);
             email_template_params.insert(LibFred::Mailer::Parameters::value_type("type", "2"));
             break;
         case PublicRequestImpl::ObjectType::domain:
+            // clang-format off
             sql = "SELECT o.authinfopw,TRIM(c.email) "
                   "FROM object o "
                   "JOIN object_registry obr ON obr.id=o.id "
@@ -340,10 +363,12 @@ unsigned long long send_authinfo(
                         "obr.erdate IS NULL AND "
                         "COALESCE(TRIM(c.email),'')<>'' AND "
                         "dcm.role=1";
+            // clang-format on
             object_type_handle = Conversion::Enums::to_db_handle(LibFred::Object_Type::domain);
             email_template_params.insert(LibFred::Mailer::Parameters::value_type("type", "3"));
             break;
         case PublicRequestImpl::ObjectType::keyset:
+            // clang-format off
             sql = "SELECT o.authinfopw,TRIM(c.email) "
                   "FROM object o "
                   "JOIN object_registry obr ON obr.id=o.id "
@@ -354,6 +379,7 @@ unsigned long long send_authinfo(
                         "obr.type=get_object_type_id($2::TEXT) AND "
                         "obr.erdate IS NULL AND "
                         "COALESCE(TRIM(c.email),'')<>''";
+            // clang-format on
             object_type_handle = Conversion::Enums::to_db_handle(LibFred::Object_Type::keyset);
             email_template_params.insert(LibFred::Mailer::Parameters::value_type("type", "4"));
             break;
@@ -403,9 +429,9 @@ void check_authinfo_request_permission(const LibFred::ObjectStatesInfo& states)
     }
 }
 
-} // namespace Registry::{anonymous}
+} // namespace Fred::Backend::PublicRequest::{anonymous}
 
-PublicRequestImpl::PublicRequestImpl(const std::string &_server_name)
+PublicRequestImpl::PublicRequestImpl(const std::string& _server_name)
     : server_name_(_server_name)
 {
     LogContext log_ctx(*this, "init");
@@ -415,23 +441,23 @@ PublicRequestImpl::~PublicRequestImpl()
 {
 }
 
-const std::string& PublicRequestImpl::get_server_name()const
+const std::string& PublicRequestImpl::get_server_name() const
 {
     return server_name_;
 }
 
 unsigned long long PublicRequestImpl::create_authinfo_request_registry_email(
-    ObjectType::Enum object_type,
-    const std::string& object_handle,
-    const Optional<unsigned long long>& log_request_id,
-    std::shared_ptr<LibFred::Mailer::Manager> manager) // potentially put as member
+        ObjectType::Enum object_type,
+        const std::string& object_handle,
+        const Optional<unsigned long long>& log_request_id,
+        std::shared_ptr<LibFred::Mailer::Manager> manager) // potentially put as member
 {
     LOGGING_CONTEXT(log_ctx, *this);
     try
     {
         unsigned long long object_id;
         unsigned long long public_request_id;
-        const PublicRequestType::AuthinfoAuto public_request_type;
+        const Type::AuthinfoAuto public_request_type;
         {
             LibFred::OperationContextCreator ctx;
             object_id = get_id_of_registered_object(ctx, object_type, object_handle);
@@ -441,7 +467,8 @@ unsigned long long PublicRequestImpl::create_authinfo_request_registry_email(
             public_request_id = LibFred::CreatePublicRequest(
                     "create_authinfo_request_registry_email call",
                     Optional<std::string>(),
-                    Optional<unsigned long long>()).exec(locked_object, public_request_type, log_request_id);
+                    Optional<unsigned long long>())
+                                        .exec(locked_object, public_request_type, log_request_id);
             ctx.commit_transaction();
         }
         try
@@ -454,11 +481,11 @@ unsigned long long PublicRequestImpl::create_authinfo_request_registry_email(
                 LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, object_id);
                 LibFred::UpdatePublicRequest(
                         LibFred::PublicRequest::Status::answered,
-                        Optional< Nullable< std::string > >(),
-                        Optional< Nullable< std::string > >(),
+                        Optional<Nullable<std::string> >(),
+                        Optional<Nullable<std::string> >(),
                         email_id,
-                        Optional< Nullable< LibFred::RegistrarId > >())
-                    .exec(locked_object, public_request_type, log_request_id);
+                        Optional<Nullable<LibFred::RegistrarId> >())
+                        .exec(locked_object, public_request_type, log_request_id);
                 ctx.commit_transaction();
             }
             catch (...)
@@ -474,11 +501,11 @@ unsigned long long PublicRequestImpl::create_authinfo_request_registry_email(
             LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, object_id);
             LibFred::UpdatePublicRequest(
                     LibFred::PublicRequest::Status::invalidated,
-                    Optional< Nullable< std::string > >(),
-                    Optional< Nullable< std::string > >(),
-                    Optional< Nullable< unsigned long long > >(),
-                    Optional< Nullable< LibFred::RegistrarId > >())
-                .exec(locked_object, public_request_type, log_request_id);
+                    Optional<Nullable<std::string> >(),
+                    Optional<Nullable<std::string> >(),
+                    Optional<Nullable<unsigned long long> >(),
+                    Optional<Nullable<LibFred::RegistrarId> >())
+                    .exec(locked_object, public_request_type, log_request_id);
             ctx.commit_transaction();
             throw;
         }
@@ -516,11 +543,11 @@ unsigned long long PublicRequestImpl::create_authinfo_request_registry_email(
 }
 
 unsigned long long PublicRequestImpl::create_authinfo_request_non_registry_email(
-    ObjectType::Enum object_type,
-    const std::string& object_handle,
-    const Optional<unsigned long long>& log_request_id,
-    ConfirmedBy::Enum confirmation_method,
-    const std::string& specified_email)
+        ObjectType::Enum object_type,
+        const std::string& object_handle,
+        const Optional<unsigned long long>& log_request_id,
+        ConfirmedBy::Enum confirmation_method,
+        const std::string& specified_email)
 {
     LOGGING_CONTEXT(log_ctx, *this);
     try
@@ -539,14 +566,14 @@ unsigned long long PublicRequestImpl::create_authinfo_request_non_registry_email
             case ConfirmedBy::email:
             {
                 const unsigned long long request_id =
-                        create_public_request_op.exec(locked_object, PublicRequestType::AuthinfoEmail(), log_request_id);
+                        create_public_request_op.exec(locked_object, Type::AuthinfoEmail(), log_request_id);
                 ctx.commit_transaction();
                 return request_id;
             }
             case ConfirmedBy::letter:
             {
                 const unsigned long long request_id =
-                        create_public_request_op.exec(locked_object, PublicRequestType::AuthinfoPost(), log_request_id);
+                        create_public_request_op.exec(locked_object, Type::AuthinfoPost(), log_request_id);
                 ctx.commit_transaction();
                 return request_id;
             }
@@ -606,14 +633,14 @@ const LibFred::PublicRequestTypeIface& get_public_request_type(PublicRequestImpl
     throw std::runtime_error("unexpected confirmation method");
 }
 
-} // namespace Registry::{anonymous}
+} // namespace Fred::Backend::PublicRequest::{anonymous}
 
 unsigned long long PublicRequestImpl::create_block_unblock_request(
-    ObjectType::Enum object_type,
-    const std::string& object_handle,
-    const Optional<unsigned long long>& log_request_id,
-    ConfirmedBy::Enum confirmation_method,
-    LockRequestType::Enum lock_request_type)
+        ObjectType::Enum object_type,
+        const std::string& object_handle,
+        const Optional<unsigned long long>& log_request_id,
+        ConfirmedBy::Enum confirmation_method,
+        LockRequestType::Enum lock_request_type)
 {
     LOGGING_CONTEXT(log_ctx, *this);
     try
@@ -623,7 +650,7 @@ unsigned long long PublicRequestImpl::create_block_unblock_request(
         LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, object_id);
         const LibFred::ObjectStatesInfo states(LibFred::GetObjectStates(object_id).exec(ctx));
         if (states.presents(LibFred::Object_State::mojeid_contact) ||
-            states.presents(LibFred::Object_State::server_blocked))
+                states.presents(LibFred::Object_State::server_blocked))
         {
             throw OperationProhibited();
         }
@@ -638,7 +665,7 @@ unsigned long long PublicRequestImpl::create_block_unblock_request(
                 const unsigned long long request_id =
                         LibFred::CreatePublicRequest().exec(
                                 locked_object,
-                                get_public_request_type<PublicRequestType::Block::Transfer>(confirmation_method),
+                                get_public_request_type<Type::Block::Transfer>(confirmation_method),
                                 log_request_id);
                 ctx.commit_transaction();
                 return request_id;
@@ -646,14 +673,14 @@ unsigned long long PublicRequestImpl::create_block_unblock_request(
             case LockRequestType::block_transfer_and_update:
             {
                 if (states.presents(LibFred::Object_State::server_transfer_prohibited) &&
-                    states.presents(LibFred::Object_State::server_update_prohibited))
+                        states.presents(LibFred::Object_State::server_update_prohibited))
                 {
                     throw ObjectAlreadyBlocked();
                 }
                 const unsigned long long request_id =
                         LibFred::CreatePublicRequest().exec(
                                 locked_object,
-                                get_public_request_type<PublicRequestType::Block::Changes>(confirmation_method),
+                                get_public_request_type<Type::Block::Changes>(confirmation_method),
                                 log_request_id);
                 ctx.commit_transaction();
                 return request_id;
@@ -671,7 +698,7 @@ unsigned long long PublicRequestImpl::create_block_unblock_request(
                 const unsigned long long request_id =
                         LibFred::CreatePublicRequest().exec(
                                 locked_object,
-                                get_public_request_type<PublicRequestType::Unblock::Transfer>(confirmation_method),
+                                get_public_request_type<Type::Unblock::Transfer>(confirmation_method),
                                 log_request_id);
                 ctx.commit_transaction();
                 return request_id;
@@ -689,7 +716,7 @@ unsigned long long PublicRequestImpl::create_block_unblock_request(
                 const unsigned long long request_id =
                         LibFred::CreatePublicRequest().exec(
                                 locked_object,
-                                get_public_request_type<PublicRequestType::Unblock::Changes>(confirmation_method),
+                                get_public_request_type<Type::Unblock::Changes>(confirmation_method),
                                 log_request_id);
                 ctx.commit_transaction();
                 return request_id;
@@ -749,11 +776,11 @@ namespace {
 std::map<std::string, unsigned char> get_public_request_type_to_post_type_dictionary()
 {
     std::map<std::string, unsigned char> dictionary;
-    if (dictionary.insert(std::make_pair(PublicRequestType::AuthinfoPost().get_public_request_type(), 1)).second &&
-        dictionary.insert(std::make_pair(PublicRequestType::Block::Transfer::ByPost().get_public_request_type(), 2)).second &&
-        dictionary.insert(std::make_pair(PublicRequestType::Unblock::Transfer::ByPost().get_public_request_type(), 3)).second &&
-        dictionary.insert(std::make_pair(PublicRequestType::Block::Changes::ByPost().get_public_request_type(), 4)).second &&
-        dictionary.insert(std::make_pair(PublicRequestType::Unblock::Changes::ByPost().get_public_request_type(), 5)).second)
+    if (dictionary.insert(std::make_pair(Type::AuthinfoPost().get_public_request_type(), 1)).second &&
+            dictionary.insert(std::make_pair(Type::Block::Transfer::ByPost().get_public_request_type(), 2)).second &&
+            dictionary.insert(std::make_pair(Type::Unblock::Transfer::ByPost().get_public_request_type(), 3)).second &&
+            dictionary.insert(std::make_pair(Type::Block::Changes::ByPost().get_public_request_type(), 4)).second &&
+            dictionary.insert(std::make_pair(Type::Unblock::Changes::ByPost().get_public_request_type(), 5)).second)
     {
         return dictionary;
     }
@@ -777,18 +804,20 @@ std::string language_to_lang_code(PublicRequestImpl::Language::Enum lang)
 {
     switch (lang)
     {
-        case PublicRequestImpl::Language::cs: return "cs";
-        case PublicRequestImpl::Language::en: return "en";
+        case PublicRequestImpl::Language::cs:
+            return "cs";
+        case PublicRequestImpl::Language::en:
+            return "en";
     }
     throw std::invalid_argument("language code not found");
 }
 
-} // namespace Registry::{anonymous}
+} // namespace Fred::Backend::PublicRequest::{anonymous}
 
-PublicRequestImpl::Buffer PublicRequestImpl::create_public_request_pdf(
-    unsigned long long public_request_id,
-    Language::Enum lang,
-    std::shared_ptr<LibFred::Document::Manager> manager)
+Fred::Backend::Buffer PublicRequestImpl::create_public_request_pdf(
+        unsigned long long public_request_id,
+        Language::Enum lang,
+        std::shared_ptr<LibFred::Document::Manager> manager)
 {
     LOGGING_CONTEXT(log_ctx, *this);
     const std::string lang_code = language_to_lang_code(lang);
@@ -830,30 +859,33 @@ PublicRequestImpl::Buffer PublicRequestImpl::create_public_request_pdf(
     std::ostringstream pdf_content;
     const std::unique_ptr<LibFred::Document::Generator> docgen_ptr(
             manager.get()->createOutputGenerator(
-                LibFred::Document::GT_PUBLIC_REQUEST_PDF,
-                pdf_content,
-                lang_code));
-    docgen_ptr->getInput() << "<?xml version='1.0' encoding='utf-8'?>"
-        << "<enum_whois>"
-        << "<public_request>"
-            << "<type>" << post_type << "</type>"
-            << "<handle type='" << type_id << "'>"
-            << handle
-            << "</handle>"
-            << "<date>" << create_time << "</date>"
-            << "<id>" << public_request_id << "</id>"
-            << "<replymail>" << email_to_answer << "</replymail>"
-        << "</public_request>"
-        << "</enum_whois>";
+                    LibFred::Document::GT_PUBLIC_REQUEST_PDF,
+                    pdf_content,
+                    lang_code));
+    docgen_ptr->getInput()
+            // clang-format off
+            << "<?xml version='1.0' encoding='utf-8'?>"
+            << "<enum_whois>"
+            << "<public_request>"
+                << "<type>" << post_type << "</type>"
+                << "<handle type='" << type_id << "'>"
+                << handle
+                << "</handle>"
+                << "<date>" << create_time << "</date>"
+                << "<id>" << public_request_id << "</id>"
+                << "<replymail>" << email_to_answer << "</replymail>"
+            << "</public_request>"
+            << "</enum_whois>";
+            // clang-format on
     docgen_ptr->closeInput();
 
-    return Buffer(pdf_content.str());
+    return Fred::Backend::Buffer(pdf_content.str());
 }
 
 std::shared_ptr<LibFred::Mailer::Manager> PublicRequestImpl::get_default_mailer_manager()
 {
     return std::shared_ptr<LibFred::Mailer::Manager>(
-                   new MailerManager(CorbaContainer::get_instance()->getNS()));
+            new MailerManager(CorbaContainer::get_instance()->getNS()));
 }
 
 std::shared_ptr<LibFred::Document::Manager> PublicRequestImpl::get_default_document_manager()
@@ -867,8 +899,6 @@ std::shared_ptr<LibFred::Document::Manager> PublicRequestImpl::get_default_docum
                     CorbaContainer::get_instance()->getNS()->getHostName()));
 }
 
-PublicRequestImpl::Buffer::Buffer(const std::string& s)
-    : value(s)
-{ }
-
-} // namespace Registry
+} // namespace Fred::Backend::PublicRequest
+} // namespace Fred::Backend
+} // namespace Fred

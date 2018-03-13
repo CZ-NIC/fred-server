@@ -25,6 +25,7 @@
 #include <utility>
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
+
 #include "config.h"
 #include "src/libfred/opcontext.hh"
 #include "src/bin/cli/read_config_file.hh"
@@ -38,13 +39,19 @@
 #include "src/util/corba_conversion.hh"
 
 #include "src/bin/corba/corba_conversion_test.hh"
+#include "src/bin/corba/util/corba_conversions_isodate.hh"
+#include "src/bin/corba/util/corba_conversions_isodatetime.hh"
 #include "src/bin/corba/mojeid/mojeid_corba_conversion.hh"
+#include "src/bin/corba/util/corba_conversions_buffer.hh"
 
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN
 
 #include "src/util/cfg/config_handler_decl.hh"
 #include <boost/test/unit_test.hpp>
+
+#include "src/bin/corba/Buffer.hh"
+#include "src/backend/buffer.hh"
 
 namespace Test {
 namespace CorbaConversion {
@@ -171,16 +178,16 @@ BOOST_AUTO_TEST_CASE(test_mojeid_date)
     static const std::string date_as_string = boost::gregorian::to_iso_extended_string(date);
     BOOST_CHECK(date_as_string == "2015-12-10");
 
-    Registry::MojeID::Date idl_date;
-    CorbaConversion::wrap_boost_gregorian_date(date, idl_date);
+    Registry::IsoDate idl_date;
+    CorbaConversion::Util::wrap_boost_gregorian_date_to_IsoDate(date, idl_date);
     BOOST_CHECK(idl_date.value.in() == date_as_string);
 
-    Registry::MojeIDImplData::Date impl_date;
+    Fred::Backend::MojeIdImplData::Birthdate impl_date;
     CorbaConversion::unwrap_Date(idl_date, impl_date);
     BOOST_CHECK(impl_date.value == date_as_string);
 
-    BOOST_CHECK_THROW(CorbaConversion::wrap_boost_gregorian_date(boost::gregorian::date(), idl_date),
-                      CorbaConversion::ArgumentIsSpecial);
+    BOOST_CHECK_THROW(CorbaConversion::Util::wrap_boost_gregorian_date_to_IsoDate(boost::gregorian::date(), idl_date),
+                      std::runtime_error);
 }
 
 BOOST_AUTO_TEST_CASE(test_mojeid_datetime)
@@ -189,18 +196,10 @@ BOOST_AUTO_TEST_CASE(test_mojeid_datetime)
     static const std::string time_as_string = boost::posix_time::to_iso_extended_string(time);
     BOOST_CHECK(time_as_string == "2015-12-10T00:00:00");
 
-    Registry::MojeID::DateTime_var idl_time = CorbaConversion::wrap_DateTime(time)._retn();
-    BOOST_CHECK(idl_time->value.in() == time_as_string);
+    Registry::IsoDateTime idl_time = CorbaConversion::Util::wrap_boost_posix_time_ptime_to_IsoDateTime(time);
+    BOOST_CHECK(idl_time.value.in() == time_as_string);
 
-    boost::posix_time::ptime impl_time;
-    CorbaConversion::unwrap_DateTime(idl_time.in(), impl_time);
-    BOOST_CHECK(impl_time == time);
-
-    BOOST_CHECK_THROW(CorbaConversion::wrap_DateTime(boost::posix_time::ptime()), CorbaConversion::ArgumentIsSpecial);
-
-    static const boost::posix_time::ptime special_time = boost::posix_time::ptime(boost::posix_time::not_a_date_time);
-    idl_time->value = boost::posix_time::to_iso_extended_string(special_time).c_str();
-    BOOST_CHECK_THROW(CorbaConversion::unwrap_DateTime(idl_time, impl_time), CorbaConversion::ArgumentIsSpecial);
+    BOOST_CHECK_THROW(CorbaConversion::Util::wrap_boost_posix_time_ptime_to_IsoDateTime(boost::posix_time::ptime()), std::runtime_error);
 }
 
 BOOST_AUTO_TEST_CASE(test_mojeid_nullabledate)
@@ -210,26 +209,26 @@ BOOST_AUTO_TEST_CASE(test_mojeid_nullabledate)
     BOOST_CHECK(date_as_string == "2015-12-10");
     static const Nullable< boost::gregorian::date > nnd(date);
 
-    const Registry::MojeID::NullableDate_var nd1 = CorbaConversion::wrap_Nullable_boost_gregorian_date(nnd)._retn();
+    const Registry::NullableIsoDate_var nd1 = CorbaConversion::Util::wrap_Nullable_boost_gregorian_date_to_NullableIsoDate(nnd)._retn();
     BOOST_CHECK(std::string(nd1->value()) == date_as_string);
 
     static const Nullable< boost::gregorian::date > nd;
-    const Registry::MojeID::NullableDate_var nd2 = CorbaConversion::wrap_Nullable_boost_gregorian_date(nd)._retn();
+    const Registry::NullableIsoDate_var nd2 = CorbaConversion::Util::wrap_Nullable_boost_gregorian_date_to_NullableIsoDate(nd)._retn();
     BOOST_CHECK(nd2.in() == NULL);
 
-    Nullable< Registry::MojeIDImplData::Date > res1;
-    CorbaConversion::unwrap_NullableDate(nd1.in(), res1);
+    Nullable< Fred::Backend::MojeIdImplData::Birthdate > res1;
+    CorbaConversion::unwrap_NullableIsoDate(nd1.in(), res1);
     BOOST_CHECK(!res1.isnull());
     BOOST_CHECK(res1.get_value().value == date_as_string);
 
-    Nullable< Registry::MojeIDImplData::Date > res2;
-    CorbaConversion::unwrap_NullableDate(nd2.in(), res2);
+    Nullable< Fred::Backend::MojeIdImplData::Birthdate > res2;
+    CorbaConversion::unwrap_NullableIsoDate(nd2.in(), res2);
     BOOST_CHECK(res2.isnull());
 }
 
 BOOST_AUTO_TEST_CASE(test_mojeid_address)
 {
-    Registry::MojeIDImplData::Address impl_addr;
+    Fred::Backend::MojeIdImplData::Address impl_addr;
     impl_addr.street1 = "st1";
     impl_addr.street2 = "st2";
     impl_addr.street3 = "st3";
@@ -246,7 +245,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_address)
     BOOST_CHECK(idl_addr.state.in()->_value()   == impl_addr.state.get_value());
     BOOST_CHECK(idl_addr.country.in()           == impl_addr.country);
 
-    Registry::MojeIDImplData::Address impl_addr_res;
+    Fred::Backend::MojeIdImplData::Address impl_addr_res;
     CorbaConversion::unwrap_Address(idl_addr, impl_addr_res);
     BOOST_CHECK(impl_addr_res.street1             == impl_addr.street1);
     BOOST_CHECK(impl_addr_res.street2.get_value() == impl_addr.street2.get_value());
@@ -258,7 +257,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_address)
 
 BOOST_AUTO_TEST_CASE(test_nullable_mojeid_address)
 {
-    Registry::MojeIDImplData::Address impl_addr;
+    Fred::Backend::MojeIdImplData::Address impl_addr;
     impl_addr.street1 = "st1";
     impl_addr.street2 = "st2";
     impl_addr.street3 = "st3";
@@ -267,10 +266,10 @@ BOOST_AUTO_TEST_CASE(test_nullable_mojeid_address)
     impl_addr.country = "Czech Republic";
 
     Registry::MojeID::NullableAddress_var idl_nullable_addr =
-        CorbaConversion::wrap_Nullable_Address(Nullable< Registry::MojeIDImplData::Address >())._retn();
+        CorbaConversion::wrap_Nullable_Address(Nullable< Fred::Backend::MojeIdImplData::Address >())._retn();
     BOOST_CHECK(idl_nullable_addr.in() == NULL);
 
-    Nullable< Registry::MojeIDImplData::Address > impl_nullable_addr(impl_addr);
+    Nullable< Fred::Backend::MojeIdImplData::Address > impl_nullable_addr(impl_addr);
     BOOST_CHECK(!impl_nullable_addr.isnull());
     CorbaConversion::unwrap_NullableAddress(idl_nullable_addr, impl_nullable_addr);
     BOOST_CHECK(impl_nullable_addr.isnull());
@@ -286,7 +285,7 @@ BOOST_AUTO_TEST_CASE(test_nullable_mojeid_address)
     BOOST_CHECK(idl_nullable_addr->_value().state.in()->_value()   == impl_addr.state.get_value());
     BOOST_CHECK(idl_nullable_addr->_value().country.in()           == impl_addr.country);
 
-    impl_nullable_addr = Nullable< Registry::MojeIDImplData::Address >();
+    impl_nullable_addr = Nullable< Fred::Backend::MojeIdImplData::Address >();
     BOOST_CHECK(impl_nullable_addr.isnull());
     CorbaConversion::unwrap_NullableAddress(idl_nullable_addr, impl_nullable_addr);
     BOOST_REQUIRE(!impl_nullable_addr.isnull());
@@ -300,7 +299,7 @@ BOOST_AUTO_TEST_CASE(test_nullable_mojeid_address)
 
 BOOST_AUTO_TEST_CASE(test_mojeid_shippingaddress)
 {
-    Registry::MojeIDImplData::ShippingAddress impl_addr;
+    Fred::Backend::MojeIdImplData::ShippingAddress impl_addr;
     impl_addr.company_name = "company";
     impl_addr.street1      = "st1";
     impl_addr.street2      = "st2";
@@ -319,7 +318,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_shippingaddress)
     BOOST_CHECK(idl_addr.state.in()->_value()        == impl_addr.state.get_value());
     BOOST_CHECK(idl_addr.country.in()                == impl_addr.country);
 
-    Registry::MojeIDImplData::ShippingAddress impl_addr_res;
+    Fred::Backend::MojeIdImplData::ShippingAddress impl_addr_res;
     CorbaConversion::unwrap_ShippingAddress(idl_addr, impl_addr_res);
     BOOST_CHECK(impl_addr_res.company_name.get_value() == impl_addr.company_name.get_value());
     BOOST_CHECK(impl_addr_res.street1                  == impl_addr.street1);
@@ -332,7 +331,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_shippingaddress)
 
 BOOST_AUTO_TEST_CASE(test_nullable_mojeid_shippingaddress)
 {
-    Registry::MojeIDImplData::ShippingAddress impl_addr;
+    Fred::Backend::MojeIdImplData::ShippingAddress impl_addr;
     impl_addr.company_name = "company";
     impl_addr.street1      = "st1";
     impl_addr.street2      = "st2";
@@ -342,10 +341,10 @@ BOOST_AUTO_TEST_CASE(test_nullable_mojeid_shippingaddress)
     impl_addr.country      = "Czech Republic";
 
     Registry::MojeID::NullableShippingAddress_var idl_nullable_addr =
-        CorbaConversion::wrap_Nullable_ShippingAddress(Nullable< Registry::MojeIDImplData::ShippingAddress >())._retn();
+        CorbaConversion::wrap_Nullable_ShippingAddress(Nullable< Fred::Backend::MojeIdImplData::ShippingAddress >())._retn();
     BOOST_CHECK(idl_nullable_addr.in() == NULL);
 
-    Nullable< Registry::MojeIDImplData::ShippingAddress > impl_nullable_addr(impl_addr);
+    Nullable< Fred::Backend::MojeIdImplData::ShippingAddress > impl_nullable_addr(impl_addr);
     BOOST_CHECK(!impl_nullable_addr.isnull());
     CorbaConversion::unwrap_NullableShippingAddress(idl_nullable_addr, impl_nullable_addr);
     BOOST_CHECK(impl_nullable_addr.isnull());
@@ -362,7 +361,7 @@ BOOST_AUTO_TEST_CASE(test_nullable_mojeid_shippingaddress)
     BOOST_CHECK(idl_nullable_addr->_value().state.in()->_value()        == impl_addr.state.get_value());
     BOOST_CHECK(idl_nullable_addr->_value().country.in()                == impl_addr.country);
 
-    impl_nullable_addr = Nullable< Registry::MojeIDImplData::ShippingAddress >();
+    impl_nullable_addr = Nullable< Fred::Backend::MojeIdImplData::ShippingAddress >();
     BOOST_CHECK(impl_nullable_addr.isnull());
     CorbaConversion::unwrap_NullableShippingAddress(idl_nullable_addr, impl_nullable_addr);
     BOOST_REQUIRE(!impl_nullable_addr.isnull());
@@ -379,31 +378,31 @@ BOOST_AUTO_TEST_CASE(test_mojeid_validationresult)
 {
     Registry::MojeID::ValidationResult idl_value;
 
-    CorbaConversion::wrap_ValidationResult(Registry::MojeIDImplData::ValidationResult::OK, idl_value);
+    CorbaConversion::wrap_ValidationResult(Fred::Backend::MojeIdImplData::ValidationResult::OK, idl_value);
     BOOST_CHECK(idl_value == Registry::MojeID::OK);
 
-    CorbaConversion::wrap_ValidationResult(Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE, idl_value);
+    CorbaConversion::wrap_ValidationResult(Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE, idl_value);
     BOOST_CHECK(idl_value == Registry::MojeID::NOT_AVAILABLE);
 
-    CorbaConversion::wrap_ValidationResult(Registry::MojeIDImplData::ValidationResult::INVALID, idl_value);
+    CorbaConversion::wrap_ValidationResult(Fred::Backend::MojeIdImplData::ValidationResult::INVALID, idl_value);
     BOOST_CHECK(idl_value == Registry::MojeID::INVALID);
 
-    CorbaConversion::wrap_ValidationResult(Registry::MojeIDImplData::ValidationResult::REQUIRED, idl_value);
+    CorbaConversion::wrap_ValidationResult(Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED, idl_value);
     BOOST_CHECK(idl_value == Registry::MojeID::REQUIRED);
 
-    static const Registry::MojeIDImplData::ValidationResult::Value out_of_range_value =
-        static_cast< Registry::MojeIDImplData::ValidationResult::Value >(10);
+    static const Fred::Backend::MojeIdImplData::ValidationResult::Value out_of_range_value =
+        static_cast< Fred::Backend::MojeIdImplData::ValidationResult::Value >(10);
     BOOST_CHECK_THROW(CorbaConversion::wrap_ValidationResult(out_of_range_value, idl_value),
                       CorbaConversion::NotEnumValidationResultValue);
 }
 
 BOOST_AUTO_TEST_CASE(test_mojeid_addressvalidationresult)
 {
-    Registry::MojeIDImplData::AddressValidationResult addr_err_impl;
-    addr_err_impl.street1     = Registry::MojeIDImplData::ValidationResult::OK;
-    addr_err_impl.city        = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
-    addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationResult::INVALID;
-    addr_err_impl.country     = Registry::MojeIDImplData::ValidationResult::REQUIRED;
+    Fred::Backend::MojeIdImplData::AddressValidationResult addr_err_impl;
+    addr_err_impl.street1     = Fred::Backend::MojeIdImplData::ValidationResult::OK;
+    addr_err_impl.city        = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
+    addr_err_impl.postal_code = Fred::Backend::MojeIdImplData::ValidationResult::INVALID;
+    addr_err_impl.country     = Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED;
 
     Registry::MojeID::AddressValidationResult addr_err;
     CorbaConversion::wrap_AddressValidationResult(addr_err_impl, addr_err);
@@ -416,12 +415,12 @@ BOOST_AUTO_TEST_CASE(test_mojeid_addressvalidationresult)
 
 BOOST_AUTO_TEST_CASE(test_mojeid_mandatoryaddressvalidationresult)
 {
-    Registry::MojeIDImplData::MandatoryAddressValidationResult addr_err_impl;
-    addr_err_impl.address_presence = Registry::MojeIDImplData::ValidationResult::REQUIRED;
-    addr_err_impl.street1          = Registry::MojeIDImplData::ValidationResult::OK;
-    addr_err_impl.city             = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
-    addr_err_impl.postal_code      = Registry::MojeIDImplData::ValidationResult::INVALID;
-    addr_err_impl.country          = Registry::MojeIDImplData::ValidationResult::REQUIRED;
+    Fred::Backend::MojeIdImplData::MandatoryAddressValidationResult addr_err_impl;
+    addr_err_impl.address_presence = Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED;
+    addr_err_impl.street1          = Fred::Backend::MojeIdImplData::ValidationResult::OK;
+    addr_err_impl.city             = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
+    addr_err_impl.postal_code      = Fred::Backend::MojeIdImplData::ValidationResult::INVALID;
+    addr_err_impl.country          = Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED;
 
     Registry::MojeID::MandatoryAddressValidationResult addr_err;
     CorbaConversion::wrap_MandatoryAddressValidationResult(addr_err_impl, addr_err);
@@ -435,7 +434,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_mandatoryaddressvalidationresult)
 
 BOOST_AUTO_TEST_CASE(test_mojeid_message_limit_exceeded)
 {
-    Registry::MojeIDImplData::MessageLimitExceeded msg;
+    Fred::Backend::MojeIdImplData::MessageLimitExceeded msg;
     BOOST_CHECK_THROW(CorbaConversion::raise_MESSAGE_LIMIT_EXCEEDED(msg),
                       Registry::MojeID::Server::INTERNAL_SERVER_ERROR);
 
@@ -443,61 +442,57 @@ BOOST_AUTO_TEST_CASE(test_mojeid_message_limit_exceeded)
 
     Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED res;
     CorbaConversion::wrap_MessageLimitExceeded(msg, res);
-
-    boost::posix_time::ptime limit_expire_datetime;
-    CorbaConversion::unwrap_DateTime(res.limit_expire_datetime, limit_expire_datetime);
-    BOOST_CHECK(limit_expire_datetime == msg.limit_expire_datetime);
 }
 
 BOOST_AUTO_TEST_CASE(test_mojeid_registration_validation_error)
 {
-    Registry::MojeIDImplData::MandatoryAddressValidationResult permanent_addr_err_impl;
-    permanent_addr_err_impl.address_presence = Registry::MojeIDImplData::ValidationResult::REQUIRED;
-    permanent_addr_err_impl.street1          = Registry::MojeIDImplData::ValidationResult::INVALID;
-    permanent_addr_err_impl.city             = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
-    permanent_addr_err_impl.postal_code      = Registry::MojeIDImplData::ValidationResult::REQUIRED;
-    permanent_addr_err_impl.country          = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+    Fred::Backend::MojeIdImplData::MandatoryAddressValidationResult permanent_addr_err_impl;
+    permanent_addr_err_impl.address_presence = Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED;
+    permanent_addr_err_impl.street1          = Fred::Backend::MojeIdImplData::ValidationResult::INVALID;
+    permanent_addr_err_impl.city             = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
+    permanent_addr_err_impl.postal_code      = Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED;
+    permanent_addr_err_impl.country          = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
 
-    Registry::MojeIDImplData::AddressValidationResult mailing_addr_err_impl;
-    mailing_addr_err_impl.street1     = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
-    mailing_addr_err_impl.city        = Registry::MojeIDImplData::ValidationResult::REQUIRED;
-    mailing_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationResult::INVALID;
-    mailing_addr_err_impl.country     = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+    Fred::Backend::MojeIdImplData::AddressValidationResult mailing_addr_err_impl;
+    mailing_addr_err_impl.street1     = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
+    mailing_addr_err_impl.city        = Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED;
+    mailing_addr_err_impl.postal_code = Fred::Backend::MojeIdImplData::ValidationResult::INVALID;
+    mailing_addr_err_impl.country     = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
 
-    Registry::MojeIDImplData::AddressValidationResult billing_addr_err_impl;
-    billing_addr_err_impl.street1     = Registry::MojeIDImplData::ValidationResult::REQUIRED;
-    billing_addr_err_impl.city        = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
-    billing_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationResult::INVALID;
-    billing_addr_err_impl.country     = Registry::MojeIDImplData::ValidationResult::REQUIRED;
+    Fred::Backend::MojeIdImplData::AddressValidationResult billing_addr_err_impl;
+    billing_addr_err_impl.street1     = Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED;
+    billing_addr_err_impl.city        = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
+    billing_addr_err_impl.postal_code = Fred::Backend::MojeIdImplData::ValidationResult::INVALID;
+    billing_addr_err_impl.country     = Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED;
 
-    Registry::MojeIDImplData::AddressValidationResult shipping_addr_err_impl;
-    shipping_addr_err_impl.street1     = Registry::MojeIDImplData::ValidationResult::INVALID;
-    shipping_addr_err_impl.city        = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
-    shipping_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationResult::REQUIRED;
-    shipping_addr_err_impl.country     = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+    Fred::Backend::MojeIdImplData::AddressValidationResult shipping_addr_err_impl;
+    shipping_addr_err_impl.street1     = Fred::Backend::MojeIdImplData::ValidationResult::INVALID;
+    shipping_addr_err_impl.city        = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
+    shipping_addr_err_impl.postal_code = Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED;
+    shipping_addr_err_impl.country     = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
 
-    Registry::MojeIDImplData::AddressValidationResult shipping2_addr_err_impl;
-    shipping2_addr_err_impl.street1     = Registry::MojeIDImplData::ValidationResult::REQUIRED;
-    shipping2_addr_err_impl.city        = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
-    shipping2_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationResult::INVALID;
-    shipping2_addr_err_impl.country     = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+    Fred::Backend::MojeIdImplData::AddressValidationResult shipping2_addr_err_impl;
+    shipping2_addr_err_impl.street1     = Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED;
+    shipping2_addr_err_impl.city        = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
+    shipping2_addr_err_impl.postal_code = Fred::Backend::MojeIdImplData::ValidationResult::INVALID;
+    shipping2_addr_err_impl.country     = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
 
-    Registry::MojeIDImplData::AddressValidationResult shipping3_addr_err_impl;
-    shipping3_addr_err_impl.street1     = Registry::MojeIDImplData::ValidationResult::INVALID;
-    shipping3_addr_err_impl.city        = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
-    shipping3_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationResult::REQUIRED;
-    shipping3_addr_err_impl.country     = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+    Fred::Backend::MojeIdImplData::AddressValidationResult shipping3_addr_err_impl;
+    shipping3_addr_err_impl.street1     = Fred::Backend::MojeIdImplData::ValidationResult::INVALID;
+    shipping3_addr_err_impl.city        = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
+    shipping3_addr_err_impl.postal_code = Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED;
+    shipping3_addr_err_impl.country     = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
 
-    Registry::MojeIDImplData::RegistrationValidationResult reg_val_err_impl;
-    reg_val_err_impl.username     = Registry::MojeIDImplData::ValidationResult::INVALID;
-    reg_val_err_impl.first_name   = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
-    reg_val_err_impl.last_name    = Registry::MojeIDImplData::ValidationResult::REQUIRED;
-    reg_val_err_impl.birth_date   = Registry::MojeIDImplData::ValidationResult::INVALID;
-    reg_val_err_impl.vat_id_num   = Registry::MojeIDImplData::ValidationResult::REQUIRED;
-    reg_val_err_impl.email        = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
-    reg_val_err_impl.notify_email = Registry::MojeIDImplData::ValidationResult::REQUIRED;
-    reg_val_err_impl.phone        = Registry::MojeIDImplData::ValidationResult::INVALID;
-    reg_val_err_impl.fax          = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+    Fred::Backend::MojeIdImplData::RegistrationValidationResult reg_val_err_impl;
+    reg_val_err_impl.username     = Fred::Backend::MojeIdImplData::ValidationResult::INVALID;
+    reg_val_err_impl.first_name   = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
+    reg_val_err_impl.last_name    = Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED;
+    reg_val_err_impl.birth_date   = Fred::Backend::MojeIdImplData::ValidationResult::INVALID;
+    reg_val_err_impl.vat_id_num   = Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED;
+    reg_val_err_impl.email        = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
+    reg_val_err_impl.notify_email = Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED;
+    reg_val_err_impl.phone        = Fred::Backend::MojeIdImplData::ValidationResult::INVALID;
+    reg_val_err_impl.fax          = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
 
     reg_val_err_impl.permanent = permanent_addr_err_impl;
     reg_val_err_impl.mailing   = mailing_addr_err_impl;
@@ -554,51 +549,51 @@ BOOST_AUTO_TEST_CASE(test_mojeid_registration_validation_error)
 
 BOOST_AUTO_TEST_CASE(test_mojeid_update_contact_prepare_validation_error)
 {
-    Registry::MojeIDImplData::MandatoryAddressValidationResult permanent_addr_err_impl;
-    permanent_addr_err_impl.address_presence = Registry::MojeIDImplData::ValidationResult::REQUIRED;
-    permanent_addr_err_impl.street1          = Registry::MojeIDImplData::ValidationResult::INVALID;
-    permanent_addr_err_impl.city             = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
-    permanent_addr_err_impl.postal_code      = Registry::MojeIDImplData::ValidationResult::REQUIRED;
-    permanent_addr_err_impl.country          = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+    Fred::Backend::MojeIdImplData::MandatoryAddressValidationResult permanent_addr_err_impl;
+    permanent_addr_err_impl.address_presence = Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED;
+    permanent_addr_err_impl.street1          = Fred::Backend::MojeIdImplData::ValidationResult::INVALID;
+    permanent_addr_err_impl.city             = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
+    permanent_addr_err_impl.postal_code      = Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED;
+    permanent_addr_err_impl.country          = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
 
-    Registry::MojeIDImplData::AddressValidationResult mailing_addr_err_impl;
-    mailing_addr_err_impl.street1     = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
-    mailing_addr_err_impl.city        = Registry::MojeIDImplData::ValidationResult::REQUIRED;
-    mailing_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationResult::INVALID;
-    mailing_addr_err_impl.country     = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+    Fred::Backend::MojeIdImplData::AddressValidationResult mailing_addr_err_impl;
+    mailing_addr_err_impl.street1     = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
+    mailing_addr_err_impl.city        = Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED;
+    mailing_addr_err_impl.postal_code = Fred::Backend::MojeIdImplData::ValidationResult::INVALID;
+    mailing_addr_err_impl.country     = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
 
-    Registry::MojeIDImplData::AddressValidationResult billing_addr_err_impl;
-    billing_addr_err_impl.street1     = Registry::MojeIDImplData::ValidationResult::REQUIRED;
-    billing_addr_err_impl.city        = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
-    billing_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationResult::INVALID;
-    billing_addr_err_impl.country     = Registry::MojeIDImplData::ValidationResult::REQUIRED;
+    Fred::Backend::MojeIdImplData::AddressValidationResult billing_addr_err_impl;
+    billing_addr_err_impl.street1     = Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED;
+    billing_addr_err_impl.city        = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
+    billing_addr_err_impl.postal_code = Fred::Backend::MojeIdImplData::ValidationResult::INVALID;
+    billing_addr_err_impl.country     = Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED;
 
-    Registry::MojeIDImplData::AddressValidationResult shipping_addr_err_impl;
-    shipping_addr_err_impl.street1     = Registry::MojeIDImplData::ValidationResult::INVALID;
-    shipping_addr_err_impl.city        = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
-    shipping_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationResult::REQUIRED;
-    shipping_addr_err_impl.country     = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+    Fred::Backend::MojeIdImplData::AddressValidationResult shipping_addr_err_impl;
+    shipping_addr_err_impl.street1     = Fred::Backend::MojeIdImplData::ValidationResult::INVALID;
+    shipping_addr_err_impl.city        = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
+    shipping_addr_err_impl.postal_code = Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED;
+    shipping_addr_err_impl.country     = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
 
-    Registry::MojeIDImplData::AddressValidationResult shipping2_addr_err_impl;
-    shipping2_addr_err_impl.street1     = Registry::MojeIDImplData::ValidationResult::REQUIRED;
-    shipping2_addr_err_impl.city        = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
-    shipping2_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationResult::INVALID;
-    shipping2_addr_err_impl.country     = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+    Fred::Backend::MojeIdImplData::AddressValidationResult shipping2_addr_err_impl;
+    shipping2_addr_err_impl.street1     = Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED;
+    shipping2_addr_err_impl.city        = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
+    shipping2_addr_err_impl.postal_code = Fred::Backend::MojeIdImplData::ValidationResult::INVALID;
+    shipping2_addr_err_impl.country     = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
 
-    Registry::MojeIDImplData::AddressValidationResult shipping3_addr_err_impl;
-    shipping3_addr_err_impl.street1     = Registry::MojeIDImplData::ValidationResult::INVALID;
-    shipping3_addr_err_impl.city        = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
-    shipping3_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationResult::REQUIRED;
-    shipping3_addr_err_impl.country     = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+    Fred::Backend::MojeIdImplData::AddressValidationResult shipping3_addr_err_impl;
+    shipping3_addr_err_impl.street1     = Fred::Backend::MojeIdImplData::ValidationResult::INVALID;
+    shipping3_addr_err_impl.city        = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
+    shipping3_addr_err_impl.postal_code = Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED;
+    shipping3_addr_err_impl.country     = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
 
-    Registry::MojeIDImplData::UpdateContactPrepareValidationResult upd_val_err_impl;
-    upd_val_err_impl.first_name   = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
-    upd_val_err_impl.last_name    = Registry::MojeIDImplData::ValidationResult::REQUIRED;
-    upd_val_err_impl.birth_date   = Registry::MojeIDImplData::ValidationResult::INVALID;
-    upd_val_err_impl.email        = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
-    upd_val_err_impl.notify_email = Registry::MojeIDImplData::ValidationResult::REQUIRED;
-    upd_val_err_impl.phone        = Registry::MojeIDImplData::ValidationResult::INVALID;
-    upd_val_err_impl.fax          = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+    Fred::Backend::MojeIdImplData::UpdateContactPrepareValidationResult upd_val_err_impl;
+    upd_val_err_impl.first_name   = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
+    upd_val_err_impl.last_name    = Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED;
+    upd_val_err_impl.birth_date   = Fred::Backend::MojeIdImplData::ValidationResult::INVALID;
+    upd_val_err_impl.email        = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
+    upd_val_err_impl.notify_email = Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED;
+    upd_val_err_impl.phone        = Fred::Backend::MojeIdImplData::ValidationResult::INVALID;
+    upd_val_err_impl.fax          = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
 
     upd_val_err_impl.permanent = permanent_addr_err_impl;
     upd_val_err_impl.mailing   = mailing_addr_err_impl;
@@ -653,23 +648,23 @@ BOOST_AUTO_TEST_CASE(test_mojeid_update_contact_prepare_validation_error)
 
 BOOST_AUTO_TEST_CASE(test_mojeid_create_validation_request_validation_error)
 {
-    Registry::MojeIDImplData::MandatoryAddressValidationResult mandatory_addr_err_impl;
-    mandatory_addr_err_impl.address_presence = Registry::MojeIDImplData::ValidationResult::REQUIRED;
-    mandatory_addr_err_impl.street1          = Registry::MojeIDImplData::ValidationResult::INVALID;
-    mandatory_addr_err_impl.city             = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
-    mandatory_addr_err_impl.postal_code      = Registry::MojeIDImplData::ValidationResult::REQUIRED;
-    mandatory_addr_err_impl.country          = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+    Fred::Backend::MojeIdImplData::MandatoryAddressValidationResult mandatory_addr_err_impl;
+    mandatory_addr_err_impl.address_presence = Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED;
+    mandatory_addr_err_impl.street1          = Fred::Backend::MojeIdImplData::ValidationResult::INVALID;
+    mandatory_addr_err_impl.city             = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
+    mandatory_addr_err_impl.postal_code      = Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED;
+    mandatory_addr_err_impl.country          = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
 
-    Registry::MojeIDImplData::CreateValidationRequestValidationResult crr_val_err_impl;
+    Fred::Backend::MojeIdImplData::CreateValidationRequestValidationResult crr_val_err_impl;
 
-    crr_val_err_impl.first_name   = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
-    crr_val_err_impl.last_name    = Registry::MojeIDImplData::ValidationResult::REQUIRED;
-    crr_val_err_impl.email        = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
-    crr_val_err_impl.notify_email = Registry::MojeIDImplData::ValidationResult::REQUIRED;
-    crr_val_err_impl.phone        = Registry::MojeIDImplData::ValidationResult::INVALID;
-    crr_val_err_impl.fax          = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
-    crr_val_err_impl.birth_date   = Registry::MojeIDImplData::ValidationResult::INVALID;
-    crr_val_err_impl.vat_id_num   = Registry::MojeIDImplData::ValidationResult::REQUIRED;
+    crr_val_err_impl.first_name   = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
+    crr_val_err_impl.last_name    = Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED;
+    crr_val_err_impl.email        = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
+    crr_val_err_impl.notify_email = Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED;
+    crr_val_err_impl.phone        = Fred::Backend::MojeIdImplData::ValidationResult::INVALID;
+    crr_val_err_impl.fax          = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
+    crr_val_err_impl.birth_date   = Fred::Backend::MojeIdImplData::ValidationResult::INVALID;
+    crr_val_err_impl.vat_id_num   = Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED;
 
     crr_val_err_impl.permanent = mandatory_addr_err_impl;
 
@@ -694,9 +689,9 @@ BOOST_AUTO_TEST_CASE(test_mojeid_create_validation_request_validation_error)
 
 BOOST_AUTO_TEST_CASE(test_mojeid_process_registration_request_validation_error)
 {
-    Registry::MojeIDImplData::ProcessRegistrationValidationResult prr_val_err_impl;
-    prr_val_err_impl.email = Registry::MojeIDImplData::ValidationResult::INVALID;
-    prr_val_err_impl.phone = Registry::MojeIDImplData::ValidationResult::REQUIRED;
+    Fred::Backend::MojeIdImplData::ProcessRegistrationValidationResult prr_val_err_impl;
+    prr_val_err_impl.email = Fred::Backend::MojeIdImplData::ValidationResult::INVALID;
+    prr_val_err_impl.phone = Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED;
 
     Registry::MojeID::Server::PROCESS_REGISTRATION_VALIDATION_ERROR res;
     CorbaConversion::wrap_ProcessRegistrationValidationResult(prr_val_err_impl,res);
@@ -714,13 +709,13 @@ BOOST_AUTO_TEST_CASE(test_mojeid_create_contact)
     cc.last_name = CorbaConversion::wrap_string("last_name")._retn();
     cc.organization = CorbaConversion::wrap_Nullable_string("org")._retn();
     cc.vat_reg_num = CorbaConversion::wrap_Nullable_string("vat_reg_num")._retn();
-    cc.birth_date = CorbaConversion::wrap_Nullable_boost_gregorian_date(boost::gregorian::date(2015,12,10))._retn();
+    cc.birth_date = CorbaConversion::Util::wrap_Nullable_boost_gregorian_date_to_NullableIsoDate(boost::gregorian::date(2015,12,10))._retn();
     cc.id_card_num = CorbaConversion::wrap_Nullable_string("id_card_num")._retn();
     cc.passport_num = CorbaConversion::wrap_Nullable_string("passport_num")._retn();
     cc.ssn_id_num = CorbaConversion::wrap_Nullable_string("ssn_id_num")._retn();
     cc.vat_id_num = CorbaConversion::wrap_Nullable_string("vat_id_num")._retn();
     {
-        Registry::MojeIDImplData::Address addr_impl;
+        Fred::Backend::MojeIdImplData::Address addr_impl;
         addr_impl.street1 = "st1";
         addr_impl.street2 = "st2";
         addr_impl.street3 = "st3";
@@ -730,7 +725,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_create_contact)
         CorbaConversion::wrap_Address(addr_impl, cc.permanent);
     }
     {
-        Registry::MojeIDImplData::Address addr_impl;
+        Fred::Backend::MojeIdImplData::Address addr_impl;
         addr_impl.street1 = "m_st1";
         addr_impl.street2 = "m_st2";
         addr_impl.street3 = "m_st3";
@@ -741,7 +736,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_create_contact)
         cc.mailing = CorbaConversion::wrap_Nullable_Address(addr_impl)._retn();
     }
     {
-        Registry::MojeIDImplData::Address addr_impl;
+        Fred::Backend::MojeIdImplData::Address addr_impl;
         addr_impl.street1 = "b_st1";
         addr_impl.street2 = "b_st2";
         addr_impl.street3 = "b_st3";
@@ -752,7 +747,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_create_contact)
         cc.billing = CorbaConversion::wrap_Nullable_Address(addr_impl)._retn();
     }
     {
-        Registry::MojeIDImplData::ShippingAddress addr_impl;
+        Fred::Backend::MojeIdImplData::ShippingAddress addr_impl;
         addr_impl.company_name = "s_company";
         addr_impl.street1      = "s_st1";
         addr_impl.street2      = "s_st2";
@@ -764,7 +759,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_create_contact)
         cc.shipping = CorbaConversion::wrap_Nullable_ShippingAddress(addr_impl)._retn();
     }
     {
-        Registry::MojeIDImplData::ShippingAddress addr_impl;
+        Fred::Backend::MojeIdImplData::ShippingAddress addr_impl;
         addr_impl.company_name = "s2_company";
         addr_impl.street1      = "s2_st1";
         addr_impl.street2      = "s2_st2";
@@ -776,7 +771,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_create_contact)
         cc.shipping2 = CorbaConversion::wrap_Nullable_ShippingAddress(addr_impl)._retn();
     }
     {
-        Registry::MojeIDImplData::ShippingAddress addr_impl;
+        Fred::Backend::MojeIdImplData::ShippingAddress addr_impl;
         addr_impl.company_name = "s3_company";
         addr_impl.street1      = "s3_st1";
         addr_impl.street2      = "s3_st2";
@@ -792,7 +787,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_create_contact)
     cc.telephone = CorbaConversion::wrap_string("telephone")._retn();
     cc.fax = CorbaConversion::wrap_Nullable_string("fax")._retn();
 
-    Registry::MojeIDImplData::CreateContact cc_impl;
+    Fred::Backend::MojeIdImplData::CreateContact cc_impl;
     CorbaConversion::unwrap_CreateContact(cc, cc_impl);
 
     BOOST_CHECK(cc_impl.username == "username");
@@ -1271,13 +1266,13 @@ BOOST_AUTO_TEST_CASE(test_mojeid_update_contact)
     uc.last_name = CorbaConversion::wrap_string("last_name")._retn();
     uc.organization = CorbaConversion::wrap_Nullable_string("org")._retn();
     uc.vat_reg_num = CorbaConversion::wrap_Nullable_string("vat_reg_num")._retn();
-    uc.birth_date = CorbaConversion::wrap_Nullable_boost_gregorian_date(boost::gregorian::date(2015,12,10))._retn();
+    uc.birth_date = CorbaConversion::Util::wrap_Nullable_boost_gregorian_date_to_NullableIsoDate(boost::gregorian::date(2015,12,10))._retn();
     uc.id_card_num = CorbaConversion::wrap_Nullable_string("id_card_num")._retn();
     uc.passport_num = CorbaConversion::wrap_Nullable_string("passport_num")._retn();
     uc.ssn_id_num = CorbaConversion::wrap_Nullable_string("ssn_id_num")._retn();
     uc.vat_id_num = CorbaConversion::wrap_Nullable_string("vat_id_num")._retn();
     {
-        Registry::MojeIDImplData::Address addr_impl;
+        Fred::Backend::MojeIdImplData::Address addr_impl;
         addr_impl.street1 = "st1";
         addr_impl.street2 = "st2";
         addr_impl.street3 = "st3";
@@ -1287,7 +1282,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_update_contact)
         CorbaConversion::wrap_Address(addr_impl, uc.permanent);
     }
     {
-        Registry::MojeIDImplData::Address addr_impl;
+        Fred::Backend::MojeIdImplData::Address addr_impl;
         addr_impl.street1 = "m_st1";
         addr_impl.street2 = "m_st2";
         addr_impl.street3 = "m_st3";
@@ -1298,7 +1293,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_update_contact)
         uc.mailing = CorbaConversion::wrap_Nullable_Address(addr_impl)._retn();
     }
     {
-        Registry::MojeIDImplData::Address addr_impl;
+        Fred::Backend::MojeIdImplData::Address addr_impl;
         addr_impl.street1 = "b_st1";
         addr_impl.street2 = "b_st2";
         addr_impl.street3 = "b_st3";
@@ -1309,7 +1304,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_update_contact)
         uc.billing = CorbaConversion::wrap_Nullable_Address(addr_impl)._retn();
     }
     {
-        Registry::MojeIDImplData::ShippingAddress addr_impl;
+        Fred::Backend::MojeIdImplData::ShippingAddress addr_impl;
         addr_impl.company_name = "s_company";
         addr_impl.street1      = "s_st1";
         addr_impl.street2      = "s_st2";
@@ -1321,7 +1316,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_update_contact)
         uc.shipping = CorbaConversion::wrap_Nullable_ShippingAddress(addr_impl)._retn();
     }
     {
-        Registry::MojeIDImplData::ShippingAddress addr_impl;
+        Fred::Backend::MojeIdImplData::ShippingAddress addr_impl;
         addr_impl.company_name = "s2_company";
         addr_impl.street1      = "s2_st1";
         addr_impl.street2      = "s2_st2";
@@ -1333,7 +1328,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_update_contact)
         uc.shipping2 = CorbaConversion::wrap_Nullable_ShippingAddress(addr_impl)._retn();
     }
     {
-        Registry::MojeIDImplData::ShippingAddress addr_impl;
+        Fred::Backend::MojeIdImplData::ShippingAddress addr_impl;
         addr_impl.company_name = "s3_company";
         addr_impl.street1      = "s3_st1";
         addr_impl.street2      = "s3_st2";
@@ -1349,7 +1344,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_update_contact)
     uc.telephone = CorbaConversion::wrap_Nullable_string("telephone")._retn();
     uc.fax = CorbaConversion::wrap_Nullable_string("fax")._retn();
 
-    Registry::MojeIDImplData::UpdateContact uc_impl;
+    Fred::Backend::MojeIdImplData::UpdateContact uc_impl;
     CorbaConversion::unwrap_UpdateContact(uc, uc_impl);
 
     BOOST_CHECK(uc_impl.first_name == std::string("first_name"));
@@ -1420,10 +1415,10 @@ BOOST_AUTO_TEST_CASE(test_mojeid_set_contact)
 
     sc.organization = CorbaConversion::wrap_Nullable_string("org")._retn();
     sc.vat_reg_num = CorbaConversion::wrap_Nullable_string("vat_reg_num")._retn();
-    sc.birth_date = CorbaConversion::wrap_Nullable_boost_gregorian_date(boost::gregorian::date(2015,12,10))._retn();
+    sc.birth_date = CorbaConversion::Util::wrap_Nullable_boost_gregorian_date_to_NullableIsoDate(boost::gregorian::date(2015,12,10))._retn();
     sc.vat_id_num = CorbaConversion::wrap_Nullable_string("vat_id_num")._retn();
     {
-        Registry::MojeIDImplData::Address addr_impl;
+        Fred::Backend::MojeIdImplData::Address addr_impl;
         addr_impl.street1 = "st1";
         addr_impl.street2 = "st2";
         addr_impl.street3 = "st3";
@@ -1433,7 +1428,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_set_contact)
         CorbaConversion::wrap_Address(addr_impl, sc.permanent);
     }
     {
-        Registry::MojeIDImplData::Address addr_impl;
+        Fred::Backend::MojeIdImplData::Address addr_impl;
         addr_impl.street1 = "m_st1";
         addr_impl.street2 = "m_st2";
         addr_impl.street3 = "m_st3";
@@ -1449,7 +1444,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_set_contact)
     sc.telephone = CorbaConversion::wrap_string("telephone")._retn();
     sc.fax = CorbaConversion::wrap_Nullable_string("fax")._retn();
 
-    Registry::MojeIDImplData::UpdateTransferContact sc_impl;
+    Fred::Backend::MojeIdImplData::UpdateTransferContact sc_impl;
     CorbaConversion::unwrap_UpdateTransferContact(sc, sc_impl);
 
     BOOST_CHECK(sc_impl.organization.get_value() == "org");
@@ -1480,7 +1475,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_set_contact)
 BOOST_AUTO_TEST_CASE(test_mojeid_info_contact)
 {
 
-    Registry::MojeIDImplData::InfoContact impl_ic;
+    Fred::Backend::MojeIdImplData::InfoContact impl_ic;
 
     impl_ic.id = 5;
     impl_ic.first_name = "first_name";
@@ -1488,7 +1483,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_info_contact)
     impl_ic.organization = "org";
     impl_ic.vat_reg_num = "vat_reg_num";
     {
-        Registry::MojeIDImplData::Date birthdate;
+        Fred::Backend::MojeIdImplData::Birthdate birthdate;
         birthdate.value = boost::gregorian::to_iso_extended_string(boost::gregorian::date(2015,12,10));
         impl_ic.birth_date = birthdate;
     }
@@ -1498,7 +1493,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_info_contact)
     impl_ic.vat_id_num = "vat_id_num";
 
     {
-        Registry::MojeIDImplData::Address addr_impl;
+        Fred::Backend::MojeIdImplData::Address addr_impl;
         addr_impl.street1 = "st1";
         addr_impl.street2 = "st2";
         addr_impl.street3 = "st3";
@@ -1510,7 +1505,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_info_contact)
     }
 
     {
-        Registry::MojeIDImplData::Address addr_impl;
+        Fred::Backend::MojeIdImplData::Address addr_impl;
         addr_impl.street1 = "m_st1";
         addr_impl.street2 = "m_st2";
         addr_impl.street3 = "m_st3";
@@ -1521,7 +1516,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_info_contact)
         impl_ic.mailing = addr_impl;
     }
     {
-        Registry::MojeIDImplData::Address addr_impl;
+        Fred::Backend::MojeIdImplData::Address addr_impl;
         addr_impl.street1 = "b_st1";
         addr_impl.street2 = "b_st2";
         addr_impl.street3 = "b_st3";
@@ -1532,7 +1527,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_info_contact)
         impl_ic.billing = addr_impl;
     }
     {
-        Registry::MojeIDImplData::ShippingAddress addr_impl;
+        Fred::Backend::MojeIdImplData::ShippingAddress addr_impl;
         addr_impl.company_name = "s_company";
         addr_impl.street1 = "s_st1";
         addr_impl.street2 = "s_st2";
@@ -1544,7 +1539,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_info_contact)
         impl_ic.shipping = addr_impl;
     }
     {
-        Registry::MojeIDImplData::ShippingAddress addr_impl;
+        Fred::Backend::MojeIdImplData::ShippingAddress addr_impl;
         addr_impl.company_name = "s2_company";
         addr_impl.street1 = "s2_st1";
         addr_impl.street2 = "s2_st2";
@@ -1556,7 +1551,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_info_contact)
         impl_ic.shipping2 = addr_impl;
     }
     {
-        Registry::MojeIDImplData::ShippingAddress addr_impl;
+        Fred::Backend::MojeIdImplData::ShippingAddress addr_impl;
         addr_impl.company_name = "s3_company";
         addr_impl.street1 = "s3_st1";
         addr_impl.street2 = "s3_st2";
@@ -1596,7 +1591,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_info_contact)
     BOOST_CHECK(idl_ic_ptr->permanent.state.in()->_value() == impl_ic.permanent.state.get_value());
     BOOST_CHECK(idl_ic_ptr->permanent.country.in() == impl_ic.permanent.country);
 
-    Nullable< Registry::MojeIDImplData::Address > mailing;
+    Nullable< Fred::Backend::MojeIdImplData::Address > mailing;
     CorbaConversion::unwrap_NullableAddress(idl_ic_ptr->mailing.in(), mailing);
     BOOST_REQUIRE(!mailing.isnull());
 
@@ -1607,7 +1602,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_info_contact)
     BOOST_CHECK(mailing.get_value().state.get_value() == impl_ic.mailing.get_value().state.get_value());
     BOOST_CHECK(mailing.get_value().country == impl_ic.mailing.get_value().country);
 
-    Nullable< Registry::MojeIDImplData::Address > billing;
+    Nullable< Fred::Backend::MojeIdImplData::Address > billing;
     CorbaConversion::unwrap_NullableAddress(idl_ic_ptr->billing.in(), billing);
     BOOST_REQUIRE(!billing.isnull());
 
@@ -1618,7 +1613,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_info_contact)
     BOOST_CHECK(billing.get_value().state.get_value() == impl_ic.billing.get_value().state.get_value());
     BOOST_CHECK(billing.get_value().country == impl_ic.billing.get_value().country);
 
-    Nullable< Registry::MojeIDImplData::ShippingAddress > shipping;
+    Nullable< Fred::Backend::MojeIdImplData::ShippingAddress > shipping;
     CorbaConversion::unwrap_NullableShippingAddress(idl_ic_ptr->shipping.in(), shipping);
     BOOST_REQUIRE(!shipping.isnull());
 
@@ -1630,7 +1625,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_info_contact)
     BOOST_CHECK(shipping.get_value().state.get_value() == impl_ic.shipping.get_value().state.get_value());
     BOOST_CHECK(shipping.get_value().country == impl_ic.shipping.get_value().country);
 
-    Nullable< Registry::MojeIDImplData::ShippingAddress > shipping2;
+    Nullable< Fred::Backend::MojeIdImplData::ShippingAddress > shipping2;
     CorbaConversion::unwrap_NullableShippingAddress(idl_ic_ptr->shipping2.in(), shipping2);
     BOOST_REQUIRE(!shipping2.isnull());
 
@@ -1642,7 +1637,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_info_contact)
     BOOST_CHECK(shipping2.get_value().state.get_value() == impl_ic.shipping2.get_value().state.get_value());
     BOOST_CHECK(shipping2.get_value().country == impl_ic.shipping2.get_value().country);
 
-    Nullable< Registry::MojeIDImplData::ShippingAddress > shipping3;
+    Nullable< Fred::Backend::MojeIdImplData::ShippingAddress > shipping3;
     CorbaConversion::unwrap_NullableShippingAddress(idl_ic_ptr->shipping3.in(), shipping3);
     BOOST_REQUIRE(!shipping3.isnull());
 
@@ -1663,7 +1658,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_info_contact)
 BOOST_AUTO_TEST_CASE(test_mojeid_contact_state_info)
 {
 
-    Registry::MojeIDImplData::ContactStateInfo impl_info;
+    Fred::Backend::MojeIdImplData::ContactStateInfo impl_info;
 
     impl_info.contact_id = 6;
     impl_info.mojeid_activation_datetime = boost::posix_time::ptime(boost::gregorian::date(2015,12,10));
@@ -1683,13 +1678,13 @@ BOOST_AUTO_TEST_CASE(test_mojeid_contact_state_info)
 
 BOOST_AUTO_TEST_CASE(test_mojeid_contact_state_info_list)
 {
-    Registry::MojeIDImplData::ContactStateInfoList impl_list;
+    Fred::Backend::MojeIdImplData::ContactStateInfoList impl_list;
     Registry::MojeID::ContactStateInfoList_var idl_list_ptr = CorbaConversion::wrap_ContactStateInfoList(impl_list)._retn();
     BOOST_REQUIRE(idl_list_ptr.operator->() != NULL);
     BOOST_CHECK(idl_list_ptr->length() == 0);
 
     {
-        Registry::MojeIDImplData::ContactStateInfo info_impl;
+        Fred::Backend::MojeIdImplData::ContactStateInfo info_impl;
         info_impl.contact_id = 5;
         info_impl.mojeid_activation_datetime = boost::posix_time::ptime(boost::gregorian::date(2015,12,10));
         info_impl.identification_date = Nullable<boost::gregorian::date>(boost::gregorian::date(2015,12,12));
@@ -1698,7 +1693,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_contact_state_info_list)
         impl_list.push_back(info_impl);
     }
     {
-        Registry::MojeIDImplData::ContactStateInfo info_impl;
+        Fred::Backend::MojeIdImplData::ContactStateInfo info_impl;
         info_impl.contact_id = 6;
         info_impl.mojeid_activation_datetime = boost::posix_time::ptime(boost::gregorian::date(2016,12,10));
         info_impl.identification_date = Nullable<boost::gregorian::date>(boost::gregorian::date(2016,12,12));
@@ -1722,17 +1717,16 @@ BOOST_AUTO_TEST_CASE(test_mojeid_contact_state_info_list)
 
 BOOST_AUTO_TEST_CASE(test_mojeid_buffer)
 {
-    Registry::MojeIDImplData::Buffer impl_buffer;
-    impl_buffer.value = "test";
-    Registry::MojeID::Buffer_var idl_buffer_ptr = CorbaConversion::wrap_Buffer(impl_buffer);
+    Fred::Backend::Buffer impl_buffer("test");
+    Registry::Buffer_var idl_buffer_ptr = CorbaConversion::Util::wrap_Buffer(impl_buffer);
     BOOST_REQUIRE(idl_buffer_ptr.operator ->() != NULL);
-    BOOST_CHECK(std::string(reinterpret_cast< const char* >(idl_buffer_ptr->value.get_buffer()),
-                            idl_buffer_ptr->value.length()) == impl_buffer.value);
+    BOOST_CHECK(std::string(reinterpret_cast< const char* >(idl_buffer_ptr->data.get_buffer()),
+                            idl_buffer_ptr->data.length()) == impl_buffer.data);
 }
 
 BOOST_AUTO_TEST_CASE(test_mojeid_constact_handle_list)
 {
-    static const Registry::MojeIDImplData::ContactHandleList impl_list = Util::vector_of< std::string >("test1")("test2")("test3");
+    static const Fred::Backend::MojeIdImplData::ContactHandleList impl_list = Util::vector_of< std::string >("test1")("test2")("test3");
     const Registry::MojeID::ContactHandleList_var ssv1 = CorbaConversion::wrap_ContactHandleList(impl_list)._retn();
     BOOST_REQUIRE(ssv1.operator ->() != NULL);
     BOOST_REQUIRE(ssv1->length() == 3);

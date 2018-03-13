@@ -26,48 +26,56 @@
 #ifndef RECORD_STATEMENT_I_HH_993EA437283F486CB9C5943AE62F0770
 #define RECORD_STATEMENT_I_HH_993EA437283F486CB9C5943AE62F0770
 
+#include "src/bin/corba/Buffer.hh"
+#include "src/bin/corba/IsoDateTime.hh"
 #include "src/bin/corba/RecordStatement.hh"
 
 #include "src/libfred/documents.hh"
 #include "src/libfred/mailer.hh"
 
-#include <boost/shared_ptr.hpp>
-
 #include <string>
+
+namespace Fred {
+namespace Backend {
+namespace RecordStatement {
+
+class RecordStatementImpl; //pimpl class
+
+} // namespace Fred::Backend::RecordStatement
+} // namespace Fred::Backend
+} // namespace Fred
 
 namespace Registry {
 namespace RecordStatement {
 
-class RecordStatementImpl;//pimpl class
-
 ///record statement corba interface
-class Server_i:public POA_Registry::RecordStatement::Server
+class Server_i : public POA_Registry::RecordStatement::Server
 {
 public:
     Server_i(
-        const std::string &_server_name,
-        const boost::shared_ptr<LibFred::Document::Manager>& _doc_manager,
-        const boost::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager,
-        const std::string& _registry_timezone);
+            const std::string& _server_name,
+            const std::shared_ptr<LibFred::Document::Manager>& _doc_manager,
+            const std::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager,
+            const std::string& _registry_timezone);
     virtual ~Server_i();
 
     // methods corresponding to defined IDL attributes and operations
 
-    PdfBuffer* domain_printout(const char* _fqdn, ::CORBA::Boolean _is_private_printout);
+    Buffer* domain_printout(const char* _fqdn, ::CORBA::Boolean _is_private_printout);
 
-    PdfBuffer* nsset_printout(const char* _handle);
+    Buffer* nsset_printout(const char* _handle);
 
-    PdfBuffer* keyset_printout(const char* _handle);
+    Buffer* keyset_printout(const char* _handle);
 
-    PdfBuffer* contact_printout(const char* _handle, ::CORBA::Boolean _is_private_printout);
+    Buffer* contact_printout(const char* _handle, ::CORBA::Boolean _is_private_printout);
 
-    PdfBuffer* historic_domain_printout(const char* _fqdn, const DateTime& _time);
+    Buffer* historic_domain_printout(const char* _fqdn, const IsoDateTime& _time);
 
-    PdfBuffer* historic_nsset_printout(const char* _handle, const DateTime& _time);
+    Buffer* historic_nsset_printout(const char* _handle, const IsoDateTime& _time);
 
-    PdfBuffer* historic_keyset_printout(const char* _handle, const DateTime& _time);
+    Buffer* historic_keyset_printout(const char* _handle, const IsoDateTime& _time);
 
-    PdfBuffer* historic_contact_printout(const char* _handle, const DateTime& _time);
+    Buffer* historic_contact_printout(const char* _handle, const IsoDateTime& _time);
 
     void send_domain_printout(const char* _fqdn);
 
@@ -76,11 +84,12 @@ public:
     void send_keyset_printout(const char* _handle);
 
     void send_contact_printout(const char* _handle);
+
 private:
     // do not copy
-    RecordStatementImpl* const impl_;
-    Server_i(const Server_i&);//no body
-    Server_i& operator=(const Server_i&);//no body
+    Fred::Backend::RecordStatement::RecordStatementImpl* const impl_;
+    Server_i(const Server_i&); //no body
+    Server_i& operator=(const Server_i&); //no body
 };
 
 } // namespace Registry::RecordStatement

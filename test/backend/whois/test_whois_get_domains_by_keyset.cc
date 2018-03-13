@@ -119,13 +119,13 @@ struct domains_by_keyset_fixture
 
 BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset, domains_by_keyset_fixture)
 {
-    Registry::WhoisImpl::DomainSeq domain_seq = impl.get_domains_by_keyset(test_keyset, regular_domains);
+    Fred::Backend::Whois::DomainSeq domain_seq = impl.get_domains_by_keyset(test_keyset, regular_domains);
     BOOST_CHECK(!domain_seq.limit_exceeded);
 
-    std::vector<Registry::WhoisImpl::Domain> domain_vec = domain_seq.content;
+    std::vector<Fred::Backend::Whois::Domain> domain_vec = domain_seq.content;
     BOOST_CHECK(domain_vec.size() == regular_domains);
     std::map<std::string, ::LibFred::InfoDomainData>::iterator found;
-    BOOST_FOREACH(const Registry::WhoisImpl::Domain& it, domain_vec)
+    BOOST_FOREACH(const Fred::Backend::Whois::Domain& it, domain_vec)
     {
         found = domain_info.find(it.fqdn);
         BOOST_REQUIRE(found != domain_info.end());
@@ -160,7 +160,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset, domains_by_keyset_fixture)
         {
             BOOST_CHECK(it.validated_to.get_value() == found->second.enum_domain_validation.get_value().validation_expiration);
             BOOST_CHECK(it.validated_to_time_estimate ==
-                    ::Whois::domain_validation_expiration_datetime_estimate(
+                    Fred::Backend::Whois::domain_validation_expiration_datetime_estimate(
                         ctx, found->second.enum_domain_validation.get_value_or_default().validation_expiration));
         }
         else
@@ -173,14 +173,14 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset, domains_by_keyset_fixture)
 
 BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset_limit_exceeded, domains_by_keyset_fixture)
 {
-    Registry::WhoisImpl::DomainSeq domain_seq =
+    Fred::Backend::Whois::DomainSeq domain_seq =
         impl.get_domains_by_keyset(test_keyset, regular_domains - 1);
     BOOST_CHECK(domain_seq.limit_exceeded);
 
-    std::vector<Registry::WhoisImpl::Domain> domain_vec = domain_seq.content;
+    std::vector<Fred::Backend::Whois::Domain> domain_vec = domain_seq.content;
     BOOST_CHECK(domain_vec.size() == regular_domains - 1);
     std::map<std::string, ::LibFred::InfoDomainData>::iterator found;
-    BOOST_FOREACH(const Registry::WhoisImpl::Domain& it, domain_vec)
+    BOOST_FOREACH(const Fred::Backend::Whois::Domain& it, domain_vec)
     {
         found = domain_info.find(it.fqdn);
         BOOST_REQUIRE(found != domain_info.end());
@@ -215,7 +215,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset_limit_exceeded, domains_by_keyset_
         {
             BOOST_CHECK(it.validated_to.get_value() == found->second.enum_domain_validation.get_value().validation_expiration);
             BOOST_CHECK(it.validated_to_time_estimate ==
-                    ::Whois::domain_validation_expiration_datetime_estimate(
+                    Fred::Backend::Whois::domain_validation_expiration_datetime_estimate(
                         ctx, found->second.enum_domain_validation.get_value_or_default().validation_expiration));
         }
         else
@@ -280,27 +280,27 @@ struct update_domains_by_keyset_fixture
 
 BOOST_FIXTURE_TEST_CASE(update_domains_by_keyset, update_domains_by_keyset_fixture)
 {
-    Registry::WhoisImpl::Domain dom = impl.get_domains_by_keyset(test_keyset, 1).content.at(0);
+    Fred::Backend::Whois::Domain dom = impl.get_domains_by_keyset(test_keyset, 1).content.at(0);
     BOOST_CHECK(dom.changed == now_utc);
     BOOST_CHECK(dom.last_transfer == now_utc);
     BOOST_CHECK(dom.sponsoring_registrar == transfer_handle);
 
     ::LibFred::OperationContextCreator ctx;
     BOOST_CHECK(dom.validated_to_time_actual.get_value() ==
-            ::Whois::domain_validation_expiration_datetime_actual(ctx, domain.id).get_value());
+            Fred::Backend::Whois::domain_validation_expiration_datetime_actual(ctx, domain.id).get_value());
 
-    Optional<boost::posix_time::ptime> eta = ::Whois::domain_expiration_datetime_actual(ctx, domain.id);
+    Optional<boost::posix_time::ptime> eta = Fred::Backend::Whois::domain_expiration_datetime_actual(ctx, domain.id);
     BOOST_CHECK(dom.expire_time_actual.get_value() == eta.get_value());
 }
 
 BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset_no_keyset, whois_impl_instance_fixture)
 {
-    BOOST_CHECK_THROW(impl.get_domains_by_keyset("absent-nsset", 1), Registry::WhoisImpl::ObjectNotExists);
+    BOOST_CHECK_THROW(impl.get_domains_by_keyset("absent-nsset", 1), Fred::Backend::Whois::ObjectNotExists);
 }
 
 BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset_wrong_keyset, whois_impl_instance_fixture)
 {
-    BOOST_CHECK_THROW(impl.get_domains_by_keyset("", 1), Registry::WhoisImpl::InvalidHandle);
+    BOOST_CHECK_THROW(impl.get_domains_by_keyset("", 1), Fred::Backend::Whois::InvalidHandle);
 }
 
 BOOST_AUTO_TEST_SUITE_END();//get_domains_by_keyset

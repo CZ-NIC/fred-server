@@ -1,6 +1,8 @@
 #include "src/backend/whois/zone_list.hh"
 
 
+namespace Fred {
+namespace Backend {
 namespace Whois {
     std::vector<std::string> get_managed_zone_list(
         LibFred::OperationContext& ctx)
@@ -15,4 +17,6 @@ namespace Whois {
         }
         return ret;
     }
-}
+} // namespace Fred::Backend::Whois
+} // namespace Fred::Backend
+} // namespace Fred

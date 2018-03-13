@@ -22,39 +22,39 @@
  */
 
 #include "config.h"
-#include "src/bin/corba/whois/whois_impl.hh"
-#include "src/bin/corba/whois/whois2_impl.hh"
-#include "src/bin/corba/public_request/server_i.hh"
 #include "src/bin/corba/contact_verification/contact_verification_i.hh"
+#include "src/bin/corba/public_request/server_i.hh"
+#include "src/bin/corba/whois/whois2_impl.hh"
+#include "src/bin/corba/whois/whois_impl.hh"
 
+#include "src/bin/corba/connection_releaser.hh"
 #include "src/libfred/db_settings.hh"
 #include "src/util/corba_wrapper.hh"
-#include "src/util/log/logger.hh"
 #include "src/util/log/context.hh"
-#include "src/bin/corba/connection_releaser.hh"
+#include "src/util/log/logger.hh"
 #include "src/util/setup_server.hh"
 
 #include "src/util/cfg/config_handler.hh"
-#include "src/util/cfg/handle_general_args.hh"
-#include "src/util/cfg/handle_server_args.hh"
-#include "src/util/cfg/handle_logging_args.hh"
-#include "src/util/cfg/handle_database_args.hh"
-#include "src/util/cfg/handle_registry_args.hh"
-#include "src/util/cfg/handle_corbanameservice_args.hh"
 #include "src/util/cfg/handle_contactverification_args.hh"
+#include "src/util/cfg/handle_corbanameservice_args.hh"
+#include "src/util/cfg/handle_database_args.hh"
+#include "src/util/cfg/handle_general_args.hh"
+#include "src/util/cfg/handle_logging_args.hh"
+#include "src/util/cfg/handle_registry_args.hh"
+#include "src/util/cfg/handle_server_args.hh"
 
+#include <cstdlib>
 #include <iostream>
 #include <stdexcept>
 #include <string>
-#include <cstdlib>
 
+#include <boost/assign/list_of.hpp>
+#include <boost/date_time.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/thread.hpp>
 #include <boost/thread/barrier.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/date_time.hpp>
-#include <boost/assign/list_of.hpp>
 #include <utility>
 
 
@@ -62,21 +62,23 @@ const std::string server_name = "fred-pifd";
 
 //config args processing
 HandlerPtrVector global_hpv =
-boost::assign::list_of
-    (HandleArgsPtr(new HandleHelpArg("\nUsage: " + server_name + " <switches>\n")))
-    (HandleArgsPtr(new HandleConfigFileArgs(CONFIG_FILE) ))
-    (HandleArgsPtr(new HandleServerArgs))
-    (HandleArgsPtr(new HandleLoggingArgs))
-    (HandleArgsPtr(new HandleDatabaseArgs))
-    (HandleArgsPtr(new HandleCorbaNameServiceArgs))
-    (HandleArgsPtr(new HandleRegistryArgs))
-    (HandleArgsPtr(new HandleContactVerificationArgs));
+        boost::assign::list_of
+        // clang-format off
+                (HandleArgsPtr(new HandleHelpArg("\nUsage: " + server_name + " <switches>\n")))
+                (HandleArgsPtr(new HandleConfigFileArgs(CONFIG_FILE) ))
+                (HandleArgsPtr(new HandleServerArgs))
+                (HandleArgsPtr(new HandleLoggingArgs))
+                (HandleArgsPtr(new HandleDatabaseArgs))
+                (HandleArgsPtr(new HandleCorbaNameServiceArgs))
+                (HandleArgsPtr(new HandleRegistryArgs))
+                (HandleArgsPtr(new HandleContactVerificationArgs));
+        // clang-format on
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
     FakedArgs fa; //producing faked args with unrecognized ones
     try
-    {   //config
+    { //config
         fa = CfgArgs::init<HandleHelpArg>(global_hpv)->handle(argc, argv);
 
         // setting up logger
@@ -88,7 +90,8 @@ int main(int argc, char *argv[])
         if (CfgArgs::instance()->get_handler_ptr_by_type<HandleLoggingArgs>()->log_config_dump)
         {
             for (std::string config_item = AccumulatedConfig::get_instance().pop_front();
-                !config_item.empty(); config_item = AccumulatedConfig::get_instance().pop_front())
+                    !config_item.empty();
+                    config_item = AccumulatedConfig::get_instance().pop_front())
             {
                 Logging::Manager::instance_ref().get(PACKAGE).debug(config_item);
             }
@@ -99,39 +102,39 @@ int main(int argc, char *argv[])
 
         //conf pointers
         HandleDatabaseArgs* db_args_ptr = CfgArgs::instance()
-            ->get_handler_ptr_by_type<HandleDatabaseArgs>();
+                                                  ->get_handler_ptr_by_type<HandleDatabaseArgs>();
         HandleRegistryArgs* registry_args_ptr = CfgArgs::instance()
-            ->get_handler_ptr_by_type<HandleRegistryArgs>();
+                                                        ->get_handler_ptr_by_type<HandleRegistryArgs>();
 
         std::unique_ptr<ccReg_Whois_i> myccReg_Whois_i(new ccReg_Whois_i(
                 db_args_ptr->get_conn_info(),
                 server_name,
                 registry_args_ptr->restricted_handles));
 
-        std::unique_ptr<Registry::Whois::Server_impl> my_whois2(new Registry::Whois::Server_impl("Whois2"));
+        std::unique_ptr<CorbaConversion::Whois::Server_impl> my_whois2(new CorbaConversion::Whois::Server_impl("Whois2"));
 
-        std::unique_ptr<Registry::PublicRequest::Server_i> my_public_request(
-                new Registry::PublicRequest::Server_i(server_name));
+        std::unique_ptr<CorbaConversion::PublicRequest::Server_i> my_public_request(
+                new CorbaConversion::PublicRequest::Server_i(server_name));
 
-        std::unique_ptr<Registry::Contact::Verification::ContactVerification_i> contact_vrf_iface(
-                new Registry::Contact::Verification::ContactVerification_i("fred-pifd-cv"));
+        std::unique_ptr<CorbaConversion::Contact::Verification::ContactVerification_i> contact_vrf_iface(
+                new CorbaConversion::Contact::Verification::ContactVerification_i("fred-pifd-cv"));
 
         //create server object with poa and nameservice registration
         CorbaContainer::get_instance()
-            ->register_server(myccReg_Whois_i.release(), "Whois");
+                ->register_server(myccReg_Whois_i.release(), "Whois");
 
         CorbaContainer::get_instance()
-            ->register_server(my_whois2.release(), "Whois2");
+                ->register_server(my_whois2.release(), "Whois2");
 
         CorbaContainer::get_instance()
-            ->register_server(my_public_request.release(), "PublicRequest");
+                ->register_server(my_public_request.release(), "PublicRequest");
 
         CorbaContainer::get_instance()
-            ->register_server(contact_vrf_iface.release(), "ContactVerification");
+                ->register_server(contact_vrf_iface.release(), "ContactVerification");
 
         run_server(CfgArgs::instance(), CorbaContainer::get_instance());
         return EXIT_SUCCESS;
-    }//try
+    } //try
     catch (const CORBA::TRANSIENT&)
     {
         std::cerr << "Caught system exception TRANSIENT -- unable to contact the server." << std::endl;

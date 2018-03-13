@@ -33,12 +33,16 @@
 
 #include <string>
 
-namespace Admin
-{
-namespace AdminContactVerificationObjectStates
-{
-    /* OperationContext versions */
-    bool conditionally_cancel_final_states(
+namespace Fred {
+namespace Backend {
+namespace Admin {
+namespace Contact {
+namespace Verification {
+namespace ContactStates {
+
+/* OperationContext versions */
+
+bool conditionally_cancel_final_states(
         LibFred::OperationContext& ctx,
         unsigned long long contact_id,
         bool name_changed,
@@ -56,24 +60,34 @@ namespace AdminContactVerificationObjectStates
         bool notifyemail_changed,
         bool vat_changed,
         bool ssntype_changed,
-        bool ssn_changed
-    );
+        bool ssn_changed);
 
-    /** @returns true if contact has changed data related to verification false otherwise */
-    bool conditionally_cancel_final_states(
+
+/** @returns true if contact has changed data related to verification false otherwise */
+bool conditionally_cancel_final_states(
         LibFred::OperationContext& ctx,
-        unsigned long long contact_id
-    );
+        unsigned long long contact_id);
 
-    void cancel_all_states(LibFred::OperationContext& ctx, unsigned long long contact_id);
 
-    void cancel_final_states(LibFred::OperationContext& ctx, unsigned long long contact_id);
+void cancel_all_states(
+        LibFred::OperationContext& ctx,
+        unsigned long long contact_id);
 
-    /* legacy version (EPP, MojeID) */
-    bool conditionally_cancel_final_states_legacy(
-        unsigned long long contact_id
-    );
-}
-}
+
+void cancel_final_states(
+        LibFred::OperationContext& ctx,
+        unsigned long long contact_id);
+
+
+/* legacy version (EPP, MojeID) */
+bool conditionally_cancel_final_states_legacy(unsigned long long contact_id);
+
+
+} // namespace Fred::Backend::Admin::Contact::Verification::ContactStates
+} // namespace Fred::Backend::Admin::Contact::Verification
+} // namespace Fred::Backend::Admin::Contact
+} // namespace Fred::Backend::Admin
+} // namespace Fred::Backend
+} // namespace Fred
+
 #endif // #include guard end
-

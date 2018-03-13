@@ -26,8 +26,12 @@
 
 #include "src/libfred/opexception.hh"
 
-namespace Admin
-{
+namespace Fred {
+namespace Backend {
+namespace Admin {
+namespace Contact {
+namespace Verification {
+
     struct ExceptionUnknownContactId : virtual LibFred::OperationException {
         const char* what() const noexcept {return "unknown contact id";}
     };
@@ -79,6 +83,11 @@ namespace Admin
     struct ExceptionTestImplementationError : virtual LibFred::OperationException {
         const char* what() const noexcept {return "error in tests implementation";}
     };
-}
+
+} // namespace Fred::Backend::Admin::Contact::Verification
+} // namespace Fred::Backend::Admin::Contact
+} // namespace Fred::Backend::Admin
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

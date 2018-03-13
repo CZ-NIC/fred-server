@@ -20,18 +20,29 @@
  *  @file
  *  implementation for MojeID CORBA conversion
  */
+
+#include "src/backend/buffer.hh"
+#include "src/bin/corba/IsoDate.hh"
+#include "src/bin/corba/MojeID.hh"
+#include "src/bin/corba/NullableIsoDate.hh"
 #include "src/bin/corba/mojeid/mojeid_corba_conversion.hh"
-#include <string>
+#include "src/bin/corba/util/corba_conversions_isodate.hh"
+#include "src/bin/corba/util/corba_conversions_isodatetime.hh"
+
 #include <boost/lexical_cast.hpp>
+
+#include <string>
 
 namespace CorbaConversion {
 
-void unwrap_NullableString(const Registry::MojeID::NullableString *src_ptr, Nullable< std::string > &dst)
+void unwrap_NullableString(const Registry::MojeID::NullableString* src_ptr, Nullable<std::string>& dst)
 {
-    if (src_ptr == NULL) {
-        dst = Nullable< std::string >();
+    if (src_ptr == NULL)
+    {
+        dst = Nullable<std::string>();
     }
-    else {
+    else
+    {
         dst = src_ptr->_boxed_in();
     }
 }
@@ -39,83 +50,70 @@ void unwrap_NullableString(const Registry::MojeID::NullableString *src_ptr, Null
 namespace {
 
 //Fake NULL value from empty input string
-void unwrap_NullableString_fix_frontend_bug(const Registry::MojeID::NullableString *src_ptr, Nullable< std::string > &dst)
+void unwrap_NullableString_fix_frontend_bug(const Registry::MojeID::NullableString* src_ptr, Nullable<std::string>& dst)
 {
-    if (src_ptr == NULL) {
-        dst = Nullable< std::string >();
+    if (src_ptr == NULL)
+    {
+        dst = Nullable<std::string>();
     }
-    else {
+    else
+    {
         const std::string dst_value = src_ptr->_boxed_in();
-        if (dst_value.empty()) {
-            dst = Nullable< std::string >();
+        if (dst_value.empty())
+        {
+            dst = Nullable<std::string>();
         }
-        else {
+        else
+        {
             dst = dst_value;
         }
     }
 }
-
 }
 
-Registry::MojeID::NullableString_var wrap_Nullable_string(const Nullable< std::string > &src)
+Registry::MojeID::NullableString_var wrap_Nullable_string(const Nullable<std::string>& src)
 {
     return src.isnull() ? Registry::MojeID::NullableString_var()
                         : Registry::MojeID::NullableString_var(
-                              new Registry::MojeID::NullableString(src.get_value().c_str()));
+                                  new Registry::MojeID::NullableString(src.get_value().c_str()));
 }
 
-void unwrap_Date(const Registry::MojeID::Date &src, Registry::MojeIDImplData::Date &dst)
+void unwrap_Date(const Registry::IsoDate& src, Fred::Backend::MojeIdImplData::Birthdate& dst)
 {
     dst.value = src.value.in();
 }
 
-void unwrap_NullableDate(const Registry::MojeID::NullableDate *src_ptr, Nullable< Registry::MojeIDImplData::Date > &dst)
+void unwrap_NullableIsoDate(const Registry::NullableIsoDate* src_ptr, Nullable<Fred::Backend::MojeIdImplData::Birthdate>& dst)
 {
-    if (src_ptr == NULL) {
-        dst = Nullable< Registry::MojeIDImplData::Date >();
+    if (src_ptr == NULL)
+    {
+        dst = Nullable<Fred::Backend::MojeIdImplData::Birthdate>();
     }
-    else {
-        Registry::MojeIDImplData::Date result;
+    else
+    {
+        Fred::Backend::MojeIdImplData::Birthdate result;
         unwrap_Date(src_ptr->_boxed_in(), result);
         dst = result;
     }
 }
 
-void wrap_boost_gregorian_date(const boost::gregorian::date &src, Registry::MojeID::Date &dst)
-{
-    if (src.is_special()) {
-        throw ArgumentIsSpecial();
-    }
-
-    dst.value = wrap_string(boost::gregorian::to_iso_extended_string(src))._retn();
-}
-
-void wrap_Date(const Registry::MojeIDImplData::Date &src, Registry::MojeID::Date &dst)
+void wrap_Birthdate(const Fred::Backend::MojeIdImplData::Birthdate& src, Registry::IsoDate& dst)
 {
     dst.value = wrap_string(src.value)._retn();
 }
 
-Registry::MojeID::NullableDate_var wrap_Nullable_Date(const Nullable< Registry::MojeIDImplData::Date > &src)
+Registry::NullableIsoDate_var wrap_Nullable_Birthdate(const Nullable<Fred::Backend::MojeIdImplData::Birthdate>& src)
 {
-    if (src.isnull()) {
-        return Registry::MojeID::NullableDate_var();
+    if (src.isnull())
+    {
+        return Registry::NullableIsoDate_var();
     }
-    Registry::MojeID::NullableDate_var result(new Registry::MojeID::NullableDate());
-    wrap_Date(src.get_value(), result.in()->_value());
+    Registry::NullableIsoDate_var result(new Registry::NullableIsoDate());
+    wrap_Birthdate(src.get_value(), result.in()->_value());
     return result._retn();
 }
 
-Registry::MojeID::NullableDate_var wrap_Nullable_boost_gregorian_date(const Nullable< boost::gregorian::date > &src)
-{
-    if (src.isnull()) {
-        return Registry::MojeID::NullableDate_var();
-    }
-    Registry::MojeID::NullableDate_var result(new Registry::MojeID::NullableDate());
-    wrap_boost_gregorian_date(src.get_value(), result.in()->_value());
-    return result._retn();
-}
-
-void unwrap_Address(const Registry::MojeID::Address &src, Registry::MojeIDImplData::Address &dst)
+void unwrap_Address(const Registry::MojeID::Address& src, Fred::Backend::MojeIdImplData::Address& dst)
 {
     dst.street1 = src.street1.in();
 
@@ -127,22 +125,24 @@ void unwrap_Address(const Registry::MojeID::Address &src, Registry::MojeIDImplDa
     unwrap_NullableString(src.state.in(), dst.state);
 
     dst.postal_code = src.postal_code.in();
-    dst.country     = src.country.in();
+    dst.country = src.country.in();
 }
 
-void unwrap_NullableAddress(const Registry::MojeID::NullableAddress *src_ptr, Nullable< Registry::MojeIDImplData::Address > &dst)
+void unwrap_NullableAddress(const Registry::MojeID::NullableAddress* src_ptr, Nullable<Fred::Backend::MojeIdImplData::Address>& dst)
 {
-    if (src_ptr == NULL) {
-        dst = Nullable< Registry::MojeIDImplData::Address >();
+    if (src_ptr == NULL)
+    {
+        dst = Nullable<Fred::Backend::MojeIdImplData::Address>();
     }
-    else {
-        Registry::MojeIDImplData::Address result;
+    else
+    {
+        Fred::Backend::MojeIdImplData::Address result;
         unwrap_Address(src_ptr->_boxed_in(), result);
         dst = result;
     }
 }
 
-void wrap_Address(const Registry::MojeIDImplData::Address &src, Registry::MojeID::Address &dst)
+void wrap_Address(const Fred::Backend::MojeIdImplData::Address& src, Registry::MojeID::Address& dst)
 {
     dst.street1 = wrap_string(src.street1)._retn();
 
@@ -154,12 +154,13 @@ void wrap_Address(const Registry::MojeIDImplData::Address &src, Registry::MojeID
     dst.state = wrap_Nullable_string(src.state);
 
     dst.postal_code = wrap_string(src.postal_code)._retn();
-    dst.country     = wrap_string(src.country)._retn();
+    dst.country = wrap_string(src.country)._retn();
 }
 
-Registry::MojeID::NullableAddress_var wrap_Nullable_Address(const Nullable< Registry::MojeIDImplData::Address > &src)
+Registry::MojeID::NullableAddress_var wrap_Nullable_Address(const Nullable<Fred::Backend::MojeIdImplData::Address>& src)
 {
-    if (src.isnull()) {
+    if (src.isnull())
+    {
         return Registry::MojeID::NullableAddress_var();
     }
     Registry::MojeID::NullableAddress_var result(new Registry::MojeID::NullableAddress());
@@ -167,7 +168,7 @@ Registry::MojeID::NullableAddress_var wrap_Nullable_Address(const Nullable< Regi
     return result._retn();
 }
 
-void unwrap_ShippingAddress(const Registry::MojeID::ShippingAddress &src, Registry::MojeIDImplData::ShippingAddress &dst)
+void unwrap_ShippingAddress(const Registry::MojeID::ShippingAddress& src, Fred::Backend::MojeIdImplData::ShippingAddress& dst)
 {
     unwrap_NullableString(src.company_name.in(), dst.company_name);
 
@@ -181,22 +182,24 @@ void unwrap_ShippingAddress(const Registry::MojeID::ShippingAddress &src, Regist
     unwrap_NullableString(src.state.in(), dst.state);
 
     dst.postal_code = src.postal_code.in();
-    dst.country     = src.country.in();
+    dst.country = src.country.in();
 }
 
-void unwrap_NullableShippingAddress(const Registry::MojeID::NullableShippingAddress *src_ptr, Nullable< Registry::MojeIDImplData::ShippingAddress > &dst)
+void unwrap_NullableShippingAddress(const Registry::MojeID::NullableShippingAddress* src_ptr, Nullable<Fred::Backend::MojeIdImplData::ShippingAddress>& dst)
 {
-    if (src_ptr == NULL) {
-        dst = Nullable< Registry::MojeIDImplData::ShippingAddress >();
+    if (src_ptr == NULL)
+    {
+        dst = Nullable<Fred::Backend::MojeIdImplData::ShippingAddress>();
     }
-    else {
-        Registry::MojeIDImplData::ShippingAddress result;
+    else
+    {
+        Fred::Backend::MojeIdImplData::ShippingAddress result;
         unwrap_ShippingAddress(src_ptr->_boxed_in(), result);
         dst = result;
     }
 }
 
-void wrap_ShippingAddress(const Registry::MojeIDImplData::ShippingAddress &src, Registry::MojeID::ShippingAddress &dst)
+void wrap_ShippingAddress(const Fred::Backend::MojeIdImplData::ShippingAddress& src, Registry::MojeID::ShippingAddress& dst)
 {
     dst.company_name = wrap_Nullable_string(src.company_name);
 
@@ -210,12 +213,13 @@ void wrap_ShippingAddress(const Registry::MojeIDImplData::ShippingAddress &src, 
     dst.state = wrap_Nullable_string(src.state);
 
     dst.postal_code = wrap_string(src.postal_code)._retn();
-    dst.country     = wrap_string(src.country)._retn();
+    dst.country = wrap_string(src.country)._retn();
 }
 
-Registry::MojeID::NullableShippingAddress_var wrap_Nullable_ShippingAddress(const Nullable< Registry::MojeIDImplData::ShippingAddress > &src)
+Registry::MojeID::NullableShippingAddress_var wrap_Nullable_ShippingAddress(const Nullable<Fred::Backend::MojeIdImplData::ShippingAddress>& src)
 {
-    if (src.isnull()) {
+    if (src.isnull())
+    {
         return Registry::MojeID::NullableShippingAddress_var();
     }
     Registry::MojeID::NullableShippingAddress_var result(new Registry::MojeID::NullableShippingAddress());
@@ -224,172 +228,148 @@ Registry::MojeID::NullableShippingAddress_var wrap_Nullable_ShippingAddress(cons
 }
 
 ArgumentIsSpecial::ArgumentIsSpecial()
-:   std::invalid_argument("argument is special")
+    : std::invalid_argument("argument is special")
 {
-}
-
-void unwrap_DateTime(const Registry::MojeID::DateTime &src, boost::posix_time::ptime &dst)
-{
-    const std::string value = src.value.in();
-    try {
-        dst = boost::date_time::parse_delimited_time< ptime >(value, 'T');
-    }
-    catch (const boost::bad_lexical_cast &e) {//special values usually lead to bad_lexical_cast exception
-        throw ArgumentIsSpecial();//really special :-)
-    }
-    if (dst.is_special()) {
-        throw ArgumentIsSpecial();
-    }
-}
-
-Registry::MojeID::DateTime_var wrap_DateTime(const boost::posix_time::ptime &src)
-{
-    if (src.is_special()) {
-        throw ArgumentIsSpecial();
-    }
-
-    Registry::MojeID::DateTime_var result(new Registry::MojeID::DateTime());
-    result.inout().value = wrap_string(boost::posix_time::to_iso_extended_string(src))._retn();
-    return result._retn();
 }
 
 NotEnumValidationResultValue::NotEnumValidationResultValue()
-:   std::invalid_argument("argument value is not from enum ValidationResult::Value set")
+    : std::invalid_argument("argument value is not from enum ValidationResult::Value set")
 {
 }
 
 ValidationResultWasNotSet::ValidationResultWasNotSet()
-:   std::invalid_argument("argument value was never set")
+    : std::invalid_argument("argument value was never set")
 {
 }
 
-void wrap_ValidationResult(Registry::MojeIDImplData::ValidationResult::Value src, Registry::MojeID::ValidationResult &dst)
+void wrap_ValidationResult(Fred::Backend::MojeIdImplData::ValidationResult::Value src, Registry::MojeID::ValidationResult& dst)
 {
-    switch (src) {
-    case Registry::MojeIDImplData::ValidationResult::OK:
-        dst = Registry::MojeID::OK;
-        return;
-    case Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE:
-        dst = Registry::MojeID::NOT_AVAILABLE;
-        return;
-    case Registry::MojeIDImplData::ValidationResult::INVALID:
-        dst = Registry::MojeID::INVALID;
-        return;
-    case Registry::MojeIDImplData::ValidationResult::REQUIRED:
-        dst = Registry::MojeID::REQUIRED;
-        return;
-    case Registry::MojeIDImplData::ValidationResult::UNKNOWN:
-        throw ValidationResultWasNotSet();
+    switch (src)
+    {
+        case Fred::Backend::MojeIdImplData::ValidationResult::OK:
+            dst = Registry::MojeID::OK;
+            return;
+        case Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE:
+            dst = Registry::MojeID::NOT_AVAILABLE;
+            return;
+        case Fred::Backend::MojeIdImplData::ValidationResult::INVALID:
+            dst = Registry::MojeID::INVALID;
+            return;
+        case Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED:
+            dst = Registry::MojeID::REQUIRED;
+            return;
+        case Fred::Backend::MojeIdImplData::ValidationResult::UNKNOWN:
+            throw ValidationResultWasNotSet();
     }
     throw NotEnumValidationResultValue();
 }
 
-void wrap_AddressValidationResult(const Registry::MojeIDImplData::AddressValidationResult &src,
-                                  Registry::MojeID::AddressValidationResult &dst)
+void wrap_AddressValidationResult(const Fred::Backend::MojeIdImplData::AddressValidationResult& src,
+        Registry::MojeID::AddressValidationResult& dst)
 {
-    wrap_ValidationResult(src.street1,     dst.street1);
-    wrap_ValidationResult(src.city,        dst.city);
+    wrap_ValidationResult(src.street1, dst.street1);
+    wrap_ValidationResult(src.city, dst.city);
     wrap_ValidationResult(src.postal_code, dst.postal_code);
-    wrap_ValidationResult(src.country,     dst.country);
+    wrap_ValidationResult(src.country, dst.country);
 }
 
-void wrap_MandatoryAddressValidationResult(const Registry::MojeIDImplData::MandatoryAddressValidationResult &src,
-                                           Registry::MojeID::MandatoryAddressValidationResult &dst)
+void wrap_MandatoryAddressValidationResult(const Fred::Backend::MojeIdImplData::MandatoryAddressValidationResult& src,
+        Registry::MojeID::MandatoryAddressValidationResult& dst)
 {
     wrap_ValidationResult(src.address_presence, dst.address_presence);
-    wrap_ValidationResult(src.street1,          dst.street1);
-    wrap_ValidationResult(src.city,             dst.city);
-    wrap_ValidationResult(src.postal_code,      dst.postal_code);
-    wrap_ValidationResult(src.country,          dst.country);
+    wrap_ValidationResult(src.street1, dst.street1);
+    wrap_ValidationResult(src.city, dst.city);
+    wrap_ValidationResult(src.postal_code, dst.postal_code);
+    wrap_ValidationResult(src.country, dst.country);
 }
 
-void wrap_RegistrationValidationResult(const Registry::MojeIDImplData::RegistrationValidationResult &src,
-                                       Registry::MojeID::Server::REGISTRATION_VALIDATION_ERROR &dst)
+void wrap_RegistrationValidationResult(const Fred::Backend::MojeIdImplData::RegistrationValidationResult& src,
+        Registry::MojeID::Server::REGISTRATION_VALIDATION_ERROR& dst)
 {
-    wrap_ValidationResult(src.username,     dst.username);
-    wrap_ValidationResult(src.first_name,   dst.first_name);
-    wrap_ValidationResult(src.last_name,    dst.last_name);
-    wrap_ValidationResult(src.birth_date,   dst.birth_date);
-    wrap_ValidationResult(src.vat_id_num,   dst.vat_id_num);
-    wrap_ValidationResult(src.email,        dst.email);
+    wrap_ValidationResult(src.username, dst.username);
+    wrap_ValidationResult(src.first_name, dst.first_name);
+    wrap_ValidationResult(src.last_name, dst.last_name);
+    wrap_ValidationResult(src.birth_date, dst.birth_date);
+    wrap_ValidationResult(src.vat_id_num, dst.vat_id_num);
+    wrap_ValidationResult(src.email, dst.email);
     wrap_ValidationResult(src.notify_email, dst.notify_email);
-    wrap_ValidationResult(src.phone,        dst.phone);
-    wrap_ValidationResult(src.fax,          dst.fax);
+    wrap_ValidationResult(src.phone, dst.phone);
+    wrap_ValidationResult(src.fax, dst.fax);
 
     wrap_MandatoryAddressValidationResult(src.permanent, dst.permanent);
 
-    wrap_AddressValidationResult(src.mailing,   dst.mailing);
-    wrap_AddressValidationResult(src.billing,   dst.billing);
-    wrap_AddressValidationResult(src.shipping,  dst.shipping);
+    wrap_AddressValidationResult(src.mailing, dst.mailing);
+    wrap_AddressValidationResult(src.billing, dst.billing);
+    wrap_AddressValidationResult(src.shipping, dst.shipping);
     wrap_AddressValidationResult(src.shipping2, dst.shipping2);
     wrap_AddressValidationResult(src.shipping3, dst.shipping3);
 }
 
-void wrap_UpdateContactPrepareValidationResult(const Registry::MojeIDImplData::UpdateContactPrepareValidationResult &src,
-                                               Registry::MojeID::Server::UPDATE_CONTACT_PREPARE_VALIDATION_ERROR &dst)
-{
-    wrap_ValidationResult(src.first_name,   dst.first_name);
-    wrap_ValidationResult(src.last_name,    dst.last_name);
-    wrap_ValidationResult(src.birth_date,   dst.birth_date);
-    wrap_ValidationResult(src.email,        dst.email);
-    wrap_ValidationResult(src.notify_email, dst.notify_email);
-    wrap_ValidationResult(src.phone,        dst.phone);
-    wrap_ValidationResult(src.fax,          dst.fax);
-
-    wrap_MandatoryAddressValidationResult(src.permanent, dst.permanent);
-
-    wrap_AddressValidationResult(src.mailing,   dst.mailing);
-    wrap_AddressValidationResult(src.billing,   dst.billing);
-    wrap_AddressValidationResult(src.shipping,  dst.shipping);
-    wrap_AddressValidationResult(src.shipping2, dst.shipping2);
-    wrap_AddressValidationResult(src.shipping3, dst.shipping3);
-}
-
-void wrap_CreateValidationRequestValidationResult(const Registry::MojeIDImplData::CreateValidationRequestValidationResult &src,
-                                                  Registry::MojeID::Server::CREATE_VALIDATION_REQUEST_VALIDATION_ERROR &dst)
+void wrap_UpdateContactPrepareValidationResult(const Fred::Backend::MojeIdImplData::UpdateContactPrepareValidationResult& src,
+        Registry::MojeID::Server::UPDATE_CONTACT_PREPARE_VALIDATION_ERROR& dst)
 {
     wrap_ValidationResult(src.first_name, dst.first_name);
-    wrap_ValidationResult(src.last_name,  dst.last_name);
+    wrap_ValidationResult(src.last_name, dst.last_name);
+    wrap_ValidationResult(src.birth_date, dst.birth_date);
+    wrap_ValidationResult(src.email, dst.email);
+    wrap_ValidationResult(src.notify_email, dst.notify_email);
+    wrap_ValidationResult(src.phone, dst.phone);
+    wrap_ValidationResult(src.fax, dst.fax);
 
     wrap_MandatoryAddressValidationResult(src.permanent, dst.permanent);
 
-    wrap_ValidationResult(src.email,        dst.email);
-    wrap_ValidationResult(src.phone,        dst.phone);
-    wrap_ValidationResult(src.notify_email, dst.notify_email);
-    wrap_ValidationResult(src.fax,          dst.fax);
-    wrap_ValidationResult(src.birth_date,   dst.birth_date);
-    wrap_ValidationResult(src.vat_id_num,   dst.vat_id_num);
+    wrap_AddressValidationResult(src.mailing, dst.mailing);
+    wrap_AddressValidationResult(src.billing, dst.billing);
+    wrap_AddressValidationResult(src.shipping, dst.shipping);
+    wrap_AddressValidationResult(src.shipping2, dst.shipping2);
+    wrap_AddressValidationResult(src.shipping3, dst.shipping3);
 }
 
-void wrap_ProcessRegistrationValidationResult(const Registry::MojeIDImplData::ProcessRegistrationValidationResult &src,
-                                              Registry::MojeID::Server::PROCESS_REGISTRATION_VALIDATION_ERROR &dst)
+void wrap_CreateValidationRequestValidationResult(const Fred::Backend::MojeIdImplData::CreateValidationRequestValidationResult& src,
+        Registry::MojeID::Server::CREATE_VALIDATION_REQUEST_VALIDATION_ERROR& dst)
+{
+    wrap_ValidationResult(src.first_name, dst.first_name);
+    wrap_ValidationResult(src.last_name, dst.last_name);
+
+    wrap_MandatoryAddressValidationResult(src.permanent, dst.permanent);
+
+    wrap_ValidationResult(src.email, dst.email);
+    wrap_ValidationResult(src.phone, dst.phone);
+    wrap_ValidationResult(src.notify_email, dst.notify_email);
+    wrap_ValidationResult(src.fax, dst.fax);
+    wrap_ValidationResult(src.birth_date, dst.birth_date);
+    wrap_ValidationResult(src.vat_id_num, dst.vat_id_num);
+}
+
+void wrap_ProcessRegistrationValidationResult(const Fred::Backend::MojeIdImplData::ProcessRegistrationValidationResult& src,
+        Registry::MojeID::Server::PROCESS_REGISTRATION_VALIDATION_ERROR& dst)
 {
     wrap_ValidationResult(src.email, dst.email);
     wrap_ValidationResult(src.phone, dst.phone);
 }
 
-void unwrap_CreateContact(const Registry::MojeID::CreateContact &src, Registry::MojeIDImplData::CreateContact &dst)
+void unwrap_CreateContact(const Registry::MojeID::CreateContact& src, Fred::Backend::MojeIdImplData::CreateContact& dst)
 {
-    dst.username   = src.username.in();
+    dst.username = src.username.in();
     dst.first_name = src.first_name.in();
-    dst.last_name  = src.last_name.in();
+    dst.last_name = src.last_name.in();
 
     unwrap_NullableString(src.organization.in(), dst.organization);
-    unwrap_NullableString(src.vat_reg_num.in(),  dst.vat_reg_num);
+    unwrap_NullableString(src.vat_reg_num.in(), dst.vat_reg_num);
 
-    unwrap_NullableDate(src.birth_date.in(), dst.birth_date);
+    unwrap_NullableIsoDate(src.birth_date.in(), dst.birth_date);
 
-    unwrap_NullableString_fix_frontend_bug(src.id_card_num.in(),  dst.id_card_num);
+    unwrap_NullableString_fix_frontend_bug(src.id_card_num.in(), dst.id_card_num);
     unwrap_NullableString_fix_frontend_bug(src.passport_num.in(), dst.passport_num);
-    unwrap_NullableString_fix_frontend_bug(src.ssn_id_num.in(),   dst.ssn_id_num);
-    unwrap_NullableString_fix_frontend_bug(src.vat_id_num.in(),   dst.vat_id_num);
+    unwrap_NullableString_fix_frontend_bug(src.ssn_id_num.in(), dst.ssn_id_num);
+    unwrap_NullableString_fix_frontend_bug(src.vat_id_num.in(), dst.vat_id_num);
 
     unwrap_Address(src.permanent, dst.permanent);
 
     unwrap_NullableAddress(src.mailing.in(), dst.mailing);
     unwrap_NullableAddress(src.billing.in(), dst.billing);
 
-    unwrap_NullableShippingAddress(src.shipping.in(),  dst.shipping);
+    unwrap_NullableShippingAddress(src.shipping.in(), dst.shipping);
     unwrap_NullableShippingAddress(src.shipping2.in(), dst.shipping2);
     unwrap_NullableShippingAddress(src.shipping3.in(), dst.shipping3);
 
@@ -402,14 +382,14 @@ void unwrap_CreateContact(const Registry::MojeID::CreateContact &src, Registry::
     unwrap_NullableString(src.fax.in(), dst.fax);
 }
 
-void unwrap_UpdateTransferContact(const Registry::MojeID::UpdateTransferContact &src, Registry::MojeIDImplData::UpdateTransferContact &dst)
+void unwrap_UpdateTransferContact(const Registry::MojeID::UpdateTransferContact& src, Fred::Backend::MojeIdImplData::UpdateTransferContact& dst)
 {
     dst.full_name = src.full_name.in();
 
     unwrap_NullableString(src.organization.in(), dst.organization);
-    unwrap_NullableString(src.vat_reg_num.in(),  dst.vat_reg_num);
+    unwrap_NullableString(src.vat_reg_num.in(), dst.vat_reg_num);
 
-    unwrap_NullableDate(src.birth_date.in(), dst.birth_date);
+    unwrap_NullableIsoDate(src.birth_date.in(), dst.birth_date);
 
     unwrap_NullableString_fix_frontend_bug(src.vat_id_num.in(), dst.vat_id_num);
 
@@ -426,224 +406,214 @@ void unwrap_UpdateTransferContact(const Registry::MojeID::UpdateTransferContact 
     unwrap_NullableString(src.fax.in(), dst.fax);
 }
 
-void unwrap_UpdateContact(const Registry::MojeID::UpdateContact &src, Registry::MojeIDImplData::UpdateContact &dst)
+void unwrap_UpdateContact(const Registry::MojeID::UpdateContact& src, Fred::Backend::MojeIdImplData::UpdateContact& dst)
 {
     dst.first_name = src.first_name.in();
-    dst.last_name  = src.last_name.in();
+    dst.last_name = src.last_name.in();
 
     unwrap_NullableString(src.organization.in(), dst.organization);
-    unwrap_NullableString(src.vat_reg_num.in(),  dst.vat_reg_num);
+    unwrap_NullableString(src.vat_reg_num.in(), dst.vat_reg_num);
 
-    unwrap_NullableDate(src.birth_date.in(), dst.birth_date);
+    unwrap_NullableIsoDate(src.birth_date.in(), dst.birth_date);
 
-    unwrap_NullableString_fix_frontend_bug(src.id_card_num.in(),  dst.id_card_num);
+    unwrap_NullableString_fix_frontend_bug(src.id_card_num.in(), dst.id_card_num);
     unwrap_NullableString_fix_frontend_bug(src.passport_num.in(), dst.passport_num);
-    unwrap_NullableString_fix_frontend_bug(src.ssn_id_num.in(),   dst.ssn_id_num);
-    unwrap_NullableString_fix_frontend_bug(src.vat_id_num.in(),   dst.vat_id_num);
+    unwrap_NullableString_fix_frontend_bug(src.ssn_id_num.in(), dst.ssn_id_num);
+    unwrap_NullableString_fix_frontend_bug(src.vat_id_num.in(), dst.vat_id_num);
 
     unwrap_Address(src.permanent, dst.permanent);
 
     unwrap_NullableAddress(src.mailing.in(), dst.mailing);
     unwrap_NullableAddress(src.billing.in(), dst.billing);
 
-    unwrap_NullableShippingAddress(src.shipping.in(),  dst.shipping);
+    unwrap_NullableShippingAddress(src.shipping.in(), dst.shipping);
     unwrap_NullableShippingAddress(src.shipping2.in(), dst.shipping2);
     unwrap_NullableShippingAddress(src.shipping3.in(), dst.shipping3);
 
     dst.email = src.email.in();
 
     unwrap_NullableString(src.notify_email.in(), dst.notify_email);
-    unwrap_NullableString(src.telephone.in(),    dst.telephone);
-    unwrap_NullableString(src.fax.in(),          dst.fax);
+    unwrap_NullableString(src.telephone.in(), dst.telephone);
+    unwrap_NullableString(src.fax.in(), dst.fax);
 }
 
-Registry::MojeID::InfoContact_var wrap_InfoContact(const Registry::MojeIDImplData::InfoContact &src)
+Registry::MojeID::InfoContact_var wrap_InfoContact(const Fred::Backend::MojeIdImplData::InfoContact& src)
 {
     Registry::MojeID::InfoContact_var result(new Registry::MojeID::InfoContact());
 
     int_to_int(src.id, result->id);
 
     result->first_name = wrap_string(src.first_name)._retn();
-    result->last_name  = wrap_string(src.last_name)._retn();
+    result->last_name = wrap_string(src.last_name)._retn();
 
     result->organization = wrap_Nullable_string(src.organization);
-    result->vat_reg_num  = wrap_Nullable_string(src.vat_reg_num);
+    result->vat_reg_num = wrap_Nullable_string(src.vat_reg_num);
 
-    result->birth_date = wrap_Nullable_Date(src.birth_date)._retn();
+    result->birth_date = wrap_Nullable_Birthdate(src.birth_date)._retn();
 
-    result->id_card_num  = wrap_Nullable_string(src.id_card_num);
+    result->id_card_num = wrap_Nullable_string(src.id_card_num);
     result->passport_num = wrap_Nullable_string(src.passport_num);
-    result->ssn_id_num   = wrap_Nullable_string(src.ssn_id_num);
-    result->vat_id_num   = wrap_Nullable_string(src.vat_id_num);
+    result->ssn_id_num = wrap_Nullable_string(src.ssn_id_num);
+    result->vat_id_num = wrap_Nullable_string(src.vat_id_num);
 
     wrap_Address(src.permanent, result->permanent);
 
     result->mailing = wrap_Nullable_Address(src.mailing)._retn();
     result->billing = wrap_Nullable_Address(src.billing)._retn();
 
-    result->shipping  = wrap_Nullable_ShippingAddress(src.shipping)._retn();
+    result->shipping = wrap_Nullable_ShippingAddress(src.shipping)._retn();
     result->shipping2 = wrap_Nullable_ShippingAddress(src.shipping2)._retn();
     result->shipping3 = wrap_Nullable_ShippingAddress(src.shipping3)._retn();
 
     result->email = wrap_string(src.email)._retn();
 
     result->notify_email = wrap_Nullable_string(src.notify_email);
-    result->telephone    = wrap_Nullable_string(src.telephone);
-    result->fax          = wrap_Nullable_string(src.fax);
+    result->telephone = wrap_Nullable_string(src.telephone);
+    result->fax = wrap_Nullable_string(src.fax);
 
     return result._retn();
 }
 
-void wrap_InfoContactPublishFlags(const Registry::MojeIDImplData::InfoContactPublishFlags &src,
-                                  Registry::MojeID::InfoContactPublishFlags &dst)
+void wrap_InfoContactPublishFlags(const Fred::Backend::MojeIdImplData::InfoContactPublishFlags& src,
+        Registry::MojeID::InfoContactPublishFlags& dst)
 {
-    int_to_int(src.first_name,   dst.first_name);
-    int_to_int(src.last_name,    dst.last_name);
+    int_to_int(src.first_name, dst.first_name);
+    int_to_int(src.last_name, dst.last_name);
     int_to_int(src.organization, dst.organization);
-    int_to_int(src.vat_reg_num,  dst.vat_reg_num);
-    int_to_int(src.birth_date,   dst.birth_date);
-    int_to_int(src.id_card_num,  dst.id_card_num);
+    int_to_int(src.vat_reg_num, dst.vat_reg_num);
+    int_to_int(src.birth_date, dst.birth_date);
+    int_to_int(src.id_card_num, dst.id_card_num);
     int_to_int(src.passport_num, dst.passport_num);
-    int_to_int(src.ssn_id_num,   dst.ssn_id_num);
-    int_to_int(src.vat_id_num,   dst.vat_id_num);
-    int_to_int(src.email,        dst.email);
+    int_to_int(src.ssn_id_num, dst.ssn_id_num);
+    int_to_int(src.vat_id_num, dst.vat_id_num);
+    int_to_int(src.email, dst.email);
     int_to_int(src.notify_email, dst.notify_email);
-    int_to_int(src.telephone,    dst.telephone);
-    int_to_int(src.fax,          dst.fax);
-    int_to_int(src.permanent,    dst.permanent);
-    int_to_int(src.mailing,      dst.mailing);
-    int_to_int(src.billing,      dst.billing);
-    int_to_int(src.shipping,     dst.shipping);
-    int_to_int(src.shipping2,    dst.shipping2);
-    int_to_int(src.shipping3,    dst.shipping3);
+    int_to_int(src.telephone, dst.telephone);
+    int_to_int(src.fax, dst.fax);
+    int_to_int(src.permanent, dst.permanent);
+    int_to_int(src.mailing, dst.mailing);
+    int_to_int(src.billing, dst.billing);
+    int_to_int(src.shipping, dst.shipping);
+    int_to_int(src.shipping2, dst.shipping2);
+    int_to_int(src.shipping3, dst.shipping3);
 }
 
-void wrap_ContactStateInfo(const Registry::MojeIDImplData::ContactStateInfo &src, Registry::MojeID::ContactStateInfo &dst)
+void wrap_ContactStateInfo(const Fred::Backend::MojeIdImplData::ContactStateInfo& src, Registry::MojeID::ContactStateInfo& dst)
 {
     int_to_int(src.contact_id, dst.contact_id);
 
-    dst.mojeid_activation_datetime = wrap_DateTime(src.mojeid_activation_datetime);
+    dst.mojeid_activation_datetime = Util::wrap_boost_posix_time_ptime_to_IsoDateTime(src.mojeid_activation_datetime);
 
-    dst.identification_date = wrap_Nullable_boost_gregorian_date(src.identification_date)._retn();
-    dst.validation_date     = wrap_Nullable_boost_gregorian_date(src.validation_date)._retn();
-    dst.linked_date         = wrap_Nullable_boost_gregorian_date(src.linked_date)._retn();
+    dst.identification_date = Util::wrap_Nullable_boost_gregorian_date_to_NullableIsoDate(src.identification_date)._retn();
+    dst.validation_date = Util::wrap_Nullable_boost_gregorian_date_to_NullableIsoDate(src.validation_date)._retn();
+    dst.linked_date = Util::wrap_Nullable_boost_gregorian_date_to_NullableIsoDate(src.linked_date)._retn();
 }
 
-Registry::MojeID::ContactStateInfo_var wrap_ContactStateInfo(const Registry::MojeIDImplData::ContactStateInfo &src)
+Registry::MojeID::ContactStateInfo_var wrap_ContactStateInfo(const Fred::Backend::MojeIdImplData::ContactStateInfo& src)
 {
     Registry::MojeID::ContactStateInfo_var result(new Registry::MojeID::ContactStateInfo());
     wrap_ContactStateInfo(src, result.inout());
     return result._retn();
 }
 
-Registry::MojeID::ContactStateInfoList_var wrap_ContactStateInfoList(const Registry::MojeIDImplData::ContactStateInfoList &src)
+Registry::MojeID::ContactStateInfoList_var wrap_ContactStateInfoList(const Fred::Backend::MojeIdImplData::ContactStateInfoList& src)
 {
     Registry::MojeID::ContactStateInfoList_var result(new Registry::MojeID::ContactStateInfoList());
 
     result->length(src.size());
     ::size_t dst_idx = 0;
-    for (Registry::MojeIDImplData::ContactStateInfoList::const_iterator src_ptr = src.begin() ; src_ptr != src.end();
-         ++src_ptr, ++dst_idx)
+    for (Fred::Backend::MojeIdImplData::ContactStateInfoList::const_iterator src_ptr = src.begin(); src_ptr != src.end();
+            ++src_ptr, ++dst_idx)
     {
         wrap_ContactStateInfo(*src_ptr, result->operator[](dst_idx));
     }
     return result._retn();
 }
 
-AllocbufFailed::AllocbufFailed()
-:   std::invalid_argument("cannot allocate requested amount of memory")
-{
-}
-
-Registry::MojeID::Buffer_var wrap_Buffer(const Registry::MojeIDImplData::Buffer &src)
-{
-    Registry::MojeID::Buffer_var result(new Registry::MojeID::Buffer());
-    try {
-        result->value.length(src.value.size());
-        if (!src.value.empty()) {
-            std::memcpy(result->value.get_buffer(), src.value.c_str(), src.value.size());
-        }
-    }
-    catch (...) {
-        throw AllocbufFailed();
-    }
-    return result._retn();
-}
-
-Registry::MojeID::ContactHandleList_var wrap_ContactHandleList(const Registry::MojeIDImplData::ContactHandleList &src)
+Registry::MojeID::ContactHandleList_var wrap_ContactHandleList(const Fred::Backend::MojeIdImplData::ContactHandleList& src)
 {
     Registry::MojeID::ContactHandleList_var result(new Registry::MojeID::ContactHandleList());
 
     result->length(src.size());
     ::size_t dst_idx = 0;
-    for (Registry::MojeIDImplData::ContactHandleList::const_iterator src_ptr = src.begin() ; src_ptr != src.end();
-         ++src_ptr, ++dst_idx)
+    for (Fred::Backend::MojeIdImplData::ContactHandleList::const_iterator src_ptr = src.begin(); src_ptr != src.end();
+            ++src_ptr, ++dst_idx)
     {
         result->operator[](dst_idx) = wrap_string(*src_ptr)._retn();
     }
     return result._retn();
 }
 
-void wrap_MessageLimitExceeded(const Registry::MojeIDImplData::MessageLimitExceeded &src, Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED &dst)
+void wrap_MessageLimitExceeded(const Fred::Backend::MojeIdImplData::MessageLimitExceeded& src, Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED& dst)
 {
-    dst.limit_expire_datetime = wrap_DateTime(src.limit_expire_datetime);
+    dst.limit_expire_datetime = Util::wrap_boost_posix_time_ptime_to_IsoDateTime(src.limit_expire_datetime);
 }
 
-void raise_REGISTRATION_VALIDATION_ERROR(const Registry::MojeIDImplData::RegistrationValidationResult &src)
+void raise_REGISTRATION_VALIDATION_ERROR(const Fred::Backend::MojeIdImplData::RegistrationValidationResult& src)
 {
     Registry::MojeID::Server::REGISTRATION_VALIDATION_ERROR e;
-    try {
+    try
+    {
         wrap_RegistrationValidationResult(src, e);
     }
-    catch (...) {
+    catch (...)
+    {
         throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
     }
     throw e;
 }
 
-void raise_UPDATE_CONTACT_PREPARE_VALIDATION_ERROR(const Registry::MojeIDImplData::UpdateContactPrepareValidationResult &src)
+void raise_UPDATE_CONTACT_PREPARE_VALIDATION_ERROR(const Fred::Backend::MojeIdImplData::UpdateContactPrepareValidationResult& src)
 {
     Registry::MojeID::Server::UPDATE_CONTACT_PREPARE_VALIDATION_ERROR e;
-    try {
+    try
+    {
         wrap_UpdateContactPrepareValidationResult(src, e);
     }
-    catch (...) {
+    catch (...)
+    {
         throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
     }
     throw e;
 }
 
-void raise_MESSAGE_LIMIT_EXCEEDED(const Registry::MojeIDImplData::MessageLimitExceeded &src)
+void raise_MESSAGE_LIMIT_EXCEEDED(const Fred::Backend::MojeIdImplData::MessageLimitExceeded& src)
 {
     Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED e;
-    try {
+    try
+    {
         wrap_MessageLimitExceeded(src, e);
     }
-    catch (...) {
+    catch (...)
+    {
         throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
     }
     throw e;
 }
 
-void raise_CREATE_VALIDATION_REQUEST_VALIDATION_ERROR(const Registry::MojeIDImplData::CreateValidationRequestValidationResult &src)
+void raise_CREATE_VALIDATION_REQUEST_VALIDATION_ERROR(const Fred::Backend::MojeIdImplData::CreateValidationRequestValidationResult& src)
 {
     Registry::MojeID::Server::CREATE_VALIDATION_REQUEST_VALIDATION_ERROR e;
-    try {
+    try
+    {
         wrap_CreateValidationRequestValidationResult(src, e);
     }
-    catch (...) {
+    catch (...)
+    {
         throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
     }
     throw e;
 }
 
-void raise_PROCESS_REGISTRATION_VALIDATION_ERROR(const Registry::MojeIDImplData::ProcessRegistrationValidationResult &src)
+void raise_PROCESS_REGISTRATION_VALIDATION_ERROR(const Fred::Backend::MojeIdImplData::ProcessRegistrationValidationResult& src)
 {
     Registry::MojeID::Server::PROCESS_REGISTRATION_VALIDATION_ERROR e;
-    try {
+    try
+    {
         wrap_ProcessRegistrationValidationResult(src, e);
     }
-    catch (...) {
+    catch (...)
+    {
         throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
     }
     throw e;

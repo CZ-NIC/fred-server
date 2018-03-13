@@ -1,10 +1,14 @@
 #include "src/backend/whois/is_domain_delete_pending.hh"
 
+namespace Fred {
+namespace Backend {
 namespace Whois {
 
-    bool is_domain_delete_pending(const std::string &_fqdn, LibFred::OperationContext& _ctx, const std::string& _timezone) {
+bool is_domain_delete_pending(const std::string& _fqdn, LibFred::OperationContext& _ctx, const std::string& _timezone)
+{
 
-        Database::Result result = _ctx.get_conn().exec_params(
+    Database::Result result = _ctx.get_conn().exec_params(
+            // clang-format off
             "WITH "
             "domain_object_type AS ( "
                 "SELECT id FROM enum_object_type WHERE name = 'domain' "
@@ -42,16 +46,16 @@ namespace Whois {
             Database::query_param_list
                 (_fqdn)
                 (_timezone)
-        );
-
-        if (result.size() > 0) {
-            LOGGER(PACKAGE).debug(
-                boost::format("delete pending check for fqdn %1% selected id=%2%")
-                % static_cast<std::string>(result[0][0])
-                % static_cast<std::string>(result[0][1])
+            // clang-format on
             );
 
-            Database::Result check = _ctx.get_conn().exec_params(
+    if (result.size() > 0)
+    {
+        LOGGER(PACKAGE).debug(
+                boost::format("delete pending check for fqdn %1% selected id=%2%") % static_cast<std::string>(result[0][0]) % static_cast<std::string>(result[0][1]));
+
+        Database::Result check = _ctx.get_conn().exec_params(
+                // clang-format off
                 "SELECT oreg.name, oreg.id FROM object_registry oreg"
                 " WHERE oreg.type = 3"
                 " AND oreg.name = $1::text"
@@ -61,23 +65,26 @@ namespace Whois {
                     (_fqdn)
                     (static_cast<unsigned long long>(result[0][1]))
                     (static_cast<std::string>(result[0][2]))
-            );
-
-            if (check.size() > 0) {
-                LOGGER(PACKAGE).debug(
-                    boost::format("delete pending check found newer domain %1% with id=%2%")
-                    % static_cast<std::string>(check[0][0])
-                    % static_cast<std::string>(check[0][1])
+                // clang-format on
                 );
 
-                return false;
-            }
-            else {
-                return true;
-            }
-        }
-        else {
+        if (check.size() > 0)
+        {
+            LOGGER(PACKAGE).debug(
+                    boost::format("delete pending check found newer domain %1% with id=%2%") % static_cast<std::string>(check[0][0]) % static_cast<std::string>(check[0][1]));
+
             return false;
         }
+        else
+        {
+            return true;
+        }
+    }
+    else
+    {
+        return false;
     }
 }
+} // namespace Fred::Backend::Whois
+} // namespace Fred::Backend
+} // namespace Fred

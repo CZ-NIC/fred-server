@@ -26,11 +26,11 @@
 #include <string>
 
 namespace Registry {
-namespace MojeID {
+namespace MojeId {
 
 extern const std::string service_name;
 
-} // namespace Registry::MojeID
+} // namespace Registry::MojeId
 } // namespace Registry
 
 #endif

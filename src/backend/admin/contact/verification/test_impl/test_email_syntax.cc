@@ -34,25 +34,34 @@
 #include <boost/foreach.hpp>
 #include <boost/regex.hpp>
 
+namespace Fred {
+namespace Backend {
 namespace Admin {
-namespace ContactVerification {
+namespace Contact {
+namespace Verification {
 
-    FACTORY_MODULE_INIT_DEFI(TestEmailSyntax_init)
+FACTORY_MODULE_INIT_DEFI(TestEmailSyntax_init)
 
-    Test::TestRunResult TestEmailSyntax::run(unsigned long long _history_id) const {
-        TestDataProvider<TestEmailSyntax> data;
-        data.init_data(_history_id);
+Test::TestRunResult TestEmailSyntax::run(unsigned long long _history_id) const
+{
+    TestDataProvider<TestEmailSyntax> data;
+    data.init_data(_history_id);
 
-        std::string email = boost::trim_copy(data.email_);
+    std::string email = boost::trim_copy(data.email_);
 
-        if ( boost::regex_match(
-            email,
-            EMAIL_PATTERN )
-        ) {
-            return TestRunResult(LibFred::ContactTestStatus::OK );
-        }
-
-        return TestRunResult(LibFred::ContactTestStatus::FAIL, std::string("invalid e-mail format") );
+    if (boost::regex_match(email, EMAIL_PATTERN))
+    {
+        return TestRunResult(LibFred::ContactTestStatus::OK);
     }
+
+    return TestRunResult(
+            LibFred::ContactTestStatus::FAIL,
+            std::string("invalid e-mail format"));
 }
-}
+
+
+} // namespace Fred::Backend::Admin::Contact::Verification
+} // namespace Fred::Backend::Admin::Contact
+} // namespace Fred::Backend::Admin
+} // namespace Fred::Backend
+} // namespace Fred

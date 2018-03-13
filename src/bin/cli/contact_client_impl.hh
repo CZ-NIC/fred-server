@@ -276,16 +276,16 @@ struct contact_verification_fill_queue_impl
       ContactVerificationFillQueueArgs params = CfgArgGroups::instance()
           ->get_handler_ptr_by_type<HandleContactVerificationFillQueueArgsGrp>()->params;
 
-      Admin::ContactVerificationQueue::contact_filter filter;
+      Fred::Backend::Admin::Contact::Verification::Queue::contact_filter filter;
 
       if(params.contact_roles.empty() == false) {
           BOOST_FOREACH(const std::string& role, params.contact_roles) {
               if(boost::iequals(role, "domain_owner")) {
-                  filter.roles.insert(Admin::ContactVerificationQueue::owner);
+                  filter.roles.insert(Fred::Backend::Admin::Contact::Verification::Queue::owner);
               } else if(boost::iequals(role, "admin")) {
-                  filter.roles.insert(Admin::ContactVerificationQueue::admin_c);
+                  filter.roles.insert(Fred::Backend::Admin::Contact::Verification::Queue::admin_c);
               } else if(boost::iequals(role, "technical")) {
-                  filter.roles.insert(Admin::ContactVerificationQueue::tech_c);
+                  filter.roles.insert(Fred::Backend::Admin::Contact::Verification::Queue::tech_c);
               } else {
                   throw ReturnCode(
                       "unknown role: \"" + role + "\"\n" +
@@ -304,10 +304,10 @@ struct contact_verification_fill_queue_impl
           filter.country_code = params.country_code;
       }
 
-      std::vector<Admin::ContactVerificationQueue::enqueued_check> enqueued_checks;
+      std::vector<Fred::Backend::Admin::Contact::Verification::Queue::enqueued_check> enqueued_checks;
 
       enqueued_checks =
-          Admin::ContactVerificationQueue::fill_check_queue(
+          Fred::Backend::Admin::Contact::Verification::Queue::fill_check_queue(
               boost::to_lower_copy(params.testsuite_handle),
               params.max_queue_length
           )
@@ -317,7 +317,7 @@ struct contact_verification_fill_queue_impl
       if(enqueued_checks.size() > 0) {
           std::cout << "enqueued check handles:" << std::endl;
 
-          BOOST_FOREACH(const Admin::ContactVerificationQueue::enqueued_check& info, enqueued_checks) {
+          BOOST_FOREACH(const Fred::Backend::Admin::Contact::Verification::Queue::enqueued_check& info, enqueued_checks) {
               std::cout
                 << "check handle: "         << info.handle << "\t"
                 << "contact id: "           << info.contact_id << "\t"
@@ -346,7 +346,7 @@ struct contact_verification_enqueue_check_impl
       LibFred::OperationContextCreator ctx;
       std::string check_handle;
       try {
-          check_handle = Admin::enqueue_check(
+          check_handle = Fred::Backend::Admin::Contact::Verification::enqueue_check(
               ctx,
               params.contact_id,
               params.testsuite_handle);
@@ -395,8 +395,8 @@ struct contact_verification_start_enqueued_checks_impl
       std::vector<std::string> started_checks;
 
       try {
-          started_checks = Admin::run_all_enqueued_checks(
-              Admin::create_test_impl_prototypes(
+          started_checks = Fred::Backend::Admin::Contact::Verification::run_all_enqueued_checks(
+              Fred::Backend::Admin::Contact::Verification::create_test_impl_prototypes(
                   std::shared_ptr<LibFred::Mailer::Manager>(
                       new MailerManager(
                           CorbaContainer::get_instance()->getNS()
@@ -415,7 +415,7 @@ struct contact_verification_start_enqueued_checks_impl
                   CfgArgGroups::instance()->get_handler_ptr_by_type<HandleContactVerificationStartEnqueuedChecksArgsGrp>()->params.cz_address_mvcr_xml_path
               )
           );
-      } catch (const Admin::ExceptionTestImplementationError& ) {
+      } catch (const Fred::Backend::Admin::Contact::Verification::ExceptionTestImplementationError& ) {
           throw ReturnCode("error in test implementation or prototype handling", 1);
       }
 

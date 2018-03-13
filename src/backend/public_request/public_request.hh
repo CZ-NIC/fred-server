@@ -24,11 +24,12 @@
 #ifndef PUBLIC_REQUEST_HH_609D44EB1F5A4BC98E8A88B662EE3761
 #define PUBLIC_REQUEST_HH_609D44EB1F5A4BC98E8A88B662EE3761
 
-#include "src/libfred/object/object_type.hh"
+#include "src/backend/buffer.hh"
+#include "src/bin/corba/mailer_manager.hh"
 #include "src/libfred/documents.hh"
 #include "src/libfred/mailer.hh"
+#include "src/libfred/object/object_type.hh"
 #include "src/util/optional_value.hh"
-#include "src/bin/corba/mailer_manager.hh"
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -38,15 +39,17 @@
 #include <string>
 #include <vector>
 
-namespace Registry {
+namespace Fred {
+namespace Backend {
+namespace PublicRequest {
 
 class PublicRequestImpl
 {
 public:
-    PublicRequestImpl(const std::string &_server_name);
+    PublicRequestImpl(const std::string& _server_name);
     ~PublicRequestImpl();
 
-    const std::string& get_server_name()const;
+    const std::string& get_server_name() const;
 
     struct ConfirmedBy
     {
@@ -86,12 +89,6 @@ public:
             domain,
             keyset,
         };
-    };
-
-    struct Buffer
-    {
-        explicit Buffer(const std::string& s);
-        const std::string value;
     };
 
     struct ObjectAlreadyBlocked : std::exception
@@ -167,36 +164,39 @@ public:
     };
 
     unsigned long long create_authinfo_request_registry_email(
-        ObjectType::Enum object_type,
-        const std::string& object_handle,
-        const Optional<unsigned long long>& log_request_id,
-        std::shared_ptr<LibFred::Mailer::Manager> manager);
+            ObjectType::Enum object_type,
+            const std::string& object_handle,
+            const Optional<unsigned long long>& log_request_id,
+            std::shared_ptr<LibFred::Mailer::Manager> manager);
 
     unsigned long long create_authinfo_request_non_registry_email(
-        ObjectType::Enum object_type,
-        const std::string& object_handle,
-        const Optional<unsigned long long>& log_request_id,
-        ConfirmedBy::Enum confirmation_method,
-        const std::string& specified_email);
+            ObjectType::Enum object_type,
+            const std::string& object_handle,
+            const Optional<unsigned long long>& log_request_id,
+            ConfirmedBy::Enum confirmation_method,
+            const std::string& specified_email);
 
     unsigned long long create_block_unblock_request(
-        ObjectType::Enum object_type,
-        const std::string& object_handle,
-        const Optional<unsigned long long>& log_request_id,
-        ConfirmedBy::Enum confirmation_method,
-        LockRequestType::Enum lock_request_type);
+            ObjectType::Enum object_type,
+            const std::string& object_handle,
+            const Optional<unsigned long long>& log_request_id,
+            ConfirmedBy::Enum confirmation_method,
+            LockRequestType::Enum lock_request_type);
 
-    Buffer create_public_request_pdf(
-        unsigned long long public_request_id,
-        Language::Enum lang,
-        std::shared_ptr<LibFred::Document::Manager> manager);
+    Fred::Backend::Buffer create_public_request_pdf(
+            unsigned long long public_request_id,
+            Language::Enum lang,
+            std::shared_ptr<LibFred::Document::Manager> manager);
 
     static std::shared_ptr<LibFred::Mailer::Manager> get_default_mailer_manager();
     static std::shared_ptr<LibFred::Document::Manager> get_default_document_manager();
+
 private:
     const std::string server_name_;
 };
 
-} // namespace Registry
+} // namespace Fred::Backend::PublicRequest
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

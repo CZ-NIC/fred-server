@@ -107,7 +107,27 @@ CLEANFILES = \
 		src/bin/corba/RecordStatementSK.cc \
 		src/bin/corba/RecordStatementDynSK.cc \
 		src/bin/corba/RecordStatementSK.h \
-		src/bin/corba/RecordStatement.hh
+		src/bin/corba/RecordStatement.hh \
+		src/bin/corba/BufferSK.cc \
+		src/bin/corba/BufferDynSK.cc \
+		src/bin/corba/BufferSK.h \
+		src/bin/corba/Buffer.hh \
+		src/bin/corba/IsoDateSK.cc \
+		src/bin/corba/IsoDateDynSK.cc \
+		src/bin/corba/IsoDateSK.h \
+		src/bin/corba/IsoDate.hh \
+		src/bin/corba/NullableIsoDateSK.cc \
+		src/bin/corba/NullableIsoDateDynSK.cc \
+		src/bin/corba/NullableIsoDateSK.h \
+		src/bin/corba/NullableIsoDate.hh \
+		src/bin/corba/IsoDateTimeSK.cc \
+		src/bin/corba/IsoDateTimeDynSK.cc \
+		src/bin/corba/IsoDateTimeSK.h \
+		src/bin/corba/IsoDateTime.hh \
+		src/bin/corba/NullableIsoDateTimeSK.cc \
+		src/bin/corba/NullableIsoDateTimeDynSK.cc \
+		src/bin/corba/NullableIsoDateTimeSK.h \
+		src/bin/corba/NullableIsoDateTime.hh
 
 
 
@@ -196,10 +216,13 @@ noinst_HEADERS = \
 		src/util/optional_value.hh \
 		src/util/is_equal_optional_nullable.hh \
 		src/util/output_indenter.hh \
-		src/bin/corba/util/corba_conversions_datetime.hh \
+		src/bin/corba/util/corba_conversions_buffer.hh \
 		src/bin/corba/util/corba_conversions_nullable_types.hh \
 		src/bin/corba/util/corba_conversions_string.hh \
 		src/bin/corba/util/corba_conversions_int.hh \
+		src/bin/corba/util/corba_conversions_string.hh \
+		src/bin/corba/util/corba_conversions_isodate.hh \
+		src/bin/corba/util/corba_conversions_isodatetime.hh \
 		src/bin/corba/automatic_keyset_management/corba_conversions.cc \
 		src/bin/corba/automatic_keyset_management/corba_conversions.hh \
 		src/util/is_equal_optional_nullable.hh \
@@ -331,6 +354,11 @@ noinst_LIBRARIES = \
 		src/bin/corba/libcorbaadmincontactverification.a \
 		src/bin/corba/util/libcorbautil.a \
 		src/bin/corba/libcorba_conversion_test.a \
+		src/bin/corba/libcorbabuffer.a \
+		src/bin/corba/libcorbaisodate.a \
+		src/bin/corba/libcorbanullableisodate.a \
+		src/bin/corba/libcorbaisodatetime.a \
+		src/bin/corba/libcorbanullableisodatetime.a \
 		src/backend/admin/contact/verification/libadmin_contact_verification.a \
 		src/backend/admin/notification/libadmin_notification.a \
 		src/backend/admin/domain/libadmin_create_expired_domain.a \
@@ -633,9 +661,11 @@ src_util_hp_crc32_LDADD = \
 # src/bin/corba/util/libcorbautil.a
 #
 src_bin_corba_util_libcorbautil_a_SOURCES = \
-		src/bin/corba/util/corba_conversions_datetime.cc \
+		src/bin/corba/util/corba_conversions_buffer.cc \
 		src/bin/corba/util/corba_conversions_nullable_types.cc \
-		src/bin/corba/util/corba_conversions_string.cc
+		src/bin/corba/util/corba_conversions_string.cc \
+		src/bin/corba/util/corba_conversions_isodate.cc \
+		src/bin/corba/util/corba_conversions_isodatetime.cc
 #
 # src/bin/corba/util/libcorbautil.a
 
@@ -1293,7 +1323,12 @@ BUILT_SOURCES = \
 		src/bin/corba/corba_conversion_testSK.cc \
 		src/bin/corba/NotificationSK.cc \
 		src/bin/corba/AutomaticKeysetManagementSK.cc \
-		src/bin/corba/RecordStatementSK.cc
+		src/bin/corba/RecordStatementSK.cc \
+		src/bin/corba/BufferSK.cc \
+		src/bin/corba/IsoDateSK.cc \
+		src/bin/corba/NullableIsoDateSK.cc \
+		src/bin/corba/IsoDateTimeSK.cc \
+		src/bin/corba/NullableIsoDateTimeSK.cc
 
 
 # src/bin/corba/libcorba.a
@@ -1327,6 +1362,18 @@ nodist_src_bin_corba_libcorbamessages_a_SOURCES = \
 		src/bin/corba/Messages.hh
 
 nodist_src_bin_corba_libcorbamojeid_a_SOURCES = \
+		src/bin/corba/BufferSK.cc \
+		src/bin/corba/BufferDynSK.cc \
+		src/bin/corba/Buffer.hh \
+		src/bin/corba/NullableIsoDateSK.cc \
+		src/bin/corba/NullableIsoDateDynSK.cc \
+		src/bin/corba/NullableIsoDate.hh \
+		src/bin/corba/IsoDateTimeSK.cc \
+		src/bin/corba/IsoDateTimeDynSK.cc \
+		src/bin/corba/IsoDateTime.hh \
+		src/bin/corba/NullableIsoDateTimeSK.cc \
+		src/bin/corba/NullableIsoDateTimeDynSK.cc \
+		src/bin/corba/NullableIsoDateTime.hh \
 		src/bin/corba/MojeIDSK.cc \
 		src/bin/corba/MojeIDDynSK.cc
 
@@ -1409,22 +1456,49 @@ nodist_src_bin_corba_libcorbacontactverification_a_SOURCES = \
 		src/bin/corba/ContactVerification.hh
 
 nodist_src_bin_corba_libcorbaadmincontactverification_a_SOURCES = \
+		src/bin/corba/IsoDateTimeSK.cc \
+		src/bin/corba/IsoDateTimeDynSK.cc \
+		src/bin/corba/IsoDateTime.hh \
+		src/bin/corba/NullableIsoDateTimeSK.cc \
+		src/bin/corba/NullableIsoDateTimeDynSK.cc \
+		src/bin/corba/NullableIsoDateTime.hh \
 		src/bin/corba/AdminContactVerificationSK.cc \
 		src/bin/corba/AdminContactVerificationDynSK.cc \
 		src/bin/corba/AdminContactVerificationSK.h \
 		src/bin/corba/AdminContactVerification.hh
 
 nodist_src_bin_corba_libcorbaadministrativeblocking_a_SOURCES = \
+		src/bin/corba/IsoDateSK.cc \
+		src/bin/corba/IsoDateDynSK.cc \
+		src/bin/corba/IsoDate.hh \
+		src/bin/corba/NullableIsoDateSK.cc \
+		src/bin/corba/NullableIsoDateDynSK.cc \
+		src/bin/corba/NullableIsoDate.hh \
 		src/bin/corba/AdministrativeBlockingSK.cc \
 		src/bin/corba/AdministrativeBlockingDynSK.cc \
 		src/bin/corba/AdministrativeBlocking.hh
 
 nodist_src_bin_corba_libcorbadomainbrowser_a_SOURCES = \
+		src/bin/corba/IsoDateSK.cc \
+		src/bin/corba/IsoDateDynSK.cc \
+		src/bin/corba/IsoDate.hh \
+		src/bin/corba/NullableIsoDateSK.cc \
+		src/bin/corba/NullableIsoDateDynSK.cc \
+		src/bin/corba/NullableIsoDate.hh \
+		src/bin/corba/IsoDateTimeSK.cc \
+		src/bin/corba/IsoDateTimeDynSK.cc \
+		src/bin/corba/IsoDateTime.hh \
+		src/bin/corba/NullableIsoDateTimeSK.cc \
+		src/bin/corba/NullableIsoDateTimeDynSK.cc \
+		src/bin/corba/NullableIsoDateTime.hh \
 		src/bin/corba/DomainBrowserSK.cc \
 		src/bin/corba/DomainBrowserDynSK.cc \
 		src/bin/corba/DomainBrowser.hh
 
 nodist_src_bin_corba_libcorbapublicrequest_a_SOURCES = \
+		src/bin/corba/BufferSK.cc \
+		src/bin/corba/BufferDynSK.cc \
+		src/bin/corba/Buffer.hh \
 		src/bin/corba/PublicRequestSK.cc \
 		src/bin/corba/PublicRequestDynSK.cc \
 		src/bin/corba/PublicRequest.hh
@@ -1445,9 +1519,46 @@ nodist_src_bin_corba_libcorbaautomatickeysetmanagement_a_SOURCES = \
 		src/bin/corba/AutomaticKeysetManagement.hh
 
 nodist_src_bin_corba_libcorbarecordstatement_a_SOURCES = \
+		src/bin/corba/BufferSK.cc \
+		src/bin/corba/BufferDynSK.cc \
+		src/bin/corba/Buffer.hh \
+		src/bin/corba/IsoDateTimeSK.cc \
+		src/bin/corba/IsoDateTimeDynSK.cc \
+		src/bin/corba/IsoDateTime.hh \
 		src/bin/corba/RecordStatementSK.cc \
 		src/bin/corba/RecordStatementDynSK.cc \
 		src/bin/corba/RecordStatement.hh
+
+nodist_src_bin_corba_libcorbabuffer_a_SOURCES = \
+		src/bin/corba/BufferSK.cc \
+		src/bin/corba/BufferDynSK.cc \
+		src/bin/corba/Buffer.hh
+
+nodist_src_bin_corba_libcorbaisodate_a_SOURCES = \
+		src/bin/corba/IsoDateSK.cc \
+		src/bin/corba/IsoDateDynSK.cc \
+		src/bin/corba/IsoDate.hh
+
+nodist_src_bin_corba_libcorbanullableisodate_a_SOURCES = \
+		src/bin/corba/IsoDateSK.cc \
+		src/bin/corba/IsoDateDynSK.cc \
+		src/bin/corba/IsoDate.hh \
+		src/bin/corba/NullableIsoDateSK.cc \
+		src/bin/corba/NullableIsoDateDynSK.cc \
+		src/bin/corba/NullableIsoDate.hh
+
+nodist_src_bin_corba_libcorbaisodatetime_a_SOURCES = \
+		src/bin/corba/IsoDateTimeSK.cc \
+		src/bin/corba/IsoDateTimeDynSK.cc \
+		src/bin/corba/IsoDateTime.hh
+
+nodist_src_bin_corba_libcorbanullableisodatetime_a_SOURCES = \
+		src/bin/corba/IsoDateTimeSK.cc \
+		src/bin/corba/IsoDateTimeDynSK.cc \
+		src/bin/corba/IsoDateTime.hh \
+		src/bin/corba/NullableIsoDateTimeSK.cc \
+		src/bin/corba/NullableIsoDateTimeDynSK.cc \
+		src/bin/corba/NullableIsoDateTime.hh
 
 #
 # nodist corba libs
@@ -1456,8 +1567,8 @@ nodist_src_bin_corba_libcorbarecordstatement_a_SOURCES = \
 # idl build
 #
 src/bin/corba/MessagesSK.cc: $(IDLDIR)/Messages.idl
-src/bin/corba/MojeIDSK.cc: $(IDLDIR)/MojeID.idl
-src/bin/corba/AdministrativeBlockingSK.cc: $(IDLDIR)/AdministrativeBlocking.idl
+src/bin/corba/MojeIDSK.cc: $(IDLDIR)/MojeID.idl $(IDLDIR)/NullableIsoDate.idl $(IDLDIR)/IsoDateTime.idl
+src/bin/corba/AdministrativeBlockingSK.cc: $(IDLDIR)/AdministrativeBlocking.idl $(IDLDIR)/NullableIsoDate.idl $(IDLDIR)/IsoDate.idl
 src/bin/corba/FileManagerSK.cc: $(IDLDIR)/FileManager.idl $(IDLDIR)/_dataTypes.idl
 src/bin/corba/MailerSK.cc: $(IDLDIR)/Mailer.idl $(IDLDIR)/_dataTypes.idl
 src/bin/corba/ZoneSK.cc: $(IDLDIR)/Zone.idl
@@ -1474,14 +1585,20 @@ src/bin/corba/TechCheckSK.cc: $(IDLDIR)/TechCheck.idl $(IDLDIR)/_dataTypes.idl
 src/bin/corba/EPPSK.cc: $(IDLDIR)/EPP.idl $(IDLDIR)/_dataTypes.idl
 src/bin/corba/ZoneGeneratorSK.cc: $(IDLDIR)/ZoneGenerator.idl $(IDLDIR)/_dataTypes.idl
 src/bin/corba/ContactVerificationSK.cc: $(IDLDIR)/ContactVerification.idl
-src/bin/corba/DomainBrowserSK.cc: $(IDLDIR)/DomainBrowser.idl
-src/bin/corba/AdminContactVerificationSK.cc: $(IDLDIR)/AdminContactVerification.idl $(IDLDIR)/_dataTypes.idl
+src/bin/corba/DomainBrowserSK.cc: $(IDLDIR)/DomainBrowser.idl $(IDLDIR)/NullableIsoDate.idl $(IDLDIR)/NullableIsoDateTime.idl
+src/bin/corba/AdminContactVerificationSK.cc: $(IDLDIR)/AdminContactVerification.idl $(IDLDIR)/_dataTypes.idl $(IDLDIR)/NullableIsoDateTime.idl $(IDLDIR)/IsoDateTime.idl
 src/bin/corba/NotificationSK.cc: $(IDLDIR)/Notification.idl
-src/bin/corba/PublicRequestSK.cc: $(IDLDIR)/PublicRequest.idl $(IDLDIR)/NullableTypes.idl
+src/bin/corba/PublicRequestSK.cc: $(IDLDIR)/PublicRequest.idl $(IDLDIR)/NullableTypes.idl $(IDLDIR)/Buffer.idl
 src/bin/corba/AutomaticKeysetManagementSK.cc: $(IDLDIR)/AutomaticKeysetManagement.idl
-src/bin/corba/RecordStatementSK.cc: $(IDLDIR)/RecordStatement.idl
+src/bin/corba/RecordStatementSK.cc: $(IDLDIR)/RecordStatement.idl $(IDLDIR)/Buffer.idl $(IDLDIR)/IsoDate.idl $(IDLDIR)/IsoDateTime.idl
+src/bin/corba/BufferSK.cc: $(IDLDIR)/Buffer.idl
+src/bin/corba/IsoDateSK.cc: $(IDLDIR)/IsoDate.idl
+src/bin/corba/NullableIsoDateSK.cc: $(IDLDIR)/NullableIsoDate.idl $(IDLDIR)/IsoDate.idl
+src/bin/corba/IsoDateTimeSK.cc: $(IDLDIR)/IsoDateTime.idl
+src/bin/corba/NullableIsoDateTimeSK.cc: $(IDLDIR)/NullableIsoDateTime.idl $(IDLDIR)/IsoDateTime.idl
 
 src/bin/corba/%.cc:
+		-echo "Trying to compile $@ ... should be specified in \"idl build\" section (*.idl) or list it in noinst_LIBRARIES (*.a) or noinst_HEADERS (*.hh)"
 		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/bin/corba $<
 
 src/bin/corba/corba_conversion_testSK.cc: $(top_srcdir)/test/util/corba_conversion_test.idl
@@ -1894,6 +2011,7 @@ src_bin_corba_fred_rifd_LDADD = \
 		src/bin/corba/libcorbatechcheck.a \
 		src/bin/corba/libmailer.a \
 		src/bin/corba/libcorbadatatypes.a \
+		src/bin/corba/libcorbaisodatetime.a \
 		src/bin/corba/libcorba.a \
 		src/libfred/public_request/libpublic_request.a \
 		src/libfred/libfred.a \
@@ -2027,6 +2145,7 @@ src_bin_corba_fred_adifd_LDADD = \
 		src/bin/corba/libcorbaadmincontactverification.a \
 		src/bin/corba/libfilemanager.a \
 		src/bin/corba/libcorbaadministrativeblocking.a \
+		src/bin/corba/libcorbaisodatetime.a \
 		src/libfred/requests/librequests.a \
 		src/libfred/contact_verification/libcontact_verification.a \
 		src/libfred/public_request/libpublic_request.a \
@@ -2067,10 +2186,14 @@ src_bin_corba_fred_pifd_SOURCES = \
 		src/backend/contact_verification/contact_verification_impl.cc \
 		src/backend/contact_verification/contact_verification_impl.hh \
 		src/backend/contact_verification/public_request_contact_verification_wrapper.hh \
+		src/backend/buffer.cc \
+		src/backend/buffer.hh \
 		src/backend/public_request/public_request.cc \
 		src/backend/public_request/public_request.hh \
 		src/bin/corba/public_request/server_i.cc \
 		src/bin/corba/public_request/server_i.hh \
+		src/bin/corba/util/corba_conversions_buffer.cc \
+		src/bin/corba/util/corba_conversions_buffer.hh \
 		src/util/corba_conversion.hh \
 		src/util/corba_conversion.cc \
 		src/bin/corba/admin/common.hh \
@@ -2092,8 +2215,11 @@ src_bin_corba_fred_pifd_LDADD = \
 		src/bin/corba/libcorbalogger.a \
 		src/bin/corba/util/libcorbautil.a \
 		src/bin/corba/libcorbanullabletypes.a \
+		src/bin/corba/libcorbanullableisodate.a \
+		src/bin/corba/libcorbanullableisodatetime.a \
 		src/libfred/contact_verification/libcontact_verification.a \
 		src/bin/corba/libcorbacontactverification.a \
+		src/bin/corba/libcorbabuffer.a \
 		src/bin/corba/libcorbapublicrequest.a \
 		src/libfred/requests/librequests.a \
 		src/libfred/banking/libbanking.a \
@@ -2209,6 +2335,7 @@ src_bin_corba_messages_fred_msgd_LDADD = \
 # src/bin/corba/mojeid/fred-mifd
 #
 src_bin_corba_mojeid_fred_mifd_SOURCES = \
+		src/backend/buffer.cc \
 		src/backend/mojeid/mojeid.cc \
 		src/backend/mojeid/mojeid_impl_data_conversion.cc \
 		src/backend/mojeid/mojeid_impl_internal.cc \
@@ -2216,6 +2343,10 @@ src_bin_corba_mojeid_fred_mifd_SOURCES = \
 		src/backend/mojeid/messages/generate.cc \
 		src/bin/corba/nameservice.cc \
 		src/bin/corba/mojeid/server_i.cc \
+		src/bin/corba/util/corba_conversions_buffer.cc \
+		src/bin/corba/util/corba_conversions_string.cc \
+		src/bin/corba/util/corba_conversions_isodate.cc \
+		src/bin/corba/util/corba_conversions_isodatetime.cc \
 		src/util/corba_conversion.cc \
 		src/bin/corba/mojeid/mojeid_corba_conversion.cc \
 		src/bin/corba/mojeid/service_name.cc \
@@ -2242,6 +2373,11 @@ src_bin_corba_mojeid_fred_mifd_LDADD = \
 		src/util/types/libtypes.a \
 		src/util/db/libdb.a \
 		src/deprecated/util/liboldutils.a \
+		src/bin/corba/libcorbabuffer.a \
+		src/bin/corba/libcorbaisodate.a \
+		src/bin/corba/libcorbaisodatetime.a \
+		src/bin/corba/libcorbanullableisodate.a \
+		src/bin/corba/libcorbanullableisodatetime.a \
 		src/bin/corba/libcorba.a \
 		-lmpdec -lm -lrt \
 		$(LIBIDN_LIBS) \
@@ -2270,6 +2406,9 @@ src_bin_corba_mojeid_messages_fred_mojeid_msggen_LDFLAGS = \
 		$(AM_LDFLAGS)
 
 src_bin_corba_mojeid_messages_fred_mojeid_msggen_LDADD = \
+		src/bin/corba/libcorbabuffer.a \
+		src/bin/corba/libcorbanullableisodate.a \
+		src/bin/corba/libcorbaisodatetime.a \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(OMNIORB4_LIBS) \
 		$(BOOST_DATE_TIME_LIB)
@@ -2296,6 +2435,7 @@ src_bin_corba_domain_browser_fred_dbifd_LDADD = \
 		src/bin/corba/libcorbadomainbrowser.a \
 		src/libfred/libfred.a \
 		src/bin/corba/util/libcorbautil.a \
+		src/bin/corba/libcorbaisodatetime.a \
 		src/util/libutil.a \
 		src/util/log/liblog.a \
 		src/util/db/libdb.a \
@@ -2387,6 +2527,8 @@ src_bin_corba_automatic_keyset_management_fred_akmd_LDADD = \
 # src/bin/corba/record_statement/fred-rsifd
 #
 src_bin_corba_record_statement_fred_rsifd_SOURCES = \
+		src/backend/buffer.cc \
+		src/backend/buffer.hh \
 		src/backend/record_statement/record_statement.cc \
 		src/backend/record_statement/record_statement.hh \
 		src/backend/record_statement/purpose.hh \
@@ -2422,6 +2564,10 @@ src_bin_corba_record_statement_fred_rsifd_LDADD = \
 		src/bin/corba/libcorba.a \
 		src/bin/corba/libmailer.a \
 		src/bin/corba/libcorbadatatypes.a \
+		src/bin/corba/libcorbabuffer.a \
+		src/bin/corba/libcorbaisodate.a \
+		src/bin/corba/libcorbaisodatetime.a \
+		src/bin/corba/libcorbanullableisodate.a \
 		src/bin/corba/libcorbarecordstatement.a \
 		$(LIBIDN_LIBS) \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
@@ -2544,6 +2690,7 @@ src_bin_cli_fred_admin_LDADD = \
 		src/bin/corba/libcorbaregistry.a \
 		src/bin/corba/libcorbafilters.a \
 		src/bin/corba/libcorbadatatypes.a \
+		src/bin/corba/libcorbaisodatetime.a \
 		src/bin/corba/libmailer.a \
 		src/bin/corba/libfilemanager.a \
 		src/libfred/messages/libmessages.a \
@@ -2650,6 +2797,8 @@ tools_contact_migration_mojeid_contact_ssn_fix_LDADD = \
 		src/util/log/liblog.a \
 		src/util/db/libdb.a \
 		src/util/libutil.a \
+		src/bin/corba/libcorbaisodatetime.a \
+		src/bin/corba/libcorbanullableisodate.a \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_THREAD_LIB) \
 		$(LIBIDN_LIBS) \
@@ -2982,6 +3131,8 @@ test_backend_test_whois_LDADD = \
 		src/bin/corba/libmailer.a \
 		src/bin/corba/libcorbadatatypes.a \
 		src/bin/corba/libfilemanager.a \
+		src/bin/corba/libcorbanullableisodate.a \
+		src/bin/corba/libcorbanullableisodatetime.a \
 		src/libfred/requests/librequests.a \
 		src/util/log/liblog.a \
 		src/util/types/libtypes.a \
@@ -3146,6 +3297,7 @@ test_test_server_LDADD = \
 #
 test_backend_test_public_request_SOURCES = \
 		test/backend/public_request/main.cc \
+		src/backend/buffer.cc \
 		src/backend/public_request/public_request.cc \
 		test/backend/public_request/test_registry_email.cc \
 		test/backend/public_request/test_non_registry_email.cc \
@@ -3460,8 +3612,15 @@ test_test_optys_LDADD = \
 # test/test_corba_conversion
 #
 test_test_corba_conversion_SOURCES = \
+		src/backend/buffer.hh \
+		src/backend/buffer.cc \
+		src/bin/corba/util/corba_conversions_buffer.hh \
+		src/bin/corba/util/corba_conversions_buffer.cc \
 		src/util/corba_conversion.hh \
 		src/util/corba_conversion.cc \
+		src/bin/corba/util/corba_conversions_string.cc \
+		src/bin/corba/util/corba_conversions_isodate.cc \
+		src/bin/corba/util/corba_conversions_isodatetime.cc \
 		src/bin/corba/mojeid/mojeid_corba_conversion.hh \
 		src/bin/corba/mojeid/mojeid_corba_conversion.cc \
 		test/util/test_corba_conversion_main.cc \
@@ -3479,6 +3638,11 @@ test_test_corba_conversion_LDFLAGS = \
 
 test_test_corba_conversion_LDADD = \
 		src/bin/corba/libcorba_conversion_test.a \
+		src/bin/corba/libcorbabuffer.a \
+		src/bin/corba/libcorbaisodate.a \
+		src/bin/corba/libcorbaisodatetime.a \
+		src/bin/corba/libcorbanullableisodate.a \
+		src/bin/corba/libcorbanullableisodatetime.a \
 		src/bin/corba/libcorbamojeid.a \
 		src/libfred/libfred.a \
 		src/util/libutil.a \
@@ -3572,6 +3736,8 @@ test_backend_test_automatic_keyset_management_LDADD = \
 # test/backend/test-record-statement
 #
 test_backend_test_record_statement_SOURCES = \
+		src/backend/buffer.cc \
+		src/backend/buffer.hh \
 		src/backend/record_statement/record_statement.cc \
 		src/backend/record_statement/record_statement.hh \
 		src/backend/record_statement/purpose.hh \
@@ -3610,6 +3776,9 @@ test_backend_test_record_statement_LDADD = \
 		src/bin/corba/libcorba.a \
 		src/bin/corba/libmailer.a \
 		src/bin/corba/libcorbadatatypes.a \
+		src/bin/corba/libcorbabuffer.a \
+		src/bin/corba/libcorbaisodate.a \
+		src/bin/corba/libcorbaisodatetime.a \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
@@ -3640,6 +3809,8 @@ test_test_password_storage_LDFLAGS = \
 
 test_test_password_storage_LDADD = \
 		src/libfred/libfred.a \
+		src/bin/corba/libcorbaisodatetime.a \
+		src/bin/corba/libcorbanullableisodate.a \
 		src/util/libpassword_storage.a \
 		src/util/libutil.a \
 		src/util/log/liblog.a \

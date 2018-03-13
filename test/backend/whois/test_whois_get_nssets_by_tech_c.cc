@@ -56,12 +56,12 @@ struct get_nssets_by_tech_c_fixture
 
 BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c, get_nssets_by_tech_c_fixture)
 {
-    Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_tech_c(contact_handle, test_limit);
+    Fred::Backend::Whois::NSSetSeq nss_s = impl.get_nssets_by_tech_c(contact_handle, test_limit);
 
     BOOST_CHECK(!nss_s.limit_exceeded);
     BOOST_CHECK(nss_s.content.size() == test_limit);
     std::map<std::string, ::LibFred::InfoNssetData>::const_iterator cit;
-    BOOST_FOREACH(const Registry::WhoisImpl::NSSet& it, nss_s.content)
+    BOOST_FOREACH(const Fred::Backend::Whois::NSSet& it, nss_s.content)
     {
         cit = nsset_info.find(it.handle);
         BOOST_REQUIRE(cit != nsset_info.end());
@@ -89,12 +89,12 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c, get_nssets_by_tech_c_fixture)
 
 BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c_limit_exceeded, get_nssets_by_tech_c_fixture)
 {
-    Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_tech_c(contact_handle, test_limit - 1);
+    Fred::Backend::Whois::NSSetSeq nss_s = impl.get_nssets_by_tech_c(contact_handle, test_limit - 1);
 
     BOOST_CHECK(nss_s.limit_exceeded);
     BOOST_CHECK(nss_s.content.size() == test_limit - 1);
     std::map<std::string, ::LibFred::InfoNssetData>::const_iterator cit;
-    BOOST_FOREACH(const Registry::WhoisImpl::NSSet& it, nss_s.content)
+    BOOST_FOREACH(const Fred::Backend::Whois::NSSet& it, nss_s.content)
     {
         cit = nsset_info.find(it.handle);
         BOOST_REQUIRE(cit != nsset_info.end());
@@ -122,12 +122,12 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c_limit_exceeded, get_nssets_by_tech_
 
 BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c_no_ns, whois_impl_instance_fixture)
 {
-    BOOST_CHECK_THROW(impl.get_nssets_by_tech_c("absent-contact", 1), Registry::WhoisImpl::ObjectNotExists);
+    BOOST_CHECK_THROW(impl.get_nssets_by_tech_c("absent-contact", 1), Fred::Backend::Whois::ObjectNotExists);
 }
 
 BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c_wrong_ns, whois_impl_instance_fixture)
 {
-    BOOST_CHECK_THROW(impl.get_nssets_by_tech_c("", 1), Registry::WhoisImpl::InvalidHandle);
+    BOOST_CHECK_THROW(impl.get_nssets_by_tech_c("", 1), Fred::Backend::Whois::InvalidHandle);
 }
 
 BOOST_AUTO_TEST_SUITE_END()//get_nssets_by_tech_c

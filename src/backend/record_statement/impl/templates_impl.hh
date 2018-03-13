@@ -19,6 +19,7 @@
 #ifndef TEMPLATES_IMPL_HH_06DE732BD7B24E81A9587A9C789F0E54
 #define TEMPLATES_IMPL_HH_06DE732BD7B24E81A9587A9C789F0E54
 
+#include "src/backend/buffer.hh"
 #include "src/backend/record_statement/exceptions.hh"
 #include "src/backend/record_statement/impl/factory.hh"
 #include "src/backend/record_statement/impl/record_statement_xml.hh"
@@ -30,7 +31,8 @@
 
 #include <boost/algorithm/string/join.hpp>
 
-namespace LibFred {
+namespace Fred {
+namespace Backend {
 namespace RecordStatement {
 namespace Impl {
 
@@ -48,7 +50,7 @@ std::string domain_printout_xml(
         LibFred::OperationContext& ctx,
         const LibFred::InfoDomainOutput& info,
         const Tz::LocalTimestamp& valid_at,
-        const Registry::RecordStatement::Purpose::Enum purpose,
+        const Purpose::Enum purpose,
         const LibFred::InfoContactOutput& registrant_info,
         const std::vector<LibFred::InfoContactOutput>& admin_contact_info,
         const LibFred::InfoRegistrarOutput& sponsoring_registrar_info,
@@ -79,7 +81,7 @@ std::string domain_printout_xml(
 
     std::ostringstream private_printout_attr;
     private_printout_attr << "is_private_printout='" << std::boolalpha
-                          << (purpose == Registry::RecordStatement::Purpose::private_printout) << "'";
+                          << (purpose == Purpose::private_printout) << "'";
 
     std::ostringstream disclose_flags;
     disclose_flags << std::boolalpha
@@ -167,7 +169,7 @@ std::string contact_printout_xml(
         LibFred::OperationContext& ctx,
         const LibFred::InfoContactOutput& info,
         const Tz::LocalTimestamp& valid_at,
-        Registry::RecordStatement::Purpose::Enum purpose,
+        Purpose::Enum purpose,
         const LibFred::InfoRegistrarOutput& sponsoring_registrar_info,
         const std::set<std::string>& external_states)
 {
@@ -187,7 +189,7 @@ std::string contact_printout_xml(
 
     std::ostringstream private_printout_attr;
     private_printout_attr << "is_private_printout='" << std::boolalpha
-                          << (purpose == Registry::RecordStatement::Purpose::private_printout) << "'";
+                          << (purpose == Purpose::private_printout) << "'";
 
     std::ostringstream disclose_flags;
     disclose_flags << std::boolalpha
@@ -282,7 +284,7 @@ template <typename REGISTRY_TIMEZONE>
 XmlWithData domain_printout_xml_with_data(
         LibFred::OperationContext& ctx,
         const std::string& fqdn,
-        Registry::RecordStatement::Purpose::Enum purpose)
+        Purpose::Enum purpose)
 {
     LibFred::InfoDomainOutput info_domain_output;
     try
@@ -293,7 +295,7 @@ XmlWithData domain_printout_xml_with_data(
     {
         if (e.is_set_unknown_fqdn())
         {
-            throw Registry::RecordStatement::ObjectNotFound();
+            throw ObjectNotFound();
         }
         //other error
         throw;
@@ -372,7 +374,7 @@ XmlWithData nsset_printout_xml_with_data(
     {
         if (e.is_set_unknown_handle())
         {
-            throw Registry::RecordStatement::ObjectNotFound();
+            throw ObjectNotFound();
         }
         //other error
         throw;
@@ -414,7 +416,7 @@ XmlWithData keyset_printout_xml_with_data(
     {
         if (e.is_set_unknown_handle())
         {
-            throw Registry::RecordStatement::ObjectNotFound();
+            throw ObjectNotFound();
         }
         //other error
         throw;
@@ -445,7 +447,7 @@ template <typename REGISTRY_TIMEZONE>
 XmlWithData contact_printout_xml_with_data(
         LibFred::OperationContext& ctx,
         const std::string& handle,
-        Registry::RecordStatement::Purpose::Enum purpose)
+        Purpose::Enum purpose)
 {
     LibFred::InfoContactOutput info_contact_output;
 
@@ -457,7 +459,7 @@ XmlWithData contact_printout_xml_with_data(
     {
         if (e.is_set_unknown_contact_handle())
         {
-            throw Registry::RecordStatement::ObjectNotFound();
+            throw ObjectNotFound();
         }
         //other error
         throw;
@@ -491,8 +493,8 @@ XmlWithData contact_printout_xml_with_data(
 
 template <typename T>
 ImplementationWithin<T>::ImplementationWithin(
-        const boost::shared_ptr<LibFred::Document::Manager>& _doc_manager,
-        const boost::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager)
+        const std::shared_ptr<LibFred::Document::Manager>& _doc_manager,
+        const std::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager)
     : doc_manager_(_doc_manager),
       mailer_manager_(_mailer_manager)
 {
@@ -500,17 +502,18 @@ ImplementationWithin<T>::ImplementationWithin(
 
 template <typename T>
 ImplementationWithin<T>::~ImplementationWithin()
-{}
+{
+}
 
 template <typename T>
-Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::domain_printout(
+Buffer ImplementationWithin<T>::domain_printout(
         LibFred::OperationContext& _ctx,
         const std::string& _fqdn,
-        Registry::RecordStatement::Purpose::Enum _purpose)const
+        Purpose::Enum _purpose)const
 {
     if (is_delete_candidate(_ctx, LibFred::get_id_of_registered<LibFred::Object_Type::domain>(_ctx, _fqdn)))
     {
-        throw Registry::RecordStatement::ObjectDeleteCandidate();
+        throw ObjectDeleteCandidate();
     }
 
     std::stringstream xml_document;
@@ -522,17 +525,17 @@ Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::domain_printou
     std::ostringstream pdf_document;
     doc_manager_->generateDocument(LibFred::Document::GT_RECORD_STATEMENT_DOMAIN, xml_document, pdf_document, "");
 
-    return Registry::RecordStatement::PdfBufferImpl(pdf_document.str());
+    return Buffer(pdf_document.str());
 }
 
 template <typename T>
-Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::nsset_printout(
+Buffer ImplementationWithin<T>::nsset_printout(
         LibFred::OperationContext& _ctx,
         const std::string& _handle)const
 {
     if (is_delete_candidate(_ctx, LibFred::get_id_of_registered<LibFred::Object_Type::nsset>(_ctx, _handle)))
     {
-        throw Registry::RecordStatement::ObjectDeleteCandidate();
+        throw ObjectDeleteCandidate();
     }
 
     std::stringstream xml_document;
@@ -541,17 +544,17 @@ Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::nsset_printout
     std::ostringstream pdf_document;
     doc_manager_->generateDocument(LibFred::Document::GT_RECORD_STATEMENT_NSSET, xml_document, pdf_document, "");
 
-    return Registry::RecordStatement::PdfBufferImpl(pdf_document.str());
+    return Buffer(pdf_document.str());
 }
 
 template <typename T>
-Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::keyset_printout(
+Buffer ImplementationWithin<T>::keyset_printout(
         LibFred::OperationContext& _ctx,
         const std::string& _handle)const
 {
     if (is_delete_candidate(_ctx, LibFred::get_id_of_registered<LibFred::Object_Type::keyset>(_ctx, _handle)))
     {
-        throw Registry::RecordStatement::ObjectDeleteCandidate();
+        throw ObjectDeleteCandidate();
     }
 
     std::stringstream xml_document;
@@ -560,19 +563,19 @@ Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::keyset_printou
     std::ostringstream pdf_document;
     doc_manager_->generateDocument(LibFred::Document::GT_RECORD_STATEMENT_KEYSET, xml_document, pdf_document, "");
 
-    return Registry::RecordStatement::PdfBufferImpl(pdf_document.str());
+    return Buffer(pdf_document.str());
 }
 
 template <typename T>
-Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::contact_printout(
+Buffer ImplementationWithin<T>::contact_printout(
         LibFred::OperationContext& _ctx,
         const std::string& _handle,
-        Registry::RecordStatement::Purpose::Enum _purpose)const
+        Purpose::Enum _purpose)const
 {
 
     if (is_delete_candidate(_ctx, LibFred::get_id_of_registered<LibFred::Object_Type::contact>(_ctx, _handle)))
     {
-        throw Registry::RecordStatement::ObjectDeleteCandidate();
+        throw ObjectDeleteCandidate();
     }
 
     std::stringstream xml_document;
@@ -584,11 +587,11 @@ Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::contact_printo
     std::ostringstream pdf_document;
     doc_manager_->generateDocument(LibFred::Document::GT_RECORD_STATEMENT_CONTACT, xml_document, pdf_document, "");
 
-    return Registry::RecordStatement::PdfBufferImpl(pdf_document.str());
+    return Buffer(pdf_document.str());
 }
 
 template <typename T>
-Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::historic_domain_printout(
+Buffer ImplementationWithin<T>::historic_domain_printout(
         LibFred::OperationContext& _ctx,
         const std::string& _fqdn,
         const Tz::LocalTimestamp& _valid_at)const
@@ -640,7 +643,7 @@ Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::historic_domai
             _ctx,
             info_domain_output,
             _valid_at,
-            Registry::RecordStatement::Purpose::private_printout,
+            Purpose::private_printout,
             info_registrant_output,
             info_admin_contact_output,
             info_sponsoring_registrar_output,
@@ -654,17 +657,17 @@ Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::historic_domai
     _ctx.get_log().debug(xml_document);
 
     std::ostringstream pdf_document;
-    boost::shared_ptr<LibFred::Document::Generator> doc_gen(
+    std::shared_ptr<LibFred::Document::Generator> doc_gen(
         doc_manager_->createOutputGenerator(LibFred::Document::GT_RECORD_STATEMENT_DOMAIN, pdf_document, "").release());
 
     doc_gen->getInput() << xml_document;
     doc_gen->closeInput();
 
-    return Registry::RecordStatement::PdfBufferImpl(pdf_document.str());
+    return Buffer(pdf_document.str());
 }
 
 template <typename T>
-Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::historic_nsset_printout(
+Buffer ImplementationWithin<T>::historic_nsset_printout(
         LibFred::OperationContext& _ctx,
         const std::string& _handle,
         const Tz::LocalTimestamp& _valid_at)const
@@ -686,18 +689,18 @@ Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::historic_nsset
     _ctx.get_log().debug(xml_document);
 
     std::ostringstream pdf_document;
-    boost::shared_ptr<LibFred::Document::Generator> doc_gen(
+    std::shared_ptr<LibFred::Document::Generator> doc_gen(
             doc_manager_->createOutputGenerator(
                     LibFred::Document::GT_RECORD_STATEMENT_NSSET, pdf_document, "").release());
 
     doc_gen->getInput() << xml_document;
     doc_gen->closeInput();
 
-    return Registry::RecordStatement::PdfBufferImpl(pdf_document.str());
+    return Buffer(pdf_document.str());
 }
 
 template <typename T>
-Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::historic_keyset_printout(
+Buffer ImplementationWithin<T>::historic_keyset_printout(
         LibFred::OperationContext& _ctx,
         const std::string& _handle,
         const Tz::LocalTimestamp& _valid_at)const
@@ -719,18 +722,18 @@ Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::historic_keyse
     _ctx.get_log().debug(xml_document);
 
     std::ostringstream pdf_document;
-    boost::shared_ptr< LibFred::Document::Generator > doc_gen(
+    std::shared_ptr<LibFred::Document::Generator> doc_gen(
             doc_manager_->createOutputGenerator(
                     LibFred::Document::GT_RECORD_STATEMENT_KEYSET, pdf_document, "").release());
 
     doc_gen->getInput() << xml_document;
     doc_gen->closeInput();
 
-    return Registry::RecordStatement::PdfBufferImpl(pdf_document.str());
+    return Buffer(pdf_document.str());
 }
 
 template <typename T>
-Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::historic_contact_printout(
+Buffer ImplementationWithin<T>::historic_contact_printout(
         LibFred::OperationContext& _ctx,
         const std::string& _handle,
         const Tz::LocalTimestamp& _valid_at)const
@@ -748,7 +751,7 @@ Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::historic_conta
             _ctx,
             info_contact_output,
             _valid_at,
-            Registry::RecordStatement::Purpose::private_printout,
+            Purpose::private_printout,
             info_sponsoring_registrar_output,
             make_historic_external_states(
                     info_contact_output.info_contact_data.id, _valid_at, _ctx));
@@ -756,25 +759,25 @@ Registry::RecordStatement::PdfBufferImpl ImplementationWithin<T>::historic_conta
     _ctx.get_log().debug(xml_document);
 
     std::ostringstream pdf_document;
-    boost::shared_ptr< LibFred::Document::Generator > doc_gen(
+    std::shared_ptr<LibFred::Document::Generator> doc_gen(
             doc_manager_->createOutputGenerator(
                     LibFred::Document::GT_RECORD_STATEMENT_CONTACT, pdf_document, "").release());
 
     doc_gen->getInput() << xml_document;
     doc_gen->closeInput();
 
-    return Registry::RecordStatement::PdfBufferImpl(pdf_document.str());
+    return Buffer(pdf_document.str());
 }
 
 template <typename T>
 void ImplementationWithin<T>::send_domain_printout(
         LibFred::OperationContext& _ctx,
         const std::string& _fqdn,
-        Registry::RecordStatement::Purpose::Enum _purpose)const
+        Purpose::Enum _purpose)const
 {
     if (is_delete_candidate(_ctx, LibFred::get_id_of_registered<LibFred::Object_Type::domain>(_ctx, _fqdn)))
     {
-        throw Registry::RecordStatement::ObjectDeleteCandidate();
+        throw ObjectDeleteCandidate();
     }
 
     const XmlWithData printout_data =
@@ -835,7 +838,7 @@ void ImplementationWithin<T>::send_nsset_printout(
 {
     if (is_delete_candidate(_ctx, LibFred::get_id_of_registered<LibFred::Object_Type::nsset>(_ctx, _handle)))
     {
-        throw Registry::RecordStatement::ObjectDeleteCandidate();
+        throw ObjectDeleteCandidate();
     }
 
     const XmlWithData printout_data =
@@ -897,7 +900,7 @@ void ImplementationWithin<T>::send_keyset_printout(
 {
     if (is_delete_candidate(_ctx, LibFred::get_id_of_registered<LibFred::Object_Type::keyset>(_ctx, _handle)))
     {
-        throw Registry::RecordStatement::ObjectDeleteCandidate();
+        throw ObjectDeleteCandidate();
     }
 
     const XmlWithData printout_data =
@@ -956,11 +959,11 @@ template <typename T>
 void ImplementationWithin<T>::send_contact_printout(
         LibFred::OperationContext& _ctx,
         const std::string& _handle,
-        Registry::RecordStatement::Purpose::Enum _purpose)const
+        Purpose::Enum _purpose)const
 {
     if (is_delete_candidate(_ctx, LibFred::get_id_of_registered<LibFred::Object_Type::contact>(_ctx, _handle)))
     {
-        throw Registry::RecordStatement::ObjectDeleteCandidate();
+        throw ObjectDeleteCandidate();
     }
 
     const XmlWithData printout_data =
@@ -1021,7 +1024,7 @@ private:
             LibFred::OperationContext& ctx,
             const LibFred::InfoDomainOutput& info,
             const Tz::LocalTimestamp& valid_at,
-            const Registry::RecordStatement::Purpose::Enum purpose,
+            const Purpose::Enum purpose,
             const LibFred::InfoContactOutput& registrant_info,
             const std::vector<LibFred::InfoContactOutput>& admin_contact_info,
             const LibFred::InfoRegistrarOutput& sponsoring_registrar_info,
@@ -1045,7 +1048,7 @@ private:
             LibFred::OperationContext& ctx,
             const LibFred::InfoContactOutput& info,
             const Tz::LocalTimestamp& valid_at,
-            Registry::RecordStatement::Purpose::Enum purpose,
+            Purpose::Enum purpose,
             const LibFred::InfoRegistrarOutput& sponsoring_registrar_info,
             const std::set<std::string>& external_states)
     {
@@ -1060,7 +1063,7 @@ private:
     static XmlWithData fake_domain_printout_xml_with_data(
             LibFred::OperationContext& ctx,
             const std::string& fqdn,
-            Registry::RecordStatement::Purpose::Enum purpose)
+            Purpose::Enum purpose)
     {
         return domain_printout_xml_with_data<REGISTRY_TIMEZONE>(
                 ctx,
@@ -1086,7 +1089,7 @@ private:
     static XmlWithData fake_contact_printout_xml_with_data(
             LibFred::OperationContext& ctx,
             const std::string& handle,
-            Registry::RecordStatement::Purpose::Enum purpose)
+            Purpose::Enum purpose)
     {
         return contact_printout_xml_with_data<REGISTRY_TIMEZONE>(
                 ctx,
@@ -1095,8 +1098,8 @@ private:
     }
 
     static Factory::Product producer(
-            const boost::shared_ptr<LibFred::Document::Manager>& _doc_manager,
-            const boost::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager)
+            const std::shared_ptr<LibFred::Document::Manager>& _doc_manager,
+            const std::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager)
     {
         return Factory::Product(
                 new ImplementationWithin<REGISTRY_TIMEZONE>(_doc_manager, _mailer_manager));
@@ -1115,8 +1118,9 @@ private:
 template <typename T>
 const typename InstanceOfNecessaryImpl<T>::RegistryProducer InstanceOfNecessaryImpl<T>::auto_registry_producer;
 
-} // namespace LibFred::RecordStatement::Impl
-} // namespace LibFred::RecordStatement
-} // namespace LibFred
+} // namespace Fred::Backend::RecordStatement::Impl
+} // namespace Fred::Backend::RecordStatement
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

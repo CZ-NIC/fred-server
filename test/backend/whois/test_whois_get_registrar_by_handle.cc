@@ -21,7 +21,7 @@ struct registrar_fixture
 
 BOOST_FIXTURE_TEST_CASE(get_fine_registrar, registrar_fixture)
 {
-    Registry::WhoisImpl::Registrar reg = impl.get_registrar_by_handle(registrar.handle);
+    Fred::Backend::Whois::Registrar reg = impl.get_registrar_by_handle(registrar.handle);
 
     BOOST_CHECK(reg.organization            == registrar.organization.get_value_or_default());
     BOOST_CHECK(reg.fax                     == registrar.fax.get_value_or_default());
@@ -41,12 +41,12 @@ BOOST_FIXTURE_TEST_CASE(get_fine_registrar, registrar_fixture)
 
 BOOST_FIXTURE_TEST_CASE(get_no_registar, whois_impl_instance_fixture)
 {
-    BOOST_CHECK_THROW(impl.get_registrar_by_handle("REG-ABSENT"), Registry::WhoisImpl::ObjectNotExists);
+    BOOST_CHECK_THROW(impl.get_registrar_by_handle("REG-ABSENT"), Fred::Backend::Whois::ObjectNotExists);
 }
 
 BOOST_FIXTURE_TEST_CASE(get_wrong_registrar, whois_impl_instance_fixture)
 {
-    BOOST_CHECK_THROW(impl.get_registrar_by_handle("REG@#$"), Registry::WhoisImpl::InvalidHandle);
+    BOOST_CHECK_THROW(impl.get_registrar_by_handle("REG@#$"), Fred::Backend::Whois::InvalidHandle);
 }
 
 BOOST_AUTO_TEST_SUITE_END()//get_registrar_by_handle

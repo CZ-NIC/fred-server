@@ -36,16 +36,24 @@
 #include "src/libfred/registrable_object/contact/verification/update_check.hh"
 #include "src/libfred/registrable_object/contact/verification/update_test.hh"
 
+namespace Fred {
+namespace Backend {
 namespace Admin {
+namespace Contact {
+namespace Verification {
 
-    /**
-     * Lists checks awaiting resolution - e. g. certain statuses.
-     *
-     * @param _testsuite handle     return checks only with specified testsuite
-     * @return information about checks
-     */
-    std::vector<LibFred::ListChecksItem> list_active_checks(const Optional<std::string>& _testsuite_handle);
-}
+/**
+ * Lists checks awaiting resolution - e. g. certain statuses.
+ *
+ * @param _testsuite handle     return checks only with specified testsuite
+ * @return information about checks
+ */
+std::vector<LibFred::ListChecksItem> list_active_checks(const Optional<std::string>& _testsuite_handle);
 
+} // namespace Fred::Backend::Admin::Contact::Verification
+} // namespace Fred::Backend::Admin::Contact
+} // namespace Fred::Backend::Admin
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

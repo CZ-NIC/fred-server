@@ -20,15 +20,18 @@
 
 #include <stdexcept>
 
-namespace LibFred {
+namespace Fred {
+namespace Backend {
 namespace RecordStatement {
 namespace Impl {
 
 Factory::Factory()
-{ }
+{
+}
 
 Factory::~Factory()
-{ }
+{
+}
 
 Factory::RegisteredProducers& Factory::get_registered_producers()
 {
@@ -47,8 +50,8 @@ void Factory::register_producer(const std::string& _key, Producer _producer)
 
 Factory::Product Factory::produce(
         const std::string& _handle_of_timezone,
-        const boost::shared_ptr<LibFred::Document::Manager>& _doc_manager,
-        const boost::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager)
+        const std::shared_ptr<LibFred::Document::Manager>& _doc_manager,
+        const std::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager)
 {
     const RegisteredProducers::const_iterator producers_itr = get_registered_producers().find(_handle_of_timezone);
     if (producers_itr == get_registered_producers().end())
@@ -58,7 +61,8 @@ Factory::Product Factory::produce(
     return producers_itr->second(_doc_manager, _mailer_manager);
 }
 
-} // namespace LibFred::RecordStatement::Impl
-} // namespace LibFred::RecordStatement
-} // namespace LibFred
+} // namespace Fred::Backend::RecordStatement::Impl
+} // namespace Fred::Backend::RecordStatement
+} // namespace Fred::Backend
+} // namespace Fred
 

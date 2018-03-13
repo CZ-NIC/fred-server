@@ -360,7 +360,8 @@ namespace LibFred
                 if (update_contact_res.size() != 1) {
                     BOOST_THROW_EXCEPTION(InternalError("failed to update contact"));
                 }
-                Admin::AdminContactVerificationObjectStates::conditionally_cancel_final_states(
+                Fred::Backend::Admin::Contact::Verification::ContactStates:: // TODO make part of LibFred
+                        conditionally_cancel_final_states(
                     ctx,
                     contact.info_contact_data.id,
                     name_.isset(),

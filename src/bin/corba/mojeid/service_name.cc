@@ -19,9 +19,9 @@
 #include "src/bin/corba/mojeid/service_name.hh"
 
 namespace Registry {
-namespace MojeID {
+namespace MojeId {
 
 const std::string service_name = "MojeID";
 
-} // namespace Registry::MojeID
+} // namespace Registry::MojeId
 } // namespace Registry

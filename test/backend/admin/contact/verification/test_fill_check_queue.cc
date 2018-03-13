@@ -62,8 +62,8 @@
 namespace TestStatus = ::LibFred::ContactTestStatus;
 namespace CheckStatus = ::LibFred::ContactCheckStatus;
 
-typedef std::vector<Admin::ContactVerificationQueue::enqueued_check> T_enq_ch;
-typedef std::map<std::string, std::shared_ptr<Admin::ContactVerification::Test> > T_testimpl_map;
+typedef std::vector<Fred::Backend::Admin::Contact::Verification::Queue::enqueued_check> T_enq_ch;
+typedef std::map<std::string, std::shared_ptr<Fred::Backend::Admin::Contact::Verification::Test> > T_testimpl_map;
 
 void clean_queue() {
     std::string status_array =
@@ -179,10 +179,10 @@ void empty_automatic_testsuite() {
 }
 
 T_testimpl_map create_dummy_automatic_testsuite() {
-    std::map< std::string, std::shared_ptr<Admin::ContactVerification::Test> > test_impls;
+    std::map< std::string, std::shared_ptr<Fred::Backend::Admin::Contact::Verification::Test> > test_impls;
 
     ::LibFred::OperationContextCreator ctx;
-    std::shared_ptr<Admin::ContactVerification::Test> temp_ptr
+    std::shared_ptr<Fred::Backend::Admin::Contact::Verification::Test> temp_ptr
         (new DummyTestReturning(TestStatus::OK));
 
     std::string handle = dynamic_cast<DummyTestReturning*>(temp_ptr.get())->get_handle();
@@ -227,10 +227,10 @@ struct setup_already_checked_contacts {
         T_testimpl_map dummy_testsuite = create_dummy_automatic_testsuite();
         std::vector<std::string> started_check_handles;
         for(int i=1; i <= count_; ++i) {
-            T_enq_ch enqueued_checks = Admin::ContactVerificationQueue::fill_check_queue(::LibFred::TestsuiteHandle::AUTOMATIC, 1).exec();
+            T_enq_ch enqueued_checks = Fred::Backend::Admin::Contact::Verification::Queue::fill_check_queue(::LibFred::TestsuiteHandle::AUTOMATIC, 1).exec();
             BOOST_CHECK_EQUAL( enqueued_checks.size(), 1);
             started_check_handles.push_back(
-                Admin::run_all_enqueued_checks(dummy_testsuite).front()
+                run_all_enqueued_checks(dummy_testsuite).front()
             );
             ::LibFred::OperationContextCreator ctx;
             ::LibFred::UpdateContactCheck(
@@ -306,18 +306,18 @@ BOOST_AUTO_TEST_CASE(test_Max_queue_length_parameter)
     T_enq_ch enqueued;
 
     int queue_length = 0;
-    enqueued = Admin::ContactVerificationQueue::fill_check_queue(::LibFred::TestsuiteHandle::AUTOMATIC, 10).exec();
+    enqueued = Fred::Backend::Admin::Contact::Verification::Queue::fill_check_queue(::LibFred::TestsuiteHandle::AUTOMATIC, 10).exec();
     // number of enqueued check is exact, if there some check resolved as ignored has no effect
     BOOST_CHECK_EQUAL(enqueued.size(), 10);
     queue_length = get_queue_length();
     BOOST_CHECK_MESSAGE(queue_length <= 10, "check queue too long");
 
-    enqueued = Admin::ContactVerificationQueue::fill_check_queue(::LibFred::TestsuiteHandle::AUTOMATIC, 30).exec();
+    enqueued = Fred::Backend::Admin::Contact::Verification::Queue::fill_check_queue(::LibFred::TestsuiteHandle::AUTOMATIC, 30).exec();
     BOOST_CHECK_EQUAL(enqueued.size(), 30 - queue_length);
     queue_length = get_queue_length();
     BOOST_CHECK_MESSAGE(queue_length <= 30, "check queue too long");
 
-    enqueued = Admin::ContactVerificationQueue::fill_check_queue(::LibFred::TestsuiteHandle::AUTOMATIC, 20).exec();
+    enqueued = Fred::Backend::Admin::Contact::Verification::Queue::fill_check_queue(::LibFred::TestsuiteHandle::AUTOMATIC, 20).exec();
     BOOST_CHECK_EQUAL(enqueued.size(), std::max(20 - queue_length, 0));
     BOOST_CHECK_MESSAGE(get_queue_length() <= 30, "check queue too long");
 }
@@ -338,12 +338,12 @@ BOOST_AUTO_TEST_CASE(test_Try_fill_full_queue)
     T_enq_ch enqueued;
 
     int queue_length = 0;
-    enqueued = Admin::ContactVerificationQueue::fill_check_queue(::LibFred::TestsuiteHandle::AUTOMATIC, 20).exec();
+    enqueued = Fred::Backend::Admin::Contact::Verification::Queue::fill_check_queue(::LibFred::TestsuiteHandle::AUTOMATIC, 20).exec();
     BOOST_CHECK_EQUAL(enqueued.size(), 20);
     queue_length = get_queue_length();
     BOOST_CHECK_MESSAGE(queue_length <= 20, "check queue too long");
 
-    enqueued = Admin::ContactVerificationQueue::fill_check_queue(::LibFred::TestsuiteHandle::AUTOMATIC, 11).exec();
+    enqueued = Fred::Backend::Admin::Contact::Verification::Queue::fill_check_queue(::LibFred::TestsuiteHandle::AUTOMATIC, 11).exec();
     BOOST_CHECK_MESSAGE(get_queue_length() <= 20, "check queue too long");
     BOOST_CHECK_EQUAL(enqueued.size(), std::max(11 - queue_length, 0));
 }
@@ -425,32 +425,32 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_never_checked_contacts)
     }
 
     // test scenarios
-    T_enq_ch enqueued_checks = Admin::ContactVerificationQueue::fill_check_queue(::LibFred::TestsuiteHandle::AUTOMATIC, 10).exec();
+    T_enq_ch enqueued_checks = Fred::Backend::Admin::Contact::Verification::Queue::fill_check_queue(::LibFred::TestsuiteHandle::AUTOMATIC, 10).exec();
     BOOST_CHECK_EQUAL(enqueued_checks.size(), 10);
     nested::enqueued_in_never_checked(enqueued_checks, never_checked_contacts);
     nested::update_never_checked(enqueued_checks, never_checked_contacts);
 
-    enqueued_checks = Admin::ContactVerificationQueue::fill_check_queue(::LibFred::TestsuiteHandle::AUTOMATIC, 20).exec();
+    enqueued_checks = Fred::Backend::Admin::Contact::Verification::Queue::fill_check_queue(::LibFred::TestsuiteHandle::AUTOMATIC, 20).exec();
     BOOST_CHECK_EQUAL(enqueued_checks.size(), 10);
     nested::enqueued_in_never_checked(enqueued_checks, never_checked_contacts);
     nested::update_never_checked(enqueued_checks, never_checked_contacts);
 
-    enqueued_checks = Admin::ContactVerificationQueue::fill_check_queue(::LibFred::TestsuiteHandle::AUTOMATIC, 30).exec();
+    enqueued_checks = Fred::Backend::Admin::Contact::Verification::Queue::fill_check_queue(::LibFred::TestsuiteHandle::AUTOMATIC, 30).exec();
     BOOST_CHECK_EQUAL(enqueued_checks.size(), 10);
     nested::enqueued_in_never_checked(enqueued_checks, never_checked_contacts);
     nested::update_never_checked(enqueued_checks, never_checked_contacts);
 
-    enqueued_checks = Admin::ContactVerificationQueue::fill_check_queue(::LibFred::TestsuiteHandle::AUTOMATIC, 40).exec();
+    enqueued_checks = Fred::Backend::Admin::Contact::Verification::Queue::fill_check_queue(::LibFred::TestsuiteHandle::AUTOMATIC, 40).exec();
     BOOST_CHECK_EQUAL(enqueued_checks.size(), 10);
     nested::enqueued_in_never_checked(enqueued_checks, never_checked_contacts);
     nested::update_never_checked(enqueued_checks, never_checked_contacts);
 
-    enqueued_checks = Admin::ContactVerificationQueue::fill_check_queue(::LibFred::TestsuiteHandle::AUTOMATIC, 50).exec();
+    enqueued_checks = Fred::Backend::Admin::Contact::Verification::Queue::fill_check_queue(::LibFred::TestsuiteHandle::AUTOMATIC, 50).exec();
     BOOST_CHECK_EQUAL(enqueued_checks.size(), 10);
     nested::enqueued_in_never_checked(enqueued_checks, never_checked_contacts);
     nested::update_never_checked(enqueued_checks, never_checked_contacts);
 
-    enqueued_checks = Admin::ContactVerificationQueue::fill_check_queue(::LibFred::TestsuiteHandle::AUTOMATIC, 50).exec();
+    enqueued_checks = Fred::Backend::Admin::Contact::Verification::Queue::fill_check_queue(::LibFred::TestsuiteHandle::AUTOMATIC, 50).exec();
     BOOST_CHECK_EQUAL(enqueued_checks.size(), 0);
 }
 
@@ -494,7 +494,7 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_already_checked_contacts)
 
     for(int i = 1; i<=20; ++i) {
         enqueued_checks.clear();
-        enqueued_checks = Admin::ContactVerificationQueue::fill_check_queue(::LibFred::TestsuiteHandle::AUTOMATIC, i).exec();
+        enqueued_checks = Fred::Backend::Admin::Contact::Verification::Queue::fill_check_queue(::LibFred::TestsuiteHandle::AUTOMATIC, i).exec();
         BOOST_CHECK_EQUAL(enqueued_checks.size(), 1);
         BOOST_CHECK_EQUAL(enqueued_checks.back().contact_id, *it_checked);
 
@@ -651,7 +651,7 @@ void process_filtered_contacts_testcase(
                 setup_special_contact::allowed_states,
                 setup_special_contact::allowed_roles,
                 bool> >& testcases,
-    const Admin::ContactVerificationQueue::contact_filter& filter
+    const Fred::Backend::Admin::Contact::Verification::Queue::contact_filter& filter
 ) {
     typedef setup_special_contact ssc;
 
@@ -685,7 +685,7 @@ void process_filtered_contacts_testcase(
     }
 
     T_enq_ch enqueued_contacts;
-    enqueued_contacts = Admin::ContactVerificationQueue::fill_check_queue(::LibFred::TestsuiteHandle::AUTOMATIC, 10)
+    enqueued_contacts = Fred::Backend::Admin::Contact::Verification::Queue::fill_check_queue(::LibFred::TestsuiteHandle::AUTOMATIC, 10)
         .set_contact_filter(filter)
         .exec();
 
@@ -742,7 +742,7 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_filtered_contacts_country)
     testdata.push_back(boost::make_tuple("DE", ssc::serverBlocked,   ssc::none,  false));
     testdata.push_back(boost::make_tuple("DE", ssc::serverBlocked,   ssc::none,  false));
 
-    Admin::ContactVerificationQueue::contact_filter filter;
+    Fred::Backend::Admin::Contact::Verification::Queue::contact_filter filter;
     filter.country_code = "JP";
 
     process_filtered_contacts_testcase(testdata, filter);
@@ -762,7 +762,7 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_filtered_contacts_state)
     testdata.push_back(boost::make_tuple("DE", ssc::validated,   ssc::owner,  true));
     testdata.push_back(boost::make_tuple("DE", ssc::serverBlocked,      ssc::owner,  false));
 
-    Admin::ContactVerificationQueue::contact_filter filter;
+    Fred::Backend::Admin::Contact::Verification::Queue::contact_filter filter;
     filter.states.insert("validatedContact");
     filter.country_code = "DE";
 
@@ -783,8 +783,8 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_filtered_contacts_role)
     testdata.push_back(boost::make_tuple("DE", ssc::serverBlocked,   ssc::owner,       false));
     testdata.push_back(boost::make_tuple("DE", ssc::serverBlocked,   ssc::technical,   true));
 
-    Admin::ContactVerificationQueue::contact_filter filter;
-    filter.roles.insert(Admin::ContactVerificationQueue::tech_c);
+    Fred::Backend::Admin::Contact::Verification::Queue::contact_filter filter;
+    filter.roles.insert(Fred::Backend::Admin::Contact::Verification::Queue::tech_c);
     filter.country_code = "DE";
 
     process_filtered_contacts_testcase(testdata, filter);
@@ -830,8 +830,8 @@ BOOST_AUTO_TEST_CASE(test_Enqueueing_filtered_contacts_combined)
     testdata.push_back(boost::make_tuple("JP", ssc::mojeid,         ssc::none,       false));
     testdata.push_back(boost::make_tuple("SK", ssc::mojeid,         ssc::none,       false));
 
-    Admin::ContactVerificationQueue::contact_filter filter;
-    filter.roles.insert(Admin::ContactVerificationQueue::tech_c);
+    Fred::Backend::Admin::Contact::Verification::Queue::contact_filter filter;
+    filter.roles.insert(Fred::Backend::Admin::Contact::Verification::Queue::tech_c);
     filter.country_code = "JP";
     filter.states.insert("validatedContact");
 

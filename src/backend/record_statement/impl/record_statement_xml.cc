@@ -24,30 +24,31 @@
 #include "src/backend/record_statement/impl/record_statement_xml.hh"
 #include "src/backend/record_statement/exceptions.hh"
 
-#include "src/util/log/context.hh"
-#include "src/util/util.hh"
-#include "src/util/xmlgen.hh"
-#include "src/util/timezones.hh"
-#include "src/util/tz/get_psql_handle_of.hh"
+#include "src/libfred/object_state/get_object_states.hh"
 #include "src/libfred/opcontext.hh"
-#include "src/libfred/zone/zone.hh"
 #include "src/libfred/registrable_object/contact/info_contact.hh"
 #include "src/libfred/registrable_object/domain/info_domain.hh"
-#include "src/libfred/registrable_object/nsset/info_nsset.hh"
 #include "src/libfred/registrable_object/keyset/info_keyset.hh"
-#include "src/libfred/object_state/get_object_states.hh"
+#include "src/libfred/registrable_object/nsset/info_nsset.hh"
+#include "src/libfred/zone/zone.hh"
+#include "src/util/log/context.hh"
+#include "src/util/timezones.hh"
+#include "src/util/tz/get_psql_handle_of.hh"
+#include "src/util/util.hh"
+#include "src/util/xmlgen.hh"
 
-#include <boost/lexical_cast.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/lexical_cast.hpp>
 
+#include <algorithm>
 #include <cstring>
+#include <sstream>
 #include <string>
 #include <vector>
-#include <algorithm>
-#include <sstream>
 
 
-namespace LibFred {
+namespace Fred {
+namespace Backend {
 namespace RecordStatement {
 namespace Impl {
 
@@ -59,7 +60,8 @@ std::set<std::string> make_external_states(
 
     const std::vector<LibFred::ObjectStateData> states = LibFred::GetObjectStates(object_id).exec(ctx);
     for (std::vector<LibFred::ObjectStateData>::const_iterator states_itr = states.begin();
-         states_itr != states.end(); ++states_itr)
+            states_itr != states.end();
+            ++states_itr)
     {
         if (states_itr->is_external)
         {
@@ -76,6 +78,7 @@ std::set<std::string> make_historic_external_states(
         LibFred::OperationContext& ctx)
 {
     const Database::Result db_res = ctx.get_conn().exec_params(
+            // clang-format off
             "WITH valid_at AS ("
                 "SELECT $1::TIMESTAMP-($2::INT||'MINUTES')::INTERVAL AS utc_time) "
             "SELECT DISTINCT eos.name "
@@ -85,12 +88,14 @@ std::set<std::string> make_historic_external_states(
             "JOIN enum_object_states eos ON eos.id=os.state_id "
             "WHERE os.object_id=$3::BIGINT AND "
                   "eos.external",
-            Database::query_param_list(boost::posix_time::to_iso_extended_string(valid_at.get_local_time()))
-                                      (valid_at.get_timezone_offset_in_minutes())
-                                      (object_id));
+            Database::query_param_list
+                    (boost::posix_time::to_iso_extended_string(valid_at.get_local_time()))
+                    (valid_at.get_timezone_offset_in_minutes())
+                    (object_id));
+    // clang-format on
 
     std::set<std::string> historic_external_states;
-    for (unsigned long long idx = 0 ; idx < db_res.size() ; ++idx)
+    for (unsigned long long idx = 0; idx < db_res.size(); ++idx)
     {
         historic_external_states.insert(static_cast<std::string>(db_res[idx][0]));
     }
@@ -112,13 +117,15 @@ boost::optional<NssetPrintoutInputData> make_nsset_data(
     retval.tech_contact.reserve(retval.info.info_nsset_data.tech_contacts.size());
 
     for (std::vector<LibFred::ObjectIdHandlePair>::const_iterator itr = retval.info.info_nsset_data.tech_contacts.begin();
-         itr != retval.info.info_nsset_data.tech_contacts.end(); ++itr)
+            itr != retval.info.info_nsset_data.tech_contacts.end();
+            ++itr)
     {
         retval.tech_contact.push_back(LibFred::InfoContactByHandle(itr->handle).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()));
     }
 
     retval.sponsoring_registrar = LibFred::InfoRegistrarByHandle(
-            retval.info.info_nsset_data.sponsoring_registrar_handle).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
+            retval.info.info_nsset_data.sponsoring_registrar_handle)
+                                          .exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
 
     retval.external_states = make_external_states(retval.info.info_nsset_data.id, ctx);
 
@@ -139,13 +146,15 @@ boost::optional<KeysetPrintoutInputData> make_keyset_data(
     retval.tech_contact.reserve(retval.info.info_keyset_data.tech_contacts.size());
 
     for (std::vector<LibFred::ObjectIdHandlePair>::const_iterator itr = retval.info.info_keyset_data.tech_contacts.begin();
-         itr != retval.info.info_keyset_data.tech_contacts.end(); ++itr)
+            itr != retval.info.info_keyset_data.tech_contacts.end();
+            ++itr)
     {
         retval.tech_contact.push_back(LibFred::InfoContactByHandle(itr->handle).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()));
     }
 
     retval.sponsoring_registrar = LibFred::InfoRegistrarByHandle(
-            retval.info.info_keyset_data.sponsoring_registrar_handle).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
+            retval.info.info_keyset_data.sponsoring_registrar_handle)
+                                          .exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
 
     retval.external_states = make_external_states(retval.info.info_keyset_data.id, ctx);
     return retval;
@@ -153,18 +162,19 @@ boost::optional<KeysetPrintoutInputData> make_keyset_data(
 
 DbDateTimeArithmetic::DbDateTimeArithmetic(LibFred::OperationContext& _ctx)
     : ctx_(_ctx)
-{ }
+{
+}
 
 Tz::LocalTimestamp DbDateTimeArithmetic::append_offset(
         const boost::posix_time::ptime& _local_time,
-        const std::string& _timezone_handle)const
+        const std::string& _timezone_handle) const
 {
     const Database::Result dbres = ctx_.get_conn().exec_params(
+            // clang-format off
             "WITH src AS (SELECT $1::TIMESTAMP AS t) "
             "SELECT EXTRACT(EPOCH FROM t-(t AT TIME ZONE $2::TEXT AT TIME ZONE $3::TEXT)) FROM src",
-            Database::query_param_list(boost::posix_time::to_simple_string(_local_time))
-                                      (_timezone_handle)
-                                      (Tz::get_psql_handle_of<Tz::UTC>()));
+            // clang-format on
+            Database::query_param_list(boost::posix_time::to_simple_string(_local_time))(_timezone_handle)(Tz::get_psql_handle_of<Tz::UTC>()));
     const int offset_in_seconds = static_cast<int>(dbres[0][0]);
     return Tz::LocalTimestamp(_local_time, offset_in_seconds / 60);
 }
@@ -172,18 +182,21 @@ Tz::LocalTimestamp DbDateTimeArithmetic::append_offset(
 Tz::LocalTimestamp DbDateTimeArithmetic::convert_into_other_timezone(
         const boost::posix_time::ptime& _src_local_time,
         ::int16_t _src_timezone_offset_in_minutes,
-        const std::string& _dst_timezone_handle)const
+        const std::string& _dst_timezone_handle) const
 {
     const Database::Result dbres = ctx_.get_conn().exec_params(
+            // clang-format off
             "WITH src AS (SELECT $1::TIMESTAMP AS t,($2::INT||'MINUTES')::INTERVAL AS o),"
                  "dst AS (SELECT (t-o) AT TIME ZONE $3::TEXT AT TIME ZONE $4::TEXT AS t FROM src) "
             "SELECT EXTRACT(EPOCH FROM src.t-dst.t),"//difference between both local times
                    "EXTRACT(EPOCH FROM dst.t-(src.t-src.o)) "//difference of dst local time from UTC time
             "FROM src,dst",
-            Database::query_param_list(boost::posix_time::to_simple_string(_src_local_time))
-                                      (_src_timezone_offset_in_minutes)
-                                      (Tz::get_psql_handle_of<Tz::UTC>())
-                                      (_dst_timezone_handle));
+            Database::query_param_list
+                (boost::posix_time::to_simple_string(_src_local_time))
+                (_src_timezone_offset_in_minutes)
+                (Tz::get_psql_handle_of<Tz::UTC>())
+                (_dst_timezone_handle));
+    // clang-format on
     const int diff_src_from_dst_in_seconds = static_cast<int>(dbres[0][0]);
     const int diff_dst_from_utc_in_seconds = static_cast<int>(dbres[0][1]);
     const boost::posix_time::ptime dst_local_time =
@@ -222,33 +235,39 @@ std::vector<Util::XmlCallback> nsset_xml(const boost::optional<NssetPrintoutInpu
     nameserver_list.reserve(nsset_data->info.info_nsset_data.dns_hosts.size());
 
     for (std::vector<LibFred::DnsHost>::const_iterator itr = nsset_data->info.info_nsset_data.dns_hosts.begin();
-         itr != nsset_data->info.info_nsset_data.dns_hosts.end(); ++itr)
+            itr != nsset_data->info.info_nsset_data.dns_hosts.end();
+            ++itr)
     {
         std::vector<Util::XmlCallback> ip_list;
         const std::vector<boost::asio::ip::address> ns_ip_info = itr->get_inet_addr();
         ip_list.reserve(ns_ip_info.size());
 
         for (std::vector<boost::asio::ip::address>::const_iterator ip_itr = ns_ip_info.begin();
-             ip_itr != ns_ip_info.end(); ++ip_itr)
+                ip_itr != ns_ip_info.end();
+                ++ip_itr)
         {
             ip_list.push_back(Util::XmlTagPair("ip", Util::XmlEscapeTag(ip_itr->to_string())));
         }
 
         nameserver_list.push_back(
+                // clang-format off
                 Util::XmlTagPair(
                         "nameserver",
                         Util::vector_of<Util::XmlCallback>
                             (Util::XmlTagPair("fqdn", Util::XmlEscapeTag(itr->get_fqdn())))
                             (Util::XmlTagPair("ip_list", ip_list))));
+        // clang-format on
     }
 
     std::vector<Util::XmlCallback> tech_contact_list;
     tech_contact_list.reserve(nsset_data->tech_contact.size());
 
     for (std::vector<LibFred::InfoContactOutput>::const_iterator itr = nsset_data->tech_contact.begin();
-         itr != nsset_data->tech_contact.end(); ++itr)
+            itr != nsset_data->tech_contact.end();
+            ++itr)
     {
         tech_contact_list.push_back(
+                // clang-format off
                 Util::XmlTagPair(
                         "tech_contact",
                         Util::vector_of<Util::XmlCallback>
@@ -256,9 +275,12 @@ std::vector<Util::XmlCallback> nsset_xml(const boost::optional<NssetPrintoutInpu
                             (Util::XmlTagPair("name", Util::XmlEscapeTag(itr->info_contact_data.name.get_value_or(""))))
                             (Util::XmlTagPair("organization",
                                               Util::XmlEscapeTag(itr->info_contact_data.organization.get_value_or(""))))));
+        // clang-format on
     }
 
-    return Util::vector_of<Util::XmlCallback>
+    return
+            // clang-format off
+        Util::vector_of<Util::XmlCallback>
         (Util::XmlTagPair(
                 "nsset",
                 Util::vector_of<Util::XmlCallback>
@@ -287,6 +309,7 @@ std::vector<Util::XmlCallback> nsset_xml(const boost::optional<NssetPrintoutInpu
                                         Util::XmlEscapeTag(
                                                 nsset_data->sponsoring_registrar.info_registrar_data.organization.get_value_or(""))))))
                     (Util::XmlTagPair("external_states_list", external_states_xml(nsset_data->external_states)))));
+    // clang-format on
 }
 
 std::vector<Util::XmlCallback> keyset_xml(const boost::optional<KeysetPrintoutInputData>& keyset_data)
@@ -300,23 +323,28 @@ std::vector<Util::XmlCallback> keyset_xml(const boost::optional<KeysetPrintoutIn
     dns_key_list.reserve(keyset_data->info.info_keyset_data.dns_keys.size());
 
     for (std::vector<LibFred::DnsKey>::const_iterator itr = keyset_data->info.info_keyset_data.dns_keys.begin();
-         itr != keyset_data->info.info_keyset_data.dns_keys.end(); ++itr)
+            itr != keyset_data->info.info_keyset_data.dns_keys.end();
+            ++itr)
     {
         dns_key_list.push_back(
+                // clang-format off
                 Util::XmlTagPair("dns_key", Util::vector_of<Util::XmlCallback>
                     (Util::XmlTagPair("flags", Util::XmlEscapeTag(boost::lexical_cast<std::string>(itr->get_flags()))))
                     (Util::XmlTagPair("protocol", Util::XmlEscapeTag(boost::lexical_cast<std::string>(itr->get_protocol()))))
                     (Util::XmlTagPair("algorithm", Util::XmlEscapeTag(boost::lexical_cast<std::string>(itr->get_alg()))))
                     (Util::XmlTagPair("key", Util::XmlEscapeTag(itr->get_key())))));
+                // clang-format on
     }
 
     std::vector<Util::XmlCallback> tech_contact_list;
     tech_contact_list.reserve(keyset_data->tech_contact.size());
 
     for (std::vector<LibFred::InfoContactOutput>::const_iterator itr = keyset_data->tech_contact.begin();
-         itr != keyset_data->tech_contact.end(); ++itr)
+            itr != keyset_data->tech_contact.end();
+            ++itr)
     {
         tech_contact_list.push_back(
+                // clang-format off
                 Util::XmlTagPair(
                         "tech_contact",
                         Util::vector_of<Util::XmlCallback>
@@ -324,9 +352,12 @@ std::vector<Util::XmlCallback> keyset_xml(const boost::optional<KeysetPrintoutIn
                             (Util::XmlTagPair("name", Util::XmlEscapeTag(itr->info_contact_data.name.get_value_or(""))))
                             (Util::XmlTagPair("organization",
                                               Util::XmlEscapeTag(itr->info_contact_data.organization.get_value_or(""))))));
+                // clang-format on
     }
 
-    return Util::vector_of<Util::XmlCallback>
+    return
+        // clang-format off
+        Util::vector_of<Util::XmlCallback>
         (Util::XmlTagPair(
                 "keyset",
                 Util::vector_of<Util::XmlCallback>
@@ -355,6 +386,7 @@ std::vector<Util::XmlCallback> keyset_xml(const boost::optional<KeysetPrintoutIn
                                         Util::XmlEscapeTag(
                                                 keyset_data->sponsoring_registrar.info_registrar_data.organization.get_value_or(""))))))
                     (Util::XmlTagPair("external_states_list", external_states_xml(keyset_data->external_states)))));
+        // clang-format on
 }
 
 std::string nsset_printout_xml(
@@ -364,12 +396,9 @@ std::string nsset_printout_xml(
     std::string printout_xml("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
     Util::XmlTagPair(
             "record_statement",
-            Util::vector_of<Util::XmlCallback>
-                (Util::XmlTagPair(
-                        "current_datetime",
-                        Util::XmlEscapeTag(valid_at.get_rfc3339_formated_string())))
-                (nsset_xml(nsset_input_data)))
-    (printout_xml);
+            Util::vector_of<Util::XmlCallback>(Util::XmlTagPair(
+                    "current_datetime",
+                    Util::XmlEscapeTag(valid_at.get_rfc3339_formated_string())))(nsset_xml(nsset_input_data)))(printout_xml);
 
     return printout_xml;
 }
@@ -381,12 +410,9 @@ std::string keyset_printout_xml(
     std::string printout_xml("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
     Util::XmlTagPair(
             "record_statement",
-            Util::vector_of<Util::XmlCallback>
-                (Util::XmlTagPair(
-                        "current_datetime",
-                        Util::XmlEscapeTag(valid_at.get_rfc3339_formated_string())))
-                (keyset_xml(keyset_input_data)))
-    (printout_xml);
+            Util::vector_of<Util::XmlCallback>(Util::XmlTagPair(
+                    "current_datetime",
+                    Util::XmlEscapeTag(valid_at.get_rfc3339_formated_string())))(keyset_xml(keyset_input_data)))(printout_xml);
 
     return printout_xml;
 }
@@ -395,7 +421,8 @@ XmlWithData::XmlWithData()
     : xml(),
       email_out(),
       request_local_timestamp(Tz::LocalTimestamp::within_utc(boost::posix_time::ptime()))
-{ }
+{
+}
 
 template <LibFred::Object_Type::Enum object_type>
 unsigned long long get_history_id_of(
@@ -404,6 +431,7 @@ unsigned long long get_history_id_of(
         LibFred::OperationContext& ctx)
 {
     const Database::Result db_res = ctx.get_conn().exec_params(
+            // clang-format off
             "WITH "
                 "valid_at AS ("
                     "SELECT $1::TIMESTAMP-($2::INT||'MINUTES')::INTERVAL AS utc_time),"
@@ -422,25 +450,33 @@ unsigned long long get_history_id_of(
                                "(v.utc_time<h.valid_to OR h.valid_to IS NULL) "
             "ORDER BY h.id DESC "
             "LIMIT 1",
-            Database::query_param_list(boost::posix_time::to_iso_extended_string(valid_at.get_local_time()))
-                                      (valid_at.get_timezone_offset_in_minutes())
-                                      (Conversion::Enums::to_db_handle(object_type))
-                                      (handle));
+            Database::query_param_list
+                    (boost::posix_time::to_iso_extended_string(valid_at.get_local_time()))
+                    (valid_at.get_timezone_offset_in_minutes())
+                    (Conversion::Enums::to_db_handle(object_type))
+                    (handle));
+            // clang-format on
 
     if (db_res.size() == 0)
     {
-        throw Registry::RecordStatement::ObjectNotFound();
+        throw ObjectNotFound();
     }
 
     return static_cast<unsigned long long>(db_res[0][0]);
 }
 
 template unsigned long long get_history_id_of<LibFred::Object_Type::contact>(
-        const std::string&, const Tz::LocalTimestamp&, LibFred::OperationContext&);
+        const std::string&,
+        const Tz::LocalTimestamp&,
+        LibFred::OperationContext&);
 template unsigned long long get_history_id_of<LibFred::Object_Type::keyset>(
-        const std::string&, const Tz::LocalTimestamp&, LibFred::OperationContext&);
+        const std::string&,
+        const Tz::LocalTimestamp&,
+        LibFred::OperationContext&);
 template unsigned long long get_history_id_of<LibFred::Object_Type::nsset>(
-        const std::string&, const Tz::LocalTimestamp&, LibFred::OperationContext&);
+        const std::string&,
+        const Tz::LocalTimestamp&,
+        LibFred::OperationContext&);
 
 template <>
 unsigned long long get_history_id_of<LibFred::Object_Type::domain>(
@@ -449,6 +485,7 @@ unsigned long long get_history_id_of<LibFred::Object_Type::domain>(
         LibFred::OperationContext& ctx)
 {
     const Database::Result db_res = ctx.get_conn().exec_params(
+            // clang-format off
             "WITH "
                 "valid_at AS ("
                     "SELECT $1::TIMESTAMP-($2::INT||'MINUTES')::INTERVAL AS utc_time),"
@@ -467,14 +504,16 @@ unsigned long long get_history_id_of<LibFred::Object_Type::domain>(
                                "(v.utc_time<h.valid_to OR h.valid_to IS NULL) "
             "ORDER BY h.id DESC "
             "LIMIT 1",
-            Database::query_param_list(boost::posix_time::to_iso_extended_string(valid_at.get_local_time()))
-                                      (valid_at.get_timezone_offset_in_minutes())
-                                      (Conversion::Enums::to_db_handle(LibFred::Object_Type::domain))
-                                      (fqdn));
+            Database::query_param_list
+                    (boost::posix_time::to_iso_extended_string(valid_at.get_local_time()))
+                    (valid_at.get_timezone_offset_in_minutes())
+                    (Conversion::Enums::to_db_handle(LibFred::Object_Type::domain))
+                    (fqdn));
+            // clang-format on
 
     if (db_res.size() == 0)
     {
-        throw Registry::RecordStatement::ObjectNotFound();
+        throw ObjectNotFound();
     }
 
     return static_cast<unsigned long long>(db_res[0][0]);
@@ -497,13 +536,21 @@ unsigned long long get_history_id_internal_of(
 }
 
 template unsigned long long get_history_id_internal_of<LibFred::Object_Type::domain>(
-        const std::string&, const Tz::LocalTimestamp&, LibFred::OperationContext&);
+        const std::string&,
+        const Tz::LocalTimestamp&,
+        LibFred::OperationContext&);
 template unsigned long long get_history_id_internal_of<LibFred::Object_Type::contact>(
-        const std::string&, const Tz::LocalTimestamp&, LibFred::OperationContext&);
+        const std::string&,
+        const Tz::LocalTimestamp&,
+        LibFred::OperationContext&);
 template unsigned long long get_history_id_internal_of<LibFred::Object_Type::keyset>(
-        const std::string&, const Tz::LocalTimestamp&, LibFred::OperationContext&);
+        const std::string&,
+        const Tz::LocalTimestamp&,
+        LibFred::OperationContext&);
 template unsigned long long get_history_id_internal_of<LibFred::Object_Type::nsset>(
-        const std::string&, const Tz::LocalTimestamp&, LibFred::OperationContext&);
+        const std::string&,
+        const Tz::LocalTimestamp&,
+        LibFred::OperationContext&);
 
 boost::optional<NssetPrintoutInputData> make_historic_nsset_data(
         const boost::optional<unsigned long long>& nsset_historyid,
@@ -518,20 +565,21 @@ boost::optional<NssetPrintoutInputData> make_historic_nsset_data(
     retval.info = LibFred::InfoNssetHistoryByHistoryid(*nsset_historyid).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
 
     for (std::vector<LibFred::ObjectIdHandlePair>::const_iterator itr = retval.info.info_nsset_data.tech_contacts.begin();
-         itr != retval.info.info_nsset_data.tech_contacts.end(); ++itr)
+            itr != retval.info.info_nsset_data.tech_contacts.end();
+            ++itr)
     {
         retval.tech_contact.push_back(
                 LibFred::InfoContactHistoryByHistoryid(
                         get_history_id_internal_of<LibFred::Object_Type::contact>(itr->handle, timestamp, ctx))
-                .exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()));
+                        .exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()));
     }
 
     retval.sponsoring_registrar =
             LibFred::InfoRegistrarByHandle(retval.info.info_nsset_data.sponsoring_registrar_handle)
-            .exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
+                    .exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
 
     retval.external_states =
-            LibFred::RecordStatement::Impl::make_historic_external_states(retval.info.info_nsset_data.id, timestamp, ctx);
+            make_historic_external_states(retval.info.info_nsset_data.id, timestamp, ctx);
 
     return retval;
 }
@@ -549,17 +597,18 @@ boost::optional<KeysetPrintoutInputData> make_historic_keyset_data(
     retval.info = LibFred::InfoKeysetHistoryByHistoryid(*keyset_historyid).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
 
     for (std::vector<LibFred::ObjectIdHandlePair>::const_iterator itr = retval.info.info_keyset_data.tech_contacts.begin();
-         itr != retval.info.info_keyset_data.tech_contacts.end(); ++itr)
+            itr != retval.info.info_keyset_data.tech_contacts.end();
+            ++itr)
     {
         retval.tech_contact.push_back(
                 LibFred::InfoContactHistoryByHistoryid(
                         get_history_id_internal_of<LibFred::Object_Type::contact>(itr->handle, timestamp, ctx))
-                .exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()));
+                        .exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()));
     }
 
     retval.sponsoring_registrar =
             LibFred::InfoRegistrarByHandle(retval.info.info_keyset_data.sponsoring_registrar_handle)
-            .exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
+                    .exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
 
     retval.external_states =
             make_historic_external_states(retval.info.info_keyset_data.id, timestamp, ctx);
@@ -567,6 +616,7 @@ boost::optional<KeysetPrintoutInputData> make_historic_keyset_data(
     return retval;
 }
 
-} // namespace LibFred::RecordStatement::Impl
-} // namespace LibFred::RecordStatement
-} // namespace LibFred
+} // namespace Fred::Backend::RecordStatement::Impl
+} // namespace Fred::Backend::RecordStatement
+} // namespace Fred::Backend
+} // namespace Fred

@@ -47,13 +47,13 @@
 
 struct dummy_testsuite : public setup_empty_testsuite {
 
-    std::map< std::string, std::shared_ptr<Admin::ContactVerification::Test> > test_impls_;
+    std::map< std::string, std::shared_ptr<Fred::Backend::Admin::Contact::Verification::Test> > test_impls_;
 
     dummy_testsuite (const std::vector<std::string>& _test_return_statuses) {
         std::string handle;
 
         BOOST_FOREACH(const std::string& status, _test_return_statuses) {
-            std::shared_ptr<Admin::ContactVerification::Test> temp_ptr(new DummyTestReturning(status));
+            std::shared_ptr<Fred::Backend::Admin::Contact::Verification::Test> temp_ptr(new DummyTestReturning(status));
             handle = dynamic_cast<DummyTestReturning*>(temp_ptr.get())->get_handle();
 
             test_impls_[handle] = temp_ptr;
@@ -74,7 +74,7 @@ void test_Resulting_check_status_impl(std::vector<std::string> _test_statuses, c
     ctx1.commit_transaction();
 
     try {
-        Admin::run_all_enqueued_checks( const_cast<const std::map< std::string, std::shared_ptr<Admin::ContactVerification::Test> >& > (suite.test_impls_) );
+        run_all_enqueued_checks( const_cast<const std::map< std::string, std::shared_ptr<Fred::Backend::Admin::Contact::Verification::Test> >& > (suite.test_impls_) );
     } catch (...) {
         BOOST_FAIL("exception during Admin::run_all_enqueued_checks");
     }
@@ -251,12 +251,12 @@ BOOST_AUTO_TEST_CASE(test_Incorrect_test_return_handling)
     {
         ::LibFred::OperationContextCreator ctx;
 
-        std::shared_ptr<Admin::ContactVerification::Test> temp_ptr(
+        std::shared_ptr<Fred::Backend::Admin::Contact::Verification::Test> temp_ptr(
             new DummyTestReturning(TestStatus::ENQUEUED));
 
         std::string handle = dynamic_cast<DummyTestReturning*>(temp_ptr.get())->get_handle();
 
-        std::map< std::string, std::shared_ptr<Admin::ContactVerification::Test> > test_impls_;
+        std::map< std::string, std::shared_ptr<Fred::Backend::Admin::Contact::Verification::Test> > test_impls_;
         test_impls_[handle] = temp_ptr;
 
         setup_empty_testsuite testsuite;
@@ -267,7 +267,7 @@ BOOST_AUTO_TEST_CASE(test_Incorrect_test_return_handling)
         ctx.commit_transaction();
 
         try {
-            Admin::run_all_enqueued_checks( test_impls_ );
+           run_all_enqueued_checks( test_impls_ );
         } catch(...) {
             BOOST_FAIL("should have been swallowed");
         }
@@ -277,12 +277,12 @@ BOOST_AUTO_TEST_CASE(test_Incorrect_test_return_handling)
     {
         ::LibFred::OperationContextCreator ctx;
 
-        std::shared_ptr<Admin::ContactVerification::Test> temp_ptr(
+        std::shared_ptr<Fred::Backend::Admin::Contact::Verification::Test> temp_ptr(
             new DummyTestReturning(TestStatus::RUNNING));
 
         std::string handle = dynamic_cast<DummyTestReturning*>(temp_ptr.get())->get_handle();
 
-        std::map< std::string, std::shared_ptr<Admin::ContactVerification::Test> > test_impls_;
+        std::map< std::string, std::shared_ptr<Fred::Backend::Admin::Contact::Verification::Test> > test_impls_;
         test_impls_[handle] = temp_ptr;
 
         setup_empty_testsuite testsuite;
@@ -290,7 +290,7 @@ BOOST_AUTO_TEST_CASE(test_Incorrect_test_return_handling)
         setup_check check(testsuite.testsuite_handle);
 
         try {
-            Admin::run_all_enqueued_checks( test_impls_ );
+           run_all_enqueued_checks( test_impls_ );
         } catch(...) {
             BOOST_FAIL("should have been swallowed");
         }
@@ -306,10 +306,10 @@ BOOST_AUTO_TEST_CASE(test_Incorrect_test_return_handling)
  */
 BOOST_AUTO_TEST_CASE(test_Throwing_test_handling)
 {
-    std::shared_ptr<Admin::ContactVerification::Test> temp_ptr(new DummyThrowingTest);
+    std::shared_ptr<Fred::Backend::Admin::Contact::Verification::Test> temp_ptr(new DummyThrowingTest);
     std::string handle = dynamic_cast<DummyThrowingTest*>(temp_ptr.get())->get_handle();
 
-    std::map< std::string, std::shared_ptr<Admin::ContactVerification::Test> > test_impls_;
+    std::map< std::string, std::shared_ptr<Fred::Backend::Admin::Contact::Verification::Test> > test_impls_;
     test_impls_[handle] = temp_ptr;
 
     setup_empty_testsuite testsuite;
@@ -324,7 +324,7 @@ BOOST_AUTO_TEST_CASE(test_Throwing_test_handling)
     ctx1.commit_transaction();
 
     try {
-        Admin::run_all_enqueued_checks( test_impls_ );
+       run_all_enqueued_checks( test_impls_ );
     } catch (...) {
         BOOST_FAIL("should have been swallowed");
     }
@@ -357,19 +357,19 @@ BOOST_AUTO_TEST_CASE(test_Logd_request_id_of_related_changes)
     // creating checkdef
     ::LibFred::OperationContextCreator ctx1;
 
-    std::shared_ptr<Admin::ContactVerification::Test> temp_ptr1(
+    std::shared_ptr<Fred::Backend::Admin::Contact::Verification::Test> temp_ptr1(
         new DummyTestReturning(TestStatus::OK));
     std::string handle1 = dynamic_cast<DummyTestReturning*>(temp_ptr1.get())->get_handle();
 
-    std::shared_ptr<Admin::ContactVerification::Test> temp_ptr2(
+    std::shared_ptr<Fred::Backend::Admin::Contact::Verification::Test> temp_ptr2(
         new DummyTestReturning(TestStatus::FAIL));
     std::string handle2 = dynamic_cast<DummyTestReturning*>(temp_ptr2.get())->get_handle();
 
-    std::shared_ptr<Admin::ContactVerification::Test> temp_ptr3(
+    std::shared_ptr<Fred::Backend::Admin::Contact::Verification::Test> temp_ptr3(
         new DummyTestReturning(TestStatus::MANUAL));
     std::string handle3 = dynamic_cast<DummyTestReturning*>(temp_ptr3.get())->get_handle();
 
-    std::map< std::string, std::shared_ptr<Admin::ContactVerification::Test> > test_impls_;
+    std::map< std::string, std::shared_ptr<Fred::Backend::Admin::Contact::Verification::Test> > test_impls_;
     test_impls_[handle1] = temp_ptr1;
     test_impls_[handle2] = temp_ptr2;
     test_impls_[handle3] = temp_ptr3;
@@ -384,9 +384,9 @@ BOOST_AUTO_TEST_CASE(test_Logd_request_id_of_related_changes)
     ctx1.commit_transaction();
 
     // effectively creates tests and updates check at once
-    Admin::ContactVerificationQueue::fill_check_queue(testsuite.testsuite_handle, 1).exec();
+    Fred::Backend::Admin::Contact::Verification::Queue::fill_check_queue(testsuite.testsuite_handle, 1).exec();
     unsigned long long logd_request_id = Random::integer(0, 2147483647);
-    Admin::run_all_enqueued_checks(test_impls_, logd_request_id);
+    run_all_enqueued_checks(test_impls_, logd_request_id);
 
     ::LibFred::InfoContactCheck info_op( uuid::from_string( check.check_handle_) );
     ::LibFred::InfoContactCheckOutput info;

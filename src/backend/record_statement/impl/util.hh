@@ -21,14 +21,16 @@
 
 #include "src/libfred/opcontext.hh"
 
-namespace LibFred {
+namespace Fred {
+namespace Backend {
 namespace RecordStatement {
 namespace Impl {
 
 bool is_delete_candidate(LibFred::OperationContext& _ctx, unsigned long long _object_id);
 
-} // namespace LibFred::RecordStatement::Impl
-} // namespace LibFred::RecordStatement
-} // namespace LibFred
+} // namespace Fred::Backend::RecordStatement::Impl
+} // namespace Fred::Backend::RecordStatement
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

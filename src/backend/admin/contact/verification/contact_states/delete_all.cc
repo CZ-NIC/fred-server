@@ -7,10 +7,12 @@
 
 #include <boost/foreach.hpp>
 
-namespace Admin
-{
-namespace AdminContactVerificationObjectStates
-{
+namespace Fred {
+namespace Backend {
+namespace Admin {
+namespace Contact {
+namespace Verification {
+namespace ContactStates {
 
     bool conditionally_cancel_final_states(
         LibFred::OperationContext& ctx,
@@ -89,11 +91,11 @@ namespace AdminContactVerificationObjectStates
     }
 
     void cancel_all_states(LibFred::OperationContext& _ctx, unsigned long long _contact_id) {
-        cancel_states(_ctx, _contact_id, Admin::AdminContactVerificationObjectStates::get_all());
+        cancel_states(_ctx, _contact_id, get_all());
     }
 
     void cancel_final_states(LibFred::OperationContext& _ctx, unsigned long long _contact_id) {
-        cancel_states(_ctx, _contact_id, Admin::AdminContactVerificationObjectStates::get_final());
+        cancel_states(_ctx, _contact_id, get_final());
     }
 
     bool conditionally_cancel_final_states_legacy(
@@ -134,7 +136,7 @@ namespace AdminContactVerificationObjectStates
         } else {
             BOOST_FOREACH(
                 const std::string& object_state,
-                Admin::AdminContactVerificationObjectStates::get_final()
+                get_final()
             ) {
                 LibFred::cancel_object_state_request(contact_id, object_state);
             }
@@ -178,7 +180,7 @@ namespace AdminContactVerificationObjectStates
             return false;
 
         } else {
-            const std::vector<std::string> final_states = Admin::AdminContactVerificationObjectStates::get_final();
+            const std::vector<std::string> final_states = get_final();
             try {
                 LibFred::CancelObjectStateRequestId(
                     contact_id,
@@ -195,6 +197,9 @@ namespace AdminContactVerificationObjectStates
             return true;
         }
     }
-}
-}
-
+} // namspace Fred::Backend::Admin::Contact::Verification::ContactStates
+} // namspace Fred::Backend::Admin::Contact::Verification
+} // namspace Fred::Backend::Admin::Contact
+} // namspace Fred::Backend::Admin
+} // namspace Fred::Backend
+} // namspace Fred

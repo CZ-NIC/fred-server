@@ -12,8 +12,6 @@
 #include <stdexcept>
 #include <string>
 
-#include <boost/shared_ptr.hpp>
-
 #define LANG_EN 0
 #define LANG_CS 1
 #define CMD_OK 1000 // OK command to the commit transaction

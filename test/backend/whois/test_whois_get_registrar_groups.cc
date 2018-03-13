@@ -14,8 +14,8 @@ struct get_registrar_groups_fixture
 
     get_registrar_groups_fixture()
     {
-        ::LibFred::OperationContextCreator ctx;
-        fixture_groups = Whois::get_registrar_groups(ctx);
+        LibFred::OperationContextCreator ctx;
+        fixture_groups = Fred::Backend::Whois::get_registrar_groups(ctx);
         for(int i = 0; i < 5; ++i) //XXX
         {
             std::string name("test-group");
@@ -28,7 +28,7 @@ struct get_registrar_groups_fixture
                     Database::query_param_list(name));
             for (unsigned int y = 0; y < rdg.xuint() % 2 + 1; ++y)
             {
-                const ::LibFred::InfoRegistrarData& data = Test::registrar::make(ctx);
+                const LibFred::InfoRegistrarData& data = Test::registrar::make(ctx);
                 ctx.get_conn().exec_params(
                         "INSERT INTO registrar_group_map (registrar_id, registrar_group_id, member_from) "
                         "VALUES ($1::bigint, $2::bigint, now()::date) ",
@@ -43,10 +43,10 @@ struct get_registrar_groups_fixture
 
 BOOST_FIXTURE_TEST_CASE(get_registrar_groups, get_registrar_groups_fixture)
 {
-    std::vector<Registry::WhoisImpl::RegistrarGroup> group_vec = impl.get_registrar_groups();
+    std::vector<Fred::Backend::Whois::RegistrarGroup> group_vec = impl.get_registrar_groups();
     BOOST_CHECK(group_vec.size() == fixture_groups.size());
     std::map<std::string, std::vector<std::string> >::iterator f_gr_it;
-    BOOST_FOREACH(const Registry::WhoisImpl::RegistrarGroup& it, group_vec)
+    BOOST_FOREACH(const Fred::Backend::Whois::RegistrarGroup& it, group_vec)
     {
         f_gr_it = fixture_groups.find(it.name);
         BOOST_REQUIRE(f_gr_it != fixture_groups.end());

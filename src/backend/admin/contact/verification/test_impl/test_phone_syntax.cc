@@ -33,30 +33,45 @@
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/regex.hpp>
 
+namespace Fred {
+namespace Backend {
 namespace Admin {
-namespace ContactVerification {
+namespace Contact {
+namespace Verification {
 
-    FACTORY_MODULE_INIT_DEFI(TestPhoneSyntax_init)
+FACTORY_MODULE_INIT_DEFI(TestPhoneSyntax_init)
 
-    Test::TestRunResult TestPhoneSyntax::run(unsigned long long _history_id) const {
-        TestDataProvider<TestPhoneSyntax> data;
-        data.init_data(_history_id);
+Test::TestRunResult TestPhoneSyntax::run(unsigned long long _history_id) const
+{
+    TestDataProvider<TestPhoneSyntax> data;
+    data.init_data(_history_id);
 
-        std::string trimmed_telephone =  boost::algorithm::trim_copy(static_cast<std::string>(data.phone_));
+    std::string trimmed_telephone =  boost::algorithm::trim_copy(static_cast<std::string>(data.phone_));
 
-        if(trimmed_telephone.empty()) {
-            return TestRunResult(LibFred::ContactTestStatus::SKIPPED, std::string("optional telephone is empty") );
-        }
+    if (trimmed_telephone.empty())
+    {
+        return TestRunResult(
+                LibFred::ContactTestStatus::SKIPPED,
+                std::string("optional telephone is empty"));
+    }
 
-        if ( boost::regex_match(
+    if (boost::regex_match(
                 // if Nullable is NULL then this casts returns empty string
                 trimmed_telephone,
-                PHONE_PATTERN )
-        ) {
-            return TestRunResult(LibFred::ContactTestStatus::OK );
-        }
-
-        return TestRunResult(LibFred::ContactTestStatus::FAIL, std::string("invalid phone format") );
+                PHONE_PATTERN)
+        )
+    {
+        return TestRunResult(LibFred::ContactTestStatus::OK);
     }
+
+    return TestRunResult(
+            LibFred::ContactTestStatus::FAIL,
+            std::string("invalid phone format"));
 }
-}
+
+
+} // namespace Fred::Backend::Admin::Contact::Verification
+} // namespace Fred::Backend::Admin::Contact
+} // namespace Fred::Backend::Admin
+} // namespace Fred::Backend
+} // namespace Fred
