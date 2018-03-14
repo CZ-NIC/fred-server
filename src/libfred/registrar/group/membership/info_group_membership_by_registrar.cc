@@ -4,15 +4,15 @@
 namespace LibFred {
 namespace Registrar {
 
-std::vector<GroupMembershipByRegistrar> InfoGroupMembershipByRegistrar::exec(OperationContext& ctx)
+std::vector<GroupMembershipByRegistrar> InfoGroupMembershipByRegistrar::exec(OperationContext& _ctx)
 {
     try
     {
-        Database::Result membership = ctx.get_conn().exec_params(
+        const Database::Result membership = _ctx.get_conn().exec_params(
               "SELECT id, registrar_group_id, member_from, member_until "
               "FROM registrar_group_map WHERE registrar_id=$1::bigint "
               "ORDER BY member_from DESC, id DESC",
-              Database::query_param_list(registrar_id));
+              Database::query_param_list(registrar_id_));
         std::vector<GroupMembershipByRegistrar> result;
         result.reserve(membership.size());
         for (Database::Result::Iterator it = membership.begin(); it != membership.end(); ++it)
@@ -35,7 +35,7 @@ std::vector<GroupMembershipByRegistrar> InfoGroupMembershipByRegistrar::exec(Ope
     }
     catch (...)
     {
-        LOGGER(PACKAGE).info("Unknown error");
+        LOGGER(PACKAGE).info("Failed to get info group membership by registrar due to an unknown exception");
         throw;
     }
 }

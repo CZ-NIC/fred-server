@@ -417,32 +417,29 @@ public:
   virtual CertificationSeq getRegistrarCertifications(const TID _registrar_id) = 0;
 
   ///create membership of registrar in group
-  virtual unsigned long long createRegistrarGroupMembership( const TID& registrar_id
-      , const TID& registrar_group_id
-      , const Database::Date &member_from
-      , const Database::Date &member_until) =0;
-  ///create membership of registrar in group
-  virtual unsigned long long createRegistrarGroupMembership( const std::string& registrar_handle
-      , const std::string& registrar_group
-      , const Database::Date &member_from
-      , const Database::Date &member_until) =0;
+  virtual unsigned long long createRegistrarGroupMembership(TID _registrar_id,
+        TID _registrar_group_id,
+        const Database::Date& _member_from,
+        const Database::Date& _member_until) =0;
 
-  ///update membership of registrar in group
-  virtual void updateRegistrarGroupMembership( const TID& mebership_id
-      , const TID& registrar_id
-      , const TID& registrar_group_id
-      , const Database::Date &member_from
-      , const Database::Date &member_until) =0;
+  ///create membership of registrar in group
+  virtual unsigned long long createRegistrarGroupMembership(const std::string& _registrar_handle,
+        const std::string& _registrar_group,
+        const Database::Date& _member_from,
+        const Database::Date& _member_until) =0;
+
   ///end of registrar membership in group
-  virtual void endRegistrarGroupMembership(const TID& registrar_id
-      , const TID& registrar_group_id) =0;
+  virtual void endRegistrarGroupMembership(TID _registrar_id,
+      TID _registrar_group_id) =0;
 
   ///get registrar groups
   virtual GroupSeq getRegistrarGroups() = 0;
+
   ///get membership by registrar
-  virtual MembershipByRegistrarSeq getMembershipByRegistrar( const TID& registrar_id) =0;
+  virtual MembershipByRegistrarSeq getMembershipByRegistrar(TID _registrar_id) =0;
+
   ///get membership by groups
-  virtual MembershipByGroupSeq getMembershipByGroup( const TID& group_id) =0;
+  virtual MembershipByGroupSeq getMembershipByGroup(TID _group_id) =0;
 
   virtual bool blockRegistrar(const TID &registrar_id, const EppCorbaClient *epp_cli) = 0;
   virtual void unblockRegistrar(const TID &registrar_id, const TID &request_id) = 0;

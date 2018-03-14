@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016  CZ.NIC, z.s.p.o.
+ * Copyright (C) 2018  CZ.NIC, z.s.p.o.
  *
  * This file is part of FRED.
  *
@@ -45,7 +45,7 @@ struct test_membership_by_registrar_fixture : virtual public Test::instantiate_d
         RandomDataGenerator rdg;
         for (int i = 0; i < 5; ++i)
         {
-            unsigned long long group_id =
+            const unsigned long long group_id =
                 LibFred::Registrar::CreateRegistrarGroup(std::string("test_reg_grp_") + rdg.xnumstring(6)).exec(ctx);
             mem_map[LibFred::Registrar::CreateRegistrarGroupMembership(reg.id, group_id, today).exec(ctx)] = group_id;
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016  CZ.NIC, z.s.p.o.
+ * Copyright (C) 2018  CZ.NIC, z.s.p.o.
  *
  * This file is part of FRED.
  *
@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE(end_group_membership)
 {
     LibFred::OperationContextCreator ctx;
     LibFred::Registrar::EndRegistrarGroupMembership(reg.id, group_id).exec(ctx);
-    Database::Result result = ctx.get_conn().exec_params(
+    const Database::Result result = ctx.get_conn().exec_params(
             "SELECT registrar_id, registrar_group_id, member_from, member_until "
             "FROM registrar_group_map "
             "WHERE id = $1::bigint",

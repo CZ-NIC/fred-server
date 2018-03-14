@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016  CZ.NIC, z.s.p.o.
+ * Copyright (C) 2018  CZ.NIC, z.s.p.o.
  *
  * This file is part of FRED.
  *
@@ -44,7 +44,7 @@ struct test_membership_by_group_fixture : virtual public Test::instantiate_db_te
         group_id = LibFred::Registrar::CreateRegistrarGroup("test_reg_grp").exec(ctx);
         for (int i = 0; i < 5; ++i)
         {
-            LibFred::InfoRegistrarData reg = Test::registrar::make(ctx);
+            const LibFred::InfoRegistrarData reg = Test::registrar::make(ctx);
             mem_map[LibFred::Registrar::CreateRegistrarGroupMembership(reg.id, group_id, today).exec(ctx)] = reg;
         }
         LibFred::Registrar::CreateRegistrarGroupMembership(

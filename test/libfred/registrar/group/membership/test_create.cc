@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016  CZ.NIC, z.s.p.o.
+ * Copyright (C) 2018  CZ.NIC, z.s.p.o.
  *
  * This file is part of FRED.
  *
@@ -52,9 +52,9 @@ BOOST_FIXTURE_TEST_SUITE(TestCreateRegistrarGroupMembership, test_create_members
 BOOST_AUTO_TEST_CASE(create_group_membership)
 {
     LibFred::OperationContextCreator ctx;
-    unsigned long long mem_id =
+    const unsigned long long mem_id =
         LibFred::Registrar::CreateRegistrarGroupMembership(reg.id, group_id, today, today).exec(ctx);
-    Database::Result result = ctx.get_conn().exec_params(
+    const Database::Result result = ctx.get_conn().exec_params(
             "SELECT registrar_id, registrar_group_id, member_from, member_until "
             "FROM registrar_group_map "
             "WHERE id = $1::bigint",
@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE(create_group_membership)
 BOOST_AUTO_TEST_CASE(inifite_membership_cut)
 {
     LibFred::OperationContextCreator ctx;
-    unsigned long long mem_id1 = LibFred::Registrar::CreateRegistrarGroupMembership(
+    const unsigned long long mem_id1 = LibFred::Registrar::CreateRegistrarGroupMembership(
             reg.id,
             group_id,
             today)
@@ -86,8 +86,8 @@ BOOST_AUTO_TEST_CASE(inifite_membership_cut)
             from_string(result1[0][2]));
     BOOST_CHECK(static_cast<std::string>(result1[0][3]).empty());
 
-    date tomorrow = today + date_duration(1);
-    unsigned long long mem_id2 =
+    const date tomorrow = today + date_duration(1);
+    const unsigned long long mem_id2 =
         LibFred::Registrar::CreateRegistrarGroupMembership(reg.id, group_id, tomorrow).exec(ctx);
 
     result1 = ctx.get_conn().exec_params(query, Database::query_param_list(mem_id1));
@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE(inifite_membership_cut)
     BOOST_CHECK(today == from_string(result1[0][2]));
     BOOST_CHECK(today == from_string(result1[0][2]));
 
-    Database::Result result2 =
+    const Database::Result result2 =
         ctx.get_conn().exec_params(query, Database::query_param_list(mem_id2));
     BOOST_CHECK(reg.id == static_cast<unsigned long long>(result2[0][0]));
     BOOST_CHECK(group_id == static_cast<unsigned long long>(result2[0][1]));
