@@ -332,9 +332,19 @@ void unwrap_ContactChange(const ccReg::ContactChange& src, Epp::Contact::Contact
 {
     dst.name = convert_contact_update_or_delete_string(src.Name);
     dst.organization = convert_contact_update_or_delete_string(src.Organization);
-    for (unsigned idx = 0; idx < src.Streets.length(); ++idx)
+    const bool street_change_requested = 0 < src.Streets.length();
+    if (street_change_requested)
     {
-        dst.streets.push_back(convert_contact_update_or_delete_string(src.Streets[idx]));
+        dst.streets = std::vector<std::string>();
+        dst.streets->reserve(src.Streets.length());
+        for (unsigned idx = 0; idx < src.Streets.length(); ++idx)
+        {
+            dst.streets->push_back(Corba::unwrap_string(src.Streets[idx]));
+        }
+    }
+    else
+    {
+        dst.streets = boost::none;
     }
     dst.city = convert_contact_update_or_delete_string(src.City);
     dst.state_or_province = convert_contact_update_or_delete_string(src.StateOrProvince);

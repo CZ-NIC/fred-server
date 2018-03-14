@@ -176,11 +176,11 @@ struct DefaultUpdateContactInputData : ::Epp::Contact::ContactChange
     {
         name = "Jan Novák";
         organization = "Firma, a. s.";
-        streets.clear();
-        streets.reserve(3);
-        streets.push_back(Nullable<std::string>("Václavské náměstí 1"));
-        streets.push_back(Nullable<std::string>("53. patro"));
-        streets.push_back(Nullable<std::string>("vpravo"));
+        streets = std::vector<std::string>();
+        streets->reserve(3);
+        streets->push_back("Václavské náměstí 1");
+        streets->push_back("53. patro");
+        streets->push_back("vpravo");
         city = "Brno";
         state_or_province = "Morava";
         postal_code = "20000";

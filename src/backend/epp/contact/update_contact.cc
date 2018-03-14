@@ -146,38 +146,37 @@ bool has_data_changed(
 }
 
 
-bool has_streets_changed(
-        const std::vector<boost::optional<Nullable<std::string> > >& change,
-        const LibFred::Contact::PlaceAddress& current_value)
+bool has_streets(const boost::optional<std::vector<std::string>>& change)
 {
-    switch (change.size())
+    return change != boost::none;
+}
+
+
+bool has_streets_changed(const boost::optional<std::vector<std::string>>& change,
+                         const LibFred::Contact::PlaceAddress& current_value)
+{
+    if (!has_streets(change))
+    {
+        return false;
+    }
+    switch (change->size())
     {
         case 0:
-            return false;
-
+            return !(current_value.street1.empty() &&
+                     current_value.street2.get_value_or_default().empty() &&
+                     current_value.street3.get_value_or_default().empty());
         case 1:
-            return has_data_changed(
-                change[0],
-                current_value.street1);
-
+            return !((current_value.street1 == (*change)[0]) &&
+                     current_value.street2.get_value_or_default().empty() &&
+                     current_value.street3.get_value_or_default().empty());
         case 2:
-            return has_data_changed(
-                change[0],
-                current_value.street1) ||
-                   has_data_changed(
-                change[1],
-                current_value.street2);
-
+            return !((current_value.street1 == (*change)[0]) &&
+                     (current_value.street2.get_value_or_default() == (*change)[1]) &&
+                     current_value.street3.get_value_or_default().empty());
         case 3:
-            return has_data_changed(
-                change[0],
-                current_value.street1) ||
-                   has_data_changed(
-                change[1],
-                current_value.street2) ||
-                   has_data_changed(
-                change[2],
-                current_value.street3);
+            return !((current_value.street1 == (*change)[0]) &&
+                     (current_value.street2.get_value_or_default() == (*change)[1]) &&
+                     (current_value.street3.get_value_or_default() == (*change)[2]));
     }
     throw std::runtime_error("Too many streets.");
 }
@@ -195,32 +194,8 @@ bool has_data(const boost::optional<std::string>& change)
 }
 
 
-bool has_streets(const std::vector<boost::optional<Nullable<std::string> > >& change)
-{
-    bool result = false;
-    switch (change.size())
-    {
-        case 3:
-            result |= has_data(change[2]);
-
-        case 2:
-            result |= has_data(change[1]);
-
-        case 1:
-            result |= has_data(change[0]);
-
-        case 0:
-            return result;
-
-        default:
-            throw std::runtime_error("Too many streets.");
-    }
-}
-
-
-bool has_place_changed(
-        const ContactChange& changed_data,
-        const Nullable<LibFred::Contact::PlaceAddress>& current_place)
+bool has_place_changed(const ContactChange& changed_data,
+                       const Nullable<LibFred::Contact::PlaceAddress>& current_place)
 {
     if (current_place.isnull())
     {
@@ -760,28 +735,13 @@ unsigned long long update_contact(
                     contact_data_before_update.place))
         {
             LibFred::Contact::PlaceAddress new_place;
-            switch (trimmed_change.streets.size())
+            switch (trimmed_change.streets->size())
             {
-                case 3:
-                    set_data(
-                        trimmed_change.streets[2],
-                        new_place.street3);
-
-                case 2:
-                    set_data(
-                        trimmed_change.streets[1],
-                        new_place.street2);
-
-                case 1:
-                    set_data(
-                        trimmed_change.streets[0],
-                        new_place.street1);
-
-                case 0:
-                    break;
-
-                default:
-                    throw std::runtime_error("Too many streets.");
+                case 3: new_place.street3 = (*trimmed_change.streets)[2];
+                case 2: new_place.street2 = (*trimmed_change.streets)[1];
+                case 1: new_place.street1 = (*trimmed_change.streets)[0];
+                case 0: break;
+                default: throw std::runtime_error("Too many streets.");
             }
             set_data(
                     trimmed_change.city,

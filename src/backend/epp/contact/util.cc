@@ -24,8 +24,10 @@
 #include "src/util/db/nullable.hh"
 
 #include <string>
+#include <vector>
 
 #include <boost/algorithm/string/trim.hpp>
+#include <boost/optional.hpp>
 #include <boost/variant.hpp>
 
 namespace Epp {
@@ -117,20 +119,27 @@ boost::optional< boost::optional<ContactIdent> > trim(const boost::optional< boo
     return trim(*src);
 }
 
-template <typename T>
-std::vector<T> trim(const std::vector<T>& src)
+template <>
+std::vector<std::string> trim(const std::vector<std::string>& src)
 {
-    std::vector<T> result;
+    std::vector<std::string> result;
     result.reserve(src.size());
-    for (typename std::vector<T>::const_iterator data_ptr = src.begin(); data_ptr != src.end(); ++data_ptr)
+    for (typename std::vector<std::string>::const_iterator data_ptr = src.begin(); data_ptr != src.end(); ++data_ptr)
     {
         result.push_back(trim(*data_ptr));
     }
     return result;
 }
 
-template std::vector<std::string> trim(const std::vector<std::string>&);
-template std::vector< boost::optional< Nullable<std::string> > > trim(const std::vector< boost::optional< Nullable<std::string> > >&);
+template <>
+boost::optional<std::vector<std::string>> trim(const boost::optional<std::vector<std::string>>& src)
+{
+    if (src == boost::none)
+    {
+        return src;
+    }
+    return trim(*src);
+}
 
 } // namespace Epp::Contact
 } // namespace Epp
