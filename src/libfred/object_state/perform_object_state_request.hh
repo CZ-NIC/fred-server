@@ -25,6 +25,8 @@
 #define PERFORM_OBJECT_STATE_REQUEST_HH_2CFAD473CF7E4138AE10AF167D322FB1
 
 #include "src/libfred/opexception.hh"
+#include "src/libfred/opcontext.hh"
+#include "src/util/optional_value.hh"
 
 namespace LibFred
 {

@@ -18,6 +18,7 @@
 
 #include "create_expired_domain.hh"
 
+#include "src/libfred/object_state/perform_object_state_request.hh"
 #include "src/libfred/opcontext.hh"
 #include "src/libfred/registrable_object/domain/create_domain.hh"
 #include "src/libfred/registrable_object/domain/delete_domain.hh"
@@ -104,6 +105,7 @@ create_expired_domain(
         msg % e.what();
         throw std::runtime_error(msg.str());
     }
+    LibFred::PerformObjectStateRequest(result.create_object_result.object_id).exec(ctx);
     ctx.commit_transaction();
     logger_create_expired_domain_close(_logger_client, "Success", req_id, existing_domain_id, result.create_object_result.object_id);
 }
