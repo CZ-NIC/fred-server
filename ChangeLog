@@ -1,3 +1,11 @@
+2018-04-14 (2.36.0)
+
+  * switch to new common date/time and buffer data types in idl
+
+  * fix - record statement internal server error for not registered objects
+
+  * fix - epp contact update - deletion of street(s) in permanent address
+
 2018-03-01 (2.35.0)
 
   * adapt to mail_archive changes (columns message_params, mail_type_id)
