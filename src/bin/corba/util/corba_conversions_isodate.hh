@@ -50,17 +50,13 @@ Registry::IsoDate
 wrap_boost_gregorian_date_to_IsoDate(
         const boost::gregorian::date& src);
 
-Registry::NullableIsoDate_var
-        wrap_Nullable_boost_gregorian_date_to_NullableIsoDate(
-        const Nullable<boost::gregorian::date>& src);
-
 void
 wrap_boost_gregorian_date_to_IsoDate(
         const boost::gregorian::date& src,
         Registry::IsoDate& dst);
 
 Registry::NullableIsoDate_var
-        wrap_Nullable_boost_gregorian_date_to_NullableIsoDate(
+wrap_Nullable_boost_gregorian_date_to_NullableIsoDate(
         const Nullable<boost::gregorian::date>& src);
 
 } // namespace CorbaConversion::Util

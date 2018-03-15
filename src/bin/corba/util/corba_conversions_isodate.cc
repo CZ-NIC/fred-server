@@ -32,7 +32,7 @@ boost::gregorian::date
 unwrap_IsoDate_to_boost_gregorian_date(
         const Registry::IsoDate src)
 {
-    return boost::gregorian::date_from_iso_string(src.value.in());
+    return boost::gregorian::from_simple_string(src.value.in());
 }
 
 void

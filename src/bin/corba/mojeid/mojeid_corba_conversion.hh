@@ -42,12 +42,12 @@ void unwrap_NullableString(
 Registry::MojeID::NullableString_var wrap_Nullable_string(const Nullable<std::string>& src);
 
 
-void unwrap_Date(
+void unwrap_Date_to_Birthdate(
         const Registry::IsoDate& src,
         Fred::Backend::MojeIdImplData::Birthdate& dst);
 
 
-void unwrap_NullableIsoDate(
+void unwrap_NullableIsoDate_to_Birthdate(
         const Registry::NullableIsoDate* src_ptr,
         Nullable<Fred::Backend::MojeIdImplData::Birthdate>& dst);
 
