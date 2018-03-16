@@ -53,8 +53,14 @@ create_expired_domain(
         throw std::runtime_error("unable to log create expired domain request");
     }
 
-    const LibFred::InfoRegistrarData session_registrar =
-            LibFred::InfoRegistrarByHandle(_registrar).exec(ctx).info_registrar_data;
+    LibFred::InfoRegistrarData session_registrar;
+    try {
+        session_registrar = LibFred::InfoRegistrarByHandle(_registrar).exec(ctx).info_registrar_data;
+    }
+    catch (const LibFred::OperationException& e)
+    {
+        throw SystemRegistrarNotExists();
+    }
 
     const bool is_system_registrar = session_registrar.system.get_value();
 
