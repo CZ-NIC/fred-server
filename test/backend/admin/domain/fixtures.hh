@@ -93,6 +93,26 @@ struct ExistingDomain : Fqdn
     }
 };
 
+struct NonexistentRegistrar
+{
+    const std::string handle;
+
+    NonexistentRegistrar():
+        handle("NonexistentRegistrar")
+    {
+    }
+};
+
+struct NoSystemRegistrar
+{
+    const std::string handle;
+
+    NoSystemRegistrar():
+        handle("REG-FRED_A")
+    {
+    }
+};
+
 struct SystemRegistrar
 {
     const std::string handle;
@@ -103,6 +123,34 @@ struct SystemRegistrar
     }
 };
 
+struct HasNonexistentRegistrar{
+    NonexistentRegistrar registrar;
+    NoExistingDomain domain;
+    bool delete_existing;
+    const std::string registrant;
+    const std::string cltrid;
+    HasNonexistentRegistrar() :
+        domain("noexistingdomain1.cz"),
+        delete_existing(true),
+        registrant("KONTAKT"),
+        cltrid("cltrid")
+    {
+    }
+};
+struct HasNoSystemRegistrar {
+    NoSystemRegistrar registrar;
+    NoExistingDomain domain;
+    bool delete_existing;
+    const std::string registrant;
+    const std::string cltrid;
+    HasNoSystemRegistrar() :
+        domain("noexistingdomain1.cz"),
+        delete_existing(true),
+        registrant("KONTAKT"),
+        cltrid("cltrid")
+    {
+    }
+};
 struct HasNoExistingDomain {
     SystemRegistrar registrar;
     NoExistingDomain domain;

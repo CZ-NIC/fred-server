@@ -52,6 +52,22 @@ size_t exists_new_expired_domain(const std::string& _fqdn, const std::string& _r
     return db_result.size();
 }
 
+BOOST_FIXTURE_TEST_CASE(set_nonexistent_registrar, HasNonexistentRegistrar)
+{
+    BOOST_CHECK_THROW(
+           ::Admin::Domain::create_expired_domain(*get_logger(), domain.fqdn, registrant, cltrid, delete_existing, registrar.handle),
+           ::Admin::Domain::SystemRegistrarNotExists
+   );
+}
+
+BOOST_FIXTURE_TEST_CASE(set_nosystem_registrar, HasNoSystemRegistrar)
+{
+    BOOST_CHECK_THROW(
+           ::Admin::Domain::create_expired_domain(*get_logger(), domain.fqdn, registrant, cltrid, delete_existing, registrar.handle),
+           ::Admin::Domain::NotSystemRegistrar
+   );
+}
+
 BOOST_FIXTURE_TEST_CASE(set_no_delete_existing_domain, HasNoDeleteExistingDomain)
 {
     BOOST_CHECK_THROW(

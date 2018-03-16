@@ -66,6 +66,7 @@ create_expired_domain(
 
     if (!is_system_registrar)
     {
+        logger_create_expired_domain_close(_logger_client, "Fail", req_id, boost::none, boost::none);
         throw NotSystemRegistrar();
     }
 
