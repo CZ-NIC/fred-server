@@ -148,7 +148,7 @@ bool has_data_changed(
 
 bool has_streets(const boost::optional<std::vector<std::string>>& change)
 {
-    return change != boost::none;
+    return ContactChange::does_value_mean<ContactChange::Value::to_set>(change);
 }
 
 
@@ -735,13 +735,17 @@ unsigned long long update_contact(
                     contact_data_before_update.place))
         {
             LibFred::Contact::PlaceAddress new_place;
-            switch (trimmed_change.streets->size())
+            if (ContactChange::does_value_mean<ContactChange::Value::to_set>(trimmed_change.streets))
             {
-                case 3: new_place.street3 = (*trimmed_change.streets)[2];
-                case 2: new_place.street2 = (*trimmed_change.streets)[1];
-                case 1: new_place.street1 = (*trimmed_change.streets)[0];
-                case 0: break;
-                default: throw std::runtime_error("Too many streets.");
+                const auto streets = ContactChange::get_value(trimmed_change.streets);
+                switch (streets.size())
+                {
+                    case 3: new_place.street3 = streets[2];
+                    case 2: new_place.street2 = streets[1];
+                    case 1: new_place.street1 = streets[0];
+                    case 0: break;
+                    default: throw std::runtime_error("Too many streets.");
+                }
             }
             set_data(
                     trimmed_change.city,
