@@ -78,12 +78,12 @@ Registry::MojeID::NullableString_var wrap_Nullable_string(const Nullable<std::st
                                   new Registry::MojeID::NullableString(src.get_value().c_str()));
 }
 
-void unwrap_Date(const Registry::IsoDate& src, Fred::Backend::MojeIdImplData::Birthdate& dst)
+void unwrap_Date_to_Birthdate(const Registry::IsoDate& src, Fred::Backend::MojeIdImplData::Birthdate& dst)
 {
     dst.value = src.value.in();
 }
 
-void unwrap_NullableIsoDate(const Registry::NullableIsoDate* src_ptr, Nullable<Fred::Backend::MojeIdImplData::Birthdate>& dst)
+void unwrap_NullableIsoDate_to_Birthdate(const Registry::NullableIsoDate* src_ptr, Nullable<Fred::Backend::MojeIdImplData::Birthdate>& dst)
 {
     if (src_ptr == NULL)
     {
@@ -92,7 +92,7 @@ void unwrap_NullableIsoDate(const Registry::NullableIsoDate* src_ptr, Nullable<F
     else
     {
         Fred::Backend::MojeIdImplData::Birthdate result;
-        unwrap_Date(src_ptr->_boxed_in(), result);
+        unwrap_Date_to_Birthdate(src_ptr->_boxed_in(), result);
         dst = result;
     }
 }
@@ -357,7 +357,7 @@ void unwrap_CreateContact(const Registry::MojeID::CreateContact& src, Fred::Back
     unwrap_NullableString(src.organization.in(), dst.organization);
     unwrap_NullableString(src.vat_reg_num.in(), dst.vat_reg_num);
 
-    unwrap_NullableIsoDate(src.birth_date.in(), dst.birth_date);
+    unwrap_NullableIsoDate_to_Birthdate(src.birth_date.in(), dst.birth_date);
 
     unwrap_NullableString_fix_frontend_bug(src.id_card_num.in(), dst.id_card_num);
     unwrap_NullableString_fix_frontend_bug(src.passport_num.in(), dst.passport_num);
@@ -389,7 +389,7 @@ void unwrap_UpdateTransferContact(const Registry::MojeID::UpdateTransferContact&
     unwrap_NullableString(src.organization.in(), dst.organization);
     unwrap_NullableString(src.vat_reg_num.in(), dst.vat_reg_num);
 
-    unwrap_NullableIsoDate(src.birth_date.in(), dst.birth_date);
+    unwrap_NullableIsoDate_to_Birthdate(src.birth_date.in(), dst.birth_date);
 
     unwrap_NullableString_fix_frontend_bug(src.vat_id_num.in(), dst.vat_id_num);
 
@@ -414,7 +414,7 @@ void unwrap_UpdateContact(const Registry::MojeID::UpdateContact& src, Fred::Back
     unwrap_NullableString(src.organization.in(), dst.organization);
     unwrap_NullableString(src.vat_reg_num.in(), dst.vat_reg_num);
 
-    unwrap_NullableIsoDate(src.birth_date.in(), dst.birth_date);
+    unwrap_NullableIsoDate_to_Birthdate(src.birth_date.in(), dst.birth_date);
 
     unwrap_NullableString_fix_frontend_bug(src.id_card_num.in(), dst.id_card_num);
     unwrap_NullableString_fix_frontend_bug(src.passport_num.in(), dst.passport_num);
