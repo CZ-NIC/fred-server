@@ -122,6 +122,16 @@ Buffer RecordStatementImpl::domain_printout(
         LibFred::OperationContextCreator ctx;
         return impl_->domain_printout(ctx, _fqdn, _purpose);
     }
+    catch (const ObjectDeleteCandidate& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw;
+    }
+    catch (const ObjectNotFound& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw;
+    }
     catch (const std::exception& e)
     {
         LOGGER(PACKAGE).error(e.what());
@@ -146,6 +156,16 @@ Buffer RecordStatementImpl::nsset_printout(
         LibFred::OperationContextCreator ctx;
         return impl_->nsset_printout(ctx, _handle);
     }
+    catch (const ObjectDeleteCandidate& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw;
+    }
+    catch (const ObjectNotFound& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw;
+    }
     catch (const std::exception& e)
     {
         LOGGER(PACKAGE).error(e.what());
@@ -166,6 +186,16 @@ Buffer RecordStatementImpl::keyset_printout(
     {
         LibFred::OperationContextCreator ctx;
         return impl_->keyset_printout(ctx, _handle);
+    }
+    catch (const ObjectDeleteCandidate& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw;
+    }
+    catch (const ObjectNotFound& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw;
     }
     catch (const std::exception& e)
     {
@@ -188,6 +218,16 @@ Buffer RecordStatementImpl::contact_printout(
     {
         LibFred::OperationContextCreator ctx;
         return impl_->contact_printout(ctx, _handle, _purpose);
+    }
+    catch (const ObjectDeleteCandidate& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw;
+    }
+    catch (const ObjectNotFound& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw;
     }
     catch (const std::exception& e)
     {
@@ -214,6 +254,11 @@ Buffer RecordStatementImpl::historic_domain_printout(
         LibFred::OperationContextCreator ctx;
         return impl_->historic_domain_printout(ctx, _fqdn, _valid_at);
     }
+    catch (const ObjectNotFound& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw;
+    }
     catch (const std::exception& e)
     {
         LOGGER(PACKAGE).error(e.what());
@@ -235,6 +280,11 @@ Buffer RecordStatementImpl::historic_nsset_printout(
     {
         LibFred::OperationContextCreator ctx;
         return impl_->historic_nsset_printout(ctx, _handle, _valid_at);
+    }
+    catch (const ObjectNotFound& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw;
     }
     catch (const std::exception& e)
     {
@@ -258,6 +308,11 @@ Buffer RecordStatementImpl::historic_keyset_printout(
         LibFred::OperationContextCreator ctx;
         return impl_->historic_keyset_printout(ctx, _handle, _valid_at);
     }
+    catch (const ObjectNotFound& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw;
+    }
     catch (const std::exception& e)
     {
         LOGGER(PACKAGE).error(e.what());
@@ -280,6 +335,11 @@ Buffer RecordStatementImpl::historic_contact_printout(
         LibFred::OperationContextCreator ctx;
         return impl_->historic_contact_printout(ctx, _handle, _valid_at);
     }
+    catch (const ObjectNotFound& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw;
+    }
     catch (const std::exception& e)
     {
         LOGGER(PACKAGE).error(e.what());
@@ -301,6 +361,16 @@ void RecordStatementImpl::send_domain_printout(
     {
         LibFred::OperationContextCreator ctx;
         impl_->send_domain_printout(ctx, _fqdn, _purpose);
+    }
+    catch (const ObjectDeleteCandidate& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw;
+    }
+    catch (const ObjectNotFound& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw;
     }
     catch (const std::exception& e)
     {
@@ -326,6 +396,16 @@ void RecordStatementImpl::send_nsset_printout(
         LibFred::OperationContextCreator ctx;
         impl_->send_nsset_printout(ctx, _handle);
     }
+    catch (const ObjectDeleteCandidate& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw;
+    }
+    catch (const ObjectNotFound& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw;
+    }
     catch (const std::exception& e)
     {
         LOGGER(PACKAGE).error(e.what());
@@ -346,6 +426,16 @@ void RecordStatementImpl::send_keyset_printout(
     {
         LibFred::OperationContextCreator ctx;
         impl_->send_keyset_printout(ctx, _handle);
+    }
+    catch (const ObjectDeleteCandidate& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw;
+    }
+    catch (const ObjectNotFound& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw;
     }
     catch (const std::exception& e)
     {
@@ -368,6 +458,16 @@ void RecordStatementImpl::send_contact_printout(
     {
         LibFred::OperationContextCreator ctx;
         impl_->send_contact_printout(ctx, _handle, _purpose);
+    }
+    catch (const ObjectDeleteCandidate& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw;
+    }
+    catch (const ObjectNotFound& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw;
     }
     catch (const std::exception& e)
     {
