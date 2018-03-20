@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_SUITE(TestAdminCreateExpiredDomain)
 
 size_t exists_new_expired_domain(const std::string& _fqdn, const std::string& _registrant)
 {
-    ::LibFred::OperationContextCreator ctx;
+    LibFred::OperationContextCreator ctx;
     const Database::Result db_result = ctx.get_conn().exec_params(
         "SELECT 1 FROM object_registry AS od "
             "LEFT JOIN domain AS d ON d.id = od.id "
@@ -46,7 +46,7 @@ size_t exists_new_expired_domain(const std::string& _fqdn, const std::string& _r
             "WHERE od.type = 3 "
                 "AND od.name = $1::varchar "
                 "AND od.erdate is null "
-                "AND oc.name = $2::varchar "
+                "AND oc.name = UPPER($2::varchar) "
                 "AND d.exdate = current_date ",
         Database::query_param_list(_fqdn)(_registrant));
     return db_result.size();
@@ -55,7 +55,7 @@ size_t exists_new_expired_domain(const std::string& _fqdn, const std::string& _r
 BOOST_FIXTURE_TEST_CASE(set_nonexistent_registrar, HasNonexistentRegistrar)
 {
     BOOST_CHECK_THROW(
-           ::Admin::Domain::create_expired_domain(*get_logger(), domain.fqdn, registrant, cltrid, delete_existing, registrar.handle),
+           ::Admin::Domain::create_expired_domain(*get_logger(), domain.fqdn, registrant.handle, cltrid, delete_existing, registrar.handle),
            ::Admin::Domain::SystemRegistrarNotExists
    );
 }
@@ -63,7 +63,7 @@ BOOST_FIXTURE_TEST_CASE(set_nonexistent_registrar, HasNonexistentRegistrar)
 BOOST_FIXTURE_TEST_CASE(set_nosystem_registrar, HasNoSystemRegistrar)
 {
     BOOST_CHECK_THROW(
-           ::Admin::Domain::create_expired_domain(*get_logger(), domain.fqdn, registrant, cltrid, delete_existing, registrar.handle),
+           ::Admin::Domain::create_expired_domain(*get_logger(), domain.fqdn, registrant.handle, cltrid, delete_existing, registrar.handle),
            ::Admin::Domain::NotSystemRegistrar
    );
 }
@@ -71,37 +71,37 @@ BOOST_FIXTURE_TEST_CASE(set_nosystem_registrar, HasNoSystemRegistrar)
 BOOST_FIXTURE_TEST_CASE(set_no_delete_existing_domain, HasNoDeleteExistingDomain)
 {
     BOOST_CHECK_THROW(
-           ::Admin::Domain::create_expired_domain(*get_logger(), domain.fqdn, registrant, cltrid, delete_existing, registrar.handle),
+           ::Admin::Domain::create_expired_domain(*get_logger(), domain.fqdn, registrant.handle, cltrid, delete_existing, registrar.handle),
            ::Admin::Domain::DomainExists
    );
 }
 
-BOOST_FIXTURE_TEST_CASE(set_no_existing_registrant, HasNoExistingRegistrant)
+BOOST_FIXTURE_TEST_CASE(set_no_existing_registrant, HasNonexistentRegistrant)
 {
     BOOST_CHECK_THROW(
-           ::Admin::Domain::create_expired_domain(*get_logger(), domain.fqdn, registrant, cltrid, delete_existing, registrar.handle),
+           ::Admin::Domain::create_expired_domain(*get_logger(), domain.fqdn, registrant.handle, cltrid, delete_existing, registrar.handle),
            ::Admin::Domain::RegistrantNotExists
    );
 }
 
-BOOST_FIXTURE_TEST_CASE(set_no_existing_domain, HasNoExistingDomain)
+BOOST_FIXTURE_TEST_CASE(set_no_existing_domain, HasNonexistentDomain)
 {
     BOOST_CHECK_THROW(
-           ::Admin::Domain::create_expired_domain(*get_logger(), domain.fqdn, registrant, cltrid, delete_existing, registrar.handle),
+           ::Admin::Domain::create_expired_domain(*get_logger(), domain.fqdn, registrant.handle, cltrid, delete_existing, registrar.handle),
            ::Admin::Domain::DomainNotExists
    );
 }
 
 BOOST_FIXTURE_TEST_CASE(set_existing_domain, HasExistingDomain)
 {
-   ::Admin::Domain::create_expired_domain(*get_logger(), domain.fqdn, registrant, cltrid, delete_existing, registrar.handle);
-   BOOST_CHECK_EQUAL(exists_new_expired_domain(domain.fqdn, registrant), 1);
+   ::Admin::Domain::create_expired_domain(*get_logger(), domain.fqdn, registrant.handle, cltrid, delete_existing, registrar.handle);
+   BOOST_CHECK_EQUAL(exists_new_expired_domain(domain.fqdn, registrant.handle), 1);
 }
 
-BOOST_FIXTURE_TEST_CASE(set_no_delete_no_existing_domain, HasNoDeleteNoExistingDomain)
+BOOST_FIXTURE_TEST_CASE(set_no_delete_no_existing_domain, HasNoDeleteNonexistentDomain)
 {
-   ::Admin::Domain::create_expired_domain(*get_logger(), domain.fqdn, registrant, cltrid, delete_existing, registrar.handle);
-   BOOST_CHECK_EQUAL(exists_new_expired_domain(domain.fqdn, registrant), 1);
+   ::Admin::Domain::create_expired_domain(*get_logger(), domain.fqdn, registrant.handle, cltrid, delete_existing, registrar.handle);
+   BOOST_CHECK_EQUAL(exists_new_expired_domain(domain.fqdn, registrant.handle), 1);
 }
 
 BOOST_AUTO_TEST_SUITE_END();
