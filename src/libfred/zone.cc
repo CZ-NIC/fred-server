@@ -33,7 +33,6 @@
 #include "src/libfred/model_zone.hh"
 #include "src/libfred/model_zone_ns.hh"
 #include "src/libfred/model_zone_soa.hh"
-#include "src/libfred/model_price_list.hh"
 
 #include "src/util/types/money.hh"
 
