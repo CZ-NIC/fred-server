@@ -18,21 +18,53 @@ enum MemberType {
 };
 
 class File:
-    public ModelFiles,
     virtual public LibFred::CommonObjectImplNew {
-private:
-    std::string m_typeDesc;
 public:
     File():
+        CommonObjectImplNew()
+    {
+    }
+    File(unsigned long long _id,
+            const std::string& _name,
+            const std::string& _path,
+            const std::string& _mimeType,
+            const Database::DateTime& _crDate,
+            int _filesize,
+            unsigned long long _fileTypeId,
+            const std::string& _fileTypeDesc):
         CommonObjectImplNew(),
-        ModelFiles()
-    { }
-    bool save();
-    void setFileTypeDesc(const std::string &desc);
-    const std::string &getFileTypeDesc() const;
+        id_(_id),
+        name_(_name),
+        path_(_path),
+        mimeType_(_mimeType),
+        crDate_(_crDate),
+        filesize_(_filesize),
+        fileTypeId_(_fileTypeId),
+        fileTypeDesc_(_fileTypeDesc)
+    {
+    }
+
+    unsigned long long getId() const;
+    const std::string& getName() const;
+    const std::string& getPath() const;
+    const std::string& getMimeType() const;
+    const Database::DateTime& getCrDate() const;
+    int getFilesize() const;
+    unsigned long long getFileTypeId() const;
+    const std::string& getFileTypeDesc() const;
+
+private:
+    unsigned long long id_;
+    std::string name_;
+    std::string path_;
+    std::string mimeType_;
+    Database::DateTime crDate_;
+    int filesize_;
+    unsigned long long fileTypeId_;
+    std::string fileTypeDesc_;
 };
 
-class List: 
+class List:
     virtual public LibFred::CommonListImplNew {
 public:
     void reload(Database::Filters::Union &filter);
