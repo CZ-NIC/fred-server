@@ -48,7 +48,7 @@ struct test_update_certification_fixture : virtual public Test::instantiate_db_t
                 "values ('update_file', "
                 "concat(to_char(current_timestamp, 'YYYY/fmMM/fmD'), '/', currval('files_id_seq'::regclass))::text, "
                 "0, 6) returning id;")[0][0];
-        certification_id = LibFred::CreateRegistrarCertification(test_registrar.id,
+        certification_id = LibFred::Registrar::CreateRegistrarCertification(test_registrar.id,
                 valid_from, valid_until, score, file_id)
             .exec(ctx);
         ctx.commit_transaction();
@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE(update_registrar_certification_date)
 {
     LibFred::OperationContextCreator ctx;
     valid_until -= boost::gregorian::date_duration(1);
-    LibFred::UpdateRegistrarCertification(certification_id, valid_until).exec(ctx);
+    LibFred::Registrar::UpdateRegistrarCertification(certification_id, valid_until).exec(ctx);
     Database::Result result = ctx.get_conn().exec_params(
             "select * from registrar_certification "
             "where id = $1::bigint",
@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE(update_registrar_certification_score_file)
 {
     LibFred::OperationContextCreator ctx;
     const int new_score = 2;
-    LibFred::UpdateRegistrarCertification(certification_id, new_score, file_id).exec(ctx);
+    LibFred::Registrar::UpdateRegistrarCertification(certification_id, new_score, file_id).exec(ctx);
     Database::Result result = ctx.get_conn().exec_params(
             "select * from registrar_certification "
             "where id = $1::bigint",
@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE(certification_in_past)
     LibFred::OperationContextCreator ctx;
     valid_until -= boost::gregorian::date_duration(3);
     BOOST_CHECK_THROW(
-        LibFred::UpdateRegistrarCertification(certification_id, valid_until).exec(ctx),
+        LibFred::Registrar::UpdateRegistrarCertification(certification_id, valid_until).exec(ctx),
         CertificationInPast);
     ctx.commit_transaction();
 }
@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE(certification_extension)
     LibFred::OperationContextCreator ctx;
     valid_until += boost::gregorian::date_duration(1);
     BOOST_CHECK_THROW(
-        LibFred::UpdateRegistrarCertification(certification_id, valid_until).exec(ctx),
+        LibFred::Registrar::UpdateRegistrarCertification(certification_id, valid_until).exec(ctx),
         CertificationExtension);
     ctx.commit_transaction();
 }
@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE(wrong_interval_order)
     LibFred::OperationContextCreator ctx;
     valid_until -= boost::gregorian::date_duration(2);
     BOOST_CHECK_THROW(
-        LibFred::UpdateRegistrarCertification(certification_id, valid_until).exec(ctx),
+        LibFred::Registrar::UpdateRegistrarCertification(certification_id, valid_until).exec(ctx),
         WrongIntervalOrder);
     ctx.commit_transaction();
 }
@@ -128,7 +128,7 @@ BOOST_AUTO_TEST_CASE(score_overcome)
     boost::gregorian::date valid_from(boost::gregorian::day_clock::local_day());
     boost::gregorian::date valid_until(valid_from + boost::gregorian::date_duration(1));
     BOOST_CHECK_THROW(
-        LibFred::UpdateRegistrarCertification(certification_id, score, file_id)
+        LibFred::Registrar::UpdateRegistrarCertification(certification_id, score, file_id)
             .exec(ctx),
         ScoreOutOfRange);
 }

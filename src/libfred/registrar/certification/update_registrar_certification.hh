@@ -21,46 +21,49 @@
  *  update registrar certification
  */
 
-#ifndef UPDATE_REGISTRAR_CERTIFICATION_H_
-#define UPDATE_REGISTRAR_CERTIFICATION_H_
+#ifndef UPDATE_REGISTRAR_CERTIFICATION_HH_4BE6201D6B1B476795A61FD9C4042041
+#define UPDATE_REGISTRAR_CERTIFICATION_HH_4BE6201D6B1B476795A61FD9C4042041
 
 #include "src/libfred/opcontext.hh"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace LibFred {
+namespace Registrar {
 
 class UpdateRegistrarCertification
 {
-private:
-    unsigned long long m_certification_id;
-    boost::gregorian::date m_valid_until;
-    int m_classification;
-    unsigned long long m_eval_file_id;
-    bool m_valid_until_set;
-
 public:
     UpdateRegistrarCertification(
             const unsigned long long _certification_id,
             const boost::gregorian::date _valid_until)
-    : m_certification_id(_certification_id),
-      m_valid_until(_valid_until),
-      m_valid_until_set(true)
+    : certification_id_(_certification_id),
+      valid_until_(_valid_until),
+      valid_until_set_(true)
     {}
 
     UpdateRegistrarCertification(
             const unsigned long long _certification_id,
             const int _classification,
             const unsigned long long _eval_file_id)
-    : m_certification_id(_certification_id),
-      m_classification(_classification),
-      m_eval_file_id(_eval_file_id),
-      m_valid_until_set(false)
+    : certification_id_(_certification_id),
+      classification_(_classification),
+      eval_file_id_(_eval_file_id),
+      valid_until_set_(false)
     {}
 
-    void exec(OperationContext& ctx);
-}; // UpdateRegistrarCertification
+    void exec(OperationContext& _ctx);
 
+private:
+    unsigned long long certification_id_;
+    boost::gregorian::date valid_until_;
+    int classification_;
+    unsigned long long eval_file_id_;
+    bool valid_until_set_;
+
+};
+
+} // namespace Registrar
 } // namespace Fred
 
-#endif // UPDATE_REGISTRAR_CERTIFICATION_H_
+#endif

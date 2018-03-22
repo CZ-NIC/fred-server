@@ -36,7 +36,7 @@ struct test_get_certifications_fixture : virtual public Test::instantiate_db_tem
 {
     LibFred::InfoRegistrarData test_registrar;
     unsigned int certifications_amount;
-    std::vector<LibFred::RegistrarCertification> reg_certs;
+    std::vector<LibFred::Registrar::RegistrarCertification> reg_certs;
 
     test_get_certifications_fixture()
     : certifications_amount(3)
@@ -49,13 +49,13 @@ struct test_get_certifications_fixture : virtual public Test::instantiate_db_tem
                 "CONCAT(TO_CHAR(current_timestamp, 'YYYY/fmMM/fmD'), '/', CURRVAL('files_id_seq'::regclass))::text, "
                 "0, 6) RETURNING id;")[0][0];
         int score = 1;
-        LibFred::RegistrarCertification rc;
+        LibFred::Registrar::RegistrarCertification rc;
         rc.valid_until = boost::gregorian::day_clock::local_day();
         for (int i = 0; i < certifications_amount; ++i)
         {
             rc.valid_from = rc.valid_until + boost::gregorian::date_duration(1);
             rc.valid_until = rc.valid_from + boost::gregorian::date_duration(1);
-            rc.id = LibFred::CreateRegistrarCertification(
+            rc.id = LibFred::Registrar::CreateRegistrarCertification(
                     test_registrar.id, rc.valid_from, rc.valid_until, score, file_id)
                 .exec(ctx);
             rc.classification = score++;
@@ -72,7 +72,7 @@ BOOST_FIXTURE_TEST_SUITE(TestGetRegistrarCertifications, test_get_certifications
 BOOST_AUTO_TEST_CASE(get_registrar_certifications)
 {
     LibFred::OperationContextCreator ctx;
-    std::vector<LibFred::RegistrarCertification> result = LibFred::GetRegistrarCertifications(test_registrar.id).exec(ctx);
+    std::vector<LibFred::Registrar::RegistrarCertification> result = LibFred::Registrar::GetRegistrarCertifications(test_registrar.id).exec(ctx);
 
     BOOST_CHECK(result.size() == certifications_amount);
     for (int i = 0; i < certifications_amount; ++i)
@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE(registrar_not_found)
     Database::Result reg_id = ctx.get_conn().exec(
             "select nextval('registrar_id_seq'::regclass)");
     BOOST_CHECK_THROW(
-        LibFred::GetRegistrarCertifications(static_cast<int>(reg_id[0][0]) + 1).exec(ctx),
+        LibFred::Registrar::GetRegistrarCertifications(static_cast<int>(reg_id[0][0]) + 1).exec(ctx),
         RegistrarNotFound);
 }
 

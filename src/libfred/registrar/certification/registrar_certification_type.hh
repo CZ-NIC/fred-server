@@ -21,12 +21,13 @@
  *  registrar certification type
  */
 
-#ifndef REGISTRAR_CERTIFICATION_H_
-#define REGISTRAR_CERTIFICATION_H_
+#ifndef REGISTRAR_CERTIFICATION_TYPE_HH_D0F08A06E53E4022B48B1AA559AE096A
+#define REGISTRAR_CERTIFICATION_TYPE_HH_D0F08A06E53E4022B48B1AA559AE096A
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 
 namespace LibFred {
+namespace Registrar {
 
 struct RegistrarCertification
 {
@@ -36,19 +37,16 @@ struct RegistrarCertification
     int classification;
     unsigned long long eval_file_id;
 
-    bool operator==(const RegistrarCertification& other) const
+    bool operator==(const RegistrarCertification& _other) const
     {
-        if (id == other.id &&
-            valid_from == other.valid_from &&
-            valid_until == other.valid_until &&
-            classification == other.classification &&
-            eval_file_id == other.eval_file_id)
-        {
-            return true;
-        }
-        return false;
+        return (id == _other.id &&
+            valid_from == _other.valid_from &&
+            valid_until == _other.valid_until &&
+            classification == _other.classification &&
+            eval_file_id == _other.eval_file_id);
     }
 };
 
-}
-#endif // REGISTRAR_CERTIFICATION_H_
+} // namespace Registrar
+} // namespace LibFred
+#endif

@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE(create_registrar_certification)
     boost::gregorian::date valid_from(boost::gregorian::day_clock::local_day());
     boost::gregorian::date valid_until(valid_from);
     score++;
-    unsigned long long id = LibFred::CreateRegistrarCertification(test_registrar.id,
+    unsigned long long id = LibFred::Registrar::CreateRegistrarCertification(test_registrar.id,
                 valid_from, valid_until, score, file_id)
             .exec(ctx);
     Database::Result result = ctx.get_conn().exec_params(
@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE(wrong_interval_order)
     boost::gregorian::date valid_until(valid_from - boost::gregorian::date_duration(1));
     score++;
     BOOST_CHECK_THROW(
-        LibFred::CreateRegistrarCertification(test_registrar.id, valid_from, valid_until, score, file_id)
+        LibFred::Registrar::CreateRegistrarCertification(test_registrar.id, valid_from, valid_until, score, file_id)
             .exec(ctx),
         WrongIntervalOrder);
 }
@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE(certification_in_past)
     boost::gregorian::date valid_until(valid_from);
     score++;
     BOOST_CHECK_THROW(
-        LibFred::CreateRegistrarCertification(test_registrar.id, valid_from, valid_until, score, file_id)
+        LibFred::Registrar::CreateRegistrarCertification(test_registrar.id, valid_from, valid_until, score, file_id)
             .exec(ctx),
         CertificationInPast);
 }
@@ -101,13 +101,13 @@ BOOST_AUTO_TEST_CASE(overlapping_range)
     boost::gregorian::date valid_from(boost::gregorian::day_clock::local_day());
     boost::gregorian::date valid_until(valid_from + boost::gregorian::date_duration(1));
     score++;
-    LibFred::CreateRegistrarCertification(test_registrar.id, valid_from, valid_until, score, file_id)
+    LibFred::Registrar::CreateRegistrarCertification(test_registrar.id, valid_from, valid_until, score, file_id)
             .exec(ctx);
 
     valid_from = valid_until;
     valid_until += boost::gregorian::date_duration(1);
     BOOST_CHECK_THROW(
-        LibFred::CreateRegistrarCertification(test_registrar.id, valid_from, valid_until, score, file_id)
+        LibFred::Registrar::CreateRegistrarCertification(test_registrar.id, valid_from, valid_until, score, file_id)
             .exec(ctx),
         OverlappingRange);
 }
@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE(score_overcome)
     boost::gregorian::date valid_from(boost::gregorian::day_clock::local_day());
     boost::gregorian::date valid_until(valid_from + boost::gregorian::date_duration(1));
     BOOST_CHECK_THROW(
-        LibFred::CreateRegistrarCertification(test_registrar.id, valid_from, valid_until, score, file_id)
+        LibFred::Registrar::CreateRegistrarCertification(test_registrar.id, valid_from, valid_until, score, file_id)
             .exec(ctx),
         ScoreOutOfRange);
 }

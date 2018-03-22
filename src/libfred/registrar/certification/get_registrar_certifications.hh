@@ -21,30 +21,32 @@
  *  get registrar certifications
  */
 
-#ifndef GET_REGISTRAR_CERTIFICATIONS_H_
-#define GET_REGISTRAR_CERTIFICATIONS_H_
-
-#include "registrar_certification_type.h"
+#ifndef GET_REGISTRAR_CERTIFICATIONS_HH_FD81A9953AF44D95B8C7F3F87BF3F249
+#define GET_REGISTRAR_CERTIFICATIONS_HH_FD81A9953AF44D95B8C7F3F87BF3F249
 
 #include "src/libfred/opcontext.hh"
+#include "src/libfred/registrar/certification/registrar_certification_type.hh"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace LibFred {
+namespace Registrar {
 
 class GetRegistrarCertifications
 {
-private:
-    unsigned long long m_registrar_id;
-
 public:
     GetRegistrarCertifications(unsigned long long _registrar_id)
-    : m_registrar_id(_registrar_id)
-    {}
+        : registrar_id_(_registrar_id)
+        {}
 
-    std::vector<RegistrarCertification> exec(OperationContext& ctx);
-}; // GetRegistrarCertifications
+    std::vector<RegistrarCertification> exec(OperationContext& _ctx);
 
+private:
+    unsigned long long registrar_id_;
+
+};
+
+} // namespace Registrar
 } // namespace LibFred
 
-#endif // GET_REGISTRAR_CERTIFICATIONS_H_
+#endif

@@ -21,13 +21,14 @@
  *  exceptions
  */
 
-#ifndef EXCEPTIONS_13413461643_
-#define EXCEPTIONS_13413461643_
+#ifndef EXCEPTIONS_HH_6E652B2F6EEF4081BF3CD3561D3FB0EE
+#define EXCEPTIONS_HH_6E652B2F6EEF4081BF3CD3561D3FB0EE
 
 #include "src/util/base_exception.hh"
 
-struct WrongIntervalOrder : std::exception {
-    virtual const char* what() const throw()
+struct WrongIntervalOrder : std::exception
+{
+    virtual const char* what() const noexcept
     {
         return "date from is later than date to";
     }
@@ -35,7 +36,7 @@ struct WrongIntervalOrder : std::exception {
 
 struct OverlappingRange : std::exception
 {
-    virtual const char* what() const throw()
+    virtual const char* what() const noexcept
     {
         return "range of certification overlaps with the other one";
     }
@@ -43,7 +44,7 @@ struct OverlappingRange : std::exception
 
 struct CertificationInPast : std::exception
 {
-    virtual const char* what() const throw()
+    virtual const char* what() const noexcept
     {
         return "end date is earlier than current date";
     }
@@ -51,7 +52,7 @@ struct CertificationInPast : std::exception
 
 struct CertificationExtension : std::exception
 {
-    virtual const char* what() const throw()
+    virtual const char* what() const noexcept
     {
         return "end date is later than latter value";
     }
@@ -59,7 +60,7 @@ struct CertificationExtension : std::exception
 
 struct ScoreOutOfRange : std::exception
 {
-    virtual const char* what() const throw()
+    virtual const char* what() const noexcept
     {
         return "certification got score out of bound";
     }
@@ -67,10 +68,10 @@ struct ScoreOutOfRange : std::exception
 
 struct RegistrarNotFound : std::exception
 {
-    virtual const char* what() const throw()
+    virtual const char* what() const noexcept
     {
         return "registrar with this id doesn't exist";
     }
 };
 
-#endif // EXCEPTIONS_13413461643_
+#endif

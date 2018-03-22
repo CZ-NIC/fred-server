@@ -21,24 +21,18 @@
  *  create registrar certification
  */
 
-#ifndef CREATE_REGISTRAR_CERTIFICATION_H_
-#define CREATE_REGISTRAR_CERTIFICATION_H_
+#ifndef CREATE_REGISTRAR_CERTIFICATION_HH_BDE927161AD44CEFAEDD7C35AE6E8C28
+#define CREATE_REGISTRAR_CERTIFICATION_HH_BDE927161AD44CEFAEDD7C35AE6E8C28
 
 #include "src/libfred/opcontext.hh"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace LibFred {
+namespace Registrar {
 
 class CreateRegistrarCertification
 {
-private:
-    unsigned long long m_registrar_id;
-    boost::gregorian::date m_valid_from;
-    boost::gregorian::date m_valid_until;
-    int m_classification;
-    unsigned long long m_eval_file_id;
-
 public:
     CreateRegistrarCertification(
             const unsigned long long _registrar_id,
@@ -46,17 +40,25 @@ public:
             const boost::gregorian::date& _valid_until,
             const int _classification,
             const unsigned long long _eval_file_id)
-    : m_registrar_id(_registrar_id),
-      m_valid_from(_valid_from),
-      m_valid_until(_valid_until),
-      m_classification(_classification),
-      m_eval_file_id(_eval_file_id)
+    : registrar_id_(_registrar_id),
+      valid_from_(_valid_from),
+      valid_until_(_valid_until),
+      classification_(_classification),
+      eval_file_id_(_eval_file_id)
     {}
 
-    unsigned long long exec(OperationContext& ctx);
+    unsigned long long exec(OperationContext& _ctx);
 
-}; // CreateRegistrarCertification
+private:
+    unsigned long long registrar_id_;
+    boost::gregorian::date valid_from_;
+    boost::gregorian::date valid_until_;
+    int classification_;
+    unsigned long long eval_file_id_;
 
+};
+
+} // namespace Registrar
 } // namespace Fred
 
-#endif // CREATE_REGISTRAR_CERTIFICATION_H_
+#endif

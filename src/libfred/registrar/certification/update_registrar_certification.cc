@@ -1,61 +1,60 @@
-#include "update_registrar_certification.h"
-#include "exceptions.h"
-
-//#include "src/fredlib/db_settings.h"
 #include "src/libfred/opcontext.hh"
+#include "src/libfred/registrar/certification/exceptions.hh"
+#include "src/libfred/registrar/certification/update_registrar_certification.hh"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace LibFred {
+namespace Registrar {
 
-void UpdateRegistrarCertification::exec(OperationContext& ctx)
+void UpdateRegistrarCertification::exec(OperationContext& _ctx)
 {
     try
     {
         Database::ParamQuery query = Database::ParamQuery("UPDATE registrar_certification SET ");
-        if (m_valid_until_set)
+        if (valid_until_set_)
         {
-            Database::Result cert_in_past = ctx.get_conn().exec_params(
-                    "select now()::date > $1::date",
-                    Database::query_param_list(m_valid_until));
+            const Database::Result cert_in_past = _ctx.get_conn().exec_params(
+                    "SELECT now()::date > $1::date",
+                    Database::query_param_list(valid_until_));
             if (cert_in_past[0][0])
             {
                 throw CertificationInPast();
             }
 
-            Database::Result from_until = ctx.get_conn().exec_params(
-                    "select valid_from, valid_until from registrar_certification "
-                    "where id = $1::bigint for update",
-                    Database::query_param_list(m_certification_id));
-            boost::gregorian::date old_from = from_until[0][0],
-                old_until = from_until[0][1];
-            if (old_until < m_valid_until)
+            const Database::Result from_until = _ctx.get_conn().exec_params(
+                    "SELECT valid_from, valid_until FROM registrar_certification "
+                    "WHERE id = $1::bigint FOR UPDATE",
+                    Database::query_param_list(certification_id_));
+            const boost::gregorian::date old_from = from_until[0][0];
+            const boost::gregorian::date old_until = from_until[0][1];
+            if (old_until < valid_until_)
             {
                 throw CertificationExtension();
             }
-            if (old_from > m_valid_until)
+            if (old_from > valid_until_)
             {
                 throw WrongIntervalOrder();
             }
 
             query = query("valid_until = ")
-                .param_date(m_valid_until);
+                .param_date(valid_until_);
         }
         else
         {
-            if (m_classification < 0 || m_classification > 5)
+            if (classification_ < 0 || classification_ > 5)
             {
                 throw ScoreOutOfRange();
             }
             query = query("classification = ")
-                .param(m_classification, "integer")
+                .param(classification_, "integer")
                 (", eval_file_id = ")
-                .param_bigint(m_eval_file_id);
+                .param_bigint(eval_file_id_);
         }
-        query = query(" where id = ")
-            .param_bigint(m_certification_id);
+        query = query(" WHERE id = ")
+            .param_bigint(certification_id_);
 
-        ctx.get_conn().exec_params(query);
+        _ctx.get_conn().exec_params(query);
     }
     catch (const std::exception& e)
     {
@@ -69,4 +68,5 @@ void UpdateRegistrarCertification::exec(OperationContext& ctx)
     }
 }
 
+} // namespace Registrar
 } // namespace Fred
