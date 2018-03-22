@@ -75,6 +75,19 @@ struct ClassifyValue< boost::optional<std::string> >
     }
 };
 
+template < >
+struct ClassifyValue<boost::optional<std::vector<std::string>>>
+{
+    static ContactChange::Value::Meaning get_meaning_of_value(const boost::optional<std::vector<std::string>> &_value)
+    {
+        if (static_cast<bool>(_value))
+        {
+            return ContactChange::Value::to_set;
+        }
+        return ContactChange::Value::not_to_touch;
+    }
+};
+
 } // namespace Epp::{anonymous}
 
 template <ContactChange::Value::Meaning meaning, class T>
@@ -173,6 +186,20 @@ bool ContactChange::does_value_mean< ContactChange::Value::not_to_touch, std::st
 
 template
 std::string ContactChange::get_value<std::string>(const boost::optional<std::string>&);
+
+
+template
+bool ContactChange::does_value_mean<ContactChange::Value::to_set, std::vector<std::string>>(
+        const boost::optional<std::vector<std::string>>&);
+
+template
+bool ContactChange::does_value_mean<ContactChange::Value::not_to_touch, std::vector<std::string>>(
+        const boost::optional<std::vector<std::string>>&);
+
+template
+std::vector<std::string> ContactChange::get_value<std::vector<std::string>>(
+        const boost::optional<std::vector<std::string>>&);
+
 
 ContactChange trim(const ContactChange& src)
 {

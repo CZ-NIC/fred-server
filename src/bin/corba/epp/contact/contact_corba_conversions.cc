@@ -326,12 +326,22 @@ void unwrap_address_change(
     throw std::runtime_error("unexpected value of AddressAction");
 }
 
+template <class T>
+bool does_value_mean_to_touch(const T& value)
+{
+    return !Epp::Contact::ContactChange::does_value_mean<Epp::Contact::ContactChange::Value::not_to_touch>(value);
+}
+
 } // namespace LibFred::Corba::{anonymous}
 
 void unwrap_ContactChange(const ccReg::ContactChange& src, Epp::Contact::ContactChange& dst)
 {
     dst.name = convert_contact_update_or_delete_string(src.Name);
     dst.organization = convert_contact_update_or_delete_string(src.Organization);
+    dst.city = convert_contact_update_or_delete_string(src.City);
+    dst.state_or_province = convert_contact_update_or_delete_string(src.StateOrProvince);
+    dst.postal_code = convert_contact_update_or_delete_string(src.PostalCode);
+    dst.country_code = convert_contact_update_string(src.CC);
     const bool street_change_requested = 0 < src.Streets.length();
     if (street_change_requested)
     {
@@ -344,12 +354,22 @@ void unwrap_ContactChange(const ccReg::ContactChange& src, Epp::Contact::Contact
     }
     else
     {
-        dst.streets = boost::none;
+        const bool address_has_to_be_changed =
+                does_value_mean_to_touch(dst.city) ||
+                does_value_mean_to_touch(dst.state_or_province) ||
+                does_value_mean_to_touch(dst.postal_code) ||
+                does_value_mean_to_touch(dst.country_code);
+        if (address_has_to_be_changed)
+        {
+            //case "one of city, state, province, postal code or country code are set and no street is set" has
+            //very special meaning: clean all "streets"
+            dst.streets = std::vector<std::string>();
+        }
+        else
+        {
+            dst.streets = boost::none;
+        }
     }
-    dst.city = convert_contact_update_or_delete_string(src.City);
-    dst.state_or_province = convert_contact_update_or_delete_string(src.StateOrProvince);
-    dst.postal_code = convert_contact_update_or_delete_string(src.PostalCode);
-    dst.country_code = convert_contact_update_string(src.CC);
     unwrap_address_change(src.MailingAddress, dst.mailing_address);
     dst.telephone = convert_contact_update_or_delete_string(src.Telephone);
     dst.fax = convert_contact_update_or_delete_string(src.Fax);

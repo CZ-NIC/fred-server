@@ -515,6 +515,67 @@ BOOST_FIXTURE_TEST_CASE(update_ok_full_data, supply_ctx<HasRegistrarWithSessionA
     check_equal(contact.data, update_contact_input_data, ::LibFred::InfoContactByHandle(contact.data.handle).exec(ctx).info_contact_data);
 }
 
+BOOST_FIXTURE_TEST_CASE(update_ok_streets, supply_ctx<HasRegistrarWithSessionAndContact>)
+{
+    DefaultUpdateContactInputData update_contact_input_data;
+
+    auto info_before = contact.data;
+    update_contact_input_data.add_additional_data().drop_mailing_address();
+    update_contact_input_data.streets = std::vector<std::string>();
+    update_contact_input_data.streets->reserve(3);
+    update_contact_input_data.streets->push_back("street1");
+    update_contact_input_data.streets->push_back("street2");
+    update_contact_input_data.streets->push_back("street3");
+    BOOST_CHECK_EQUAL(update_contact_input_data.streets->size(), 3);
+    ::Epp::Contact::update_contact(
+            ctx,
+            info_before.handle,
+            update_contact_input_data,
+            DefaultUpdateContactConfigData(),
+            session.data);
+    auto info_after = ::LibFred::InfoContactByHandle(info_before.handle).exec(ctx).info_contact_data;
+    check_equal(info_before, update_contact_input_data, info_after);
+
+    info_before = info_after;
+    update_contact_input_data.streets->pop_back();
+    BOOST_CHECK_EQUAL(update_contact_input_data.streets->size(), 2);
+    BOOST_CHECK_EQUAL((*update_contact_input_data.streets)[0], info_before.place.get_value().street1);
+    BOOST_CHECK_EQUAL((*update_contact_input_data.streets)[1], info_before.place.get_value().street2.get_value());
+    ::Epp::Contact::update_contact(
+            ctx,
+            info_before.handle,
+            update_contact_input_data,
+            DefaultUpdateContactConfigData(),
+            session.data);
+    info_after = ::LibFred::InfoContactByHandle(info_before.handle).exec(ctx).info_contact_data;
+    check_equal(info_before, update_contact_input_data, info_after);
+
+    info_before = info_after;
+    update_contact_input_data.streets->pop_back();
+    BOOST_CHECK_EQUAL(update_contact_input_data.streets->size(), 1);
+    BOOST_CHECK_EQUAL((*update_contact_input_data.streets)[0], info_before.place.get_value().street1);
+    ::Epp::Contact::update_contact(
+            ctx,
+            info_before.handle,
+            update_contact_input_data,
+            DefaultUpdateContactConfigData(),
+            session.data);
+    info_after = ::LibFred::InfoContactByHandle(info_before.handle).exec(ctx).info_contact_data;
+    check_equal(info_before, update_contact_input_data, info_after);
+
+    info_before = info_after;
+    update_contact_input_data.streets->pop_back();
+    BOOST_CHECK_EQUAL(update_contact_input_data.streets->size(), 0);
+    ::Epp::Contact::update_contact(
+            ctx,
+            info_before.handle,
+            update_contact_input_data,
+            DefaultUpdateContactConfigData(),
+            session.data);
+    info_after = ::LibFred::InfoContactByHandle(info_before.handle).exec(ctx).info_contact_data;
+    check_equal(info_before, update_contact_input_data, info_after);
+}
+
 BOOST_FIXTURE_TEST_CASE(update_mailing_address_ok, supply_ctx<HasRegistrarWithSessionAndContact>)
 {
     DefaultUpdateContactInputData update_contact_input_data;
