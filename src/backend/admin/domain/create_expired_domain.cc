@@ -53,14 +53,26 @@ create_expired_domain(
         throw std::runtime_error("unable to log create expired domain request");
     }
 
-    const LibFred::InfoRegistrarData session_registrar =
-            LibFred::InfoRegistrarByHandle(_registrar).exec(ctx).info_registrar_data;
+    try {
+        LibFred::InfoRegistrarData session_registrar =
+                LibFred::InfoRegistrarByHandle(_registrar).exec(ctx).info_registrar_data;
 
-    const bool is_system_registrar = session_registrar.system.get_value();
+        const bool is_system_registrar = session_registrar.system.get_value();
 
-    if (!is_system_registrar)
+        if (!is_system_registrar)
+        {
+            logger_create_expired_domain_close(_logger_client, "Fail", req_id, boost::none, boost::none);
+            throw NotSystemRegistrar();
+        }
+    }
+    catch (const LibFred::InfoRegistrarByHandle::Exception& e)
     {
-        throw NotSystemRegistrar();
+        logger_create_expired_domain_close(_logger_client, "Fail", req_id, boost::none, boost::none);
+        if (e.is_set_unknown_registrar_handle())
+        {
+            throw SystemRegistrarNotExists();
+        }
+        throw;
     }
 
     if (!get_id_by_handle<LibFred::Object_Type::contact>(ctx, _registrant))

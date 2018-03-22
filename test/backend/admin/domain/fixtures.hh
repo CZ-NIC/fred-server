@@ -56,46 +56,65 @@ std::unique_ptr<LibFred::Logger::LoggerClient> get_logger()
             ns_args_ptr->nameservice_port,
             ns_args_ptr->nameservice_context);
 
-    std::unique_ptr<LibFred::Logger::LoggerClient> logger_client = std::make_unique<::LibFred::Logger::DummyLoggerCorbaClientImpl>();
+    std::unique_ptr<LibFred::Logger::LoggerClient> logger_client = std::make_unique<LibFred::Logger::DummyLoggerCorbaClientImpl>();
 
     return logger_client;
 }
 
-struct Fqdn
+struct NonexistentDomain
 {
-    const std::string fqdn;
+    std::string fqdn;
 
-    Fqdn(const std::string& _fqdn) : fqdn(_fqdn)
+    NonexistentDomain()
     {
+        LibFred::OperationContextCreator ctx;
+        fqdn = Test::domain::make(ctx).fqdn;
     }
 };
 
-struct NoExistingDomain : Fqdn
+struct ExistingDomain
 {
-    NoExistingDomain(const std::string& _fqdn) : Fqdn(_fqdn)
-    {
-    }
-};
+    std::string fqdn;
 
-struct ExistingDomain : Fqdn
-{
-    ::LibFred::InfoDomainData domain;
-    ExistingDomain(const std::string& _fqdn) : Fqdn(_fqdn)
+    ExistingDomain()
     {
-        ::LibFred::OperationContextCreator ctx;
-        domain = Test::exec(Test::CreateX_factory<::LibFred::CreateDomain>()
+        LibFred::OperationContextCreator ctx;
+        LibFred::InfoDomainData domain = Test::exec(Test::CreateX_factory<LibFred::CreateDomain>()
                         .make(Test::registrar::make(ctx).handle,
-                              Test::contact::make(ctx).handle,
-                              _fqdn),
+                              Test::contact::make(ctx).handle),
                         ctx);
-        ::LibFred::PerformObjectStateRequest(domain.id).exec(ctx);
+        fqdn = domain.fqdn;
+        ctx.commit_transaction();
+    }
+};
+
+struct NonexistentRegistrar
+{
+    std::string handle;
+
+    NonexistentRegistrar()
+    {
+        LibFred::OperationContextCreator ctx;
+        handle = Test::registrar::make(ctx).handle;
+    }
+};
+
+struct NoSystemRegistrar
+{
+    std::string handle;
+
+    NoSystemRegistrar()
+    {
+        LibFred::OperationContextCreator ctx;
+        const LibFred::InfoRegistrarData registrar = Test::exec(Test::CreateX_factory<LibFred::CreateRegistrar>().make(), ctx);
+        handle = registrar.handle;
         ctx.commit_transaction();
     }
 };
 
 struct SystemRegistrar
 {
-    const std::string handle;
+    std::string handle;
 
     SystemRegistrar():
         handle(CfgArgs::instance()->get_handler_ptr_by_type<HandleCreateExpiredDomainArgs>()->registrar_handle)
@@ -103,31 +122,75 @@ struct SystemRegistrar
     }
 };
 
-struct HasNoExistingDomain {
-    SystemRegistrar registrar;
-    NoExistingDomain domain;
+struct ExistingContact
+{
+    std::string handle;
+
+    ExistingContact()
+    {
+        LibFred::OperationContextCreator ctx;
+        const LibFred::InfoContactData contact = Test::exec(Test::CreateX_factory<LibFred::CreateContact>().make(Test::registrar::make(ctx).handle), ctx);
+        handle = contact.handle;
+        ctx.commit_transaction();
+    }
+};
+
+struct NonexistentContact
+{
+    std::string handle;
+
+    NonexistentContact()
+    {
+        LibFred::OperationContextCreator ctx;
+        handle = Test::contact::make(ctx).handle;
+    }
+};
+
+struct HasNonexistentRegistrar{
+    NonexistentRegistrar registrar;
+    ExistingContact registrant;
+    NonexistentDomain domain;
     bool delete_existing;
-    const std::string registrant;
     const std::string cltrid;
-    HasNoExistingDomain() :
-        domain("noexistingdomain1.cz"),
+    HasNonexistentRegistrar():
+        delete_existing(false),
+        cltrid("cltrid")
+    {
+    }
+};
+struct HasNoSystemRegistrar {
+    NoSystemRegistrar registrar;
+    ExistingContact registrant;
+    NonexistentDomain domain;
+    bool delete_existing;
+    const std::string cltrid;
+    HasNoSystemRegistrar():
+        delete_existing(false),
+        cltrid("cltrid")
+    {
+    }
+};
+struct HasNonexistentDomain {
+    SystemRegistrar registrar;
+    ExistingContact registrant;
+    NonexistentDomain domain;
+    bool delete_existing;
+    const std::string cltrid;
+    HasNonexistentDomain():
         delete_existing(true),
-        registrant("KONTAKT"),
         cltrid("cltrid")
     {
     }
 };
 
-struct HasNoDeleteNoExistingDomain {
+struct HasNoDeleteNonexistentDomain {
     SystemRegistrar registrar;
-    NoExistingDomain domain;
+    ExistingContact registrant;
+    NonexistentDomain domain;
     bool delete_existing;
-    const std::string registrant;
     const std::string cltrid;
-    HasNoDeleteNoExistingDomain() :
-        domain("noexistingdomain2.cz"),
+    HasNoDeleteNonexistentDomain():
         delete_existing(false),
-        registrant("KONTAKT"),
         cltrid("cltrid")
     {
     }
@@ -135,14 +198,12 @@ struct HasNoDeleteNoExistingDomain {
 
 struct HasExistingDomain {
     SystemRegistrar registrar;
+    ExistingContact registrant;
     ExistingDomain domain;
     bool delete_existing;
-    const std::string registrant;
     const std::string cltrid;
-    HasExistingDomain() :
-        domain("existingdomain2.cz"),
+    HasExistingDomain():
         delete_existing(true),
-        registrant("KONTAKT"),
         cltrid("cltrid")
     {
     }
@@ -150,29 +211,25 @@ struct HasExistingDomain {
 
 struct HasNoDeleteExistingDomain {
     SystemRegistrar registrar;
+    ExistingContact registrant;
     ExistingDomain domain;
     bool delete_existing;
-    const std::string registrant;
     const std::string cltrid;
-    HasNoDeleteExistingDomain() :
-        domain("existingdomain1.cz"),
+    HasNoDeleteExistingDomain():
         delete_existing(false),
-        registrant("KONTAKT"),
         cltrid("cltrid")
     {
     }
 };
 
-struct HasNoExistingRegistrant {
+struct HasNonexistentRegistrant {
     SystemRegistrar registrar;
-    ExistingDomain domain;
+    NonexistentContact registrant;
+    NonexistentDomain domain;
     bool delete_existing;
-    const std::string registrant;
     const std::string cltrid;
-    HasNoExistingRegistrant() :
-        domain("noexistingregistrant.cz"),
+    HasNonexistentRegistrant():
         delete_existing(false),
-        registrant("no_existing_contact"),
         cltrid("cltrid")
     {
     }
