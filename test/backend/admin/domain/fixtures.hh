@@ -44,6 +44,23 @@ namespace Backend {
 namespace Admin {
 namespace Domain {
 
+struct context_holder
+    : virtual instantiate_db_template
+{
+    LibFred::OperationContextCreator ctx;
+};
+
+template <class T>
+struct supply_fixture_ctx : context_holder, T
+{
+    supply_fixture_ctx()
+        : context_holder(),
+          T(ctx)
+    {
+        ctx.commit_transaction();
+    }
+};
+
 std::unique_ptr<LibFred::Logger::LoggerClient> get_logger()
 {
     FakedArgs fa = CfgArgs::instance()->fa;
@@ -65,10 +82,9 @@ struct NonexistentDomain
 {
     std::string fqdn;
 
-    NonexistentDomain()
+    NonexistentDomain(LibFred::OperationContext& _ctx)
     {
-        LibFred::OperationContextCreator ctx;
-        fqdn = Test::domain::make(ctx).fqdn;
+        fqdn = Test::get_nonexistent_object_handle(_ctx) + ".cz";
     }
 };
 
@@ -76,15 +92,13 @@ struct ExistingDomain
 {
     std::string fqdn;
 
-    ExistingDomain()
+    ExistingDomain(LibFred::OperationContext& _ctx)
     {
-        LibFred::OperationContextCreator ctx;
         LibFred::InfoDomainData domain = Test::exec(Test::CreateX_factory<LibFred::CreateDomain>()
-                        .make(Test::registrar::make(ctx).handle,
-                              Test::contact::make(ctx).handle),
-                        ctx);
+                        .make(Test::registrar::make(_ctx).handle,
+                              Test::contact::make(_ctx).handle),
+                        _ctx);
         fqdn = domain.fqdn;
-        ctx.commit_transaction();
     }
 };
 
@@ -92,23 +106,20 @@ struct NonexistentRegistrar
 {
     std::string handle;
 
-    NonexistentRegistrar()
+    NonexistentRegistrar(LibFred::OperationContext& _ctx)
     {
-        LibFred::OperationContextCreator ctx;
-        handle = Test::registrar::make(ctx).handle;
+        handle = Test::get_nonexistent_object_handle(_ctx);
     }
 };
 
-struct NoSystemRegistrar
+struct NonSystemRegistrar
 {
     std::string handle;
 
-    NoSystemRegistrar()
+    NonSystemRegistrar(LibFred::OperationContext& _ctx)
     {
-        LibFred::OperationContextCreator ctx;
-        const LibFred::InfoRegistrarData registrar = Test::exec(Test::CreateX_factory<LibFred::CreateRegistrar>().make(), ctx);
+        const LibFred::InfoRegistrarData registrar = Test::exec(Test::CreateX_factory<LibFred::CreateRegistrar>().make(), _ctx);
         handle = registrar.handle;
-        ctx.commit_transaction();
     }
 };
 
@@ -126,12 +137,10 @@ struct ExistingContact
 {
     std::string handle;
 
-    ExistingContact()
+    ExistingContact(LibFred::OperationContext& _ctx)
     {
-        LibFred::OperationContextCreator ctx;
-        const LibFred::InfoContactData contact = Test::exec(Test::CreateX_factory<LibFred::CreateContact>().make(Test::registrar::make(ctx).handle), ctx);
+        const LibFred::InfoContactData contact = Test::exec(Test::CreateX_factory<LibFred::CreateContact>().make(Test::registrar::make(_ctx).handle), _ctx);
         handle = contact.handle;
-        ctx.commit_transaction();
     }
 };
 
@@ -139,32 +148,37 @@ struct NonexistentContact
 {
     std::string handle;
 
-    NonexistentContact()
+    NonexistentContact(LibFred::OperationContext& _ctx)
     {
-        LibFred::OperationContextCreator ctx;
-        handle = Test::contact::make(ctx).handle;
+        handle = Test::get_nonexistent_object_handle(_ctx);
     }
 };
 
-struct HasNonexistentRegistrar{
+struct HasNonexistentRegistrar {
     NonexistentRegistrar registrar;
     ExistingContact registrant;
     NonexistentDomain domain;
     bool delete_existing;
     const std::string cltrid;
-    HasNonexistentRegistrar():
+    HasNonexistentRegistrar(LibFred::OperationContext& _ctx):
+        registrar(_ctx),
+        registrant(_ctx),
+        domain(_ctx),
         delete_existing(false),
         cltrid("cltrid")
     {
     }
 };
-struct HasNoSystemRegistrar {
-    NoSystemRegistrar registrar;
+struct HasNonSystemRegistrar {
+    NonSystemRegistrar registrar;
     ExistingContact registrant;
     NonexistentDomain domain;
     bool delete_existing;
     const std::string cltrid;
-    HasNoSystemRegistrar():
+    HasNonSystemRegistrar(LibFred::OperationContext& _ctx):
+        registrar(_ctx),
+        registrant(_ctx),
+        domain(_ctx),
         delete_existing(false),
         cltrid("cltrid")
     {
@@ -176,7 +190,9 @@ struct HasNonexistentDomain {
     NonexistentDomain domain;
     bool delete_existing;
     const std::string cltrid;
-    HasNonexistentDomain():
+    HasNonexistentDomain(LibFred::OperationContext& _ctx):
+        registrant(_ctx),
+        domain(_ctx),
         delete_existing(true),
         cltrid("cltrid")
     {
@@ -189,7 +205,9 @@ struct HasNoDeleteNonexistentDomain {
     NonexistentDomain domain;
     bool delete_existing;
     const std::string cltrid;
-    HasNoDeleteNonexistentDomain():
+    HasNoDeleteNonexistentDomain(LibFred::OperationContext& _ctx):
+        registrant(_ctx),
+        domain(_ctx),
         delete_existing(false),
         cltrid("cltrid")
     {
@@ -202,7 +220,9 @@ struct HasExistingDomain {
     ExistingDomain domain;
     bool delete_existing;
     const std::string cltrid;
-    HasExistingDomain():
+    HasExistingDomain(LibFred::OperationContext& _ctx):
+        registrant(_ctx),
+        domain(_ctx),
         delete_existing(true),
         cltrid("cltrid")
     {
@@ -215,7 +235,9 @@ struct HasNoDeleteExistingDomain {
     ExistingDomain domain;
     bool delete_existing;
     const std::string cltrid;
-    HasNoDeleteExistingDomain():
+    HasNoDeleteExistingDomain(LibFred::OperationContext& _ctx):
+        registrant(_ctx),
+        domain(_ctx),
         delete_existing(false),
         cltrid("cltrid")
     {
@@ -228,7 +250,9 @@ struct HasNonexistentRegistrant {
     NonexistentDomain domain;
     bool delete_existing;
     const std::string cltrid;
-    HasNonexistentRegistrant():
+    HasNonexistentRegistrant(LibFred::OperationContext& _ctx):
+        registrant(_ctx),
+        domain(_ctx),
         delete_existing(false),
         cltrid("cltrid")
     {

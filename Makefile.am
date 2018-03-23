@@ -2976,7 +2976,9 @@ test_backend_test_admin_domain_SOURCES = \
 		src/backend/admin/domain/create_expired_domain.hh \
 		src/backend/admin/domain/create_expired_domain.cc \
 		test/setup/fixtures.hh \
-		test/setup/fixtures.cc
+		test/setup/fixtures.cc \
+		test/setup/fixtures_utils.hh \
+		test/setup/fixtures_utils.cc
 
 test_backend_test_admin_domain_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
