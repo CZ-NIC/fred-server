@@ -80,7 +80,6 @@ create_expired_domain(
         logger_create_expired_domain_close(_logger_client, "Fail", req_id, boost::none, boost::none);
         throw RegistrantNotExists();
     }
-
     const boost::optional<unsigned long long> existing_domain_id = get_id_by_handle<LibFred::Object_Type::domain>(ctx, _fqdn);
 
     if (existing_domain_id && !_delete_existing)
@@ -109,6 +108,22 @@ create_expired_domain(
             _fqdn,
             _registrar,
             _registrant).set_expiration_date(current_date).exec(ctx);
+    }
+    catch (const LibFred::CreateDomain::Exception& e)
+    {
+        logger_create_expired_domain_close(_logger_client, "Fail", req_id, existing_domain_id, boost::none);
+        boost::format msg("Create domain failed: %1%");
+        if (e.is_set_invalid_fqdn_syntax())
+        {
+            msg % "Invalid FQDN syntax";
+            throw std::runtime_error(msg.str());
+        }
+        if (e.is_set_unknown_zone_fqdn())
+        {
+            msg % "Unknown FQDN zone";
+            throw std::runtime_error(msg.str());
+        }
+        throw;
     }
     catch (const std::exception& e)
     {
