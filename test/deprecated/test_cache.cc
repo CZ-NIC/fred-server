@@ -452,7 +452,7 @@ BOOST_AUTO_TEST_CASE( cache_ultimate_threaded_test )
     }
 
     threads.join_all();
-    BOOST_TEST_MESSAGE( boost::format("refused_count: %1%") % refused_count);
+    BOOST_TEST_MESSAGE( boost::format("refused_count: %1%") % static_cast<unsigned>(refused_count));
 
     // there is always 1 element above the limit
     BOOST_CHECK(1 + refused_count + cache_capacity <= thread_number);
