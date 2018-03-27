@@ -42,6 +42,22 @@ struct NotSystemRegistrar : std::exception
     }
 };
 
+struct InvalidFQDNSyntax : std::exception
+{
+    virtual const char* what() const noexcept
+    {
+        return "FQDN has invalid syntax.";
+    }
+};
+
+struct ZoneNotExists : std::exception
+{
+    virtual const char* what() const noexcept
+    {
+        return "Domain zone is not in registry.";
+    }
+};
+
 struct DomainExists : std::exception
 {
     virtual const char* what() const noexcept
