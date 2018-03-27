@@ -20,6 +20,7 @@
 
 #include "src/libfred/object_state/perform_object_state_request.hh"
 #include "src/libfred/opcontext.hh"
+#include "src/libfred/registrable_object/domain/domain.hh"
 #include "src/libfred/registrable_object/domain/create_domain.hh"
 #include "src/libfred/registrable_object/domain/delete_domain.hh"
 #include "src/libfred/registrar/info_registrar.hh"
@@ -62,11 +63,12 @@ create_expired_domain(
         throw std::runtime_error(msg.str());
     }
 
+    bool is_system_registrar;
     try {
         LibFred::InfoRegistrarData session_registrar =
                 LibFred::InfoRegistrarByHandle(_registrar).exec(ctx).info_registrar_data;
 
-        const bool is_system_registrar = session_registrar.system.get_value();
+        is_system_registrar = session_registrar.system.get_value();
 
         if (!is_system_registrar)
         {
@@ -89,7 +91,25 @@ create_expired_domain(
         logger_create_expired_domain_close(_logger_client, "Fail", req_id, boost::none, boost::none);
         throw RegistrantNotExists();
     }
-    const boost::optional<unsigned long long> existing_domain_id = get_id_by_handle<LibFred::Object_Type::domain>(ctx, _fqdn);
+
+    const LibFred::Domain::DomainRegistrability::Enum domain_registrability =
+            LibFred::Domain::get_domain_registrability_by_domain_fqdn(ctx, _fqdn, is_system_registrar);
+
+    if (domain_registrability == LibFred::Domain::DomainRegistrability::zone_not_in_registry)
+    {
+        throw ZoneNotExists();
+    }
+
+    if (LibFred::Domain::get_domain_fqdn_syntax_validity(ctx, _fqdn, is_system_registrar) != LibFred::Domain::DomainFqdnSyntaxValidity::valid)
+    {
+        throw InvalidFQDNSyntax();
+    }
+
+    boost::optional<unsigned long long> existing_domain_id;
+    if (domain_registrability == LibFred::Domain::DomainRegistrability::registered)
+    {
+        existing_domain_id = get_id_by_handle<LibFred::Object_Type::domain>(ctx, _fqdn);
+    }
 
     if (existing_domain_id && !_delete_existing)
     {
