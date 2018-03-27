@@ -2755,7 +2755,9 @@ add_executable(test-admin-domain
     src/backend/admin/domain/create_expired_domain.hh
     src/backend/admin/domain/create_expired_domain.cc
     test/setup/fixtures.hh
-    test/setup/fixtures.cc)
+    test/setup/fixtures.cc
+    test/setup/fixtures_utils.hh
+    test/setup/fixtures_utils.cc)
 target_link_libraries(test-admin-domain
     admin_notification
     corba
