@@ -24,6 +24,7 @@
 #include "src/libfred/registrable_object/domain/create_domain.hh"
 #include "src/libfred/registrable_object/domain/delete_domain.hh"
 #include "src/libfred/registrar/info_registrar.hh"
+#include "src/libfred/zone/zone.hh"
 
 #include <boost/optional.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
@@ -97,18 +98,20 @@ create_expired_domain(
 
     if (domain_registrability == LibFred::Domain::DomainRegistrability::zone_not_in_registry)
     {
+        logger_create_expired_domain_close(_logger_client, "Fail", req_id, boost::none, boost::none);
         throw ZoneNotExists();
     }
 
     if (LibFred::Domain::get_domain_fqdn_syntax_validity(ctx, _fqdn, is_system_registrar) != LibFred::Domain::DomainFqdnSyntaxValidity::valid)
     {
+        logger_create_expired_domain_close(_logger_client, "Fail", req_id, boost::none, boost::none);
         throw InvalidFQDNSyntax();
     }
 
     boost::optional<unsigned long long> existing_domain_id;
     if (domain_registrability == LibFred::Domain::DomainRegistrability::registered)
     {
-        existing_domain_id = get_id_by_handle<LibFred::Object_Type::domain>(ctx, _fqdn);
+        existing_domain_id = get_id_by_handle<LibFred::Object_Type::domain>(ctx, LibFred::Zone::rem_trailing_dot(_fqdn));
     }
 
     if (existing_domain_id && !_delete_existing)
