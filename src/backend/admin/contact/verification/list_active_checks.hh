@@ -35,6 +35,8 @@
 #include "src/libfred/registrable_object/contact/verification/list_enum_objects.hh"
 #include "src/libfred/registrable_object/contact/verification/update_check.hh"
 #include "src/libfred/registrable_object/contact/verification/update_test.hh"
+#include "src/util/tz/get_psql_handle_of.hh"
+#include "src/util/tz/utc.hh"
 
 namespace Fred {
 namespace Backend {
@@ -48,7 +50,7 @@ namespace Verification {
  * @param _testsuite handle     return checks only with specified testsuite
  * @return information about checks
  */
-std::vector<LibFred::ListChecksItem> list_active_checks(const Optional<std::string>& _testsuite_handle);
+std::vector<LibFred::ListChecksItem> list_active_checks(const Optional<std::string>& _testsuite_handle, const std::string& _output_timezone = Tz::get_psql_handle_of<Tz::UTC>());
 
 } // namespace Fred::Backend::Admin::Contact::Verification
 } // namespace Fred::Backend::Admin::Contact

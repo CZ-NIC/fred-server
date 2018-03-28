@@ -57,6 +57,8 @@
 #include "src/libfred/registrable_object/contact/verification/update_test.hh"
 #include "src/util/log/context.hh"
 #include "src/util/random_data_generator.hh"
+#include "src/util/tz/utc.hh"
+#include "src/util/tz/get_psql_handle_of.hh"
 #include "src/util/uuid.hh"
 
 #include <string>
@@ -81,12 +83,12 @@ static void wrap_check_detail(const LibFred::InfoContactCheckOutput& in, Registr
     LibFred::InfoContactOutput contact_info_current;
     {
         LibFred::OperationContextCreator ctx;
-        contact_info_historical = LibFred::InfoContactHistoryByHistoryid(in.contact_history_id).exec(ctx);
+        contact_info_historical = LibFred::InfoContactHistoryByHistoryid(in.contact_history_id).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
         contact_info_current =
                 // looks strange but in case contact was deleted it's current data are not accessible via LibFred::InfoContact anymore
                 // so the most recent history is used instead
                 LibFred::InfoContactHistoryById(contact_info_historical.info_contact_data.id)
-                        .exec(ctx)
+                        .exec(ctx, Tz::get_psql_handle_of<Tz::UTC>())
                         .at(0);
     }
 
@@ -294,7 +296,7 @@ Registry::AdminContactVerification::ContactCheckDetail* Server_i::getContactChec
         wrap_check_detail(
                 LibFred::InfoContactCheck(
                         uuid::from_string(LibFred::Corba::unwrap_string(check_handle)))
-                        .exec(ctx),
+                        .exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()),
                 result);
 
         return result._retn();
@@ -335,7 +337,7 @@ Registry::AdminContactVerification::ContactCheckList* Server_i::getChecksOfConta
         }
 
         wrap_check_list(
-                list_checks.exec(ctx),
+                list_checks.exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()),
                 result);
 
         return result._retn();
@@ -356,7 +358,7 @@ Registry::AdminContactVerification::ContactCheckList* Server_i::getActiveChecks(
         Registry::AdminContactVerification::ContactCheckList_var result(new Registry::AdminContactVerification::ContactCheckList);
 
         wrap_check_list(
-                Fred::Backend::Admin::Contact::Verification::list_active_checks(Util::unwrap_nullable_string_to_optional(testsuite)),
+                Fred::Backend::Admin::Contact::Verification::list_active_checks(Util::unwrap_nullable_string_to_optional(testsuite), Tz::get_psql_handle_of<Tz::UTC>()),
                 result);
 
         return result._retn();
@@ -427,7 +429,7 @@ void Server_i::resolveContactCheckStatus(const char* check_handle, const char* s
                 uuid::from_string(LibFred::Corba::unwrap_string(check_handle)),
                 LibFred::Corba::unwrap_string(status),
                 logd_request_id)
-                .exec(ctx);
+                .exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
 
         ctx.commit_transaction();
     }
@@ -616,7 +618,8 @@ Registry::AdminContactVerification::MessageSeq* Server_i::getContactCheckMessage
         wrap_messages(
                 Fred::Backend::Admin::Contact::Verification::get_related_messages(
                         ctx,
-                        contact_id),
+                        contact_id,
+                        Tz::get_psql_handle_of<Tz::UTC>()),
                 result);
 
         return result._retn();

@@ -43,7 +43,7 @@ resolve_check& resolve_check::set_logd_request_id(Optional<unsigned long long> _
 }
 
 
-void resolve_check::exec(LibFred::OperationContext& _ctx)
+void resolve_check::exec(LibFred::OperationContext& _ctx, const std::string& _output_timezone)
 {
     Logging::Context log("resolve_check::exec");
 
@@ -55,7 +55,7 @@ void resolve_check::exec(LibFred::OperationContext& _ctx)
             std::find(
                     allowed_statuses.begin(),
                     allowed_statuses.end(),
-                    LibFred::InfoContactCheck(check_handle_).exec(_ctx)
+                    LibFred::InfoContactCheck(check_handle_).exec(_ctx, _output_timezone)
                     .check_state_history.rbegin()->status_handle) == allowed_statuses.end()
             )
         {

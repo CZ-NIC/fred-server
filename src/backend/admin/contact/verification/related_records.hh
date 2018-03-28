@@ -24,12 +24,15 @@
 #ifndef RELATED_RECORDS_HH_255B3730A58F470DA6BEAF4858BE4213
 #define RELATED_RECORDS_HH_255B3730A58F470DA6BEAF4858BE4213
 
+#include "src/libfred/opcontext.hh"
+#include "src/util/tz/get_psql_handle_of.hh"
+#include "src/util/tz/utc.hh"
+
 #include <boost/tuple/tuple.hpp>
+
 #include <set>
 #include <string>
 #include <vector>
-
-#include "src/libfred/opcontext.hh"
 
 namespace Fred {
 namespace Backend {
@@ -107,7 +110,7 @@ struct related_message
 vector<related_message> get_related_messages(
         LibFred::OperationContext& _ctx,
         unsigned long long _contact_id,
-        const std::string& _output_timezone = "Europe/Prague");
+        const std::string& _output_timezone = Tz::get_psql_handle_of<Tz::UTC>());
 
 
 } // namespace Fred::Backend::Admin::Contact::Verification
