@@ -103,6 +103,34 @@ extern const char authinfo_post_pif[] = "authinfo_post_pif";
 typedef AuthinfoPublicRequest::Named<authinfo_post_pif> AuthinfoPost;
 
 
+struct PersonalinfoInfoImplementation
+{
+    template <typename T>
+    LibFred::PublicRequestTypeIface::PublicRequestTypes get_public_request_types_to_cancel_on_create() const
+    {
+        return LibFred::PublicRequestTypeIface::PublicRequestTypes();
+    }
+    template <typename T>
+    LibFred::PublicRequestTypeIface::PublicRequestTypes get_public_request_types_to_cancel_on_update(
+            LibFred::PublicRequest::Status::Enum,
+            LibFred::PublicRequest::Status::Enum) const
+    {
+        return LibFred::PublicRequestTypeIface::PublicRequestTypes();
+    };
+};
+
+typedef ImplementedBy<PersonalinfoInfoImplementation> PersonalinfoPublicRequest;
+
+extern const char personalinfo_auto_pif[] = "personalinfo_auto_pif";
+typedef PersonalinfoPublicRequest::Named<personalinfo_auto_pif> PersonalinfoAuto;
+
+extern const char personalinfo_email_pif[] = "personalinfo_email_pif";
+typedef PersonalinfoPublicRequest::Named<personalinfo_email_pif> PersonalinfoEmail;
+
+extern const char personalinfo_post_pif[] = "personalinfo_post_pif";
+typedef AuthinfoPublicRequest::Named<personalinfo_post_pif> PersonalinfoPost;
+
+
 LibFred::PublicRequestTypeIface::PublicRequestTypes get_block_unblock_public_request_types_to_cancel_on_create();
 
 struct BlockUnblockImplementation
@@ -767,6 +795,129 @@ unsigned long long PublicRequestImpl::create_block_unblock_request(
     catch (...)
     {
         LOGGER(PACKAGE).error("Unknown error");
+        throw;
+    }
+}
+
+namespace {
+
+unsigned long long get_id_of_contact(LibFred::OperationContext& ctx, const std::string contact_handle)
+{
+    return get_id_of_registered_object(ctx, PublicRequestImpl::ObjectType::contact, contact_handle);
+}
+
+} // namespace Fred::Backend::PublicRequest::Type::{anonymous}
+
+unsigned long long PublicRequestImpl::create_personal_info_request_registry_email(
+        const std::string& contact_handle,
+        const Optional<unsigned long long>& log_request_id,
+        std::shared_ptr<LibFred::Mailer::Manager> manager)
+{
+    LOGGING_CONTEXT(log_ctx, *this);
+    try
+    {
+        unsigned long long contact_id;
+        unsigned long long public_request_id;
+
+        LibFred::OperationContextCreator ctx;
+        contact_id = get_id_of_contact(ctx, contact_handle);
+        LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, contact_id);
+        public_request_id = LibFred::CreatePublicRequest(
+                "create_personal_info_request_registry_email call",
+                Optional<std::string>(),
+                Optional<unsigned long long>())
+            .exec(locked_object, Type::PersonalinfoAuto(), log_request_id);
+        LibFred::UpdatePublicRequest().set_status(LibFred::PublicRequest::Status::for_processing)
+            .exec(locked_object, Type::PersonalinfoAuto(), log_request_id);
+        ctx.commit_transaction();
+
+        return public_request_id;
+    }
+    catch (const NoPublicRequest& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw ObjectNotFound();
+    }
+    catch (const NoContactEmail& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw NoContactEmail();
+    }
+    catch (const LibFred::UnknownObject& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw ObjectNotFound();
+    }
+    catch (const std::exception& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw;
+    }
+    catch (...)
+    {
+        LOGGER(PACKAGE).error("create_personal_info_request (registry) failed due to an unknown exception");
+        throw;
+    }
+}
+
+unsigned long long PublicRequestImpl::create_personal_info_request_non_registry_email(
+        const std::string& contact_handle,
+        const Optional<unsigned long long>& log_request_id,
+        ConfirmedBy::Enum confirmation_method,
+        const std::string& specified_email)
+{
+    LOGGING_CONTEXT(log_ctx, *this);
+    try
+    {
+        LibFred::OperationContextCreator ctx;
+        const unsigned long long contact_id = get_id_of_contact(ctx, contact_handle);
+        LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, contact_id);
+        const LibFred::CreatePublicRequest create_public_request_op(
+                "create_personal_info_request_non_registry_email call",
+                specified_email,
+                Optional<unsigned long long>());
+        switch (confirmation_method)
+        {
+            case ConfirmedBy::email:
+            {
+                const unsigned long long request_id =
+                        create_public_request_op.exec(locked_object, Type::PersonalinfoEmail(), log_request_id);
+                ctx.commit_transaction();
+                return request_id;
+            }
+            case ConfirmedBy::letter:
+            {
+                const unsigned long long request_id =
+                        create_public_request_op.exec(locked_object, Type::PersonalinfoPost(), log_request_id);
+                ctx.commit_transaction();
+                return request_id;
+            }
+        }
+        throw std::runtime_error("unexpected confirmation method");
+    }
+    catch (const LibFred::UnknownObject& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw ObjectNotFound();
+    }
+    catch (const LibFred::CreatePublicRequest::Exception& e)
+    {
+        if (e.is_set_wrong_email())
+        {
+            LOGGER(PACKAGE).error(boost::diagnostic_information(e));
+            throw InvalidContactEmail();
+        }
+        LOGGER(PACKAGE).error(e.what());
+        throw;
+    }
+    catch (const std::exception& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw;
+    }
+    catch (...)
+    {
+        LOGGER(PACKAGE).error("create_personal_info_request (non registry) failed due to an unknown exception");
         throw;
     }
 }

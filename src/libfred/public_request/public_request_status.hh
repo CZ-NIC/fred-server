@@ -43,6 +43,7 @@ struct Status
         active,
         answered,
         invalidated,
+        for_processing,
     };
 };
 
@@ -59,6 +60,7 @@ inline std::string to_db_handle(LibFred::PublicRequest::Status::Enum value)
         case LibFred::PublicRequest::Status::active:      return "new";
         case LibFred::PublicRequest::Status::answered:    return "answered";
         case LibFred::PublicRequest::Status::invalidated: return "invalidated";
+        case LibFred::PublicRequest::Status::for_processing: return "for_processing";
     }
     throw std::invalid_argument("value doesn't exist in LibFred::PublicRequest::Status::Enum");
 }
@@ -69,6 +71,7 @@ inline LibFred::PublicRequest::Status::Enum from_db_handle< LibFred::PublicReque
     if (to_db_handle(LibFred::PublicRequest::Status::active) == db_handle) { return LibFred::PublicRequest::Status::active; }
     if (to_db_handle(LibFred::PublicRequest::Status::answered) == db_handle) { return LibFred::PublicRequest::Status::answered; }
     if (to_db_handle(LibFred::PublicRequest::Status::invalidated) == db_handle) { return LibFred::PublicRequest::Status::invalidated; }
+    if (to_db_handle(LibFred::PublicRequest::Status::for_processing) == db_handle) { return LibFred::PublicRequest::Status::for_processing; }
     throw std::invalid_argument("handle \"" + db_handle + "\" isn't convertible to LibFred::PublicRequest::Status::Enum");
 }
 

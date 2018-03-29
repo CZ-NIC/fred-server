@@ -183,6 +183,17 @@ public:
             ConfirmedBy::Enum confirmation_method,
             LockRequestType::Enum lock_request_type);
 
+    unsigned long long create_personal_info_request_registry_email(
+            const std::string& contact_handle,
+            const Optional<unsigned long long>& log_request_id,
+            std::shared_ptr<LibFred::Mailer::Manager> manager);
+
+    unsigned long long create_personal_info_request_non_registry_email(
+            const std::string& contact_handle,
+            const Optional<unsigned long long>& log_request_id,
+            ConfirmedBy::Enum confirmation_method,
+            const std::string& specified_email);
+
     Fred::Backend::Buffer create_public_request_pdf(
             unsigned long long public_request_id,
             Language::Enum lang,
