@@ -2155,6 +2155,7 @@ src_bin_corba_fred_adifd_LDADD = \
 		src/util/libpassword_storage.a \
 		src/deprecated/model/libmodel.a \
 		src/util/db/libdb.a \
+		src/util/tz/libtimezones.a \
 		src/util/types/libtypes.a \
 		src/util/log/liblog.a \
 		src/deprecated/util/liboldutils.a \

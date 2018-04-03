@@ -29,6 +29,8 @@
 #include "src/libfred/opcontext.hh"
 #include "src/util/db/nullable.hh"
 #include "src/util/optional_value.hh"
+#include "src/util/tz/get_psql_handle_of.hh"
+#include "src/util/tz/utc.hh"
 
 namespace Fred {
 namespace Backend {
@@ -87,7 +89,7 @@ public:
      * @throws Admin::ExceptionUnknownCheckStatusHandle
      * @throws Admin::ExceptionCheckNotUpdateable
      */
-    void exec(LibFred::OperationContext& _ctx);
+    void exec(LibFred::OperationContext& _ctx, const std::string& _output_timezone = Tz::get_psql_handle_of<Tz::UTC>());
 
 
 };
