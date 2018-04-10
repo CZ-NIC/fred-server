@@ -50,7 +50,6 @@
 
 #include "src/util/random_data_generator.hh"
 #include "src/util/concurrent_queue.hh"
-#include "src/libfred/model_files.hh"
 
 #include "src/util/cfg/handle_general_args.hh"
 #include "src/util/cfg/handle_database_args.hh"

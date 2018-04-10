@@ -4,8 +4,6 @@
 #include "src/libfred/common_impl_new.hh"
 #include "src/libfred/db_settings.hh"
 #include "src/libfred/file_transferer.hh"
-#include "src/deprecated/model/model_filters.hh"
-#include "src/libfred/model_files.hh"
 
 namespace LibFred {
 namespace File {

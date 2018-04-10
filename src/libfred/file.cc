@@ -1,11 +1,8 @@
-#include <algorithm>
-#include <boost/utility.hpp>
-
-// #include "src/libfred/common_impl.hh"
 #include "src/libfred/file.hh"
 #include "src/util/log/logger.hh"
 
-// #include "model_files.h"
+#include <algorithm>
+#include <boost/utility.hpp>
 
 namespace LibFred {
 namespace File {

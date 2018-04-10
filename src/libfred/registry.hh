@@ -29,7 +29,6 @@
 #include "src/libfred/invoicing/invoice.hh"
 #include "src/libfred/banking/bank_manager.hh"
 #include "src/libfred/mail.hh"
-#include "src/libfred/file.hh"
 #include "src/libfred/filter.hh"
 #include "src/libfred/messages/messages_impl.hh"
 

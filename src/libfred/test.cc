@@ -20,7 +20,6 @@
 #include <fstream>
 #include <string>
 #include "src/libfred/db_settings.hh"
-#include "src/libfred/file.hh"
 #include "src/libfred/invoicing/invoice.hh"
 #include "src/libfred/banking/bank_manager.hh"
 // #include "bank.h"
