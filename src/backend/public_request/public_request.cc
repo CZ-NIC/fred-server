@@ -103,7 +103,7 @@ extern const char authinfo_post_pif[] = "authinfo_post_pif";
 typedef AuthinfoPublicRequest::Named<authinfo_post_pif> AuthinfoPost;
 
 
-struct PersonalinfoInfoImplementation
+struct PersonalinfoImplementation
 {
     template <typename T>
     LibFred::PublicRequestTypeIface::PublicRequestTypes get_public_request_types_to_cancel_on_create() const
@@ -119,7 +119,7 @@ struct PersonalinfoInfoImplementation
     };
 };
 
-typedef ImplementedBy<PersonalinfoInfoImplementation> PersonalinfoPublicRequest;
+typedef ImplementedBy<PersonalinfoImplementation> PersonalinfoPublicRequest;
 
 extern const char personalinfo_auto_pif[] = "personalinfo_auto_pif";
 typedef PersonalinfoPublicRequest::Named<personalinfo_auto_pif> PersonalinfoAuto;
@@ -478,7 +478,7 @@ unsigned long long PublicRequestImpl::create_authinfo_request_registry_email(
         ObjectType::Enum object_type,
         const std::string& object_handle,
         const Optional<unsigned long long>& log_request_id,
-        std::shared_ptr<LibFred::Mailer::Manager> manager) // potentially put as member
+        std::shared_ptr<LibFred::Mailer::Manager> manager) const // potentially put as member
 {
     LOGGING_CONTEXT(log_ctx, *this);
     try
@@ -575,7 +575,7 @@ unsigned long long PublicRequestImpl::create_authinfo_request_non_registry_email
         const std::string& object_handle,
         const Optional<unsigned long long>& log_request_id,
         ConfirmedBy::Enum confirmation_method,
-        const std::string& specified_email)
+        const std::string& specified_email) const
 {
     LOGGING_CONTEXT(log_ctx, *this);
     try
@@ -668,7 +668,7 @@ unsigned long long PublicRequestImpl::create_block_unblock_request(
         const std::string& object_handle,
         const Optional<unsigned long long>& log_request_id,
         ConfirmedBy::Enum confirmation_method,
-        LockRequestType::Enum lock_request_type)
+        LockRequestType::Enum lock_request_type) const
 {
     LOGGING_CONTEXT(log_ctx, *this);
     try
@@ -801,7 +801,7 @@ unsigned long long PublicRequestImpl::create_block_unblock_request(
 
 namespace {
 
-unsigned long long get_id_of_contact(LibFred::OperationContext& ctx, const std::string contact_handle)
+unsigned long long get_id_of_contact(LibFred::OperationContext& ctx, const std::string& contact_handle)
 {
     return get_id_of_registered_object(ctx, PublicRequestImpl::ObjectType::contact, contact_handle);
 }
@@ -811,23 +811,18 @@ unsigned long long get_id_of_contact(LibFred::OperationContext& ctx, const std::
 unsigned long long PublicRequestImpl::create_personal_info_request_registry_email(
         const std::string& contact_handle,
         const Optional<unsigned long long>& log_request_id,
-        std::shared_ptr<LibFred::Mailer::Manager> manager)
+        std::shared_ptr<LibFred::Mailer::Manager> manager) const
 {
     LOGGING_CONTEXT(log_ctx, *this);
     try
     {
-        unsigned long long contact_id;
-        unsigned long long public_request_id;
-
         LibFred::OperationContextCreator ctx;
-        contact_id = get_id_of_contact(ctx, contact_handle);
+        const auto contact_id = get_id_of_contact(ctx, contact_handle);
         LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, contact_id);
-        public_request_id = LibFred::CreatePublicRequest(
-                "create_personal_info_request_registry_email call",
-                Optional<std::string>(),
-                Optional<unsigned long long>())
+        const auto public_request_id = LibFred::CreatePublicRequest()
             .exec(locked_object, Type::PersonalinfoAuto(), log_request_id);
-        LibFred::UpdatePublicRequest().set_status(LibFred::PublicRequest::Status::for_processing)
+        LibFred::UpdatePublicRequest()
+            .set_status(LibFred::PublicRequest::Status::answered)
             .exec(locked_object, Type::PersonalinfoAuto(), log_request_id);
         ctx.commit_transaction();
 
@@ -864,7 +859,7 @@ unsigned long long PublicRequestImpl::create_personal_info_request_non_registry_
         const std::string& contact_handle,
         const Optional<unsigned long long>& log_request_id,
         ConfirmedBy::Enum confirmation_method,
-        const std::string& specified_email)
+        const std::string& specified_email) const
 {
     LOGGING_CONTEXT(log_ctx, *this);
     try
@@ -872,10 +867,7 @@ unsigned long long PublicRequestImpl::create_personal_info_request_non_registry_
         LibFred::OperationContextCreator ctx;
         const unsigned long long contact_id = get_id_of_contact(ctx, contact_handle);
         LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, contact_id);
-        const LibFred::CreatePublicRequest create_public_request_op(
-                "create_personal_info_request_non_registry_email call",
-                specified_email,
-                Optional<unsigned long long>());
+        const auto create_public_request_op = LibFred::CreatePublicRequest().set_email_to_answer(specified_email);
         switch (confirmation_method)
         {
             case ConfirmedBy::email:
@@ -968,7 +960,7 @@ std::string language_to_lang_code(PublicRequestImpl::Language::Enum lang)
 Fred::Backend::Buffer PublicRequestImpl::create_public_request_pdf(
         unsigned long long public_request_id,
         Language::Enum lang,
-        std::shared_ptr<LibFred::Document::Manager> manager)
+        std::shared_ptr<LibFred::Document::Manager> manager) const
 {
     LOGGING_CONTEXT(log_ctx, *this);
     const std::string lang_code = language_to_lang_code(lang);
