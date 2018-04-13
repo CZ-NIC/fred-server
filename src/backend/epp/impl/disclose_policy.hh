@@ -21,7 +21,7 @@
 
 namespace Epp {
 
-inline bool is_the_default_policy_to_disclose() { return true; }
+inline bool is_the_default_policy_to_disclose() { return false; }
 inline bool is_the_default_policy_to_hide() { return !is_the_default_policy_to_disclose(); }
 
 } // namespace Epp
