@@ -94,7 +94,8 @@ namespace LibFred
             conn.exec_params("INSERT INTO registrar_credit (credit, registrar_id, zone_id) VALUES "
                 "(0, "
                 "($1::bigint), "
-                "($2::bigint)) ",
+                "($2::bigint)) "
+                "ON CONFLICT DO NOTHING",
                 Database::query_param_list
                         (reg_id)
                         (zone_id) );
