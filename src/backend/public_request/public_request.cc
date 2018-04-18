@@ -923,7 +923,8 @@ std::map<std::string, unsigned char> get_public_request_type_to_post_type_dictio
             dictionary.insert(std::make_pair(Type::Block::Transfer::ByPost().get_public_request_type(), 2)).second &&
             dictionary.insert(std::make_pair(Type::Unblock::Transfer::ByPost().get_public_request_type(), 3)).second &&
             dictionary.insert(std::make_pair(Type::Block::Changes::ByPost().get_public_request_type(), 4)).second &&
-            dictionary.insert(std::make_pair(Type::Unblock::Changes::ByPost().get_public_request_type(), 5)).second)
+            dictionary.insert(std::make_pair(Type::Unblock::Changes::ByPost().get_public_request_type(), 5)).second &&
+            dictionary.insert(std::make_pair(Type::PersonalinfoPost().get_public_request_type(), 6)).second)
     {
         return dictionary;
     }
