@@ -260,6 +260,11 @@ CORBA::ULongLong Server_i::create_personal_info_request_registry_email(
         LOGGER(PACKAGE).info(e.what());
         throw Registry::PublicRequest::INVALID_EMAIL();
     }
+    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::ObjectNotFound& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw Registry::PublicRequest::OBJECT_NOT_FOUND();
+    }
     catch (const std::exception& e)
     {
         LOGGER(PACKAGE).error(e.what());
@@ -294,6 +299,11 @@ CORBA::ULongLong Server_i::create_personal_info_request_non_registry_email(
     {
         LOGGER(PACKAGE).info(e.what());
         throw Registry::PublicRequest::INVALID_EMAIL();
+    }
+    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::ObjectNotFound& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw Registry::PublicRequest::OBJECT_NOT_FOUND();
     }
     catch (const std::exception& e)
     {
