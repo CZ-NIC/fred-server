@@ -387,7 +387,8 @@ sbin_PROGRAMS = \
 		src/bin/cli/fred-admin \
 		tools/logd_migration/migrate_log \
 		tools/contact_migration/mojeid_contact_address_import \
-		tools/contact_migration/mojeid_contact_ssn_fix
+		tools/contact_migration/mojeid_contact_ssn_fix \
+		tools/disclose_flags_updater/fred-disclose-flags-updater
 
 
 # util/libutil.a
@@ -2718,6 +2719,40 @@ src_bin_cli_fred_admin_LDADD = \
 		-lresolv
 #
 # src/cli_admin/fred-admin
+
+
+# tools/disclose_flags_updater/fred-disclose-flag-updater
+#
+tools_disclose_flags_updater_fred_disclose_flags_updater_SOURCES = \
+		tools/disclose_flags_updater/disclose_value.hh \
+		tools/disclose_flags_updater/disclose_value.cc \
+		tools/disclose_flags_updater/disclose_settings.hh \
+		tools/disclose_flags_updater/disclose_settings.cc \
+		tools/disclose_flags_updater/contact_search_query.hh \
+		tools/disclose_flags_updater/contact_search_query.cc \
+		tools/disclose_flags_updater/fred_disclose_flags_updater.cc
+
+tools_disclose_flags_updater_fred_disclose_flags_updater_CPPFLAGS = \
+		$(AM_CPPFLAGS)
+
+tools_disclose_flags_updater_fred_disclose_flags_updater_LDFLAGS = \
+		$(AM_LDFLAGS)
+
+tools_disclose_flags_updater_fred_disclose_flags_updater_LDADD = \
+		src/libfred/libfred.a \
+		src/util/log/liblog.a \
+		src/util/db/libdb.a \
+		src/util/libutil.a \
+		$(POSTGRESQL_LIB) \
+		$(BOOST_REGEX_LIB) \
+		$(BOOST_DATE_TIME_LIB) \
+		$(BOOST_THREAD_LIB) \
+		$(BOOST_PROGRAM_OPTIONS_LIB) \
+		$(BOOST_RANDOM_LIB) \
+		$(BOOST_SYSTEM_LIB)
+
+#
+# tools/disclose_flags_updater/fred-disclose-flag-updater
 
 
 # tools/logd_migration
