@@ -64,13 +64,14 @@ int main(int argc, char *argv[])
 
         po::variables_map vm;
         po::store(po::parse_command_line(argc, argv, args), vm);
-        po::notify(vm);
 
         if (vm.count("help"))
         {
             std::cout << args << std::endl;
             return 0;
         }
+
+        po::notify(vm);
 
         if (verbose)
         {
