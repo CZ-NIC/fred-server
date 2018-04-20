@@ -2604,6 +2604,8 @@ src_bin_cli_fred_admin_SOURCES = \
 		src/bin/cli/contactclient.cc \
 		src/bin/cli/contactclient.hh \
 		src/bin/cli/contact_params.hh \
+		src/bin/cli/public_request_method.hh \
+		src/bin/cli/public_request_method.cc \
 		src/bin/cli/contact_client_impl.hh \
 		src/bin/cli/invoiceclient.cc \
 		src/bin/cli/invoiceclient.hh \
@@ -2673,7 +2675,11 @@ src_bin_cli_fred_admin_SOURCES = \
 		src/backend/admin/notification/notification.hh \
 		src/backend/admin/notification/notification.cc \
 		src/backend/admin/domain/create_expired_domain.hh \
-		src/backend/admin/domain/create_expired_domain.cc
+		src/backend/admin/domain/create_expired_domain.cc \
+		src/backend/public_request/public_request.cc \
+		src/backend/public_request/public_request.hh \
+		src/backend/buffer.cc \
+		src/backend/buffer.hh
 
 src_bin_cli_fred_admin_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
@@ -2704,6 +2710,7 @@ src_bin_cli_fred_admin_LDADD = \
 		src/deprecated/util/liboldutils.a \
 		src/util/libutil.a \
 		src/util/hp/libhp.a \
+		src/libfred/public_request/libpublic_request.a \
 		-lmpdec -lm -lrt \
 		$(LIBCRYPTO_LIBS) \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
