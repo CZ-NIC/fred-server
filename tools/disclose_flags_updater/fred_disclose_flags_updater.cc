@@ -84,6 +84,7 @@ int main(int argc, char *argv[])
         if (discloses.is_empty())
         {
             std::cout << std::endl << "Nothing to do. Exiting..." << std::endl;
+            return 0;
         }
 
         auto contact_search_sql = make_query_search_contact_needs_update(discloses);
