@@ -31,6 +31,20 @@ public:
     void fillTemplateParams(LibFred::Mailer::Parameters&) const
     {
     }
+
+    TID sendEmail() const
+    {
+        return 0;
+    }
+
+    void save()
+    {
+        if (this->getId() == 0)
+        {
+            throw std::runtime_error("insert new request disabled");
+        }
+        PublicRequestImpl::save();
+    }
 };
 
 
