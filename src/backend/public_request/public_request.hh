@@ -44,6 +44,14 @@ namespace Fred {
 namespace Backend {
 namespace PublicRequest {
 
+struct NoPublicRequest : std::exception
+{
+    virtual const char* what() const noexcept
+    {
+        return "no public request found";
+    }
+};
+
 class PublicRequestImpl
 {
 public:
@@ -206,13 +214,6 @@ public:
 private:
     const std::string server_name_;
 };
-
-void process_public_request_nop(
-        unsigned long long _public_request_id,
-        LibFred::OperationContext& _ctx);
-void process_public_request_personal_info_answered(
-        unsigned long long _public_request_id,
-        LibFred::OperationContext& _ctx);
 
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend

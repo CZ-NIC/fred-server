@@ -2193,6 +2193,8 @@ src_bin_corba_fred_pifd_SOURCES = \
 		src/backend/buffer.hh \
 		src/backend/public_request/public_request.cc \
 		src/backend/public_request/public_request.hh \
+		src/backend/public_request/send_email.cc \
+		src/backend/public_request/send_email.hh \
 		src/bin/corba/public_request/server_i.cc \
 		src/bin/corba/public_request/server_i.hh \
 		src/bin/corba/util/corba_conversions_buffer.cc \
@@ -2676,8 +2678,10 @@ src_bin_cli_fred_admin_SOURCES = \
 		src/backend/admin/notification/notification.cc \
 		src/backend/admin/domain/create_expired_domain.hh \
 		src/backend/admin/domain/create_expired_domain.cc \
-		src/backend/public_request/public_request.cc \
-		src/backend/public_request/public_request.hh \
+		src/backend/public_request/send_email.cc \
+		src/backend/public_request/send_email.hh \
+		src/backend/public_request/process_public_requests.cc \
+		src/backend/public_request/process_public_requests.hh \
 		src/backend/buffer.cc \
 		src/backend/buffer.hh
 
@@ -3346,6 +3350,7 @@ test_backend_test_public_request_SOURCES = \
 		test/backend/public_request/main.cc \
 		src/backend/buffer.cc \
 		src/backend/public_request/public_request.cc \
+		src/backend/public_request/send_email.cc \
 		test/backend/public_request/test_registry_email.cc \
 		test/backend/public_request/test_non_registry_email.cc \
 		test/backend/public_request/test_create_block_unblock_request.cc \
