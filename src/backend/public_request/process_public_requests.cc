@@ -9,6 +9,7 @@
 #include "src/libfred/public_request/info_public_request.hh"
 #include "src/deprecated/model/public_request_filter.hh"
 #include "src/backend/public_request/public_request.hh"
+#include "src/util/csv/csv.hh"
 
 namespace Fred {
 namespace Backend {
@@ -87,11 +88,11 @@ unsigned long long send_personalinfo(
             LibFred::Mailer::Parameters::value_type("organization", info_contact_data.organization.get_value_or_default()));
     email_template_params.insert(
             LibFred::Mailer::Parameters::value_type("name", info_contact_data.name.get_value_or_default()));
+    const std::string pretty_printed_address = info_contact_data.place.isnull()
+        ? std::string()
+        : pretty_print_address(info_contact_data.place.get_value());
     email_template_params.insert(
-            LibFred::Mailer::Parameters::value_type("address",
-                                                    info_contact_data.place.isnull()
-                                                    ? std::string()
-                                                    : pretty_print_address(info_contact_data.place.get_value())));
+            LibFred::Mailer::Parameters::value_type("address", pretty_printed_address));
     std::string mailing_address;
     std::string billing_address;
     std::string shipping_address_1;
@@ -165,6 +166,54 @@ unsigned long long send_personalinfo(
         email_template_params.insert(
                 LibFred::Mailer::Parameters::value_type("registrar_url", std::string()));
     }
+
+    std::string ident_type_repr;
+    const std::string ident_type = info_contact_data.ssntype.get_value_or_default();
+    if (ident_type == "RC")
+    {
+        ident_type_repr = "Birth date";
+    }
+    else if (ident_type == "OP")
+    {
+        ident_type_repr = "Personal ID";
+    }
+    else if (ident_type == "PASS")
+    {
+        ident_type_repr = "Passport number";
+    }
+    else if (ident_type == "ICO")
+    {
+        ident_type_repr = "ID number";
+    }
+    else if (ident_type == "MSPV")
+    {
+        ident_type_repr = "MSPV ID";
+    }
+    else if (ident_type == "BIRTHDAY")
+    {
+        ident_type_repr = "Birth day";
+    }
+
+    const Util::Csv::Document csv_document = {
+        {"Contact ID in the registry", info_contact_data.handle},
+        {"Organisation", info_contact_data.organization.get_value_or_default()},
+        {"Name", info_contact_data.name.get_value_or_default()},
+        {"Address", pretty_printed_address},
+        {"Mailing address", mailing_address},
+        {"Billing address", billing_address},
+        {"Shipping address 1", shipping_address_1},
+        {"Shipping address 2", shipping_address_2},
+        {"Shipping address 3", shipping_address_3},
+        {"Identification type", ident_type_repr},
+        {"Identification", info_contact_data.ssn.get_value_or_default()},
+        {"VAT No.", info_contact_data.vat.get_value_or_default()},
+        {"Phone", info_contact_data.telephone.get_value_or_default()},
+        {"Fax", info_contact_data.fax.get_value_or_default()},
+        {"E-mail", info_contact_data.email.get_value()},
+        {"Notification e-mail", info_contact_data.notifyemail.get_value_or_default()},
+        {"Designated registrar", info_contact_data.notifyemail.get_value_or_default()}
+    };
+    const std::string csv_document_content = Util::Csv::to_string(csv_document);
 
     // create attachment
     std::vector<unsigned long long> attachments;
