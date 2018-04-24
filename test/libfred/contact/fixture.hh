@@ -19,8 +19,18 @@
 #ifndef FIXTURE_HH_DDB7D8EEA4534803A96FA30593FE5869
 #define FIXTURE_HH_DDB7D8EEA4534803A96FA30593FE5869
 
-#include "test/libfred/contact/test_merge_contact_fixture.hh"
+#include "src/libfred/opcontext.hh"
+#include "src/libfred/object/object_states_info.hh"
+#include "src/libfred/object_state/create_object_state_request_id.hh"
+#include "src/libfred/object_state/perform_object_state_request.hh"
+#include "src/libfred/registrable_object/contact/create_contact.hh"
+#include "src/libfred/registrable_object/contact/info_contact.hh"
+#include "src/libfred/registrar/create_registrar.hh"
+#include "src/libfred/registrar/info_registrar.hh"
 #include "test/libfred/contact/util.hh"
+
+#include <boost/foreach.hpp>
+#include <boost/test/unit_test.hpp>
 
 namespace Test {
 namespace LibFred {

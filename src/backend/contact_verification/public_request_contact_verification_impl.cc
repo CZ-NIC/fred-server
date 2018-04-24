@@ -6,6 +6,9 @@
 #include "src/libfred/contact_verification/contact_verification_validators.hh"
 #include "src/libfred/object_states.hh"
 #include "src/libfred/public_request/public_request_impl.hh"
+#include "src/libfred/registrable_object/contact/undisclose_address.hh"
+#include "src/util/cfg/config_handler_decl.hh"
+#include "src/util/cfg/handle_registry_args.hh"
 #include "src/util/factory.hh"
 #include "src/util/map_at.hh"
 #include "src/util/types/birthdate.hh"
@@ -17,11 +20,26 @@ namespace Backend {
 namespace ContactVerification {
 namespace PublicRequest {
 
+namespace {
+
+std::string get_system_registrar_handle()
+{
+    const std::string handle =
+            CfgArgs::instance()->get_handler_ptr_by_type<HandleRegistryArgs>()->system_registrar;
+    if (!handle.empty())
+    {
+        return handle;
+    }
+    throw std::runtime_error("missing configuration for system registrar");
+}
+
+} // namespace Fred::Backend::ContactVerification::PublicRequest::{anonymous}
+
 FACTORY_MODULE_INIT_DEFI(contact_verification)
 
 class ConditionalContactIdentification
         : public LibFred::PublicRequest::PublicRequestAuthImpl,
-          public Util::FactoryAutoRegister<LibFred::PublicRequest::PublicRequest,
+          public ::Util::FactoryAutoRegister<LibFred::PublicRequest::PublicRequest,
                   ConditionalContactIdentification>
 {
     LibFred::Contact::Verification::ConditionalContactIdentificationImpl cond_contact_identification_impl;
@@ -105,7 +123,7 @@ public:
 
 class ContactIdentification
         : public LibFred::PublicRequest::PublicRequestAuthImpl,
-          public Util::FactoryAutoRegister<LibFred::PublicRequest::PublicRequest,
+          public ::Util::FactoryAutoRegister<LibFred::PublicRequest::PublicRequest,
                   ContactIdentification>
 {
     LibFred::Contact::Verification::ContactIdentificationImpl contact_identification_impl;
@@ -153,6 +171,7 @@ public:
 
         /* update states */
         LibFred::update_object_states(this->getObject(0).id);
+
         tx.commit();
     }
 

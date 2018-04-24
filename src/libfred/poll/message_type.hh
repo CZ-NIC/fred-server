@@ -55,6 +55,7 @@ struct MessageType
         imp_validation,
         validation,
 
+        update_contact,
         update_domain,
         update_nsset,
         update_keyset,
@@ -96,6 +97,7 @@ inline std::string to_db_handle(LibFred::Poll::MessageType::Enum value)
         case LibFred::Poll::MessageType::imp_validation: return "imp_validation";
         case LibFred::Poll::MessageType::validation: return "validation";
 
+        case LibFred::Poll::MessageType::update_contact: return "update_contact";
         case LibFred::Poll::MessageType::update_domain: return "update_domain";
         case LibFred::Poll::MessageType::update_nsset: return "update_nsset";
         case LibFred::Poll::MessageType::update_keyset: return "update_keyset";
@@ -133,6 +135,7 @@ inline LibFred::Poll::MessageType::Enum from_db_handle<LibFred::Poll::MessageTyp
                 LibFred::Poll::MessageType::imp_validation,
                 LibFred::Poll::MessageType::validation,
 
+                LibFred::Poll::MessageType::update_contact,
                 LibFred::Poll::MessageType::update_domain,
                 LibFred::Poll::MessageType::update_nsset,
                 LibFred::Poll::MessageType::update_keyset,

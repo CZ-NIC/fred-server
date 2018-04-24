@@ -49,6 +49,7 @@
 #include "src/libfred/registrable_object/contact/info_contact_diff.hh"
 #include "src/libfred/registrable_object/contact/ssntype.hh"
 #include "src/libfred/registrable_object/contact/transfer_contact.hh"
+#include "src/libfred/registrable_object/contact/undisclose_address.hh"
 #include "src/libfred/registrable_object/contact/update_contact.hh"
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/handle_corbanameservice_args.hh"
@@ -113,6 +114,17 @@ std::string get_mojeid_registrar_handle()
         return handle;
     }
     throw std::runtime_error("missing configuration for dedicated registrar");
+}
+
+std::string get_system_registrar_handle()
+{
+    const std::string handle =
+            CfgArgs::instance()->get_handler_ptr_by_type<HandleRegistryArgs>()->system_registrar;
+    if (!handle.empty())
+    {
+        return handle;
+    }
+    throw std::runtime_error("missing configuration for system registrar");
 }
 
 ::size_t get_mojeid_registrar_id(const std::string& registrar_handle)
@@ -370,7 +382,7 @@ void notify(LibFred::OperationContext& _ctx,
 {
     if (notification_enabled())
     {
-        Notification::enqueue_notification(_ctx, _event, _done_by_registrar, _object_historyid_post_change, Util::make_svtrid(_log_request_id));
+        Notification::enqueue_notification(_ctx, _event, _done_by_registrar, _object_historyid_post_change, ::Util::make_svtrid(_log_request_id));
     }
 }
 
@@ -732,6 +744,7 @@ typedef prepare_transaction_storage::object_type::data_not_found prepare_transac
 MojeIdImpl::MojeIdImpl(const std::string& _server_name)
     : server_name_(_server_name),
       mojeid_registrar_handle_(get_mojeid_registrar_handle()),
+      system_registrar_handle_(get_system_registrar_handle()),
       mojeid_registrar_id_(get_mojeid_registrar_id(mojeid_registrar_handle_))
 {
     LogContext log_ctx(*this, "init");
@@ -1706,6 +1719,7 @@ MojeIdImpl::ContactId MojeIdImpl::process_registration_request(
             }
 
             LibFred::StatusList to_set;
+            bool validated_contact_state_was_set = false;
             switch (pub_req_type)
             {
                 case PubReqType::contact_conditional_identification:
@@ -1716,6 +1730,7 @@ MojeIdImpl::ContactId MojeIdImpl::process_registration_request(
                     if (states.absents(LibFred::Object_State::validated_contact))
                     {
                         to_set.insert(Conversion::Enums::to_db_handle(LibFred::Object_State::validated_contact));
+                        validated_contact_state_was_set = true;
                     }
                     break;
                 case PubReqType::conditionally_identified_contact_transfer:
@@ -1725,6 +1740,7 @@ MojeIdImpl::ContactId MojeIdImpl::process_registration_request(
                     if (states.absents(LibFred::Object_State::validated_contact))
                     {
                         to_set.insert(Conversion::Enums::to_db_handle(LibFred::Object_State::validated_contact));
+                        validated_contact_state_was_set = true;
                     }
                     break;
                 default:
@@ -1767,6 +1783,10 @@ MojeIdImpl::ContactId MojeIdImpl::process_registration_request(
             to_set.insert(Conversion::Enums::to_db_handle(LibFred::Object_State::mojeid_contact));
             LibFred::CreateObjectStateRequestId(contact_id, to_set).exec(ctx);
             LibFred::PerformObjectStateRequest(contact_id).exec(ctx);
+            if (validated_contact_state_was_set)
+            {
+                LibFred::Contact::undisclose_address(ctx, contact_id, system_registrar_handle_); // #21767
+            }
 
             const LibFred::InfoContactData contact = LibFred::InfoContactById(contact_id).exec(ctx).info_contact_data;
             {
@@ -1959,6 +1979,7 @@ void MojeIdImpl::process_identification_request(
         to_set.insert(Conversion::Enums::to_db_handle(LibFred::Object_State::identified_contact));
         LibFred::CreateObjectStateRequestId(_contact_id, to_set).exec(ctx);
         LibFred::PerformObjectStateRequest(_contact_id).exec(ctx);
+        LibFred::Contact::undisclose_address(ctx, _contact_id, system_registrar_handle_); // #21767
         answer(locked_request,
                 reidentification ? Fred::Backend::MojeId::PublicRequest::ContactReidentification().iface()
                                  : Fred::Backend::MojeId::PublicRequest::ContactIdentification().iface(),
@@ -2194,14 +2215,14 @@ Fred::Backend::Buffer MojeIdImpl::get_validation_pdf(ContactId _contact_id) cons
                         : "";
         std::string letter_xml("<?xml version='1.0' encoding='utf-8'?>");
         // clang-format off
-        Util::XmlTagPair("mojeid_valid", Util::vector_of< Util::XmlCallback >
-            (Util::XmlTagPair("request_id",   Util::XmlUnparsedCData(request_id)))
-            (Util::XmlTagPair("handle",       Util::XmlUnparsedCData(handle)))
-            (Util::XmlTagPair("name",         Util::XmlUnparsedCData(name)))
-            (Util::XmlTagPair("organization", Util::XmlUnparsedCData(organization)))
-            (Util::XmlTagPair("ic",           Util::XmlUnparsedCData(is_ssn_ico ? ssn_value : "")))
-            (Util::XmlTagPair("birth_date",   Util::XmlUnparsedCData(birthday)))
-            (Util::XmlTagPair("address",      Util::XmlUnparsedCData(address)))
+        ::Util::XmlTagPair("mojeid_valid", ::Util::vector_of< ::Util::XmlCallback >
+            (::Util::XmlTagPair("request_id",   ::Util::XmlUnparsedCData(request_id)))
+            (::Util::XmlTagPair("handle",       ::Util::XmlUnparsedCData(handle)))
+            (::Util::XmlTagPair("name",         ::Util::XmlUnparsedCData(name)))
+            (::Util::XmlTagPair("organization", ::Util::XmlUnparsedCData(organization)))
+            (::Util::XmlTagPair("ic",           ::Util::XmlUnparsedCData(is_ssn_ico ? ssn_value : "")))
+            (::Util::XmlTagPair("birth_date",   ::Util::XmlUnparsedCData(birthday)))
+            (::Util::XmlTagPair("address",      ::Util::XmlUnparsedCData(address)))
         )(letter_xml);
         // clang-format on
 
@@ -2366,6 +2387,7 @@ void MojeIdImpl::validate_contact(
         to_set.insert(Conversion::Enums::to_db_handle(LibFred::Object_State::validated_contact));
         LibFred::CreateObjectStateRequestId(_contact_id, to_set).exec(ctx);
         LibFred::PerformObjectStateRequest(_contact_id).exec(ctx);
+        LibFred::Contact::undisclose_address(ctx, _contact_id, system_registrar_handle_); // #21767
         ctx.commit_transaction();
         return;
     }
@@ -3131,24 +3153,24 @@ MojeIdImpl::MessageId MojeIdImpl::send_mojeid_card(
                                               : "";
 
     // clang-format off
-    Util::XmlTagPair("contact_auth", Util::vector_of<Util::XmlCallback>
-        (Util::XmlTagPair("user", Util::vector_of<Util::XmlCallback>
-            (Util::XmlTagPair("actual_date", Util::XmlUnparsedCData(boost::gregorian::to_iso_extended_string(letter_date))))
-            (Util::XmlTagPair("name", Util::XmlUnparsedCData(pa.name)))
-            (Util::XmlTagPair("organization", Util::XmlUnparsedCData(pa.org)))
-            (Util::XmlTagPair("street", Util::XmlUnparsedCData(pa.street1)))
-            (Util::XmlTagPair("city", Util::XmlUnparsedCData(pa.city)))
-            (Util::XmlTagPair("stateorprovince", Util::XmlUnparsedCData(pa.state)))
-            (Util::XmlTagPair("postal_code", Util::XmlUnparsedCData(pa.code)))
-            (Util::XmlTagPair("country", Util::XmlUnparsedCData(addr_country)))
-            (Util::XmlTagPair("account", Util::vector_of<Util::XmlCallback>
-                (Util::XmlTagPair("username", Util::XmlUnparsedCData(boost::algorithm::to_lower_copy(contact_handle))))
-                (Util::XmlTagPair("first_name", Util::XmlUnparsedCData(firstname)))
-                (Util::XmlTagPair("last_name", Util::XmlUnparsedCData(lastname)))
-                (Util::XmlTagPair("sex", Util::XmlUnparsedCData(sex)))
-                (Util::XmlTagPair("email", Util::XmlUnparsedCData(_data.email.get_value_or_default())))
-                (Util::XmlTagPair("mobile", Util::XmlUnparsedCData(_data.telephone.get_value_or_default())))
-                (Util::XmlTagPair("state", Util::XmlUnparsedCData(contact_state)))
+    ::Util::XmlTagPair("contact_auth", ::Util::vector_of<::Util::XmlCallback>
+        (::Util::XmlTagPair("user", ::Util::vector_of<::Util::XmlCallback>
+            (::Util::XmlTagPair("actual_date", ::Util::XmlUnparsedCData(boost::gregorian::to_iso_extended_string(letter_date))))
+            (::Util::XmlTagPair("name", ::Util::XmlUnparsedCData(pa.name)))
+            (::Util::XmlTagPair("organization", ::Util::XmlUnparsedCData(pa.org)))
+            (::Util::XmlTagPair("street", ::Util::XmlUnparsedCData(pa.street1)))
+            (::Util::XmlTagPair("city", ::Util::XmlUnparsedCData(pa.city)))
+            (::Util::XmlTagPair("stateorprovince", ::Util::XmlUnparsedCData(pa.state)))
+            (::Util::XmlTagPair("postal_code", ::Util::XmlUnparsedCData(pa.code)))
+            (::Util::XmlTagPair("country", ::Util::XmlUnparsedCData(addr_country)))
+            (::Util::XmlTagPair("account", ::Util::vector_of<::Util::XmlCallback>
+                (::Util::XmlTagPair("username", ::Util::XmlUnparsedCData(boost::algorithm::to_lower_copy(contact_handle))))
+                (::Util::XmlTagPair("first_name", ::Util::XmlUnparsedCData(firstname)))
+                (::Util::XmlTagPair("last_name", ::Util::XmlUnparsedCData(lastname)))
+                (::Util::XmlTagPair("sex", ::Util::XmlUnparsedCData(sex)))
+                (::Util::XmlTagPair("email", ::Util::XmlUnparsedCData(_data.email.get_value_or_default())))
+                (::Util::XmlTagPair("mobile", ::Util::XmlUnparsedCData(_data.telephone.get_value_or_default())))
+                (::Util::XmlTagPair("state", ::Util::XmlUnparsedCData(contact_state)))
             ))
         ))
     )(letter_xml);

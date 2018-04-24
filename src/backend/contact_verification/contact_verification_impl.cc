@@ -10,8 +10,10 @@
 #include "src/libfred/object_states.hh"
 #include "src/libfred/public_request/public_request_impl.hh"
 #include "src/libfred/registrable_object/contact.hh"
+#include "src/libfred/registrable_object/contact/undisclose_address.hh"
 #include "src/libfred/registry.hh"
 #include "src/util/cfg/config_handler_decl.hh"
+#include "src/util/cfg/handle_registry_args.hh"
 #include "src/util/factory_check.hh"
 #include "src/util/log/logger.hh"
 #include "src/util/random.hh"
@@ -39,6 +41,21 @@ static const std::string create_ctx_name(const std::string& _name)
 namespace Fred {
 namespace Backend {
 namespace ContactVerification {
+
+namespace {
+
+std::string get_system_registrar_handle()
+{
+    const std::string handle =
+            CfgArgs::instance()->get_handler_ptr_by_type<HandleRegistryArgs>()->system_registrar;
+    if (!handle.empty())
+    {
+        return handle;
+    }
+    throw std::runtime_error("missing configuration for system registrar");
+}
+
+} // namespace Fred::Backend::ContactVerification::{anonymous}
 
 static Fred::Backend::ContactVerification::DATA_VALIDATION_ERROR
 create_data_validation_error_not_available()
@@ -425,12 +442,28 @@ unsigned long long ContactVerificationImpl::processIdentification(
                 cinfo.id,
                 request_type_list);
 
-        request_manager->processAuthRequest(
+        const unsigned long long object_id = request_manager->processAuthRequest(
                 request_id,
                 password,
                 log_id);
 
         trans.commit();
+
+        try {
+            LibFred::Contact::undisclose_address_async(object_id, get_system_registrar_handle()); // #21767
+        }
+        catch (const std::exception& e)
+        {
+            LOGGER(PACKAGE).info(
+                    boost::format("processing identification request id=%1%: async disclose address of contact with id %2%: %3%")
+                    % request_id % object_id % e.what());
+        }
+        catch (...)
+        {
+            LOGGER(PACKAGE).info(
+                    boost::format("processing identification request id=%1%: async disclose address of contact with id %2%: unknown error")
+                    % request_id % object_id);
+        }
 
         return cinfo.id;
     }
