@@ -21,6 +21,7 @@ int main(int argc, char *argv[])
         DiscloseSettings discloses;
         bool verbose = false;
         bool dry_run = false;
+        bool progress_display = false;
         std::string by_registrar;
         std::string db_connect;
 
@@ -28,6 +29,7 @@ int main(int argc, char *argv[])
         po::options_description args("Options");
         args.add_options()
             ("verbose", po::bool_switch(&verbose)->default_value(false), "verbose output")
+            ("progress", po::bool_switch(&progress_display)->default_value(false), "display progress bar")
             ("help", "produce usage message")
             ("dry-run", po::bool_switch(&dry_run)->default_value(false), "only show what will be done")
             ("db-connect", po::value<std::string>(&db_connect)->required(), "database connection string")
@@ -178,7 +180,7 @@ int main(int argc, char *argv[])
             }
             else
             {
-                if (i % progress_display_step == 0 || i == 0)
+                if (progress_display && (i % progress_display_step == 0 || i == 0))
                 {
                     auto ith_time = std::chrono::steady_clock::now();
                     auto eta_time = ((ith_time - start_time) / (i + 1)) * (total_count - i + 1);
