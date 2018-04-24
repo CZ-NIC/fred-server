@@ -171,27 +171,27 @@ unsigned long long send_personalinfo(
     const std::string ident_type = info_contact_data.ssntype.get_value_or_default();
     if (ident_type == "RC")
     {
-        ident_type_repr = "Birth date";
+        ident_type_repr = "National Identity Number";
     }
     else if (ident_type == "OP")
     {
-        ident_type_repr = "Personal ID";
+        ident_type_repr = "National Identity Card";
     }
     else if (ident_type == "PASS")
     {
-        ident_type_repr = "Passport number";
+        ident_type_repr = "Passport Number";
     }
     else if (ident_type == "ICO")
     {
-        ident_type_repr = "ID number";
+        ident_type_repr = "Company Registration Number";
     }
-    else if (ident_type == "MSPV")
+    else if (ident_type == "MPSV")
     {
-        ident_type_repr = "MSPV ID";
+        ident_type_repr = "Social Security Number";
     }
     else if (ident_type == "BIRTHDAY")
     {
-        ident_type_repr = "Birth day";
+        ident_type_repr = "Birthdate";
     }
 
     const Util::Csv::Document csv_document = {
