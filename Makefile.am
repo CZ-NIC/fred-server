@@ -2683,7 +2683,8 @@ src_bin_cli_fred_admin_SOURCES = \
 		src/backend/public_request/process_public_requests.cc \
 		src/backend/public_request/process_public_requests.hh \
 		src/backend/buffer.cc \
-		src/backend/buffer.hh
+		src/backend/buffer.hh \
+		src/backend/public_request/public_request.cc
 
 src_bin_cli_fred_admin_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \

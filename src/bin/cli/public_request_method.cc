@@ -21,6 +21,8 @@
 #include "src/backend/public_request/process_public_requests.hh"
 #include "src/util/db/query_param.hh"
 #include "src/bin/cli/public_request_method.hh"
+#include "src/backend/public_request/get_type_names.hh"
+#include "src/libfred/public_request/public_request_status.hh"
 
 namespace Admin {
 
@@ -28,16 +30,25 @@ void PublicRequestProcedure::exec()
 {
     LibFred::OperationContextCreator ctx;
     const Database::Result dbres =
-        ctx.get_conn().exec_params("SELECT id, request_type FROM public_request WHERE on_status_action=$1::enum_on_status_action_type",
-                                    Database::query_param_list
-                                    (Conversion::Enums::to_db_handle(LibFred::PublicRequest::OnStatusAction::scheduled)));
+        ctx.get_conn().exec_params("SELECT pr.id, eprs.name, eprt.name "
+                                   "FROM public_request pr "
+                                   "JOIN enum_public_request_type eprt ON pr.request_type=eprt.id "
+                                   "JOIN enum_public_request_status eprs ON eprs.id=pr.status "
+                                   "WHERE on_status_action=$1::enum_on_status_action_type",
+                                   Database::query_param_list
+                                   (Conversion::Enums::to_db_handle(LibFred::PublicRequest::OnStatusAction::scheduled)));
     for (std::size_t i = 0; i < dbres.size(); ++i)
     {
         const auto request_id = static_cast<unsigned long long>(dbres[i][0]);
-        const auto request_type = static_cast<unsigned long long>(dbres[i][1]); // enum or sql query?
+        const auto request_status =
+            Conversion::Enums::from_db_handle<LibFred::PublicRequest::Status>(static_cast<std::string>(dbres[i][1]));
+        const auto request_type = static_cast<std::string>(dbres[i][2]);
         try
         {
-            if (request_type == 22 || request_type == 23 || request_type == 24)
+            if (request_status == LibFred::PublicRequest::Status::answered &&
+                (request_type == Fred::Backend::PublicRequest::Type::get_personal_info_auto_type_name() ||
+                 request_type == Fred::Backend::PublicRequest::Type::get_personal_info_email_type_name() ||
+                 request_type == Fred::Backend::PublicRequest::Type::get_personal_info_post_type_name()))
             {
                 Fred::Backend::PublicRequest::process_public_request_personal_info_answered(
                         request_id,
@@ -59,6 +70,7 @@ void PublicRequestProcedure::exec()
             ctx.get_log().error(e.what());
         }
     }
+    ctx.commit_transaction();
 }
 
 } // namespace Admin

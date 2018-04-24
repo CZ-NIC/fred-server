@@ -21,28 +21,29 @@
 
 #include "src/util/csv/rapidcsv.hh"
 
+#include <vector>
+#include <string>
+
+namespace Fred
+{
 namespace Util
 {
-namespace Csv
-{
 
-using Document = std::vector<std::vector<std::string>>;
-
-std::string to_string(const Document& _csv)
+std::string to_csv_string(const std::vector<std::vector<std::string>>& _cells)
 {
     rapidcsv::Document doc(std::string(), rapidcsv::LabelParams(-1, -1), rapidcsv::SeparatorParams(';', true));
-    for (std::size_t i = 0; i < _csv.size(); ++i)
+    for (std::size_t i = 0; i < _cells.size(); ++i)
     {
-        const std::size_t column_size = _csv[i].size();
+        const std::size_t column_size = _cells[i].size();
         for (std::size_t j = 0; j < column_size; ++j)
         {
-            doc.SetCell<std::string>(j, i, _csv[i][j]);
+            doc.SetCell<std::string>(j, i, _cells[i][j]);
         }
     }
     return doc.ToString();
 }
 
-} // namespace Util::Csv
-} // namespace Util
+} // namespace Fred::Util
+} // namespace Fred
 
 #endif

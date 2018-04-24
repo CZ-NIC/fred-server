@@ -38,6 +38,18 @@ struct process_public_requests_impl
     void operator()() const
     {
         Logging::Context ctx("process_public_requests_impl");
+
+        FakedArgs orb_fa = CfgArgGroups::instance()->fa;
+
+        HandleCorbaNameServiceArgsGrp* ns_args_ptr=CfgArgGroups::instance()->
+                   get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>();
+
+        CorbaContainer::set_instance(orb_fa.get_argc(),
+                                     orb_fa.get_argv(),
+                                     ns_args_ptr->get_nameservice_host(),
+                                     ns_args_ptr->get_nameservice_port(),
+                                     ns_args_ptr->get_nameservice_context());
+
         Admin::PublicRequestProcedure public_request(
                 CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientProcessPublicRequestsArgsGrp>()->process_public_requests_params,
                 static_cast<std::shared_ptr<LibFred::Mailer::Manager>>(

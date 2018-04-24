@@ -2703,8 +2703,9 @@ struct HandleAdminClientProcessPublicRequestsArgsGrp : HandleCommandGrpArgs
     {
         std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
-                        std::string("object_regular_procedure options")));
+                        std::string("process_public_requests options")));
         cfg_opts->add_options()
+             ("process_public_requests", "process_public_requests options")
              ("types", boost::program_options::value<std::vector<std::string> >()->multitoken()
                  ->notifier(save_arg<std::vector<std::string> >(process_public_requests_params.types)),
                  "list of types of public requests to be processed");

@@ -34,7 +34,7 @@ void set_on_status_action(
     {
         return;
     }
-    throw std::runtime_error("failed to mark a public_request as processed");
+    throw std::runtime_error("failed to switch public request's on status action");
 }
 
 template<typename T>
@@ -42,7 +42,20 @@ std::string pretty_print_address(const T& _address)
 {
     std::ostringstream address;
     address << _address.street1 << ", ";
+    if (!_address.street2.get_value_or_default().empty())
+    {
+        address << _address.street2.get_value() << ", ";
+    }
+    if (!_address.street3.get_value_or_default().empty())
+    {
+        address << _address.street3.get_value() << ", ";
+    }
     address << _address.city << ", ";
+    if (!_address.stateorprovince.get_value_or_default().empty())
+    {
+        address << _address.stateorprovince.get_value() << ", ";
+    }
+    address << _address.country << ", ";
     address << _address.postalcode;
     return address.str();
 }
@@ -141,7 +154,7 @@ unsigned long long send_personalinfo(
             LibFred::Mailer::Parameters::value_type("telephone", info_contact_data.telephone.get_value_or_default()));
     email_template_params.insert(
             LibFred::Mailer::Parameters::value_type("fax", info_contact_data.fax.get_value_or_default()));
-    if (!info_contact_data.email.isnull())
+    if (info_contact_data.email.isnull())
     {
         throw PublicRequestImpl::NoContactEmail();
     }
@@ -195,7 +208,7 @@ unsigned long long send_personalinfo(
         ident_type_repr = "Birthdate";
     }
 
-    const Util::Csv::Document csv_document = {
+    const std::vector<std::vector<std::string>> cells = {
         {"Contact ID in the registry", info_contact_data.handle},
         {"Organisation", info_contact_data.organization.get_value_or_default()},
         {"Name", info_contact_data.name.get_value_or_default()},
@@ -214,7 +227,7 @@ unsigned long long send_personalinfo(
         {"Notification e-mail", info_contact_data.notifyemail.get_value_or_default()},
         {"Designated registrar", info_contact_data.notifyemail.get_value_or_default()}
     };
-    const std::string csv_document_content = Util::Csv::to_string(csv_document);
+    const std::string csv_document_content = Fred::Util::to_csv_string(cells);
 
     constexpr unsigned db_enum_filetype_dot_personal_info_csv = 12;
     std::vector<char> in_buffer(csv_document_content.begin(), csv_document_content.end());

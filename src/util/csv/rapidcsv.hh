@@ -5,7 +5,7 @@
  * Version:  2.0
  *
  * Copyright (C) 2017-2018 Kristofer Berggren
- * Copyright (C) 2018 Miroslav Franc
+ * Copyright (C) 2018 Miroslav Franc (implemented member function "ToString")
  * All rights reserved.
  * 
  * rapidcsv is distributed under the BSD 3-Clause license, see LICENSE for details.
