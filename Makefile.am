@@ -1130,6 +1130,8 @@ src_libfred_public_request_libpublic_request_a_SOURCES = \
 		src/libfred/public_request/public_request_authinfo_impl.hh \
 		src/libfred/public_request/public_request_block_impl.cc \
 		src/libfred/public_request/public_request_block_impl.hh \
+		src/libfred/public_request/public_request_personalinfo_impl.cc \
+		src/libfred/public_request/public_request_personalinfo_impl.hh \
 		src/libfred/public_request/create_public_request.cc \
 		src/libfred/public_request/create_public_request.hh \
 		src/libfred/public_request/create_public_request_auth.cc \

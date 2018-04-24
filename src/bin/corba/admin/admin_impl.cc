@@ -42,6 +42,7 @@
 #include "src/libfred/banking/bank_payment.hh"
 #include "src/libfred/public_request/public_request_authinfo_impl.hh"
 #include "src/libfred/public_request/public_request_block_impl.hh"
+#include "src/libfred/public_request/public_request_personalinfo_impl.hh"
 #include "src/libfred/registrar/info_registrar.hh"
 #include "src/util/factory_check.hh"
 #include "src/util/log/logger.hh"

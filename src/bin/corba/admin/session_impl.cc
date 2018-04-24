@@ -34,6 +34,7 @@
 #include "src/bin/corba/admin/common.hh"
 #include "src/libfred/public_request/public_request_authinfo_impl.hh"
 #include "src/libfred/public_request/public_request_block_impl.hh"
+#include "src/libfred/public_request/public_request_personalinfo_impl.hh"
 #include "src/backend/contact_verification/public_request_contact_verification_impl.hh"
 #include "src/util/log/logger.hh"
 #include "src/util/log/context.hh"
@@ -1636,6 +1637,15 @@ Registry::PublicRequest::Detail* ccReg_Session_i::createPublicRequestDetail(LibF
   }
   else if (_request->getType() == CorbaConversion::Admin::PRT_MOJEID_CONTACT_PREVALIDATED_TRANSFER) {
       detail->type = Registry::PublicRequest::PRT_MOJEID_PREVALIDATED_CONTACT_TRANSFER;
+  }
+  else if (_request->getType() == LibFred::PublicRequest::PRT_PERSONALINFO_AUTO_PIF) {
+      detail->type = Registry::PublicRequest::PRT_PERSONALINFO_AUTO_PIF;
+  }
+  else if (_request->getType() == LibFred::PublicRequest::PRT_PERSONALINFO_EMAIL_PIF) {
+      detail->type = Registry::PublicRequest::PRT_PERSONALINFO_EMAIL_PIF;
+  }
+  else if (_request->getType() == LibFred::PublicRequest::PRT_PERSONALINFO_POST_PIF) {
+      detail->type = Registry::PublicRequest::PRT_PERSONALINFO_POST_PIF;
   }
   else {
       throw std::runtime_error("unknown public request type");
