@@ -49,9 +49,10 @@ std::string pretty_print_address(const T& _address)
 
 unsigned long long send_personalinfo(
         unsigned long long _public_request_id,
-        LibFred::OperationContext& _ctx)
+        LibFred::OperationContext& _ctx,
+        std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager,
+        std::shared_ptr<LibFred::File::Transferer> _file_manager_client)
 {
-    const std::shared_ptr<LibFred::Mailer::Manager> manager = std::make_shared<MailerManager>(CorbaContainer::get_instance()->getNS()); // sigh
     LibFred::PublicRequestLockGuardById locked_request(_ctx, _public_request_id);
     const LibFred::PublicRequestInfo request_info = LibFred::InfoPublicRequest().exec(_ctx, locked_request);
     const auto contact_id = request_info.get_object_id().get_value(); // oops
@@ -215,30 +216,41 @@ unsigned long long send_personalinfo(
     };
     const std::string csv_document_content = Util::Csv::to_string(csv_document);
 
-    // create attachment
-    std::vector<unsigned long long> attachments;
-    // add attachments number
+    constexpr unsigned db_enum_filetype_dot_personal_info_csv = 12;
+    std::vector<char> in_buffer(csv_document_content.begin(), csv_document_content.end());
+    const unsigned long long attachment_id = _file_manager_client->upload(
+            in_buffer,
+            "personal_info.csv",
+            "text/csv",
+            db_enum_filetype_dot_personal_info_csv);
+
+    std::vector<unsigned long long> attachments = { attachment_id };
+
     const std::set<std::string> recipients = { info_contact_data.email.get_value() };
     const EmailData data(recipients, "sendpersonalinfo_pif", email_template_params, attachments);
-    return send_joined_addresses_email(manager, data);
+    return send_joined_addresses_email(_mailer_manager, data);
 }
 
 } // namespace Fred::Backend::PublicRequest::{anonymous}
 
 void process_public_request_nop(
         unsigned long long _public_request_id,
-        LibFred::OperationContext& _ctx)
+        LibFred::OperationContext& _ctx,
+        std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager,
+        std::shared_ptr<LibFred::File::Transferer> _file_manager_client)
 {
     set_on_status_action(_public_request_id, LibFred::PublicRequest::OnStatusAction::processed, _ctx);
 }
 
 void process_public_request_personal_info_answered(
         unsigned long long _public_request_id,
-        LibFred::OperationContext& _ctx)
+        LibFred::OperationContext& _ctx,
+        std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager,
+        std::shared_ptr<LibFred::File::Transferer> _file_manager_client)
 {
     try
     {
-        send_personalinfo(_public_request_id, _ctx);
+        send_personalinfo(_public_request_id, _ctx, _mailer_manager, _file_manager_client);
     }
     catch (...)
     {

@@ -20,6 +20,10 @@
 #define PROCESS_PUBLIC_REQUESTS_HH_9CC977C4F3F344748AB821941D44B2F7
 
 #include "src/libfred/opcontext.hh"
+#include "src/libfred/mailer.hh"
+#include "src/bin/corba/mailer_manager.hh"
+#include "src/bin/corba/file_manager_client.hh"
+#include "src/libfred/file_transferer.hh"
 
 namespace Fred {
 namespace Backend {
@@ -27,10 +31,14 @@ namespace PublicRequest {
 
 void process_public_request_nop(
         unsigned long long _public_request_id,
-        LibFred::OperationContext& _ctx);
+        LibFred::OperationContext& _ctx,
+        std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager,
+        std::shared_ptr<LibFred::File::Transferer> file_manager_client);
 void process_public_request_personal_info_answered(
         unsigned long long _public_request_id,
-        LibFred::OperationContext& _ctx);
+        LibFred::OperationContext& _ctx,
+        std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager,
+        std::shared_ptr<LibFred::File::Transferer> file_manager_client);
 
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend

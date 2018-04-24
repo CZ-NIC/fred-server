@@ -39,11 +39,19 @@ void PublicRequestProcedure::exec()
         {
             if (request_type == 22 || request_type == 23 || request_type == 24)
             {
-                Fred::Backend::PublicRequest::process_public_request_personal_info_answered(request_id, ctx);
+                Fred::Backend::PublicRequest::process_public_request_personal_info_answered(
+                        request_id,
+                        ctx,
+                        mailer_manager,
+                        file_manager_client);
             }
             else
             {
-                Fred::Backend::PublicRequest::process_public_request_nop(request_id, ctx);
+                Fred::Backend::PublicRequest::process_public_request_nop(
+                        request_id,
+                        ctx,
+                        mailer_manager,
+                        file_manager_client);
             }
         }
         catch(const std::exception& e)
