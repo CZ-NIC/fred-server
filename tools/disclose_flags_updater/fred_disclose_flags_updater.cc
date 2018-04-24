@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <cmath>
 #include <string>
+#include <chrono>
 #include <boost/program_options.hpp>
 
 #include "tools/disclose_flags_updater/disclose_value.hh"
@@ -101,6 +102,11 @@ int main(int argc, char *argv[])
         Database::Result contact_list = ctx.get_conn().exec(contact_search_sql);
 
         auto total_count = contact_list.size();
+
+        auto start_time = std::chrono::steady_clock::now();
+        std::string eta_time_human = "n/a";
+        uint64_t progress_display_step = 50;
+
         for (unsigned int i = 0; i < contact_list.size(); ++i)
         {
             auto contact_id = static_cast<uint64_t>(contact_list[i][0]);
@@ -172,11 +178,34 @@ int main(int argc, char *argv[])
             }
             else
             {
-                std::cout << std::setfill('0') << std::setw(3)
-                          << std::round(100 * (static_cast<float>(i + 1) / contact_list.size())) << "%"
-                          << std::setw(0)
-                          << " (" << i + 1 << "/" << total_count << ")\r";
-                std::cout.flush();
+                if (i % progress_display_step == 0 || i == 0)
+                {
+                    auto ith_time = std::chrono::steady_clock::now();
+                    auto eta_time = ((ith_time - start_time) / (i + 1)) * (total_count - i + 1);
+
+                    auto eta_time_rest = eta_time;
+                    auto eta_h = std::chrono::duration_cast<std::chrono::hours>(eta_time_rest);
+                    eta_time_rest -= eta_h;
+                    auto eta_m = std::chrono::duration_cast<std::chrono::minutes>(eta_time_rest);
+                    eta_time_rest -= eta_m;
+                    auto eta_s = std::chrono::duration_cast<std::chrono::seconds>(eta_time_rest);
+                    std::stringstream eta_format;
+
+                    eta_format << std::setfill('0')
+                               << std::setw(2) << eta_h.count() << "h"
+                               << std::setw(2) << eta_m.count() << "m"
+                               << std::setw(2) << eta_s.count() << "s";
+                    eta_time_human = eta_format.str();
+
+
+                    std::cout << std::setfill('0') << std::setw(3)
+                              << std::round(100 * (static_cast<float>(i + 1) / contact_list.size())) << "%"
+                              << std::setw(0)
+                              << " (" << i + 1 << "/" << total_count << ")"
+                              << " eta: " << eta_time_human
+                              << "\r";
+                    std::cout.flush();
+                }
             }
         }
         std::cout << std::endl;
