@@ -1,8 +1,7 @@
-#include <string>
-
 #include "src/libfred/public_request/public_request_personalinfo_impl.hh"
 #include "src/libfred/public_request/public_request_impl.hh"
 
+#include <string>
 
 namespace LibFred {
 namespace PublicRequest {
@@ -84,7 +83,5 @@ public:
 };
 
 
-}
-}
-
-
+} // namespace LibFred::PublicRequest
+} // namespace LibFred
