@@ -92,8 +92,8 @@ int main(int argc, char *argv[])
         if (verbose)
         {
             std::cout << "\t- search-sql: " << contact_search_sql << std::endl;
-            std::cout << std::endl;
         }
+        std::cout << std::endl;
 
         Database::Manager::init(new Database::ConnectionFactory(db_connect));
 
@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
             }
 
             update_op.exec(ctx);
-            if (verbose || dry_run)
+            if (verbose)
             {
                 std::cout << "id: " << contact_id << "  "
                           << "hidden-address-allowed: " << (contact_hidden_address_allowed ? "yes" : "no") << "\n";
@@ -179,6 +179,7 @@ int main(int argc, char *argv[])
                 std::cout.flush();
             }
         }
+        std::cout << std::endl;
         if (!dry_run)
         {
             ctx.commit_transaction();
