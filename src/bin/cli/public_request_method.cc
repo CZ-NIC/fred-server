@@ -52,6 +52,10 @@ void PublicRequestProcedure::exec()
             {
                 request_types_filter.insert(*itr);
             }
+            else
+            {
+                throw std::runtime_error("bad --types parameter: " + argument);
+            }
         }
         if (request_types_filter.empty())
         {

@@ -2684,7 +2684,13 @@ src_bin_cli_fred_admin_SOURCES = \
 		src/backend/public_request/process_public_requests.hh \
 		src/backend/buffer.cc \
 		src/backend/buffer.hh \
-		src/backend/public_request/public_request.cc
+		src/backend/public_request/public_request.cc \
+	        src/backend/public_request/get_type_names.hh \
+		src/bin/cli/public_request_params.hh \
+		src/libfred/public_request/public_request_on_status_action.hh \
+		src/bin/cli/public_request_impl.hh \
+		src/util/csv/csv.hh \
+		src/util/csv/rapidcsv.hh
 
 src_bin_cli_fred_admin_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
