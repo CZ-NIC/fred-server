@@ -231,7 +231,7 @@ unsigned long long send_personalinfo(
             {"Fax", info_contact_data.fax.get_value_or_default()},
             {"E-mail", info_contact_data.email.get_value()},
             {"Notifikační e-mail", info_contact_data.notifyemail.get_value_or_default()},
-            {"Určený registrátor", info_contact_data.notifyemail.get_value_or_default()}
+            {"Určený registrátor", info_registrar_data.name.get_value_or_default()}
         };
         const std::string csv_document_content = Fred::Util::to_csv_string(cells);
 
@@ -288,7 +288,7 @@ unsigned long long send_personalinfo(
             {"Fax", info_contact_data.fax.get_value_or_default()},
             {"E-mail", info_contact_data.email.get_value()},
             {"Notification e-mail", info_contact_data.notifyemail.get_value_or_default()},
-            {"Designated registrar", info_contact_data.notifyemail.get_value_or_default()}
+            {"Designated registrar", info_registrar_data.name.get_value_or_default()}
         };
         const std::string csv_document_content = Fred::Util::to_csv_string(cells);
 
