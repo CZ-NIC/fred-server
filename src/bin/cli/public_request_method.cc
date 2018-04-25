@@ -78,9 +78,7 @@ void PublicRequestProcedure::exec()
             {
                 Fred::Backend::PublicRequest::process_public_request_nop(
                         request_id,
-                        ctx,
-                        mailer_manager,
-                        file_manager_client);
+                        ctx);
             }
         }
         catch(const std::exception& e)

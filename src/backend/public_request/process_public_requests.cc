@@ -310,9 +310,7 @@ unsigned long long send_personalinfo(
 
 void process_public_request_nop(
         unsigned long long _public_request_id,
-        LibFred::OperationContext& _ctx,
-        std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager,
-        std::shared_ptr<LibFred::File::Transferer> _file_manager_client)
+        LibFred::OperationContext& _ctx)
 {
     set_on_status_action(_public_request_id, LibFred::PublicRequest::OnStatusAction::processed, _ctx);
 }
