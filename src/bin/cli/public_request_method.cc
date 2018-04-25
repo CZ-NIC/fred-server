@@ -37,6 +37,27 @@ void PublicRequestProcedure::exec()
                                    "WHERE on_status_action=$1::enum_on_status_action_type",
                                    Database::query_param_list
                                    (Conversion::Enums::to_db_handle(LibFred::PublicRequest::OnStatusAction::scheduled)));
+
+    std::set<std::string> request_types_filter;
+    {
+        std::set<std::string> request_types_filter_default = {
+            Fred::Backend::PublicRequest::Type::get_personal_info_auto_type_name(),
+            Fred::Backend::PublicRequest::Type::get_personal_info_email_type_name(),
+            Fred::Backend::PublicRequest::Type::get_personal_info_post_type_name()
+        };
+        for (const auto& argument: args.types)
+        {
+            const auto itr = request_types_filter_default.find(argument);
+            if (itr != request_types_filter_default.end())
+            {
+                request_types_filter.insert(*itr);
+            }
+        }
+        if (request_types_filter.empty())
+        {
+            request_types_filter = std::move(request_types_filter_default);
+        }
+    }
     for (std::size_t i = 0; i < dbres.size(); ++i)
     {
         const auto request_id = static_cast<unsigned long long>(dbres[i][0]);
@@ -45,10 +66,7 @@ void PublicRequestProcedure::exec()
         const auto request_type = static_cast<std::string>(dbres[i][2]);
         try
         {
-            if (request_status == LibFred::PublicRequest::Status::answered &&
-                (request_type == Fred::Backend::PublicRequest::Type::get_personal_info_auto_type_name() ||
-                 request_type == Fred::Backend::PublicRequest::Type::get_personal_info_email_type_name() ||
-                 request_type == Fred::Backend::PublicRequest::Type::get_personal_info_post_type_name()))
+            if (request_status == LibFred::PublicRequest::Status::answered && request_types_filter.count(request_type) == 1)
             {
                 Fred::Backend::PublicRequest::process_public_request_personal_info_answered(
                         request_id,
