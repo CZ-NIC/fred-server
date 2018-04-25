@@ -41,6 +41,9 @@ struct process_public_requests_impl
 
         FakedArgs orb_fa = CfgArgGroups::instance()->fa;
 
+        orb_fa.add_argv(std::string("-ORBnativeCharCodeSet"));
+        orb_fa.add_argv(std::string("UTF-8"));
+
         HandleCorbaNameServiceArgsGrp* ns_args_ptr=CfgArgGroups::instance()->
                    get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>();
 

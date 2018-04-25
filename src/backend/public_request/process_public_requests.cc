@@ -181,63 +181,125 @@ unsigned long long send_personalinfo(
                 LibFred::Mailer::Parameters::value_type("registrar_url", std::string()));
     }
 
-    std::string ident_type_repr;
+
     const std::string ident_type = info_contact_data.ssntype.get_value_or_default();
-    if (ident_type == "RC")
-    {
-        ident_type_repr = "National Identity Number";
-    }
-    else if (ident_type == "OP")
-    {
-        ident_type_repr = "National Identity Card";
-    }
-    else if (ident_type == "PASS")
-    {
-        ident_type_repr = "Passport Number";
-    }
-    else if (ident_type == "ICO")
-    {
-        ident_type_repr = "Company Registration Number";
-    }
-    else if (ident_type == "MPSV")
-    {
-        ident_type_repr = "Social Security Number";
-    }
-    else if (ident_type == "BIRTHDAY")
-    {
-        ident_type_repr = "Birthdate";
-    }
 
-    const std::vector<std::vector<std::string>> cells = {
-        {"Contact ID in the registry", info_contact_data.handle},
-        {"Organisation", info_contact_data.organization.get_value_or_default()},
-        {"Name", info_contact_data.name.get_value_or_default()},
-        {"Address", pretty_printed_address},
-        {"Mailing address", mailing_address},
-        {"Billing address", billing_address},
-        {"Shipping address 1", shipping_address_1},
-        {"Shipping address 2", shipping_address_2},
-        {"Shipping address 3", shipping_address_3},
-        {"Identification type", ident_type_repr},
-        {"Identification", info_contact_data.ssn.get_value_or_default()},
-        {"VAT No.", info_contact_data.vat.get_value_or_default()},
-        {"Phone", info_contact_data.telephone.get_value_or_default()},
-        {"Fax", info_contact_data.fax.get_value_or_default()},
-        {"E-mail", info_contact_data.email.get_value()},
-        {"Notification e-mail", info_contact_data.notifyemail.get_value_or_default()},
-        {"Designated registrar", info_contact_data.notifyemail.get_value_or_default()}
-    };
-    const std::string csv_document_content = Fred::Util::to_csv_string(cells);
-
+    std::vector<unsigned long long> attachments;
+    attachments.reserve(2);
     constexpr unsigned db_enum_filetype_dot_personal_info_csv = 12;
-    std::vector<char> in_buffer(csv_document_content.begin(), csv_document_content.end());
-    const unsigned long long attachment_id = _file_manager_client->upload(
-            in_buffer,
-            "personal_info.csv",
-            "text/csv",
-            db_enum_filetype_dot_personal_info_csv);
+    {
+        std::string ident_type_repr;
+        if (ident_type == "RC")
+        {
+            ident_type_repr = "Rodné číslo";
+        }
+        else if (ident_type == "OP")
+        {
+            ident_type_repr = "Číslo OP";
+        }
+        else if (ident_type == "PASS")
+        {
+            ident_type_repr = "Číslo pasu";
+        }
+        else if (ident_type == "ICO")
+        {
+            ident_type_repr = "IČO";
+        }
+        else if (ident_type == "MPSV")
+        {
+            ident_type_repr = "Identifikátor MPSV";
+        }
+        else if (ident_type == "BIRTHDAY")
+        {
+            ident_type_repr = "Datum narození";
+        }
 
-    std::vector<unsigned long long> attachments = { attachment_id };
+        const std::vector<std::vector<std::string>> cells = {
+            {"ID kontaktu v registru", info_contact_data.handle},
+            {"Organizace", info_contact_data.organization.get_value_or_default()},
+            {"Jméno", info_contact_data.name.get_value_or_default()},
+            {"Adresa trvalého bydliště", pretty_printed_address},
+            {"Korespondenční adresa", mailing_address},
+            {"akturační adresa", billing_address},
+            {"Dodací adresa 1", shipping_address_1},
+            {"Dodací adresa 2", shipping_address_2},
+            {"Dodací adresa 3", shipping_address_3},
+            {"Typ identifikace", ident_type_repr},
+            {"Identifikace", info_contact_data.ssn.get_value_or_default()},
+            {"DIČ", info_contact_data.vat.get_value_or_default()},
+            {"Telefon", info_contact_data.telephone.get_value_or_default()},
+            {"Fax", info_contact_data.fax.get_value_or_default()},
+            {"E-mail", info_contact_data.email.get_value()},
+            {"Notifikační e-mail", info_contact_data.notifyemail.get_value_or_default()},
+            {"Určený registrátor", info_contact_data.notifyemail.get_value_or_default()}
+        };
+        const std::string csv_document_content = Fred::Util::to_csv_string(cells);
+
+        std::vector<char> in_buffer(csv_document_content.begin(), csv_document_content.end());
+        const unsigned long long attachment_id = _file_manager_client->upload(
+                in_buffer,
+                "personal_info_cs.csv",
+                "text/csv",
+                db_enum_filetype_dot_personal_info_csv);
+        attachments.emplace_back(attachment_id);
+    }
+
+    {
+        std::string ident_type_repr;
+        if (ident_type == "RC")
+        {
+            ident_type_repr = "National Identity Number";
+        }
+        else if (ident_type == "OP")
+        {
+            ident_type_repr = "National Identity Card";
+        }
+        else if (ident_type == "PASS")
+        {
+            ident_type_repr = "Passport Number";
+        }
+        else if (ident_type == "ICO")
+        {
+            ident_type_repr = "Company Registration Number";
+        }
+        else if (ident_type == "MPSV")
+        {
+            ident_type_repr = "Social Security Number";
+        }
+        else if (ident_type == "BIRTHDAY")
+        {
+            ident_type_repr = "Birthdate";
+        }
+
+        const std::vector<std::vector<std::string>> cells = {
+            {"Contact ID in the registry", info_contact_data.handle},
+            {"Organisation", info_contact_data.organization.get_value_or_default()},
+            {"Name", info_contact_data.name.get_value_or_default()},
+            {"Address", pretty_printed_address},
+            {"Mailing address", mailing_address},
+            {"Billing address", billing_address},
+            {"Shipping address 1", shipping_address_1},
+            {"Shipping address 2", shipping_address_2},
+            {"Shipping address 3", shipping_address_3},
+            {"Identification type", ident_type_repr},
+            {"Identification", info_contact_data.ssn.get_value_or_default()},
+            {"VAT No.", info_contact_data.vat.get_value_or_default()},
+            {"Phone", info_contact_data.telephone.get_value_or_default()},
+            {"Fax", info_contact_data.fax.get_value_or_default()},
+            {"E-mail", info_contact_data.email.get_value()},
+            {"Notification e-mail", info_contact_data.notifyemail.get_value_or_default()},
+            {"Designated registrar", info_contact_data.notifyemail.get_value_or_default()}
+        };
+        const std::string csv_document_content = Fred::Util::to_csv_string(cells);
+
+        std::vector<char> in_buffer(csv_document_content.begin(), csv_document_content.end());
+        const unsigned long long attachment_id = _file_manager_client->upload(
+                in_buffer,
+                "personal_info_en.csv",
+                "text/csv",
+                db_enum_filetype_dot_personal_info_csv);
+        attachments.emplace_back(attachment_id);
+    }
 
     const std::set<std::string> recipients = { info_contact_data.email.get_value() };
     const EmailData data(recipients, "sendpersonalinfo_pif", email_template_params, attachments);
