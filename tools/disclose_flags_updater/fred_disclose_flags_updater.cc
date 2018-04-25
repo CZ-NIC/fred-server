@@ -5,6 +5,7 @@
 #include <chrono>
 #include <boost/program_options.hpp>
 
+#include "tools/disclose_flags_updater/options.hh"
 #include "tools/disclose_flags_updater/disclose_value.hh"
 #include "tools/disclose_flags_updater/disclose_settings.hh"
 #include "tools/disclose_flags_updater/contact_search_query.hh"
@@ -19,20 +20,16 @@ int main(int argc, char *argv[])
     try
     {
         DiscloseSettings discloses;
-        bool verbose = false;
-        bool dry_run = false;
-        bool progress_display = false;
-        std::string by_registrar;
-        std::string db_connect;
+        GeneralOptions opts;
 
         namespace po = boost::program_options;
         po::options_description args("Options");
         args.add_options()
-            ("verbose", po::bool_switch(&verbose)->default_value(false), "verbose output")
-            ("progress", po::bool_switch(&progress_display)->default_value(false), "display progress bar")
+            ("verbose", po::bool_switch(&opts.verbose)->default_value(false), "verbose output")
+            ("progress", po::bool_switch(&opts.progress_display)->default_value(false), "display progress bar")
             ("help", "produce usage message")
-            ("dry-run", po::bool_switch(&dry_run)->default_value(false), "only show what will be done")
-            ("db-connect", po::value<std::string>(&db_connect)->required(), "database connection string")
+            ("dry-run", po::bool_switch(&opts.dry_run)->default_value(false), "only show what will be done")
+            ("db-connect", po::value<std::string>(&opts.db_connect)->required(), "database connection string")
             ("set-name",
              po::value<DiscloseValue>(&discloses.name)->default_value(DiscloseValue::not_set, "not-set"),
              "disclose value for name")
@@ -61,7 +58,7 @@ int main(int argc, char *argv[])
              po::value<DiscloseValue>(&discloses.notify_email)->default_value(DiscloseValue::not_set, "not-set"),
              "disclose value for contact identification type and value")
             ("by-registrar",
-             po::value<std::string>(&by_registrar)->required(),
+             po::value<std::string>(&opts.by_registrar)->required(),
              "all changes to dislose flags will be done by this registrar");
 
 
@@ -76,11 +73,11 @@ int main(int argc, char *argv[])
 
         po::notify(vm);
 
-        if (verbose)
+        if (opts.verbose)
         {
             std::cout << "Settings:" << std::endl
-                      << "\t- db: " << db_connect << std::endl
-                      << "\t- by-registrar: " << by_registrar << std::endl
+                      << "\t- db: " << opts.db_connect << std::endl
+                      << "\t- by-registrar: " << opts.by_registrar << std::endl
                       << "\t- disclose-settings: " << discloses << std::endl;
         }
 
@@ -92,13 +89,13 @@ int main(int argc, char *argv[])
 
         auto contact_search_sql = make_query_search_contact_needs_update(discloses);
 
-        if (verbose)
+        if (opts.verbose)
         {
             std::cout << "\t- search-sql: " << contact_search_sql << std::endl;
         }
         std::cout << std::endl;
 
-        Database::Manager::init(new Database::ConnectionFactory(db_connect));
+        Database::Manager::init(new Database::ConnectionFactory(opts.db_connect));
 
         LibFred::OperationContextCreator ctx;
         Database::Result contact_list = ctx.get_conn().exec(contact_search_sql);
@@ -114,7 +111,7 @@ int main(int argc, char *argv[])
             auto contact_id = static_cast<uint64_t>(contact_list[i][0]);
             auto contact_hidden_address_allowed = static_cast<bool>(contact_list[i][1]);
 
-            auto update_op = LibFred::UpdateContactById(contact_id, by_registrar);
+            auto update_op = LibFred::UpdateContactById(contact_id, opts.by_registrar);
 
             if (discloses.name != DiscloseValue::not_set)
             {
@@ -170,7 +167,8 @@ int main(int argc, char *argv[])
             }
 
             update_op.exec(ctx);
-            if (verbose)
+
+            if (opts.verbose)
             {
                 std::cout << "id: " << contact_id << "  "
                           << "hidden-address-allowed: " << (contact_hidden_address_allowed ? "yes" : "no") << "\n";
@@ -180,7 +178,7 @@ int main(int argc, char *argv[])
             }
             else
             {
-                if (progress_display && (i % progress_display_step == 0 || i == 0))
+                if (opts.progress_display && (i % progress_display_step == 0 || i == 0))
                 {
                     auto ith_time = std::chrono::steady_clock::now();
                     auto eta_time = ((ith_time - start_time) / (i + 1)) * (total_count - i + 1);
@@ -211,7 +209,7 @@ int main(int argc, char *argv[])
             }
         }
         std::cout << std::endl;
-        if (!dry_run)
+        if (!opts.dry_run)
         {
             ctx.commit_transaction();
             std::cout << "Total " << contact_list.size() << " contact(s) UPDATED." << std::endl;

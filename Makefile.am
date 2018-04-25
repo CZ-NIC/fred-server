@@ -2744,6 +2744,7 @@ src_bin_cli_fred_admin_LDADD = \
 # tools/disclose_flags_updater/fred-disclose-flag-updater
 #
 tools_disclose_flags_updater_fred_disclose_flags_updater_SOURCES = \
+		tools/disclose_flags_updater/options.hh \
 		tools/disclose_flags_updater/disclose_value.hh \
 		tools/disclose_flags_updater/disclose_value.cc \
 		tools/disclose_flags_updater/disclose_settings.hh \
