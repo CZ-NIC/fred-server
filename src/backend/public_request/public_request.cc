@@ -9,6 +9,7 @@
 #include "src/libfred/public_request/info_public_request.hh"
 #include "src/libfred/public_request/public_request_lock_guard.hh"
 #include "src/libfred/public_request/public_request_status.hh"
+#include "src/libfred/public_request/public_request_on_status_action.hh"
 #include "src/libfred/public_request/public_request_type_iface.hh"
 #include "src/libfred/public_request/update_public_request.hh"
 #include "src/util/cfg/config_handler_decl.hh"
@@ -69,6 +70,11 @@ struct ImplementedBy
                     _old_status,
                     _new_status);
         }
+        LibFred::PublicRequest::OnStatusAction::Enum get_on_status_action(
+                LibFred::PublicRequest::Status::Enum _status) const
+        {
+            return implementation_.template get_on_status_action<Named>(_status);
+        }
         const Type implementation_;
     };
 };
@@ -89,6 +95,11 @@ struct AuthinfoImplementation
             LibFred::PublicRequest::Status::Enum) const
     {
         return LibFred::PublicRequestTypeIface::PublicRequestTypes();
+    };
+    template <typename T>
+    LibFred::PublicRequest::OnStatusAction::Enum get_on_status_action(LibFred::PublicRequest::Status::Enum _status) const
+    {
+        return LibFred::PublicRequest::OnStatusAction::processed;
     };
 };
 
@@ -117,6 +128,16 @@ struct PersonalinfoImplementation
             LibFred::PublicRequest::Status::Enum) const
     {
         return LibFred::PublicRequestTypeIface::PublicRequestTypes();
+    };
+
+    template <typename T>
+    LibFred::PublicRequest::OnStatusAction::Enum get_on_status_action(LibFred::PublicRequest::Status::Enum _status) const
+    {
+        if (_status == LibFred::PublicRequest::Status::answered)
+        {
+            return LibFred::PublicRequest::OnStatusAction::scheduled;
+        }
+        return LibFred::PublicRequest::OnStatusAction::processed;
     };
 };
 
@@ -147,6 +168,11 @@ struct BlockUnblockImplementation
             LibFred::PublicRequest::Status::Enum) const
     {
         return LibFred::PublicRequestTypeIface::PublicRequestTypes();
+    };
+    template <typename T>
+    LibFred::PublicRequest::OnStatusAction::Enum get_on_status_action(LibFred::PublicRequest::Status::Enum _status) const
+    {
+        return LibFred::PublicRequest::OnStatusAction::processed;
     };
 };
 
