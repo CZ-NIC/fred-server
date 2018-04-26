@@ -308,13 +308,6 @@ unsigned long long send_personalinfo(
 
 } // namespace Fred::Backend::PublicRequest::{anonymous}
 
-void process_public_request_nop(
-        unsigned long long _public_request_id,
-        LibFred::OperationContext& _ctx)
-{
-    set_on_status_action(_public_request_id, LibFred::PublicRequest::OnStatusAction::processed, _ctx);
-}
-
 void process_public_request_personal_info_answered(
         unsigned long long _public_request_id,
         LibFred::OperationContext& _ctx,
