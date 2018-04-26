@@ -3,14 +3,15 @@
 #include <cmath>
 #include <string>
 #include <chrono>
+#include <thread>
 #include <boost/program_options.hpp>
 
 #include "tools/disclose_flags_updater/options.hh"
 #include "tools/disclose_flags_updater/disclose_value.hh"
 #include "tools/disclose_flags_updater/disclose_settings.hh"
 #include "tools/disclose_flags_updater/contact_search_query.hh"
+#include "tools/disclose_flags_updater/worker.hh"
 #include "src/libfred/db_settings.hh"
-#include "src/libfred/registrable_object/contact/update_contact.hh"
 
 
 int main(int argc, char *argv[])
@@ -27,6 +28,7 @@ int main(int argc, char *argv[])
         args.add_options()
             ("verbose", po::bool_switch(&opts.verbose)->default_value(false), "verbose output")
             ("progress", po::bool_switch(&opts.progress_display)->default_value(false), "display progress bar")
+            ("thread-count", po::value<uint16_t>(&opts.thread_count)->default_value(1), "number of worker threads")
             ("help", "produce usage message")
             ("dry-run", po::bool_switch(&opts.dry_run)->default_value(false), "only show what will be done")
             ("db-connect", po::value<std::string>(&opts.db_connect)->required(), "database connection string")
@@ -78,7 +80,9 @@ int main(int argc, char *argv[])
             std::cout << "Settings:" << std::endl
                       << "\t- db: " << opts.db_connect << std::endl
                       << "\t- by-registrar: " << opts.by_registrar << std::endl
-                      << "\t- disclose-settings: " << discloses << std::endl;
+                      << "\t- thread-count: " << opts.thread_count << std::endl
+                      << "\t- dry-run: " << opts.dry_run << std::endl
+                      << "\t- disclose-settings: " << discloses << "\n" << std::endl;
         }
 
         if (discloses.is_empty())
@@ -91,97 +95,72 @@ int main(int argc, char *argv[])
 
         if (opts.verbose)
         {
-            std::cout << "\t- search-sql: " << contact_search_sql << std::endl;
+            std::cout << "search-sql: " << contact_search_sql << std::endl;
         }
-        std::cout << std::endl;
 
         Database::Manager::init(new Database::ConnectionFactory(opts.db_connect));
 
         LibFred::OperationContextCreator ctx;
-        Database::Result contact_list = ctx.get_conn().exec(contact_search_sql);
+        Database::Result contact_result = ctx.get_conn().exec(contact_search_sql);
 
-        auto total_count = contact_list.size();
-
-        auto start_time = std::chrono::steady_clock::now();
-        std::string eta_time_human = "n/a";
-        uint64_t progress_display_step = 50;
-
-        for (unsigned int i = 0; i < contact_list.size(); ++i)
+        TaskCollection update_tasks;
+        update_tasks.reserve(contact_result.size());
+        for (uint64_t i = 0; i < contact_result.size(); ++i)
         {
-            auto contact_id = static_cast<uint64_t>(contact_list[i][0]);
-            auto contact_hidden_address_allowed = static_cast<bool>(contact_list[i][1]);
+            update_tasks.emplace_back(
+                static_cast<uint64_t>(contact_result[i][0]),
+                static_cast<bool>(contact_result[i][1])
+            );
+        }
 
-            auto update_op = LibFred::UpdateContactById(contact_id, opts.by_registrar);
+        if (opts.verbose)
+        {
+            std::cout << "total-contacts: " << update_tasks.size() << std::endl;
+        }
 
-            if (discloses.name != DiscloseValue::not_set)
+        std::vector<Worker> workers;
+
+        const auto chunk_size = update_tasks.size() / opts.thread_count;
+        auto chunk_begin = update_tasks.begin();
+        for (auto i = 0; i < opts.thread_count - 1; ++i)
+        {
+            auto chunk_end = chunk_begin + chunk_size;
+            workers.emplace_back(opts, discloses, std::make_pair(chunk_begin, chunk_end));
+            chunk_begin = chunk_end;
+        }
+        workers.emplace_back(opts, discloses, std::make_pair(chunk_begin, update_tasks.end()));
+
+        if (opts.verbose)
+        {
+            std::stringstream chunk_sizes;
+            for (auto& w : workers)
             {
-                update_op.set_disclosename(to_db_value(discloses.name));
+                chunk_sizes << w.total_count << " ";
             }
-            if (discloses.org != DiscloseValue::not_set)
+            std::cout << "workers: " << workers.size() << "(" << chunk_sizes.str() << ")" << std::endl;
+        }
+
+        std::cout << std::endl;
+
+        std::thread progress_thread([&workers](){
+            std::cout << "[progress thread] started" << std::endl;
+            auto start_time = std::chrono::steady_clock::now();
+            std::string eta_time_human = "n/a";
+
+            bool is_finished;
+            do
             {
-                update_op.set_discloseorganization(to_db_value(discloses.org));
-            }
-            if (discloses.voice != DiscloseValue::not_set)
-            {
-                update_op.set_disclosetelephone(to_db_value(discloses.voice));
-            }
-            if (discloses.fax != DiscloseValue::not_set)
-            {
-                update_op.set_disclosefax(to_db_value(discloses.fax));
-            }
-            if (discloses.email != DiscloseValue::not_set)
-            {
-                update_op.set_discloseemail(to_db_value(discloses.email));
-            }
-            if (discloses.vat != DiscloseValue::not_set)
-            {
-                update_op.set_disclosevat(to_db_value(discloses.vat));
-            }
-            if (discloses.ident != DiscloseValue::not_set)
-            {
-                update_op.set_discloseident(to_db_value(discloses.ident));
-            }
-            if (discloses.notify_email != DiscloseValue::not_set)
-            {
-                update_op.set_disclosenotifyemail(to_db_value(discloses.notify_email));
-            }
-            if (discloses.addr != DiscloseAddressValue::not_set)
-            {
-                auto discloseaddress_value = true;
-                if (discloses.addr == DiscloseAddressValue::hide_verified)
+                is_finished = true;
+                for (auto i = 0ul; i < workers.size(); ++i)
                 {
-                    if (contact_hidden_address_allowed)
+                    const auto& w = workers[i];
+                    if (!w.exited)
                     {
-                        discloseaddress_value = false;
+                        is_finished = false;
                     }
-                    else
-                    {
-                        discloseaddress_value = true;
-                    }
-                }
-                else
-                {
-                    discloseaddress_value = to_db_value(discloses.addr);
-                }
-                update_op.set_discloseaddress(discloseaddress_value);
-            }
 
-            update_op.exec(ctx);
-
-            if (opts.verbose)
-            {
-                std::cout << "id: " << contact_id << "  "
-                          << "hidden-address-allowed: " << (contact_hidden_address_allowed ? "yes" : "no") << "\n";
-
-                std::cout << update_op.to_string() << "\n";
-                std::cout << std::endl;
-            }
-            else
-            {
-                if (opts.progress_display && (i % progress_display_step == 0 || i == 0))
-                {
                     auto ith_time = std::chrono::steady_clock::now();
-                    auto eta_time = ((ith_time - start_time) / (i + 1)) * (total_count - i + 1);
+                    auto eta_time = ((ith_time - start_time) / (w.done_count + 1)) * (w.total_count - i + 1);
 
                     auto eta_time_rest = eta_time;
                     auto eta_h = std::chrono::duration_cast<std::chrono::hours>(eta_time_rest);
@@ -197,26 +176,50 @@ int main(int argc, char *argv[])
                                << std::setw(2) << eta_s.count() << "s";
                     eta_time_human = eta_format.str();
 
-
-                    std::cout << std::setfill('0') << std::setw(3)
-                              << std::round(100 * (static_cast<float>(i + 1) / contact_list.size())) << "%"
+                    std::cout << i << ": " << std::setfill('0') << std::setw(3)
+                              << std::round(100 * (static_cast<float>(w.done_count) / w.total_count)) << "%"
                               << std::setw(0)
-                              << " (" << i + 1 << "/" << total_count << ")"
-                              << " eta: " << eta_time_human
-                              << "\r";
-                    std::cout.flush();
+                              << " (" << w.done_count << "/" << w.total_count << ")"
+                              << " eta: " << eta_time_human << "  ";
+                }
+                std::cout << "\r";
+                std::cout.flush();
+                if (!is_finished)
+                {
+                    std::this_thread::sleep_for(std::chrono::seconds(1));
                 }
             }
+            while (!is_finished);
+            std::cout << "\n[progress thread] finished" << std::endl;
+        });
+
+
+        std::vector<std::thread> t_workers;
+        for (auto& w : workers)
+        {
+            t_workers.push_back(std::thread(std::ref(w)));
         }
+
+        std::cout << "workers: " << t_workers.size() << " workers" << std::endl;
+
+        for (auto& t : t_workers)
+        {
+            t.join();
+        }
+        progress_thread.join();
+
         std::cout << std::endl;
         if (!opts.dry_run)
         {
-            ctx.commit_transaction();
-            std::cout << "Total " << contact_list.size() << " contact(s) UPDATED." << std::endl;
+            for (auto& w : workers)
+            {
+                w.ctx->commit_transaction();
+            }
+            std::cout << "Total " << contact_result.size() << " contact(s) UPDATED." << std::endl;
         }
         else
         {
-            std::cout << "Total " << contact_list.size() << " contact(s) SHOULD be updated." << std::endl;
+            std::cout << "Total " << contact_result.size() << " contact(s) SHOULD be updated." << std::endl;
         }
     }
     catch (const std::exception& ex)

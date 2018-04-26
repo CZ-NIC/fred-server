@@ -2,6 +2,7 @@
 #define OPTIONS_HH_91218A95D0A09AD248FEFF1DC37C6461
 
 #include <string>
+#include <cstdint>
 
 namespace Tools {
 namespace DiscloseFlagsUpdater {
@@ -14,6 +15,7 @@ struct GeneralOptions
     bool progress_display;
     std::string by_registrar;
     std::string db_connect;
+    uint16_t thread_count;
 };
 
 
