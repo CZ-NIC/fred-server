@@ -1,5 +1,6 @@
 #include "src/libfred/public_request/public_request_personalinfo_impl.hh"
 #include "src/libfred/public_request/public_request_impl.hh"
+#include "src/libfred/public_request/public_request_on_status_action.hh"
 
 #include <string>
 
@@ -43,6 +44,14 @@ public:
             throw std::runtime_error("insert new request disabled");
         }
         PublicRequestImpl::save();
+        Database::Connection conn = Database::Manager::acquire();
+        conn.exec_params(
+            "UPDATE public_request SET on_status_action = $1::enum_on_status_action_type"
+            " WHERE id = $2::bigint",
+            Database::query_param_list
+                (Conversion::Enums::to_db_handle(OnStatusAction::scheduled))
+                (this->getId())
+        );
     }
 };
 
