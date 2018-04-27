@@ -29,9 +29,6 @@ namespace Fred {
 namespace Backend {
 namespace PublicRequest {
 
-void process_public_request_nop(
-        unsigned long long _public_request_id,
-        LibFred::OperationContext& _ctx);
 void process_public_request_personal_info_answered(
         unsigned long long _public_request_id,
         LibFred::OperationContext& _ctx,

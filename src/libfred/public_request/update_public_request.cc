@@ -156,6 +156,10 @@ UpdatePublicRequest::Result UpdatePublicRequest::update(OperationContext &_ctx,
                                          "THEN NOW() "
                                          "ELSE resolve_time "
                                     "END,";
+            const auto on_status_action = _public_request_type.get_on_status_action(status_.get_value());
+            sql_set << "on_status_action=$"
+                    << params.add(Conversion::Enums::to_db_handle(on_status_action))
+                    << "::ENUM_ON_STATUS_ACTION_TYPE,";
         }
         catch (const std::runtime_error &e) {
             bad_params.set_bad_public_request_status(status_.get_value());

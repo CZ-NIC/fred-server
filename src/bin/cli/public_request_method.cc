@@ -29,15 +29,6 @@ namespace Admin {
 void PublicRequestProcedure::exec()
 {
     LibFred::OperationContextCreator ctx;
-    const Database::Result dbres =
-        ctx.get_conn().exec_params("SELECT pr.id, eprs.name, eprt.name "
-                                   "FROM public_request pr "
-                                   "JOIN enum_public_request_type eprt ON pr.request_type=eprt.id "
-                                   "JOIN enum_public_request_status eprs ON eprs.id=pr.status "
-                                   "WHERE on_status_action=$1::enum_on_status_action_type",
-                                   Database::query_param_list
-                                   (Conversion::Enums::to_db_handle(LibFred::PublicRequest::OnStatusAction::scheduled)));
-
     std::set<std::string> request_types_filter;
     {
         std::set<std::string> request_types_filter_default = {
@@ -62,15 +53,38 @@ void PublicRequestProcedure::exec()
             request_types_filter = std::move(request_types_filter_default);
         }
     }
+
+    std::ostringstream condition_query_part;
+    Database::query_param_list query_param_list;
+    query_param_list(Conversion::Enums::to_db_handle(LibFred::PublicRequest::OnStatusAction::scheduled));
+    condition_query_part << " AND eprt.name IN (";
+    for (const auto& request_type : request_types_filter)
+    {
+        if (query_param_list.size() > 1)
+        {
+            condition_query_part << ",";
+        }
+        condition_query_part << "$" << query_param_list.size() + 1 << "::TEXT";
+        query_param_list(request_type);
+    }
+    condition_query_part << ")";
+
+    const Database::Result dbres =
+        ctx.get_conn().exec_params("SELECT pr.id, eprs.name "
+                                   "FROM public_request pr "
+                                   "JOIN enum_public_request_type eprt ON pr.request_type=eprt.id "
+                                   "JOIN enum_public_request_status eprs ON eprs.id=pr.status "
+                                   "WHERE on_status_action=$1::enum_on_status_action_type" + condition_query_part.str(),
+                                   query_param_list);
+
     for (std::size_t i = 0; i < dbres.size(); ++i)
     {
         const auto request_id = static_cast<unsigned long long>(dbres[i][0]);
         const auto request_status =
             Conversion::Enums::from_db_handle<LibFred::PublicRequest::Status>(static_cast<std::string>(dbres[i][1]));
-        const auto request_type = static_cast<std::string>(dbres[i][2]);
         try
         {
-            if (request_status == LibFred::PublicRequest::Status::answered && request_types_filter.count(request_type) == 1)
+            if (request_status == LibFred::PublicRequest::Status::answered)
             {
                 Fred::Backend::PublicRequest::process_public_request_personal_info_answered(
                         request_id,
@@ -78,14 +92,8 @@ void PublicRequestProcedure::exec()
                         mailer_manager,
                         file_manager_client);
             }
-            else
-            {
-                Fred::Backend::PublicRequest::process_public_request_nop(
-                        request_id,
-                        ctx);
-            }
         }
-        catch(const std::exception& e)
+        catch (const std::exception& e)
         {
             ctx.get_log().error(e.what());
         }

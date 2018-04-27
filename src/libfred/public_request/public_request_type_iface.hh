@@ -25,6 +25,8 @@
 #define PUBLIC_REQUEST_TYPE_IFACE_HH_801D66A174C44EE6B82B5D9811CDDD2C
 
 #include "src/libfred/public_request/public_request_status.hh"
+#include "src/libfred/public_request/public_request_on_status_action.hh"
+#include "src/libfred/public_request/public_request_status.hh"
 
 #include <set>
 #include <memory>
@@ -69,6 +71,11 @@ public:
      */
     virtual PublicRequestTypes get_public_request_types_to_cancel_on_update(
         PublicRequest::Status::Enum _old_status, PublicRequest::Status::Enum _new_status)const = 0;
+
+    virtual LibFred::PublicRequest::OnStatusAction::Enum get_on_status_action(LibFred::PublicRequest::Status::Enum)const
+    {
+        return LibFred::PublicRequest::OnStatusAction::processed;
+    }
 };
 
 } // namespace LibFred
