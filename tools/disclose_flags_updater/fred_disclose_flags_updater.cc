@@ -160,7 +160,7 @@ int main(int argc, char *argv[])
                     }
 
                     auto ith_time = std::chrono::steady_clock::now();
-                    auto eta_time = ((ith_time - start_time) / (w.done_count + 1)) * (w.total_count - i + 1);
+                    auto eta_time = ((ith_time - start_time) / (w.done_count + 1)) * (w.total_count - w.done_count + 1);
 
                     auto eta_time_rest = eta_time;
                     auto eta_h = std::chrono::duration_cast<std::chrono::hours>(eta_time_rest);
