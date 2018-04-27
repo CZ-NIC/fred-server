@@ -20,6 +20,10 @@
 #include "test/setup/fixtures_utils.hh"
 #include "test/backend/epp/util.hh"
 #include "src/libfred/poll/create_update_object_poll_message.hh"
+#include "src/libfred/registrable_object/contact/update_contact.hh"
+#include "src/libfred/registrable_object/domain/update_domain.hh"
+#include "src/libfred/registrable_object/nsset/update_nsset.hh"
+#include "src/libfred/registrable_object/keyset/update_keyset.hh"
 #include "src/libfred/registrable_object/domain/transfer_domain.hh"
 #include "src/libfred/registrable_object/contact/transfer_contact.hh"
 #include "src/libfred/registrable_object/nsset/transfer_nsset.hh"
@@ -263,6 +267,23 @@ void create_poll_techeck_record(
 }
 
 // fixtures
+
+struct HasPollUpdateContactMessage : virtual Test::Backend::Epp::autorollbacking_context
+{
+    unsigned long long history_id;
+
+    HasPollUpdateContactMessage()
+    {
+        Test::mark_all_messages_as_seen(ctx);
+        const Test::contact contact(ctx);
+        history_id = ::LibFred::UpdateContactByHandle(contact.info_data.handle,
+                                        contact.info_data.sponsoring_registrar_handle
+            ).set_authinfo("doesntmatter").exec(ctx);
+        ::LibFred::Poll::CreateUpdateObjectPollMessage().exec(ctx, history_id);
+    }
+
+    typedef Epp::Poll::UpdateInfoEvent::Data<Epp::Poll::UpdateInfoEvent::UpdateContact> SubMessage;
+};
 
 struct HasPollUpdateDomainMessage : virtual Test::Backend::Epp::autorollbacking_context
 {
@@ -948,6 +969,11 @@ struct HasPollTechCheckMessage : virtual Test::Backend::Epp::autorollbacking_con
 };
 
 } // namespace {anonymous}
+
+BOOST_FIXTURE_TEST_CASE(request_contact_update_message, HasPollUpdate<HasPollUpdateContactMessage>)
+{
+    test();
+}
 
 BOOST_FIXTURE_TEST_CASE(request_domain_update_message, HasPollUpdate<HasPollUpdateDomainMessage>)
 {

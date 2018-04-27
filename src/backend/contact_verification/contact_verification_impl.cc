@@ -455,13 +455,13 @@ unsigned long long ContactVerificationImpl::processIdentification(
         catch (const std::exception& e)
         {
             LOGGER(PACKAGE).info(
-                    boost::format("processing identification request id=%1%: async disclose address of contact with id %2%: %3%")
+                    boost::format("processing identification request id=%1%: async undisclose address of contact %2%: %3%")
                     % request_id % object_id % e.what());
         }
         catch (...)
         {
             LOGGER(PACKAGE).info(
-                    boost::format("processing identification request id=%1%: async disclose address of contact with id %2%: unknown error")
+                    boost::format("processing identification request id=%1%: async undisclose address of contact %2%: unknown error")
                     % request_id % object_id);
         }
 

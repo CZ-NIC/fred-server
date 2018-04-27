@@ -1778,6 +1778,8 @@ src_bin_corba_epp_libepp_impl_a_SOURCES = \
 		src/backend/epp/contact/contact_change.hh \
 		src/backend/epp/contact/contact_data.cc \
 		src/backend/epp/contact/contact_data.hh \
+		src/backend/epp/contact/impl/contact_output.cc \
+		src/backend/epp/contact/impl/contact_output.hh \
 		src/backend/epp/contact/update_contact_localized.cc \
 		src/backend/epp/contact/update_contact_localized.hh \
 		src/backend/epp/contact/update_contact.cc \
@@ -1838,12 +1840,16 @@ src_bin_corba_epp_libepp_impl_a_SOURCES = \
 		src/backend/epp/poll/poll_request_localized.hh \
 		src/backend/epp/poll/poll_request.cc \
 		src/backend/epp/poll/poll_request.hh \
+		src/backend/epp/poll/poll_request_get_update_contact_details.cc \
+		src/backend/epp/poll/poll_request_get_update_contact_details.hh \
 		src/backend/epp/poll/poll_request_get_update_domain_details.cc \
 		src/backend/epp/poll/poll_request_get_update_domain_details.hh \
 		src/backend/epp/poll/poll_request_get_update_keyset_details.cc \
 		src/backend/epp/poll/poll_request_get_update_keyset_details.hh \
 		src/backend/epp/poll/poll_request_get_update_nsset_details.cc \
 		src/backend/epp/poll/poll_request_get_update_nsset_details.hh \
+		src/backend/epp/poll/poll_request_get_update_contact_details_localized.cc \
+		src/backend/epp/poll/poll_request_get_update_contact_details_localized.hh \
 		src/backend/epp/poll/poll_request_get_update_domain_details_localized.cc \
 		src/backend/epp/poll/poll_request_get_update_domain_details_localized.hh \
 		src/backend/epp/poll/poll_request_get_update_keyset_details_localized.cc \

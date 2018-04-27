@@ -20,21 +20,6 @@ namespace Backend {
 namespace ContactVerification {
 namespace PublicRequest {
 
-namespace {
-
-std::string get_system_registrar_handle()
-{
-    const std::string handle =
-            CfgArgs::instance()->get_handler_ptr_by_type<HandleRegistryArgs>()->system_registrar;
-    if (!handle.empty())
-    {
-        return handle;
-    }
-    throw std::runtime_error("missing configuration for system registrar");
-}
-
-} // namespace Fred::Backend::ContactVerification::PublicRequest::{anonymous}
-
 FACTORY_MODULE_INIT_DEFI(contact_verification)
 
 class ConditionalContactIdentification
