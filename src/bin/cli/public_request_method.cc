@@ -57,20 +57,17 @@ void PublicRequestProcedure::exec()
     std::ostringstream condition_query_part;
     Database::query_param_list query_param_list;
     query_param_list(Conversion::Enums::to_db_handle(LibFred::PublicRequest::OnStatusAction::scheduled));
-    if (!request_types_filter.empty())
+    condition_query_part << " AND eprt.name IN (";
+    for (const auto& request_type : request_types_filter)
     {
-        condition_query_part << " AND eprt.name IN (";
-        for (const auto& request_type : request_types_filter)
+        if (query_param_list.size() > 1)
         {
-            if (query_param_list.size() > 1)
-            {
-                condition_query_part << ",";
-            }
-            condition_query_part << "$" << query_param_list.size() + 1 << "::TEXT";
-            query_param_list(request_type);
+            condition_query_part << ",";
         }
-        condition_query_part << ")";
+        condition_query_part << "$" << query_param_list.size() + 1 << "::TEXT";
+        query_param_list(request_type);
     }
+    condition_query_part << ")";
 
     const Database::Result dbres =
         ctx.get_conn().exec_params("SELECT pr.id, eprs.name "
