@@ -43,6 +43,11 @@ public:
             throw std::runtime_error("insert new request disabled");
         }
         PublicRequestImpl::save();
+        Database::Connection conn = Database::Manager::acquire();
+        conn.exec_params(
+            "UPDATE public_request SET on_status_action = 'scheduled'::enum_on_status_action_type"
+            " WHERE id = $1::bigint", Database::query_param_list(this->getId())
+        );
     }
 };
 
