@@ -57,6 +57,8 @@
 #include "src/bin/cli/regblock_client.hh"
 #include "src/bin/cli/charge_client_impl.hh"
 #include "src/bin/cli/domain_name_validation_init.hh"
+#include "src/bin/cli/public_request_impl.hh"
+
 
 #include "src/util/cfg/handle_general_args.hh"
 #include "src/util/cfg/handle_logging_args.hh"
@@ -142,6 +144,7 @@ CommandHandlerPtrVector chpv = boost::assign::list_of
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleContactVerificationStartEnqueuedChecksArgsGrp), contact_verification_start_enqueued_checks_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleSendObjectEventNotificationEmailsArgsGrp), send_object_event_notification_emails_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientCreateExpiredDomainArgsGrp), create_expired_domain_impl()))
+    (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientProcessPublicRequestsArgsGrp), process_public_requests_impl()))
     ;
 
 CommandOptionGroups cog(chpv);

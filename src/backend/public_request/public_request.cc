@@ -18,8 +18,9 @@
 #include "src/util/log/context.hh"
 #include "src/util/random.hh"
 #include "src/util/types/stringify.hh"
+#include "src/backend/public_request/send_email.hh"
+#include "src/backend/public_request/get_type_names.hh"
 
-#include <boost/algorithm/string/trim.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
@@ -208,6 +209,22 @@ LibFred::PublicRequestTypeIface::PublicRequestTypes get_block_unblock_public_req
 }
 
 } // namespace Fred::Backend::PublicRequest::Type::{anonymous}
+
+std::string get_personal_info_auto_type_name()
+{
+    return PersonalinfoAuto().get_public_request_type();
+}
+
+std::string get_personal_info_email_type_name()
+{
+    return PersonalinfoEmail().get_public_request_type();
+}
+
+std::string get_personal_info_post_type_name()
+{
+    return PersonalinfoPost().get_public_request_type();
+}
+
 } // namespace Fred::Backend::PublicRequest::Type
 
 namespace {
@@ -241,72 +258,6 @@ private:
 };
 
 #define LOGGING_CONTEXT(CTX_VAR, IMPL_OBJ) LogContext CTX_VAR((IMPL_OBJ), create_ctx_function_name(__FUNCTION__))
-
-struct NoPublicRequest : std::exception
-{
-    virtual const char* what() const noexcept
-    {
-        return "no public request found";
-    }
-};
-
-struct EmailData
-{
-    EmailData(
-            const std::set<std::string>& _recipient_email_addresses,
-            const std::string& _template_name,
-            const std::map<std::string, std::string>& _template_parameters)
-        : recipient_email_addresses(_recipient_email_addresses),
-          template_name(_template_name),
-          template_parameters(_template_parameters)
-    {
-    }
-    const std::set<std::string> recipient_email_addresses;
-    const std::string template_name;
-    const std::map<std::string, std::string> template_parameters;
-};
-
-struct FailedToSendMailToRecipient : std::exception
-{
-    const char* what() const noexcept
-    {
-        return "failed to send mail to recipient";
-    }
-};
-
-unsigned long long send_joined_addresses_email(
-        std::shared_ptr<LibFred::Mailer::Manager> mailer,
-        const EmailData& data)
-{
-    std::set<std::string> trimmed_recipient_email_addresses;
-    BOOST_FOREACH (const std::string& email, data.recipient_email_addresses)
-    {
-        trimmed_recipient_email_addresses.insert(boost::trim_copy(email));
-    }
-
-    std::ostringstream recipients;
-    for (std::set<std::string>::const_iterator address_ptr = trimmed_recipient_email_addresses.begin();
-            address_ptr != trimmed_recipient_email_addresses.end();
-            ++address_ptr)
-    {
-        recipients << *address_ptr << ' ';
-    }
-    try
-    {
-        return mailer->sendEmail(
-                "",
-                recipients.str(),
-                "",
-                data.template_name,
-                data.template_parameters,
-                LibFred::Mailer::Handles(),
-                LibFred::Mailer::Attachments());
-    }
-    catch (const LibFred::Mailer::NOT_SEND&)
-    {
-        throw FailedToSendMailToRecipient();
-    }
-}
 
 unsigned long long send_authinfo(
         unsigned long long public_request_id,
@@ -426,7 +377,7 @@ unsigned long long send_authinfo(
     {
         recipients.insert(static_cast<std::string>(dbres[idx][1]));
     }
-    const EmailData data(recipients, "sendauthinfo_pif", email_template_params);
+    const EmailData data(recipients, "sendauthinfo_pif", email_template_params, std::vector<unsigned long long>());
     return send_joined_addresses_email(manager, data);
 }
 
@@ -622,7 +573,7 @@ unsigned long long PublicRequestImpl::create_authinfo_request_non_registry_email
     {
         if (e.is_set_wrong_email())
         {
-            LOGGER(PACKAGE).error(boost::diagnostic_information(e));
+            LOGGER(PACKAGE).info(boost::diagnostic_information(e));
             throw InvalidContactEmail();
         }
         LOGGER(PACKAGE).error(e.what());
@@ -781,7 +732,7 @@ unsigned long long PublicRequestImpl::create_block_unblock_request(
     {
         if (e.is_set_wrong_email())
         {
-            LOGGER(PACKAGE).error(boost::diagnostic_information(e));
+            LOGGER(PACKAGE).info(boost::diagnostic_information(e));
             throw InvalidContactEmail();
         }
         LOGGER(PACKAGE).error(e.what());
@@ -896,7 +847,7 @@ unsigned long long PublicRequestImpl::create_personal_info_request_non_registry_
     {
         if (e.is_set_wrong_email())
         {
-            LOGGER(PACKAGE).error(boost::diagnostic_information(e));
+            LOGGER(PACKAGE).info(boost::diagnostic_information(e));
             throw InvalidContactEmail();
         }
         LOGGER(PACKAGE).error(e.what());

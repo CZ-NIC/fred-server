@@ -44,6 +44,7 @@
 #include "src/bin/cli/file_params.hh"
 #include "src/bin/cli/regblock_params.hh"
 #include "src/bin/cli/charge_params.hh"
+#include "src/bin/cli/public_request_params.hh"
 #include "src/bin/cli/domain_name_validation_params.hh"
 
 #include <iostream>
@@ -2688,6 +2689,40 @@ class HandleSendObjectEventNotificationEmailsArgsGrp : public HandleCommandGrpAr
             handler_parse_args()(get_options_description(), vm, argc, argv, fa);
             return option_group_index;
         }
+};
+
+struct HandleAdminClientProcessPublicRequestsArgsGrp : HandleCommandGrpArgs
+{
+    CommandDescription get_command_option() override
+    {
+        return CommandDescription("process_public_requests");
+    }
+
+    std::shared_ptr<boost::program_options::options_description>
+    get_options_description() override
+    {
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("process_public_requests options")));
+        cfg_opts->add_options()
+             ("process_public_requests", "process_public_requests options")
+             ("types", boost::program_options::value<std::vector<std::string> >()->multitoken()
+                 ->notifier(save_arg<std::vector<std::string> >(process_public_requests_params.types)),
+                 "list of types of public requests to be processed");
+        return cfg_opts;
+    }
+
+    std::size_t handle(
+            int argc,
+            char* argv[],
+            FakedArgs& fa,
+            std::size_t option_group_index) override
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }
+    ProcessPublicRequestsArgs process_public_requests_params;
 };
 
 #endif

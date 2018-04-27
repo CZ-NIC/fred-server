@@ -29,6 +29,7 @@
 #include "src/libfred/documents.hh"
 #include "src/libfred/mailer.hh"
 #include "src/libfred/object/object_type.hh"
+#include "src/libfred/opcontext.hh"
 #include "src/util/optional_value.hh"
 
 #include <boost/date_time/gregorian/gregorian.hpp>
@@ -42,6 +43,14 @@
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
+
+struct NoPublicRequest : std::exception
+{
+    virtual const char* what() const noexcept
+    {
+        return "no public request found";
+    }
+};
 
 class PublicRequestImpl
 {
