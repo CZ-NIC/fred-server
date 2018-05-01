@@ -22,8 +22,8 @@
 #include <set>
 #include <stdexcept>
 
-#ifndef CONTACT_DISCLOSE_HH_BD1A85C16AF74D188622B4D1C2EA308E
-#define CONTACT_DISCLOSE_HH_BD1A85C16AF74D188622B4D1C2EA308E
+#ifndef EMPTY_CONTACT_DISCLOSE_ELEMENT_ALLOWED
+#define EMPTY_CONTACT_DISCLOSE_ELEMENT_ALLOWED
 #endif // EMPTY_CONTACT_DISCLOSE_ELEMENT_ALLOWED
 
 namespace Epp {
@@ -123,7 +123,7 @@ public:
 
     void check_validity() const
     {
-#ifndef CONTACT_DISCLOSE_HH_BD1A85C16AF74D188622B4D1C2EA308E
+#ifndef EMPTY_CONTACT_DISCLOSE_ELEMENT_ALLOWED
         if (this->is_empty())
         {
             throw std::runtime_error("At least one disclose flag has to be set.");
