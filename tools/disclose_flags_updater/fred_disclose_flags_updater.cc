@@ -133,12 +133,13 @@ int main(int argc, char *argv[])
 
         if (opts.verbose)
         {
-            std::stringstream chunk_sizes;
+            std::ostringstream chunk_sizes;
+            chunk_sizes << " ";
             for (auto& w : workers)
             {
                 chunk_sizes << w.get_total_count() << " ";
             }
-            std::cout << "workers: " << workers.size() << "(" << chunk_sizes.str() << ")" << std::endl;
+            std::cout << "workers: " << workers.size() << "  (" << chunk_sizes.str() << ")" << std::endl;
         }
 
         std::cout << std::endl;
