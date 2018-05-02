@@ -11,6 +11,7 @@
 #include "tools/disclose_flags_updater/disclose_settings.hh"
 #include "tools/disclose_flags_updater/contact_search_query.hh"
 #include "tools/disclose_flags_updater/worker.hh"
+#include "tools/disclose_flags_updater/thread_safe_output.hh"
 #include "src/libfred/db_settings.hh"
 
 
@@ -143,7 +144,7 @@ int main(int argc, char *argv[])
         std::cout << std::endl;
 
         std::thread progress_thread([&workers](){
-            std::cout << "[progress thread] started" << std::endl;
+            safe_cout("[progress thread] started");
             auto start_time = std::chrono::steady_clock::now();
             std::string eta_time_human = "n/a";
 
@@ -168,29 +169,29 @@ int main(int argc, char *argv[])
                     auto eta_m = std::chrono::duration_cast<std::chrono::minutes>(eta_time_rest);
                     eta_time_rest -= eta_m;
                     auto eta_s = std::chrono::duration_cast<std::chrono::seconds>(eta_time_rest);
-                    std::stringstream eta_format;
+                    std::ostringstream eta_format;
 
                     eta_format << std::setfill('0')
                                << std::setw(2) << eta_h.count() << "h"
                                << std::setw(2) << eta_m.count() << "m"
                                << std::setw(2) << eta_s.count() << "s";
-                    eta_time_human = eta_format.str();
 
-                    std::cout << i << ": " << std::setfill('0') << std::setw(3)
-                              << std::round(100 * (static_cast<float>(w.done_count) / w.total_count)) << "%"
-                              << std::setw(0)
-                              << " (" << w.done_count << "/" << w.total_count << ")"
-                              << " eta: " << eta_time_human << "  ";
+                    std::ostringstream progress_format;
+                    progress_format << i << ": " << std::setfill('0') << std::setw(3)
+                                    << std::round(100 * (static_cast<float>(w.done_count) / w.total_count)) << "%"
+                                    << std::setw(0)
+                                    << " (" << w.done_count << "/" << w.total_count << ")"
+                                    << " eta: " << eta_format.str() << "  \r";
+                    safe_cout(progress_format.str());
                 }
-                std::cout << "\r";
-                std::cout.flush();
+                safe_cout_flush();
                 if (!is_finished)
                 {
                     std::this_thread::sleep_for(std::chrono::seconds(1));
                 }
             }
             while (!is_finished);
-            std::cout << "\n[progress thread] finished" << std::endl;
+            safe_cout("\n[progress thread] finished\n");
         });
 
 
@@ -200,7 +201,7 @@ int main(int argc, char *argv[])
             t_workers.push_back(std::thread(std::ref(w)));
         }
 
-        std::cout << "workers: " << t_workers.size() << " workers" << std::endl;
+        safe_cout("workers: " + std::to_string(t_workers.size()) + " workers\n");
 
         for (auto& t : t_workers)
         {

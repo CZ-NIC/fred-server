@@ -1,5 +1,6 @@
 #include "tools/disclose_flags_updater/disclose_value.hh"
 #include "tools/disclose_flags_updater/worker.hh"
+#include "tools/disclose_flags_updater/thread_safe_output.hh"
 #include "src/libfred/registrable_object/contact/update_contact.hh"
 
 #include <thread>
@@ -80,10 +81,14 @@ void update_contact_disclose_flag_impl(
 
 void Worker::operator()()
 {
+    std::ostringstream thread_prefix_format;
+    thread_prefix_format << "[thread:" << std::this_thread::get_id() << "] ";
     try
     {
+
         started = true;
-        std::cout << "[thread:" << std::this_thread::get_id() << "] started" << std::endl;
+        safe_cout(thread_prefix_format.str() + "started\n");
+        safe_cout_flush();
 
         ctx = std::make_shared<::LibFred::OperationContextCreator>();
         for (auto it = range.first; it != range.second; ++it)
@@ -94,14 +99,15 @@ void Worker::operator()()
     }
     catch (const std::exception& ex)
     {
-        std::cerr << "[thread:" << std::this_thread::get_id() << "] error: " << ex.what() << std::endl;
+        safe_cerr(thread_prefix_format.str() + "error: " + ex.what() + "\n");
     }
     catch (...)
     {
-        std::cerr << "[thread:" << std::this_thread::get_id() << "] unknown error" << std::endl;
+        safe_cerr(thread_prefix_format.str() + "unknown error\n");
     }
 
-    std::cout << "[thread:" << std::this_thread::get_id() << "] finished" << std::endl;
+    safe_cout(thread_prefix_format.str() + "finished\n");
+    safe_cout_flush();
     exited = true;
 }
 
