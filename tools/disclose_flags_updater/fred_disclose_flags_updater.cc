@@ -136,7 +136,7 @@ int main(int argc, char *argv[])
             std::stringstream chunk_sizes;
             for (auto& w : workers)
             {
-                chunk_sizes << w.total_count << " ";
+                chunk_sizes << w.get_total_count() << " ";
             }
             std::cout << "workers: " << workers.size() << "(" << chunk_sizes.str() << ")" << std::endl;
         }
@@ -155,13 +155,14 @@ int main(int argc, char *argv[])
                 for (auto i = 0ul; i < workers.size(); ++i)
                 {
                     const auto& w = workers[i];
-                    if (!w.exited)
+                    if (!w.has_exited())
                     {
                         is_finished = false;
                     }
 
                     auto ith_time = std::chrono::steady_clock::now();
-                    auto eta_time = ((ith_time - start_time) / (w.done_count + 1)) * (w.total_count - w.done_count + 1);
+                    auto eta_time = ((ith_time - start_time) / (w.get_done_count() + 1))
+                                        * (w.get_total_count() - w.get_done_count() + 1);
 
                     auto eta_time_rest = eta_time;
                     auto eta_h = std::chrono::duration_cast<std::chrono::hours>(eta_time_rest);
@@ -178,9 +179,9 @@ int main(int argc, char *argv[])
 
                     std::ostringstream progress_format;
                     progress_format << i << ": " << std::setfill('0') << std::setw(3)
-                                    << std::round(100 * (static_cast<float>(w.done_count) / w.total_count)) << "%"
+                                    << std::round(100 * (static_cast<float>(w.get_done_count()) / w.get_total_count())) << "%"
                                     << std::setw(0)
-                                    << " (" << w.done_count << "/" << w.total_count << ")"
+                                    << " (" << w.get_done_count() << "/" << w.get_total_count() << ")"
                                     << " eta: " << eta_format.str() << "  \r";
                     safe_cout(progress_format.str());
                 }
@@ -214,7 +215,7 @@ int main(int argc, char *argv[])
         {
             for (auto& w : workers)
             {
-                w.ctx->commit_transaction();
+                w.get_ctx()->commit_transaction();
             }
             std::cout << "Total " << contact_result.size() << " contact(s) UPDATED." << std::endl;
         }

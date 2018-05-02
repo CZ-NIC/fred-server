@@ -27,15 +27,9 @@ struct ContactUpdateTask
 using TaskCollection = std::vector<ContactUpdateTask>;
 using TaskRange = std::pair<TaskCollection::const_iterator, TaskCollection::const_iterator>;
 
-struct Worker
+class Worker
 {
-    Worker(const GeneralOptions& _opts, const DiscloseSettings& _discloses, const TaskRange& _range)
-        : opts(_opts), discloses(_discloses), range(_range),
-          total_count(_range.second - _range.first), done_count(0),
-          started(false), exited(false)
-    {
-    }
-
+private:
     GeneralOptions opts;
     DiscloseSettings discloses;
     TaskRange range;
@@ -47,6 +41,36 @@ struct Worker
     bool exited;
 
     std::shared_ptr<::LibFred::OperationContextCreator> ctx;
+
+
+public:
+    Worker(const GeneralOptions& _opts, const DiscloseSettings& _discloses, const TaskRange& _range)
+        : opts(_opts), discloses(_discloses), range(_range),
+          total_count(_range.second - _range.first), done_count(0),
+          started(false), exited(false)
+    {
+    }
+
+    uint64_t get_total_count() const
+
+    {
+        return total_count;
+    }
+
+    uint64_t get_done_count() const
+    {
+        return done_count;
+    }
+
+    auto get_ctx() -> decltype(ctx)
+    {
+        return ctx;
+    }
+
+    bool has_exited() const
+    {
+        return exited;
+    }
 
     void operator()();
 };
