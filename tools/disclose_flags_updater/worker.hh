@@ -8,6 +8,7 @@
 #include <vector>
 #include <utility>
 #include <memory>
+#include <atomic>
 
 namespace Tools {
 namespace DiscloseFlagsUpdater {
@@ -35,10 +36,10 @@ private:
     TaskRange range;
 
     uint64_t total_count;
-    uint64_t done_count;
+    std::atomic<uint64_t> done_count;
 
     bool started;
-    bool exited;
+    std::atomic<bool> exited;
 
     std::shared_ptr<::LibFred::OperationContextCreator> ctx;
 
@@ -51,6 +52,18 @@ public:
     {
     }
 
+    Worker(const Worker& _other)
+    {
+        opts = _other.opts;
+        discloses = _other.discloses;
+        range = _other.range;
+        total_count = _other.total_count;
+        done_count = _other.done_count.load();
+        started = _other.started;
+        exited = _other.exited.load();
+        ctx = _other.ctx;
+    }
+
     uint64_t get_total_count() const
 
     {
@@ -59,7 +72,7 @@ public:
 
     uint64_t get_done_count() const
     {
-        return done_count;
+        return done_count.load();
     }
 
     auto get_ctx() -> decltype(ctx)
@@ -69,7 +82,7 @@ public:
 
     bool has_exited() const
     {
-        return exited;
+        return exited.load();
     }
 
     void operator()();
