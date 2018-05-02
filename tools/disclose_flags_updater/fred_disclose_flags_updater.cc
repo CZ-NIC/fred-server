@@ -144,7 +144,7 @@ int main(int argc, char *argv[])
         std::cout << std::endl;
 
         std::thread progress_thread([&workers](){
-            safe_cout("[progress thread] started");
+            safe_cout("[progress thread] started\n");
             auto start_time = std::chrono::steady_clock::now();
             std::string eta_time_human = "n/a";
 
@@ -152,6 +152,7 @@ int main(int argc, char *argv[])
             do
             {
                 is_finished = true;
+                std::ostringstream progress_format;
                 for (auto i = 0ul; i < workers.size(); ++i)
                 {
                     const auto& w = workers[i];
@@ -177,14 +178,13 @@ int main(int argc, char *argv[])
                                << std::setw(2) << eta_m.count() << "m"
                                << std::setw(2) << eta_s.count() << "s";
 
-                    std::ostringstream progress_format;
                     progress_format << i << ": " << std::setfill('0') << std::setw(3)
                                     << std::round(100 * (static_cast<float>(w.get_done_count()) / w.get_total_count())) << "%"
                                     << std::setw(0)
                                     << " (" << w.get_done_count() << "/" << w.get_total_count() << ")"
-                                    << " eta: " << eta_format.str() << "  \r";
-                    safe_cout(progress_format.str());
+                                    << " eta: " << eta_format.str() << "  ";
                 }
+                safe_cout(progress_format.str() + "\r");
                 safe_cout_flush();
                 if (!is_finished)
                 {
