@@ -120,6 +120,7 @@ int main(int argc, char *argv[])
         }
 
         std::vector<Worker> workers;
+        workers.reserve(opts.thread_count);
 
         const auto chunk_size = update_tasks.size() / opts.thread_count;
         auto chunk_begin = update_tasks.begin();
@@ -197,6 +198,7 @@ int main(int argc, char *argv[])
 
 
         std::vector<std::thread> t_workers;
+        t_workers.reserve(workers.size());
         for (auto& w : workers)
         {
             t_workers.emplace_back(std::ref(w));
