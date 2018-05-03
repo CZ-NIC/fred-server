@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
 
         std::thread progress_thread([&workers](){
             safe_cout("[progress thread] started\n");
-            auto start_time = std::chrono::steady_clock::now();
+            const auto start_time = std::chrono::steady_clock::now();
 
             bool is_finished;
             do
@@ -161,16 +161,16 @@ int main(int argc, char *argv[])
                         is_finished = false;
                     }
 
-                    auto ith_time = std::chrono::steady_clock::now();
-                    auto eta_time = ((ith_time - start_time) / (w.get_done_count() + 1))
+                    const auto ith_time = std::chrono::steady_clock::now();
+                    const auto eta_time = ((ith_time - start_time) / (w.get_done_count() + 1))
                                         * (w.get_total_count() - w.get_done_count() + 1);
 
                     auto eta_time_rest = eta_time;
-                    auto eta_h = std::chrono::duration_cast<std::chrono::hours>(eta_time_rest);
+                    const auto eta_h = std::chrono::duration_cast<std::chrono::hours>(eta_time_rest);
                     eta_time_rest -= eta_h;
-                    auto eta_m = std::chrono::duration_cast<std::chrono::minutes>(eta_time_rest);
+                    const auto eta_m = std::chrono::duration_cast<std::chrono::minutes>(eta_time_rest);
                     eta_time_rest -= eta_m;
-                    auto eta_s = std::chrono::duration_cast<std::chrono::seconds>(eta_time_rest);
+                    const auto eta_s = std::chrono::duration_cast<std::chrono::seconds>(eta_time_rest);
                     std::ostringstream eta_format;
 
                     eta_format << std::setfill('0')
