@@ -2,13 +2,20 @@
 #include <iomanip>
 #include <cmath>
 #include <string>
+#include <chrono>
+#include <thread>
 #include <boost/program_options.hpp>
+#include <boost/optional.hpp>
+#include <boost/optional/optional_io.hpp>
 
+#include "tools/disclose_flags_updater/options.hh"
 #include "tools/disclose_flags_updater/disclose_value.hh"
 #include "tools/disclose_flags_updater/disclose_settings.hh"
 #include "tools/disclose_flags_updater/contact_search_query.hh"
+#include "tools/disclose_flags_updater/worker.hh"
+#include "tools/disclose_flags_updater/thread_safe_output.hh"
 #include "src/libfred/db_settings.hh"
-#include "src/libfred/registrable_object/contact/update_contact.hh"
+#include "src/libfred/registrar/info_registrar.hh"
 
 
 int main(int argc, char *argv[])
@@ -17,19 +24,22 @@ int main(int argc, char *argv[])
 
     try
     {
+        /* parser in boost/optional/optional_io.hpp seems broken */
+        std::uint64_t logd_request_id = 0;
         DiscloseSettings discloses;
-        bool verbose = false;
-        bool dry_run = false;
-        std::string by_registrar;
-        std::string db_connect;
+        GeneralOptions opts;
 
         namespace po = boost::program_options;
         po::options_description args("Options");
         args.add_options()
-            ("verbose", po::bool_switch(&verbose)->default_value(false), "verbose output")
+            ("verbose", po::bool_switch(&opts.verbose)->default_value(false), "verbose output")
+            ("progress", po::bool_switch(&opts.progress_display)->default_value(false), "display progress bar")
+            ("thread-count", po::value<std::int16_t>(&opts.thread_count)->default_value(1), "number of worker threads")
+            ("logd-request-id", po::value<std::uint64_t>(&logd_request_id)->default_value(0, "--"),
+             "logger request id for all contact updates")
             ("help", "produce usage message")
-            ("dry-run", po::bool_switch(&dry_run)->default_value(false), "only show what will be done")
-            ("db-connect", po::value<std::string>(&db_connect)->required(), "database connection string")
+            ("dry-run", po::bool_switch(&opts.dry_run)->default_value(false), "only show what will be done")
+            ("db-connect", po::value<std::string>(&opts.db_connect)->required(), "database connection string")
             ("set-name",
              po::value<DiscloseValue>(&discloses.name)->default_value(DiscloseValue::not_set, "not-set"),
              "disclose value for name")
@@ -58,7 +68,7 @@ int main(int argc, char *argv[])
              po::value<DiscloseValue>(&discloses.notify_email)->default_value(DiscloseValue::not_set, "not-set"),
              "disclose value for contact identification type and value")
             ("by-registrar",
-             po::value<std::string>(&by_registrar)->required(),
+             po::value<std::string>(&opts.by_registrar)->required(),
              "all changes to dislose flags will be done by this registrar");
 
 
@@ -73,12 +83,38 @@ int main(int argc, char *argv[])
 
         po::notify(vm);
 
-        if (verbose)
+        if (logd_request_id != 0)
+        {
+            opts.logd_request_id = logd_request_id;
+        }
+
+        if (opts.thread_count < 1)
+        {
+            std::cerr << "Error: --thread-count must be at least 1." << std::endl;
+            return 1;
+        }
+
+        Database::Manager::init(new Database::ConnectionFactory(opts.db_connect));
+        try
+        {
+            LibFred::OperationContextCreator ctx;
+            LibFred::InfoRegistrarByHandle(opts.by_registrar).exec(ctx);
+        }
+        catch (...)
+        {
+            std::cerr << "Error: registrar not found" << std::endl;
+            return 1;
+        }
+
+        if (opts.verbose)
         {
             std::cout << "Settings:" << std::endl
-                      << "\t- db: " << db_connect << std::endl
-                      << "\t- by-registrar: " << by_registrar << std::endl
-                      << "\t- disclose-settings: " << discloses << std::endl;
+                      << "\t- db: " << opts.db_connect << std::endl
+                      << "\t- by-registrar: " << opts.by_registrar << std::endl
+                      << "\t- thread-count: " << opts.thread_count << std::endl
+                      << "\t- dry-run: " << opts.dry_run << std::endl
+                      << "\t- logd-request-id: " << opts.logd_request_id << std::endl
+                      << "\t- disclose-settings: " << discloses << "\n" << std::endl;
         }
 
         if (discloses.is_empty())
@@ -89,104 +125,146 @@ int main(int argc, char *argv[])
 
         auto contact_search_sql = make_query_search_contact_needs_update(discloses);
 
-        if (verbose)
+        if (opts.verbose)
         {
-            std::cout << "\t- search-sql: " << contact_search_sql << std::endl;
-            std::cout << std::endl;
+            std::cout << "search-sql: " << contact_search_sql << std::endl;
         }
-
-        Database::Manager::init(new Database::ConnectionFactory(db_connect));
 
         LibFred::OperationContextCreator ctx;
-        Database::Result contact_list = ctx.get_conn().exec(contact_search_sql);
+        Database::Result contact_result = ctx.get_conn().exec(contact_search_sql);
 
-        auto total_count = contact_list.size();
-        for (unsigned int i = 0; i < contact_list.size(); ++i)
+        if (contact_result.size() == 0)
         {
-            auto contact_id = static_cast<uint64_t>(contact_list[i][0]);
-            auto contact_hidden_address_allowed = static_cast<bool>(contact_list[i][1]);
+            std::cout << std::endl << "Nothing to do. Exiting..." << std::endl;
+            return 0;
+        }
 
-            auto update_op = LibFred::UpdateContactById(contact_id, by_registrar);
+        TaskCollection update_tasks;
+        update_tasks.reserve(contact_result.size());
+        for (std::uint64_t i = 0; i < contact_result.size(); ++i)
+        {
+            update_tasks.emplace_back(
+                static_cast<std::uint64_t>(contact_result[i][0]),
+                static_cast<bool>(contact_result[i][1])
+            );
+        }
 
-            if (discloses.name != DiscloseValue::not_set)
-            {
-                update_op.set_disclosename(to_db_value(discloses.name));
-            }
-            if (discloses.org != DiscloseValue::not_set)
-            {
-                update_op.set_discloseorganization(to_db_value(discloses.org));
-            }
-            if (discloses.voice != DiscloseValue::not_set)
-            {
-                update_op.set_disclosetelephone(to_db_value(discloses.voice));
-            }
-            if (discloses.fax != DiscloseValue::not_set)
-            {
-                update_op.set_disclosefax(to_db_value(discloses.fax));
-            }
-            if (discloses.email != DiscloseValue::not_set)
-            {
-                update_op.set_discloseemail(to_db_value(discloses.email));
-            }
-            if (discloses.vat != DiscloseValue::not_set)
-            {
-                update_op.set_disclosevat(to_db_value(discloses.vat));
-            }
-            if (discloses.ident != DiscloseValue::not_set)
-            {
-                update_op.set_discloseident(to_db_value(discloses.ident));
-            }
-            if (discloses.notify_email != DiscloseValue::not_set)
-            {
-                update_op.set_disclosenotifyemail(to_db_value(discloses.notify_email));
-            }
-            if (discloses.addr != DiscloseAddressValue::not_set)
-            {
-                auto discloseaddress_value = true;
-                if (discloses.addr == DiscloseAddressValue::hide_verified)
-                {
-                    if (contact_hidden_address_allowed)
-                    {
-                        discloseaddress_value = false;
-                    }
-                    else
-                    {
-                        discloseaddress_value = true;
-                    }
-                }
-                else
-                {
-                    discloseaddress_value = to_db_value(discloses.addr);
-                }
-                update_op.set_discloseaddress(discloseaddress_value);
-            }
+        if (opts.verbose)
+        {
+            std::cout << "total-contacts: " << update_tasks.size() << std::endl;
+        }
 
-            update_op.exec(ctx);
-            if (verbose || dry_run)
-            {
-                std::cout << "id: " << contact_id << "  "
-                          << "hidden-address-allowed: " << (contact_hidden_address_allowed ? "yes" : "no") << "\n";
+        std::vector<Worker> workers;
+        workers.reserve(opts.thread_count);
 
-                std::cout << update_op.to_string() << "\n";
-                std::cout << std::endl;
-            }
-            else
+        const auto chunk_size = update_tasks.size() / opts.thread_count;
+        auto chunk_begin = update_tasks.begin();
+        if (chunk_size > 0)
+        {
+            for (std::int16_t i = 0; i < opts.thread_count - 1; ++i)
             {
-                std::cout << std::setfill('0') << std::setw(3)
-                          << std::round(100 * (static_cast<float>(i + 1) / contact_list.size())) << "%"
-                          << std::setw(0)
-                          << " (" << i + 1 << "/" << total_count << ")\r";
-                std::cout.flush();
+                auto chunk_end = chunk_begin + chunk_size;
+                workers.emplace_back(opts, discloses, std::make_pair(chunk_begin, chunk_end));
+                chunk_begin = chunk_end;
             }
         }
-        if (!dry_run)
+        if (update_tasks.end() - chunk_begin > 0)
         {
-            ctx.commit_transaction();
-            std::cout << "Total " << contact_list.size() << " contact(s) UPDATED." << std::endl;
+            workers.emplace_back(opts, discloses, std::make_pair(chunk_begin, update_tasks.end()));
+        }
+
+        if (opts.verbose)
+        {
+            std::ostringstream chunk_sizes;
+            chunk_sizes << " ";
+            for (auto& w : workers)
+            {
+                chunk_sizes << w.get_total_count() << " ";
+            }
+            std::cout << "workers: " << workers.size() << "  (" << chunk_sizes.str() << ")" << std::endl;
+        }
+
+        std::cout << std::endl;
+
+        std::thread progress_thread([&workers](){
+            safe_cout("[progress thread] started\n");
+            const auto start_time = std::chrono::steady_clock::now();
+
+            bool is_finished;
+            do
+            {
+                is_finished = true;
+                std::ostringstream progress_format;
+                for (auto i = 0ul; i < workers.size(); ++i)
+                {
+                    const auto& w = workers[i];
+                    if (!w.has_exited())
+                    {
+                        is_finished = false;
+                    }
+
+                    const auto ith_time = std::chrono::steady_clock::now();
+                    const auto eta_time = ((ith_time - start_time) / (w.get_done_count() + 1))
+                                        * (w.get_total_count() - w.get_done_count() + 1);
+
+                    auto eta_time_rest = eta_time;
+                    const auto eta_h = std::chrono::duration_cast<std::chrono::hours>(eta_time_rest);
+                    eta_time_rest -= eta_h;
+                    const auto eta_m = std::chrono::duration_cast<std::chrono::minutes>(eta_time_rest);
+                    eta_time_rest -= eta_m;
+                    const auto eta_s = std::chrono::duration_cast<std::chrono::seconds>(eta_time_rest);
+                    std::ostringstream eta_format;
+
+                    eta_format << std::setfill('0')
+                               << std::setw(2) << eta_h.count() << "h"
+                               << std::setw(2) << eta_m.count() << "m"
+                               << std::setw(2) << eta_s.count() << "s";
+
+                    progress_format << i << ": " << std::setfill('0') << std::setw(3)
+                                    << std::round(100 * (static_cast<float>(w.get_done_count()) / w.get_total_count())) << "%"
+                                    << std::setw(0)
+                                    << " (" << w.get_done_count() << "/" << w.get_total_count() << ")"
+                                    << " eta: " << eta_format.str() << "  ";
+                }
+                safe_cout(progress_format.str() + "\r");
+                safe_cout_flush();
+                if (!is_finished)
+                {
+                    std::this_thread::sleep_for(std::chrono::seconds(1));
+                }
+            }
+            while (!is_finished);
+            safe_cout("\n[progress thread] finished\n");
+        });
+
+
+        std::vector<std::thread> t_workers;
+        t_workers.reserve(workers.size());
+        for (auto& w : workers)
+        {
+            t_workers.emplace_back(std::ref(w));
+        }
+
+        safe_cout("workers: " + std::to_string(t_workers.size()) + " workers\n");
+
+        for (auto& t : t_workers)
+        {
+            t.join();
+        }
+        progress_thread.join();
+
+        std::cout << std::endl;
+        if (!opts.dry_run)
+        {
+            for (auto& w : workers)
+            {
+                w.get_ctx()->commit_transaction();
+            }
+            std::cout << "Total " << contact_result.size() << " contact(s) UPDATED." << std::endl;
         }
         else
         {
-            std::cout << "Total " << contact_list.size() << " contact(s) SHOULD be updated." << std::endl;
+            std::cout << "Total " << contact_result.size() << " contact(s) SHOULD be updated." << std::endl;
         }
     }
     catch (const std::exception& ex)
