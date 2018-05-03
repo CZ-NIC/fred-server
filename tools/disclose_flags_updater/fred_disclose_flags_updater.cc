@@ -147,7 +147,6 @@ int main(int argc, char *argv[])
         std::thread progress_thread([&workers](){
             safe_cout("[progress thread] started\n");
             auto start_time = std::chrono::steady_clock::now();
-            std::string eta_time_human = "n/a";
 
             bool is_finished;
             do
