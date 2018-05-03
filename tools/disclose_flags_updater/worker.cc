@@ -14,10 +14,15 @@ void update_contact_disclose_flag_impl(
         ::LibFred::OperationContext& _ctx,
         const ContactUpdateTask& _task,
         const std::string& _by_registrar,
-        const DiscloseSettings& _discloses
+        const DiscloseSettings& _discloses,
+        const boost::optional<std::uint64_t> _logd_request_id
 )
 {
     ::LibFred::UpdateContactById update_op(_task.contact_id, _by_registrar);
+    if (_logd_request_id != boost::none)
+    {
+        update_op.set_logd_request_id(_logd_request_id.value());
+    }
 
     if (_discloses.name != DiscloseValue::not_set)
     {
@@ -93,7 +98,7 @@ void Worker::operator()()
         ctx = std::make_shared<::LibFred::OperationContextCreator>();
         for (auto it = range.first; it != range.second; ++it)
         {
-            update_contact_disclose_flag_impl(*ctx, *it, opts.by_registrar, discloses);
+            update_contact_disclose_flag_impl(*ctx, *it, opts.by_registrar, discloses, opts.logd_request_id);
             ++done_count;
         }
     }

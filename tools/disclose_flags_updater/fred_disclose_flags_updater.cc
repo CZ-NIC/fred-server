@@ -5,6 +5,8 @@
 #include <chrono>
 #include <thread>
 #include <boost/program_options.hpp>
+#include <boost/optional.hpp>
+#include <boost/optional/optional_io.hpp>
 
 #include "tools/disclose_flags_updater/options.hh"
 #include "tools/disclose_flags_updater/disclose_value.hh"
@@ -21,6 +23,8 @@ int main(int argc, char *argv[])
 
     try
     {
+        /* parser in boost/optional/optional_io.hpp seems broken */
+        std::uint64_t logd_request_id = 0;
         DiscloseSettings discloses;
         GeneralOptions opts;
 
@@ -30,6 +34,8 @@ int main(int argc, char *argv[])
             ("verbose", po::bool_switch(&opts.verbose)->default_value(false), "verbose output")
             ("progress", po::bool_switch(&opts.progress_display)->default_value(false), "display progress bar")
             ("thread-count", po::value<std::uint16_t>(&opts.thread_count)->default_value(1), "number of worker threads")
+            ("logd-request-id", po::value<std::uint64_t>(&logd_request_id)->default_value(0, "--"),
+             "logger request id for all contact updates")
             ("help", "produce usage message")
             ("dry-run", po::bool_switch(&opts.dry_run)->default_value(false), "only show what will be done")
             ("db-connect", po::value<std::string>(&opts.db_connect)->required(), "database connection string")
@@ -76,6 +82,11 @@ int main(int argc, char *argv[])
 
         po::notify(vm);
 
+        if (logd_request_id != 0)
+        {
+            opts.logd_request_id = logd_request_id;
+        }
+
         if (opts.verbose)
         {
             std::cout << "Settings:" << std::endl
@@ -83,6 +94,7 @@ int main(int argc, char *argv[])
                       << "\t- by-registrar: " << opts.by_registrar << std::endl
                       << "\t- thread-count: " << opts.thread_count << std::endl
                       << "\t- dry-run: " << opts.dry_run << std::endl
+                      << "\t- logd-request-id: " << opts.logd_request_id << std::endl
                       << "\t- disclose-settings: " << discloses << "\n" << std::endl;
         }
 

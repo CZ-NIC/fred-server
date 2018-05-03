@@ -3,6 +3,7 @@
 
 #include <string>
 #include <cstdint>
+#include <boost/optional.hpp>
 
 namespace Tools {
 namespace DiscloseFlagsUpdater {
@@ -13,9 +14,10 @@ struct GeneralOptions
     bool verbose;
     bool dry_run;
     bool progress_display;
+    std::uint16_t thread_count;
+    boost::optional<std::uint64_t> logd_request_id;
     std::string by_registrar;
     std::string db_connect;
-    std::uint16_t thread_count;
 };
 
 
