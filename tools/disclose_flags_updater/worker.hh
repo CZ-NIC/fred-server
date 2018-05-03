@@ -16,12 +16,12 @@ namespace DiscloseFlagsUpdater {
 
 struct ContactUpdateTask
 {
-    ContactUpdateTask(uint64_t _contact_id, bool _contact_hidden_address_allowed)
+    ContactUpdateTask(std::uint64_t _contact_id, bool _contact_hidden_address_allowed)
         : contact_id(_contact_id), contact_hidden_address_allowed(_contact_hidden_address_allowed)
     {
     }
 
-    uint64_t contact_id;
+    std::uint64_t contact_id;
     bool contact_hidden_address_allowed;
 };
 
@@ -35,8 +35,8 @@ private:
     DiscloseSettings discloses;
     TaskRange range;
 
-    uint64_t total_count;
-    std::atomic<uint64_t> done_count;
+    std::uint64_t total_count;
+    std::atomic<std::uint64_t> done_count;
 
     bool started;
     std::atomic<bool> exited;
@@ -64,13 +64,13 @@ public:
         ctx = _other.ctx;
     }
 
-    uint64_t get_total_count() const
+    std::uint64_t get_total_count() const
 
     {
         return total_count;
     }
 
-    uint64_t get_done_count() const
+    std::uint64_t get_done_count() const
     {
         return done_count.load();
     }

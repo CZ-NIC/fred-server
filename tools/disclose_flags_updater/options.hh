@@ -15,7 +15,7 @@ struct GeneralOptions
     bool progress_display;
     std::string by_registrar;
     std::string db_connect;
-    uint16_t thread_count;
+    std::uint16_t thread_count;
 };
 
 

@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
         args.add_options()
             ("verbose", po::bool_switch(&opts.verbose)->default_value(false), "verbose output")
             ("progress", po::bool_switch(&opts.progress_display)->default_value(false), "display progress bar")
-            ("thread-count", po::value<uint16_t>(&opts.thread_count)->default_value(1), "number of worker threads")
+            ("thread-count", po::value<std::uint16_t>(&opts.thread_count)->default_value(1), "number of worker threads")
             ("help", "produce usage message")
             ("dry-run", po::bool_switch(&opts.dry_run)->default_value(false), "only show what will be done")
             ("db-connect", po::value<std::string>(&opts.db_connect)->required(), "database connection string")
@@ -106,10 +106,10 @@ int main(int argc, char *argv[])
 
         TaskCollection update_tasks;
         update_tasks.reserve(contact_result.size());
-        for (uint64_t i = 0; i < contact_result.size(); ++i)
+        for (std::uint64_t i = 0; i < contact_result.size(); ++i)
         {
             update_tasks.emplace_back(
-                static_cast<uint64_t>(contact_result[i][0]),
+                static_cast<std::uint64_t>(contact_result[i][0]),
                 static_cast<bool>(contact_result[i][1])
             );
         }
