@@ -133,6 +133,12 @@ int main(int argc, char *argv[])
         LibFred::OperationContextCreator ctx;
         Database::Result contact_result = ctx.get_conn().exec(contact_search_sql);
 
+        if (contact_result.size() == 0)
+        {
+            std::cout << std::endl << "Nothing to do. Exiting..." << std::endl;
+            return 0;
+        }
+
         TaskCollection update_tasks;
         update_tasks.reserve(contact_result.size());
         for (std::uint64_t i = 0; i < contact_result.size(); ++i)
@@ -153,13 +159,19 @@ int main(int argc, char *argv[])
 
         const auto chunk_size = update_tasks.size() / opts.thread_count;
         auto chunk_begin = update_tasks.begin();
-        for (auto i = 0; i < opts.thread_count - 1; ++i)
+        if (chunk_size > 0)
         {
-            auto chunk_end = chunk_begin + chunk_size;
-            workers.emplace_back(opts, discloses, std::make_pair(chunk_begin, chunk_end));
-            chunk_begin = chunk_end;
+            for (std::int16_t i = 0; i < opts.thread_count - 1; ++i)
+            {
+                auto chunk_end = chunk_begin + chunk_size;
+                workers.emplace_back(opts, discloses, std::make_pair(chunk_begin, chunk_end));
+                chunk_begin = chunk_end;
+            }
         }
-        workers.emplace_back(opts, discloses, std::make_pair(chunk_begin, update_tasks.end()));
+        if (update_tasks.end() - chunk_begin > 0)
+        {
+            workers.emplace_back(opts, discloses, std::make_pair(chunk_begin, update_tasks.end()));
+        }
 
         if (opts.verbose)
         {
