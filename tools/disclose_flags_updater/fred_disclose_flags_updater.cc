@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
         args.add_options()
             ("verbose", po::bool_switch(&opts.verbose)->default_value(false), "verbose output")
             ("progress", po::bool_switch(&opts.progress_display)->default_value(false), "display progress bar")
-            ("thread-count", po::value<std::uint16_t>(&opts.thread_count)->default_value(1), "number of worker threads")
+            ("thread-count", po::value<std::int16_t>(&opts.thread_count)->default_value(1), "number of worker threads")
             ("logd-request-id", po::value<std::uint64_t>(&logd_request_id)->default_value(0, "--"),
              "logger request id for all contact updates")
             ("help", "produce usage message")
@@ -85,6 +85,12 @@ int main(int argc, char *argv[])
         if (logd_request_id != 0)
         {
             opts.logd_request_id = logd_request_id;
+        }
+
+        if (opts.thread_count < 1)
+        {
+            std::cerr << "Error: --thread-count must be at least 1." << std::endl;
+            return 1;
         }
 
         if (opts.verbose)
