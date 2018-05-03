@@ -199,7 +199,7 @@ int main(int argc, char *argv[])
         std::vector<std::thread> t_workers;
         for (auto& w : workers)
         {
-            t_workers.push_back(std::thread(std::ref(w)));
+            t_workers.emplace_back(std::ref(w));
         }
 
         safe_cout("workers: " + std::to_string(t_workers.size()) + " workers\n");
