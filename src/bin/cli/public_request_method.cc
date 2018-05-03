@@ -54,6 +54,10 @@ void PublicRequestProcedure::exec()
         }
     }
 
+    if (request_types_filter.empty())
+    {
+        return;
+    }
     std::ostringstream condition_query_part;
     Database::query_param_list query_param_list;
     query_param_list(Conversion::Enums::to_db_handle(LibFred::PublicRequest::OnStatusAction::scheduled));
