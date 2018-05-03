@@ -15,6 +15,7 @@
 #include "tools/disclose_flags_updater/worker.hh"
 #include "tools/disclose_flags_updater/thread_safe_output.hh"
 #include "src/libfred/db_settings.hh"
+#include "src/libfred/registrar/info_registrar.hh"
 
 
 int main(int argc, char *argv[])
@@ -93,6 +94,18 @@ int main(int argc, char *argv[])
             return 1;
         }
 
+        Database::Manager::init(new Database::ConnectionFactory(opts.db_connect));
+        try
+        {
+            LibFred::OperationContextCreator ctx;
+            LibFred::InfoRegistrarByHandle(opts.by_registrar).exec(ctx);
+        }
+        catch (...)
+        {
+            std::cerr << "Error: registrar not found" << std::endl;
+            return 1;
+        }
+
         if (opts.verbose)
         {
             std::cout << "Settings:" << std::endl
@@ -116,8 +129,6 @@ int main(int argc, char *argv[])
         {
             std::cout << "search-sql: " << contact_search_sql << std::endl;
         }
-
-        Database::Manager::init(new Database::ConnectionFactory(opts.db_connect));
 
         LibFred::OperationContextCreator ctx;
         Database::Result contact_result = ctx.get_conn().exec(contact_search_sql);
