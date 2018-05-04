@@ -913,6 +913,8 @@ src_libfred_libfred_a_SOURCES = \
 		src/libfred/registrable_object/contact/place_address.hh \
 		src/libfred/registrable_object/contact/transfer_contact.hh \
 		src/libfred/registrable_object/contact/transfer_contact.cc \
+		src/libfred/registrable_object/contact/undisclose_address.hh \
+		src/libfred/registrable_object/contact/undisclose_address.cc \
 		src/backend/mojeid/checkers.cc \
 		src/backend/mojeid/checkers.hh \
 		src/backend/mojeid/check_collector.hh \
@@ -1232,6 +1234,7 @@ src_libfred_contact_verification_libcontact_verification_a_SOURCES = \
 		src/libfred/contact_verification/contact_verification_password.cc \
 		src/libfred/contact_verification/contact_verification_password.hh \
 		src/libfred/contact_verification/contact_validator.hh
+
 #
 # src/libfred/contact_verification/libcontact_verification.a
 
@@ -1775,6 +1778,8 @@ src_bin_corba_epp_libepp_impl_a_SOURCES = \
 		src/backend/epp/contact/contact_change.hh \
 		src/backend/epp/contact/contact_data.cc \
 		src/backend/epp/contact/contact_data.hh \
+		src/backend/epp/contact/impl/contact_output.cc \
+		src/backend/epp/contact/impl/contact_output.hh \
 		src/backend/epp/contact/update_contact_localized.cc \
 		src/backend/epp/contact/update_contact_localized.hh \
 		src/backend/epp/contact/update_contact.cc \
@@ -1835,12 +1840,16 @@ src_bin_corba_epp_libepp_impl_a_SOURCES = \
 		src/backend/epp/poll/poll_request_localized.hh \
 		src/backend/epp/poll/poll_request.cc \
 		src/backend/epp/poll/poll_request.hh \
+		src/backend/epp/poll/poll_request_get_update_contact_details.cc \
+		src/backend/epp/poll/poll_request_get_update_contact_details.hh \
 		src/backend/epp/poll/poll_request_get_update_domain_details.cc \
 		src/backend/epp/poll/poll_request_get_update_domain_details.hh \
 		src/backend/epp/poll/poll_request_get_update_keyset_details.cc \
 		src/backend/epp/poll/poll_request_get_update_keyset_details.hh \
 		src/backend/epp/poll/poll_request_get_update_nsset_details.cc \
 		src/backend/epp/poll/poll_request_get_update_nsset_details.hh \
+		src/backend/epp/poll/poll_request_get_update_contact_details_localized.cc \
+		src/backend/epp/poll/poll_request_get_update_contact_details_localized.hh \
 		src/backend/epp/poll/poll_request_get_update_domain_details_localized.cc \
 		src/backend/epp/poll/poll_request_get_update_domain_details_localized.hh \
 		src/backend/epp/poll/poll_request_get_update_keyset_details_localized.cc \
@@ -3289,6 +3298,7 @@ test_test_server_SOURCES = \
 		src/backend/domain_browser/domain_browser.cc \
 		src/backend/domain_browser/domain_browser.hh \
 		test/backend/domain_browser/test_domain_browser.cc \
+		test/setup/fixtures.cc \
 		test/setup/fixtures.hh
 
 test_test_server_CPPFLAGS = \
@@ -3507,6 +3517,7 @@ test_test_libfred_SOURCES = \
 		test/libfred/contact/test_copy_contact.cc \
 		test/libfred/contact/test_transfer_contact.cc \
 		test/libfred/contact/test_mojeid_checkers.cc \
+		test/libfred/contact/test_undisclose_address.cc \
 		src/util/types/birthdate.cc \
 		test/libfred/domain/test_update_domain.cc \
 		test/libfred/domain/test_renew_domain.cc \
@@ -3920,7 +3931,6 @@ test_test_exception_LDADD = \
 		$(BOOST_SYSTEM_LIB)
 #
 # non-corba tests with overloaded global operator new
-
 
 install-tests: $(SERVER_TESTS)
 		test -z "$(bindir)" || $(MKDIR_P) "$(bindir)"

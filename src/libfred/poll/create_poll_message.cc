@@ -103,6 +103,18 @@ const CreatePollMessageFunction MessageTypeTraits<MessageType::transfer_keyset>:
         create_poll_eppaction_message<message_type>;
 
 template <>
+struct MessageTypeTraits<MessageType::update_contact>
+{
+    static const MessageType::Enum message_type = MessageType::update_contact;
+    static const Object_Type::Enum object_type = Object_Type::contact;
+    static const SponsoringRegistrar::Enum recipient = SponsoringRegistrar::who_did_the_action;
+    static const CreatePollMessageFunction create_poll_message;
+};
+
+const CreatePollMessageFunction MessageTypeTraits<MessageType::update_contact>::create_poll_message =
+        create_poll_eppaction_message<message_type>;
+
+template <>
 struct MessageTypeTraits<MessageType::update_domain>
 {
     static const MessageType::Enum message_type = MessageType::update_domain;
@@ -250,6 +262,7 @@ template struct CreatePollMessage<MessageType::transfer_domain>;
 template struct CreatePollMessage<MessageType::transfer_nsset>;
 template struct CreatePollMessage<MessageType::transfer_keyset>;
 
+template struct CreatePollMessage<MessageType::update_contact>;
 template struct CreatePollMessage<MessageType::update_domain>;
 template struct CreatePollMessage<MessageType::update_nsset>;
 template struct CreatePollMessage<MessageType::update_keyset>;

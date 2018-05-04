@@ -40,11 +40,8 @@ void CreateUpdateObjectPollMessage::exec(LibFred::OperationContext &_ctx, unsign
     switch (Conversion::Enums::from_db_handle<Object_Type>(static_cast<std::string>(db_res[0][0])))
     {
         case Object_Type::contact:
-            struct ContactsNotSupported:OperationException
-            {
-                const char* what()const noexcept { return "contacts not supported"; }
-            };
-            throw ContactsNotSupported();
+            CreatePollMessage<MessageType::update_contact>().exec(_ctx, _history_id);
+            return;
         case Object_Type::domain:
             CreatePollMessage<MessageType::update_domain>().exec(_ctx, _history_id);
             return;

@@ -464,6 +464,12 @@ UpdateInfoEvent get_update_info_event(
     UpdateInfoEvent ret;
     switch (_message_type)
     {
+        case MessageType::update_contact:
+        {
+            const UpdateInfoEvent::Data<UpdateInfoEvent::UpdateContact> specific_message = { transaction_id, _message_id };
+            ret.message = specific_message;
+            break;
+        }
         case MessageType::update_domain:
         {
             const UpdateInfoEvent::Data<UpdateInfoEvent::UpdateDomain> specific_message = { transaction_id, _message_id };
@@ -563,6 +569,7 @@ PollRequestOutputData poll_request(
         case MessageType::request_fee_info:
             poll_request_output_data.message = get_request_fee_info_event(_ctx, poll_request_output_data.message_id, message_type);
             return poll_request_output_data;
+        case MessageType::update_contact:
         case MessageType::update_domain:
         case MessageType::update_nsset:
         case MessageType::update_keyset:

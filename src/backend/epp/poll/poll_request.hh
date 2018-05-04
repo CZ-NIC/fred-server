@@ -131,6 +131,7 @@ struct RequestFeeInfoEvent
 
 struct UpdateInfoEvent
 {
+    struct UpdateContact;
     struct UpdateDomain;
     struct UpdateNsset;
     struct UpdateKeyset;
@@ -143,6 +144,7 @@ struct UpdateInfoEvent
     };
 
     typedef boost::variant<
+        Data<UpdateContact>,
         Data<UpdateDomain>,
         Data<UpdateNsset>,
         Data<UpdateKeyset>

@@ -117,6 +117,9 @@ fileclient_path = @BINDIR@/filemanager_client
 # Value must be from PostgreSQL pg_timezone_names.name.
 registry_timezone = Europe/Prague
 
+# handle of registrar with system privileges for restricted actions
+system_registrar = REG-CZNIC
+
 ################################################################################
 ## Daemon-specific settings
 ################################################################################

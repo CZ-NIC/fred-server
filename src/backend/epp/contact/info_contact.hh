@@ -41,6 +41,7 @@ namespace Contact {
 
 struct InfoContactOutputData
 {
+    InfoContactOutputData() = default;
     explicit InfoContactOutputData(const boost::optional<ContactDisclose>& _disclose);
     std::string handle;
     std::string roid;

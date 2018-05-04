@@ -100,6 +100,7 @@
 
 #include "src/backend/epp/poll/poll_acknowledgement_localized.hh"
 #include "src/backend/epp/poll/poll_request_localized.hh"
+#include "src/backend/epp/poll/poll_request_get_update_contact_details_localized.hh"
 #include "src/backend/epp/poll/poll_request_get_update_domain_details_localized.hh"
 #include "src/backend/epp/poll/poll_request_get_update_nsset_details_localized.hh"
 #include "src/backend/epp/poll/poll_request_get_update_keyset_details_localized.hh"
@@ -1317,6 +1318,57 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
         _create_time = create_time._retn();
         _msg_id = msg_id._retn();
         return return_value._retn();
+    }
+    catch (const Epp::EppResponseFailureLocalized& e) {
+        throw LibFred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
+    }
+}
+
+/*
+ * idl method for retrieving old and new data of updated contact
+ *
+ * \param _poll_id        database id of poll message where is stored
+ *                        historyid of object we want details about
+ * \param _old_data       output parameter - data of object before update
+ * \param _new_data       output parameter - data of object after update
+ * \param params          common epp parameters
+ *
+ */
+void
+ccReg_EPP_i::PollRequestGetUpdateContactDetails(
+    CORBA::ULongLong _message_id,
+    ccReg::Contact_out _old_data,
+    ccReg::Contact_out _new_data,
+    const ccReg::EppParams& _epp_params)
+{
+    const Epp::RequestParams epp_request_params = LibFred::Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
+
+    try {
+        const Epp::RegistrarSessionData registrar_session_data =
+            Epp::get_registrar_session_data(epp_sessions_, epp_request_params.session_id);
+
+        const Epp::Poll::PollRequestUpdateContactLocalizedResponse contact_update_response =
+            Epp::Poll::poll_request_get_update_contact_details_localized(
+                _message_id,
+                Epp::SessionData(
+                    registrar_session_data.registrar_id,
+                    registrar_session_data.language,
+                    server_transaction_handle,
+                    epp_request_params.log_request_id.get_value_or(0)));
+
+        ccReg::Contact_var old_data = new ccReg::Contact;
+        LibFred::Corba::wrap_InfoContactLocalizedOutputData(
+            contact_update_response.data.old_data,
+            old_data);
+
+        ccReg::Contact_var new_data = new ccReg::Contact;
+        LibFred::Corba::wrap_InfoContactLocalizedOutputData(
+            contact_update_response.data.new_data,
+            new_data);
+
+        _old_data = old_data._retn();
+        _new_data = new_data._retn();
     }
     catch (const Epp::EppResponseFailureLocalized& e) {
         throw LibFred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);

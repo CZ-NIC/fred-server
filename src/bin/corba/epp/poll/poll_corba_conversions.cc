@@ -263,6 +263,12 @@ struct UpdateInfoEventWrapper : boost::static_visitor<PollMessage>
 template<typename> struct UpdateInfoTypes;
 
 template<>
+struct UpdateInfoTypes<Epp::Poll::UpdateInfoEvent::UpdateContact>
+{
+    static const ccReg::PollType value = ccReg::polltype_update_contact;
+};
+
+template<>
 struct UpdateInfoTypes<Epp::Poll::UpdateInfoEvent::UpdateDomain>
 {
     static const ccReg::PollType value = ccReg::polltype_update_domain;
