@@ -970,6 +970,7 @@ src_libfred_libfred_a_SOURCES = \
 		src/libfred/registrable_object/domain/delete_domain.cc \
 		src/libfred/registrable_object/domain/domain_name.hh \
 		src/libfred/registrable_object/domain/domain_name.cc \
+		src/libfred/zone/utils.hh \
 		src/libfred/zone/zone.hh \
 		src/libfred/zone/zone.cc \
 		src/libfred/registrable_object/contact/verification/create_check.hh \
