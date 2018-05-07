@@ -3682,6 +3682,7 @@ test_test_libfred_SOURCES = \
 		test/libfred/registrar/certification/test_get_registrar_certifications.cc \
 		test/libfred/test_opexception.cc \
 		test/libfred/test_check_handle.cc \
+		test/libfred/zone/test_create_zone.cc \
 		test/util/test_param_query.cc \
 		test/setup/fixtures_utils.hh \
 		test/setup/fixtures_utils.cc \
