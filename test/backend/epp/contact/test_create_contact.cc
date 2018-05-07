@@ -47,6 +47,24 @@ bool to_disclose(const ::Epp::Contact::CreateContactInputData& data)
     return data.disclose->should_be_disclosed<item>(::Epp::is_the_default_policy_to_disclose());
 }
 
+template<>
+bool to_disclose<::Epp::Contact::ContactDisclose::Item::name>(const ::Epp::Contact::CreateContactInputData& data)
+{
+    return true;
+}
+
+template<>
+bool to_disclose<::Epp::Contact::ContactDisclose::Item::organization>(const ::Epp::Contact::CreateContactInputData& data)
+{
+    return true;
+}
+
+template<>
+bool to_disclose<::Epp::Contact::ContactDisclose::Item::address>(const ::Epp::Contact::CreateContactInputData& data)
+{
+    return true;
+}
+
 struct GetPersonalIdUnionFromContactIdent:boost::static_visitor<::LibFred::PersonalIdUnion>
 {
     ::LibFred::PersonalIdUnion operator()(const ::Epp::Contact::ContactIdentValueOf< ::Epp::Contact::ContactIdentType::Op >& src)const
