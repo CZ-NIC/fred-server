@@ -3689,6 +3689,7 @@ test_test_libfred_SOURCES = \
 		test/libfred/test_check_handle.cc \
 		test/libfred/zone/test_create_zone.cc \
 		test/libfred/zone/test_info_zone.cc \
+		test/libfred/zone/test_update_zone.cc \
 		test/util/test_param_query.cc \
 		test/setup/fixtures_utils.hh \
 		test/setup/fixtures_utils.cc \
