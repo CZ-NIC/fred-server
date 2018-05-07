@@ -4,6 +4,8 @@
 
   * public request interface - add impl. for personal info request
 
+  * epp - update contact poll message type
+
   * fix registrar credit record initialization (after zone access is granted)
 
 2018-04-14 (2.36.0)
