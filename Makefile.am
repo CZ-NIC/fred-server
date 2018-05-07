@@ -972,6 +972,9 @@ src_libfred_libfred_a_SOURCES = \
 		src/libfred/registrable_object/domain/domain_name.cc \
 		src/libfred/zone/create_zone.hh \
 		src/libfred/zone/create_zone.cc \
+		src/libfred/zone/info_zone_data.hh \
+		src/libfred/zone/info_zone.hh \
+		src/libfred/zone/info_zone.cc \
 		src/libfred/zone/utils.hh \
 		src/libfred/zone/zone.hh \
 		src/libfred/zone/zone.cc \
