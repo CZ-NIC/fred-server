@@ -186,56 +186,60 @@ int main(int argc, char *argv[])
 
         std::cout << std::endl;
 
-        std::thread progress_thread([&workers](){
-            safe_cout("[progress thread] started\n");
-            const auto start_time = std::chrono::steady_clock::now();
+        boost::optional<std::thread> progress_thread;
+        if (opts.progress_display)
+        {
+            progress_thread = std::thread([&workers](){
+                safe_cout("[progress thread] started\n");
+                const auto start_time = std::chrono::steady_clock::now();
 
-            bool is_finished;
-            do
-            {
-                is_finished = true;
-                std::ostringstream progress_format;
-                for (auto i = 0ul; i < workers.size(); ++i)
+                bool is_finished;
+                do
                 {
-                    const auto& w = workers[i];
-                    if (!w.has_exited())
+                    is_finished = true;
+                    std::ostringstream progress_format;
+                    for (auto i = 0ul; i < workers.size(); ++i)
                     {
-                        is_finished = false;
+                        const auto& w = workers[i];
+                        if (!w.has_exited())
+                        {
+                            is_finished = false;
+                        }
+
+                        const auto ith_time = std::chrono::steady_clock::now();
+                        const auto eta_time = ((ith_time - start_time) / (w.get_done_count() + 1))
+                                            * (w.get_total_count() - w.get_done_count() + 1);
+
+                        auto eta_time_rest = eta_time;
+                        const auto eta_h = std::chrono::duration_cast<std::chrono::hours>(eta_time_rest);
+                        eta_time_rest -= eta_h;
+                        const auto eta_m = std::chrono::duration_cast<std::chrono::minutes>(eta_time_rest);
+                        eta_time_rest -= eta_m;
+                        const auto eta_s = std::chrono::duration_cast<std::chrono::seconds>(eta_time_rest);
+                        std::ostringstream eta_format;
+
+                        eta_format << std::setfill('0')
+                                   << std::setw(2) << eta_h.count() << "h"
+                                   << std::setw(2) << eta_m.count() << "m"
+                                   << std::setw(2) << eta_s.count() << "s";
+
+                        progress_format << i << ": " << std::setfill('0') << std::setw(3)
+                                        << std::round(100 * (static_cast<float>(w.get_done_count()) / w.get_total_count())) << "%"
+                                        << std::setw(0)
+                                        << " (" << w.get_done_count() << "/" << w.get_total_count() << ")"
+                                        << " eta: " << eta_format.str() << "  ";
                     }
-
-                    const auto ith_time = std::chrono::steady_clock::now();
-                    const auto eta_time = ((ith_time - start_time) / (w.get_done_count() + 1))
-                                        * (w.get_total_count() - w.get_done_count() + 1);
-
-                    auto eta_time_rest = eta_time;
-                    const auto eta_h = std::chrono::duration_cast<std::chrono::hours>(eta_time_rest);
-                    eta_time_rest -= eta_h;
-                    const auto eta_m = std::chrono::duration_cast<std::chrono::minutes>(eta_time_rest);
-                    eta_time_rest -= eta_m;
-                    const auto eta_s = std::chrono::duration_cast<std::chrono::seconds>(eta_time_rest);
-                    std::ostringstream eta_format;
-
-                    eta_format << std::setfill('0')
-                               << std::setw(2) << eta_h.count() << "h"
-                               << std::setw(2) << eta_m.count() << "m"
-                               << std::setw(2) << eta_s.count() << "s";
-
-                    progress_format << i << ": " << std::setfill('0') << std::setw(3)
-                                    << std::round(100 * (static_cast<float>(w.get_done_count()) / w.get_total_count())) << "%"
-                                    << std::setw(0)
-                                    << " (" << w.get_done_count() << "/" << w.get_total_count() << ")"
-                                    << " eta: " << eta_format.str() << "  ";
+                    safe_cout(progress_format.str() + "\r");
+                    safe_cout_flush();
+                    if (!is_finished)
+                    {
+                        std::this_thread::sleep_for(std::chrono::seconds(1));
+                    }
                 }
-                safe_cout(progress_format.str() + "\r");
-                safe_cout_flush();
-                if (!is_finished)
-                {
-                    std::this_thread::sleep_for(std::chrono::seconds(1));
-                }
-            }
-            while (!is_finished);
-            safe_cout("\n[progress thread] finished\n");
-        });
+                while (!is_finished);
+                safe_cout("\n[progress thread] finished\n");
+            });
+        }
 
 
         std::vector<std::thread> t_workers;
@@ -251,7 +255,10 @@ int main(int argc, char *argv[])
         {
             t.join();
         }
-        progress_thread.join();
+        if (progress_thread != boost::none)
+        {
+            progress_thread.value().join();
+        }
 
         std::cout << std::endl;
         if (!opts.dry_run)
