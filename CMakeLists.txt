@@ -48,29 +48,6 @@ endif()
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_BINARY_DIR}/config.h)
 
-function(set_common_properties_on_targets)
-    foreach(target_name ${ARGN})
-        message(STATUS "setting properties on: " ${target_name})
-        set_target_properties(${target_name} PROPERTIES
-            CXX_STANDARD 14
-            CXX_STANDARD_REQUIRED YES
-            CXX_EXTENSIONS NO
-            ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-            LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-            RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
-        target_compile_options(${target_name}
-            PUBLIC "-O2"
-            PUBLIC "-ggdb"
-            PUBLIC "-grecord-gcc-switches"
-            PUBLIC "-Wall"
-            PUBLIC "-Wextra"
-            PUBLIC "-Wno-unused-parameter"
-            PUBLIC "-fdiagnostics-color=auto")
-        target_include_directories(${target_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-        target_include_directories(${target_name} PUBLIC ${CMAKE_BINARY_DIR})
-    endforeach()
-endfunction()
-
 find_package(Threads REQUIRED)
 find_package(PostgreSQL REQUIRED)
 find_package(Boost 1.53.0
@@ -184,11 +161,28 @@ create_include_function(zlib ZLIB_INCLUDE_DIRS)
 create_include_function(postgres PostgreSQL_INCLUDE_DIRS)
 create_include_function(libcurl LIBCURL_INCLUDE_DIRS)
 
-# we should get rid of this
-set(src_util_includes src/util)
-create_include_function(src_util src_util_includes)
-set(src_deprecated_includes src/deprecated)
-create_include_function(src_deprecated src_deprecated_includes)
+function(set_common_properties_on_targets)
+    foreach(target_name ${ARGN})
+        message(STATUS "setting properties on: " ${target_name})
+        set_target_properties(${target_name} PROPERTIES
+            CXX_STANDARD 14
+            CXX_STANDARD_REQUIRED YES
+            CXX_EXTENSIONS NO
+            ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+            LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+            RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+        target_compile_options(${target_name}
+            PUBLIC "-O2"
+            PUBLIC "-ggdb"
+            PUBLIC "-grecord-gcc-switches"
+            PUBLIC "-Wall"
+            PUBLIC "-Wextra"
+            PUBLIC "-Wno-unused-parameter"
+            PUBLIC "-fdiagnostics-color=auto")
+        target_include_directories(${target_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+        target_include_directories(${target_name} PUBLIC ${CMAKE_BINARY_DIR})
+    endforeach()
+endfunction()
 
 include(CheckIncludeFileCXX)
 function(abort_if_headers_not_found)
@@ -773,8 +767,6 @@ add_library(fred STATIC
     src/libfred/notifier/process_one_notification_request.cc)
 set_common_properties_on_targets(fred)
 include_boost_in_targets(fred)
-include_src_util_in_targets(fred)
-include_src_deprecated_in_targets(fred)
 include_postgres_in_targets(fred)
 
 add_library(password_storage STATIC
