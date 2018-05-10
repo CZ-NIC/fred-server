@@ -8,6 +8,10 @@ endif()
 set(program_name fred-server)
 project(${program_name} CXX)
 
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Release")
+endif()
+
 if(NOT VERSION)
     execute_process(COMMAND "git" "describe" "--tags"
                     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
@@ -172,7 +176,6 @@ function(set_common_properties_on_targets)
             LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
             RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
         target_compile_options(${target_name}
-            PUBLIC "-O2"
             PUBLIC "-ggdb"
             PUBLIC "-grecord-gcc-switches"
             PUBLIC "-Wall"
