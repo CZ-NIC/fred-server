@@ -29,8 +29,9 @@ class InfoZone
 {
 public:
     explicit InfoZone(const std::string& _fqdn)
-    : fqdn_(_fqdn)
-    {}
+        : fqdn_(_fqdn)
+    {
+    }
 
     InfoZoneData exec(OperationContext& _ctx);
 

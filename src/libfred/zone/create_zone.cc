@@ -58,16 +58,18 @@ namespace Zone {
         try
         {
             const Database::Result result = _ctx.get_conn().exec_params(
-                "INSERT INTO zone (fqdn, ex_period_min, ex_period_max, val_period, dots_max, enum_zone, warning_letter) "
+                    // clang-format off
+                    "INSERT INTO zone (fqdn, ex_period_min, ex_period_max, val_period, dots_max, enum_zone, warning_letter) "
                     "VALUES ($1::text, $2::integer, $3::integer, $4::integer, $5::integer, $6::boolean, $7::boolean)"
                     "RETURNING id",
-                Database::query_param_list(fqdn_)
-                                          (ex_period_min_)
-                                          (ex_period_max_)
-                                          (val_period)
-                                          (dots_max)
-                                          (enum_zone)
-                                          (warning_letter_));
+                    // clang-format on
+                    Database::query_param_list(fqdn_)
+                                              (ex_period_min_)
+                                              (ex_period_max_)
+                                              (val_period)
+                                              (dots_max)
+                                              (enum_zone)
+                                              (warning_letter_));
             id = result[0][0];
         }
         catch (const std::exception& e)

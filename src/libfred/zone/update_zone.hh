@@ -31,8 +31,9 @@ class UpdateZone
 public:
     UpdateZone(
             const std::string& _fqdn)
-    : fqdn_(_fqdn)
-    {}
+        : fqdn_(_fqdn)
+    {
+    }
 
     UpdateZone& set_ex_period_min(int _ex_period_min);
     UpdateZone& set_ex_period_max(int _ex_period_max);

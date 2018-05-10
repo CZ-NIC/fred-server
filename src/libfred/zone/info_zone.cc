@@ -30,9 +30,12 @@ InfoZoneData InfoZone::exec(OperationContext& _ctx)
     try
     {
         result = _ctx.get_conn().exec_params(
-            "SELECT fqdn, ex_period_max, ex_period_min, val_period, dots_max, enum_zone, warning_letter FROM zone "
-                "WHERE fqdn = $1::text",
-            Database::query_param_list(fqdn_));
+                // clang-format off
+                "SELECT fqdn, ex_period_max, ex_period_min, val_period, dots_max, enum_zone, warning_letter "
+                "FROM zone "
+                "WHERE fqdn = LOWER($1::text)",
+                // clang-format on
+                Database::query_param_list(fqdn_));
     }
     catch (const std::exception&)
     {

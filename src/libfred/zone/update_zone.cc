@@ -61,7 +61,7 @@ unsigned long long UpdateZone::exec(OperationContext& _ctx)
 
     Database::QueryParams params;
     std::ostringstream object_sql;
-    Util::HeadSeparator set_separator(" SET "," , ");
+    Util::HeadSeparator set_separator(" SET ",", ");
 
     object_sql << "UPDATE zone";
     if (ex_period_min_)

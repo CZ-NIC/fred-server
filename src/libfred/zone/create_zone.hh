@@ -34,11 +34,12 @@ public:
             const std::string& _fqdn,
             int _ex_period_min,
             int _ex_period_max)
-    : fqdn_(_fqdn),
-      ex_period_min_(_ex_period_min),
-      ex_period_max_(_ex_period_max),
-      warning_letter_(false)
-    {}
+        : fqdn_(_fqdn),
+          ex_period_min_(_ex_period_min),
+          ex_period_max_(_ex_period_max),
+          warning_letter_(false)
+    {
+    }
 
     CreateZone& set_enum_validation_period(int _months);
     CreateZone& set_sending_warning_letter(bool _warning_letter);
