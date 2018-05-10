@@ -34,27 +34,24 @@ namespace Zone {
         return *this;
     }
 
-    unsigned long long CreateZone::exec(OperationContext& _ctx)
+    unsigned long long CreateZone::exec(OperationContext& _ctx) const
     {
         bool enum_zone = is_enum_zone(fqdn_);
-        int dots_max;
-        if (!enum_zone)
+        if (!enum_zone && val_period_)
         {
-            if (val_period_)
-            {
-                throw NotEnumZone();
-            }
-            dots_max = 1;
-            val_period_ = 0;
+            throw NotEnumZone();
         }
 
-        if (enum_zone)
+        const int dots_max = enum_zone ? 9 : 1;
+
+        int val_period;
+        if (val_period_)
         {
-            dots_max = 9;
-            if (!val_period_)
-            {
-                val_period_ = 6;
-            }
+            val_period = *val_period_;
+        }
+        else
+        {
+            val_period = enum_zone ? 6 : 0;
         }
 
         unsigned long long id;
@@ -67,7 +64,7 @@ namespace Zone {
                 Database::query_param_list(fqdn_)
                                           (ex_period_min_)
                                           (ex_period_max_)
-                                          (*val_period_)
+                                          (val_period)
                                           (dots_max)
                                           (enum_zone)
                                           (warning_letter_));

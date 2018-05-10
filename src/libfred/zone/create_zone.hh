@@ -42,7 +42,7 @@ public:
 
     CreateZone& set_enum_validation_period(int _months);
     CreateZone& set_sending_warning_letter(bool _warning_letter);
-    unsigned long long exec(OperationContext& _ctx);
+    unsigned long long exec(OperationContext& _ctx) const;
 
 private:
     std::string fqdn_;
