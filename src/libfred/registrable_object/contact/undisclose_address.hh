@@ -24,9 +24,14 @@
 namespace LibFred {
 namespace Contact {
 
-void undisclose_address(LibFred::OperationContext& _ctx, unsigned long long _contact_id, const std::string& _registrar_handle);
+void undisclose_address(
+        LibFred::OperationContext& _ctx,
+        unsigned long long _contact_id,
+        const std::string& _registrar_handle);
 
-void undisclose_address_async(unsigned long long _contact_id, const std::string& _registrar_handle);
+void undisclose_address_async(
+        unsigned long long _contact_id,
+        const std::string& _registrar_handle);
 
 } // namespace LibFred::Contact
 } // namespace LibFred
