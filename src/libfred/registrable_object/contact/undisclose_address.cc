@@ -28,38 +28,44 @@
 namespace LibFred {
 namespace Contact {
 
-void undisclose_address(LibFred::OperationContext& _ctx, unsigned long long _contact_id, const std::string& _registrar_handle)
+void undisclose_address(
+        LibFred::OperationContext& _ctx,
+        unsigned long long _contact_id,
+        const std::string& _registrar_handle)
 {
-    if (LibFred::InfoContactById(_contact_id).exec(_ctx).info_contact_data.discloseaddress)
-    {
-        LibFred::UpdateContactById update_contact(_contact_id, _registrar_handle);
-        const unsigned long long history_id = update_contact.set_discloseaddress(false).exec(_ctx); // #21767
-        LibFred::Poll::CreatePollMessage<LibFred::Poll::MessageType::update_contact>()
-                .exec(_ctx, history_id);
-    }
+    LibFred::UpdateContactById update_contact(_contact_id, _registrar_handle);
+    const unsigned long long history_id = update_contact.set_discloseaddress(false).exec(_ctx); // #21767
+    LibFred::Poll::CreatePollMessage<LibFred::Poll::MessageType::update_contact>().exec(_ctx, history_id);
 }
 
 namespace {
 
-bool are_preconditions_met_for_undisclose_address(LibFred::OperationContext& _ctx, unsigned long long _contact_id)
+bool are_preconditions_met_for_async_undisclose_address(
+        LibFred::OperationContext& _ctx,
+        unsigned long long _contact_id)
 {
     const LibFred::ObjectStatesInfo states(LibFred::GetObjectStates(_contact_id).exec(_ctx));
+    const LibFred::InfoContactData info_contact_data = LibFred::InfoContactById(_contact_id).exec(_ctx).info_contact_data;
+    const bool address_is_disclosed = info_contact_data.discloseaddress;
+    const bool address_can_be_undisclosed = info_contact_data.organization.get_value_or("").empty();
 
     return (
-            states.presents(LibFred::Object_State::identified_contact) ||
-            states.presents(LibFred::Object_State::validated_contact)
+                states.presents(LibFred::Object_State::identified_contact) ||
+                states.presents(LibFred::Object_State::validated_contact)
            )
-           &&
-           LibFred::InfoContactById(_contact_id).exec(_ctx).info_contact_data.organization.get_value_or("").empty();
+           && address_is_disclosed
+           && address_can_be_undisclosed;
 }
 
-} // namespace Fred::Util::{anonymous}
+} // namespace LibFred::Contact::{anonymous}
 
-void undisclose_address_async(unsigned long long _contact_id, const std::string& _registrar_handle)
+void undisclose_address_async(
+        unsigned long long _contact_id,
+        const std::string& _registrar_handle)
 {
         LibFred::OperationContextCreator ctx;
 
-        if (are_preconditions_met_for_undisclose_address(ctx, _contact_id))
+        if (are_preconditions_met_for_async_undisclose_address(ctx, _contact_id))
         {
             ctx.get_log().info(boost::format("processing async undisclose address of contact %1%: preconditions met, undisclosing address") % _contact_id);
             undisclose_address(ctx, _contact_id, _registrar_handle);

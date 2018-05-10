@@ -102,10 +102,6 @@ BOOST_FIXTURE_TEST_CASE(test_without_organization_ok, supply_ctx<HasIdentifiedCo
     const auto info_contact_data = ::LibFred::InfoContactById(identified_contact.data.id).exec(ctx).info_contact_data;
     BOOST_CHECK_EQUAL(info_contact_data.discloseaddress, false);
     BOOST_CHECK_EQUAL(info_contact_data.update_registrar_handle, dedicated_registrar.data.handle);
-
-    BOOST_CHECK_NO_THROW(::LibFred::Contact::undisclose_address(ctx, identified_contact.data.id, dedicated_registrar.data.handle););
-    const auto info_contact_data_after_second_run = ::LibFred::InfoContactById(identified_contact.data.id).exec(ctx).info_contact_data;
-    BOOST_CHECK_EQUAL(info_contact_data_after_second_run, info_contact_data);
 }
 
 BOOST_FIXTURE_TEST_CASE(test_nonexisting_registrar_fail, supply_ctx<HasIdentifiedContactWithoutOrganization>)

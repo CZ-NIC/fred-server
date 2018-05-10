@@ -1785,7 +1785,13 @@ MojeIdImpl::ContactId MojeIdImpl::process_registration_request(
             LibFred::PerformObjectStateRequest(contact_id).exec(ctx);
             if (validated_contact_state_was_set)
             {
-                LibFred::Contact::undisclose_address(ctx, contact_id, system_registrar_handle_); // #21767
+                const LibFred::InfoContactData info_contact_data = LibFred::InfoContactById(contact_id).exec(ctx).info_contact_data;
+                const bool address_is_disclosed = info_contact_data.discloseaddress;
+                const bool address_can_be_undisclosed = info_contact_data.organization.get_value_or("").empty();
+                if (address_is_disclosed && address_can_be_undisclosed)
+                {
+                    LibFred::Contact::undisclose_address(ctx, contact_id, system_registrar_handle_); // #21767
+                }
             }
 
             const LibFred::InfoContactData contact = LibFred::InfoContactById(contact_id).exec(ctx).info_contact_data;
@@ -1979,7 +1985,13 @@ void MojeIdImpl::process_identification_request(
         to_set.insert(Conversion::Enums::to_db_handle(LibFred::Object_State::identified_contact));
         LibFred::CreateObjectStateRequestId(_contact_id, to_set).exec(ctx);
         LibFred::PerformObjectStateRequest(_contact_id).exec(ctx);
-        LibFred::Contact::undisclose_address(ctx, _contact_id, system_registrar_handle_); // #21767
+        const LibFred::InfoContactData info_contact_data = LibFred::InfoContactById(_contact_id).exec(ctx).info_contact_data;
+        const bool address_is_disclosed = info_contact_data.discloseaddress;
+        const bool address_can_be_undisclosed = info_contact_data.organization.get_value_or("").empty();
+        if (address_is_disclosed && address_can_be_undisclosed)
+        {
+            LibFred::Contact::undisclose_address(ctx, _contact_id, system_registrar_handle_); // #21767
+        }
         answer(locked_request,
                 reidentification ? Fred::Backend::MojeId::PublicRequest::ContactReidentification().iface()
                                  : Fred::Backend::MojeId::PublicRequest::ContactIdentification().iface(),
@@ -2387,7 +2399,12 @@ void MojeIdImpl::validate_contact(
         to_set.insert(Conversion::Enums::to_db_handle(LibFred::Object_State::validated_contact));
         LibFred::CreateObjectStateRequestId(_contact_id, to_set).exec(ctx);
         LibFred::PerformObjectStateRequest(_contact_id).exec(ctx);
-        LibFred::Contact::undisclose_address(ctx, _contact_id, system_registrar_handle_); // #21767
+        const bool address_is_disclosed = contact_data.discloseaddress;
+        const bool address_can_be_undisclosed = contact_data.organization.get_value_or("").empty();
+        if (address_is_disclosed && address_can_be_undisclosed)
+        {
+            LibFred::Contact::undisclose_address(ctx, _contact_id, system_registrar_handle_); // #21767
+        }
         ctx.commit_transaction();
         return;
     }
