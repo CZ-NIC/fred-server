@@ -41,23 +41,23 @@ struct update_zone_fixture : public virtual Test::instantiate_db_template
         ::LibFred::OperationContextCreator ctx;
 
         zone.fqdn = RandomDataGenerator().xstring(3);
-        zone.ex_period_min = boost::gregorian::months(1);
-        zone.ex_period_max = boost::gregorian::months(2);
+        zone.ex_period_min = 1;
+        zone.ex_period_max = 2;
         zone.dots_max = 1;
         zone.enum_zone = false;
         zone.warning_letter = false;
 
-        ::LibFred::Zone::CreateZone(zone.fqdn, boost::gregorian::months(6), boost::gregorian::months(12))
+        ::LibFred::Zone::CreateZone(zone.fqdn, 6, 12)
                 .exec(ctx);
 
         enum_zone.fqdn = "3.2.1.e164.arpa";
-        enum_zone.ex_period_min = boost::gregorian::months(8);
-        enum_zone.ex_period_max = boost::gregorian::months(9);
-        enum_zone.val_period = boost::gregorian::months(10);
+        enum_zone.ex_period_min = 8;
+        enum_zone.ex_period_max = 9;
+        enum_zone.val_period = 10;
         enum_zone.dots_max = 9;
         enum_zone.enum_zone = true;
         enum_zone.warning_letter = true;
-        ::LibFred::Zone::CreateZone(enum_zone.fqdn, boost::gregorian::months(6), boost::gregorian::months(12))
+        ::LibFred::Zone::CreateZone(enum_zone.fqdn, 6, 12)
                 .exec(ctx);
         ctx.commit_transaction();
     }
@@ -78,8 +78,8 @@ BOOST_AUTO_TEST_CASE(set_nonexistent_zone)
     ::LibFred::OperationContextCreator ctx;
 
     BOOST_CHECK_THROW(::LibFred::Zone::UpdateZone("someNonexistentZone")
-                .set_ex_period_min(zone.ex_period_min->number_of_months())
-                .set_ex_period_max(zone.ex_period_max->number_of_months())
+                .set_ex_period_min(zone.ex_period_min)
+                .set_ex_period_max(zone.ex_period_max)
                 .set_sending_warning_letter(zone.warning_letter)
                 .exec(ctx),
            ::LibFred::Zone::NonExistentZone);
@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE(set_zone_val_period)
     ::LibFred::OperationContextCreator ctx;
 
     BOOST_CHECK_THROW(::LibFred::Zone::UpdateZone(zone.fqdn)
-                .set_enum_validation_period(boost::gregorian::months(3))
+                .set_enum_validation_period(3)
                 .exec(ctx),
            ::LibFred::Zone::NotEnumZone);
 }
@@ -107,9 +107,9 @@ BOOST_AUTO_TEST_CASE(set_enum_zone_update_all)
 {
    ::LibFred::OperationContextCreator ctx;
    ::LibFred::Zone::UpdateZone(enum_zone.fqdn)
-                .set_ex_period_min(enum_zone.ex_period_min->number_of_months())
-                .set_ex_period_max(enum_zone.ex_period_max->number_of_months())
-                .set_enum_validation_period(enum_zone.val_period->number_of_months())
+                .set_ex_period_min(enum_zone.ex_period_min)
+                .set_ex_period_max(enum_zone.ex_period_max)
+                .set_enum_validation_period(enum_zone.val_period)
                 .set_sending_warning_letter(enum_zone.warning_letter)
                 .exec(ctx),
    ctx.commit_transaction();

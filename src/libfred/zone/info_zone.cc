@@ -44,9 +44,9 @@ InfoZoneData InfoZone::exec(OperationContext& _ctx)
     }
     InfoZoneData info_zone_data;
     info_zone_data.fqdn = static_cast<std::string>(result[0]["fqdn"]);
-    info_zone_data.ex_period_max = boost::optional<boost::gregorian::months>(static_cast<int>(result[0]["ex_period_max"]));
-    info_zone_data.ex_period_min = boost::optional<boost::gregorian::months>(static_cast<int>(result[0]["ex_period_min"]));
-    info_zone_data.val_period = boost::optional<boost::gregorian::months>(static_cast<int>(result[0]["val_period"]));
+    info_zone_data.ex_period_max = static_cast<int>(result[0]["ex_period_max"]);
+    info_zone_data.ex_period_min = static_cast<int>(result[0]["ex_period_min"]);
+    info_zone_data.val_period = static_cast<int>(result[0]["val_period"]);
     info_zone_data.dots_max = result[0]["dots_max"];
     info_zone_data.enum_zone = result[0]["enum_zone"];
     info_zone_data.warning_letter = result[0]["warning_letter"];

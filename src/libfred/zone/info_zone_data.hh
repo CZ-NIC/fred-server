@@ -21,18 +21,15 @@
 
 #include "src/libfred/opcontext.hh"
 
-#include <boost/date_time/gregorian/gregorian.hpp>
-#include <boost/optional.hpp>
-
 namespace LibFred {
 namespace Zone {
 
 struct InfoZoneData
 {
     std::string fqdn;
-    boost::optional<boost::gregorian::months> ex_period_min;
-    boost::optional<boost::gregorian::months> ex_period_max;
-    boost::optional<boost::gregorian::months> val_period;
+    int ex_period_min;
+    int ex_period_max;
+    int val_period;
     int dots_max;
     bool enum_zone;
     bool warning_letter;

@@ -41,26 +41,26 @@ struct info_zone_fixture : public virtual Test::instantiate_db_template
         ::LibFred::OperationContextCreator ctx;
 
         info_zone_data.fqdn = RandomDataGenerator().xstring(3);
-        info_zone_data.ex_period_max = boost::gregorian::months(6);
-        info_zone_data.ex_period_min = boost::gregorian::months(8);
-        info_zone_data.val_period = boost::gregorian::months(0);
+        info_zone_data.ex_period_max = 6;
+        info_zone_data.ex_period_min = 8;
+        info_zone_data.val_period = 0;
         info_zone_data.dots_max = 1;
         info_zone_data.enum_zone = false;
         info_zone_data.warning_letter = false;
 
-        ::LibFred::Zone::CreateZone(info_zone_data.fqdn, *(info_zone_data.ex_period_min), *(info_zone_data.ex_period_max))
+        ::LibFred::Zone::CreateZone(info_zone_data.fqdn, info_zone_data.ex_period_min, info_zone_data.ex_period_max)
                 .exec(ctx);
 
         info_zone_data_enum.fqdn = "3.2.1.e164.arpa";
-        info_zone_data_enum.ex_period_max = boost::gregorian::months(12);
-        info_zone_data_enum.ex_period_min = boost::gregorian::months(24);
-        info_zone_data_enum.val_period = boost::gregorian::months(4);
+        info_zone_data_enum.ex_period_max = 12;
+        info_zone_data_enum.ex_period_min = 24;
+        info_zone_data_enum.val_period = 4;
         info_zone_data_enum.dots_max = 9;
         info_zone_data_enum.enum_zone = true;
         info_zone_data_enum.warning_letter = true;
 
-        ::LibFred::Zone::CreateZone(info_zone_data_enum.fqdn, *(info_zone_data_enum.ex_period_min), *(info_zone_data_enum.ex_period_max))
-                .set_enum_validation_period(*(info_zone_data_enum.val_period))
+        ::LibFred::Zone::CreateZone(info_zone_data_enum.fqdn, info_zone_data_enum.ex_period_min, info_zone_data_enum.ex_period_max)
+                .set_enum_validation_period(info_zone_data_enum.val_period)
                 .set_sending_warning_letter(info_zone_data_enum.warning_letter)
                 .exec(ctx);
         ctx.commit_transaction();

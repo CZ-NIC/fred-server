@@ -21,7 +21,6 @@
 
 #include "src/libfred/opcontext.hh"
 
-#include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/optional.hpp>
 
 namespace LibFred {
@@ -35,18 +34,18 @@ public:
     : fqdn_(_fqdn)
     {}
 
-    UpdateZone& set_ex_period_min(boost::gregorian::months _ex_period_min);
-    UpdateZone& set_ex_period_max(boost::gregorian::months _ex_period_max);
-    UpdateZone& set_enum_validation_period(boost::gregorian::months _val_period);
+    UpdateZone& set_ex_period_min(int _ex_period_min);
+    UpdateZone& set_ex_period_max(int _ex_period_max);
+    UpdateZone& set_enum_validation_period(int _val_period);
     UpdateZone& set_sending_warning_letter(bool _warning_letter);
 
     unsigned long long exec(OperationContext& _ctx);
 
 private:
     std::string fqdn_;
-    boost::optional<boost::gregorian::months> ex_period_min_;
-    boost::optional<boost::gregorian::months> ex_period_max_;
-    boost::optional<boost::gregorian::months> val_period_;
+    boost::optional<int> ex_period_min_;
+    boost::optional<int> ex_period_max_;
+    boost::optional<int> val_period_;
     boost::optional<bool> warning_letter_;
 };
 

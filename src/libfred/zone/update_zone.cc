@@ -22,19 +22,19 @@
 namespace LibFred {
 namespace Zone {
 
-UpdateZone& UpdateZone::set_ex_period_min(const boost::gregorian::months _ex_period_min)
+UpdateZone& UpdateZone::set_ex_period_min(const int _ex_period_min)
 {
     ex_period_min_ = _ex_period_min;
     return *this;
 }
 
-UpdateZone& UpdateZone::set_ex_period_max(const boost::gregorian::months _ex_period_max)
+UpdateZone& UpdateZone::set_ex_period_max(const int _ex_period_max)
 {
     ex_period_max_ = _ex_period_max;
     return *this;
 }
 
-UpdateZone& UpdateZone::set_enum_validation_period(const boost::gregorian::months _val_period)
+UpdateZone& UpdateZone::set_enum_validation_period(const int _val_period)
 {
     val_period_ = _val_period;
     return *this;
@@ -66,17 +66,17 @@ unsigned long long UpdateZone::exec(OperationContext& _ctx)
     object_sql << "UPDATE zone";
     if (ex_period_min_)
     {
-        params.push_back(ex_period_min_->number_of_months());
+        params.push_back(*ex_period_min_);
         object_sql << set_separator.get() <<  "ex_period_min = $" << params.size() << "::integer";
     }
     if (ex_period_max_)
     {
-        params.push_back(ex_period_max_->number_of_months());
+        params.push_back(*ex_period_max_);
         object_sql << set_separator.get() <<  "ex_period_max = $" << params.size() << "::integer";
     }
     if (val_period_)
     {
-        params.push_back(val_period_->number_of_months());
+        params.push_back(*val_period_);
         object_sql << set_separator.get() <<  "val_period = $" << params.size() << "::integer";
     }
     if (warning_letter_)

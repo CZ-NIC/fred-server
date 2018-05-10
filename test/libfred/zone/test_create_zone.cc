@@ -32,8 +32,8 @@ const std::string server_name = "test-create-zone";
 struct create_zone_fixture : public virtual Test::instantiate_db_template
 {
     std::string fqdn;
-    boost::gregorian::months ex_period_min;
-    boost::gregorian::months ex_period_max;
+    int ex_period_min;
+    int ex_period_max;
 
     create_zone_fixture()
         : fqdn(RandomDataGenerator().xstring(3)),
@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE(set_enum_val_period)
     ::LibFred::OperationContextCreator ctx;
 
     BOOST_CHECK_THROW(::LibFred::Zone::CreateZone(fqdn, ex_period_min, ex_period_max)
-                .set_enum_validation_period(boost::gregorian::months(5))
+                .set_enum_validation_period(int(5))
                 .exec(ctx),
            ::LibFred::Zone::NotEnumZone);
 }
@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE(set_max_create_enum_zone)
     const std::string fqdn = "1.2.e164.arpa";
     ::LibFred::OperationContextCreator ctx;
     ::LibFred::Zone::CreateZone(fqdn, ex_period_min, ex_period_max)
-            .set_enum_validation_period(boost::gregorian::months(5))
+            .set_enum_validation_period(int(5))
             .set_sending_warning_letter(false)
             .exec(ctx);
     ctx.commit_transaction();

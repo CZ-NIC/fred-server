@@ -21,7 +21,6 @@
 
 #include "src/libfred/opcontext.hh"
 
-#include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/optional.hpp>
 
 
@@ -33,24 +32,24 @@ class CreateZone
 public:
     CreateZone(
             const std::string& _fqdn,
-            boost::gregorian::months _ex_period_min,
-            boost::gregorian::months _ex_period_max)
+            int _ex_period_min,
+            int _ex_period_max)
     : fqdn_(_fqdn),
       ex_period_min_(_ex_period_min),
       ex_period_max_(_ex_period_max),
       warning_letter_(false)
     {}
 
-    CreateZone& set_enum_validation_period(boost::gregorian::months _months);
+    CreateZone& set_enum_validation_period(int _months);
     CreateZone& set_sending_warning_letter(bool _warning_letter);
     unsigned long long exec(OperationContext& _ctx);
 
 private:
     std::string fqdn_;
-    boost::gregorian::months ex_period_min_;
-    boost::gregorian::months ex_period_max_;
+    int ex_period_min_;
+    int ex_period_max_;
     bool warning_letter_;
-    boost::optional<boost::gregorian::months> val_period_;
+    boost::optional<int> val_period_;
 };
 
 } // namespace Zone

@@ -22,7 +22,7 @@
 namespace LibFred {
 namespace Zone {
 
-    CreateZone& CreateZone::set_enum_validation_period(const boost::gregorian::months _val_period)
+    CreateZone& CreateZone::set_enum_validation_period(const int _val_period)
     {
         val_period_ = _val_period;
         return *this;
@@ -45,7 +45,7 @@ namespace Zone {
                 throw NotEnumZone();
             }
             dots_max = 1;
-            val_period_ = boost::optional<boost::gregorian::months>(0);
+            val_period_ = 0;
         }
 
         if (enum_zone)
@@ -53,7 +53,7 @@ namespace Zone {
             dots_max = 9;
             if (!val_period_)
             {
-                val_period_ = boost::optional<boost::gregorian::months>(6);
+                val_period_ = 6;
             }
         }
 
@@ -65,9 +65,9 @@ namespace Zone {
                     "VALUES ($1::text, $2::integer, $3::integer, $4::integer, $5::integer, $6::boolean, $7::boolean)"
                     "RETURNING id",
                 Database::query_param_list(fqdn_)
-                                          (ex_period_min_.number_of_months())
-                                          (ex_period_max_.number_of_months())
-                                          (val_period_->number_of_months())
+                                          (ex_period_min_)
+                                          (ex_period_max_)
+                                          (*val_period_)
                                           (dots_max)
                                           (enum_zone)
                                           (warning_letter_));
