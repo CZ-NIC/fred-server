@@ -2002,6 +2002,7 @@ target_link_libraries(fred-mojeid-msgen
     corbanullableisodate
     corbaisodatetime)
 link_targets_against_boost_program_options(fred-mojeid-msgen)
+link_targets_against_boost_date_time(fred-mojeid-msgen)
 link_targets_against_omniorb4(fred-mojeid-msgen)
 link_targets_against_omnidynamic4(fred-mojeid-msgen)
 
@@ -3011,6 +3012,7 @@ link_targets_against_boost_system(test-whois)
 link_targets_against_boost_unit_test_framework(test-whois)
 link_targets_against_postgres(test-whois)
 link_targets_against_omniorb4(test-whois)
+target_link_libraries(test-whois mpdec)
 
 install(TARGETS fred-adifd DESTINATION sbin)
 install(TARGETS fred-admin DESTINATION sbin)
