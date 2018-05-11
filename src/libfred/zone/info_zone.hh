@@ -33,13 +33,13 @@ public:
     {
     }
 
-    InfoZoneData exec(OperationContext& _ctx);
+    InfoZoneData exec(OperationContext& _ctx) const;
 
 private:
     std::string fqdn_;
 };
 
-} // namespace Zone
+} // namespace LibFred::Zone
 } // namespace LibFred
 
 #endif

@@ -18,13 +18,13 @@
 
 #include "src/libfred/zone/info_zone_data.hh"
 #include "src/libfred/zone/info_zone.hh"
-#include "src/libfred/zone/utils.hh"
+#include "src/libfred/zone/util.hh"
 
 
 namespace LibFred {
 namespace Zone {
 
-InfoZoneData InfoZone::exec(OperationContext& _ctx)
+InfoZoneData InfoZone::exec(OperationContext& _ctx) const
 {
     Database::Result result;
     try
@@ -41,20 +41,20 @@ InfoZoneData InfoZone::exec(OperationContext& _ctx)
     {
         throw InfoZoneException();
     }
-    if (result.size() == 0)
+    if (result.size() != 1)
     {
         throw NonExistentZone();
     }
     InfoZoneData info_zone_data;
     info_zone_data.fqdn = static_cast<std::string>(result[0]["fqdn"]);
-    info_zone_data.ex_period_max = static_cast<int>(result[0]["ex_period_max"]);
-    info_zone_data.ex_period_min = static_cast<int>(result[0]["ex_period_min"]);
-    info_zone_data.val_period = static_cast<int>(result[0]["val_period"]);
+    info_zone_data.expiration_period_max_in_months = static_cast<int>(result[0]["ex_period_max"]);
+    info_zone_data.expiration_period_min_in_months = static_cast<int>(result[0]["ex_period_min"]);
+    info_zone_data.enum_validation_period_in_months = static_cast<int>(result[0]["val_period"]);
     info_zone_data.dots_max = result[0]["dots_max"];
     info_zone_data.enum_zone = result[0]["enum_zone"];
-    info_zone_data.warning_letter = result[0]["warning_letter"];
+    info_zone_data.sending_warning_letter = result[0]["warning_letter"];
     return info_zone_data;
 }
 
-} // namespace Zone
+} // namespace LibFred::Zone
 } // namespace LibFred

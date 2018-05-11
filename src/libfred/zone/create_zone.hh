@@ -32,28 +32,28 @@ class CreateZone
 public:
     CreateZone(
             const std::string& _fqdn,
-            int _ex_period_min,
-            int _ex_period_max)
+            int _expiration_period_min_in_months,
+            int _expiration_period_max_in_months)
         : fqdn_(_fqdn),
-          ex_period_min_(_ex_period_min),
-          ex_period_max_(_ex_period_max),
-          warning_letter_(false)
+          expiration_period_min_in_months_(_expiration_period_min_in_months),
+          expiration_period_max_in_months_(_expiration_period_max_in_months),
+          sending_warning_letter_(false)
     {
     }
 
-    CreateZone& set_enum_validation_period(int _months);
-    CreateZone& set_sending_warning_letter(bool _warning_letter);
+    CreateZone& set_enum_validation_period(int _enum_validation_period_in_months);
+    CreateZone& set_sending_warning_letter(bool _sending_warning_letter);
     unsigned long long exec(OperationContext& _ctx) const;
 
 private:
     std::string fqdn_;
-    int ex_period_min_;
-    int ex_period_max_;
-    bool warning_letter_;
-    boost::optional<int> val_period_;
+    int expiration_period_min_in_months_;
+    int expiration_period_max_in_months_;
+    bool sending_warning_letter_;
+    boost::optional<int> enum_validation_period_in_months_;
 };
 
-} // namespace Zone
+} // namespace LibFred::Zone
 } // namespace LibFred
 
 #endif

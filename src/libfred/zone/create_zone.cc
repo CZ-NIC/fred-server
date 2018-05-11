@@ -17,67 +17,64 @@
  */
 
 #include "src/libfred/zone/create_zone.hh"
-#include "src/libfred/zone/utils.hh"
+#include "src/libfred/zone/util.hh"
 
 namespace LibFred {
 namespace Zone {
 
-    CreateZone& CreateZone::set_enum_validation_period(const int _val_period)
+    CreateZone& CreateZone::set_enum_validation_period(const int _enum_validation_period_in_months)
     {
-        val_period_ = _val_period;
+        enum_validation_period_in_months_ = _enum_validation_period_in_months;
         return *this;
     }
 
-    CreateZone& CreateZone::set_sending_warning_letter(const bool _warning_letter)
+    CreateZone& CreateZone::set_sending_warning_letter(const bool _sending_warning_letter)
     {
-        warning_letter_ = _warning_letter;
+        sending_warning_letter_ = _sending_warning_letter;
         return *this;
     }
 
     unsigned long long CreateZone::exec(OperationContext& _ctx) const
     {
-        bool enum_zone = is_enum_zone(fqdn_);
-        if (!enum_zone && val_period_)
+        const bool enum_zone = is_enum_zone(fqdn_);
+        if (!enum_zone && enum_validation_period_in_months_)
         {
             throw NotEnumZone();
         }
 
         const int dots_max = enum_zone ? 9 : 1;
-
-        int val_period;
-        if (val_period_)
-        {
-            val_period = *val_period_;
-        }
-        else
-        {
-            val_period = enum_zone ? 6 : 0;
-        }
-
-        unsigned long long id;
+        const int default_val_period_months_nonenum = 0;
+        const int default_val_period_months_enum = 6;
+        const int validation_period_in_months = enum_validation_period_in_months_.value_or(
+                enum_zone ? default_val_period_months_enum
+                          : default_val_period_months_nonenum);
         try
         {
-            const Database::Result result = _ctx.get_conn().exec_params(
+            const Database::Result create_result = _ctx.get_conn().exec_params(
                     // clang-format off
                     "INSERT INTO zone (fqdn, ex_period_min, ex_period_max, val_period, dots_max, enum_zone, warning_letter) "
-                    "VALUES ($1::text, $2::integer, $3::integer, $4::integer, $5::integer, $6::boolean, $7::boolean)"
+                    "VALUES (LOWER($1::text), $2::integer, $3::integer, $4::integer, $5::integer, $6::boolean, $7::boolean) "
                     "RETURNING id",
                     // clang-format on
                     Database::query_param_list(fqdn_)
-                                              (ex_period_min_)
-                                              (ex_period_max_)
-                                              (val_period)
+                                              (expiration_period_min_in_months_)
+                                              (expiration_period_max_in_months_)
+                                              (validation_period_in_months)
                                               (dots_max)
                                               (enum_zone)
-                                              (warning_letter_));
-            id = result[0][0];
+                                              (sending_warning_letter_));
+            if (create_result.size() == 1)
+            {
+                const unsigned long long id = static_cast<unsigned long long>(create_result[0][0]);
+                return id;
+            }
+            throw CreateZoneException();
         }
-        catch (const std::exception& e)
+        catch (const std::exception&)
         {
             throw CreateZoneException();
         }
-        return id;
     }
 
-} // namespace Zone
+} // namespace LibFred::Zone
 } // namespace LibFred

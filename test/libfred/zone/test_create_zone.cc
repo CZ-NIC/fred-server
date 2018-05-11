@@ -18,7 +18,7 @@
 #include "src/libfred/opcontext.hh"
 #include "src/libfred/opexception.hh"
 #include "src/libfred/zone/create_zone.hh"
-#include "src/libfred/zone/utils.hh"
+#include "src/libfred/zone/util.hh"
 #include "src/util/random_data_generator.hh"
 #include "test/setup/fixtures.hh"
 
@@ -50,9 +50,9 @@ size_t exists_new_zone(const std::string& _fqdn)
 {
     ::LibFred::OperationContextCreator ctx;
     const Database::Result db_result = ctx.get_conn().exec_params(
-        "SELECT 1 FROM zone AS z "
-            "WHERE z.fqdn = $1::varchar ",
-        Database::query_param_list(_fqdn));
+            "SELECT 1 FROM zone AS z "
+            "WHERE z.fqdn = LOWER($1::text) ",
+            Database::query_param_list(_fqdn));
     return db_result.size();
 }
 
@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE(set_enum_val_period)
     ::LibFred::OperationContextCreator ctx;
 
     BOOST_CHECK_THROW(::LibFred::Zone::CreateZone(fqdn, ex_period_min, ex_period_max)
-                .set_enum_validation_period(int(5))
+                .set_enum_validation_period(5)
                 .exec(ctx),
            ::LibFred::Zone::NotEnumZone);
 }
@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE(set_max_create_enum_zone)
     const std::string fqdn = "1.2.e164.arpa";
     ::LibFred::OperationContextCreator ctx;
     ::LibFred::Zone::CreateZone(fqdn, ex_period_min, ex_period_max)
-            .set_enum_validation_period(int(5))
+            .set_enum_validation_period(5)
             .set_sending_warning_letter(false)
             .exec(ctx);
     ctx.commit_transaction();

@@ -27,26 +27,26 @@ namespace Zone {
 struct InfoZoneData
 {
     std::string fqdn;
-    int ex_period_min;
-    int ex_period_max;
-    int val_period;
+    int expiration_period_min_in_months;
+    int expiration_period_max_in_months;
+    int enum_validation_period_in_months;
     int dots_max;
     bool enum_zone;
-    bool warning_letter;
+    bool sending_warning_letter;
 
     bool operator==(const InfoZoneData& _other)
     {
         return (fqdn == _other.fqdn
-                && ex_period_max == _other.ex_period_max
-                && ex_period_min == _other.ex_period_min
-                && val_period == _other.val_period
+                && expiration_period_max_in_months == _other.expiration_period_max_in_months
+                && expiration_period_min_in_months == _other.expiration_period_min_in_months
+                && enum_validation_period_in_months == _other.enum_validation_period_in_months
                 && dots_max == _other.dots_max
                 && enum_zone == _other.enum_zone
-                && warning_letter == _other.warning_letter);
+                && sending_warning_letter == _other.sending_warning_letter);
     }
 };
 
-} // namespace Zone
+} // namespace LibFred::Zone
 } // namespace LibFred
 
 #endif

@@ -35,22 +35,22 @@ public:
     {
     }
 
-    UpdateZone& set_ex_period_min(int _ex_period_min);
-    UpdateZone& set_ex_period_max(int _ex_period_max);
-    UpdateZone& set_enum_validation_period(int _val_period);
-    UpdateZone& set_sending_warning_letter(bool _warning_letter);
+    UpdateZone& set_expiration_period_min(int _expiration_period_min_in_months);
+    UpdateZone& set_expiration_period_max(int _expiration_period_max_in_months);
+    UpdateZone& set_enum_validation_period(int _enum_validation_period_in_months);
+    UpdateZone& set_sending_sending_warning_letter(bool _sending_warning_letter);
 
-    unsigned long long exec(OperationContext& _ctx);
+    unsigned long long exec(OperationContext& _ctx) const;
 
 private:
     std::string fqdn_;
-    boost::optional<int> ex_period_min_;
-    boost::optional<int> ex_period_max_;
-    boost::optional<int> val_period_;
-    boost::optional<bool> warning_letter_;
+    boost::optional<int> expiration_period_min_in_months_;
+    boost::optional<int> expiration_period_max_in_months_;
+    boost::optional<int> enum_validation_period_in_months_;
+    boost::optional<bool> sending_warning_letter_;
 };
 
-} // namespace Zone
+} // namespace LibFred::Zone
 } // namespace LibFred
 
 #endif

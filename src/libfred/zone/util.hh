@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef UTILS_HH_3D464D2FBF714314991D5DF2D86C15F6
-#define UTILS_HH_3D464D2FBF714314991D5DF2D86C15F6
+#ifndef UTIL_HH_3D464D2FBF714314991D5DF2D86C15F6
+#define UTIL_HH_3D464D2FBF714314991D5DF2D86C15F6
 
 #include <exception>
 #include <string>
@@ -29,7 +29,7 @@ struct NonExistentZone : std::exception
 {
     virtual const char* what() const noexcept
     {
-        return "Zone is not exist.";
+        return "Zone does not exist.";
     }
 };
 
@@ -37,7 +37,7 @@ struct NotEnumZone : std::exception
 {
     virtual const char* what() const noexcept
     {
-        return "Could not set enum validation period for not enum zone.";
+        return "Could not set enum validation period for non-enum zone.";
     }
 };
 
@@ -73,9 +73,12 @@ struct UpdateZoneException : std::exception
     }
 };
 
-inline bool is_enum_zone(const std::string& _fqdn) { return (_fqdn.rfind("e164.arpa") != std::string::npos); }
+inline bool is_enum_zone(const std::string& _fqdn)
+{
+    return (_fqdn.rfind("e164.arpa") != std::string::npos);
+}
 
-} // namespace Zone
+} // namespace LibFred::Zone
 } // namespace LibFred
 
 #endif

@@ -17,96 +17,94 @@
  */
 
 #include "src/libfred/zone/update_zone.hh"
-#include "src/libfred/zone/utils.hh"
+#include "src/libfred/zone/util.hh"
 
 namespace LibFred {
 namespace Zone {
 
-UpdateZone& UpdateZone::set_ex_period_min(const int _ex_period_min)
+UpdateZone& UpdateZone::set_expiration_period_min(const int _expiration_period_min_in_months)
 {
-    ex_period_min_ = _ex_period_min;
+    expiration_period_min_in_months_ = _expiration_period_min_in_months;
     return *this;
 }
 
-UpdateZone& UpdateZone::set_ex_period_max(const int _ex_period_max)
+UpdateZone& UpdateZone::set_expiration_period_max(const int _expiration_period_max_in_months)
 {
-    ex_period_max_ = _ex_period_max;
+    expiration_period_max_in_months_ = _expiration_period_max_in_months;
     return *this;
 }
 
-UpdateZone& UpdateZone::set_enum_validation_period(const int _val_period)
+UpdateZone& UpdateZone::set_enum_validation_period(const int _enum_validation_period_in_months)
 {
-    val_period_ = _val_period;
+    enum_validation_period_in_months_ = _enum_validation_period_in_months;
     return *this;
 }
 
-UpdateZone& UpdateZone::set_sending_warning_letter(const bool _warning_letter)
+UpdateZone& UpdateZone::set_sending_sending_warning_letter(const bool _sending_warning_letter)
 {
-    warning_letter_ = _warning_letter;
+    sending_warning_letter_ = _sending_warning_letter;
     return *this;
 }
 
-unsigned long long UpdateZone::exec(OperationContext& _ctx)
+unsigned long long UpdateZone::exec(OperationContext& _ctx) const
 {
-    const bool is_data_for_update = (ex_period_min_ || ex_period_max_ || val_period_ || warning_letter_);
+    const bool is_data_for_update = (expiration_period_min_in_months_ || expiration_period_max_in_months_ || enum_validation_period_in_months_ || sending_warning_letter_);
     if (!is_data_for_update)
     {
         throw NoZoneData();
     }
 
-    if (val_period_ && !is_enum_zone(fqdn_))
+    if (enum_validation_period_in_months_ && !is_enum_zone(fqdn_))
     {
         throw NotEnumZone();
     }
 
     Database::QueryParams params;
     std::ostringstream object_sql;
-    Util::HeadSeparator set_separator(" SET ",", ");
+    Util::HeadSeparator set_separator(" SET ", ", ");
 
     object_sql << "UPDATE zone";
-    if (ex_period_min_)
+    if (expiration_period_min_in_months_)
     {
-        params.push_back(*ex_period_min_);
+        params.push_back(*expiration_period_min_in_months_);
         object_sql << set_separator.get() <<  "ex_period_min = $" << params.size() << "::integer";
     }
-    if (ex_period_max_)
+    if (expiration_period_max_in_months_)
     {
-        params.push_back(*ex_period_max_);
+        params.push_back(*expiration_period_max_in_months_);
         object_sql << set_separator.get() <<  "ex_period_max = $" << params.size() << "::integer";
     }
-    if (val_period_)
+    if (enum_validation_period_in_months_)
     {
-        params.push_back(*val_period_);
+        params.push_back(*enum_validation_period_in_months_);
         object_sql << set_separator.get() <<  "val_period = $" << params.size() << "::integer";
     }
-    if (warning_letter_)
+    if (sending_warning_letter_)
     {
-        params.push_back(warning_letter_.get());
+        params.push_back(sending_warning_letter_.get());
         object_sql << set_separator.get() <<  "warning_letter = $" << params.size() << "::bool";
     }
 
     params.push_back(fqdn_);
-    object_sql << " WHERE fqdn = $" << params.size() << "::text RETURNING id";
+    object_sql << " WHERE fqdn = LOWER($" << params.size() << "::text) RETURNING id";
 
-    Database::Result object_result;
     try
     {
-        object_result = _ctx.get_conn().exec_params(
+        const Database::Result update_result = _ctx.get_conn().exec_params(
                 object_sql.str(),
                 params);
+        if (update_result.size() == 1)
+        {
+            const unsigned long long id = static_cast<unsigned long long>(update_result[0][0]);
+            return id;
+        }
     }
     catch (const std::exception&)
     {
         throw UpdateZoneException();
     }
-
-    if (object_result.size() != 1)
-    {
-        throw NonExistentZone();
-    }
-    const unsigned long long id = object_result[0][0];
-    return id;
+    throw NonExistentZone();
 }
 
-} // namespace Zone
+} // namespace LibFred::Zone
 } // namespace LibFred

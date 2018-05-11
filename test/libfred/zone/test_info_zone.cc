@@ -20,7 +20,7 @@
 #include "src/libfred/zone/create_zone.hh"
 #include "src/libfred/zone/info_zone_data.hh"
 #include "src/libfred/zone/info_zone.hh"
-#include "src/libfred/zone/utils.hh"
+#include "src/libfred/zone/util.hh"
 #include "src/util/random_data_generator.hh"
 #include "test/setup/fixtures.hh"
 
@@ -40,28 +40,28 @@ struct info_zone_fixture : public virtual Test::instantiate_db_template
     {
         ::LibFred::OperationContextCreator ctx;
 
-        info_zone_data.fqdn = RandomDataGenerator().xstring(3);
-        info_zone_data.ex_period_max = 6;
-        info_zone_data.ex_period_min = 8;
-        info_zone_data.val_period = 0;
+        info_zone_data.fqdn = "zoo";
+        info_zone_data.expiration_period_max_in_months = 6;
+        info_zone_data.expiration_period_min_in_months = 8;
+        info_zone_data.enum_validation_period_in_months = 0;
         info_zone_data.dots_max = 1;
         info_zone_data.enum_zone = false;
-        info_zone_data.warning_letter = false;
+        info_zone_data.sending_warning_letter = false;
 
-        ::LibFred::Zone::CreateZone(info_zone_data.fqdn, info_zone_data.ex_period_min, info_zone_data.ex_period_max)
+        ::LibFred::Zone::CreateZone(info_zone_data.fqdn, info_zone_data.expiration_period_min_in_months, info_zone_data.expiration_period_max_in_months)
                 .exec(ctx);
 
         info_zone_data_enum.fqdn = "3.2.1.e164.arpa";
-        info_zone_data_enum.ex_period_max = 12;
-        info_zone_data_enum.ex_period_min = 24;
-        info_zone_data_enum.val_period = 4;
+        info_zone_data_enum.expiration_period_max_in_months = 12;
+        info_zone_data_enum.expiration_period_min_in_months = 24;
+        info_zone_data_enum.enum_validation_period_in_months = 4;
         info_zone_data_enum.dots_max = 9;
         info_zone_data_enum.enum_zone = true;
-        info_zone_data_enum.warning_letter = true;
+        info_zone_data_enum.sending_warning_letter = true;
 
-        ::LibFred::Zone::CreateZone(info_zone_data_enum.fqdn, info_zone_data_enum.ex_period_min, info_zone_data_enum.ex_period_max)
-                .set_enum_validation_period(info_zone_data_enum.val_period)
-                .set_sending_warning_letter(info_zone_data_enum.warning_letter)
+        ::LibFred::Zone::CreateZone(info_zone_data_enum.fqdn, info_zone_data_enum.expiration_period_min_in_months, info_zone_data_enum.expiration_period_max_in_months)
+                .set_enum_validation_period(info_zone_data_enum.enum_validation_period_in_months)
+                .set_sending_warning_letter(info_zone_data_enum.sending_warning_letter)
                 .exec(ctx);
         ctx.commit_transaction();
     }
