@@ -22,7 +22,7 @@ std::string sql_disclose_flag_condition(const std::string& _column, const std::s
 
 void sql_or(std::string& _dst_sql, const std::string& _expr)
 {
-    if (!_expr.empty()) 
+    if (!_expr.empty())
     {
         if (!_dst_sql.empty())
         {
