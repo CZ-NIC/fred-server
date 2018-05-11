@@ -63,9 +63,12 @@ std::string make_query_search_contact_needs_update(const DiscloseSettings& _disc
     sql_or(search_conditions, sql_disclose_flag_condition("disclosenotifyemail", "IS NOT", _discloses.notify_email));
     if (_discloses.addr == DiscloseAddressValue::hide_verified)
     {
-        std::string subcondition = "(contact_list.hide_address_allowed AND "
+        std::string subcondition1 = "(contact_list.hide_address_allowed AND "
             + sql_disclose_flag_condition("discloseaddress", "IS NOT", DiscloseValue::hide) + ")";
-        sql_or(search_conditions, subcondition);
+        sql_or(search_conditions, subcondition1);
+        std::string subcondition2 = "(NOT contact_list.hide_address_allowed AND "
+            + sql_disclose_flag_condition("discloseaddress", "IS NOT", DiscloseValue::show) + ")";
+        sql_or(search_conditions, subcondition2);
     }
     else
     {
