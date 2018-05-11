@@ -11,6 +11,7 @@ project(${program_name} CXX)
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release")
 endif()
+set(CMAKE_CXX_FLAGS_RELEASE "-O2")
 
 if(NOT VERSION)
     execute_process(COMMAND "git" "describe" "--tags"
