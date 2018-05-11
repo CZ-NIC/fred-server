@@ -83,6 +83,7 @@ unsigned long long send_personalinfo(
     {
         throw std::runtime_error("too many public requests for given id");
     }
+    const std::string email_to_answer = request_info.get_email_to_answer().get_value_or_default();
 
     LibFred::InfoContactData info_contact_data;
     try
@@ -301,7 +302,7 @@ unsigned long long send_personalinfo(
         attachments.emplace_back(attachment_id);
     }
 
-    const std::set<std::string> recipients = { info_contact_data.email.get_value() };
+    const std::set<std::string> recipients = { email_to_answer.empty() ? info_contact_data.email.get_value() : email_to_answer };
     const EmailData data(recipients, "sendpersonalinfo_pif", email_template_params, attachments);
     return send_joined_addresses_email(_mailer_manager, data);
 }
