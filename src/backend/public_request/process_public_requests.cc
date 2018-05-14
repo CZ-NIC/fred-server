@@ -215,7 +215,7 @@ unsigned long long send_personalinfo(
             ident_type_repr = "Datum narození";
         }
 
-        const std::vector<std::vector<std::string>> cells = {
+        const Fred::Util::CsvCells cells = {
             {"ID kontaktu v registru", info_contact_data.handle},
             {"Organizace", info_contact_data.organization.get_value_or_default()},
             {"Jméno", info_contact_data.name.get_value_or_default()},
@@ -234,7 +234,7 @@ unsigned long long send_personalinfo(
             {"Notifikační e-mail", info_contact_data.notifyemail.get_value_or_default()},
             {"Určený registrátor", info_registrar_data.name.get_value_or_default()}
         };
-        const std::string csv_document_content = Fred::Util::to_csv_string(cells);
+        const std::string csv_document_content = static_cast<std::string>(cells);
 
         std::vector<char> in_buffer(csv_document_content.begin(), csv_document_content.end());
         const unsigned long long attachment_id = _file_manager_client->upload(
@@ -272,7 +272,7 @@ unsigned long long send_personalinfo(
             ident_type_repr = "Birthdate";
         }
 
-        const std::vector<std::vector<std::string>> cells = {
+        const Fred::Util::CsvCells cells = {
             {"Contact ID in the registry", info_contact_data.handle},
             {"Organisation", info_contact_data.organization.get_value_or_default()},
             {"Name", info_contact_data.name.get_value_or_default()},
@@ -291,7 +291,7 @@ unsigned long long send_personalinfo(
             {"Notification e-mail", info_contact_data.notifyemail.get_value_or_default()},
             {"Designated registrar", info_registrar_data.name.get_value_or_default()}
         };
-        const std::string csv_document_content = Fred::Util::to_csv_string(cells);
+        const std::string csv_document_content = static_cast<std::string>(cells);
 
         std::vector<char> in_buffer(csv_document_content.begin(), csv_document_content.end());
         const unsigned long long attachment_id = _file_manager_client->upload(

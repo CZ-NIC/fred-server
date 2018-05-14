@@ -19,29 +19,24 @@
 #ifndef CSV_HH_B446365F01434DEBABBE5930EEBA1DAA
 #define CSV_HH_B446365F01434DEBABBE5930EEBA1DAA
 
-#include "src/util/csv/rapidcsv.hh"
-
-#include <vector>
+#include <initializer_list>
 #include <string>
+#include <vector>
 
 namespace Fred
 {
 namespace Util
 {
 
-std::string to_csv_string(const std::vector<std::vector<std::string>>& _cells)
+class CsvCells
 {
-    rapidcsv::Document doc(std::string(), rapidcsv::LabelParams(-1, -1), rapidcsv::SeparatorParams(';', true));
-    for (std::size_t i = 0; i < _cells.size(); ++i)
-    {
-        const std::size_t column_size = _cells[i].size();
-        for (std::size_t j = 0; j < column_size; ++j)
-        {
-            doc.SetCell<std::string>(j, i, _cells[i][j]);
-        }
-    }
-    return doc.ToString();
-}
+public:
+    CsvCells(const std::initializer_list<std::initializer_list<std::string>>& _cells);
+    explicit operator std::string() const;
+private:
+    constexpr static char separator = ';';
+    std::vector<std::vector<std::string>> data;
+};
 
 } // namespace Fred::Util
 } // namespace Fred
