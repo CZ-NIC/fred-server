@@ -29,8 +29,6 @@
 
 namespace Test {
 
-const std::string server_name = "test-info-zone";
-
 struct info_zone_fixture : public virtual Test::instantiate_db_template
 {
     ::LibFred::Zone::InfoZoneData info_zone_data;
@@ -97,6 +95,6 @@ BOOST_AUTO_TEST_CASE(set_info_enum_zone)
     BOOST_CHECK(info_zone_data_enum == zone_info_enum);
 }
 
-BOOST_AUTO_TEST_SUITE_END();//TestCreateZone
+BOOST_AUTO_TEST_SUITE_END();
 
 } // namespace Test

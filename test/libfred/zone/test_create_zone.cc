@@ -27,8 +27,6 @@
 
 namespace Test {
 
-const std::string server_name = "test-create-zone";
-
 struct create_zone_fixture : public virtual Test::instantiate_db_template
 {
     std::string fqdn;
@@ -107,6 +105,6 @@ BOOST_AUTO_TEST_CASE(set_max_create_enum_zone)
 
 }
 
-BOOST_AUTO_TEST_SUITE_END();//TestCreateZone
+BOOST_AUTO_TEST_SUITE_END();
 
 } // namespace Test
