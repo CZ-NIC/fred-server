@@ -387,7 +387,8 @@ sbin_PROGRAMS = \
 		src/bin/cli/fred-admin \
 		tools/logd_migration/migrate_log \
 		tools/contact_migration/mojeid_contact_address_import \
-		tools/contact_migration/mojeid_contact_ssn_fix
+		tools/contact_migration/mojeid_contact_ssn_fix \
+		tools/disclose_flags_updater/fred-disclose-flags-updater
 
 
 # util/libutil.a
@@ -912,6 +913,8 @@ src_libfred_libfred_a_SOURCES = \
 		src/libfred/registrable_object/contact/place_address.hh \
 		src/libfred/registrable_object/contact/transfer_contact.hh \
 		src/libfred/registrable_object/contact/transfer_contact.cc \
+		src/libfred/registrable_object/contact/undisclose_address.hh \
+		src/libfred/registrable_object/contact/undisclose_address.cc \
 		src/backend/mojeid/checkers.cc \
 		src/backend/mojeid/checkers.hh \
 		src/backend/mojeid/check_collector.hh \
@@ -1129,6 +1132,8 @@ src_libfred_public_request_libpublic_request_a_SOURCES = \
 		src/libfred/public_request/public_request_authinfo_impl.hh \
 		src/libfred/public_request/public_request_block_impl.cc \
 		src/libfred/public_request/public_request_block_impl.hh \
+		src/libfred/public_request/public_request_personalinfo_impl.cc \
+		src/libfred/public_request/public_request_personalinfo_impl.hh \
 		src/libfred/public_request/create_public_request.cc \
 		src/libfred/public_request/create_public_request.hh \
 		src/libfred/public_request/create_public_request_auth.cc \
@@ -1229,6 +1234,7 @@ src_libfred_contact_verification_libcontact_verification_a_SOURCES = \
 		src/libfred/contact_verification/contact_verification_password.cc \
 		src/libfred/contact_verification/contact_verification_password.hh \
 		src/libfred/contact_verification/contact_validator.hh
+
 #
 # src/libfred/contact_verification/libcontact_verification.a
 
@@ -1772,6 +1778,8 @@ src_bin_corba_epp_libepp_impl_a_SOURCES = \
 		src/backend/epp/contact/contact_change.hh \
 		src/backend/epp/contact/contact_data.cc \
 		src/backend/epp/contact/contact_data.hh \
+		src/backend/epp/contact/impl/contact_output.cc \
+		src/backend/epp/contact/impl/contact_output.hh \
 		src/backend/epp/contact/update_contact_localized.cc \
 		src/backend/epp/contact/update_contact_localized.hh \
 		src/backend/epp/contact/update_contact.cc \
@@ -1832,12 +1840,16 @@ src_bin_corba_epp_libepp_impl_a_SOURCES = \
 		src/backend/epp/poll/poll_request_localized.hh \
 		src/backend/epp/poll/poll_request.cc \
 		src/backend/epp/poll/poll_request.hh \
+		src/backend/epp/poll/poll_request_get_update_contact_details.cc \
+		src/backend/epp/poll/poll_request_get_update_contact_details.hh \
 		src/backend/epp/poll/poll_request_get_update_domain_details.cc \
 		src/backend/epp/poll/poll_request_get_update_domain_details.hh \
 		src/backend/epp/poll/poll_request_get_update_keyset_details.cc \
 		src/backend/epp/poll/poll_request_get_update_keyset_details.hh \
 		src/backend/epp/poll/poll_request_get_update_nsset_details.cc \
 		src/backend/epp/poll/poll_request_get_update_nsset_details.hh \
+		src/backend/epp/poll/poll_request_get_update_contact_details_localized.cc \
+		src/backend/epp/poll/poll_request_get_update_contact_details_localized.hh \
 		src/backend/epp/poll/poll_request_get_update_domain_details_localized.cc \
 		src/backend/epp/poll/poll_request_get_update_domain_details_localized.hh \
 		src/backend/epp/poll/poll_request_get_update_keyset_details_localized.cc \
@@ -2190,6 +2202,8 @@ src_bin_corba_fred_pifd_SOURCES = \
 		src/backend/buffer.hh \
 		src/backend/public_request/public_request.cc \
 		src/backend/public_request/public_request.hh \
+		src/backend/public_request/send_email.cc \
+		src/backend/public_request/send_email.hh \
 		src/bin/corba/public_request/server_i.cc \
 		src/bin/corba/public_request/server_i.hh \
 		src/bin/corba/util/corba_conversions_buffer.cc \
@@ -2601,6 +2615,8 @@ src_bin_cli_fred_admin_SOURCES = \
 		src/bin/cli/contactclient.cc \
 		src/bin/cli/contactclient.hh \
 		src/bin/cli/contact_params.hh \
+		src/bin/cli/public_request_method.hh \
+		src/bin/cli/public_request_method.cc \
 		src/bin/cli/contact_client_impl.hh \
 		src/bin/cli/invoiceclient.cc \
 		src/bin/cli/invoiceclient.hh \
@@ -2670,7 +2686,20 @@ src_bin_cli_fred_admin_SOURCES = \
 		src/backend/admin/notification/notification.hh \
 		src/backend/admin/notification/notification.cc \
 		src/backend/admin/domain/create_expired_domain.hh \
-		src/backend/admin/domain/create_expired_domain.cc
+		src/backend/admin/domain/create_expired_domain.cc \
+		src/backend/public_request/send_email.cc \
+		src/backend/public_request/send_email.hh \
+		src/backend/public_request/process_public_requests.cc \
+		src/backend/public_request/process_public_requests.hh \
+		src/backend/buffer.cc \
+		src/backend/buffer.hh \
+		src/backend/public_request/public_request.cc \
+	        src/backend/public_request/get_type_names.hh \
+		src/bin/cli/public_request_params.hh \
+		src/libfred/public_request/public_request_on_status_action.hh \
+		src/bin/cli/public_request_impl.hh \
+		src/util/csv/csv.hh \
+		src/util/csv/rapidcsv.hh
 
 src_bin_cli_fred_admin_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
@@ -2701,6 +2730,7 @@ src_bin_cli_fred_admin_LDADD = \
 		src/deprecated/util/liboldutils.a \
 		src/util/libutil.a \
 		src/util/hp/libhp.a \
+		src/libfred/public_request/libpublic_request.a \
 		-lmpdec -lm -lrt \
 		$(LIBCRYPTO_LIBS) \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
@@ -2718,6 +2748,45 @@ src_bin_cli_fred_admin_LDADD = \
 		-lresolv
 #
 # src/cli_admin/fred-admin
+
+
+# tools/disclose_flags_updater/fred-disclose-flag-updater
+#
+tools_disclose_flags_updater_fred_disclose_flags_updater_SOURCES = \
+		tools/disclose_flags_updater/options.hh \
+		tools/disclose_flags_updater/thread_safe_output.cc \
+		tools/disclose_flags_updater/thread_safe_output.hh \
+		tools/disclose_flags_updater/worker.hh \
+		tools/disclose_flags_updater/worker.cc \
+		tools/disclose_flags_updater/disclose_value.hh \
+		tools/disclose_flags_updater/disclose_value.cc \
+		tools/disclose_flags_updater/disclose_settings.hh \
+		tools/disclose_flags_updater/disclose_settings.cc \
+		tools/disclose_flags_updater/contact_search_query.hh \
+		tools/disclose_flags_updater/contact_search_query.cc \
+		tools/disclose_flags_updater/fred_disclose_flags_updater.cc
+
+tools_disclose_flags_updater_fred_disclose_flags_updater_CPPFLAGS = \
+		$(AM_CPPFLAGS)
+
+tools_disclose_flags_updater_fred_disclose_flags_updater_LDFLAGS = \
+		$(AM_LDFLAGS)
+
+tools_disclose_flags_updater_fred_disclose_flags_updater_LDADD = \
+		src/libfred/libfred.a \
+		src/util/log/liblog.a \
+		src/util/db/libdb.a \
+		src/util/libutil.a \
+		$(POSTGRESQL_LIB) \
+		$(BOOST_REGEX_LIB) \
+		$(BOOST_DATE_TIME_LIB) \
+		$(BOOST_THREAD_LIB) \
+		$(BOOST_PROGRAM_OPTIONS_LIB) \
+		$(BOOST_RANDOM_LIB) \
+		$(BOOST_SYSTEM_LIB)
+
+#
+# tools/disclose_flags_updater/fred-disclose-flag-updater
 
 
 # tools/logd_migration
@@ -3229,6 +3298,7 @@ test_test_server_SOURCES = \
 		src/backend/domain_browser/domain_browser.cc \
 		src/backend/domain_browser/domain_browser.hh \
 		test/backend/domain_browser/test_domain_browser.cc \
+		test/setup/fixtures.cc \
 		test/setup/fixtures.hh
 
 test_test_server_CPPFLAGS = \
@@ -3302,6 +3372,7 @@ test_backend_test_public_request_SOURCES = \
 		test/backend/public_request/main.cc \
 		src/backend/buffer.cc \
 		src/backend/public_request/public_request.cc \
+		src/backend/public_request/send_email.cc \
 		test/backend/public_request/test_registry_email.cc \
 		test/backend/public_request/test_non_registry_email.cc \
 		test/backend/public_request/test_create_block_unblock_request.cc \
@@ -3446,6 +3517,7 @@ test_test_libfred_SOURCES = \
 		test/libfred/contact/test_copy_contact.cc \
 		test/libfred/contact/test_transfer_contact.cc \
 		test/libfred/contact/test_mojeid_checkers.cc \
+		test/libfred/contact/test_undisclose_address.cc \
 		src/util/types/birthdate.cc \
 		test/libfred/domain/test_update_domain.cc \
 		test/libfred/domain/test_renew_domain.cc \
@@ -3859,7 +3931,6 @@ test_test_exception_LDADD = \
 		$(BOOST_SYSTEM_LIB)
 #
 # non-corba tests with overloaded global operator new
-
 
 install-tests: $(SERVER_TESTS)
 		test -z "$(bindir)" || $(MKDIR_P) "$(bindir)"

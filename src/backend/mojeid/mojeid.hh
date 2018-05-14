@@ -155,6 +155,7 @@ public:
 private:
     const std::string server_name_;
     const std::string mojeid_registrar_handle_;
+    const std::string system_registrar_handle_;
     const ::size_t mojeid_registrar_id_;
 };
 

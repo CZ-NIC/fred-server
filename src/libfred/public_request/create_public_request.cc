@@ -3,6 +3,7 @@
 #include "src/libfred/public_request/public_request_lock_guard.hh"
 #include "src/libfred/public_request/public_request_status.hh"
 #include "src/libfred/contact_verification/django_email_format.hh"
+#include "src/libfred/public_request/public_request_on_status_action.hh"
 #include "src/util/idn_utils.hh"
 
 #include <string>
@@ -94,12 +95,15 @@ PublicRequestId CreatePublicRequest::exec(const LockedPublicRequestsOfObjectForU
         }
         params(Conversion::Enums::to_db_handle(PublicRequest::Status::active));             // $7::TEXT
 
+        const auto on_status_action = _type.get_on_status_action(PublicRequest::Status::active);
+        params(Conversion::Enums::to_db_handle(on_status_action)); // $8::ENUM_ON_STATUS_ACTION_TYPE
+
         const Database::Result res = _locked_object.get_ctx().get_conn().exec_params(
             "WITH request AS ("
                 "INSERT INTO public_request "
                     "(request_type,status,resolve_time,reason,email_to_answer,answer_email_id,registrar_id,"
-                     "create_request_id,resolve_request_id) "
-                "SELECT eprt.id,eprs.id,NULL,$3::TEXT,$4::TEXT,NULL,$5::BIGINT,$6::BIGINT,NULL "
+                     "create_request_id,resolve_request_id,on_status_action) "
+                "SELECT eprt.id,eprs.id,NULL,$3::TEXT,$4::TEXT,NULL,$5::BIGINT,$6::BIGINT,NULL,$8::ENUM_ON_STATUS_ACTION_TYPE "
                 "FROM enum_public_request_type eprt,"
                      "enum_public_request_status eprs "
                 "WHERE eprt.name=$1::TEXT AND "

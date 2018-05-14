@@ -241,6 +241,83 @@ CORBA::ULongLong Server_i::create_block_unblock_request(
     }
 }
 
+CORBA::ULongLong Server_i::create_personal_info_request_registry_email(
+        const char* contact_handle,
+        Registry::NullableULongLong* log_request_id)
+{
+    try
+    {
+        const unsigned long long public_request_id = pimpl_->create_personal_info_request_registry_email(
+                LibFred::Corba::unwrap_string_from_const_char_ptr(contact_handle),
+                unwrap_nullableulonglong_to_optional_unsigned_long_long(log_request_id),
+                Fred::Backend::PublicRequest::PublicRequestImpl::get_default_mailer_manager());
+        ::CORBA::ULongLong result;
+        CorbaConversion::wrap_int(public_request_id, result);
+        return result;
+    }
+    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::NoContactEmail& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw Registry::PublicRequest::INVALID_EMAIL();
+    }
+    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::ObjectNotFound& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw Registry::PublicRequest::OBJECT_NOT_FOUND();
+    }
+    catch (const std::exception& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::PublicRequest::INTERNAL_SERVER_ERROR();
+    }
+    catch (...)
+    {
+        LOGGER(PACKAGE).error("create_personal_info_request_registry_email failed due to an unexpected exception");
+        throw Registry::PublicRequest::INTERNAL_SERVER_ERROR();
+    }
+}
+
+
+CORBA::ULongLong Server_i::create_personal_info_request_non_registry_email(
+        const char* contact_handle,
+        Registry::NullableULongLong* log_request_id,
+        Registry::PublicRequest::ConfirmedBy::Type confirmation_method,
+        const char* specified_email)
+{
+    try
+    {
+        const unsigned long long public_request_id = pimpl_->create_personal_info_request_non_registry_email(
+                LibFred::Corba::unwrap_string_from_const_char_ptr(contact_handle),
+                unwrap_nullableulonglong_to_optional_unsigned_long_long(log_request_id),
+                unwrap_confirmedby_to_confirmedby(confirmation_method),
+                LibFred::Corba::unwrap_string_from_const_char_ptr(specified_email));
+        CORBA::ULongLong result;
+        CorbaConversion::wrap_int(public_request_id, result);
+        return result;
+    }
+    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::InvalidContactEmail& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw Registry::PublicRequest::INVALID_EMAIL();
+    }
+    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::ObjectNotFound& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw Registry::PublicRequest::OBJECT_NOT_FOUND();
+    }
+    catch (const std::exception& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::PublicRequest::INTERNAL_SERVER_ERROR();
+    }
+    catch (...)
+    {
+        LOGGER(PACKAGE).error("create_personal_info_request_non_registry_email failed due to an unexpected exception");
+        throw Registry::PublicRequest::INTERNAL_SERVER_ERROR();
+    }
+}
+
+
 namespace {
 
 Fred::Backend::PublicRequest::PublicRequestImpl::Language::Enum unwrap_language_to_language(Registry::PublicRequest::Language::Type lang)

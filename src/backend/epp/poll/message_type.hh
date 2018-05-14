@@ -44,6 +44,7 @@ struct MessageType
         transfer_keyset,
         idle_delete_keyset,
         request_fee_info,
+        update_contact,
         update_domain,
         update_nsset,
         update_keyset,
@@ -78,6 +79,7 @@ inline std::string to_db_handle(Epp::Poll::MessageType::Enum value)
         case Epp::Poll::MessageType::transfer_keyset: return "transfer_keyset";
         case Epp::Poll::MessageType::idle_delete_keyset: return "idle_delete_keyset";
         case Epp::Poll::MessageType::request_fee_info: return "request_fee_info";
+        case Epp::Poll::MessageType::update_contact: return "update_contact";
         case Epp::Poll::MessageType::update_domain: return "update_domain";
         case Epp::Poll::MessageType::update_nsset: return "update_nsset";
         case Epp::Poll::MessageType::update_keyset: return "update_keyset";
@@ -137,6 +139,9 @@ inline Epp::Poll::MessageType::Enum from_db_handle<Epp::Poll::MessageType>(const
     }
     if (to_db_handle(Epp::Poll::MessageType::request_fee_info) == db_handle) {
         return Epp::Poll::MessageType::request_fee_info;
+    }
+    if (to_db_handle(Epp::Poll::MessageType::update_contact) == db_handle) {
+        return Epp::Poll::MessageType::update_contact;
     }
     if (to_db_handle(Epp::Poll::MessageType::update_domain) == db_handle) {
         return Epp::Poll::MessageType::update_domain;

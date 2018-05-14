@@ -41,12 +41,17 @@ namespace PublicRequest {
 
 std::string Status2Str(Status_PR _status)
 {
-  switch (_status) {
-    case PRS_NEW:       return "New";
-    case PRS_ANSWERED:  return "Answered";
-    case PRS_INVALID:   return "Invalidated";
-    default:            return "STATUS UNKNOWN";
-  }
+    switch (_status)
+    {
+        case PRS_NEW:
+            return "New";
+        case PRS_ANSWERED:
+            return "Answered";
+        case PRS_INVALID:
+            return "Invalidated";
+        default:
+            return "STATUS UNKNOWN";
+    }
 }
 
 

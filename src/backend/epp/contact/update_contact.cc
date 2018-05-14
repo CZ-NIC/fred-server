@@ -322,7 +322,7 @@ void set_ContactUpdate_discloseflag<ContactDisclose::Item::name>(
         LibFred::UpdateContactByHandle& update_op,
         bool value)
 {
-    update_op.set_disclosename(value);
+    // update_op.set_disclosename(value);
 }
 
 
@@ -331,7 +331,7 @@ void set_ContactUpdate_discloseflag<ContactDisclose::Item::organization>(
         LibFred::UpdateContactByHandle& update_op,
         bool value)
 {
-    update_op.set_discloseorganization(value);
+    // update_op.set_discloseorganization(value);
 }
 
 

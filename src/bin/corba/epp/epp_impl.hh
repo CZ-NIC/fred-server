@@ -254,6 +254,7 @@ public:
   * \return svTRID and errCode
   */
   ccReg::Response* PollRequest(CORBA::String_out msgID, CORBA::ULongLong& count, ccReg::timestamp_out qDate, ccReg::PollType& type, CORBA::Any_OUT_arg msg, const ccReg::EppParams &params);
+  void PollRequestGetUpdateContactDetails(CORBA::ULongLong _poll_id, ccReg::Contact_out _old_data, ccReg::Contact_out _new_data, const ccReg::EppParams &params);
   void PollRequestGetUpdateDomainDetails(CORBA::ULongLong _poll_id, ccReg::Domain_out _old_data, ccReg::Domain_out _new_data, const ccReg::EppParams &params);
   void PollRequestGetUpdateNSSetDetails(CORBA::ULongLong _poll_id, ccReg::NSSet_out _old_data, ccReg::NSSet_out _new_data, const ccReg::EppParams &params);
   void PollRequestGetUpdateKeySetDetails(CORBA::ULongLong _poll_id, ccReg::KeySet_out _old_data, ccReg::KeySet_out _new_data, const ccReg::EppParams &params);

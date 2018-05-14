@@ -79,6 +79,7 @@ void ContactVerificationPassword::sendEmailPassword(const std::string& mailTempl
     params["hostname"]  = map_at(data, "hostname");
     params["handle"]    = map_at(data, "handle");
     params["identification"] = map_at(data, "identification");
+    params["telephone"] = map_at(data, "phone");
 
     /*
      * If public request password is one chunk long then

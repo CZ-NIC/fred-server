@@ -42,7 +42,11 @@
 #include "src/libfred/banking/bank_payment.hh"
 #include "src/libfred/public_request/public_request_authinfo_impl.hh"
 #include "src/libfred/public_request/public_request_block_impl.hh"
+#include "src/libfred/public_request/public_request_personalinfo_impl.hh"
+#include "src/libfred/registrable_object/contact/undisclose_address.hh"
 #include "src/libfred/registrar/info_registrar.hh"
+#include "src/util/cfg/config_handler_decl.hh"
+#include "src/util/cfg/handle_registry_args.hh"
 #include "src/util/factory_check.hh"
 #include "src/util/log/logger.hh"
 #include "src/util/log/context.hh"
@@ -767,6 +771,21 @@ ccReg::TID ccReg_Admin_i::createPublicRequest(Registry::PublicRequest::Type _typ
   }
 }
 
+namespace {
+
+std::string get_system_registrar_handle()
+{
+    const std::string handle =
+            CfgArgs::instance()->get_handler_ptr_by_type<HandleRegistryArgs>()->system_registrar;
+    if (!handle.empty())
+    {
+        return handle;
+    }
+    throw std::runtime_error("missing configuration for system registrar");
+}
+
+} // namespace {anonymous}
+
 void ccReg_Admin_i::processPublicRequest(ccReg::TID id, CORBA::Boolean invalid)
 {
   Logging::Context ctx(server_name_);
@@ -812,6 +831,24 @@ void ccReg_Admin_i::processPublicRequest(ccReg::TID id, CORBA::Boolean invalid)
     /* this also catches when try to process request which
      * need to be authenticated */
     throw ccReg::Admin::OBJECT_NOT_FOUND();
+  }
+
+  std::unique_ptr<LibFred::PublicRequest::List> request_list(request_manager->loadRequest(id));
+  unsigned long long object_id = request_list->get(0)->getObject(0).id;
+  try {
+      LibFred::Contact::undisclose_address_async(object_id, get_system_registrar_handle()); // #21767
+  }
+  catch (const std::exception& e)
+  {
+      LOGGER(PACKAGE).info(
+              boost::format("processing validation request id=%1%: async disclose address of contact with id %2%: %3%")
+              % id % object_id % e.what());
+  }
+  catch (...)
+  {
+      LOGGER(PACKAGE).info(
+              boost::format("processing validation request id=%1%: async disclose address of contact with id %2%: unknown error")
+              % id % object_id);
   }
 }
 

@@ -88,7 +88,10 @@ public:
                  boost::program_options::value<std::string>()->default_value("UTC"),
                  "registry timezone in Olson format, "
                  "must be the same as local system timezone, "
-                 "value must be from PostgreSQL pg_timezone_names.name");
+                 "value must be from PostgreSQL pg_timezone_names.name")
+                ("registry.system_registrar",
+                 boost::program_options::value<std::string>()->required(),
+                 "handle of registrar with system privileges for restricted actions");
 
         return opts_descs;
     }
@@ -115,6 +118,7 @@ public:
         fileclient_path = vm["registry.fileclient_path"].as<std::string>();
         disable_epp_notifier_cltrid_prefix = vm["registry.disable_epp_notifier_cltrid_prefix"].as<std::string>();
         registry_timezone = vm["registry.registry_timezone"].as<std::string>();
+        system_registrar = vm["registry.system_registrar"].as<std::string>();
     }
     bool restricted_handles;
     bool disable_epp_notifier;
@@ -128,6 +132,7 @@ public:
     std::string fileclient_path;
     std::string disable_epp_notifier_cltrid_prefix;
     std::string registry_timezone;
+    std::string system_registrar;
 };
 
 /**
@@ -196,6 +201,10 @@ public:
     const std::string& get_registry_timezone()const
     {
         return HandleRegistryArgs::registry_timezone;
+    }
+    const std::string& get_system_registrar()const
+    {
+        return HandleRegistryArgs::system_registrar;
     }
 };
 

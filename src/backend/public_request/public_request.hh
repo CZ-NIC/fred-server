@@ -29,6 +29,7 @@
 #include "src/libfred/documents.hh"
 #include "src/libfred/mailer.hh"
 #include "src/libfred/object/object_type.hh"
+#include "src/libfred/opcontext.hh"
 #include "src/util/optional_value.hh"
 
 #include <boost/date_time/gregorian/gregorian.hpp>
@@ -42,6 +43,14 @@
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
+
+struct NoPublicRequest : std::exception
+{
+    virtual const char* what() const noexcept
+    {
+        return "no public request found";
+    }
+};
 
 class PublicRequestImpl
 {
@@ -167,26 +176,37 @@ public:
             ObjectType::Enum object_type,
             const std::string& object_handle,
             const Optional<unsigned long long>& log_request_id,
-            std::shared_ptr<LibFred::Mailer::Manager> manager);
+            std::shared_ptr<LibFred::Mailer::Manager> manager) const;
 
     unsigned long long create_authinfo_request_non_registry_email(
             ObjectType::Enum object_type,
             const std::string& object_handle,
             const Optional<unsigned long long>& log_request_id,
             ConfirmedBy::Enum confirmation_method,
-            const std::string& specified_email);
+            const std::string& specified_email) const;
 
     unsigned long long create_block_unblock_request(
             ObjectType::Enum object_type,
             const std::string& object_handle,
             const Optional<unsigned long long>& log_request_id,
             ConfirmedBy::Enum confirmation_method,
-            LockRequestType::Enum lock_request_type);
+            LockRequestType::Enum lock_request_type) const;
+
+    unsigned long long create_personal_info_request_registry_email(
+            const std::string& contact_handle,
+            const Optional<unsigned long long>& log_request_id,
+            std::shared_ptr<LibFred::Mailer::Manager> manager) const;
+
+    unsigned long long create_personal_info_request_non_registry_email(
+            const std::string& contact_handle,
+            const Optional<unsigned long long>& log_request_id,
+            ConfirmedBy::Enum confirmation_method,
+            const std::string& specified_email) const;
 
     Fred::Backend::Buffer create_public_request_pdf(
             unsigned long long public_request_id,
             Language::Enum lang,
-            std::shared_ptr<LibFred::Document::Manager> manager);
+            std::shared_ptr<LibFred::Document::Manager> manager) const;
 
     static std::shared_ptr<LibFred::Mailer::Manager> get_default_mailer_manager();
     static std::shared_ptr<LibFred::Document::Manager> get_default_document_manager();

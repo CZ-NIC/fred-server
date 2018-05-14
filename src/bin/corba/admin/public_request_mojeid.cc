@@ -150,7 +150,8 @@ public:
 
         /* set new state */
         LibFred::PublicRequest::insertNewStateRequest(this->getId(), oid, "validatedContact");
-        ::LibFred::update_object_states(oid);
+        LibFred::update_object_states(oid);
+
         tx.commit();
     }
 

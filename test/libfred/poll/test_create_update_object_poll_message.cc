@@ -135,18 +135,22 @@ BOOST_AUTO_TEST_CASE( test_correct_type_specific_data)
                 static_cast<int>((*it)["count_"])
             );
         }
+        Test::contact contact(ctx);
         Test::domain domain(ctx);
         Test::keyset keyset(ctx);
         Test::nsset nsset(ctx);
 
         switch(i) {
             case 0:
-                ::LibFred::Poll::CreateUpdateObjectPollMessage().exec(ctx, domain.info_data.historyid);
+                ::LibFred::Poll::CreateUpdateObjectPollMessage().exec(ctx, contact.info_data.historyid);
                 break;
             case 1:
-                ::LibFred::Poll::CreateUpdateObjectPollMessage().exec(ctx, keyset.info_data.historyid);
+                ::LibFred::Poll::CreateUpdateObjectPollMessage().exec(ctx, domain.info_data.historyid);
                 break;
             case 2:
+                ::LibFred::Poll::CreateUpdateObjectPollMessage().exec(ctx, keyset.info_data.historyid);
+                break;
+            case 3:
                 ::LibFred::Poll::CreateUpdateObjectPollMessage().exec(ctx, nsset.info_data.historyid);
                 break;
         }
@@ -188,35 +192,23 @@ BOOST_AUTO_TEST_CASE( test_correct_type_specific_data)
         switch (i) {
             case 0:
                 BOOST_CHECK_EQUAL(static_cast<std::string>(message_res[0]["msgtype_name_"]),
-                                  Conversion::Enums::to_db_handle(::LibFred::Poll::MessageType::update_domain));
+                                  Conversion::Enums::to_db_handle(::LibFred::Poll::MessageType::update_contact));
                 break;
             case 1:
                 BOOST_CHECK_EQUAL(static_cast<std::string>(message_res[0]["msgtype_name_"]),
-                                  Conversion::Enums::to_db_handle(::LibFred::Poll::MessageType::update_keyset));
+                                  Conversion::Enums::to_db_handle(::LibFred::Poll::MessageType::update_domain));
                 break;
             case 2:
+                BOOST_CHECK_EQUAL(static_cast<std::string>(message_res[0]["msgtype_name_"]),
+                                  Conversion::Enums::to_db_handle(::LibFred::Poll::MessageType::update_keyset));
+                break;
+            case 3:
                 BOOST_CHECK_EQUAL(static_cast<std::string>(message_res[0]["msgtype_name_"]),
                                   Conversion::Enums::to_db_handle(::LibFred::Poll::MessageType::update_nsset));
                 break;
         }
 
         ctx.commit_transaction();
-    }
-
-    try {
-        ::LibFred::OperationContextCreator ctx;
-
-        const Test::contact contact(ctx);
-        ::LibFred::Poll::CreateUpdateObjectPollMessage().exec(ctx, contact.info_data.historyid);
-        BOOST_CHECK(false);
-
-        ctx.commit_transaction();
-    }
-    catch (const ::LibFred::OperationException&) {
-        BOOST_CHECK(true);
-    }
-    catch (...) {
-        BOOST_CHECK(false);
     }
 }
 

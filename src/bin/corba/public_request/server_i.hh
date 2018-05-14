@@ -71,6 +71,17 @@ public:
             Registry::PublicRequest::ConfirmedBy::Type confirmation_method,
             Registry::PublicRequest::LockRequestType::Type lock_request_type);
 
+    CORBA::ULongLong create_personal_info_request_registry_email(
+            const char* contact_handle,
+            Registry::NullableULongLong* log_request_id);
+
+
+    CORBA::ULongLong create_personal_info_request_non_registry_email(
+            const char* contact_handle,
+            Registry::NullableULongLong* log_request_id,
+            Registry::PublicRequest::ConfirmedBy::Type confirmation_method,
+            const char* specified_email);
+
     Registry::Buffer* create_public_request_pdf(CORBA::ULongLong public_request_id, Registry::PublicRequest::Language::Type lang);
 
 private:
