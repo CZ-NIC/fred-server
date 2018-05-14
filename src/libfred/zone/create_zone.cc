@@ -37,7 +37,8 @@ namespace Zone {
     unsigned long long CreateZone::exec(OperationContext& _ctx) const
     {
         const bool enum_zone = is_enum_zone(fqdn_);
-        if (!enum_zone && enum_validation_period_in_months_)
+        const bool is_set_enum_val_period = enum_validation_period_in_months_ != boost::none;
+        if (!enum_zone && is_set_enum_val_period)
         {
             throw NotEnumZone();
         }
@@ -68,12 +69,12 @@ namespace Zone {
                 const unsigned long long id = static_cast<unsigned long long>(create_result[0][0]);
                 return id;
             }
-            throw CreateZoneException();
         }
         catch (const std::exception&)
         {
             throw CreateZoneException();
         }
+        throw CreateZoneException();
     }
 
 } // namespace LibFred::Zone

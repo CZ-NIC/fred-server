@@ -40,7 +40,7 @@ UpdateZone& UpdateZone::set_enum_validation_period(const int _enum_validation_pe
     return *this;
 }
 
-UpdateZone& UpdateZone::set_sending_sending_warning_letter(const bool _sending_warning_letter)
+UpdateZone& UpdateZone::set_sending_warning_letter(const bool _sending_warning_letter)
 {
     sending_warning_letter_ = _sending_warning_letter;
     return *this;
@@ -48,13 +48,17 @@ UpdateZone& UpdateZone::set_sending_sending_warning_letter(const bool _sending_w
 
 unsigned long long UpdateZone::exec(OperationContext& _ctx) const
 {
-    const bool is_data_for_update = (expiration_period_min_in_months_ || expiration_period_max_in_months_ || enum_validation_period_in_months_ || sending_warning_letter_);
+    const bool is_data_for_update = (expiration_period_min_in_months_ != boost::none
+            || expiration_period_max_in_months_ != boost::none
+            || enum_validation_period_in_months_ != boost::none
+            || sending_warning_letter_ != boost::none);
     if (!is_data_for_update)
     {
         throw NoZoneData();
     }
 
-    if (enum_validation_period_in_months_ && !is_enum_zone(fqdn_))
+    const bool is_set_enum_val_period = enum_validation_period_in_months_ != boost::none;
+    if (is_set_enum_val_period && !is_enum_zone(fqdn_))
     {
         throw NotEnumZone();
     }
@@ -64,24 +68,24 @@ unsigned long long UpdateZone::exec(OperationContext& _ctx) const
     Util::HeadSeparator set_separator(" SET ", ", ");
 
     object_sql << "UPDATE zone";
-    if (expiration_period_min_in_months_)
+    if (expiration_period_min_in_months_ != boost::none)
     {
         params.push_back(*expiration_period_min_in_months_);
         object_sql << set_separator.get() <<  "ex_period_min = $" << params.size() << "::integer";
     }
-    if (expiration_period_max_in_months_)
+    if (expiration_period_max_in_months_ != boost::none)
     {
         params.push_back(*expiration_period_max_in_months_);
         object_sql << set_separator.get() <<  "ex_period_max = $" << params.size() << "::integer";
     }
-    if (enum_validation_period_in_months_)
+    if (enum_validation_period_in_months_ != boost::none)
     {
         params.push_back(*enum_validation_period_in_months_);
         object_sql << set_separator.get() <<  "val_period = $" << params.size() << "::integer";
     }
-    if (sending_warning_letter_)
+    if (sending_warning_letter_ != boost::none)
     {
-        params.push_back(sending_warning_letter_.get());
+        params.push_back(*sending_warning_letter_);
         object_sql << set_separator.get() <<  "warning_letter = $" << params.size() << "::bool";
     }
 

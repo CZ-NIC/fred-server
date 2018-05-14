@@ -50,9 +50,9 @@ InfoZoneData InfoZone::exec(OperationContext& _ctx) const
     info_zone_data.expiration_period_max_in_months = static_cast<int>(result[0]["ex_period_max"]);
     info_zone_data.expiration_period_min_in_months = static_cast<int>(result[0]["ex_period_min"]);
     info_zone_data.enum_validation_period_in_months = static_cast<int>(result[0]["val_period"]);
-    info_zone_data.dots_max = result[0]["dots_max"];
-    info_zone_data.enum_zone = result[0]["enum_zone"];
-    info_zone_data.sending_warning_letter = result[0]["warning_letter"];
+    info_zone_data.dots_max = static_cast<int>(result[0]["dots_max"]);
+    info_zone_data.enum_zone = static_cast<bool>(result[0]["enum_zone"]);
+    info_zone_data.sending_warning_letter = static_cast<bool>(result[0]["warning_letter"]);
     return info_zone_data;
 }
 
