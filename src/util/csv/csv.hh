@@ -32,9 +32,8 @@ class CsvCells
 {
 public:
     CsvCells(const std::initializer_list<std::initializer_list<std::string>>& _cells);
-    explicit operator std::string() const;
+    template<char Separator> std::string to_string() const;
 private:
-    constexpr static char separator = ';';
     std::vector<std::vector<std::string>> data;
 };
 

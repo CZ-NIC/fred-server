@@ -31,11 +31,12 @@ CsvCells::CsvCells(const std::initializer_list<std::initializer_list<std::string
     data.reserve(_cells.size());
     for (const auto& row: _cells)
     {
-        data.push_back(std::vector<std::string>(row.begin(), row.end()));
+        data.emplace_back(row.begin(), row.end());
     }
 }
 
-CsvCells::operator std::string() const
+template<char Separator>
+std::string CsvCells::to_string() const
 {
     std::size_t no_of_columns = 0;
     for (const auto& row: data)
@@ -53,7 +54,7 @@ CsvCells::operator std::string() const
         for (const auto& cell: row)
         {
             if (std::find_if(cell.begin(), cell.end(),
-                             [](char c){return c == '"' || c == separator || c == '\n';}) != cell.end())
+                             [](char c){return c == '"' || c == Separator || c == '\n';}) != cell.end())
             {
                 output << '"';
                 if (cell.find('"') != std::string::npos)
@@ -79,18 +80,20 @@ CsvCells::operator std::string() const
             }
             if (remaining_no_of_separators > 0)
             {
-                output << separator;
+                output << Separator;
                 --remaining_no_of_separators;
             }
         }
         for (std::size_t i = remaining_no_of_separators; i > 0; --i)
         {
-            output << separator;
+            output << Separator;
         }
         output << "\r\n";
     }
     return output.str();
 }
+
+template std::string CsvCells::to_string<';'>() const;
 
 } // namespace Fred::Util
 } // namespace Fred
