@@ -26,6 +26,34 @@ namespace Fred
 namespace Util
 {
 
+namespace
+{
+
+std::string escape_csv_cell(const std::string& _cell)
+{
+    std::ostringstream output;
+    output << '"';
+    if (_cell.find('"') != std::string::npos)
+    {
+        for (const char c: _cell)
+        {
+            if (c == '"')
+            {
+                output << c;
+            }
+            output << c;
+        }
+    }
+    else
+    {
+        output << _cell;
+    }
+    output << '"';
+    return output.str();
+}
+
+} // Fred::Util::{anonymous}
+
 CsvCells::CsvCells(const std::initializer_list<std::initializer_list<std::string>>& _cells)
 {
     data.reserve(_cells.size());
@@ -56,23 +84,7 @@ std::string CsvCells::to_string() const
             if (std::find_if(cell.begin(), cell.end(),
                              [](char c){return c == '"' || c == Separator || c == '\n';}) != cell.end())
             {
-                output << '"';
-                if (cell.find('"') != std::string::npos)
-                {
-                    for (const char c: cell)
-                    {
-                        if (c == '"')
-                        {
-                            output << c;
-                        }
-                        output << c;
-                    }
-                }
-                else
-                {
-                    output << cell;
-                }
-                output << '"';
+                output << escape_csv_cell(cell);
             }
             else
             {
