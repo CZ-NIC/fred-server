@@ -28,8 +28,6 @@ namespace Fred
 namespace Util
 {
 
-namespace
-{
 template<char Separator>
 std::string escape_csv_cell(const std::string& _cell)
 {
@@ -64,8 +62,6 @@ std::string escape_csv_cell(const std::string& _cell)
     }
     return output.str();
 }
-
-} // namespace Fred::Util::{anonymous}
 
 template<char Separator, typename T>
 std::string to_csv_string_using_separator(const T& list_of_rows)
