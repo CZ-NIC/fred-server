@@ -28,12 +28,12 @@ namespace Fred
 namespace Util
 {
 
-template<char Separator>
+template<char separator>
 std::string escape_csv_cell(const std::string& _cell)
 {
     std::ostringstream output;
     if (std::find_if(_cell.begin(), _cell.end(),
-                     [](char c){return c == '"' || c == Separator || c == '\n';}) != _cell.end())
+                     [](char c){return c == '"' || c == separator || c == '\n';}) != _cell.end())
     {
         output << '"';
         if (_cell.find('"') != std::string::npos)
@@ -63,7 +63,7 @@ std::string escape_csv_cell(const std::string& _cell)
     return output.str();
 }
 
-template<char Separator, typename T>
+template<char separator, typename T>
 std::string to_csv_string_using_separator(const T& list_of_rows)
 {
     std::size_t no_of_columns = 0;
@@ -81,16 +81,16 @@ std::string to_csv_string_using_separator(const T& list_of_rows)
         auto remaining_no_of_separators = no_of_separators;
         for (const auto& cell: row)
         {
-            output << escape_csv_cell<Separator>(cell);
+            output << escape_csv_cell<separator>(cell);
             if (remaining_no_of_separators > 0)
             {
-                output << Separator;
+                output << separator;
                 --remaining_no_of_separators;
             }
         }
         for (; remaining_no_of_separators > 0; --remaining_no_of_separators)
         {
-            output << Separator;
+            output << separator;
         }
         output << "\r\n";
     }
