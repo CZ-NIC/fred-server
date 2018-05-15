@@ -69,7 +69,7 @@ std::string to_csv_string_using_separator(const T& list_of_rows)
     std::size_t no_of_columns = 0;
     for (const auto& cell: list_of_rows)
     {
-        if(cell.size() > no_of_columns)
+        if (cell.size() > no_of_columns)
         {
             no_of_columns = cell.size();
         }
