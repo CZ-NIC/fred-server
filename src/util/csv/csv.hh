@@ -22,6 +22,7 @@
 #include <initializer_list>
 #include <string>
 #include <vector>
+#include <type_traits>
 
 namespace Fred
 {
@@ -81,6 +82,7 @@ std::string to_csv_string_using_separator(const T& list_of_rows)
         auto remaining_no_of_separators = no_of_separators;
         for (const auto& cell: row)
         {
+            static_assert(std::is_same<decltype(cell), const std::string&>::value, "Cell has to be std::string");
             output << escape_csv_cell<separator>(cell);
             if (remaining_no_of_separators > 0)
             {
