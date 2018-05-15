@@ -2698,8 +2698,7 @@ src_bin_cli_fred_admin_SOURCES = \
 		src/bin/cli/public_request_params.hh \
 		src/libfred/public_request/public_request_on_status_action.hh \
 		src/bin/cli/public_request_impl.hh \
-		src/util/csv/csv.hh \
-		src/util/csv/csv.cc
+		src/util/csv/csv.hh
 
 
 src_bin_cli_fred_admin_LDFLAGS = \

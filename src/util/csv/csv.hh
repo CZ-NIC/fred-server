@@ -28,14 +28,78 @@ namespace Fred
 namespace Util
 {
 
-class CsvCells
+namespace
 {
-public:
-    CsvCells(const std::initializer_list<std::initializer_list<std::string>>& _cells);
-    template<char Separator> std::string to_string() const;
-private:
-    std::vector<std::vector<std::string>> data;
-};
+template<char Separator>
+std::string escape_csv_cell(const std::string& _cell)
+{
+    std::ostringstream output;
+    if (std::find_if(_cell.begin(), _cell.end(),
+                     [](char c){return c == '"' || c == Separator || c == '\n';}) != _cell.end())
+    {
+        output << '"';
+        if (_cell.find('"') != std::string::npos)
+        {
+            for (const char c: _cell)
+            {
+                if (c == '"')
+                {
+                    output << R"("")";
+                }
+                else
+                {
+                    output << c;
+                }
+            }
+        }
+        else
+        {
+            output << _cell;
+        }
+        output << '"';
+    }
+    else
+    {
+        output << _cell;
+    }
+    return output.str();
+}
+
+} // namespace Fred::Util::{anonymous}
+
+template<char Separator, typename T>
+std::string to_csv_string_using_separator(const T& list_of_rows)
+{
+    std::size_t no_of_columns = 0;
+    for (const auto& cell: list_of_rows)
+    {
+        if(cell.size() > no_of_columns)
+        {
+            no_of_columns = cell.size();
+        }
+    }
+    const std::size_t no_of_separators = no_of_columns > 0 ? no_of_columns - 1 : 0;
+    std::ostringstream output;
+    for (const auto& row: list_of_rows)
+    {
+        auto remaining_no_of_separators = no_of_separators;
+        for (const auto& cell: row)
+        {
+            output << escape_csv_cell<Separator>(cell);
+            if (remaining_no_of_separators > 0)
+            {
+                output << Separator;
+                --remaining_no_of_separators;
+            }
+        }
+        for (; remaining_no_of_separators > 0; --remaining_no_of_separators)
+        {
+            output << Separator;
+        }
+        output << "\r\n";
+    }
+    return output.str();
+}
 
 } // namespace Fred::Util
 } // namespace Fred
