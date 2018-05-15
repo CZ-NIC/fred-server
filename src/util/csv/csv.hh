@@ -19,28 +19,82 @@
 #ifndef CSV_HH_B446365F01434DEBABBE5930EEBA1DAA
 #define CSV_HH_B446365F01434DEBABBE5930EEBA1DAA
 
-#include "src/util/csv/rapidcsv.hh"
-
-#include <vector>
 #include <string>
+#include <type_traits>
 
 namespace Fred
 {
 namespace Util
 {
 
-std::string to_csv_string(const std::vector<std::vector<std::string>>& _cells)
+template<char separator>
+std::string escape_csv_cell(const std::string& _cell)
 {
-    rapidcsv::Document doc(std::string(), rapidcsv::LabelParams(-1, -1), rapidcsv::SeparatorParams(';', true));
-    for (std::size_t i = 0; i < _cells.size(); ++i)
+    std::ostringstream output;
+    if (std::find_if(_cell.begin(), _cell.end(),
+                     [](char c){return c == '"' || c == separator || c == '\n';}) != _cell.end())
     {
-        const std::size_t column_size = _cells[i].size();
-        for (std::size_t j = 0; j < column_size; ++j)
+        output << '"';
+        if (_cell.find('"') != std::string::npos)
         {
-            doc.SetCell<std::string>(j, i, _cells[i][j]);
+            for (const char c: _cell)
+            {
+                if (c == '"')
+                {
+                    output << R"("")";
+                }
+                else
+                {
+                    output << c;
+                }
+            }
+        }
+        else
+        {
+            output << _cell;
+        }
+        output << '"';
+    }
+    else
+    {
+        output << _cell;
+    }
+    return output.str();
+}
+
+template<char separator, typename T>
+std::string to_csv_string_using_separator(const T& list_of_rows)
+{
+    std::size_t no_of_columns = 0;
+    for (const auto& cell: list_of_rows)
+    {
+        if (cell.size() > no_of_columns)
+        {
+            no_of_columns = cell.size();
         }
     }
-    return doc.ToString();
+    const std::size_t no_of_separators = no_of_columns > 0 ? no_of_columns - 1 : 0;
+    std::ostringstream output;
+    for (const auto& row: list_of_rows)
+    {
+        auto remaining_no_of_separators = no_of_separators;
+        for (const auto& cell: row)
+        {
+            static_assert(std::is_same<decltype(cell), const std::string&>::value, "Cell has to be std::string");
+            output << escape_csv_cell<separator>(cell);
+            if (remaining_no_of_separators > 0)
+            {
+                output << separator;
+                --remaining_no_of_separators;
+            }
+        }
+        for (; remaining_no_of_separators > 0; --remaining_no_of_separators)
+        {
+            output << separator;
+        }
+        output << "\r\n";
+    }
+    return output.str();
 }
 
 } // namespace Fred::Util
