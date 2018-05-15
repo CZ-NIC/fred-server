@@ -29,26 +29,38 @@ namespace Util
 namespace
 {
 
+template<char Separator>
 std::string escape_csv_cell(const std::string& _cell)
 {
     std::ostringstream output;
-    output << '"';
-    if (_cell.find('"') != std::string::npos)
+    if (std::find_if(_cell.begin(), _cell.end(),
+                     [](char c){return c == '"' || c == Separator || c == '\n';}) != _cell.end())
     {
-        for (const char c: _cell)
+        output << '"';
+        if (_cell.find('"') != std::string::npos)
         {
-            if (c == '"')
+            for (const char c: _cell)
             {
-                output << c;
+                if (c == '"')
+                {
+                    output << R"("")";
+                }
+                else
+                {
+                    output << c;
+                }
             }
-            output << c;
         }
+        else
+        {
+            output << _cell;
+        }
+        output << '"';
     }
     else
     {
         output << _cell;
     }
-    output << '"';
     return output.str();
 }
 
@@ -81,22 +93,14 @@ std::string CsvCells::to_string() const
         auto remaining_no_of_separators = no_of_separators;
         for (const auto& cell: row)
         {
-            if (std::find_if(cell.begin(), cell.end(),
-                             [](char c){return c == '"' || c == Separator || c == '\n';}) != cell.end())
-            {
-                output << escape_csv_cell(cell);
-            }
-            else
-            {
-                output << cell;
-            }
+            output << escape_csv_cell<Separator>(cell);
             if (remaining_no_of_separators > 0)
             {
                 output << Separator;
                 --remaining_no_of_separators;
             }
         }
-        for (std::size_t i = remaining_no_of_separators; i > 0; --i)
+        for (; remaining_no_of_separators > 0; --remaining_no_of_separators)
         {
             output << Separator;
         }

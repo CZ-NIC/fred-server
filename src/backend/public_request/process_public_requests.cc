@@ -188,6 +188,7 @@ unsigned long long send_personalinfo(
     std::vector<unsigned long long> attachments;
     attachments.reserve(2);
     constexpr unsigned db_enum_filetype_dot_personal_info_csv = 12;
+    constexpr char separator = ';';
     {
         std::string ident_type_repr;
         if (ident_type == "RC")
@@ -234,7 +235,7 @@ unsigned long long send_personalinfo(
             {"Notifikační e-mail", info_contact_data.notifyemail.get_value_or_default()},
             {"Určený registrátor", info_registrar_data.name.get_value_or_default()}
         };
-        const std::string csv_document_content = cells.to_string<';'>();
+        const std::string csv_document_content = cells.to_string<separator>();
 
         std::vector<char> in_buffer(csv_document_content.begin(), csv_document_content.end());
         const unsigned long long attachment_id = _file_manager_client->upload(
@@ -291,7 +292,7 @@ unsigned long long send_personalinfo(
             {"Notification e-mail", info_contact_data.notifyemail.get_value_or_default()},
             {"Designated registrar", info_registrar_data.name.get_value_or_default()}
         };
-        const std::string csv_document_content = cells.to_string<';'>();
+        const std::string csv_document_content = cells.to_string<separator>();
 
         std::vector<char> in_buffer(csv_document_content.begin(), csv_document_content.end());
         const unsigned long long attachment_id = _file_manager_client->upload(
