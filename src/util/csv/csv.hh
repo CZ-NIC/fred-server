@@ -19,9 +19,7 @@
 #ifndef CSV_HH_B446365F01434DEBABBE5930EEBA1DAA
 #define CSV_HH_B446365F01434DEBABBE5930EEBA1DAA
 
-#include <initializer_list>
 #include <string>
-#include <vector>
 #include <type_traits>
 
 namespace Fred
