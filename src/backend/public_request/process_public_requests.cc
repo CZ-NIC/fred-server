@@ -294,7 +294,7 @@ unsigned long long send_personalinfo(
 
 } // namespace Fred::Backend::PublicRequest::{anonymous}
 
-void process_public_request_personal_info_answered(
+void process_public_request_personal_info_resolved(
         unsigned long long _public_request_id,
         const LibFred::PublicRequestTypeIface& _public_request_type,
         std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager,

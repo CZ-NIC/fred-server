@@ -273,7 +273,7 @@ ContactConditionalIdentification::get_public_request_types_to_cancel_on_update(
 {
     PublicRequestTypes result;
     if ((_old_status == LibFred::PublicRequest::Status::opened) &&
-        (_new_status == LibFred::PublicRequest::Status::answered))
+        (_new_status == LibFred::PublicRequest::Status::resolved))
     {
         result.insert(IfacePtr(new ContactConditionalIdentificationForInvalidationOnly));
     }
@@ -314,7 +314,7 @@ ContactIdentification::get_public_request_types_to_cancel_on_update(
 {
     PublicRequestTypes result;
     if ((_old_status == LibFred::PublicRequest::Status::opened) &&
-        (_new_status == LibFred::PublicRequest::Status::answered))
+        (_new_status == LibFred::PublicRequest::Status::resolved))
     {
     }
     return result;
@@ -351,7 +351,7 @@ ContactReidentification::get_public_request_types_to_cancel_on_update(
 {
     PublicRequestTypes result;
     if ((_old_status == LibFred::PublicRequest::Status::opened) &&
-        (_new_status == LibFred::PublicRequest::Status::answered))
+        (_new_status == LibFred::PublicRequest::Status::resolved))
     {
     }
     return result;
@@ -388,7 +388,7 @@ ContactValidation::get_public_request_types_to_cancel_on_update(
 {
     PublicRequestTypes result;
     if ((_old_status == LibFred::PublicRequest::Status::opened) &&
-        (_new_status == LibFred::PublicRequest::Status::answered))
+        (_new_status == LibFred::PublicRequest::Status::resolved))
     {
     }
     return result;
@@ -417,7 +417,7 @@ ConditionallyIdentifiedContactTransfer::get_public_request_types_to_cancel_on_up
 {
     PublicRequestTypes result;
     if ((_old_status == LibFred::PublicRequest::Status::opened) &&
-        (_new_status == LibFred::PublicRequest::Status::answered))
+        (_new_status == LibFred::PublicRequest::Status::resolved))
     {
         result.insert(IfacePtr(new ContactIdentificationForInvalidationOnly));
         result.insert(IfacePtr(new PrevalidatedContactTransfer));
@@ -455,7 +455,7 @@ IdentifiedContactTransfer::get_public_request_types_to_cancel_on_update(
 {
     PublicRequestTypes result;
     if ((_old_status == LibFred::PublicRequest::Status::opened) &&
-        (_new_status == LibFred::PublicRequest::Status::answered))
+        (_new_status == LibFred::PublicRequest::Status::resolved))
     {
     }
     return result;
@@ -493,7 +493,7 @@ PrevalidatedUnidentifiedContactTransfer::get_public_request_types_to_cancel_on_u
 {
     PublicRequestTypes result;
     if ((_old_status == LibFred::PublicRequest::Status::opened) &&
-        (_new_status == LibFred::PublicRequest::Status::answered))
+        (_new_status == LibFred::PublicRequest::Status::resolved))
     {
     }
     return result;
@@ -531,7 +531,7 @@ PrevalidatedContactTransfer::get_public_request_types_to_cancel_on_update(
 {
     PublicRequestTypes result;
     if ((_old_status == LibFred::PublicRequest::Status::opened) &&
-        (_new_status == LibFred::PublicRequest::Status::answered))
+        (_new_status == LibFred::PublicRequest::Status::resolved))
     {
     }
     return result;

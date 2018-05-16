@@ -1564,8 +1564,8 @@ Registry::PublicRequest::Detail* ccReg_Session_i::createPublicRequestDetail(LibF
     case LibFred::PublicRequest::OPENED:
       detail->status = Registry::PublicRequest::OPENED;
       break;
-    case LibFred::PublicRequest::PRS_ANSWERED:
-      detail->status = Registry::PublicRequest::PRS_ANSWERED;
+    case LibFred::PublicRequest::PRS_RESOLVED:
+      detail->status = Registry::PublicRequest::PRS_RESOLVED;
       break;
     case LibFred::PublicRequest::PRS_INVALID:
       detail->status = Registry::PublicRequest::PRS_INVALID;

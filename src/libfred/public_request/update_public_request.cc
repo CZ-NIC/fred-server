@@ -145,13 +145,13 @@ UpdatePublicRequest::Result UpdatePublicRequest::update(OperationContext &_ctx,
     if (status_.isset()) {
         try {
             switch (status_.get_value()) {
-            case PublicRequest::Status::answered:
+            case PublicRequest::Status::resolved:
                 break;
             case PublicRequest::Status::invalidated:
                 stop_letter_sending(_ctx, _public_request_id);
                 break;
             default:
-                throw std::runtime_error("unable to set other public request state than 'answered' or 'invalidated'");
+                throw std::runtime_error("unable to set other public request state than 'resolved' or 'invalidated'");
             }
             sql_set << "status=(SELECT id FROM enum_public_request_status WHERE name=$"
                     << params.add(Conversion::Enums::to_db_handle(status_.get_value()))

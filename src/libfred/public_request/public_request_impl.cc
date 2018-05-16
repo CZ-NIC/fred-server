@@ -45,8 +45,8 @@ std::string Status2Str(Status_PR _status)
     {
         case OPENED:
             return "Opened";
-        case PRS_ANSWERED:
-            return "Answered";
+        case PRS_RESOLVED:
+            return "Resolved";
         case PRS_INVALID:
             return "Invalidated";
         default:
@@ -313,7 +313,7 @@ void PublicRequestImpl::save()
         conn.exec(update_request);
 
         LOGGER(PACKAGE).info(boost::format("request id='%1%' updated successfully -- %2%") %
-                          id_ % (status_ == PRS_INVALID ? "invalidated" : "answered"));
+                          id_ % (status_ == PRS_INVALID ? "invalidated" : "resolved"));
       }
       catch (Database::Exception& ex) {
         LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
@@ -629,7 +629,7 @@ void PublicRequestImpl::process(
       }
       else {
           processAction(check);
-          status_ = PRS_ANSWERED;
+          status_ = PRS_RESOLVED;
           answer_email_id_ = sendEmail();
       }
       save();
@@ -756,7 +756,7 @@ void PublicRequestAuthImpl::process(
     if (status_ != OPENED) {
         throw AlreadyProcessed(
                 this->getId(),
-                this->getStatus() == PRS_ANSWERED ? true : false);
+                this->getStatus() == PRS_RESOLVED ? true : false);
     }
 
     resolve_time_ = ptime(boost::posix_time::second_clock::local_time());
@@ -768,7 +768,7 @@ void PublicRequestAuthImpl::process(
     }
     else {
         processAction(_check);
-        status_ = PRS_ANSWERED;
+        status_ = PRS_RESOLVED;
     }
     save();
 

@@ -1077,7 +1077,7 @@ Generate::MessageId send_email(
                               birthdate_from_string_to_date(contact_data.ssn.get_value_or_default()))
                     : std::string();
     mail_params["address"] = collect_address(contact_data.place);
-    mail_params["status"] = "2"; // public_request.status == "answered" ? "1" : "2"
+    mail_params["status"] = "2"; // public_request.status == "resolved" ? "1" : "2"
     mail_params["hostname"] = _link_hostname_part;
     mail_params["firstname"] = firstname;
     mail_params["lastname"] = lastname;

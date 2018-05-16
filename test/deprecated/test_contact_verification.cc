@@ -425,12 +425,12 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
     cv->processConditionalIdentification(another_request_id
             , password, request_id);
 
-    //check answered cci request
+    //check resolved cci request
     check_public_request_on_contact(fcvc
             , Fred::Backend::ContactVerification::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION
-            , LibFred::PublicRequest::PRS_ANSWERED);
+            , LibFred::PublicRequest::PRS_RESOLVED);
 
-    //check new ci request
+    //check opened ci request
     check_public_request_on_contact(fcvc
             , Fred::Backend::ContactVerification::PublicRequest::PRT_CONTACT_IDENTIFICATION
             , LibFred::PublicRequest::OPENED);
@@ -493,10 +493,10 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
 
     cv->processIdentification(fcvc.handle, password, request_id);
 
-    //check answered ci request
+    //check resolved ci request
     check_public_request_on_contact(fcvc
             , Fred::Backend::ContactVerification::PublicRequest::PRT_CONTACT_IDENTIFICATION
-            , LibFred::PublicRequest::PRS_ANSWERED);
+            , LibFred::PublicRequest::PRS_RESOLVED);
 
     {
         //get db connection
@@ -789,10 +789,10 @@ public:
                 //get db connection
                 Database::Connection conn = Database::Manager::acquire();
 
-                //check cci request answered (1)
+                //check cci request resolved (1)
                 check_public_request_on_contact(fixture_ptr_->fcvc
                         , Fred::Backend::ContactVerification::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION
-                        , LibFred::PublicRequest::PRS_ANSWERED);
+                        , LibFred::PublicRequest::PRS_RESOLVED);
 
                 //check ci request new 0
                 check_public_request_on_contact(fixture_ptr_->fcvc
@@ -867,10 +867,10 @@ public:
                 //get db connection
                 Database::Connection conn = Database::Manager::acquire();
 
-                //check ci request answered (1)
+                //check ci request resolved (1)
                 check_public_request_on_contact(fixture_ptr_->fcvc
                         , Fred::Backend::ContactVerification::PublicRequest::PRT_CONTACT_IDENTIFICATION
-                        , LibFred::PublicRequest::PRS_ANSWERED);
+                        , LibFred::PublicRequest::PRS_RESOLVED);
 
                 //check identified contact state
                 BOOST_CHECK(::LibFred::object_has_state(

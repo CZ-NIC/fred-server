@@ -1538,7 +1538,7 @@ LibFred::UpdatePublicRequest::Result answer(
         const std::string& _reason,
         MojeIdImpl::LogRequestId _log_request_id)
 {
-    return set_status(_locked_request, _request_type, LibFred::PublicRequest::Status::answered, _reason, _log_request_id);
+    return set_status(_locked_request, _request_type, LibFred::PublicRequest::Status::resolved, _reason, _log_request_id);
 }
 
 LibFred::UpdatePublicRequest::Result invalidate(
@@ -1712,7 +1712,7 @@ MojeIdImpl::ContactId MojeIdImpl::process_registration_request(
             {
                 case LibFred::PublicRequest::Status::opened:
                     break;
-                case LibFred::PublicRequest::Status::answered:
+                case LibFred::PublicRequest::Status::resolved:
                     throw MojeIdImplData::IdentificationAlreadyProcessed();
                 case LibFred::PublicRequest::Status::invalidated:
                     throw MojeIdImplData::IdentificationAlreadyInvalidated();
@@ -2392,7 +2392,7 @@ void MojeIdImpl::validate_contact(
                         get_optional_log_request_id(_log_request_id));
         const LibFred::PublicRequestLockGuardById locked_request(ctx, public_request_id);
         LibFred::UpdatePublicRequest().set_registrar_id(mojeid_registrar_id_).set_status(
-                LibFred::PublicRequest::Status::answered).set_reason("MojeId validate_contact function has been called").exec(locked_request,
+                LibFred::PublicRequest::Status::resolved).set_reason("MojeId validate_contact function has been called").exec(locked_request,
                 Fred::Backend::MojeId::PublicRequest::ContactValidation().iface(),
                 get_optional_log_request_id(_log_request_id));
         LibFred::StatusList to_set;

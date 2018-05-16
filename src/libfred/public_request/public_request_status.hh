@@ -41,7 +41,7 @@ struct Status
     enum Enum//enum_public_request_status table
     {
         opened,
-        answered,
+        resolved,
         invalidated,
     };
 };
@@ -57,7 +57,7 @@ inline std::string to_db_handle(LibFred::PublicRequest::Status::Enum value)
     switch (value)
     {
         case LibFred::PublicRequest::Status::opened: return "opened";
-        case LibFred::PublicRequest::Status::answered: return "answered";
+        case LibFred::PublicRequest::Status::resolved: return "resolved";
         case LibFred::PublicRequest::Status::invalidated: return "invalidated";
     }
     throw std::invalid_argument("value doesn't exist in LibFred::PublicRequest::Status::Enum");
@@ -67,7 +67,7 @@ template < >
 inline LibFred::PublicRequest::Status::Enum from_db_handle< LibFred::PublicRequest::Status >(const std::string &db_handle)
 {
     if (to_db_handle(LibFred::PublicRequest::Status::opened) == db_handle) { return LibFred::PublicRequest::Status::opened; }
-    if (to_db_handle(LibFred::PublicRequest::Status::answered) == db_handle) { return LibFred::PublicRequest::Status::answered; }
+    if (to_db_handle(LibFred::PublicRequest::Status::resolved) == db_handle) { return LibFred::PublicRequest::Status::resolved; }
     if (to_db_handle(LibFred::PublicRequest::Status::invalidated) == db_handle) { return LibFred::PublicRequest::Status::invalidated; }
     throw std::invalid_argument("handle \"" + db_handle + "\" isn't convertible to LibFred::PublicRequest::Status::Enum");
 }

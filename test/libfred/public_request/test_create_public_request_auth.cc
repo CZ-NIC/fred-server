@@ -98,7 +98,7 @@ private:
     {
         PublicRequestTypes result;
         if ((_old_status == ::LibFred::PublicRequest::Status::opened) &&
-            (_new_status == ::LibFred::PublicRequest::Status::answered)) {
+            (_new_status == ::LibFred::PublicRequest::Status::resolved)) {
         }
         return result;
     }

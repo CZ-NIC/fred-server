@@ -912,7 +912,7 @@ ccReg::TID ccReg_Admin_i::resendPin3Letter(ccReg::TID publicRequestId)
         Database::Result res = conn.exec_params(
             "SELECT (SELECT name "            // [0] - type of request
                     "FROM enum_public_request_type WHERE id=pr.request_type),"
-                   "(SELECT name "            // [1] - request status new/answered/invalidated
+                   "(SELECT name "            // [1] - request status opened/resolved/invalidated
                     "FROM enum_public_request_status WHERE id=pr.status),"
                    "prmm.id IS NULL,"         // [2] - have any message
                    "prmm.message_archive_id," // [3] - sms/letter id
@@ -1035,7 +1035,7 @@ ccReg::TID ccReg_Admin_i::resendPin2SMS(ccReg::TID publicRequestId)
         Database::Result res = conn.exec_params(
             "SELECT (SELECT name "            // [0] - type of request
                     "FROM enum_public_request_type WHERE id=pr.request_type),"
-                   "(SELECT name "            // [1] - request status new/answered/invalidated
+                   "(SELECT name "            // [1] - request status opened/resolved/invalidated
                     "FROM enum_public_request_status WHERE id=pr.status),"
                    "prmm.id IS NULL,"         // [2] - have any message
                    "prmm.message_archive_id," // [3] - sms/letter id
