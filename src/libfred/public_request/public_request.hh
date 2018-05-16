@@ -96,7 +96,7 @@ typedef std::string Type;
 enum Status_PR { // suffix to fix name clash with public_request_status.h status struct
   OPENED,        ///< Request was created and waiting for autorization
   PRS_RESOLVED,  ///< Email with answer was sent
-  PRS_INVALID    ///< Time passed without authorization
+  PRS_INVALIDATED    ///< Time passed without authorization
 };
 
 std::string Status2Str(Status_PR _status); 

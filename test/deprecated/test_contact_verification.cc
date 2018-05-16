@@ -753,7 +753,7 @@ public:
                 fixture_ptr_->my_new_another_request_id = another_request_id;
                 fixture_ptr_->my_new_password = mypassword;
             }
-            else if(my_public_request_status == LibFred::PublicRequest::PRS_INVALID)
+            else if(my_public_request_status == LibFred::PublicRequest::PRS_INVALIDATED)
             {
             BOOST_CHECK_EXCEPTION(cv->processConditionalIdentification(another_request_id
                     , mypassword, request_id)

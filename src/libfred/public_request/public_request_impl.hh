@@ -140,7 +140,7 @@ public:
 
     virtual void invalidateAction();
 
-    virtual void process(bool invalid, bool check, const unsigned long long &_request_id);
+    virtual void process(bool invalidated, bool check, const unsigned long long &_request_id);
 
     virtual unsigned getPDFType() const;
 
@@ -176,7 +176,7 @@ public:
 
     virtual void save();
 
-    virtual void process(bool _invalid, bool _check, const unsigned long long &_request_id);
+    virtual void process(bool _invalidated, bool _check, const unsigned long long &_request_id);
 
     /* just to be sure of empty impl (if someone would change base impl) */
     virtual void postCreate();
