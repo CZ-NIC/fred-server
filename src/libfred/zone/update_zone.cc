@@ -57,8 +57,8 @@ unsigned long long UpdateZone::exec(OperationContext& _ctx) const
         throw NoZoneData();
     }
 
-    const bool is_set_enum_val_period = enum_validation_period_in_months_ != boost::none;
-    if (is_set_enum_val_period && !is_enum_zone(fqdn_))
+    const bool enum_val_period_is_set = enum_validation_period_in_months_ != boost::none;
+    if (enum_val_period_is_set && !is_enum_zone(fqdn_))
     {
         throw NotEnumZone();
     }

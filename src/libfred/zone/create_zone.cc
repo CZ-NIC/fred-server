@@ -37,8 +37,8 @@ namespace Zone {
     unsigned long long CreateZone::exec(OperationContext& _ctx) const
     {
         const bool enum_zone = is_enum_zone(fqdn_);
-        const bool is_set_enum_val_period = enum_validation_period_in_months_ != boost::none;
-        if (!enum_zone && is_set_enum_val_period)
+        const bool enum_val_period_is_set = enum_validation_period_in_months_ != boost::none;
+        if (!enum_zone && enum_val_period_is_set)
         {
             throw NotEnumZone();
         }
