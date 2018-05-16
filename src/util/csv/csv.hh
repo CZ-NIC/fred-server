@@ -21,6 +21,8 @@
 
 #include <string>
 #include <type_traits>
+#include <algorithm>
+#include <sstream>
 
 namespace Fred
 {
