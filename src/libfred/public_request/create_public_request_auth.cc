@@ -87,7 +87,7 @@ CreatePublicRequestAuth::Result CreatePublicRequestAuth::exec(const LockedPublic
                 "SELECT eprt.id,eprs.id,NULL,$5::TEXT,$6::TEXT,NULL,$7::BIGINT,$8::BIGINT,NULL "
                 "FROM enum_public_request_type eprt,"
                      "enum_public_request_status eprs "
-                "WHERE eprt.name=$1::TEXT AND eprs.name='new' "
+                "WHERE eprt.name=$1::TEXT AND eprs.name='opened' "
                 "RETURNING id),"
                  "request_object AS ("
                 "INSERT INTO public_request_objects_map (request_id,object_id) "

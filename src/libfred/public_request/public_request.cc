@@ -376,7 +376,7 @@ public:
       " JOIN public_request_objects_map prom ON (prom.request_id=pr.id) "
       " JOIN enum_public_request_type eprt ON eprt.id = pr.request_type "
       " WHERE object_id = $1::bigint "//_contact_id
-      " AND pr.status = $2::integer AND ";// 1 - answered requests , 0 - new requests
+      " AND pr.status = $2::integer AND ";// 1 - answered requests , 0 - opened requests
 
       Util::HeadSeparator prt_separator("("," OR ");
       Database::QueryParams params;

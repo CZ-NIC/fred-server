@@ -43,8 +43,8 @@ std::string Status2Str(Status_PR _status)
 {
     switch (_status)
     {
-        case PRS_NEW:
-            return "New";
+        case OPENED:
+            return "Opened";
         case PRS_ANSWERED:
             return "Answered";
         case PRS_INVALID:
@@ -228,7 +228,7 @@ bool object_was_changed_since_request_create(const unsigned long long _request_i
 
 PublicRequestImpl::PublicRequestImpl()
     : CommonObjectImpl(0), type_(), create_request_id_(0),
-      resolve_request_id_(0), status_(PRS_NEW), answer_email_id_(0),
+      resolve_request_id_(0), status_(OPENED), answer_email_id_(0),
       registrar_id_(0), man_()
 {
 }
@@ -752,8 +752,8 @@ void PublicRequestAuthImpl::process(
         throw NotAuthenticated();
     }
 
-    /* proces only new */
-    if (status_ != PRS_NEW) {
+    /* process only opened */
+    if (status_ != OPENED) {
         throw AlreadyProcessed(
                 this->getId(),
                 this->getStatus() == PRS_ANSWERED ? true : false);

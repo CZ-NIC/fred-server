@@ -235,7 +235,7 @@ BOOST_AUTO_TEST_CASE(create_public_request_ok)
                 "id,"
                 "(SELECT name=$2::TEXT FROM enum_public_request_type WHERE id=pr.request_type),"
                 "create_time=NOW(),"
-                "(SELECT name='new' FROM enum_public_request_status WHERE id=pr.status),"
+                "(SELECT name='opened' FROM enum_public_request_status WHERE id=pr.status),"
                 "resolve_time IS NULL,"
                 "reason IS NULL,"
                 "email_to_answer IS NULL,"

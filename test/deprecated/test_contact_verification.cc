@@ -365,7 +365,7 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
     //check new cci request
     check_public_request_on_contact(fcvc
             , Fred::Backend::ContactVerification::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION
-            , LibFred::PublicRequest::PRS_NEW);
+            , LibFred::PublicRequest::OPENED);
 
     {
         //get db connection
@@ -433,7 +433,7 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
     //check new ci request
     check_public_request_on_contact(fcvc
             , Fred::Backend::ContactVerification::PublicRequest::PRT_CONTACT_IDENTIFICATION
-            , LibFred::PublicRequest::PRS_NEW);
+            , LibFred::PublicRequest::OPENED);
 
     {
         //get db connection
@@ -677,7 +677,7 @@ public:
                 //check new cci request
                 check_public_request_on_contact(fixture_ptr_->fcvc
                         , Fred::Backend::ContactVerification::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION
-                        , LibFred::PublicRequest::PRS_NEW);
+                        , LibFred::PublicRequest::OPENED);
 
                 //check invalidated cci request
                 Database::Result res_invalid_cci_request = conn.exec_params(
@@ -748,7 +748,7 @@ public:
 
             sb_ptr_->barrier1.wait();//wait for other synced threads
 
-            if(my_public_request_status == LibFred::PublicRequest::PRS_NEW)
+            if(my_public_request_status == LibFred::PublicRequest::OPENED)
             {
                 fixture_ptr_->my_new_another_request_id = another_request_id;
                 fixture_ptr_->my_new_password = mypassword;
@@ -797,7 +797,7 @@ public:
                 //check ci request new 0
                 check_public_request_on_contact(fixture_ptr_->fcvc
                         , Fred::Backend::ContactVerification::PublicRequest::PRT_CONTACT_IDENTIFICATION
-                        , LibFred::PublicRequest::PRS_NEW);
+                        , LibFred::PublicRequest::OPENED);
 
                 //check pin3 letter
                 Database::Result res_ci_letter = conn.exec_params(
