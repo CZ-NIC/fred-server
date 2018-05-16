@@ -40,6 +40,18 @@ namespace Fred {
 namespace Backend {
 namespace MojeId {
 
+class ConfiguredRegistrar
+{
+public:
+    explicit ConfiguredRegistrar(const std::string& _handle);
+    std::string handle() const;
+    unsigned long long id() const;
+
+private:
+    std::string handle_;
+    unsigned long long id_;
+};
+
 class MojeIdImpl
 {
 public:
@@ -154,9 +166,8 @@ public:
 
 private:
     const std::string server_name_;
-    const std::string mojeid_registrar_handle_;
-    const std::string system_registrar_handle_;
-    const ::size_t mojeid_registrar_id_;
+    const ConfiguredRegistrar mojeid_registrar_;
+    const ConfiguredRegistrar system_registrar_;
 };
 
 } // namespace Fred::Backend::MojeId
