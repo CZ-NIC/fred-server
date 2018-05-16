@@ -53,7 +53,7 @@ private:
         ::LibFred::PublicRequest::Status::Enum _old_status, ::LibFred::PublicRequest::Status::Enum _new_status)const
     {
         PublicRequestTypes result;
-        if ((_old_status == ::LibFred::PublicRequest::Status::active) &&
+        if ((_old_status == ::LibFred::PublicRequest::Status::opened) &&
             (_new_status == ::LibFred::PublicRequest::Status::answered)) {
         }
         return result;

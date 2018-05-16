@@ -89,7 +89,7 @@ private:
         ::LibFred::PublicRequest::Status::Enum _old_status, ::LibFred::PublicRequest::Status::Enum _new_status)const
     {
         PublicRequestTypes result;
-        if ((_old_status == ::LibFred::PublicRequest::Status::active) &&
+        if ((_old_status == ::LibFred::PublicRequest::Status::opened) &&
             (_new_status == ::LibFred::PublicRequest::Status::answered)) {
         }
         return result;
@@ -296,7 +296,7 @@ BOOST_AUTO_TEST_CASE(create_public_request_ok)
         BOOST_CHECK(!res[idx][2].isnull() && static_cast< bool >(res[idx][2]));
         const std::string status = Conversion::Enums::to_db_handle(idx == 0
                                                                    ? ::LibFred::PublicRequest::Status::invalidated
-                                                                   : ::LibFred::PublicRequest::Status::active);
+                                                                   : ::LibFred::PublicRequest::Status::opened);
         BOOST_CHECK(!res[idx][3].isnull() && (static_cast< std::string >(res[idx][3]) == status));
         BOOST_CHECK(static_cast< bool >(res[idx][4]) == (idx != 0));
         BOOST_CHECK(!res[idx][5].isnull() && static_cast< bool >(res[idx][5]));

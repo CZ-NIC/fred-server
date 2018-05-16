@@ -55,14 +55,14 @@ private:
             LibFred::PublicRequest::Status::Enum _old_status,
             LibFred::PublicRequest::Status::Enum _new_status) const
     {
-        if ((_old_status == LibFred::PublicRequest::Status::active) &&
+        if ((_old_status == LibFred::PublicRequest::Status::opened) &&
             (_new_status == LibFred::PublicRequest::Status::invalidated))
         {
             return PublicRequestTypes();
         }
         throw std::runtime_error(
                 "get_public_request_types_to_cancel_on_update method can be used "
-                "for invalidating of active requests only");
+                "for invalidating of opened requests only");
     }
 
 };
@@ -97,14 +97,14 @@ private:
             LibFred::PublicRequest::Status::Enum _old_status,
             LibFred::PublicRequest::Status::Enum _new_status) const
     {
-        if ((_old_status == LibFred::PublicRequest::Status::active) &&
+        if ((_old_status == LibFred::PublicRequest::Status::opened) &&
             (_new_status == LibFred::PublicRequest::Status::invalidated))
         {
             return PublicRequestTypes();
         }
         throw std::runtime_error(
                 "get_public_request_types_to_cancel_on_update method can be used "
-                "for invalidating of active requests only");
+                "for invalidating of opened requests only");
     }
 
 };
@@ -272,7 +272,7 @@ ContactConditionalIdentification::get_public_request_types_to_cancel_on_update(
         LibFred::PublicRequest::Status::Enum _new_status) const
 {
     PublicRequestTypes result;
-    if ((_old_status == LibFred::PublicRequest::Status::active) &&
+    if ((_old_status == LibFred::PublicRequest::Status::opened) &&
         (_new_status == LibFred::PublicRequest::Status::answered))
     {
         result.insert(IfacePtr(new ContactConditionalIdentificationForInvalidationOnly));
@@ -313,7 +313,7 @@ ContactIdentification::get_public_request_types_to_cancel_on_update(
         LibFred::PublicRequest::Status::Enum _new_status) const
 {
     PublicRequestTypes result;
-    if ((_old_status == LibFred::PublicRequest::Status::active) &&
+    if ((_old_status == LibFred::PublicRequest::Status::opened) &&
         (_new_status == LibFred::PublicRequest::Status::answered))
     {
     }
@@ -350,7 +350,7 @@ ContactReidentification::get_public_request_types_to_cancel_on_update(
         LibFred::PublicRequest::Status::Enum _new_status) const
 {
     PublicRequestTypes result;
-    if ((_old_status == LibFred::PublicRequest::Status::active) &&
+    if ((_old_status == LibFred::PublicRequest::Status::opened) &&
         (_new_status == LibFred::PublicRequest::Status::answered))
     {
     }
@@ -387,7 +387,7 @@ ContactValidation::get_public_request_types_to_cancel_on_update(
         LibFred::PublicRequest::Status::Enum _new_status) const
 {
     PublicRequestTypes result;
-    if ((_old_status == LibFred::PublicRequest::Status::active) &&
+    if ((_old_status == LibFred::PublicRequest::Status::opened) &&
         (_new_status == LibFred::PublicRequest::Status::answered))
     {
     }
@@ -416,7 +416,7 @@ ConditionallyIdentifiedContactTransfer::get_public_request_types_to_cancel_on_up
         LibFred::PublicRequest::Status::Enum _new_status) const
 {
     PublicRequestTypes result;
-    if ((_old_status == LibFred::PublicRequest::Status::active) &&
+    if ((_old_status == LibFred::PublicRequest::Status::opened) &&
         (_new_status == LibFred::PublicRequest::Status::answered))
     {
         result.insert(IfacePtr(new ContactIdentificationForInvalidationOnly));
@@ -454,7 +454,7 @@ IdentifiedContactTransfer::get_public_request_types_to_cancel_on_update(
         LibFred::PublicRequest::Status::Enum _new_status) const
 {
     PublicRequestTypes result;
-    if ((_old_status == LibFred::PublicRequest::Status::active) &&
+    if ((_old_status == LibFred::PublicRequest::Status::opened) &&
         (_new_status == LibFred::PublicRequest::Status::answered))
     {
     }
@@ -492,7 +492,7 @@ PrevalidatedUnidentifiedContactTransfer::get_public_request_types_to_cancel_on_u
         LibFred::PublicRequest::Status::Enum _new_status) const
 {
     PublicRequestTypes result;
-    if ((_old_status == LibFred::PublicRequest::Status::active) &&
+    if ((_old_status == LibFred::PublicRequest::Status::opened) &&
         (_new_status == LibFred::PublicRequest::Status::answered))
     {
     }
@@ -530,7 +530,7 @@ PrevalidatedContactTransfer::get_public_request_types_to_cancel_on_update(
         LibFred::PublicRequest::Status::Enum _new_status) const
 {
     PublicRequestTypes result;
-    if ((_old_status == LibFred::PublicRequest::Status::active) &&
+    if ((_old_status == LibFred::PublicRequest::Status::opened) &&
         (_new_status == LibFred::PublicRequest::Status::answered))
     {
     }

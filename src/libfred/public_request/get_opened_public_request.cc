@@ -1,15 +1,15 @@
-#include "src/libfred/public_request/get_active_public_request.hh"
+#include "src/libfred/public_request/get_opened_public_request.hh"
 #include "src/libfred/public_request/update_public_request.hh"
 #include "src/libfred/public_request/public_request_lock_guard.hh"
 #include "src/libfred/public_request/public_request_status.hh"
 
 namespace LibFred {
 
-GetActivePublicRequest::GetActivePublicRequest(const PublicRequestTypeIface &_type)
+GetOpenedPublicRequest::GetOpenedPublicRequest(const PublicRequestTypeIface &_type)
 :   type_(_type.get_public_request_type())
 { }
 
-PublicRequestId GetActivePublicRequest::exec(
+PublicRequestId GetOpenedPublicRequest::exec(
     OperationContext &_ctx,
     const LockedPublicRequestsOfObject &_locked_object,
     const Optional< LogRequestId > &_log_request_id)const

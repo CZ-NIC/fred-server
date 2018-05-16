@@ -32,7 +32,7 @@ struct RequiredStatus
 {
     static std::string value(Database::query_param_list& _params)
     {
-        return "$" + _params.add(Conversion::Enums::to_db_handle(LibFred::PublicRequest::Status::active)) +
+        return "$" + _params.add(Conversion::Enums::to_db_handle(LibFred::PublicRequest::Status::opened)) +
                "::TEXT";
     }
 

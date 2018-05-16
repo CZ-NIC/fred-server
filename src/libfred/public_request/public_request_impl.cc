@@ -132,7 +132,7 @@ bool queryBlockRequest(
 }
 
 
-/* check if object has given request type already active */
+/* check if object has given request type already opened */
 unsigned long long check_public_request(
         const unsigned long long &_object_id,
         const Type &_type)

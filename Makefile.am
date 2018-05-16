@@ -278,7 +278,7 @@ noinst_HEADERS = \
 		src/libfred/object/object_state.hh \
 		src/backend/epp/contact/contact_handle_state_to_check_result.hh \
 		src/libfred/public_request/public_request_status.hh \
-		src/libfred/public_request/get_active_public_request.hh \
+		src/libfred/public_request/get_opened_public_request.hh \
 		src/libfred/public_request/info_public_request.hh \
 		src/libfred/public_request/info_public_request_auth.hh \
 		test/backend/epp/util.hh \
@@ -1146,7 +1146,7 @@ src_libfred_public_request_libpublic_request_a_SOURCES = \
 		src/libfred/public_request/update_public_request.hh \
 		src/libfred/public_request/info_public_request.cc \
 		src/libfred/public_request/info_public_request_auth.cc \
-		src/libfred/public_request/get_active_public_request.cc
+		src/libfred/public_request/get_opened_public_request.cc
 #
 # src/libfred/public_request/libpublic_request.a
 
