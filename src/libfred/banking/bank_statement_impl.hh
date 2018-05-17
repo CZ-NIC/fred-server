@@ -7,6 +7,7 @@
 #include "src/libfred/banking/bank_payment_impl.hh"
 #include "src/libfred/common_impl_new.hh"
 #include "src/libfred/db_settings.hh"
+#include "src/util/types/date.hh"
 #include "src/util/types/money.hh"
 
 
@@ -286,6 +287,46 @@ StatementImplPtr parse_xml_statement_part(const XMLnode &_node)
         Money money(_node.getChild(STATEMENT_DEBET).getValue());
         statement->setBalanceDebet(money);
     }
+
+    return statement;
+}
+
+StatementImplPtr statement_from_params(
+        const std::string& _account_number)
+{
+    TRACE("[CALL] LibFred::Banking::statement_from_params(...)");
+
+    /* get bank account id */
+    const std::string account_number = std::string(_account_number); // FIXME
+    const std::string account_bank_code = std::string(_account_number);
+
+    if (account_number.empty() || account_bank_code.empty()) {
+        throw std::runtime_error("not valid account number");
+    }
+
+    if (account_number.empty() || account_bank_code.empty()) {
+        throw std::runtime_error(str(boost::format("could not get valid "
+                    "account_number and account_bank_code (%1%/%2%)")
+                    % account_number % account_bank_code));
+    }
+
+    Database::Query query;
+    query.buffer() << "SELECT id FROM bank_account WHERE "
+                   << "trim(leading '0' from account_number) = "
+                   << "trim(leading '0' from " << Database::Value(account_number) << ") "
+                   << "AND bank_code = " << Database::Value(account_bank_code);
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Result result = conn.exec(query);
+    if (result.size() == 0) {
+        throw std::runtime_error(str(boost::format("not valid record found "
+                    "in database for account=%1% bankcode=%2%")
+                    % account_number % account_bank_code));
+    }
+    unsigned long long account_id = result[0][0];
+
+    /* fill statement */
+    StatementImplPtr statement(new StatementImpl());
+    statement->setAccountId(account_id);
 
     return statement;
 }

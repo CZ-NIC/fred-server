@@ -7,6 +7,9 @@
 #include "src/libfred/banking/bank_statement_list.hh"
 #include "src/libfred/file.hh"
 #include "src/libfred/db_settings.hh"
+#include "src/util/types/money.hh"
+
+#include <boost/date_time/posix_time/ptime.hpp>
 
 namespace LibFred {
 namespace Banking {
@@ -17,6 +20,7 @@ public:
     virtual StatementList *createStatementList() const = 0;
     virtual PaymentList *createPaymentList() const = 0;
     static Manager *create(File::Manager *_file_manager);
+    static Manager *create();
 
     virtual void addBankAccount(
             const std::string &_account_number,
@@ -30,6 +34,21 @@ public:
             const std::string &_file_path,
             const std::string &_file_mime,
             const bool &_generate_invoices = false) //throw (std::runtime_error)
+                = 0;
+
+    virtual void importPayment(
+            const std::string& _bank_payment,
+            const std::string& _uuid,
+            const std::string& _account_number,
+            const std::string& _counter_account_number,
+            const std::string& _counter_account_name,
+            const std::string& _constant_symbol,
+            const std::string& _variable_symbol,
+            const std::string& _specific_symbol,
+            const Money& _price,
+            const boost::posix_time::ptime _date,
+            const std::string& _memo,
+            const std::string& _creation_time)
                 = 0;
 
     virtual bool pairPaymentWithStatement(

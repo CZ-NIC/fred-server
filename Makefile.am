@@ -127,7 +127,11 @@ CLEANFILES = \
 		src/bin/corba/NullableIsoDateTimeSK.cc \
 		src/bin/corba/NullableIsoDateTimeDynSK.cc \
 		src/bin/corba/NullableIsoDateTimeSK.h \
-		src/bin/corba/NullableIsoDateTime.hh
+		src/bin/corba/NullableIsoDateTime.hh \
+		src/bin/corba/AccountingSK.cc \
+		src/bin/corba/AccountingDynSK.cc \
+		src/bin/corba/AccountingSK.h \
+		src/bin/corba/Accounting.hh
 
 
 
@@ -218,6 +222,7 @@ noinst_HEADERS = \
 		src/bin/corba/util/corba_conversions_buffer.hh \
 		src/bin/corba/util/corba_conversions_nullable_types.hh \
 		src/bin/corba/util/corba_conversions_int.hh \
+		src/bin/corba/util/corba_conversions_money.hh \
 		src/bin/corba/util/corba_conversions_string.hh \
 		src/bin/corba/util/corba_conversions_isodate.hh \
 		src/bin/corba/util/corba_conversions_isodatetime.hh \
@@ -382,7 +387,8 @@ noinst_LIBRARIES = \
 		src/backend/admin/contact/verification/libadmin_contact_verification.a \
 		src/backend/admin/notification/libadmin_notification.a \
 		src/backend/admin/domain/libadmin_create_expired_domain.a \
-		src/epp/impl/registraracl/libauthentic_registrar.a
+		src/epp/impl/registraracl/libauthentic_registrar.a \
+		src/bin/corba/libcorbaaccounting.a
 
 
 noinst_PROGRAMS = \
@@ -405,6 +411,7 @@ sbin_PROGRAMS = \
 		src/bin/corba/domain_browser/fred-dbifd \
 		src/bin/corba/automatic_keyset_management/fred-akmd \
 		src/bin/corba/record_statement/fred-rsifd \
+		src/bin/corba/accounting/fred-accifd \
 		src/bin/cli/fred-admin \
 		tools/logd_migration/migrate_log \
 		tools/contact_migration/mojeid_contact_address_import \
@@ -696,6 +703,7 @@ src_util_hp_crc32_LDADD = \
 src_bin_corba_util_libcorbautil_a_SOURCES = \
 		src/bin/corba/util/corba_conversions_buffer.cc \
 		src/bin/corba/util/corba_conversions_nullable_types.cc \
+		src/bin/corba/util/corba_conversions_money.cc \
 		src/bin/corba/util/corba_conversions_string.cc \
 		src/bin/corba/util/corba_conversions_isodate.cc \
 		src/bin/corba/util/corba_conversions_isodatetime.cc
@@ -1456,7 +1464,8 @@ BUILT_SOURCES = \
 		src/bin/corba/IsoDateSK.cc \
 		src/bin/corba/NullableIsoDateSK.cc \
 		src/bin/corba/IsoDateTimeSK.cc \
-		src/bin/corba/NullableIsoDateTimeSK.cc
+		src/bin/corba/NullableIsoDateTimeSK.cc \
+		src/bin/corba/AccountingSK.cc
 
 
 # src/bin/corba/libcorba.a
@@ -1688,6 +1697,14 @@ nodist_src_bin_corba_libcorbanullableisodatetime_a_SOURCES = \
 		src/bin/corba/NullableIsoDateTimeDynSK.cc \
 		src/bin/corba/NullableIsoDateTime.hh
 
+nodist_src_bin_corba_libcorbaaccounting_a_SOURCES = \
+		src/bin/corba/IsoDateSK.cc \
+		src/bin/corba/IsoDateDynSK.cc \
+		src/bin/corba/IsoDate.hh \
+		src/bin/corba/AccountingSK.cc \
+		src/bin/corba/AccountingDynSK.cc \
+		src/bin/corba/Accounting.hh
+
 #
 # nodist corba libs
 
@@ -1724,6 +1741,7 @@ src/bin/corba/IsoDateSK.cc: $(IDLDIR)/IsoDate.idl
 src/bin/corba/NullableIsoDateSK.cc: $(IDLDIR)/NullableIsoDate.idl $(IDLDIR)/IsoDate.idl
 src/bin/corba/IsoDateTimeSK.cc: $(IDLDIR)/IsoDateTime.idl
 src/bin/corba/NullableIsoDateTimeSK.cc: $(IDLDIR)/NullableIsoDateTime.idl $(IDLDIR)/IsoDateTime.idl
+src/bin/corba/AccountingSK.cc: $(IDLDIR)/Accounting.idl
 
 src/bin/corba/%.cc:
 		-echo "Trying to compile $@ ... should be specified in \"idl build\" section (*.idl) or list it in noinst_LIBRARIES (*.a) or noinst_HEADERS (*.hh)"
@@ -2174,9 +2192,7 @@ src_bin_corba_fred_rifd_SOURCES = \
 
 src_bin_corba_fred_rifd_LDADD = \
 		src/bin/corba/epp/libepp_impl.a \
-		src/util/libpassword_storage.a \
 		src/epp/impl/registraracl/libauthentic_registrar.a \
-		src/util/libpassword_storage.a \
 		src/backend/admin/contact/verification/libadmin_contact_verification.a \
 		src/bin/corba/libcorbaepp.a \
 		src/bin/corba/libcorbatechcheck.a \
@@ -2185,7 +2201,9 @@ src_bin_corba_fred_rifd_LDADD = \
 		src/bin/corba/libcorbaisodatetime.a \
 		src/bin/corba/libcorba.a \
 		src/libfred/public_request/libpublic_request.a \
+		src/libfred/banking/libbanking.a \
 		src/libfred/libfred.a \
+		src/util/libpassword_storage.a \
 		src/libfred/messages/libmessages.a \
 		src/deprecated/model/libmodel.a \
 		src/util/tz/libtimezones.a \
@@ -2752,6 +2770,55 @@ src_bin_corba_record_statement_fred_rsifd_LDADD = \
 #
 # src/bin/corba/record_statement/fred-rsifd
 
+# src/bin/corba/accounting/fred-accifd
+#
+src_bin_corba_accounting_fred_accifd_SOURCES = \
+		src/backend/credit.cc \
+		src/backend/credit.hh \
+		src/backend/accounting/accounting.cc \
+		src/backend/accounting/accounting.hh \
+		src/backend/accounting/exceptions.cc \
+		src/backend/accounting/exceptions.hh \
+		src/backend/accounting/payment_data.hh \
+		src/backend/accounting/registrar.hh \
+		src/bin/corba/nameservice.cc \
+		src/bin/corba/accounting/accounting_i.cc \
+		src/bin/corba/accounting/accounting_i.hh \
+		src/bin/corba/accounting/fred-accifd.cc
+
+src_bin_corba_accounting_fred_accifd_LDFLAGS = \
+		$(POSTGRESQL_LDFLAGS) \
+		$(BOOST_LDFLAGS) \
+		$(XML2_LIBS) \
+		$(AM_LDFLAGS)
+
+src_bin_corba_accounting_fred_accifd_LDADD = \
+		src/libfred/banking/libbanking.a \
+		src/libfred/libfred.a \
+		src/deprecated/model/libmodel.a \
+		src/util/libpassword_storage.a \
+		src/deprecated/util/liboldutils.a \
+		src/bin/corba/util/libcorbautil.a \
+		src/util/libutil.a \
+		src/util/types/libtypes.a \
+		src/util/log/liblog.a \
+		src/util/db/libdb.a \
+		-lmpdec -lm -lrt \
+		src/bin/corba/libcorba.a \
+		src/bin/corba/libcorbaisodate.a \
+		src/bin/corba/libcorbaaccounting.a \
+		$(LIBCRYPTO_LIBS) \
+		$(LIBIDN_LIBS) \
+		$(BOOST_PROGRAM_OPTIONS_LIB) \
+		$(OMNIORB4_LIBS) \
+		$(BOOST_DATE_TIME_LIB) \
+		$(BOOST_REGEX_LIB) \
+		$(BOOST_RANDOM_LIB) \
+		$(BOOST_THREAD_LIB) \
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB)
+#
+# src/bin/corba/accounting/fred-accifd
 
 # src/cli_admin/fred-admin
 #
@@ -3492,7 +3559,6 @@ test_test_server_LDADD = \
 		src/libfred/contact_verification/libcontact_verification.a \
 		src/bin/corba/admin/libadmin_impl.a \
 		src/bin/corba/epp/libepp_impl.a \
-		src/util/libpassword_storage.a \
 		src/bin/corba/libcorba.a \
 		src/bin/corba/whois/libwhois_impl.a \
 		src/libfred/public_request/libpublic_request.a \
@@ -3500,8 +3566,8 @@ test_test_server_LDADD = \
 		src/backend/admin/notification/libadmin_notification.a \
 		src/backend/admin/domain/libadmin_create_expired_domain.a \
 		src/libfred/libfred.a \
-		src/epp/impl/registraracl/libauthentic_registrar.a \
 		src/util/libpassword_storage.a \
+		src/epp/impl/registraracl/libauthentic_registrar.a \
 		src/libfred/messages/libmessages.a \
 		src/deprecated/model/libmodel.a \
 		src/util/tz/libtimezones.a \
@@ -3631,7 +3697,6 @@ test_test_blocking_LDADD = \
 		src/libfred/contact_verification/libcontact_verification.a \
 		src/bin/corba/admin/libadmin_impl.a \
 		src/bin/corba/epp/libepp_impl.a \
-		src/util/libpassword_storage.a \
 		src/bin/corba/libcorba.a \
 		src/bin/corba/whois/libwhois_impl.a \
 		src/libfred/public_request/libpublic_request.a \

@@ -16,17 +16,37 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/backend/buffer.hh"
-
-#include <string>
+#include "src/backend/accounting/exceptions.hh"
 
 namespace Fred {
 namespace Backend {
+namespace Accounting {
 
-Buffer::Buffer(const std::string& _data)
-    : data(_data)
+const char* InternalServerError::what() const noexcept
 {
+    return "internal server error";
 }
 
+const char* RegistrarNotFound::what() const noexcept
+{
+    return "registrar does not exist";
+}
+
+const char* InvalidZone::what() const noexcept
+{
+    return "zone does not exist";
+}
+
+const char* InvalidCreditValue::what() const noexcept
+{
+    return "invalid credit value";
+}
+
+const char* CreditAlreadyProcessed::what() const noexcept
+{
+    return "credit already processed";
+}
+
+} // namespace Fred::Backend::Accounting
 } // namespace Fred::Backend
 } // namespace Fred

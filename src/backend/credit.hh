@@ -16,17 +16,23 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/backend/buffer.hh"
+#ifndef CREDIT_HH_A02D7D4ACABE40B6B59C27648CA1D22B
+#define CREDIT_HH_A02D7D4ACABE40B6B59C27648CA1D22B
+
+#include "src/util/types/money.hh"
 
 #include <string>
 
 namespace Fred {
 namespace Backend {
 
-Buffer::Buffer(const std::string& _data)
-    : data(_data)
+struct Credit
 {
-}
+    explicit Credit(const std::string& _credit);
+    Money value;
+};
 
 } // namespace Fred::Backend
 } // namespace Fred
+
+#endif

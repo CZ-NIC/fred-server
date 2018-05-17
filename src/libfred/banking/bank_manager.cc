@@ -3,6 +3,7 @@
 #include <algorithm>
 // #include <magic.h>
 
+#include "src/libfred/banking/bank_statement_impl.hh"
 #include "src/libfred/banking/bank_payment_list_impl.hh"
 #include "src/libfred/banking/bank_statement_list_impl.hh"
 #include "src/libfred/banking/bank_common.hh"
@@ -16,18 +17,6 @@
 #include <boost/algorithm/string.hpp>
 #include <utility>
 
-
-// std::string magic_string_to_mime_type(const std::string &_magic_str)
-// {
-//     std::string::size_type l = _magic_str.length();
-//     std::string::size_type scolon = _magic_str.find_first_of(";");
-//     if (scolon >= l) {
-//         return _magic_str;
-//     }
-//     else {
-//         return std::string(_magic_str, 0, scolon);
-//     }
-// }
 
 namespace LibFred {
 namespace Banking {
@@ -278,6 +267,10 @@ public:
     {
     }
 
+    ManagerImpl()
+    {
+    }
+
     StatementList* createStatementList() const
     {
         return new StatementListImpl();
@@ -519,6 +512,183 @@ public:
         }
     }
 
+    void importPayment(
+            const std::string& _bank_payment,
+            const std::string& _uuid,
+            const std::string& _account_number,
+            const std::string& _counter_account_number,
+            const std::string& _counter_account_name,
+            const std::string& _constant_symbol,
+            const std::string& _variable_symbol,
+            const std::string& _specific_symbol,
+            const Money& _price,
+            const boost::posix_time::ptime _date,
+            const std::string& _memo,
+            const std::string& _creation_time)
+    {
+        TRACE("[CALL] LibFred::Banking::Manager::importPayment(...)");
+        Logging::Context ctx("bank payment import");
+
+        const std::string account_number = _account_number; // TODO
+        const std::string _bank_code = _account_number; // TODO
+
+        try {
+            Database::Connection conn = Database::Manager::acquire();
+            Database::Transaction tx(conn);
+
+            LOGGER(PACKAGE).debug("saving transaction for single payment");
+
+            StatementImplPtr statement(statement_from_params(_account_number));
+
+            statement->setId(0);
+            LOGGER(PACKAGE).info("no statement -- importing only payments");
+
+            const unsigned long long sid = statement->getId();
+
+            PaymentImplPtr payment(payment_from_params(
+                    _bank_payment,
+                    _uuid,
+                    _account_number,
+                    _counter_account_number,
+                    _counter_account_name,
+                    _constant_symbol,
+                    _variable_symbol,
+                    _specific_symbol,
+                    _price,
+                    _date,
+                    _memo,
+                    _creation_time));
+
+            payment->setAccountId(statement->getAccountId());
+            if (sid != 0) {
+                payment->setStatementId(sid);
+            }
+
+            Database::ID conflict_pid(0);
+            if ((conflict_pid = payment->getConflictId()) == 0) {
+                payment->save();
+                LOGGER(PACKAGE).info(boost::format(
+                        "payment imported (id=%1% account=%2%/%3% "
+                        "evid=%4% price=%5% account_date=%6%) account_id=%7%")
+                        % payment->getId()
+                        % payment->getAccountNumber()
+                        % payment->getBankCode()
+                        % payment->getAccountEvid()
+                        % payment->getPrice()
+                        % payment->getAccountDate()
+                        % payment->getAccountId());
+
+                /* payment processing */
+                processPayment(payment.get());
+            }
+            else {
+                /* load conflict payment */
+                PaymentImplPtr cpayment(new PaymentImpl());
+                cpayment->setId(conflict_pid);
+                cpayment->reload();
+                /* compare major attributes which should never change */
+                if (payment->getAccountNumber() != cpayment->getAccountNumber()
+                        || payment->getBankCode() != cpayment->getBankCode()
+                        || payment->getCode() != cpayment->getCode()
+                        || payment->getKonstSym() != cpayment->getKonstSym()
+                        || payment->getVarSymb() != cpayment->getVarSymb()
+                        || payment->getSpecSymb() != cpayment->getSpecSymb()
+                        || payment->getAccountMemo() != cpayment->getAccountMemo()) {
+
+                    LOGGER(PACKAGE).debug(boost::format("imported payment: %1%")
+                                                        % payment->toString());
+                    LOGGER(PACKAGE).debug(boost::format("conflict payment: %1%")
+                                                        % cpayment->toString());
+
+                    LOGGER(PACKAGE).error(boost::format(
+                                    "oops! found conflict payment with "
+                                    "INCONSISTENT DATA (id=%1% account_evid=%2%) "
+                                    "-- please make manual checking"
+                                    "; skipping payment")
+                                    % cpayment->getId()
+                                    % cpayment->getAccountEvid());
+                    /* lets do another payment */
+                    return;
+                }
+                /* compare changable attributes for futher processing */
+                else if (payment->getStatus() != cpayment->getStatus()) {
+                    LOGGER(PACKAGE).info(boost::format(
+                            "already imported payment -- status changed "
+                            "%1% => %2% (price %3% => %4%; account_date %5% => %6%)")
+                            % cpayment->getStatus()
+                            % payment->getStatus()
+                            % cpayment->getPrice()
+                            % payment->getPrice()
+                            % cpayment->getAccountDate()
+                            % payment->getAccountDate());
+
+                    cpayment->setStatus(payment->getStatus());
+                    cpayment->setAccountDate(payment->getAccountDate());
+                    cpayment->setPrice(payment->getPrice());
+                    cpayment->save();
+                    processPayment(cpayment.get());
+                }
+
+                /* there we should have already imported payment */
+                LOGGER(PACKAGE).info(boost::format(
+                        "conflict payment found "
+                        "(id=%1% account=%2%/%3% evid=%4%)")
+                        % cpayment->getId()
+                        % cpayment->getAccountNumber()
+                        % cpayment->getBankCode()
+                        % cpayment->getAccountEvid());
+
+                if (payment->getStatementId() != cpayment->getStatementId()
+                        && cpayment->getStatementId() == 0) {
+
+                    /*
+                    if (statement_valid && !statement_conflict) {
+                        LOGGER(PACKAGE).info(boost::format(
+                                    "conflict payment should be paired with imported "
+                                    "statement (payment=%1% statement=%2%)")
+                                    % cpayment->getId()
+                                    % statement->getId());
+                        _pairPaymentWithStatement(cpayment->getId(), statement->getId());
+                    }
+                    */
+               }
+               else {
+                   LOGGER(PACKAGE).info(boost::format(
+                               "conflict payment is already paired with this "
+                               "statement (payment=%1% statement=%2%)")
+                               % cpayment->getId()
+                               % statement->getId());
+               }
+            }
+
+            /* upload file via file manager and update statement */
+            /*
+            if (file_manager_ && statement_valid && !statement_conflict) {
+                // get mime type
+                // magic_t magic = magic_open(MAGIC_MIME);
+                // magic_load(magic, 0);
+                // std::string magic_str = magic_file(magic, _file_path.c_str());
+                // std::string mime_type = magic_string_to_mime_type(magic_str);
+
+                unsigned long long id = file_manager_->upload(_file_path, _file_mime, 4);
+                statement->setFileId(id);
+                statement->save();
+                LOGGER(PACKAGE).info(boost::format(
+                            "statement file (id=%1%) succesfully uploaded") % id);
+            }
+            */
+
+            tx.commit();
+        }
+        catch (std::exception &ex) {
+            throw std::runtime_error(str(boost::format(
+                            "bank xml import: %1%") % ex.what()));
+        }
+        catch (...) {
+            throw std::runtime_error("bank xml import: an error occured");
+        }
+    }
+
     void addBankAccount(const std::string &_account_number,
                             const std::string &_bank_code,
                             const std::string &_zone,
@@ -743,6 +913,11 @@ public:
 Manager* Manager::create(File::Manager *_file_manager)
 {
     return new ManagerImpl(_file_manager);
+}
+
+Manager* Manager::create()
+{
+    return new ManagerImpl();
 }
 
 } // namespace Banking

@@ -16,17 +16,39 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/backend/buffer.hh"
-
-#include <string>
+#ifndef REGISTRAR_HH_9C42489EE07E4E49B87AF2941D36710D
+#define REGISTRAR_HH_9C42489EE07E4E49B87AF2941D36710D
 
 namespace Fred {
 namespace Backend {
+namespace Accounting {
 
-Buffer::Buffer(const std::string& _data)
-    : data(_data)
+#include <string>
+
+struct PlaceAddress
 {
-}
+    std::string street1;
+    std::string street2;
+    std::string street3;
+    std::string city;
+    std::string stateorprovince;
+    std::string postalcode;
+    std::string country_code;
+};
 
+struct Registrar
+{
+    std::string handle;
+    std::string name;
+    std::string organization;
+    std::string url;
+    std::string phone;
+    std::string fax;
+    PlaceAddress address;
+};
+
+} // namespace Fred::Backend::Accounting
 } // namespace Fred::Backend
 } // namespace Fred
+
+#endif

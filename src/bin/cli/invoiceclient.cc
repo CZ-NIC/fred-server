@@ -279,7 +279,7 @@ InvoiceClient::list_filters()
     }
     std::cout << "</objects>" << std::endl;
 
-}
+} // "
 void
 InvoiceClient::archive()
 {

@@ -16,17 +16,37 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/backend/buffer.hh"
+#ifndef PAYMENT_DATA_HH_AAD16DFCDC514E7FAFAC28DE9BDD7E87
+#define PAYMENT_DATA_HH_AAD16DFCDC514E7FAFAC28DE9BDD7E87
 
 #include <string>
 
+#include "src/util/types/money.hh"
+
+#include <boost/date_time/posix_time/posix_time_types.hpp>
+
 namespace Fred {
 namespace Backend {
+namespace Accounting {
 
-Buffer::Buffer(const std::string& _data)
-    : data(_data)
+struct PaymentData
 {
-}
+    std::string bank_payment;
+    std::string uuid;
+    std::string account_number;
+    std::string counter_account_number;
+    std::string counter_account_name;
+    std::string constant_symbol;
+    std::string variable_symbol;
+    std::string specific_symbol;
+    Money price;
+    boost::posix_time::ptime date;
+    std::string memo;
+    std::string creation_time;
+};
 
+} // namespace Fred::Backend::Accounting
 } // namespace Fred::Backend
 } // namespace Fred
+
+#endif

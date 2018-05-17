@@ -1,7 +1,6 @@
 #ifndef BANK_PAYMENT_IMPL_HH_F11C942347B648A4A9EDA7A6E3495B32
 #define BANK_PAYMENT_IMPL_HH_F11C942347B648A4A9EDA7A6E3495B32
 
-#include "src/libfred/banking/bank_common.hh"
 #include "src/libfred/banking/bank_payment.hh"
 #include "src/libfred/common_impl_new.hh"
 #include "src/libfred/banking/model_bank_payment.hh"
@@ -10,7 +9,6 @@
 
 namespace LibFred {
 namespace Banking {
-
 
 class PaymentImpl : virtual public Payment,
                     public LibFred::CommonObjectImplNew,
@@ -326,6 +324,21 @@ COMPARE_CLASS_IMPL_NEW(PaymentImpl, DestAccount)
 
 PaymentImplPtr parse_xml_payment_part(const XMLnode &_node);
 
+PaymentImplPtr payment_from_params(
+        const std::string& _bank_payment,
+        const std::string& _uuid,
+        const std::string& _account_number,
+        const std::string& _counter_account_number,
+        const std::string& _counter_account_name,
+        const std::string& _constant_symbol,
+        const std::string& _variable_symbol,
+        const std::string& _specific_symbol,
+        const Money& _price,
+        const boost::posix_time::ptime& _date,
+        const std::string& _memo,
+        const std::string& _creation_time);
+
+
 EnumList getBankAccounts();
 
 } // namespace Banking
@@ -333,4 +346,3 @@ EnumList getBankAccounts();
 
 
 #endif /*BANK_PAYMENT_IMPL_H_*/
-

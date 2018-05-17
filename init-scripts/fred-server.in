@@ -26,6 +26,7 @@ MSGD_PORT=@MSGDPORT@
 DBIFD_PORT=@DBIFDPORT@
 AKMD_PORT=@AKMDPORT@
 RSIFD_PORT=@RSIFDPORT@
+ACCIFD_PORT=@ACCIFDPORT@
 OPTIONS="-ORBnativeCharCodeSet UTF-8 -ORBendPoint giop:tcp::"
 
 MSG_START="Starting FRED central registry CORBA servers..."
@@ -160,6 +161,13 @@ fred_start() {
         NUM=$(($NUM+1))
         fi
     fi
+    if check_pidfile ${VARRUN_PATH}/fred-accifd.pid; then NUM=$(($NUM+1)); else
+        ${FRED_PATH}/fred-accifd ${OPTIONS}${ACCIFD_PORT} 2>/dev/null &
+        if store_pid "${FRED_PATH}/fred-accifd" ${VARRUN_PATH}/fred-accifd.pid
+    then
+        NUM=$(($NUM+1))
+        fi
+    fi
 
     FRED_CENTRAL_REGISTRY_CORBA_SERVERS_TOTAL=10
     if [ $NUM -eq $FRED_CENTRAL_REGISTRY_CORBA_SERVERS_TOTAL ]; then
@@ -190,6 +198,7 @@ fred_status() {
     check_server_status "fred-dbifd" "${VARRUN_PATH}/fred-dbifd.pid"
     check_server_status "fred-akmd" "${VARRUN_PATH}/fred-akmd.pid"
     check_server_status "fred-rsifd" "${VARRUN_PATH}/fred-rsifd.pid"
+    check_server_status "fred-accifd" "${VARRUN_PATH}/fred-accifd.pid"
 }
 
 fred_stop() {
@@ -247,6 +256,12 @@ fred_stop() {
     kill -TERM `cat ${VARRUN_PATH}/fred-rsifd.pid` 2>/dev/null
         STOP_SUCCEDED=$(($STOP_SUCCEDED * $?))
     rm -f ${VARRUN_PATH}/fred-rsifd.pid
+    fi
+    if [ -f ${VARRUN_PATH}/fred-accifd.pid ]
+    then
+    kill -TERM `cat ${VARRUN_PATH}/fred-accifd.pid` 2>/dev/null
+        STOP_SUCCEDED=$(($STOP_SUCCEDED * $?))
+    rm -f ${VARRUN_PATH}/fred-accifd.pid
     fi
 
     @BINDIR@/pyfredctl stop > /dev/null

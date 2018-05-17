@@ -64,7 +64,7 @@ BankClient::payment_list()
             payment_filter->addType().setValue(type);
         }
         else {
-            throw std::runtime_error("payment list: parameter error: bank "
+            throw std::runtime_error("payment list: parameter error: bank for( "
                                      "payment type should be from interval <1, 6>");
         }
     }

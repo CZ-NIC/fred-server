@@ -1,10 +1,14 @@
-#include <utility>
-
 #include "src/libfred/banking/bank_common.hh"
+
+#include "src/libfred/banking/bank_payment.hh"
+#include "src/libfred/banking/bank_payment_impl.hh"
+#include "src/libfred/db_settings.hh"
 #include "src/util/types/stringify.hh"
 #include "src/util/types/money.hh"
 
-#include "src/libfred/banking/bank_payment_impl.hh"
+#include <boost/date_time/posix_time/ptime.hpp>
+
+#include <utility>
 
 namespace LibFred {
 namespace Banking {
@@ -415,6 +419,73 @@ PaymentImplPtr parse_xml_payment_part(const XMLnode &_node)
 
     return payment;
 }
+
+PaymentImplPtr payment_from_params(
+        const std::string& _bank_payment,
+        const std::string& _uuid,
+        const std::string& _account_number,
+        const std::string& _counter_account_number,
+        const std::string& _counter_account_name,
+        const std::string& _constant_symbol,
+        const std::string& _variable_symbol,
+        const std::string& _specific_symbol,
+        const Money& _price,
+        const boost::posix_time::ptime& _date,
+        const std::string& _memo,
+        const std::string& _creation_time)
+{
+    TRACE("[CALL] LibFred::Banking::payment_from_params(...)");
+
+    PaymentImplPtr payment(new PaymentImpl());
+
+    const std::string& account_number = _account_number; // FIXME
+    const std::string& account_bank_code = _account_number; // FIXME
+    const std::string& date = ""; // FIXME
+    payment->setAccountNumber(account_number);
+    payment->setBankCode(account_bank_code);
+    payment->setPrice(_price);
+
+    if (!_constant_symbol.empty()) {
+        payment->setKonstSym(_constant_symbol);
+    }
+    if (!_variable_symbol.empty()) {
+        payment->setVarSymb(_variable_symbol);
+    }
+    if (!_specific_symbol.empty()) {
+        payment->setSpecSymb(_specific_symbol);
+    }
+    if (!_memo.empty()) {
+        payment->setAccountMemo(_memo);
+    }
+    if (!date.empty()) {
+        payment->setAccountDate(date);
+    }
+    if (!_creation_time.empty()) {
+        payment->setCrTime(_creation_time);
+    }
+    if (!_counter_account_name.empty()) {
+        payment->setAccountName(_counter_account_name);
+    }
+
+    // TODO
+    /*
+    if (!_node.getChild(ITEM_TYPE).isEmpty()) {
+        int value = atoi(_node.getChild(ITEM_TYPE).getValue().c_str());
+        payment->setType(value);
+    }
+    if (!_node.getChild(ITEM_CODE).isEmpty()) {
+        int value = atoi(_node.getChild(ITEM_CODE).getValue().c_str());
+        payment->setCode(value);
+    }
+    if (!_node.getChild(ITEM_STATUS).isEmpty()) {
+        int value = atoi(_node.getChild(ITEM_STATUS).getValue().c_str());
+        payment->setStatus(value);
+    }
+    */
+
+    return payment;
+}
+
 
 } // namespace Banking
 } // namespace LibFred

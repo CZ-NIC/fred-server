@@ -16,17 +16,21 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/backend/buffer.hh"
+#ifndef CORBA_CONVERSIONS_MONEY_HH_66469ED274324D5BAA1C30C215FFA51D
+#define CORBA_CONVERSIONS_MONEY_HH_66469ED274324D5BAA1C30C215FFA51D
 
-#include <string>
+#include "src/util/types/money.hh"
 
-namespace Fred {
-namespace Backend {
+#include <omniORB4/CORBA.h>
 
-Buffer::Buffer(const std::string& _data)
-    : data(_data)
-{
-}
+namespace CorbaConversion {
+namespace Util {
 
-} // namespace Fred::Backend
-} // namespace Fred
+Money unwrap_money_from_const_char_ptr(const char* in);
+
+CORBA::String_var wrap_Money_to_corba_string(const Money& in);
+
+} // namespace CorbaConversion::Util
+} // namespace CorbaConversion
+
+#endif

@@ -16,15 +16,15 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/backend/buffer.hh"
+#include "src/backend/credit.hh"
 
 #include <string>
 
 namespace Fred {
 namespace Backend {
 
-Buffer::Buffer(const std::string& _data)
-    : data(_data)
+Credit::Credit(const std::string& _value)
+    : value(_value)
 {
 }
 
