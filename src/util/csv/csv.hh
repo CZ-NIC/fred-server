@@ -21,6 +21,8 @@
 
 #include <string>
 #include <type_traits>
+#include <algorithm>
+#include <sstream>
 
 namespace Fred
 {
@@ -66,11 +68,11 @@ template<char separator, typename T>
 std::string to_csv_string_using_separator(const T& list_of_rows)
 {
     std::size_t no_of_columns = 0;
-    for (const auto& cell: list_of_rows)
+    for (const auto& row: list_of_rows)
     {
-        if (cell.size() > no_of_columns)
+        if (row.size() > no_of_columns)
         {
-            no_of_columns = cell.size();
+            no_of_columns = row.size();
         }
     }
     const std::size_t no_of_separators = no_of_columns > 0 ? no_of_columns - 1 : 0;
