@@ -1,3 +1,9 @@
+2018-05-17 (2.37.1)
+
+  * bugfix of authinfo sending (automatic on registry e-mail) for multiple recipients
+
+  * fix csv serializer (escaping)
+
 2018-04-20 (2.37.0)
 
   * quick fix to change default disclose policy to hide (will be revisited)
