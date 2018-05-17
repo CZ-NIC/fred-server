@@ -3276,6 +3276,7 @@ test_test_server_SOURCES = \
 		test/deprecated/checks.hh \
 		test/util/test_printable.cc \
 		test/util/test_csv_parser.cc \
+		test/util/test_csv_serializer.cc \
 		src/util/optys/download_client.cc \
 		src/util/optys/download_client.hh \
 		src/util/corba_conversion.hh \
