@@ -19,6 +19,26 @@ namespace PublicRequest {
 
 namespace {
 
+void set_answer_email_id(
+        unsigned long long _public_request_id,
+        unsigned long long _answer_email_id,
+        LibFred::OperationContext& _ctx)
+{
+    const Database::Result dbres =
+        _ctx.get_conn().exec_params("UPDATE public_request "
+                                    "SET answer_email_id=$1::BIGINT "
+                                    "WHERE id=$2::BIGINT;",
+                                    Database::query_param_list
+                                    (_answer_email_id)
+                                    (_public_request_id));
+
+    if (dbres.rows_affected() == 1)
+    {
+        return;
+    }
+    throw std::runtime_error("failed public request's answer_email_id");
+}
+
 void set_on_status_action(
         unsigned long long _public_request_id,
         LibFred::PublicRequest::OnStatusAction::Enum _action,
@@ -320,7 +340,18 @@ void process_public_request_personal_info_answered(
 {
     try
     {
-        send_personalinfo(_public_request_id, _ctx, _mailer_manager, _file_manager_client);
+        unsigned long long email_id = send_personalinfo(_public_request_id, _ctx, _mailer_manager, _file_manager_client);
+        try
+        {
+            set_answer_email_id(_public_request_id, email_id, _ctx);
+        }
+        catch (...)
+        {
+            _ctx.get_log().info(
+                    boost::format("Request %1% update failed, but email %2% sent") %
+                    _public_request_id %
+                    email_id);
+        }
     }
     catch (...)
     {
