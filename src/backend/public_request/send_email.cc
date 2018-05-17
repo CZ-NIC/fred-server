@@ -15,7 +15,7 @@ unsigned long long send_joined_addresses_email(
     std::ostringstream recipients;
     for (const auto& email: data.recipient_email_addresses)
     {
-        recipients << boost::trim_copy(email);
+        recipients << boost::trim_copy(email) << ' ';
     }
 
     try
