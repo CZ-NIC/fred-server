@@ -20,7 +20,7 @@
 #include "src/util/random.hh"
 #include "src/util/types/stringify.hh"
 #include "src/backend/public_request/send_email.hh"
-#include "src/backend/public_request/get_type_names.hh"
+#include "src/backend/public_request/get_types.hh"
 
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/foreach.hpp>
@@ -235,21 +235,6 @@ LibFred::PublicRequestTypeIface::PublicRequestTypes get_block_unblock_public_req
 }
 
 } // namespace Fred::Backend::PublicRequest::Type::{anonymous}
-
-std::string get_personal_info_auto_type_name()
-{
-    return PersonalinfoAuto().get_public_request_type();
-}
-
-std::string get_personal_info_email_type_name()
-{
-    return PersonalinfoEmail().get_public_request_type();
-}
-
-std::string get_personal_info_post_type_name()
-{
-    return PersonalinfoPost().get_public_request_type();
-}
 
 } // namespace Fred::Backend::PublicRequest::Type
 
@@ -1019,6 +1004,25 @@ std::shared_ptr<LibFred::Document::Manager> PublicRequestImpl::get_default_docum
                     args->fileclient_path,
                     CorbaContainer::get_instance()->getNS()->getHostName()));
 }
+
+const LibFred::PublicRequestTypeIface& get_personal_info_auto_iface()
+{
+    static const Type::PersonalinfoAuto singleton;
+    return singleton;
+}
+
+const LibFred::PublicRequestTypeIface& get_personal_info_email_iface()
+{
+    static const Type::PersonalinfoEmail singleton;
+    return singleton;
+}
+
+const LibFred::PublicRequestTypeIface& get_personal_info_post_iface()
+{
+    static const Type::PersonalinfoPost singleton;
+    return singleton;
+}
+
 
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend

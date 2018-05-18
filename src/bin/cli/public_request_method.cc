@@ -21,8 +21,12 @@
 #include "src/backend/public_request/process_public_requests.hh"
 #include "src/util/db/query_param.hh"
 #include "src/bin/cli/public_request_method.hh"
-#include "src/backend/public_request/get_type_names.hh"
+#include "src/backend/public_request/get_types.hh"
 #include "src/libfred/public_request/public_request_status.hh"
+#include "src/libfred/opcontext.hh"
+
+#include <unordered_map>
+#include <functional>
 
 namespace Admin {
 
@@ -31,9 +35,9 @@ void PublicRequestProcedure::exec()
     std::set<std::string> request_types_filter;
     {
         std::set<std::string> request_types_filter_default = {
-            Fred::Backend::PublicRequest::Type::get_personal_info_auto_type_name(),
-            Fred::Backend::PublicRequest::Type::get_personal_info_email_type_name(),
-            Fred::Backend::PublicRequest::Type::get_personal_info_post_type_name()
+            Fred::Backend::PublicRequest::get_personal_info_auto_iface().get_public_request_type(),
+            Fred::Backend::PublicRequest::get_personal_info_email_iface().get_public_request_type(),
+            Fred::Backend::PublicRequest::get_personal_info_post_iface().get_public_request_type()
         };
         for (const auto& argument: args.types)
         {
@@ -75,37 +79,43 @@ void PublicRequestProcedure::exec()
     Database::Result dbres;
     {
         LibFred::OperationContextCreator ctx;
-        dbres = ctx.get_conn().exec_params("SELECT pr.id, eprs.name "
-                                   "FROM public_request pr "
-                                   "JOIN enum_public_request_type eprt ON pr.request_type=eprt.id "
-                                   "JOIN enum_public_request_status eprs ON eprs.id=pr.status "
-                                   "WHERE on_status_action=$1::enum_on_status_action_type" + condition_query_part.str(),
-                                   query_param_list);
+        dbres = ctx.get_conn().exec_params("SELECT pr.id, eprt.name, eprs.name "
+                                           "FROM public_request pr "
+                                           "JOIN enum_public_request_type eprt ON pr.request_type=eprt.id "
+                                           "JOIN enum_public_request_status eprs ON eprs.id=pr.status "
+                                           "WHERE on_status_action=$1::enum_on_status_action_type" +
+                                           condition_query_part.str(),
+                                           query_param_list);
     }
 
+    std::unordered_map<std::string, std::reference_wrapper<const LibFred::PublicRequestTypeIface>> type_to_iface;
+    type_to_iface.insert({Fred::Backend::PublicRequest::get_personal_info_auto_iface().get_public_request_type(),
+                std::cref(Fred::Backend::PublicRequest::get_personal_info_auto_iface())});
+    type_to_iface.insert({Fred::Backend::PublicRequest::get_personal_info_email_iface().get_public_request_type(),
+                std::cref(Fred::Backend::PublicRequest::get_personal_info_email_iface())});
+    type_to_iface.insert({Fred::Backend::PublicRequest::get_personal_info_post_iface().get_public_request_type(),
+                std::cref(Fred::Backend::PublicRequest::get_personal_info_post_iface())});
     for (std::size_t i = 0; i < dbres.size(); ++i)
     {
         const auto request_id = static_cast<unsigned long long>(dbres[i][0]);
+        const auto request_type = static_cast<std::string>(dbres[i][1]);
         const auto request_status =
-            Conversion::Enums::from_db_handle<LibFred::PublicRequest::Status>(static_cast<std::string>(dbres[i][1]));
+            Conversion::Enums::from_db_handle<LibFred::PublicRequest::Status>(static_cast<std::string>(dbres[i][2]));
         try
         {
             if (request_status == LibFred::PublicRequest::Status::answered)
             {
-                LibFred::OperationContextCreator ctx;
                 Fred::Backend::PublicRequest::process_public_request_personal_info_answered(
                         request_id,
-                        ctx,
+                        type_to_iface.at(request_type),
                         mailer_manager,
                         file_manager_client);
-                ctx.commit_transaction();
             }
         }
         catch (const std::exception& e)
         {
             LibFred::OperationContextCreator ctx;
             ctx.get_log().error(e.what());
-            ctx.commit_transaction();
         }
     }
 }

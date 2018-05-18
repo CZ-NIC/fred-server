@@ -220,7 +220,9 @@ UpdatePublicRequest::Result UpdatePublicRequest::update(OperationContext &_ctx,
     }
 
     if (on_status_action_.isset()) {
-        sql_set << "on_status_action=$" << params.add(on_status_action_.get_value()) << "::ENUM_ON_STATUS_ACTION_TYPE";
+        sql_set << "on_status_action=$"
+                << params.add(Conversion::Enums::to_db_handle(on_status_action_.get_value()))
+                << "::ENUM_ON_STATUS_ACTION_TYPE,";
     }
 
     if (_resolve_log_request_id.isset()) {

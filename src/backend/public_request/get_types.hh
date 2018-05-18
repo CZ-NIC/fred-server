@@ -16,19 +16,21 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GET_TYPE_NAMES_HH_4559661349854500AF12EF0ADE39836A
-#define GET_TYPE_NAMES_HH_4559661349854500AF12EF0ADE39836A
+#ifndef GET_TYPES_HH_4559661349854500AF12EF0ADE39836A
+#define GET_TYPES_HH_4559661349854500AF12EF0ADE39836A
+
+#include "src/libfred/public_request/public_request_type_iface.hh"
+
+#include <memory>
 
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
-namespace Type {
 
-std::string get_personal_info_auto_type_name();
-std::string get_personal_info_email_type_name();
-std::string get_personal_info_post_type_name();
+const LibFred::PublicRequestTypeIface& get_personal_info_auto_iface();
+const LibFred::PublicRequestTypeIface& get_personal_info_email_iface();
+const LibFred::PublicRequestTypeIface& get_personal_info_post_iface();
 
-} // namespace Fred::Backend::PublicRequest::Type
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend
 } // namespace Fred

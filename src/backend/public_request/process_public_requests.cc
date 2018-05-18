@@ -7,8 +7,10 @@
 #include "src/util/corba_wrapper_decl.hh"
 #include "src/libfred/public_request/public_request_lock_guard.hh"
 #include "src/libfred/public_request/info_public_request.hh"
+#include "src/libfred/public_request/update_public_request.hh"
 #include "src/deprecated/model/public_request_filter.hh"
 #include "src/backend/public_request/public_request.hh"
+#include "src/libfred/opcontext.hh"
 #include "src/util/csv/csv.hh"
 
 #include <array>
@@ -18,46 +20,6 @@ namespace Backend {
 namespace PublicRequest {
 
 namespace {
-
-void set_answer_email_id(
-        unsigned long long _public_request_id,
-        unsigned long long _answer_email_id,
-        LibFred::OperationContext& _ctx)
-{
-    const Database::Result dbres =
-        _ctx.get_conn().exec_params("UPDATE public_request "
-                                    "SET answer_email_id=$1::BIGINT "
-                                    "WHERE id=$2::BIGINT;",
-                                    Database::query_param_list
-                                    (_answer_email_id)
-                                    (_public_request_id));
-
-    if (dbres.rows_affected() == 1)
-    {
-        return;
-    }
-    throw std::runtime_error("failed public request's answer_email_id");
-}
-
-void set_on_status_action(
-        unsigned long long _public_request_id,
-        LibFred::PublicRequest::OnStatusAction::Enum _action,
-        LibFred::OperationContext& _ctx)
-{
-    const Database::Result dbres =
-        _ctx.get_conn().exec_params("UPDATE public_request "
-                                    "SET on_status_action=$1::enum_on_status_action_type "
-                                    "WHERE id=$2::BIGINT;",
-                                    Database::query_param_list
-                                    (Conversion::Enums::to_db_handle(_action))
-                                    (_public_request_id));
-
-    if (dbres.rows_affected() == 1)
-    {
-        return;
-    }
-    throw std::runtime_error("failed to switch public request's on status action");
-}
 
 template<typename T>
 std::string pretty_print_address(const T& _address)
@@ -334,20 +296,26 @@ unsigned long long send_personalinfo(
 
 void process_public_request_personal_info_answered(
         unsigned long long _public_request_id,
-        LibFred::OperationContext& _ctx,
+        const LibFred::PublicRequestTypeIface& _public_request_type,
         std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager,
         std::shared_ptr<LibFred::File::Transferer> _file_manager_client)
 {
     try
     {
-        unsigned long long email_id = send_personalinfo(_public_request_id, _ctx, _mailer_manager, _file_manager_client);
+        LibFred::OperationContextCreator ctx;
+        LibFred::PublicRequestLockGuardById locked_request(ctx, _public_request_id);
+        unsigned long long email_id = send_personalinfo(_public_request_id, ctx, _mailer_manager, _file_manager_client);
         try
         {
-            set_answer_email_id(_public_request_id, email_id, _ctx);
+            LibFred::UpdatePublicRequest()
+                .set_answer_email_id(email_id)
+                .set_on_status_action(LibFred::PublicRequest::OnStatusAction::processed)
+                .exec(locked_request, _public_request_type);
+            ctx.commit_transaction();
         }
         catch (...)
         {
-            _ctx.get_log().info(
+            ctx.get_log().info(
                     boost::format("Request %1% update failed, but email %2% sent") %
                     _public_request_id %
                     email_id);
@@ -355,10 +323,14 @@ void process_public_request_personal_info_answered(
     }
     catch (...)
     {
-        set_on_status_action(_public_request_id, LibFred::PublicRequest::OnStatusAction::failed, _ctx);
+        LibFred::OperationContextCreator ctx;
+        LibFred::PublicRequestLockGuardById locked_request(ctx, _public_request_id);
+        LibFred::UpdatePublicRequest()
+            .set_on_status_action(LibFred::PublicRequest::OnStatusAction::failed)
+            .exec(locked_request, _public_request_type);
+        ctx.commit_transaction();
         throw;
     }
-    set_on_status_action(_public_request_id, LibFred::PublicRequest::OnStatusAction::processed, _ctx);
 }
 
 } // namespace Fred::Backend::PublicRequest
