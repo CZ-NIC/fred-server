@@ -28,7 +28,6 @@ namespace Admin {
 
 void PublicRequestProcedure::exec()
 {
-    LibFred::OperationContextCreator ctx;
     std::set<std::string> request_types_filter;
     {
         std::set<std::string> request_types_filter_default = {
@@ -73,13 +72,16 @@ void PublicRequestProcedure::exec()
     }
     condition_query_part << ")";
 
-    const Database::Result dbres =
-        ctx.get_conn().exec_params("SELECT pr.id, eprs.name "
+    Database::Result dbres;
+    {
+        LibFred::OperationContextCreator ctx;
+        dbres = ctx.get_conn().exec_params("SELECT pr.id, eprs.name "
                                    "FROM public_request pr "
                                    "JOIN enum_public_request_type eprt ON pr.request_type=eprt.id "
                                    "JOIN enum_public_request_status eprs ON eprs.id=pr.status "
                                    "WHERE on_status_action=$1::enum_on_status_action_type" + condition_query_part.str(),
                                    query_param_list);
+    }
 
     for (std::size_t i = 0; i < dbres.size(); ++i)
     {
@@ -90,19 +92,22 @@ void PublicRequestProcedure::exec()
         {
             if (request_status == LibFred::PublicRequest::Status::answered)
             {
+                LibFred::OperationContextCreator ctx;
                 Fred::Backend::PublicRequest::process_public_request_personal_info_answered(
                         request_id,
                         ctx,
                         mailer_manager,
                         file_manager_client);
+                ctx.commit_transaction();
             }
         }
         catch (const std::exception& e)
         {
+            LibFred::OperationContextCreator ctx;
             ctx.get_log().error(e.what());
+            ctx.commit_transaction();
         }
     }
-    ctx.commit_transaction();
 }
 
 } // namespace Admin
