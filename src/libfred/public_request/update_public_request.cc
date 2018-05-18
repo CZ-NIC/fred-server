@@ -48,6 +48,12 @@ UpdatePublicRequest& UpdatePublicRequest::set_registrar_id(const Nullable< Regis
     return *this;
 }
 
+UpdatePublicRequest& UpdatePublicRequest::set_on_status_action(PublicRequest::OnStatusAction::Enum _on_status_action)
+{
+    on_status_action_ = _on_status_action;
+    return * this;
+}
+
 UpdatePublicRequest& UpdatePublicRequest::set_registrar_id(OperationContext &_ctx,
                                                            const std::string &_registrar_handle)
 {
@@ -211,6 +217,10 @@ UpdatePublicRequest::Result UpdatePublicRequest::update(OperationContext &_ctx,
                 bad_params.set_unknown_registrar_id(registrar_id);
             }
         }
+    }
+
+    if (on_status_action_.isset()) {
+        sql_set << "on_status_action=$" << params.add(on_status_action_.get_value()) << "::ENUM_ON_STATUS_ACTION_TYPE";
     }
 
     if (_resolve_log_request_id.isset()) {
