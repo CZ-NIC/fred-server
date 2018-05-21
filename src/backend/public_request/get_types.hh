@@ -21,8 +21,6 @@
 
 #include "src/libfred/public_request/public_request_type_iface.hh"
 
-#include <memory>
-
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
