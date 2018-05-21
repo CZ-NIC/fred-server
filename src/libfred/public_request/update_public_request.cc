@@ -165,7 +165,7 @@ UpdatePublicRequest::Result UpdatePublicRequest::update(OperationContext &_ctx,
             const auto on_status_action = _public_request_type.get_on_status_action(status_.get_value());
             sql_set << "on_status_action=$"
                     << params.add(Conversion::Enums::to_db_handle(on_status_action))
-                    << "::ENUM_ON_STATUS_ACTION_TYPE,";
+                    << "::enum_on_status_action_type,";
         }
         catch (const std::runtime_error &e) {
             bad_params.set_bad_public_request_status(status_.get_value());
@@ -222,7 +222,7 @@ UpdatePublicRequest::Result UpdatePublicRequest::update(OperationContext &_ctx,
     if (on_status_action_.isset()) {
         sql_set << "on_status_action=$"
                 << params.add(Conversion::Enums::to_db_handle(on_status_action_.get_value()))
-                << "::ENUM_ON_STATUS_ACTION_TYPE,";
+                << "::enum_on_status_action_type,";
     }
 
     if (_resolve_log_request_id.isset()) {
