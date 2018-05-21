@@ -55,11 +55,11 @@ DbHandle<ObjectType> to_db_handle(ObjectType enum_value);
 template <>
 ObjectType from_db_handle(const DbHandle<ObjectType>& handle);
 
-ObjectType object_type_from_string(const std::string& src);
+ObjectType object_type_from_cli_option(const std::string& cli_option);
 
 typedef std::set<ObjectType> SetOfObjectTypes;
 
-boost::optional<SetOfObjectTypes> construct_set_of_object_types_from_string(const std::string& src);
+boost::optional<SetOfObjectTypes> construct_set_of_object_types_from_cli_options(const std::string& cli_options);
 
 typedef std::chrono::duration<double> Seconds;
 

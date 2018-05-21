@@ -40,6 +40,7 @@
 #include <vector>
 
 #include <boost/format.hpp>
+#include <boost/lexical_cast.hpp>
 
 namespace Admin {
 
@@ -96,30 +97,30 @@ ObjectType from_db_handle(const DbHandle<ObjectType>& handle)
     return Conversion::Enums::inverse_transformation(handle, set_of_values, to_db_handle<ObjectType>);
 }
 
-ObjectType object_type_from_string(const std::string& src)
+ObjectType object_type_from_cli_option(const std::string& cli_option)
 {
     try
     {
-        return from_db_handle(DbHandle<ObjectType>::construct_from(src));
+        return from_db_handle(DbHandle<ObjectType>::construct_from(cli_option));
     }
     catch (const std::invalid_argument&)
     {
-        if (src == "1")
+        if (cli_option == "1")
         {
             std::cerr << "integer as object type is deprecated option" << std::endl;
             return ObjectType::contact;
         }
-        if (src == "2")
+        if (cli_option == "2")
         {
             std::cerr << "integer as object type is deprecated option" << std::endl;
             return ObjectType::nsset;
         }
-        if (src == "3")
+        if (cli_option == "3")
         {
             std::cerr << "integer as object type is deprecated option" << std::endl;
             return ObjectType::domain;
         }
-        if (src == "4")
+        if (cli_option == "4")
         {
             std::cerr << "integer as object type is deprecated option" << std::endl;
             return ObjectType::keyset;
@@ -128,9 +129,9 @@ ObjectType object_type_from_string(const std::string& src)
     throw std::runtime_error("unable convert to object type");
 }
 
-boost::optional<SetOfObjectTypes> construct_set_of_object_types_from_string(const std::string& src)
+boost::optional<SetOfObjectTypes> construct_set_of_object_types_from_cli_options(const std::string& cli_options)
 {
-    if (src.empty())
+    if (cli_options.empty())
     {
         return boost::none;
     }
@@ -138,10 +139,10 @@ boost::optional<SetOfObjectTypes> construct_set_of_object_types_from_string(cons
     SetOfObjectTypes set_of_object_types;
 
     static const std::regex delimiter(",");
-    for (auto object_types_itr = std::sregex_token_iterator(src.begin(), src.end(), delimiter, -1);
+    for (auto object_types_itr = std::sregex_token_iterator(cli_options.begin(), cli_options.end(), delimiter, -1);
          object_types_itr != std::sregex_token_iterator(); ++object_types_itr)
     {
-        const ObjectType object_type = object_type_from_string(*object_types_itr);
+        const ObjectType object_type = object_type_from_cli_option(*object_types_itr);
         set_of_object_types.insert(object_type);
     }
     return set_of_object_types;
@@ -165,24 +166,137 @@ std::string object_types_into_sql(
     return sql;
 }
 
+template <typename>
+struct ObjectTypeCorrespondingWith { };
+
+template <ObjectType>
+struct TagCorrespondingWith { };
+
 struct Domain_;
 typedef DbId<Domain_> DomainId;
 typedef DbHandle<Domain_> DomainFqdn;
+template <>
+struct ObjectTypeCorrespondingWith<Domain_>
+{
+    static constexpr ObjectType value = ObjectType::domain;
+};
+template <>
+struct TagCorrespondingWith<ObjectType::domain>
+{
+    typedef Domain_ type;
+};
 
 struct Contact_;
 typedef DbId<Contact_> ContactId;
 typedef DbHandle<Contact_> ContactHandle;
+template <>
+struct ObjectTypeCorrespondingWith<Contact_>
+{
+    static constexpr ObjectType value = ObjectType::contact;
+};
+template <>
+struct TagCorrespondingWith<ObjectType::contact>
+{
+    typedef Contact_ type;
+};
 
 struct Keyset_;
 typedef DbId<Keyset_> KeysetId;
 typedef DbHandle<Keyset_> KeysetHandle;
+template <>
+struct ObjectTypeCorrespondingWith<Keyset_>
+{
+    static constexpr ObjectType value = ObjectType::keyset;
+};
+template <>
+struct TagCorrespondingWith<ObjectType::keyset>
+{
+    typedef Keyset_ type;
+};
 
 struct Nsset_;
 typedef DbId<Nsset_> NssetId;
 typedef DbHandle<Nsset_> NssetHandle;
+template <>
+struct ObjectTypeCorrespondingWith<Nsset_>
+{
+    static constexpr ObjectType value = ObjectType::nsset;
+};
+template <>
+struct TagCorrespondingWith<ObjectType::nsset>
+{
+    typedef Nsset_ type;
+};
 
 struct Zone_;
 typedef DbId<Zone_> ZoneId;
+
+template <ObjectType object_type>
+struct NotFound:std::runtime_error
+{
+    NotFound(const DbId<typename TagCorrespondingWith<object_type>::type>& _id)
+        : std::runtime_error(to_db_handle(object_type).get_value() + " not found"),
+          id(_id)
+    { }
+    const DbId<typename TagCorrespondingWith<object_type>::type> id;
+};
+
+template <ObjectType object_type>
+struct NotExist:std::runtime_error
+{
+    NotExist(const DbId<typename TagCorrespondingWith<object_type>::type>& _id,
+             const DbHandle<typename TagCorrespondingWith<object_type>::type>& _handle)
+        : std::runtime_error(to_db_handle(object_type).get_value() + " " +
+                             _handle.get_value() + ":" + boost::lexical_cast<std::string>(_id.get_value()) + " not exist"),
+          id(_id),
+          handle(_handle)
+    { }
+    const DbId<typename TagCorrespondingWith<object_type>::type> id;
+    const DbHandle<typename TagCorrespondingWith<object_type>::type> handle;
+};
+
+template <ObjectType object_type>
+struct CaseNormalize
+{
+    static const std::string sql_function;
+};
+template <ObjectType object_type>
+const std::string CaseNormalize<object_type>::sql_function = "UPPER";
+
+template <>
+struct CaseNormalize<ObjectType::domain>
+{
+    static const std::string sql_function;
+};
+const std::string CaseNormalize<ObjectType::domain>::sql_function = "LOWER";
+
+template <typename T>
+const DbId<T>& lock_existing(LibFred::OperationContext& ctx, const DbId<T>& id)
+{
+    Database::query_param_list params(id.get_value());
+    params(to_db_handle(ObjectTypeCorrespondingWith<T>::value).get_value());
+    const Database::Result dbres = ctx.get_conn().exec_params(
+            "SELECT (SELECT id FROM object_registry "
+                    "WHERE id=obr.id AND type=obr.type AND erdate IS NULL FOR UPDATE) IS NOT NULL," +
+                    CaseNormalize<ObjectTypeCorrespondingWith<T>::value>::sql_function + "(name) "
+            "FROM object_registry obr "
+            "WHERE id=$1::BIGINT AND "
+                  "type=get_object_type_id($2::TEXT)",
+            params);
+    if (dbres.size() <= 0)
+    {
+        throw NotFound<ObjectTypeCorrespondingWith<T>::value>(id);
+    }
+    const bool object_exists = static_cast<bool>(dbres[0][0]);
+    if (!object_exists)
+    {
+        const std::string object_handle = static_cast<std::string>(dbres[0][1]);
+        throw NotExist<ObjectTypeCorrespondingWith<T>::value>(
+                id,
+                DbHandle<T>::construct_from(object_handle));
+    }
+    return id;
+}
 
 struct DomainToDelete
 {
@@ -197,6 +311,10 @@ struct DomainToDelete
     DomainId domain_id;
     DomainFqdn domain_fqdn;
     ZoneId zone_id;
+    DomainId lock(LibFred::OperationContext& _ctx)const
+    {
+        return lock_existing(_ctx, domain_id);
+    }
 };
 
 struct ContactToDelete
@@ -209,6 +327,10 @@ struct ContactToDelete
     { }
     ContactId contact_id;
     ContactHandle contact_handle;
+    ContactId lock(LibFred::OperationContext& _ctx)const
+    {
+        return lock_existing(_ctx, contact_id);
+    }
 };
 
 struct KeysetToDelete
@@ -221,6 +343,10 @@ struct KeysetToDelete
     { }
     KeysetId keyset_id;
     KeysetHandle keyset_handle;
+    KeysetId lock(LibFred::OperationContext& _ctx)const
+    {
+        return lock_existing(_ctx, keyset_id);
+    }
 };
 
 struct NssetToDelete
@@ -233,6 +359,10 @@ struct NssetToDelete
     { }
     NssetId nsset_id;
     NssetHandle nsset_handle;
+    NssetId lock(LibFred::OperationContext& _ctx)const
+    {
+        return lock_existing(_ctx, nsset_id);
+    }
 };
 
 unsigned init_objects_to_delete(
@@ -422,37 +552,90 @@ void delete_objects_marked_as_delete_candidate(
             if (idx_of_deleted_object < domains.size())
             {
                 const unsigned idx_of_deleted_domain = idx_of_deleted_object;
-                LibFred::DeleteDomainById(domains[idx_of_deleted_domain].domain_id.get_value()).exec(ctx);
-                std::cerr << "domain " << domains[idx_of_deleted_domain].domain_fqdn.get_value() << " "
-                             "(domain_id:" << domains[idx_of_deleted_domain].domain_id.get_value() << ", "
-                             "zone_id:" << domains[idx_of_deleted_domain].zone_id.get_value() << ") "
+                const DomainToDelete& domain = domains[idx_of_deleted_domain];
+                LibFred::DeleteDomainById(domain.lock(ctx).get_value()).exec(ctx);
+                std::cerr << "domain " << domain.domain_fqdn.get_value() << " "
+                             "(domain_id:" << domain.domain_id.get_value() << ", "
+                             "zone_id:" << domain.zone_id.get_value() << ") "
                              "successfully deleted" << std::endl;
             }
             else if (idx_of_deleted_object < (domains.size() + nssets.size()))
             {
                 const unsigned idx_of_deleted_nsset = idx_of_deleted_object - domains.size();
-                LibFred::DeleteNssetById(nssets[idx_of_deleted_nsset].nsset_id.get_value()).exec(ctx);
-                std::cerr << "nsset " << nssets[idx_of_deleted_nsset].nsset_handle.get_value() << " "
-                             "(nsset_id:" << nssets[idx_of_deleted_nsset].nsset_id.get_value() << ") "
+                const NssetToDelete& nsset = nssets[idx_of_deleted_nsset];
+                LibFred::DeleteNssetById(nsset.lock(ctx).get_value()).exec(ctx);
+                std::cerr << "nsset " << nsset.nsset_handle.get_value() << " "
+                             "(nsset_id:" << nsset.nsset_id.get_value() << ") "
                              "successfully deleted" << std::endl;
             }
             else if (idx_of_deleted_object < (domains.size() + nssets.size() + keysets.size()))
             {
                 const unsigned idx_of_deleted_keyset = idx_of_deleted_object - (domains.size() + nssets.size());
-                LibFred::DeleteKeysetById(keysets[idx_of_deleted_keyset].keyset_id.get_value()).exec(ctx);
-                std::cerr << "keyset " << keysets[idx_of_deleted_keyset].keyset_handle.get_value() << " "
-                             "(keyset_id:" << keysets[idx_of_deleted_keyset].keyset_id.get_value() << ") "
+                const KeysetToDelete& keyset = keysets[idx_of_deleted_keyset];
+                LibFred::DeleteKeysetById(keyset.lock(ctx).get_value()).exec(ctx);
+                std::cerr << "keyset " << keyset.keyset_handle.get_value() << " "
+                             "(keyset_id:" << keyset.keyset_id.get_value() << ") "
                              "successfully deleted" << std::endl;
             }
             else
             {
                 const unsigned idx_of_deleted_contact = idx_of_deleted_object - (domains.size() + nssets.size() + keysets.size());
-                LibFred::DeleteContactById(contacts[idx_of_deleted_contact].contact_id.get_value()).exec(ctx);
-                std::cerr << "contact " << contacts[idx_of_deleted_contact].contact_handle.get_value() << " "
-                             "(contact_id:" << contacts[idx_of_deleted_contact].contact_id.get_value() << ") "
+                const ContactToDelete& contact = contacts[idx_of_deleted_contact];
+                LibFred::DeleteContactById(contact.lock(ctx).get_value()).exec(ctx);
+                std::cerr << "contact " << contact.contact_handle.get_value() << " "
+                             "(contact_id:" << contact.contact_id.get_value() << ") "
                              "successfully deleted" << std::endl;
             }
             ctx.commit_transaction();
+        }
+        catch (const NotFound<ObjectType::contact>& e)
+        {
+            LOGGER(PACKAGE).error(boost::format("delete contact failed (%1%)") % e.what());
+            const unsigned idx_of_deleted_contact = idx_of_deleted_object - (domains.size() + nssets.size() + keysets.size());
+            std::cerr << "delete contact " << contacts[idx_of_deleted_contact].contact_handle.get_value() << " "
+                         "(contact_id:" << contacts[idx_of_deleted_contact].contact_id.get_value() << ") "
+                         "failed: " << e.what() << std::endl;
+        }
+        catch (const NotExist<ObjectType::contact>& e)
+        {
+            LOGGER(PACKAGE).info(boost::format("delete contact failed (%1%)") % e.what());
+        }
+        catch (const NotFound<ObjectType::domain>& e)
+        {
+            LOGGER(PACKAGE).error(boost::format("delete domain failed (%1%)") % e.what());
+            const unsigned idx_of_deleted_domain = idx_of_deleted_object;
+            std::cerr << "delete domain " << domains[idx_of_deleted_domain].domain_fqdn.get_value() << " "
+                         "(domain_id:" << domains[idx_of_deleted_domain].domain_id.get_value() << ", "
+                         "zone_id:" << domains[idx_of_deleted_domain].zone_id.get_value() << ") "
+                         "failed: " << e.what() << std::endl;
+        }
+        catch (const NotExist<ObjectType::domain>& e)
+        {
+            LOGGER(PACKAGE).info(boost::format("delete domain failed (%1%)") % e.what());
+        }
+        catch (const NotFound<ObjectType::keyset>& e)
+        {
+            LOGGER(PACKAGE).error(boost::format("delete keyset failed (%1%)") % e.what());
+            const unsigned idx_of_deleted_keyset = idx_of_deleted_object - (domains.size() + nssets.size());
+            std::cerr << "delete keyset " << keysets[idx_of_deleted_keyset].keyset_handle.get_value() << " "
+                         "(keyset_id:" << keysets[idx_of_deleted_keyset].keyset_id.get_value() << ") "
+                         "failed: " << e.what() << std::endl;
+        }
+        catch (const NotExist<ObjectType::keyset>& e)
+        {
+            LOGGER(PACKAGE).info(boost::format("delete keyset failed (%1%)") % e.what());
+        }
+        catch (const NotFound<ObjectType::nsset>& e)
+        {
+            LOGGER(PACKAGE).error(boost::format("delete nsset failed (%1%)") % e.what());
+            const unsigned idx_of_deleted_nsset = idx_of_deleted_object - domains.size();
+            std::cerr << "delete nsset " << nssets[idx_of_deleted_nsset].nsset_handle.get_value() << " "
+                         "(nsset_id:" << nssets[idx_of_deleted_nsset].nsset_id.get_value() << ") "
+                         "failed: " << e.what() << std::endl;
+        }
+        catch (const NotExist<ObjectType::nsset>& e)
+        {
+            LOGGER(PACKAGE).info(boost::format("delete nsset failed (%1%)") % e.what());
         }
         catch (const LibFred::DeleteContactById::Exception& e)
         {
