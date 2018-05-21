@@ -51,7 +51,7 @@ UpdatePublicRequest& UpdatePublicRequest::set_registrar_id(const Nullable< Regis
 UpdatePublicRequest& UpdatePublicRequest::set_on_status_action(PublicRequest::OnStatusAction::Enum _on_status_action)
 {
     on_status_action_ = _on_status_action;
-    return * this;
+    return *this;
 }
 
 UpdatePublicRequest& UpdatePublicRequest::set_registrar_id(OperationContext &_ctx,
