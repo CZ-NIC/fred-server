@@ -206,7 +206,7 @@ unsigned long long send_personalinfo(
                         {"Jméno", info_contact_data.name.get_value_or_default()},
                         {"Adresa trvalého bydliště", pretty_printed_address},
                         {"Korespondenční adresa", mailing_address},
-                        {"akturační adresa", billing_address},
+                        {"Fakturační adresa", billing_address},
                         {"Dodací adresa 1", shipping_address_1},
                         {"Dodací adresa 2", shipping_address_2},
                         {"Dodací adresa 3", shipping_address_3},
