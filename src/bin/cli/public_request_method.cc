@@ -88,13 +88,13 @@ void PublicRequestProcedure::exec()
                                            query_param_list);
     }
 
-    std::unordered_map<std::string, std::reference_wrapper<const LibFred::PublicRequestTypeIface>> type_to_iface;
+    std::unordered_map<std::string, const LibFred::PublicRequestTypeIface& (*)()> type_to_iface;
     type_to_iface.insert({Fred::Backend::PublicRequest::get_personal_info_auto_iface().get_public_request_type(),
-                std::cref(Fred::Backend::PublicRequest::get_personal_info_auto_iface())});
+                Fred::Backend::PublicRequest::get_personal_info_auto_iface});
     type_to_iface.insert({Fred::Backend::PublicRequest::get_personal_info_email_iface().get_public_request_type(),
-                std::cref(Fred::Backend::PublicRequest::get_personal_info_email_iface())});
+                Fred::Backend::PublicRequest::get_personal_info_email_iface});
     type_to_iface.insert({Fred::Backend::PublicRequest::get_personal_info_post_iface().get_public_request_type(),
-                std::cref(Fred::Backend::PublicRequest::get_personal_info_post_iface())});
+                Fred::Backend::PublicRequest::get_personal_info_post_iface});
     for (std::size_t i = 0; i < dbres.size(); ++i)
     {
         const auto request_id = static_cast<unsigned long long>(dbres[i][0]);
@@ -107,7 +107,7 @@ void PublicRequestProcedure::exec()
             {
                 Fred::Backend::PublicRequest::process_public_request_personal_info_answered(
                         request_id,
-                        type_to_iface.at(request_type),
+                        type_to_iface.at(request_type)(),
                         mailer_manager,
                         file_manager_client);
             }
