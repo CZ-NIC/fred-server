@@ -21,6 +21,7 @@
 
 #include <exception>
 #include <string>
+#include <regex>
 
 namespace LibFred {
 namespace Zone {
@@ -75,7 +76,8 @@ struct UpdateZoneException : std::exception
 
 inline bool is_enum_zone(const std::string& _fqdn)
 {
-    return (_fqdn.rfind("e164.arpa") != std::string::npos);
+    std::regex enum_regex("^([^.]+\\.)*e164\\.arpa\\.?$");
+    return std::regex_match(_fqdn, enum_regex);
 }
 
 } // namespace LibFred::Zone
