@@ -303,8 +303,8 @@ void process_public_request_personal_info_answered(
     try
     {
         LibFred::OperationContextCreator ctx;
-        LibFred::PublicRequestLockGuardById locked_request(ctx, _public_request_id);
-        unsigned long long email_id = send_personalinfo(_public_request_id, ctx, _mailer_manager, _file_manager_client);
+        const LibFred::PublicRequestLockGuardById locked_request(ctx, _public_request_id);
+        const unsigned long long email_id = send_personalinfo(_public_request_id, ctx, _mailer_manager, _file_manager_client);
         try
         {
             LibFred::UpdatePublicRequest()
@@ -313,18 +313,19 @@ void process_public_request_personal_info_answered(
                 .exec(locked_request, _public_request_type);
             ctx.commit_transaction();
         }
-        catch (...)
+        catch (const std::exception& e)
         {
             ctx.get_log().info(
-                    boost::format("Request %1% update failed, but email %2% sent") %
+                    boost::format("Request %1% update failed (%2%), but email %3% sent") %
                     _public_request_id %
+                    e.what() %
                     email_id);
         }
     }
     catch (...)
     {
         LibFred::OperationContextCreator ctx;
-        LibFred::PublicRequestLockGuardById locked_request(ctx, _public_request_id);
+        const LibFred::PublicRequestLockGuardById locked_request(ctx, _public_request_id);
         LibFred::UpdatePublicRequest()
             .set_on_status_action(LibFred::PublicRequest::OnStatusAction::failed)
             .exec(locked_request, _public_request_type);
