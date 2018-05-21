@@ -81,7 +81,7 @@ void PublicRequestProcedure::exec()
         LibFred::OperationContextCreator ctx;
         dbres = ctx.get_conn().exec_params("SELECT pr.id, eprt.name, eprs.name "
                                            "FROM public_request pr "
-                                           "JOIN enum_public_request_type eprt ON pr.request_type=eprt.id "
+                                           "JOIN enum_public_request_type eprt ON eprt.id=pr.request_type "
                                            "JOIN enum_public_request_status eprs ON eprs.id=pr.status "
                                            "WHERE pr.on_status_action=$1::enum_on_status_action_type" +
                                            condition_query_part.str(),
