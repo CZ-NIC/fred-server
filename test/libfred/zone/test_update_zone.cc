@@ -31,29 +31,27 @@ namespace Test {
 
 struct update_zone_fixture : public virtual Test::instantiate_db_template
 {
-    ::LibFred::Zone::InfoZoneData zone;
-    ::LibFred::Zone::InfoZoneData enum_zone;
+    ::LibFred::Zone::NonEnumZone non_enum_zone;
+    ::LibFred::Zone::EnumZone enum_zone;
 
     update_zone_fixture()
     {
         ::LibFred::OperationContextCreator ctx;
 
-        zone.fqdn = RandomDataGenerator().xstring(3);
-        zone.expiration_period_min_in_months = 1;
-        zone.expiration_period_max_in_months = 2;
-        zone.dots_max = 1;
-        zone.enum_zone = false;
-        zone.sending_warning_letter = false;
+        non_enum_zone.fqdn = RandomDataGenerator().xstring(3);
+        non_enum_zone.expiration_period_min_in_months = 1;
+        non_enum_zone.expiration_period_max_in_months = 2;
+        non_enum_zone.dots_max = 1;
+        non_enum_zone.sending_warning_letter = false;
 
-        ::LibFred::Zone::CreateZone(zone.fqdn, 6, 12)
+        ::LibFred::Zone::CreateZone(non_enum_zone.fqdn, 6, 12)
                 .exec(ctx);
 
         enum_zone.fqdn = "3.2.1.e164.arpa";
         enum_zone.expiration_period_min_in_months = 8;
         enum_zone.expiration_period_max_in_months = 9;
-        enum_zone.enum_validation_period_in_months = 10;
+        enum_zone.validation_period_in_months = 10;
         enum_zone.dots_max = 9;
-        enum_zone.enum_zone = true;
         enum_zone.sending_warning_letter = true;
         ::LibFred::Zone::CreateZone(enum_zone.fqdn, 6, 12)
                 .exec(ctx);
@@ -76,9 +74,9 @@ BOOST_AUTO_TEST_CASE(set_nonexistent_zone)
     ::LibFred::OperationContextCreator ctx;
 
     BOOST_CHECK_THROW(::LibFred::Zone::UpdateZone("someNonexistentZone")
-                .set_expiration_period_min(zone.expiration_period_min_in_months)
-                .set_expiration_period_max(zone.expiration_period_max_in_months)
-                .set_sending_warning_letter(zone.sending_warning_letter)
+                .set_expiration_period_min(non_enum_zone.expiration_period_min_in_months)
+                .set_expiration_period_max(non_enum_zone.expiration_period_max_in_months)
+                .set_sending_warning_letter(non_enum_zone.sending_warning_letter)
                 .exec(ctx),
            ::LibFred::Zone::NonExistentZone);
 }
@@ -87,7 +85,7 @@ BOOST_AUTO_TEST_CASE(set_zone_enum_validation_period)
 {
     ::LibFred::OperationContextCreator ctx;
 
-    BOOST_CHECK_THROW(::LibFred::Zone::UpdateZone(zone.fqdn)
+    BOOST_CHECK_THROW(::LibFred::Zone::UpdateZone(non_enum_zone.fqdn)
                 .set_enum_validation_period(3)
                 .exec(ctx),
            ::LibFred::Zone::NotEnumZone);
@@ -96,7 +94,7 @@ BOOST_AUTO_TEST_CASE(set_zone_enum_validation_period)
 BOOST_AUTO_TEST_CASE(set_zone_empty)
 {
    ::LibFred::OperationContextCreator ctx;
-   BOOST_CHECK_THROW(::LibFred::Zone::UpdateZone(zone.fqdn)
+   BOOST_CHECK_THROW(::LibFred::Zone::UpdateZone(non_enum_zone.fqdn)
                 .exec(ctx),
            ::LibFred::Zone::NoZoneData);
 }
@@ -107,13 +105,13 @@ BOOST_AUTO_TEST_CASE(set_enum_zone_update_all)
    ::LibFred::Zone::UpdateZone(enum_zone.fqdn)
                 .set_expiration_period_min(enum_zone.expiration_period_min_in_months)
                 .set_expiration_period_max(enum_zone.expiration_period_max_in_months)
-                .set_enum_validation_period(enum_zone.enum_validation_period_in_months)
+                .set_enum_validation_period(enum_zone.validation_period_in_months)
                 .set_sending_warning_letter(enum_zone.sending_warning_letter)
                 .exec(ctx),
    ctx.commit_transaction();
    ::LibFred::Zone::InfoZoneData new_zone = get_info_zone_data(enum_zone.fqdn);
 
-   BOOST_CHECK(enum_zone == new_zone);
+   BOOST_CHECK(enum_zone == boost::get<LibFred::Zone::EnumZone>(new_zone));
 }
 
 BOOST_AUTO_TEST_SUITE_END();

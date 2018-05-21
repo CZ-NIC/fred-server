@@ -31,35 +31,32 @@ namespace Test {
 
 struct info_zone_fixture : public virtual Test::instantiate_db_template
 {
-    ::LibFred::Zone::InfoZoneData info_zone_data;
-    ::LibFred::Zone::InfoZoneData info_zone_data_enum;
+    ::LibFred::Zone::NonEnumZone non_enum_zone;
+    ::LibFred::Zone::EnumZone enum_zone;
 
     info_zone_fixture()
     {
         ::LibFred::OperationContextCreator ctx;
 
-        info_zone_data.fqdn = "zoo";
-        info_zone_data.expiration_period_max_in_months = 6;
-        info_zone_data.expiration_period_min_in_months = 8;
-        info_zone_data.enum_validation_period_in_months = 0;
-        info_zone_data.dots_max = 1;
-        info_zone_data.enum_zone = false;
-        info_zone_data.sending_warning_letter = false;
+        non_enum_zone.fqdn = "zoo";
+        non_enum_zone.expiration_period_max_in_months = 6;
+        non_enum_zone.expiration_period_min_in_months = 8;
+        non_enum_zone.dots_max = 1;
+        non_enum_zone.sending_warning_letter = false;
 
-        ::LibFred::Zone::CreateZone(info_zone_data.fqdn, info_zone_data.expiration_period_min_in_months, info_zone_data.expiration_period_max_in_months)
+        ::LibFred::Zone::CreateZone(non_enum_zone.fqdn, non_enum_zone.expiration_period_min_in_months, non_enum_zone.expiration_period_max_in_months)
                 .exec(ctx);
 
-        info_zone_data_enum.fqdn = "3.2.1.e164.arpa";
-        info_zone_data_enum.expiration_period_max_in_months = 12;
-        info_zone_data_enum.expiration_period_min_in_months = 24;
-        info_zone_data_enum.enum_validation_period_in_months = 4;
-        info_zone_data_enum.dots_max = 9;
-        info_zone_data_enum.enum_zone = true;
-        info_zone_data_enum.sending_warning_letter = true;
+        enum_zone.fqdn = "3.2.1.e164.arpa";
+        enum_zone.expiration_period_max_in_months = 12;
+        enum_zone.expiration_period_min_in_months = 24;
+        enum_zone.validation_period_in_months = 4;
+        enum_zone.dots_max = 9;
+        enum_zone.sending_warning_letter = true;
 
-        ::LibFred::Zone::CreateZone(info_zone_data_enum.fqdn, info_zone_data_enum.expiration_period_min_in_months, info_zone_data_enum.expiration_period_max_in_months)
-                .set_enum_validation_period(info_zone_data_enum.enum_validation_period_in_months)
-                .set_sending_warning_letter(info_zone_data_enum.sending_warning_letter)
+        ::LibFred::Zone::CreateZone(enum_zone.fqdn, enum_zone.expiration_period_min_in_months, enum_zone.expiration_period_max_in_months)
+                .set_enum_validation_period(enum_zone.validation_period_in_months)
+                .set_sending_warning_letter(enum_zone.sending_warning_letter)
                 .exec(ctx);
         ctx.commit_transaction();
     }
@@ -83,16 +80,16 @@ BOOST_AUTO_TEST_CASE(set_info_zone)
 {
     ::LibFred::OperationContextCreator ctx;
 
-    ::LibFred::Zone::InfoZoneData zone_info = ::LibFred::Zone::InfoZone(info_zone_data.fqdn).exec(ctx);
-    BOOST_CHECK(info_zone_data == zone_info);
+    ::LibFred::Zone::InfoZoneData zone_info = ::LibFred::Zone::InfoZone(non_enum_zone.fqdn).exec(ctx);
+    BOOST_CHECK(non_enum_zone == boost::get<::LibFred::Zone::NonEnumZone>(zone_info));
 }
 
 BOOST_AUTO_TEST_CASE(set_info_enum_zone)
 {
     ::LibFred::OperationContextCreator ctx;
 
-    ::LibFred::Zone::InfoZoneData zone_info_enum = ::LibFred::Zone::InfoZone(info_zone_data_enum.fqdn).exec(ctx);
-    BOOST_CHECK(info_zone_data_enum == zone_info_enum);
+    ::LibFred::Zone::InfoZoneData zone_info = ::LibFred::Zone::InfoZone(enum_zone.fqdn).exec(ctx);
+    BOOST_CHECK(enum_zone == boost::get<::LibFred::Zone::EnumZone>(zone_info));
 }
 
 BOOST_AUTO_TEST_SUITE_END();

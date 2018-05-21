@@ -48,11 +48,11 @@ UpdateZone& UpdateZone::set_sending_warning_letter(const bool _sending_warning_l
 
 unsigned long long UpdateZone::exec(OperationContext& _ctx) const
 {
-    const bool is_data_for_update = (expiration_period_min_in_months_ != boost::none
+    const bool values_for_update_are_set = (expiration_period_min_in_months_ != boost::none
             || expiration_period_max_in_months_ != boost::none
             || enum_validation_period_in_months_ != boost::none
             || sending_warning_letter_ != boost::none);
-    if (!is_data_for_update)
+    if (!values_for_update_are_set)
     {
         throw NoZoneData();
     }

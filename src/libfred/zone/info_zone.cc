@@ -41,18 +41,36 @@ InfoZoneData InfoZone::exec(OperationContext& _ctx) const
     {
         throw InfoZoneException();
     }
+
     if (result.size() != 1)
     {
         throw NonExistentZone();
     }
+
     InfoZoneData info_zone_data;
-    info_zone_data.fqdn = static_cast<std::string>(result[0]["fqdn"]);
-    info_zone_data.expiration_period_max_in_months = static_cast<int>(result[0]["ex_period_max"]);
-    info_zone_data.expiration_period_min_in_months = static_cast<int>(result[0]["ex_period_min"]);
-    info_zone_data.enum_validation_period_in_months = static_cast<int>(result[0]["val_period"]);
-    info_zone_data.dots_max = static_cast<int>(result[0]["dots_max"]);
-    info_zone_data.enum_zone = static_cast<bool>(result[0]["enum_zone"]);
-    info_zone_data.sending_warning_letter = static_cast<bool>(result[0]["warning_letter"]);
+    const bool enum_zone = static_cast<bool>(result[0]["enum_zone"]);
+
+    if (enum_zone)
+    {
+        EnumZone enum_zone;
+        enum_zone.fqdn = static_cast<std::string>(result[0]["fqdn"]);
+        enum_zone.expiration_period_max_in_months = static_cast<int>(result[0]["ex_period_max"]);
+        enum_zone.expiration_period_min_in_months = static_cast<int>(result[0]["ex_period_min"]);
+        enum_zone.validation_period_in_months = static_cast<int>(result[0]["val_period"]);
+        enum_zone.dots_max = static_cast<int>(result[0]["dots_max"]);
+        enum_zone.sending_warning_letter = static_cast<bool>(result[0]["warning_letter"]);
+        info_zone_data = enum_zone;
+    }
+    else
+    {
+        NonEnumZone non_enum_zone;
+        non_enum_zone.fqdn = static_cast<std::string>(result[0]["fqdn"]);
+        non_enum_zone.expiration_period_max_in_months = static_cast<int>(result[0]["ex_period_max"]);
+        non_enum_zone.expiration_period_min_in_months = static_cast<int>(result[0]["ex_period_min"]);
+        non_enum_zone.dots_max = static_cast<int>(result[0]["dots_max"]);
+        non_enum_zone.sending_warning_letter = static_cast<bool>(result[0]["warning_letter"]);
+        info_zone_data = non_enum_zone;
+    }
     return info_zone_data;
 }
 

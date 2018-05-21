@@ -21,30 +21,48 @@
 
 #include "src/libfred/opcontext.hh"
 
+#include <boost/variant.hpp>
+
 namespace LibFred {
 namespace Zone {
 
-struct InfoZoneData
+struct Data
 {
     std::string fqdn;
     int expiration_period_min_in_months;
     int expiration_period_max_in_months;
-    int enum_validation_period_in_months;
     int dots_max;
-    bool enum_zone;
     bool sending_warning_letter;
+};
 
-    bool operator==(const InfoZoneData& _other)
+struct NonEnumZone: Data
+{
+    bool operator==(const NonEnumZone& _other) const
     {
         return (fqdn == _other.fqdn
                 && expiration_period_max_in_months == _other.expiration_period_max_in_months
                 && expiration_period_min_in_months == _other.expiration_period_min_in_months
-                && enum_validation_period_in_months == _other.enum_validation_period_in_months
                 && dots_max == _other.dots_max
-                && enum_zone == _other.enum_zone
                 && sending_warning_letter == _other.sending_warning_letter);
     }
 };
+
+struct EnumZone: Data
+{
+    int validation_period_in_months;
+
+    bool operator==(const EnumZone& _other) const
+    {
+        return (fqdn == _other.fqdn
+                && expiration_period_max_in_months == _other.expiration_period_max_in_months
+                && expiration_period_min_in_months == _other.expiration_period_min_in_months
+                && validation_period_in_months == _other.validation_period_in_months
+                && dots_max == _other.dots_max
+                && sending_warning_letter == _other.sending_warning_letter);
+    }
+};
+
+using InfoZoneData = boost::variant<boost::blank, NonEnumZone, EnumZone>;
 
 } // namespace LibFred::Zone
 } // namespace LibFred
