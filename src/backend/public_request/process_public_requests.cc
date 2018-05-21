@@ -321,6 +321,13 @@ void process_public_request_personal_info_answered(
                     e.what() %
                     email_id);
         }
+        catch (...)
+        {
+            ctx.get_log().info(
+                    boost::format("Request %1% update failed (unknown exception), but email %2% sent") %
+                    _public_request_id %
+                    email_id);
+        }
     }
     catch (...)
     {
