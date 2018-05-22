@@ -978,6 +978,7 @@ src_libfred_libfred_a_SOURCES = \
 		src/libfred/zone/update_zone.hh \
 		src/libfred/zone/update_zone.cc \
 		src/libfred/zone/util.hh \
+		src/libfred/zone/util.cc \
 		src/libfred/zone/zone.hh \
 		src/libfred/zone/zone.cc \
 		src/libfred/registrable_object/contact/verification/create_check.hh \

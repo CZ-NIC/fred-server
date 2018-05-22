@@ -74,11 +74,7 @@ struct UpdateZoneException : std::exception
     }
 };
 
-inline bool is_enum_zone(const std::string& _fqdn)
-{
-    std::regex enum_regex("^([^.]+\\.)*e164\\.arpa\\.?$");
-    return std::regex_match(_fqdn, enum_regex);
-}
+bool is_enum_zone(const std::string& _fqdn);
 
 } // namespace LibFred::Zone
 } // namespace LibFred

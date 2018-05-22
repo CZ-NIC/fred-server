@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE(set_min_create_enum_zone)
 
 BOOST_AUTO_TEST_CASE(set_max_create_enum_zone)
 {
-    const std::string fqdn = "1.2.e164.arpa";
+    const std::string fqdn = "1.2.E164.ArpA";
     ::LibFred::OperationContextCreator ctx;
     ::LibFred::Zone::CreateZone(fqdn, ex_period_min, ex_period_max)
             .set_enum_validation_period(5)
