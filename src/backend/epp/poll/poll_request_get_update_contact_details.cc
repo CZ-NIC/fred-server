@@ -55,13 +55,13 @@ HistoryContactData get_history_contact_data(
 
     const LibFred::InfoContactData old_history_data =
             LibFred::InfoContactHistoryByHistoryid(old_history_id).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()).info_contact_data;
-    const bool old_info_is_for_sponsoring_registrar = old_history_data.sponsoring_registrar_handle == session_registrar_handle;
+    const bool old_info_include_authinfo = old_history_data.sponsoring_registrar_handle == session_registrar_handle;
     const std::vector<LibFred::ObjectStateData> old_contact_states_data =
             LibFred::GetObjectStatesByHistoryId(old_history_id).exec(ctx).object_state_at_end;
 
     const LibFred::InfoContactData new_history_data =
             LibFred::InfoContactHistoryByHistoryid(new_history_id).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()).info_contact_data;
-    const bool new_info_is_for_sponsoring_registrar = new_history_data.sponsoring_registrar_handle == session_registrar_handle;
+    const bool new_info_include_authinfo = new_history_data.sponsoring_registrar_handle == session_registrar_handle;
     const std::vector<LibFred::ObjectStateData> new_contact_states_data =
             LibFred::GetObjectStatesByHistoryId(new_history_id).exec(ctx).object_state_at_begin;
 
@@ -69,11 +69,11 @@ HistoryContactData get_history_contact_data(
     retval.old_data = Epp::Contact::get_info_contact_output(
             old_history_data,
             old_contact_states_data,
-            old_info_is_for_sponsoring_registrar);
+            old_info_include_authinfo);
     retval.new_data = Epp::Contact::get_info_contact_output(
             new_history_data,
             new_contact_states_data,
-            new_info_is_for_sponsoring_registrar);
+            new_info_include_authinfo);
     return retval;
 }
 

@@ -37,31 +37,31 @@ void insert_discloseflags(const LibFred::InfoContactData& src, ContactDisclose& 
 {
     const bool meaning_of_present_discloseflag = dst.does_present_item_mean_to_disclose();
     if (src.disclosename == meaning_of_present_discloseflag) {
-        dst.add< ContactDisclose::Item::name >();
+        dst.add<ContactDisclose::Item::name>();
     }
     if (src.discloseorganization == meaning_of_present_discloseflag) {
-        dst.add< ContactDisclose::Item::organization >();
+        dst.add<ContactDisclose::Item::organization>();
     }
     if (src.discloseaddress == meaning_of_present_discloseflag) {
-        dst.add< ContactDisclose::Item::address >();
+        dst.add<ContactDisclose::Item::address>();
     }
     if (src.disclosetelephone == meaning_of_present_discloseflag) {
-        dst.add< ContactDisclose::Item::telephone >();
+        dst.add<ContactDisclose::Item::telephone>();
     }
     if (src.disclosefax == meaning_of_present_discloseflag) {
-        dst.add< ContactDisclose::Item::fax >();
+        dst.add<ContactDisclose::Item::fax>();
     }
     if (src.discloseemail == meaning_of_present_discloseflag) {
-        dst.add< ContactDisclose::Item::email >();
+        dst.add<ContactDisclose::Item::email>();
     }
     if (src.disclosevat == meaning_of_present_discloseflag) {
-        dst.add< ContactDisclose::Item::vat >();
+        dst.add<ContactDisclose::Item::vat>();
     }
     if (src.discloseident == meaning_of_present_discloseflag) {
-        dst.add< ContactDisclose::Item::ident >();
+        dst.add<ContactDisclose::Item::ident>();
     }
     if (src.disclosenotifyemail == meaning_of_present_discloseflag) {
-        dst.add< ContactDisclose::Item::notify_email >();
+        dst.add<ContactDisclose::Item::notify_email>();
     }
 }
 
@@ -113,10 +113,15 @@ boost::optional<LibFred::PersonalIdUnion> get_personal_id(
 
 } // namespace Epp::Contact::{anonymous}
 
+InfoContactOutputData::InfoContactOutputData(const boost::optional<ContactDisclose>& _disclose)
+    : disclose(_disclose)
+{
+}
+
 InfoContactOutputData get_info_contact_output(
     const LibFred::InfoContactData& _data,
     const std::vector<LibFred::ObjectStateData>& _object_state_data,
-    bool _info_is_for_sponsoring_registrar)
+    bool _include_authinfo)
 {
 
     // TODO: move get_discloseflags from info_contact.cc to this file (impl/ocntact_output.cc) and call this function from info_contact.cc (remove duplicit implementation)
@@ -210,8 +215,7 @@ InfoContactOutputData get_info_contact_output(
     ret.VAT = _data.vat;
     ret.personal_id = get_personal_id(_data.ssn, _data.ssntype);
 
-    const bool authinfopw_has_to_be_hidden = !_info_is_for_sponsoring_registrar;
-    ret.authinfopw = authinfopw_has_to_be_hidden ? boost::optional<std::string>() : _data.authinfopw;
+    ret.authinfopw = _include_authinfo ? _data.authinfopw : boost::optional<std::string>();
 
     return ret;
 }

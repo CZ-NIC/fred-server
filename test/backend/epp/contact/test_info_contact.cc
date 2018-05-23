@@ -30,6 +30,7 @@
 #include <boost/algorithm/string/join.hpp>
 #include <boost/assign/list_of.hpp>
 #include <boost/optional.hpp>
+#include <boost/optional/optional_io.hpp>
 #include <boost/test/unit_test.hpp>
 
 namespace Test {
@@ -45,7 +46,13 @@ bool to_disclose(const ::Epp::Contact::InfoContactOutputData& epp_data)
     return epp_data.disclose->should_be_disclosed<ITEM>(Epp::is_the_default_policy_to_disclose());
 }
 
-void check_equal(const ::Epp::Contact::InfoContactOutputData& epp_data, const ::LibFred::InfoContactData& fred_data)
+void check_equal_authinfopw(const boost::optional<std::string>& epp_data_authinfopw, const std::string fred_data_authinfopw)
+{
+    BOOST_REQUIRE(epp_data_authinfopw != boost::none);
+    BOOST_CHECK_EQUAL(*epp_data_authinfopw, fred_data_authinfopw);
+}
+
+void check_equal_except_authinfo(const ::Epp::Contact::InfoContactOutputData& epp_data, const ::LibFred::InfoContactData& fred_data)
 {
     BOOST_CHECK_EQUAL(boost::to_upper_copy(epp_data.handle), fred_data.handle);
     BOOST_CHECK_EQUAL(epp_data.name.get_value_or_default(), fred_data.name.get_value_or_default());
@@ -111,8 +118,6 @@ void check_equal(const ::Epp::Contact::InfoContactOutputData& epp_data, const ::
             fred_data.ssn.get_value_or_default());
     BOOST_CHECK_EQUAL(epp_data.personal_id.is_initialized() ? epp_data.personal_id->get_type() : "",
             fred_data.ssntype.get_value_or_default());
-    BOOST_REQUIRE(epp_data.authinfopw);
-    BOOST_CHECK_EQUAL(*epp_data.authinfopw, fred_data.authinfopw);
     BOOST_CHECK_EQUAL(to_disclose< ::Epp::Contact::ContactDisclose::Item::name>(epp_data), fred_data.disclosename);
     BOOST_CHECK_EQUAL(to_disclose< ::Epp::Contact::ContactDisclose::Item::organization>(epp_data), fred_data.discloseorganization);
     BOOST_CHECK_EQUAL(to_disclose< ::Epp::Contact::ContactDisclose::Item::address>(epp_data), fred_data.discloseaddress);
@@ -122,6 +127,17 @@ void check_equal(const ::Epp::Contact::InfoContactOutputData& epp_data, const ::
     BOOST_CHECK_EQUAL(to_disclose< ::Epp::Contact::ContactDisclose::Item::vat>(epp_data), fred_data.disclosevat);
     BOOST_CHECK_EQUAL(to_disclose< ::Epp::Contact::ContactDisclose::Item::ident>(epp_data), fred_data.discloseident);
     BOOST_CHECK_EQUAL(to_disclose< ::Epp::Contact::ContactDisclose::Item::notify_email>(epp_data), fred_data.disclosenotifyemail);
+}
+
+void check_equal(::Epp::Contact::InfoContactOutputData epp_data, const ::LibFred::InfoContactData& fred_data)
+{
+    check_equal_except_authinfo(epp_data, fred_data);
+    check_equal_authinfopw(epp_data.authinfopw, fred_data.authinfopw);
+}
+void check_equal_but_no_authinfopw(::Epp::Contact::InfoContactOutputData epp_data, const ::LibFred::InfoContactData& fred_data)
+{
+    check_equal_except_authinfo(epp_data, fred_data);
+    BOOST_CHECK_EQUAL(epp_data.authinfopw, boost::none);
 }
 
 } // namespace Test::{anonymous}
@@ -172,7 +188,7 @@ BOOST_FIXTURE_TEST_CASE(info_fail_nonexistent_handle, supply_ctx<HasRegistrarWit
 }
 
 
-BOOST_FIXTURE_TEST_CASE(info_ok_full_data, supply_ctx<HasRegistrarWithSessionAndContact>)
+BOOST_FIXTURE_TEST_CASE(info_ok_full_data_for_sponsoring_registrar, supply_ctx<HasRegistrarWithSessionAndContact>)
 {
     check_equal(
         ::Epp::Contact::info_contact(
@@ -182,6 +198,18 @@ BOOST_FIXTURE_TEST_CASE(info_ok_full_data, supply_ctx<HasRegistrarWithSessionAnd
             session.data
         ),
         contact.data);
+}
+
+BOOST_FIXTURE_TEST_CASE(info_ok_full_data_for_different_registrar, supply_ctx<HasRegistrarWithSessionAndContactOfDifferentRegistrar>)
+{
+    check_equal_but_no_authinfopw(
+        ::Epp::Contact::info_contact(
+            ctx,
+            contact_of_different_registrar.data.handle,
+            DefaultInfoContactConfigData(),
+            session.data
+        ),
+        contact_of_different_registrar.data);
 }
 
 BOOST_AUTO_TEST_SUITE_END();
