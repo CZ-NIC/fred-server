@@ -28,6 +28,7 @@
 #include "src/libfred/public_request/public_request_object_lock_guard.hh"
 #include "src/libfred/public_request/public_request_type_iface.hh"
 #include "src/libfred/public_request/public_request_status.hh"
+#include "src/libfred/public_request/public_request_on_status_action.hh"
 #include "src/util/optional_value.hh"
 
 #include <vector>
@@ -145,6 +146,13 @@ public:
     UpdatePublicRequest& set_registrar_id(OperationContext &_ctx, const std::string &_registrar_handle);
 
     /**
+     * Sets on_status_action of public request.
+     * @param _on_status_action on_status_action of public request
+     * @return operation instance reference to allow method chaining
+     */
+    UpdatePublicRequest& set_on_status_action(PublicRequest::OnStatusAction::Enum _on_status_action);
+
+    /**
      * Result of update operation.
      */
     struct Result
@@ -192,6 +200,7 @@ private:
     Optional< Nullable< std::string > > email_to_answer_;
     Optional< Nullable< EmailId > > answer_email_id_;
     Optional< Nullable< RegistrarId > > registrar_id_;
+    Optional< PublicRequest::OnStatusAction::Enum > on_status_action_;
 };
 
 } // namespace LibFred
