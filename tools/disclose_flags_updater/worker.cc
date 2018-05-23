@@ -21,7 +21,7 @@ void update_contact_disclose_flag_impl(
     ::LibFred::UpdateContactById update_op(_task.contact_id, _by_registrar);
     if (_logd_request_id != boost::none)
     {
-        update_op.set_logd_request_id(_logd_request_id.value());
+        update_op.set_logd_request_id(_logd_request_id.get());
     }
 
     if (_discloses.name != DiscloseValue::not_set)

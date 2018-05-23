@@ -186,7 +186,7 @@ int main(int argc, char *argv[])
 
         std::cout << std::endl;
 
-        boost::optional<std::thread> progress_thread;
+        std::thread progress_thread;
         if (opts.progress_display)
         {
             progress_thread = std::thread([&workers](){
@@ -255,9 +255,9 @@ int main(int argc, char *argv[])
         {
             t.join();
         }
-        if (progress_thread != boost::none)
+        if (progress_thread.joinable())
         {
-            progress_thread.value().join();
+            progress_thread.join();
         }
 
         std::cout << std::endl;
