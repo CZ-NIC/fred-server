@@ -26,7 +26,7 @@
 namespace LibFred {
 namespace Zone {
 
-struct Data
+struct NonEnumZone
 {
     std::string fqdn;
     int expiration_period_min_in_months;
@@ -35,31 +35,14 @@ struct Data
     bool sending_warning_letter;
 };
 
-struct NonEnumZone: Data
+struct EnumZone
 {
-    bool operator==(const NonEnumZone& _other) const
-    {
-        return (fqdn == _other.fqdn
-                && expiration_period_max_in_months == _other.expiration_period_max_in_months
-                && expiration_period_min_in_months == _other.expiration_period_min_in_months
-                && dots_max == _other.dots_max
-                && sending_warning_letter == _other.sending_warning_letter);
-    }
-};
-
-struct EnumZone: Data
-{
+    std::string fqdn;
+    int expiration_period_min_in_months;
+    int expiration_period_max_in_months;
     int validation_period_in_months;
-
-    bool operator==(const EnumZone& _other) const
-    {
-        return (fqdn == _other.fqdn
-                && expiration_period_max_in_months == _other.expiration_period_max_in_months
-                && expiration_period_min_in_months == _other.expiration_period_min_in_months
-                && validation_period_in_months == _other.validation_period_in_months
-                && dots_max == _other.dots_max
-                && sending_warning_letter == _other.sending_warning_letter);
-    }
+    int dots_max;
+    bool sending_warning_letter;
 };
 
 using InfoZoneData = boost::variant<boost::blank, NonEnumZone, EnumZone>;

@@ -16,18 +16,16 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "util.hh"
+#ifndef UTIL_HH_768620FFC83747FE8C6479F25B1F4031
+#define UTIL_HH_768620FFC83747FE8C6479F25B1F4031
 
-#include <regex>
+#include "src/libfred/zone/info_zone_data.hh"
 
-namespace LibFred {
-namespace Zone {
+namespace Test {
 
-bool is_enum_zone(const std::string& _fqdn)
-{
-    const std::regex enum_regex("^([^.]+\\.)*e164\\.arpa\\.?$", std::regex::icase);
-    return std::regex_match(_fqdn, enum_regex);
-}
+bool operator==(const ::LibFred::Zone::EnumZone& _first, const ::LibFred::Zone::EnumZone& _second);
 
-} // namespace LibFred::Zone
-} // namespace LibFred
+bool operator==(const ::LibFred::Zone::NonEnumZone& _first, const ::LibFred::Zone::NonEnumZone& _second);
+
+} // namespace Test
+#endif

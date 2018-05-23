@@ -20,6 +20,7 @@
 #include "src/libfred/zone/create_zone.hh"
 #include "src/libfred/zone/util.hh"
 #include "src/util/random_data_generator.hh"
+#include "test/libfred/zone/util.hh"
 #include "test/setup/fixtures.hh"
 
 #include <boost/test/test_tools.hpp>

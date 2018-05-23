@@ -21,7 +21,6 @@
 
 #include <exception>
 #include <string>
-#include <regex>
 
 namespace LibFred {
 namespace Zone {
