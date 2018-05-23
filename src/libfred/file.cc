@@ -27,7 +27,7 @@ const Database::DateTime& File::getCrDate() const
 {
     return crDate_;
 }
-int File::getFilesize() const
+unsigned long long File::getFilesize() const
 {
     return filesize_;
 }
@@ -99,8 +99,8 @@ List::reload(Database::Filters::Union &filter)
             std::string        path     = *(++col);
             std::string        mimetype = *(++col);
             Database::DateTime crdate   = *(++col);
-            unsigned long      size     = *(++col);
-            unsigned           type     = *(++col);
+            unsigned long long size     = *(++col);
+            unsigned long long type     = *(++col);
             std::string        typedesc = *(++col);
 
             File *file = new File(id, name, path, mimetype, crdate, size, type, typedesc);

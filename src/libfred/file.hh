@@ -27,7 +27,7 @@ public:
             const std::string& _path,
             const std::string& _mimeType,
             const Database::DateTime& _crDate,
-            int _filesize,
+            unsigned long long _filesize,
             unsigned long long _fileTypeId,
             const std::string& _fileTypeDesc):
         CommonObjectImplNew(),
@@ -47,7 +47,7 @@ public:
     const std::string& getPath() const;
     const std::string& getMimeType() const;
     const Database::DateTime& getCrDate() const;
-    int getFilesize() const;
+    unsigned long long getFilesize() const;
     unsigned long long getFileTypeId() const;
     const std::string& getFileTypeDesc() const;
 
@@ -57,7 +57,7 @@ private:
     std::string path_;
     std::string mimeType_;
     Database::DateTime crDate_;
-    int filesize_;
+    unsigned long long filesize_;
     unsigned long long fileTypeId_;
     std::string fileTypeDesc_;
 };

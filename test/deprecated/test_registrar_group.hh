@@ -62,7 +62,5 @@
 #include "src/util/cfg/config_handler_decl.hh"
 #include <boost/test/unit_test.hpp>
 
-unsigned long long mfid = 0;
-
 #endif // TEST_REGISTRAR_GROUP_H_
 
