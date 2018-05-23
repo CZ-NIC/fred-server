@@ -93,9 +93,9 @@ PublicRequestId CreatePublicRequest::exec(const LockedPublicRequestsOfObjectForU
         else {
             params(Database::QPNull);                                                       // $6::BIGINT
         }
-        params(Conversion::Enums::to_db_handle(PublicRequest::Status::active));             // $7::TEXT
+        params(Conversion::Enums::to_db_handle(PublicRequest::Status::opened));             // $7::TEXT
 
-        const auto on_status_action = _type.get_on_status_action(PublicRequest::Status::active);
+        const auto on_status_action = _type.get_on_status_action(PublicRequest::Status::opened);
         params(Conversion::Enums::to_db_handle(on_status_action)); // $8::ENUM_ON_STATUS_ACTION_TYPE
 
         const Database::Result res = _locked_object.get_ctx().get_conn().exec_params(
@@ -139,7 +139,7 @@ PublicRequestId CreatePublicRequest::exec(const LockedPublicRequestsOfObjectForU
     {
         Database::query_param_list params(_locked_object.get_id());            // $1::BIGINT
         params((*to_cancel_ptr)->get_public_request_type());                   // $2::TEXT
-        params(Conversion::Enums::to_db_handle(PublicRequest::Status::active));// $3::TEXT
+        params(Conversion::Enums::to_db_handle(PublicRequest::Status::opened));// $3::TEXT
         const Database::Result res = _locked_object.get_ctx().get_conn().exec_params(
             "SELECT pr.id "
             "FROM public_request pr "

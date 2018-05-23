@@ -43,6 +43,7 @@
 #include "src/libfred/public_request/public_request_authinfo_impl.hh"
 #include "src/libfred/public_request/public_request_block_impl.hh"
 #include "src/libfred/public_request/public_request_personalinfo_impl.hh"
+#include "src/libfred/public_request/create_public_request.hh"
 #include "src/libfred/registrable_object/contact/undisclose_address.hh"
 #include "src/libfred/registrar/info_registrar.hh"
 #include "src/util/cfg/config_handler_decl.hh"
@@ -912,7 +913,7 @@ ccReg::TID ccReg_Admin_i::resendPin3Letter(ccReg::TID publicRequestId)
         Database::Result res = conn.exec_params(
             "SELECT (SELECT name "            // [0] - type of request
                     "FROM enum_public_request_type WHERE id=pr.request_type),"
-                   "(SELECT name "            // [1] - request status new/answered/invalidated
+                   "(SELECT name "            // [1] - request status opened/resolved/invalidated
                     "FROM enum_public_request_status WHERE id=pr.status),"
                    "prmm.id IS NULL,"         // [2] - have any message
                    "prmm.message_archive_id," // [3] - sms/letter id
@@ -946,7 +947,7 @@ ccReg::TID ccReg_Admin_i::resendPin3Letter(ccReg::TID publicRequestId)
             throw ccReg::Admin::ObjectNotFound();
         }
         const std::string requestStatus = static_cast< std::string >(res[0][1]);
-        if (requestStatus != "new") {
+        if (requestStatus != Conversion::Enums::to_db_handle(LibFred::PublicRequest::Status::opened)) {
             LOGGER(PACKAGE).error(
                 boost::format("publicRequestId: %1% in %2% state is not new PIN3 request")
                 % publicRequestId
@@ -1035,7 +1036,7 @@ ccReg::TID ccReg_Admin_i::resendPin2SMS(ccReg::TID publicRequestId)
         Database::Result res = conn.exec_params(
             "SELECT (SELECT name "            // [0] - type of request
                     "FROM enum_public_request_type WHERE id=pr.request_type),"
-                   "(SELECT name "            // [1] - request status new/answered/invalidated
+                   "(SELECT name "            // [1] - request status opened/resolved/invalidated
                     "FROM enum_public_request_status WHERE id=pr.status),"
                    "prmm.id IS NULL,"         // [2] - have any message
                    "prmm.message_archive_id," // [3] - sms/letter id
@@ -1065,7 +1066,7 @@ ccReg::TID ccReg_Admin_i::resendPin2SMS(ccReg::TID publicRequestId)
             throw ccReg::Admin::ObjectNotFound();
         }
         const std::string requestStatus = static_cast< std::string >(res[0][1]);
-        if (requestStatus != "new") {
+        if (requestStatus != Conversion::Enums::to_db_handle(LibFred::PublicRequest::Status::opened)) {
             LOGGER(PACKAGE).error(
                 boost::format("publicRequestId: %1% in %2% state is not new PIN2 request")
                 % publicRequestId

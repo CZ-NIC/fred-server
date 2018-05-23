@@ -53,8 +53,8 @@ private:
         ::LibFred::PublicRequest::Status::Enum _old_status, ::LibFred::PublicRequest::Status::Enum _new_status)const
     {
         PublicRequestTypes result;
-        if ((_old_status == ::LibFred::PublicRequest::Status::active) &&
-            (_new_status == ::LibFred::PublicRequest::Status::answered)) {
+        if ((_old_status == ::LibFred::PublicRequest::Status::opened) &&
+            (_new_status == ::LibFred::PublicRequest::Status::resolved)) {
         }
         return result;
     }
@@ -255,7 +255,7 @@ BOOST_AUTO_TEST_CASE(update_public_request_wrong_public_request_id)
     BOOST_CHECK_EXCEPTION(
     try {
         ::LibFred::UpdatePublicRequest()
-            .set_status(::LibFred::PublicRequest::Status::answered)
+            .set_status(::LibFred::PublicRequest::Status::resolved)
             .exec(PublicRequestLockGuardFake(ctx, bad_public_request_id), public_request_type);
     }
     catch(const ::LibFred::UpdatePublicRequest::Exception &e) {
@@ -422,7 +422,7 @@ BOOST_AUTO_TEST_CASE(update_public_request_ok)
 {
     ::LibFred::OperationContextCreator ctx;
     ::LibFred::PublicRequestLockGuardById locked_request(ctx, create_result.public_request_id);
-    const ::LibFred::PublicRequest::Status::Enum enum_status = ::LibFred::PublicRequest::Status::answered;
+    const ::LibFred::PublicRequest::Status::Enum enum_status = ::LibFred::PublicRequest::Status::resolved;
     const std::string str_status = Conversion::Enums::to_db_handle(enum_status);
     const std::string reason = "Prostě proto.";
     const std::string email = "noreply@nic.cz";

@@ -18,11 +18,11 @@
 
 /**
  *  @file
- *  declaration of GetActivePublicRequest class
+ *  declaration of GetOpenedPublicRequest class
  */
 
-#ifndef GET_ACTIVE_PUBLIC_REQUEST_HH_DC9C890ACA6A4D5B81372F7FCFA8C864
-#define GET_ACTIVE_PUBLIC_REQUEST_HH_DC9C890ACA6A4D5B81372F7FCFA8C864
+#ifndef GET_OPENED_PUBLIC_REQUEST_HH_DC9C890ACA6A4D5B81372F7FCFA8C864
+#define GET_OPENED_PUBLIC_REQUEST_HH_DC9C890ACA6A4D5B81372F7FCFA8C864
 
 #include "src/libfred/public_request/public_request_type_iface.hh"
 #include "src/libfred/public_request/public_request_object_lock_guard.hh"
@@ -33,7 +33,7 @@ namespace LibFred {
 /**
  * Operation for public request creation.
  */
-class GetActivePublicRequest
+class GetOpenedPublicRequest
 {
 public:
     typedef ::uint64_t LogRequestId;///< logging request identification
@@ -49,16 +49,16 @@ public:
      * Constructor with mandatory parameter.
      * @param _type type of public request
      */
-    GetActivePublicRequest(const PublicRequestTypeIface &_type);
+    GetOpenedPublicRequest(const PublicRequestTypeIface &_type);
 
-    ~GetActivePublicRequest() { }
+    ~GetOpenedPublicRequest() { }
 
     /**
      * Executes searching of given public request.
      * @param _ctx contains reference to database and logging interface
      * @param _locked_object guarantees exclusive access to all public requests of given object
      * @param _log_request_id associated request id in logger
-     * @return unique numeric identification of active public request given type of given object
+     * @return unique numeric identification of opened public request given type of given object
      * @throw Exception if something wrong happened
      */
     PublicRequestId exec(OperationContext &_ctx,

@@ -133,7 +133,7 @@ struct PersonalinfoImplementation
     template <typename T>
     LibFred::PublicRequest::OnStatusAction::Enum get_on_status_action(LibFred::PublicRequest::Status::Enum _status) const
     {
-        if (_status == LibFred::PublicRequest::Status::answered)
+        if (_status == LibFred::PublicRequest::Status::resolved)
         {
             return LibFred::PublicRequest::OnStatusAction::scheduled;
         }
@@ -470,7 +470,7 @@ unsigned long long PublicRequestImpl::create_authinfo_request_registry_email(
                 LibFred::OperationContextCreator ctx;
                 LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, object_id);
                 LibFred::UpdatePublicRequest(
-                        LibFred::PublicRequest::Status::answered,
+                        LibFred::PublicRequest::Status::resolved,
                         Optional<Nullable<std::string> >(),
                         Optional<Nullable<std::string> >(),
                         email_id,
@@ -784,7 +784,7 @@ unsigned long long PublicRequestImpl::create_personal_info_request_registry_emai
         const auto public_request_id = LibFred::CreatePublicRequest()
             .exec(locked_object, Type::PersonalinfoAuto(), log_request_id);
         LibFred::UpdatePublicRequest()
-            .set_status(LibFred::PublicRequest::Status::answered)
+            .set_status(LibFred::PublicRequest::Status::resolved)
             .exec(locked_object, Type::PersonalinfoAuto(), log_request_id);
         ctx.commit_transaction();
 

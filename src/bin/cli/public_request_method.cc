@@ -105,9 +105,9 @@ void PublicRequestProcedure::exec()
             Conversion::Enums::from_db_handle<LibFred::PublicRequest::Status>(static_cast<std::string>(dbres[i][2]));
         try
         {
-            if (request_status == LibFred::PublicRequest::Status::answered)
+            if (request_status == LibFred::PublicRequest::Status::resolved)
             {
-                Fred::Backend::PublicRequest::process_public_request_personal_info_answered(
+                Fred::Backend::PublicRequest::process_public_request_personal_info_resolved(
                         request_id,
                         type_to_iface.at(request_type)(),
                         mailer_manager,

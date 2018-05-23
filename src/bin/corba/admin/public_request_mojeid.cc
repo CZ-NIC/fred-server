@@ -124,9 +124,9 @@ public:
         LOGGER(PACKAGE).debug(boost::format("invalidation request id=%1%") % this->getId());
         /* just send email - note that difference between succesfully
          * processed email and invalidated email is done
-         * by setting status_ = PRS_INVALID which is passed to email in
+         * by setting status_ = PRS_INVALIDATED which is passed to email in
          * fillTemplateParams(...) method -
-         * (params["status"] = getStatus() == PRS_ANSWERED ? "1" : "2";)
+         * (params["status"] = getStatus() == PRS_RESOLVED ? "1" : "2";)
          */
         this->get_answer_email_id() = this->sendEmail();
     }
@@ -192,7 +192,7 @@ public:
                                           ? stringify(birthdate_from_string_to_date(ssn))
                                           : std::string();
             params["address"] = res[0][4].isnull() ? std::string() : static_cast<std::string>(res[0][4]);
-            params["status"] = this->getStatus() == LibFred::PublicRequest::PRS_ANSWERED ? "1" : "2";
+            params["status"] = this->getStatus() == LibFred::PublicRequest::PRS_RESOLVED ? "1" : "2";
         }
     }
 

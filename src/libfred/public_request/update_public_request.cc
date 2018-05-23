@@ -1,5 +1,5 @@
 #include "src/libfred/public_request/update_public_request.hh"
-#include "src/libfred/public_request/get_active_public_request.hh"
+#include "src/libfred/public_request/get_opened_public_request.hh"
 
 #include <sstream>
 
@@ -72,7 +72,7 @@ namespace {
                              PublicRequestId _public_request_id)
 {
     Database::query_param_list params(_public_request_id);                    //$1::BIGINT
-    params(Conversion::Enums::to_db_handle(LibFred::PublicRequest::Status::active));//$2::TEXT
+    params(Conversion::Enums::to_db_handle(LibFred::PublicRequest::Status::opened));//$2::TEXT
     const Database::Result res = _ctx.get_conn().exec_params(
         "UPDATE message_archive ma "
         "SET status_id=(SELECT id FROM enum_send_status WHERE status_name='no_processing'),"
@@ -107,8 +107,8 @@ UpdatePublicRequest::Result UpdatePublicRequest::exec(const LockedPublicRequests
     result.public_request_type = _public_request_type.get_public_request_type();
     result.object_id           = _locked_public_requests.get_id();
     try {
-        while (true) {//iterate all active public requests of given type and given object
-            const PublicRequestId public_request_id = GetActivePublicRequest(_public_request_type)
+        while (true) {//iterate all opened public requests of given type and given object
+            const PublicRequestId public_request_id = GetOpenedPublicRequest(_public_request_type)
                                                           .exec(_locked_public_requests.get_ctx(),
                                                                 _locked_public_requests);
             const Result updated = this->update(_locked_public_requests.get_ctx(), public_request_id,
@@ -125,7 +125,7 @@ UpdatePublicRequest::Result UpdatePublicRequest::exec(const LockedPublicRequests
             }
         }
     }
-    catch (const GetActivePublicRequest::Exception &e) {
+    catch (const GetOpenedPublicRequest::Exception &e) {
         if (e.is_set_no_request_found()) {//no more requests to cancel
             return result;
         }
@@ -145,19 +145,19 @@ UpdatePublicRequest::Result UpdatePublicRequest::update(OperationContext &_ctx,
     if (status_.isset()) {
         try {
             switch (status_.get_value()) {
-            case PublicRequest::Status::answered:
+            case PublicRequest::Status::resolved:
                 break;
             case PublicRequest::Status::invalidated:
                 stop_letter_sending(_ctx, _public_request_id);
                 break;
             default:
-                throw std::runtime_error("unable to set other public request state than 'answered' or 'invalidated'");
+                throw std::runtime_error("unable to set other public request state than 'resolved' or 'invalidated'");
             }
             sql_set << "status=(SELECT id FROM enum_public_request_status WHERE name=$"
                     << params.add(Conversion::Enums::to_db_handle(status_.get_value()))
                     << "::TEXT),"
                        "resolve_time=CASE WHEN status=(SELECT id FROM enum_public_request_status WHERE name=$"
-                    << params.add(Conversion::Enums::to_db_handle(PublicRequest::Status::active))
+                    << params.add(Conversion::Enums::to_db_handle(PublicRequest::Status::opened))
                     << "::TEXT) "
                                          "THEN NOW() "
                                          "ELSE resolve_time "
@@ -283,7 +283,7 @@ UpdatePublicRequest::Result UpdatePublicRequest::update(OperationContext &_ctx,
     {
         Database::query_param_list params(result.object_id);                   // $1::BIGINT
         params((*type_to_cancel_ptr)->get_public_request_type());              // $2::TEXT
-        params(Conversion::Enums::to_db_handle(PublicRequest::Status::active));// $3::TEXT
+        params(Conversion::Enums::to_db_handle(PublicRequest::Status::opened));// $3::TEXT
         const Database::Result res = _ctx.get_conn().exec_params(
             "SELECT pr.id "
             "FROM public_request pr "

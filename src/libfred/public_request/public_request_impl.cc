@@ -43,11 +43,11 @@ std::string Status2Str(Status_PR _status)
 {
     switch (_status)
     {
-        case PRS_NEW:
-            return "New";
-        case PRS_ANSWERED:
-            return "Answered";
-        case PRS_INVALID:
+        case PRS_OPENED:
+            return "Opened";
+        case PRS_RESOLVED:
+            return "Resolved";
+        case PRS_INVALIDATED:
             return "Invalidated";
         default:
             return "STATUS UNKNOWN";
@@ -132,7 +132,7 @@ bool queryBlockRequest(
 }
 
 
-/* check if object has given request type already active */
+/* check if object has given request type already opened */
 unsigned long long check_public_request(
         const unsigned long long &_object_id,
         const Type &_type)
@@ -176,7 +176,7 @@ void cancel_public_request(
                 " status = $1::integer, resolve_request_id = $2::bigint"
                 " WHERE id = $3::integer",
                 Database::query_param_list
-                    (PRS_INVALID)
+                    (PRS_INVALIDATED)
                     (_request_id != 0 ? _request_id : Database::QPNull)
                     (prid));
 
@@ -228,7 +228,7 @@ bool object_was_changed_since_request_create(const unsigned long long _request_i
 
 PublicRequestImpl::PublicRequestImpl()
     : CommonObjectImpl(0), type_(), create_request_id_(0),
-      resolve_request_id_(0), status_(PRS_NEW), answer_email_id_(0),
+      resolve_request_id_(0), status_(PRS_OPENED), answer_email_id_(0),
       registrar_id_(0), man_()
 {
 }
@@ -313,7 +313,7 @@ void PublicRequestImpl::save()
         conn.exec(update_request);
 
         LOGGER(PACKAGE).info(boost::format("request id='%1%' updated successfully -- %2%") %
-                          id_ % (status_ == PRS_INVALID ? "invalidated" : "answered"));
+                          id_ % (status_ == PRS_INVALIDATED ? "invalidated" : "resolved"));
       }
       catch (Database::Exception& ex) {
         LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
@@ -610,9 +610,9 @@ void PublicRequestImpl::invalidateAction()
 }
 
 
-/// process request (or just close in case of invalid flag)
+/// process request (or just close in case of invalidated flag)
 void PublicRequestImpl::process(
-        bool invalid,
+        bool invalidated,
         bool check,
         const unsigned long long &_request_id)
 {
@@ -623,13 +623,13 @@ void PublicRequestImpl::process(
       resolve_time_ = ptime(boost::posix_time::second_clock::local_time());
       resolve_request_id_ = Database::ID(_request_id);
 
-      if (invalid) {
-          status_ = PRS_INVALID;
+      if (invalidated) {
+          status_ = PRS_INVALIDATED;
           invalidateAction();
       }
       else {
           processAction(check);
-          status_ = PRS_ANSWERED;
+          status_ = PRS_RESOLVED;
           answer_email_id_ = sendEmail();
       }
       save();
@@ -740,7 +740,7 @@ void PublicRequestAuthImpl::save()
 
 
 void PublicRequestAuthImpl::process(
-        bool _invalid,
+        bool _invalidated,
         bool _check,
         const unsigned long long &_request_id)
 {
@@ -752,23 +752,23 @@ void PublicRequestAuthImpl::process(
         throw NotAuthenticated();
     }
 
-    /* proces only new */
-    if (status_ != PRS_NEW) {
+    /* process only opened */
+    if (status_ != PRS_OPENED) {
         throw AlreadyProcessed(
                 this->getId(),
-                this->getStatus() == PRS_ANSWERED ? true : false);
+                this->getStatus() == PRS_RESOLVED ? true : false);
     }
 
     resolve_time_ = ptime(boost::posix_time::second_clock::local_time());
     resolve_request_id_ = (_request_id != 0) ? Database::ID(_request_id)
                                              : this->getRequestId();
 
-    if (_invalid) {
-        status_ = PRS_INVALID;
+    if (_invalidated) {
+        status_ = PRS_INVALIDATED;
     }
     else {
         processAction(_check);
-        status_ = PRS_ANSWERED;
+        status_ = PRS_RESOLVED;
     }
     save();
 

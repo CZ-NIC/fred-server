@@ -38,7 +38,7 @@
 #include "src/libfred/poll/create_poll_message.hh"
 #include "src/libfred/public_request/create_public_request.hh"
 #include "src/libfred/public_request/create_public_request_auth.hh"
-#include "src/libfred/public_request/get_active_public_request.hh"
+#include "src/libfred/public_request/get_opened_public_request.hh"
 #include "src/libfred/public_request/info_public_request_auth.hh"
 #include "src/libfred/public_request/public_request_lock_guard.hh"
 #include "src/libfred/public_request/public_request_status.hh"
@@ -1538,7 +1538,7 @@ LibFred::UpdatePublicRequest::Result answer(
         const std::string& _reason,
         MojeIdImpl::LogRequestId _log_request_id)
 {
-    return set_status(_locked_request, _request_type, LibFred::PublicRequest::Status::answered, _reason, _log_request_id);
+    return set_status(_locked_request, _request_type, LibFred::PublicRequest::Status::resolved, _reason, _log_request_id);
 }
 
 LibFred::UpdatePublicRequest::Result invalidate(
@@ -1710,9 +1710,9 @@ MojeIdImpl::ContactId MojeIdImpl::process_registration_request(
         {
             switch (pub_req_info.get_status())
             {
-                case LibFred::PublicRequest::Status::active:
+                case LibFred::PublicRequest::Status::opened:
                     break;
-                case LibFred::PublicRequest::Status::answered:
+                case LibFred::PublicRequest::Status::resolved:
                     throw MojeIdImplData::IdentificationAlreadyProcessed();
                 case LibFred::PublicRequest::Status::invalidated:
                     throw MojeIdImplData::IdentificationAlreadyInvalidated();
@@ -1925,12 +1925,12 @@ void MojeIdImpl::process_identification_request(
         bool reidentification;
         try
         {
-            public_request_id = LibFred::GetActivePublicRequest(
+            public_request_id = LibFred::GetOpenedPublicRequest(
                     Fred::Backend::MojeId::PublicRequest::ContactIdentification())
                                         .exec(ctx, locked_contact, _log_request_id);
             reidentification = false;
         }
-        catch (const LibFred::GetActivePublicRequest::Exception& e)
+        catch (const LibFred::GetOpenedPublicRequest::Exception& e)
         {
             if (!e.is_set_no_request_found())
             {
@@ -1938,12 +1938,12 @@ void MojeIdImpl::process_identification_request(
             }
             try
             {
-                public_request_id = LibFred::GetActivePublicRequest(
+                public_request_id = LibFred::GetOpenedPublicRequest(
                         Fred::Backend::MojeId::PublicRequest::ContactReidentification())
                                             .exec(ctx, locked_contact, _log_request_id);
                 reidentification = true;
             }
-            catch (const LibFred::GetActivePublicRequest::Exception& e)
+            catch (const LibFred::GetOpenedPublicRequest::Exception& e)
             {
                 if (e.is_set_no_request_found())
                 {
@@ -2187,7 +2187,7 @@ Fred::Backend::Buffer MojeIdImpl::get_validation_pdf(ContactId _contact_id) cons
                       "EXISTS(SELECT 1 FROM public_request_objects_map WHERE request_id=pr.id AND object_id=c.id)",
                 // clang-format on
                 Database::query_param_list
-                        (Conversion::Enums::to_db_handle(LibFred::PublicRequest::Status::active))
+                        (Conversion::Enums::to_db_handle(LibFred::PublicRequest::Status::opened))
                         (Fred::Backend::MojeId::PublicRequest::ContactValidation().get_public_request_type())
                         (_contact_id));
         if (res.size() <= 0)
@@ -2281,11 +2281,11 @@ void MojeIdImpl::create_validation_request(
         const LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_contact(ctx, _contact_id);
         try
         {
-            LibFred::GetActivePublicRequest(Fred::Backend::MojeId::PublicRequest::ContactValidation())
+            LibFred::GetOpenedPublicRequest(Fred::Backend::MojeId::PublicRequest::ContactValidation())
                     .exec(ctx, locked_contact, _log_request_id);
             throw MojeIdImplData::ValidationRequestExists();
         }
-        catch (const LibFred::GetActivePublicRequest::Exception& e)
+        catch (const LibFred::GetOpenedPublicRequest::Exception& e)
         {
             if (!e.is_set_no_request_found())
             {
@@ -2392,7 +2392,7 @@ void MojeIdImpl::validate_contact(
                         get_optional_log_request_id(_log_request_id));
         const LibFred::PublicRequestLockGuardById locked_request(ctx, public_request_id);
         LibFred::UpdatePublicRequest().set_registrar_id(mojeid_registrar_id_).set_status(
-                LibFred::PublicRequest::Status::answered).set_reason("MojeId validate_contact function has been called").exec(locked_request,
+                LibFred::PublicRequest::Status::resolved).set_reason("MojeId validate_contact function has been called").exec(locked_request,
                 Fred::Backend::MojeId::PublicRequest::ContactValidation().iface(),
                 get_optional_log_request_id(_log_request_id));
         LibFred::StatusList to_set;
@@ -2791,10 +2791,10 @@ void MojeIdImpl::send_new_pin3(
         try
         {
             const Fred::Backend::MojeId::PublicRequest::ContactIdentification type;
-            LibFred::GetActivePublicRequest get_active_public_request_op(type.iface());
+            LibFred::GetOpenedPublicRequest get_opened_public_request_op(type.iface());
             while (true)
             {
-                const LibFred::PublicRequestId request_id = get_active_public_request_op.exec(ctx, locked_object);
+                const LibFred::PublicRequestId request_id = get_opened_public_request_op.exec(ctx, locked_object);
                 LibFred::UpdatePublicRequest update_public_request_op;
                 LibFred::PublicRequestLockGuardById locked_request(ctx, request_id);
                 update_public_request_op.set_status(LibFred::PublicRequest::Status::invalidated);
@@ -2804,7 +2804,7 @@ void MojeIdImpl::send_new_pin3(
                 has_identification_request = true;
             }
         }
-        catch (const LibFred::GetActivePublicRequest::Exception& e)
+        catch (const LibFred::GetOpenedPublicRequest::Exception& e)
         {
             if (!e.is_set_no_request_found())
             {
@@ -2816,10 +2816,10 @@ void MojeIdImpl::send_new_pin3(
         try
         {
             const Fred::Backend::MojeId::PublicRequest::ContactReidentification type;
-            LibFred::GetActivePublicRequest get_active_public_request_op(type.iface());
+            LibFred::GetOpenedPublicRequest get_opened_public_request_op(type.iface());
             while (true)
             {
-                const LibFred::PublicRequestId request_id = get_active_public_request_op.exec(ctx, locked_object);
+                const LibFred::PublicRequestId request_id = get_opened_public_request_op.exec(ctx, locked_object);
                 LibFred::UpdatePublicRequest update_public_request_op;
                 LibFred::PublicRequestLockGuardById locked_request(ctx, request_id);
                 update_public_request_op.set_status(LibFred::PublicRequest::Status::invalidated);
@@ -2829,7 +2829,7 @@ void MojeIdImpl::send_new_pin3(
                 has_reidentification_request = true;
             }
         }
-        catch (const LibFred::GetActivePublicRequest::Exception& e)
+        catch (const LibFred::GetOpenedPublicRequest::Exception& e)
         {
             if (!e.is_set_no_request_found())
             {
