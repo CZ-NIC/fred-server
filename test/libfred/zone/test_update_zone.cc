@@ -74,8 +74,8 @@ BOOST_AUTO_TEST_CASE(set_nonexistent_zone)
     ::LibFred::OperationContextCreator ctx;
 
     BOOST_CHECK_THROW(::LibFred::Zone::UpdateZone("someNonexistentZone")
-                .set_expiration_period_min(non_enum_zone.expiration_period_min_in_months)
-                .set_expiration_period_max(non_enum_zone.expiration_period_max_in_months)
+                .set_expiration_period_min_in_months(non_enum_zone.expiration_period_min_in_months)
+                .set_expiration_period_max_in_months(non_enum_zone.expiration_period_max_in_months)
                 .set_sending_warning_letter(non_enum_zone.sending_warning_letter)
                 .exec(ctx),
            ::LibFred::Zone::NonExistentZone);
@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE(set_zone_enum_validation_period)
     ::LibFred::OperationContextCreator ctx;
 
     BOOST_CHECK_THROW(::LibFred::Zone::UpdateZone(non_enum_zone.fqdn)
-                .set_enum_validation_period(3)
+                .set_enum_validation_period_in_months(3)
                 .exec(ctx),
            ::LibFred::Zone::NotEnumZone);
 }
@@ -103,9 +103,9 @@ BOOST_AUTO_TEST_CASE(set_enum_zone_update_all)
 {
    ::LibFred::OperationContextCreator ctx;
    ::LibFred::Zone::UpdateZone(enum_zone.fqdn)
-                .set_expiration_period_min(enum_zone.expiration_period_min_in_months)
-                .set_expiration_period_max(enum_zone.expiration_period_max_in_months)
-                .set_enum_validation_period(enum_zone.validation_period_in_months)
+                .set_expiration_period_min_in_months(enum_zone.expiration_period_min_in_months)
+                .set_expiration_period_max_in_months(enum_zone.expiration_period_max_in_months)
+                .set_enum_validation_period_in_months(enum_zone.validation_period_in_months)
                 .set_sending_warning_letter(enum_zone.sending_warning_letter)
                 .exec(ctx),
    ctx.commit_transaction();

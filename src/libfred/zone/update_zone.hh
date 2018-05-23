@@ -35,9 +35,9 @@ public:
     {
     }
 
-    UpdateZone& set_expiration_period_min(int _expiration_period_min_in_months);
-    UpdateZone& set_expiration_period_max(int _expiration_period_max_in_months);
-    UpdateZone& set_enum_validation_period(int _enum_validation_period_in_months);
+    UpdateZone& set_expiration_period_min_in_months(int _expiration_period_min_in_months);
+    UpdateZone& set_expiration_period_max_in_months(int _expiration_period_max_in_months);
+    UpdateZone& set_enum_validation_period_in_months(int _enum_validation_period_in_months);
     UpdateZone& set_sending_warning_letter(bool _sending_warning_letter);
 
     unsigned long long exec(OperationContext& _ctx) const;

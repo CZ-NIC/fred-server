@@ -22,7 +22,7 @@
 namespace LibFred {
 namespace Zone {
 
-    CreateZone& CreateZone::set_enum_validation_period(const int _enum_validation_period_in_months)
+    CreateZone& CreateZone::set_enum_validation_period_in_months(const int _enum_validation_period_in_months)
     {
         enum_validation_period_in_months_ = _enum_validation_period_in_months;
         return *this;

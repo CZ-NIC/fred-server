@@ -55,7 +55,7 @@ struct info_zone_fixture : public virtual Test::instantiate_db_template
         enum_zone.sending_warning_letter = true;
 
         ::LibFred::Zone::CreateZone(enum_zone.fqdn, enum_zone.expiration_period_min_in_months, enum_zone.expiration_period_max_in_months)
-                .set_enum_validation_period(enum_zone.validation_period_in_months)
+                .set_enum_validation_period_in_months(enum_zone.validation_period_in_months)
                 .set_sending_warning_letter(enum_zone.sending_warning_letter)
                 .exec(ctx);
         ctx.commit_transaction();

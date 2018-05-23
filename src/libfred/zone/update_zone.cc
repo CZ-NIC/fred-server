@@ -22,19 +22,19 @@
 namespace LibFred {
 namespace Zone {
 
-UpdateZone& UpdateZone::set_expiration_period_min(const int _expiration_period_min_in_months)
+UpdateZone& UpdateZone::set_expiration_period_min_in_months(const int _expiration_period_min_in_months)
 {
     expiration_period_min_in_months_ = _expiration_period_min_in_months;
     return *this;
 }
 
-UpdateZone& UpdateZone::set_expiration_period_max(const int _expiration_period_max_in_months)
+UpdateZone& UpdateZone::set_expiration_period_max_in_months(const int _expiration_period_max_in_months)
 {
     expiration_period_max_in_months_ = _expiration_period_max_in_months;
     return *this;
 }
 
-UpdateZone& UpdateZone::set_enum_validation_period(const int _enum_validation_period_in_months)
+UpdateZone& UpdateZone::set_enum_validation_period_in_months(const int _enum_validation_period_in_months)
 {
     enum_validation_period_in_months_ = _enum_validation_period_in_months;
     return *this;
