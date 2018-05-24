@@ -18,7 +18,8 @@ unsigned long long CreateRegistrarCertification::exec(OperationContext& _ctx)
 
         constexpr int min_classification_value = 0;
         constexpr int max_classification_value = 5;
-        const bool clasification_is_out_of_range = (classification_ < min_classification_value || classification_ > max_classification_value);
+        const bool clasification_is_out_of_range = (classification_ < min_classification_value) ||
+                                                   (classification_ > max_classification_value);
         if (clasification_is_out_of_range)
         {
             throw ScoreOutOfRange();
