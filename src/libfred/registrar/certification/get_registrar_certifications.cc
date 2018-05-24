@@ -53,5 +53,5 @@ std::vector<RegistrarCertification> GetRegistrarCertifications::exec(OperationCo
     }
 }
 
-} // namespace Registrar
+} // namespace LibFred::Registrar
 } // namespace LibFred

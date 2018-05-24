@@ -54,7 +54,6 @@
 #include <boost/regex.hpp>
 
 #include <algorithm>
-#include <functional>
 #include <memory>
 #include <stdexcept>
 #include <utility>
@@ -1590,7 +1589,7 @@ public:
     {
         try
         {
-            OperationContextCreator ctx;//TODO checking namespace
+            OperationContextCreator ctx;
             UpdateRegistrarCertification(_certification_id, _classification, _eval_file_id).exec(ctx);
             ctx.commit_transaction();
         }
@@ -1608,14 +1607,14 @@ public:
         std::vector<CertificationData> result;
         const std::vector<RegistrarCertification> registrar_certifications = GetRegistrarCertifications(_registrar_id).exec(ctx);
         result.reserve(registrar_certifications.size());
-        for (const auto& it : registrar_certifications)
+        for (const auto& certification : registrar_certifications)
         {
             CertificationData cd;
-            cd.id = it.id;
-            cd.valid_from = it.valid_from;
-            cd.valid_until = it.valid_until;
-            cd.classification = static_cast<RegCertClass>(it.classification);
-            cd.eval_file_id = it.eval_file_id;
+            cd.id = certification.id;
+            cd.valid_from = certification.valid_from;
+            cd.valid_until = certification.valid_until;
+            cd.classification = static_cast<RegCertClass>(certification.classification);
+            cd.eval_file_id = certification.eval_file_id;
             result.push_back(std::move(cd));
         }
         return result;

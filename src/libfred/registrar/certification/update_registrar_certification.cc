@@ -42,8 +42,8 @@ void UpdateRegistrarCertification::exec(OperationContext& _ctx)
         }
         else
         {
-            constexpr unsigned short min_classification_value = 0;
-            constexpr unsigned short max_classification_value = 5;
+            constexpr int min_classification_value = 0;
+            constexpr int max_classification_value = 5;
 
             const bool is_clasification_out_of_range = (*classification_ < min_classification_value || *classification_ > max_classification_value);
             if (is_clasification_out_of_range)
@@ -51,12 +51,11 @@ void UpdateRegistrarCertification::exec(OperationContext& _ctx)
                 throw ScoreOutOfRange();
             }
             query = query("classification = ")
-                .param(*classification_, "integer")
-                (", eval_file_id = ")
-                .param_bigint(*eval_file_id_);
+                            .param(*classification_, "integer")(", eval_file_id = ")
+                            .param_bigint(*eval_file_id_);
         }
         query = query(" WHERE id = ")
-            .param_bigint(certification_id_);
+                        .param_bigint(certification_id_);
 
         _ctx.get_conn().exec_params(query);
     }
@@ -72,5 +71,5 @@ void UpdateRegistrarCertification::exec(OperationContext& _ctx)
     }
 }
 
-} // namespace Registrar
+} // namespace LibFred::Registrar
 } // namespace LibFred

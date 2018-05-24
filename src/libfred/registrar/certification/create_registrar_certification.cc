@@ -16,6 +16,14 @@ unsigned long long CreateRegistrarCertification::exec(OperationContext& _ctx)
             throw WrongIntervalOrder();
         }
 
+        constexpr int min_classification_value = 0;
+        constexpr int max_classification_value = 5;
+        const bool clasification_is_out_of_range = (classification_ < min_classification_value || classification_ > max_classification_value);
+        if (clasification_is_out_of_range)
+        {
+            throw ScoreOutOfRange();
+        }
+
         const Database::Result cert_in_past = _ctx.get_conn().exec_params(
                 "SELECT now()::date > $1::date",
                 Database::query_param_list(valid_until_));
@@ -36,15 +44,6 @@ unsigned long long CreateRegistrarCertification::exec(OperationContext& _ctx)
         if (range_overlap.size() > 0)
         {
             throw OverlappingRange();
-        }
-
-        constexpr unsigned short min_classification_value = 0;
-        constexpr unsigned short max_classification_value = 5;
-
-        const bool is_clasification_out_of_range = (classification_ < min_classification_value || classification_ > max_classification_value);
-        if (is_clasification_out_of_range)
-        {
-            throw ScoreOutOfRange();
         }
 
         const Database::Result created_certification = _ctx.get_conn().exec_params(
@@ -69,5 +68,5 @@ unsigned long long CreateRegistrarCertification::exec(OperationContext& _ctx)
     }
 }
 
-} // namespace Registrar
+} // namespace LibFred::Registrar
 } // namespace LibFred
