@@ -19,23 +19,23 @@
 
 namespace Test {
 
-bool operator==(const ::LibFred::Zone::EnumZone& _first, const ::LibFred::Zone::EnumZone& _second)
+bool operator==(const ::LibFred::Zone::EnumZone& _lhs, const ::LibFred::Zone::EnumZone& _rhs)
 {
-        return (_first.fqdn == _second.fqdn
-            && _first.expiration_period_max_in_months == _second.expiration_period_max_in_months
-            && _first.expiration_period_min_in_months == _second.expiration_period_min_in_months
-            && _first.validation_period_in_months == _second.validation_period_in_months
-            && _first.dots_max == _second.dots_max
-            && _first.sending_warning_letter == _second.sending_warning_letter);
+        return (_lhs.fqdn == _rhs.fqdn
+            && _lhs.expiration_period_max_in_months == _rhs.expiration_period_max_in_months
+            && _lhs.expiration_period_min_in_months == _rhs.expiration_period_min_in_months
+            && _lhs.validation_period_in_months == _rhs.validation_period_in_months
+            && _lhs.dots_max == _rhs.dots_max
+            && _lhs.sending_warning_letter == _rhs.sending_warning_letter);
 }
 
-bool operator==(const ::LibFred::Zone::NonEnumZone& _first, const ::LibFred::Zone::NonEnumZone& _second)
+bool operator==(const ::LibFred::Zone::NonEnumZone& _lhs, const ::LibFred::Zone::NonEnumZone& _rhs)
 {
-        return (_first.fqdn == _second.fqdn
-            && _first.expiration_period_max_in_months == _second.expiration_period_max_in_months
-            && _first.expiration_period_min_in_months == _second.expiration_period_min_in_months
-            && _first.dots_max == _second.dots_max
-            && _first.sending_warning_letter == _second.sending_warning_letter);
+        return (_lhs.fqdn == _rhs.fqdn
+            && _lhs.expiration_period_max_in_months == _rhs.expiration_period_max_in_months
+            && _lhs.expiration_period_min_in_months == _rhs.expiration_period_min_in_months
+            && _lhs.dots_max == _rhs.dots_max
+            && _lhs.sending_warning_letter == _rhs.sending_warning_letter);
 }
 
 } // namespace Test

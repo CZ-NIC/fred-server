@@ -23,9 +23,9 @@
 
 namespace Test {
 
-bool operator==(const ::LibFred::Zone::EnumZone& _first, const ::LibFred::Zone::EnumZone& _second);
+bool operator==(const ::LibFred::Zone::EnumZone& _lhs, const ::LibFred::Zone::EnumZone& _rhs);
 
-bool operator==(const ::LibFred::Zone::NonEnumZone& _first, const ::LibFred::Zone::NonEnumZone& _second);
+bool operator==(const ::LibFred::Zone::NonEnumZone& _lhs, const ::LibFred::Zone::NonEnumZone& _rhs);
 
 } // namespace Test
 #endif
