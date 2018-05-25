@@ -388,12 +388,12 @@ public:
                                                    const std::string &memo) = 0;
 
   ///create registrar group
-  virtual unsigned long long createRegistrarGroup(const std::string &group_name) =0;
+  virtual unsigned long long createRegistrarGroup(const std::string& _group_name) = 0;
   ///cancel registrar group
-  virtual void cancelRegistrarGroup(const TID& group_id) =0;
+  virtual void cancelRegistrarGroup(const TID _group_id) = 0;
   ///update registrar group
-  virtual void updateRegistrarGroup(const TID& group_id
-          , const std::string &group_name) =0;
+  virtual void updateRegistrarGroup(const TID _group_id,
+            const std::string& _group_name) = 0;
   ///create registrar certification
   virtual unsigned long long createRegistrarCertification( const TID& registrar_id
       , const Database::Date &valid_from
@@ -438,7 +438,7 @@ public:
       , const TID& registrar_group_id) =0;
 
   ///get registrar groups
-  virtual GroupSeq getRegistrarGroups() =0;
+  virtual GroupSeq getRegistrarGroups() = 0;
   ///get membership by registrar
   virtual MembershipByRegistrarSeq getMembershipByRegistrar( const TID& registrar_id) =0;
   ///get membership by groups
