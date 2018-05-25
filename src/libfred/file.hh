@@ -18,10 +18,6 @@ enum MemberType {
 class File:
     virtual public LibFred::CommonObjectImplNew {
 public:
-    File():
-        CommonObjectImplNew()
-    {
-    }
     File(unsigned long long _id,
             const std::string& _name,
             const std::string& _path,
@@ -77,8 +73,6 @@ class Manager {
 public:
     virtual ~Manager() {
     }
-
-    virtual File *createFile() const = 0;
 
     virtual List *createList() const = 0;
 

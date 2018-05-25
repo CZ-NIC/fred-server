@@ -194,13 +194,6 @@ public:
     {
     }
 
-    File *createFile() const
-    {
-        TRACE("[CALL] LibFred::File::ManagerImpl::createFile()");
-        File *file = new File();
-        return file;
-    }
-
     List* createList() const 
     {
         return new List();
