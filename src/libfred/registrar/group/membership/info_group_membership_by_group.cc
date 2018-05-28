@@ -10,7 +10,8 @@ std::vector<GroupMembershipByGroup> InfoGroupMembershipByGroup::exec(OperationCo
     {
         const Database::Result membership = _ctx.get_conn().exec_params(
                 "SELECT id, registrar_id, member_from, member_until "
-                "FROM registrar_group_map WHERE registrar_group_id=$1::bigint "
+                "FROM registrar_group_map "
+                "WHERE registrar_group_id=$1::bigint "
                 "ORDER BY member_from DESC, id DESC",
                 Database::query_param_list(group_id_));
         std::vector<GroupMembershipByGroup> result;

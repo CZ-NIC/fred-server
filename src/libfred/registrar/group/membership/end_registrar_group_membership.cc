@@ -13,8 +13,8 @@ void EndRegistrarGroupMembership::exec(OperationContext& _ctx)
         const Database::Result membership = _ctx.get_conn().exec_params(
                 "SELECT id FROM registrar_group_map "
                 "WHERE registrar_id=$1::bigint "
-                    "AND registrar_group_id=$2::bigint "
-                    "AND (member_until IS NULL OR member_until >= NOW())",
+                "AND registrar_group_id=$2::bigint "
+                "AND (member_until IS NULL OR member_until >= NOW())",
                 Database::query_param_list(registrar_id_)(group_id_));
         if (membership.size() < 1)
         {

@@ -9,10 +9,11 @@ std::vector<GroupMembershipByRegistrar> InfoGroupMembershipByRegistrar::exec(Ope
     try
     {
         const Database::Result membership = _ctx.get_conn().exec_params(
-              "SELECT id, registrar_group_id, member_from, member_until "
-              "FROM registrar_group_map WHERE registrar_id=$1::bigint "
-              "ORDER BY member_from DESC, id DESC",
-              Database::query_param_list(registrar_id_));
+                "SELECT id, registrar_group_id, member_from, member_until "
+                "FROM registrar_group_map "
+                "WHERE registrar_id=$1::bigint "
+                "ORDER BY member_from DESC, id DESC",
+                Database::query_param_list(registrar_id_));
         std::vector<GroupMembershipByRegistrar> result;
         result.reserve(membership.size());
         for (Database::Result::Iterator it = membership.begin(); it != membership.end(); ++it)

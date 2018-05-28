@@ -19,7 +19,7 @@ unsigned long long CreateRegistrarGroupMembership::exec(OperationContext& _ctx)
         const Database::Result last_membership = _ctx.get_conn().exec_params(
                 "SELECT id, member_until FROM registrar_group_map "
                 "WHERE registrar_id=$1::bigint "
-                    "AND registrar_group_id=$2::bigint "
+                "AND registrar_group_id=$2::bigint "
                 "ORDER BY member_until DESC LIMIT 1",
                 Database::query_param_list(registrar_id_)(group_id_));
         if (last_membership.size() > 0)
