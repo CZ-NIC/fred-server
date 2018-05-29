@@ -2782,6 +2782,33 @@ src_bin_cli_fred_admin_LDADD = \
 #
 # src/cli_admin/fred-admin
 
+# test/test-delete-objects-marked-as-delete-candidate
+#
+test_test_delete_objects_marked_as_delete_candidate_SOURCES = \
+		test/test_delete_objects_marked_as_delete_candidate.cc
+
+test_test_delete_objects_marked_as_delete_candidate_LDFLAGS = \
+		$(POSTGRESQL_LDFLAGS)
+
+test_test_delete_objects_marked_as_delete_candidate_LDADD = \
+		src/libfred/libfred.a \
+		src/util/log/liblog.a \
+		src/util/db/libdb.a \
+		src/deprecated/util/liboldutils.a \
+		src/util/libutil.a \
+		-lmpdec -lm -lrt \
+		$(BOOST_PROGRAM_OPTIONS_LIB) \
+		$(BOOST_DATE_TIME_LIB) \
+		$(BOOST_REGEX_LIB) \
+		$(BOOST_RANDOM_LIB) \
+		$(BOOST_FILESYSTEM_LIB) \
+		$(BOOST_THREAD_LIB) \
+		$(LIBIDN_LIBS) \
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB) \
+		-lresolv
+#
+# test/test-delete-objects-marked-as-delete-candidate
 
 # tools/disclose_flags_updater/fred-disclose-flag-updater
 #
@@ -2931,7 +2958,8 @@ SERVER_TESTS = \
 		test/test-optys \
 		test/test-corba-conversion \
 		test/backend/test-record-statement \
-		test/test-password-storage
+		test/test-password-storage \
+		test/test-delete-objects-marked-as-delete-candidate
 
 # test/backend/test-admin-contact-verification
 #
