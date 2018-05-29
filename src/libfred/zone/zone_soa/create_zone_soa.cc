@@ -16,7 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "create_zone_soa.hh"
+#include "src/libfred/zone/zone_soa/create_zone_soa.hh"
+#include "src/libfred/zone/zone_soa/exceptions.hh"
 
 namespace LibFred {
 namespace Zone {
@@ -66,9 +67,19 @@ unsigned long long CreateZoneSoa::exec(OperationContext& _ctx) const
             Database::query_param_list(fqdn_));
     if (zone_exists.size() != 1)
     {
-        throw;
+        throw NonExistentZone();
     }
     const unsigned long long zone_id = static_cast<unsigned long long>(zone_exists[0][0]);
+
+    const Database::Result zone_soa_exists = _ctx.get_conn().exec_params(
+            // clang-format off
+            "SELECT zone FROM zone_soa WHERE zone=$1::bigint ",
+            // clang-format off
+            Database::query_param_list(zone_id));
+    if (zone_soa_exists.size() != 0)
+    {
+        throw AlreadyExistingZoneSoa();
+    }
 
     try
     {
@@ -97,9 +108,9 @@ unsigned long long CreateZoneSoa::exec(OperationContext& _ctx) const
     }
     catch (const std::exception& e)
     {
-        throw;
+        throw CreateZoneSoaException();
     }
-    throw;
+    throw CreateZoneSoaException();
 }
 
 }
