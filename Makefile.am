@@ -987,6 +987,9 @@ src_libfred_libfred_a_SOURCES = \
 		src/libfred/zone/zone_soa/create_zone_soa.hh \
 		src/libfred/zone/zone_soa/create_zone_soa.cc \
 		src/libfred/zone/zone_soa/exceptions.hh \
+		src/libfred/zone/zone_soa/info_zone_soa.hh \
+		src/libfred/zone/zone_soa/info_zone_soa.cc \
+		src/libfred/zone/zone_soa/info_zone_soa_data.hh \
 		src/libfred/registrable_object/contact/verification/create_check.hh \
 		src/libfred/registrable_object/contact/verification/create_check.cc \
 		src/libfred/registrable_object/contact/verification/update_check.hh \
