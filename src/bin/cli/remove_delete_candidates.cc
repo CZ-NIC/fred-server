@@ -276,12 +276,19 @@ const DbId<T>& lock_existing(LibFred::OperationContext& ctx, const DbId<T>& id)
     Database::query_param_list params(id.get_value());
     params(to_db_handle(ObjectTypeCorrespondingWith<T>::value).get_value());
     const Database::Result dbres = ctx.get_conn().exec_params(
-            "SELECT (SELECT id FROM object_registry "
-                    "WHERE id=obr.id AND type=obr.type AND erdate IS NULL FOR UPDATE) IS NOT NULL," +
-                    CaseNormalize<ObjectTypeCorrespondingWith<T>::value>::sql_function + "(name) "
+            // clang-format off
+            "SELECT "
+                "(SELECT id "
+                 "FROM object_registry "
+                 "WHERE id=obr.id AND "
+                       "type=obr.type AND "
+                       "erdate IS NULL "
+                 "FOR UPDATE) IS NOT NULL," +
+                CaseNormalize<ObjectTypeCorrespondingWith<T>::value>::sql_function + "(name) "
             "FROM object_registry obr "
             "WHERE id=$1::BIGINT AND "
                   "type=get_object_type_id($2::TEXT)",
+            // clang-format on
             params);
     if (dbres.size() <= 0)
     {
