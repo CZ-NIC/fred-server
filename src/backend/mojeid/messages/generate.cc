@@ -629,28 +629,22 @@ Generate::MessageId send_auth_owner_letter(
 
     const std::string name = _data.name.get_value_or_default();
     const std::string::size_type name_delimiter_pos = name.find_last_of(' ');
-    const std::string firstname = name_delimiter_pos != std::string::npos
-                                  ? name.substr(
-            0,
-            name_delimiter_pos)
-                                  : name;
+    const std::string firstname = name.substr(
+                                          0,
+                                          name_delimiter_pos);
     const std::string lastname  = name_delimiter_pos != std::string::npos
                                   ? name.substr(
-            name_delimiter_pos + 1,
-            std::string::npos)
+                                          name_delimiter_pos + 1,
+                                          std::string::npos)
                                   : std::string();
-    static const char female_suffix[] = "á"; // utf-8 encoded
-    enum
-    {
-        FEMALE_SUFFIX_LEN = sizeof (female_suffix) - 1,
-        STR_EQUAL = 0
+    constexpr char female_suffix[] = u8"á";
+    constexpr auto female_suffix_len = sizeof(female_suffix) - sizeof(u8"");
+    constexpr int str_equal = 0;
 
-    };
-
-    const std::string sex = (FEMALE_SUFFIX_LEN <= name.length()) &&
+    const std::string sex = (female_suffix_len <= name.length()) &&
                             (std::strcmp(
-                                     name.c_str() + name.length() - FEMALE_SUFFIX_LEN,
-                                     female_suffix) == STR_EQUAL)
+                                     name.c_str() + name.length() - female_suffix_len,
+                                     female_suffix) == str_equal)
                             ? "female"
                             : "male";
 

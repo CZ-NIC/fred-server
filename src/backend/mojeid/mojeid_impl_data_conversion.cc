@@ -172,7 +172,7 @@ template <class SRC_INFO_TYPE>
 void common_conversion_into_fred(const SRC_INFO_TYPE& src, LibFred::InfoContactData& dst)
 {
     minimal_common_conversion_into_fred(src, dst);
-    dst.name = src.first_name + " " + src.last_name;
+    dst.name = src.name;
 
     if (dst.ssntype.isnull() || dst.ssn.isnull())
     {
@@ -225,18 +225,7 @@ void common_conversion_from_fred(const LibFred::InfoContactData& src, DST_INFO_T
 {
     minimal_common_conversion_from_fred(src, dst);
 
-    const std::string name = boost::algorithm::trim_copy(src.name.get_value_or_default());
-    const ::size_t last_name_start_pos = name.find_last_of(' ');
-    if (last_name_start_pos == std::string::npos)
-    {
-        dst.first_name = name;
-        dst.last_name.clear();
-    }
-    else
-    {
-        dst.first_name = boost::algorithm::trim_copy(name.substr(0, last_name_start_pos));
-        dst.last_name = name.substr(last_name_start_pos + 1);
-    }
+    dst.name = boost::algorithm::trim_copy(src.name.get_value_or_default());
 
     if (!src.ssn.isnull() && !src.ssntype.isnull())
     {
@@ -324,7 +313,7 @@ void from_into(const UpdateContact& src, LibFred::InfoContactData& dst)
 void from_into(const UpdateTransferContact& src, LibFred::InfoContactData& dst)
 {
     minimal_common_conversion_into_fred(src, dst);
-    dst.name = src.full_name;
+    dst.name = src.name;
     dst.telephone = src.telephone;
 }
 

@@ -287,8 +287,7 @@ void wrap_RegistrationValidationResult(const Fred::Backend::MojeIdImplData::Regi
         Registry::MojeID::Server::REGISTRATION_VALIDATION_ERROR& dst)
 {
     wrap_ValidationResult(src.username, dst.username);
-    wrap_ValidationResult(src.first_name, dst.first_name);
-    wrap_ValidationResult(src.last_name, dst.last_name);
+    wrap_ValidationResult(src.name, dst.name);
     wrap_ValidationResult(src.birth_date, dst.birth_date);
     wrap_ValidationResult(src.vat_id_num, dst.vat_id_num);
     wrap_ValidationResult(src.email, dst.email);
@@ -308,8 +307,7 @@ void wrap_RegistrationValidationResult(const Fred::Backend::MojeIdImplData::Regi
 void wrap_UpdateContactPrepareValidationResult(const Fred::Backend::MojeIdImplData::UpdateContactPrepareValidationResult& src,
         Registry::MojeID::Server::UPDATE_CONTACT_PREPARE_VALIDATION_ERROR& dst)
 {
-    wrap_ValidationResult(src.first_name, dst.first_name);
-    wrap_ValidationResult(src.last_name, dst.last_name);
+    wrap_ValidationResult(src.name, dst.name);
     wrap_ValidationResult(src.birth_date, dst.birth_date);
     wrap_ValidationResult(src.email, dst.email);
     wrap_ValidationResult(src.notify_email, dst.notify_email);
@@ -328,8 +326,7 @@ void wrap_UpdateContactPrepareValidationResult(const Fred::Backend::MojeIdImplDa
 void wrap_CreateValidationRequestValidationResult(const Fred::Backend::MojeIdImplData::CreateValidationRequestValidationResult& src,
         Registry::MojeID::Server::CREATE_VALIDATION_REQUEST_VALIDATION_ERROR& dst)
 {
-    wrap_ValidationResult(src.first_name, dst.first_name);
-    wrap_ValidationResult(src.last_name, dst.last_name);
+    wrap_ValidationResult(src.name, dst.name);
 
     wrap_MandatoryAddressValidationResult(src.permanent, dst.permanent);
 
@@ -351,8 +348,7 @@ void wrap_ProcessRegistrationValidationResult(const Fred::Backend::MojeIdImplDat
 void unwrap_CreateContact(const Registry::MojeID::CreateContact& src, Fred::Backend::MojeIdImplData::CreateContact& dst)
 {
     dst.username = src.username.in();
-    dst.first_name = src.first_name.in();
-    dst.last_name = src.last_name.in();
+    dst.name = src.name.in();
 
     unwrap_NullableString(src.organization.in(), dst.organization);
     unwrap_NullableString(src.vat_reg_num.in(), dst.vat_reg_num);
@@ -384,7 +380,7 @@ void unwrap_CreateContact(const Registry::MojeID::CreateContact& src, Fred::Back
 
 void unwrap_UpdateTransferContact(const Registry::MojeID::UpdateTransferContact& src, Fred::Backend::MojeIdImplData::UpdateTransferContact& dst)
 {
-    dst.full_name = src.full_name.in();
+    dst.name = src.name.in();
 
     unwrap_NullableString(src.organization.in(), dst.organization);
     unwrap_NullableString(src.vat_reg_num.in(), dst.vat_reg_num);
@@ -408,8 +404,7 @@ void unwrap_UpdateTransferContact(const Registry::MojeID::UpdateTransferContact&
 
 void unwrap_UpdateContact(const Registry::MojeID::UpdateContact& src, Fred::Backend::MojeIdImplData::UpdateContact& dst)
 {
-    dst.first_name = src.first_name.in();
-    dst.last_name = src.last_name.in();
+    dst.name = src.name.in();
 
     unwrap_NullableString(src.organization.in(), dst.organization);
     unwrap_NullableString(src.vat_reg_num.in(), dst.vat_reg_num);
@@ -443,8 +438,7 @@ Registry::MojeID::InfoContact_var wrap_InfoContact(const Fred::Backend::MojeIdIm
 
     int_to_int(src.id, result->id);
 
-    result->first_name = wrap_string(src.first_name)._retn();
-    result->last_name = wrap_string(src.last_name)._retn();
+    result->name = wrap_string(src.name)._retn();
 
     result->organization = wrap_Nullable_string(src.organization);
     result->vat_reg_num = wrap_Nullable_string(src.vat_reg_num);
@@ -477,8 +471,7 @@ Registry::MojeID::InfoContact_var wrap_InfoContact(const Fred::Backend::MojeIdIm
 void wrap_InfoContactPublishFlags(const Fred::Backend::MojeIdImplData::InfoContactPublishFlags& src,
         Registry::MojeID::InfoContactPublishFlags& dst)
 {
-    int_to_int(src.first_name, dst.first_name);
-    int_to_int(src.last_name, dst.last_name);
+    int_to_int(src.name, dst.name);
     int_to_int(src.organization, dst.organization);
     int_to_int(src.vat_reg_num, dst.vat_reg_num);
     int_to_int(src.birth_date, dst.birth_date);

@@ -176,7 +176,7 @@ void set_create_contact_arguments(
         const MojeIdImplData::CreateContact& _contact,
         LibFred::CreateContact& _arguments)
 {
-    _arguments.set_name(_contact.first_name + " " + _contact.last_name);
+    _arguments.set_name(_contact.name);
     LibFred::Contact::PlaceAddress permanent;
     from_into(_contact.permanent, permanent);
     _arguments.set_place(permanent);
@@ -1647,8 +1647,7 @@ void MojeIdImpl::get_contact_info_publish_flags(
 
         if (states.presents(LibFred::Object_State::linked))
         {
-            _flags.first_name = data.disclosename;
-            _flags.last_name = data.disclosename;
+            _flags.name = data.disclosename;
             _flags.organization = data.discloseorganization;
             _flags.vat_reg_num = data.discloseident;
             _flags.birth_date = data.discloseident;
@@ -1669,8 +1668,7 @@ void MojeIdImpl::get_contact_info_publish_flags(
         }
         else
         {
-            _flags.first_name = data.disclosename;
-            _flags.last_name = data.disclosename;
+            _flags.name = data.disclosename;
             _flags.organization = false;
             _flags.vat_reg_num = false;
             _flags.birth_date = false;
