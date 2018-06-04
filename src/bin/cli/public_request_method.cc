@@ -21,7 +21,7 @@
 #include "src/backend/public_request/process_public_requests.hh"
 #include "src/util/db/query_param.hh"
 #include "src/bin/cli/public_request_method.hh"
-#include "src/backend/public_request/types/personalinfo/public_request_personalinfo.hh"
+#include "src/backend/public_request/type/personalinfo/public_request_personalinfo.hh"
 #include "src/libfred/public_request/public_request_status.hh"
 #include "src/libfred/opcontext.hh"
 

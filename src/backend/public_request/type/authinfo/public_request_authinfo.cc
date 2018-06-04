@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/backend/public_request/types/authinfo/public_request_authinfo.hh"
-#include "src/backend/public_request/types/impl/public_request_impl.hh"
+#include "src/backend/public_request/type/authinfo/public_request_authinfo.hh"
+#include "src/backend/public_request/type/impl/public_request_impl.hh"
 #include "src/backend/public_request/send_email.hh"
 
 namespace Fred {

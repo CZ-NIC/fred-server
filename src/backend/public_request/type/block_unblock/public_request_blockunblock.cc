@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/backend/public_request/types/block_unblock/public_request_blockunblock.hh"
-#include "src/backend/public_request/types/impl/public_request_impl.hh"
+#include "src/backend/public_request/type/block_unblock/public_request_blockunblock.hh"
+#include "src/backend/public_request/type/impl/public_request_impl.hh"
 #include "src/util/log/context.hh"
 
 namespace Fred {
