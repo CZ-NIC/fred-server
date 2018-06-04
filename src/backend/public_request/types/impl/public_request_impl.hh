@@ -75,7 +75,7 @@ struct ImplementedBy
     };
 };
 
-} // Fred::Backend::PublicRequest::Type
+} // namespace Fred::Backend::PublicRequest::Type
 
 inline std::string create_ctx_name(const std::string& _name)
 {
@@ -118,9 +118,9 @@ short public_request_type_to_post_type(const std::string& public_request_type);
 
 std::string language_to_lang_code(PublicRequestImpl::Language::Enum lang);
 
-} // Fred::Backend::PublicRequest
-} // Fred::Backend
-} // Fred
+} // namespace Fred::Backend::PublicRequest
+} // namespace Fred::Backend
+} // namespace Fred
 
 #define LOGGING_CONTEXT(CTX_VAR, IMPL_OBJ) \
     Fred::Backend::PublicRequest::LogContext CTX_VAR((IMPL_OBJ), create_ctx_function_name(__FUNCTION__))

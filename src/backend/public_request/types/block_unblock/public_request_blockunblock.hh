@@ -27,32 +27,6 @@
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
-namespace Type {
-
-LibFred::PublicRequestTypeIface::PublicRequestTypes get_block_unblock_public_request_types_to_cancel_on_create();
-
-struct BlockUnblockImplementation
-{
-    template <typename>
-    LibFred::PublicRequestTypeIface::PublicRequestTypes get_public_request_types_to_cancel_on_create() const
-    {
-        return get_block_unblock_public_request_types_to_cancel_on_create();
-    }
-    template <typename T>
-    LibFred::PublicRequestTypeIface::PublicRequestTypes get_public_request_types_to_cancel_on_update(
-            LibFred::PublicRequest::Status::Enum,
-            LibFred::PublicRequest::Status::Enum) const
-    {
-        return LibFred::PublicRequestTypeIface::PublicRequestTypes();
-    };
-    template <typename T>
-    LibFred::PublicRequest::OnStatusAction::Enum get_on_status_action(LibFred::PublicRequest::Status::Enum _status) const
-    {
-        return LibFred::PublicRequest::OnStatusAction::processed;
-    };
-};
-
-} // Fred::Backend::PublicRequest::Type
 
 const LibFred::PublicRequestTypeIface& get_block_changes_email_iface();
 const LibFred::PublicRequestTypeIface& get_block_changes_post_iface();
@@ -68,8 +42,8 @@ const LibFred::PublicRequestTypeIface& get_block_change_iface(PublicRequestImpl:
 const LibFred::PublicRequestTypeIface& get_unblock_transfer_iface(PublicRequestImpl::ConfirmedBy::Enum confirmation_method);
 const LibFred::PublicRequestTypeIface& get_unblock_changes_iface(PublicRequestImpl::ConfirmedBy::Enum confirmation_method);
 
-} // Fred::Backend::PublicRequest
-} // Fred::Backend
-} // Fred
+} // namespace Fred::Backend::PublicRequest
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

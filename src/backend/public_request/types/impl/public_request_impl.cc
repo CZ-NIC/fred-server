@@ -91,6 +91,6 @@ std::string language_to_lang_code(PublicRequestImpl::Language::Enum lang)
     throw std::invalid_argument("language code not found");
 }
 
-} // Fred::Backend::PublicRequest
-} // Fred::Backend
-} // Fred
+} // namespace Fred::Backend::PublicRequest
+} // namespace Fred::Backend
+} // namespace Fred

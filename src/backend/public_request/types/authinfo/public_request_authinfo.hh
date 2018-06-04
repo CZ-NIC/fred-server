@@ -28,32 +28,6 @@
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
-namespace Type {
-
-struct AuthinfoImplementation
-{
-    template <typename T>
-    LibFred::PublicRequestTypeIface::PublicRequestTypes get_public_request_types_to_cancel_on_create() const
-    {
-        LibFred::PublicRequestTypeIface::PublicRequestTypes res;
-        res.insert(LibFred::PublicRequestTypeIface::IfacePtr(new T));
-        return res;
-    }
-    template <typename T>
-    LibFred::PublicRequestTypeIface::PublicRequestTypes get_public_request_types_to_cancel_on_update(
-            LibFred::PublicRequest::Status::Enum,
-            LibFred::PublicRequest::Status::Enum) const
-    {
-        return LibFred::PublicRequestTypeIface::PublicRequestTypes();
-    };
-    template <typename T>
-    LibFred::PublicRequest::OnStatusAction::Enum get_on_status_action(LibFred::PublicRequest::Status::Enum _status) const
-    {
-        return LibFred::PublicRequest::OnStatusAction::processed;
-    };
-};
-
-} // Fred::Backend::PublicRequest::Type
 
 unsigned long long send_authinfo(
         unsigned long long public_request_id,
@@ -67,8 +41,8 @@ const LibFred::PublicRequestTypeIface& get_auth_info_auto_iface();
 const LibFred::PublicRequestTypeIface& get_auth_info_email_iface();
 const LibFred::PublicRequestTypeIface& get_auth_info_post_iface();
 
-} // Fred::Backend::PublicRequest
-} // Fred::Backend
-} // Fred
+} // namespace Fred::Backend::PublicRequest
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

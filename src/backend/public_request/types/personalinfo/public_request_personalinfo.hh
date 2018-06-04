@@ -26,41 +26,13 @@
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
-namespace Type {
-
-struct PersonalinfoImplementation
-{
-    template <typename T>
-    LibFred::PublicRequestTypeIface::PublicRequestTypes get_public_request_types_to_cancel_on_create() const
-    {
-        return LibFred::PublicRequestTypeIface::PublicRequestTypes();
-    }
-    template <typename T>
-    LibFred::PublicRequestTypeIface::PublicRequestTypes get_public_request_types_to_cancel_on_update(
-            LibFred::PublicRequest::Status::Enum,
-            LibFred::PublicRequest::Status::Enum) const
-    {
-        return LibFred::PublicRequestTypeIface::PublicRequestTypes();
-    };
-
-    template <typename T>
-    LibFred::PublicRequest::OnStatusAction::Enum get_on_status_action(LibFred::PublicRequest::Status::Enum _status) const
-    {
-        if (_status == LibFred::PublicRequest::Status::resolved)
-        {
-            return LibFred::PublicRequest::OnStatusAction::scheduled;
-        }
-        return LibFred::PublicRequest::OnStatusAction::processed;
-    };
-};
-} // Fred::Backend::PublicRequest::Type
 
 const LibFred::PublicRequestTypeIface& get_personal_info_auto_iface();
 const LibFred::PublicRequestTypeIface& get_personal_info_email_iface();
 const LibFred::PublicRequestTypeIface& get_personal_info_post_iface();
 
-} // Fred::Backend::PublicRequest
-} // Fred::Backend
-} // Fred
+} // namespace Fred::Backend::PublicRequest
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

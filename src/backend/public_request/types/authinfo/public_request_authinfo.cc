@@ -25,6 +25,31 @@ namespace Backend {
 namespace PublicRequest {
 namespace Type {
 
+namespace {
+
+struct AuthinfoImplementation
+{
+    template <typename T>
+    LibFred::PublicRequestTypeIface::PublicRequestTypes get_public_request_types_to_cancel_on_create() const
+    {
+        LibFred::PublicRequestTypeIface::PublicRequestTypes res;
+        res.insert(LibFred::PublicRequestTypeIface::IfacePtr(new T));
+        return res;
+    }
+    template <typename T>
+    LibFred::PublicRequestTypeIface::PublicRequestTypes get_public_request_types_to_cancel_on_update(
+            LibFred::PublicRequest::Status::Enum,
+            LibFred::PublicRequest::Status::Enum) const
+    {
+        return LibFred::PublicRequestTypeIface::PublicRequestTypes();
+    };
+    template <typename T>
+    LibFred::PublicRequest::OnStatusAction::Enum get_on_status_action(LibFred::PublicRequest::Status::Enum _status) const
+    {
+        return LibFred::PublicRequest::OnStatusAction::processed;
+    };
+};
+
 typedef ImplementedBy<AuthinfoImplementation> AuthinfoPublicRequest;
 
 extern const char authinfo_auto_pif[] = "authinfo_auto_pif";
@@ -36,7 +61,8 @@ typedef AuthinfoPublicRequest::Named<authinfo_email_pif> AuthinfoEmail;
 extern const char authinfo_post_pif[] = "authinfo_post_pif";
 typedef AuthinfoPublicRequest::Named<authinfo_post_pif> AuthinfoPost;
 
-} // Fred::Backend::PublicRequest::Type
+} // namespace Fred::Backend::PublicRequest::Type::{anonymous}
+} // namespace Fred::Backend::PublicRequest::Type
 
 unsigned long long send_authinfo(
         unsigned long long public_request_id,
@@ -186,6 +212,6 @@ const LibFred::PublicRequestTypeIface& get_auth_info_post_iface()
     return singleton;
 }
 
-} // Fred::Backend::PublicRequest
-} // Fred::Backend
-} // Fred
+} // namespace Fred::Backend::PublicRequest
+} // namespace Fred::Backend
+} // namespace Fred

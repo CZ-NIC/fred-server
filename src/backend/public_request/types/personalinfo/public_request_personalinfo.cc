@@ -25,8 +25,33 @@ namespace Backend {
 namespace PublicRequest {
 namespace Type {
 
-
 namespace {
+
+struct PersonalinfoImplementation
+{
+    template <typename T>
+    LibFred::PublicRequestTypeIface::PublicRequestTypes get_public_request_types_to_cancel_on_create() const
+    {
+        return LibFred::PublicRequestTypeIface::PublicRequestTypes();
+    }
+    template <typename T>
+    LibFred::PublicRequestTypeIface::PublicRequestTypes get_public_request_types_to_cancel_on_update(
+            LibFred::PublicRequest::Status::Enum,
+            LibFred::PublicRequest::Status::Enum) const
+    {
+        return LibFred::PublicRequestTypeIface::PublicRequestTypes();
+    };
+
+    template <typename T>
+    LibFred::PublicRequest::OnStatusAction::Enum get_on_status_action(LibFred::PublicRequest::Status::Enum _status) const
+    {
+        if (_status == LibFred::PublicRequest::Status::resolved)
+        {
+            return LibFred::PublicRequest::OnStatusAction::scheduled;
+        }
+        return LibFred::PublicRequest::OnStatusAction::processed;
+    };
+};
 
 typedef ImplementedBy<PersonalinfoImplementation> PersonalinfoPublicRequest;
 
@@ -39,8 +64,8 @@ typedef PersonalinfoPublicRequest::Named<personalinfo_email_pif> PersonalinfoEma
 extern const char personalinfo_post_pif[] = "personalinfo_post_pif";
 typedef PersonalinfoPublicRequest::Named<personalinfo_post_pif> PersonalinfoPost;
 
-} // Fred::Backend::PublicRequest::Type::{anonymous}
-} // Fred::Backend::PublicRequest::Type
+} // namespace Fred::Backend::PublicRequest::Type::{anonymous}
+} // namespace Fred::Backend::PublicRequest::Type
 
 const LibFred::PublicRequestTypeIface& get_personal_info_auto_iface()
 {
@@ -60,6 +85,6 @@ const LibFred::PublicRequestTypeIface& get_personal_info_post_iface()
     return singleton;
 }
 
-} // Fred::Backend::PublicRequest
-} // Fred::Backend
-} // Fred
+} // namespace Fred::Backend::PublicRequest
+} // namespace Fred::Backend
+} // namespace Fred
