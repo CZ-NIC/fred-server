@@ -54,12 +54,12 @@ struct BlockUnblockImplementation
             LibFred::PublicRequest::Status::Enum) const
     {
         return LibFred::PublicRequestTypeIface::PublicRequestTypes();
-    };
+    }
     template <typename T>
     LibFred::PublicRequest::OnStatusAction::Enum get_on_status_action(LibFred::PublicRequest::Status::Enum _status) const
     {
         return LibFred::PublicRequest::OnStatusAction::processed;
-    };
+    }
 };
 
 struct Block
