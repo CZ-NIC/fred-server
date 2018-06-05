@@ -20,8 +20,6 @@
 #define PUBLIC_REQUEST_PERSONALINFO_HH_A366D7960D55468A86355804EEA01FC2
 
 #include "src/libfred/public_request/public_request_type_iface.hh"
-#include "src/libfred/public_request/public_request_status.hh"
-#include "src/libfred/public_request/public_request_on_status_action.hh"
 #include "src/backend/public_request/public_request.hh"
 
 namespace Fred {
@@ -30,14 +28,17 @@ namespace PublicRequest {
 namespace Type {
 namespace Blockunblock {
 
-const LibFred::PublicRequestTypeIface& get_block_changes_email_iface();
-const LibFred::PublicRequestTypeIface& get_block_changes_post_iface();
-const LibFred::PublicRequestTypeIface& get_block_transfer_email_iface();
-const LibFred::PublicRequestTypeIface& get_block_transfer_post_iface();
-const LibFred::PublicRequestTypeIface& get_unblock_changes_email_iface();
-const LibFred::PublicRequestTypeIface& get_unblock_changes_post_iface();
-const LibFred::PublicRequestTypeIface& get_unblock_transfer_email_iface();
-const LibFred::PublicRequestTypeIface& get_unblock_transfer_post_iface();
+template <typename T>
+const LibFred::PublicRequestTypeIface& get_iface_of();
+
+struct BlockChangesEmail;
+struct BlockChangesPost;
+struct BlockTransferEmail;
+struct BlockTransferPost;
+struct UnblockChangesEmail;
+struct UnblockChangesPost;
+struct UnblockTransferEmail;
+struct UnblockTransferPost;
 
 const LibFred::PublicRequestTypeIface& get_block_transfer_iface(PublicRequestImpl::ConfirmedBy::Enum confirmation_method);
 const LibFred::PublicRequestTypeIface& get_block_change_iface(PublicRequestImpl::ConfirmedBy::Enum confirmation_method);

@@ -56,12 +56,24 @@ unsigned long long get_id_of_contact(LibFred::OperationContext& ctx, const std::
 std::map<std::string, unsigned char> get_public_request_type_to_post_type_dictionary()
 {
     std::map<std::string, unsigned char> dictionary;
-    if (dictionary.insert(std::make_pair(Type::Authinfo::get_auth_info_post_iface().get_public_request_type(), 1)).second &&
-        dictionary.insert(std::make_pair(Type::Blockunblock::get_block_transfer_post_iface().get_public_request_type(), 2)).second &&
-        dictionary.insert(std::make_pair(Type::Blockunblock::get_unblock_transfer_post_iface().get_public_request_type(), 3)).second &&
-        dictionary.insert(std::make_pair(Type::Blockunblock::get_block_changes_post_iface().get_public_request_type(), 4)).second &&
-        dictionary.insert(std::make_pair(Type::Blockunblock::get_unblock_changes_post_iface().get_public_request_type(), 5)).second &&
-        dictionary.insert(std::make_pair(Type::Personalinfo::get_personal_info_post_iface().get_public_request_type(), 6)).second)
+    if (dictionary.insert(
+                std::make_pair(Type::Authinfo::get_iface_of<Type::Authinfo::Post>()
+                               .get_public_request_type(), 1)).second &&
+        dictionary.insert(
+                std::make_pair(Type::Blockunblock::get_iface_of<Type::Blockunblock::BlockTransferPost>()
+                               .get_public_request_type(), 2)).second &&
+        dictionary.insert(
+                std::make_pair(Type::Blockunblock::get_iface_of<Type::Blockunblock::UnblockTransferPost>()
+                               .get_public_request_type(), 3)).second &&
+        dictionary.insert(
+                std::make_pair(Type::Blockunblock::get_iface_of<Type::Blockunblock::BlockChangesPost>()
+                               .get_public_request_type(), 4)).second &&
+        dictionary.insert(
+                std::make_pair(Type::Blockunblock::get_iface_of<Type::Blockunblock::UnblockChangesPost>()
+                               .get_public_request_type(), 5)).second &&
+        dictionary.insert(
+                std::make_pair(Type::Personalinfo::get_iface_of<Type::Personalinfo::Post>()
+                               .get_public_request_type(), 6)).second)
     {
         return dictionary;
     }
@@ -162,7 +174,7 @@ unsigned long long PublicRequestImpl::create_authinfo_request_registry_email(
                     "create_authinfo_request_registry_email call",
                     Optional<std::string>(),
                     Optional<unsigned long long>())
-                .exec(locked_object, Type::Authinfo::get_auth_info_auto_iface(), log_request_id);
+                .exec(locked_object, Type::Authinfo::get_iface_of<Type::Authinfo::Auto>(), log_request_id);
             ctx.commit_transaction();
         }
         try
@@ -179,7 +191,7 @@ unsigned long long PublicRequestImpl::create_authinfo_request_registry_email(
                         Optional<Nullable<std::string> >(),
                         email_id,
                         Optional<Nullable<LibFred::RegistrarId> >())
-                    .exec(locked_object, Type::Authinfo::get_auth_info_auto_iface(), log_request_id);
+                    .exec(locked_object, Type::Authinfo::get_iface_of<Type::Authinfo::Auto>(), log_request_id);
                 ctx.commit_transaction();
             }
             catch (...)
@@ -199,7 +211,7 @@ unsigned long long PublicRequestImpl::create_authinfo_request_registry_email(
                     Optional<Nullable<std::string> >(),
                     Optional<Nullable<unsigned long long> >(),
                     Optional<Nullable<LibFred::RegistrarId> >())
-                .exec(locked_object, Type::Authinfo::get_auth_info_auto_iface(), log_request_id);
+                .exec(locked_object, Type::Authinfo::get_iface_of<Type::Authinfo::Auto>(), log_request_id);
             ctx.commit_transaction();
             throw;
         }
@@ -260,14 +272,14 @@ unsigned long long PublicRequestImpl::create_authinfo_request_non_registry_email
             case ConfirmedBy::email:
             {
                 const unsigned long long request_id =
-                    create_public_request_op.exec(locked_object, Type::Authinfo::get_auth_info_email_iface(), log_request_id);
+                    create_public_request_op.exec(locked_object, Type::Authinfo::get_iface_of<Type::Authinfo::Email>(), log_request_id);
                 ctx.commit_transaction();
                 return request_id;
             }
             case ConfirmedBy::letter:
             {
                 const unsigned long long request_id =
-                    create_public_request_op.exec(locked_object, Type::Authinfo::get_auth_info_post_iface(), log_request_id);
+                    create_public_request_op.exec(locked_object, Type::Authinfo::get_iface_of<Type::Authinfo::Post>(), log_request_id);
                 ctx.commit_transaction();
                 return request_id;
             }
@@ -454,10 +466,10 @@ unsigned long long PublicRequestImpl::create_personal_info_request_registry_emai
         const auto contact_id = get_id_of_contact(ctx, contact_handle);
         LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, contact_id);
         const auto public_request_id = LibFred::CreatePublicRequest()
-            .exec(locked_object, Type::Personalinfo::get_personal_info_auto_iface(), log_request_id);
+            .exec(locked_object, Type::Personalinfo::get_iface_of<Type::Personalinfo::Auto>(), log_request_id);
         LibFred::UpdatePublicRequest()
             .set_status(LibFred::PublicRequest::Status::resolved)
-            .exec(locked_object, Type::Personalinfo::get_personal_info_auto_iface(), log_request_id);
+            .exec(locked_object, Type::Personalinfo::get_iface_of<Type::Personalinfo::Auto>(), log_request_id);
         ctx.commit_transaction();
 
         return public_request_id;
@@ -507,14 +519,14 @@ unsigned long long PublicRequestImpl::create_personal_info_request_non_registry_
             case ConfirmedBy::email:
             {
                 const unsigned long long request_id =
-                    create_public_request_op.exec(locked_object, Type::Personalinfo::get_personal_info_email_iface(), log_request_id);
+                    create_public_request_op.exec(locked_object, Type::Personalinfo::get_iface_of<Type::Personalinfo::Email>(), log_request_id);
                 ctx.commit_transaction();
                 return request_id;
             }
             case ConfirmedBy::letter:
             {
                 const unsigned long long request_id =
-                    create_public_request_op.exec(locked_object, Type::Personalinfo::get_personal_info_post_iface(), log_request_id);
+                    create_public_request_op.exec(locked_object, Type::Personalinfo::get_iface_of<Type::Personalinfo::Post>(), log_request_id);
                 ctx.commit_transaction();
                 return request_id;
             }

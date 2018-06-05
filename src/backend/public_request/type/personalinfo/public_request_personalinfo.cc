@@ -19,6 +19,8 @@
 #include "src/backend/public_request/type/personalinfo/public_request_personalinfo.hh"
 #include "src/backend/public_request/type/impl/public_request_impl.hh"
 #include "src/backend/public_request/public_request.hh"
+#include "src/libfred/public_request/public_request_status.hh"
+#include "src/libfred/public_request/public_request_on_status_action.hh"
 
 namespace Fred {
 namespace Backend {
@@ -67,23 +69,30 @@ typedef PersonalinfoPublicRequest::Named<personalinfo_post_pif> PersonalinfoPost
 
 } // namespace Fred::Backend::PublicRequest::Type::Personalinfo::{anonymous}
 
-const LibFred::PublicRequestTypeIface& get_personal_info_auto_iface()
+template<>
+const LibFred::PublicRequestTypeIface& get_iface_of<Auto>()
 {
     static const PersonalinfoAuto singleton;
     return singleton;
 }
 
-const LibFred::PublicRequestTypeIface& get_personal_info_email_iface()
+template<>
+const LibFred::PublicRequestTypeIface& get_iface_of<Email>()
 {
     static const PersonalinfoEmail singleton;
     return singleton;
 }
 
-const LibFred::PublicRequestTypeIface& get_personal_info_post_iface()
+template<>
+const LibFred::PublicRequestTypeIface& get_iface_of<Post>()
 {
     static const PersonalinfoPost singleton;
     return singleton;
 }
+
+template const LibFred::PublicRequestTypeIface& get_iface_of<Auto>();
+template const LibFred::PublicRequestTypeIface& get_iface_of<Email>();
+template const LibFred::PublicRequestTypeIface& get_iface_of<Post>();
 
 } // namespace Fred::Backend::PublicRequest::Type::Personalinfo
 } // namespace Fred::Backend::PublicRequest::Type

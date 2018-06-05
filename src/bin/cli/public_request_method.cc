@@ -35,9 +35,12 @@ void PublicRequestProcedure::exec()
     std::set<std::string> request_types_filter;
     {
         std::set<std::string> request_types_filter_default = {
-            Fred::Backend::PublicRequest::Type::Personalinfo::get_personal_info_auto_iface().get_public_request_type(),
-            Fred::Backend::PublicRequest::Type::Personalinfo::get_personal_info_email_iface().get_public_request_type(),
-            Fred::Backend::PublicRequest::Type::Personalinfo::get_personal_info_post_iface().get_public_request_type()
+            Fred::Backend::PublicRequest::Type::Personalinfo::get_iface_of<
+            Fred::Backend::PublicRequest::Type::Personalinfo::Auto>().get_public_request_type(),
+            Fred::Backend::PublicRequest::Type::Personalinfo::get_iface_of<
+            Fred::Backend::PublicRequest::Type::Personalinfo::Email>().get_public_request_type(),
+            Fred::Backend::PublicRequest::Type::Personalinfo::get_iface_of<
+            Fred::Backend::PublicRequest::Type::Personalinfo::Post>().get_public_request_type()
         };
         for (const auto& argument: args.types)
         {
@@ -90,12 +93,18 @@ void PublicRequestProcedure::exec()
 
     const std::unordered_map<std::string, const LibFred::PublicRequestTypeIface& (*)()> type_to_iface =
         {
-            {Fred::Backend::PublicRequest::Type::Personalinfo::get_personal_info_auto_iface().get_public_request_type(),
-             Fred::Backend::PublicRequest::Type::Personalinfo::get_personal_info_auto_iface},
-            {Fred::Backend::PublicRequest::Type::Personalinfo::get_personal_info_email_iface().get_public_request_type(),
-             Fred::Backend::PublicRequest::Type::Personalinfo::get_personal_info_email_iface},
-            {Fred::Backend::PublicRequest::Type::Personalinfo::get_personal_info_post_iface().get_public_request_type(),
-             Fred::Backend::PublicRequest::Type::Personalinfo::get_personal_info_post_iface},
+            {Fred::Backend::PublicRequest::Type::Personalinfo::get_iface_of<
+             Fred::Backend::PublicRequest::Type::Personalinfo::Auto>().get_public_request_type(),
+             Fred::Backend::PublicRequest::Type::Personalinfo::get_iface_of<
+             Fred::Backend::PublicRequest::Type::Personalinfo::Auto>},
+            {Fred::Backend::PublicRequest::Type::Personalinfo::get_iface_of<
+             Fred::Backend::PublicRequest::Type::Personalinfo::Email>().get_public_request_type(),
+             Fred::Backend::PublicRequest::Type::Personalinfo::get_iface_of<
+             Fred::Backend::PublicRequest::Type::Personalinfo::Email>},
+            {Fred::Backend::PublicRequest::Type::Personalinfo::get_iface_of<
+             Fred::Backend::PublicRequest::Type::Personalinfo::Post>().get_public_request_type(),
+             Fred::Backend::PublicRequest::Type::Personalinfo::get_iface_of<
+             Fred::Backend::PublicRequest::Type::Personalinfo::Post>},
         };
     for (std::size_t i = 0; i < dbres.size(); ++i)
     {

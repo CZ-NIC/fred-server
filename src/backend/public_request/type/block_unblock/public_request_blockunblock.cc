@@ -19,6 +19,8 @@
 #include "src/backend/public_request/type/block_unblock/public_request_blockunblock.hh"
 #include "src/backend/public_request/type/impl/public_request_impl.hh"
 #include "src/util/log/context.hh"
+#include "src/libfred/public_request/public_request_status.hh"
+#include "src/libfred/public_request/public_request_on_status_action.hh"
 
 namespace Fred {
 namespace Backend {
@@ -111,53 +113,70 @@ LibFred::PublicRequestTypeIface::PublicRequestTypes get_block_unblock_public_req
 
 } // namespace Fred::Backend::PublicRequest::Type
 
-const LibFred::PublicRequestTypeIface& get_block_changes_email_iface()
+template<>
+const LibFred::PublicRequestTypeIface& get_iface_of<BlockChangesEmail>()
 {
     static const Block::Changes::ByEmail singleton;
     return singleton;
 }
 
-const LibFred::PublicRequestTypeIface& get_block_changes_post_iface()
+template<>
+const LibFred::PublicRequestTypeIface& get_iface_of<BlockChangesPost>()
 {
     static const Block::Changes::ByPost singleton;
     return singleton;
 }
 
-const LibFred::PublicRequestTypeIface& get_block_transfer_email_iface()
+template<>
+const LibFred::PublicRequestTypeIface& get_iface_of<BlockTransferEmail>()
 {
     static const Block::Transfer::ByEmail singleton;
     return singleton;
 }
 
-const LibFred::PublicRequestTypeIface& get_block_transfer_post_iface()
+template<>
+const LibFred::PublicRequestTypeIface& get_iface_of<BlockTransferPost>()
 {
     static const Block::Transfer::ByPost singleton;
     return singleton;
 }
 
-const LibFred::PublicRequestTypeIface& get_unblock_changes_email_iface()
+template<>
+const LibFred::PublicRequestTypeIface& get_iface_of<UnblockChangesEmail>()
 {
     static const Unblock::Changes::ByEmail singleton;
     return singleton;
 }
 
-const LibFred::PublicRequestTypeIface& get_unblock_changes_post_iface()
+template<>
+const LibFred::PublicRequestTypeIface& get_iface_of<UnblockChangesPost>()
 {
     static const Unblock::Changes::ByPost singleton;
     return singleton;
 }
 
-const LibFred::PublicRequestTypeIface& get_unblock_transfer_email_iface()
+template<>
+const LibFred::PublicRequestTypeIface& get_iface_of<UnblockTransferEmail>()
 {
     static const Unblock::Transfer::ByEmail singleton;
     return singleton;
 }
 
-const LibFred::PublicRequestTypeIface& get_unblock_transfer_post_iface()
+template<>
+const LibFred::PublicRequestTypeIface& get_iface_of<UnblockTransferPost>()
 {
     static const Unblock::Transfer::ByPost singleton;
     return singleton;
 }
+
+template const LibFred::PublicRequestTypeIface& get_iface_of<BlockChangesEmail>();
+template const LibFred::PublicRequestTypeIface& get_iface_of<BlockChangesPost>();
+template const LibFred::PublicRequestTypeIface& get_iface_of<BlockTransferEmail>();
+template const LibFred::PublicRequestTypeIface& get_iface_of<BlockTransferPost>();
+template const LibFred::PublicRequestTypeIface& get_iface_of<UnblockChangesEmail>();
+template const LibFred::PublicRequestTypeIface& get_iface_of<UnblockChangesPost>();
+template const LibFred::PublicRequestTypeIface& get_iface_of<UnblockTransferEmail>();
+template const LibFred::PublicRequestTypeIface& get_iface_of<UnblockTransferPost>();
 
 namespace {
 

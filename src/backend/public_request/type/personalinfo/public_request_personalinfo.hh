@@ -20,8 +20,6 @@
 #define PUBLIC_REQUEST_PERSONALINFO_HH_D1B2A453ABD94CD1A241FDEED46A3026
 
 #include "src/libfred/public_request/public_request_type_iface.hh"
-#include "src/libfred/public_request/public_request_status.hh"
-#include "src/libfred/public_request/public_request_on_status_action.hh"
 
 namespace Fred {
 namespace Backend {
@@ -29,9 +27,12 @@ namespace PublicRequest {
 namespace Type {
 namespace Personalinfo {
 
-const LibFred::PublicRequestTypeIface& get_personal_info_auto_iface();
-const LibFred::PublicRequestTypeIface& get_personal_info_email_iface();
-const LibFred::PublicRequestTypeIface& get_personal_info_post_iface();
+template <typename T>
+const LibFred::PublicRequestTypeIface& get_iface_of();
+
+struct Auto;
+struct Email;
+struct Post;
 
 } // namespace Fred::Backend::PublicRequest::Type::Personalinfo
 } // namespace Fred::Backend::PublicRequest::Type

@@ -20,10 +20,11 @@
 #define PUBLIC_REQUEST_AUTHINFO_HH_8B3EE0B3BE664879ABB060A09093D67C
 
 #include "src/libfred/public_request/public_request_type_iface.hh"
-#include "src/libfred/public_request/public_request_status.hh"
-#include "src/libfred/public_request/public_request_on_status_action.hh"
 #include "src/libfred/object/object_states_info.hh"
 #include "src/backend/public_request/public_request.hh"
+
+#include <string>
+#include <memory>
 
 namespace Fred {
 namespace Backend {
@@ -39,9 +40,13 @@ unsigned long long send_authinfo(
 
 void check_authinfo_request_permission(const LibFred::ObjectStatesInfo& states);
 
-const LibFred::PublicRequestTypeIface& get_auth_info_auto_iface();
-const LibFred::PublicRequestTypeIface& get_auth_info_email_iface();
-const LibFred::PublicRequestTypeIface& get_auth_info_post_iface();
+
+template <typename T>
+const LibFred::PublicRequestTypeIface& get_iface_of();
+
+struct Auto;
+struct Email;
+struct Post;
 
 } // namespace Fred::Backend::PublicRequest::Type::Authinfo
 } // namespace Fred::Backend::PublicRequest::Type

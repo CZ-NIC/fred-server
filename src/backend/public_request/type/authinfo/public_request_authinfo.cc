@@ -16,6 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "src/libfred/public_request/public_request_status.hh"
+#include "src/libfred/public_request/public_request_on_status_action.hh"
 #include "src/backend/public_request/type/authinfo/public_request_authinfo.hh"
 #include "src/backend/public_request/type/impl/public_request_impl.hh"
 #include "src/backend/public_request/send_email.hh"
@@ -194,23 +196,30 @@ void check_authinfo_request_permission(const LibFred::ObjectStatesInfo& states)
     }
 }
 
-const LibFred::PublicRequestTypeIface& get_auth_info_auto_iface()
+template<>
+const LibFred::PublicRequestTypeIface& get_iface_of<Auto>()
 {
     static const AuthinfoAuto singleton;
     return singleton;
 }
 
-const LibFred::PublicRequestTypeIface& get_auth_info_email_iface()
+template<>
+const LibFred::PublicRequestTypeIface& get_iface_of<Email>()
 {
     static const AuthinfoEmail singleton;
     return singleton;
 }
 
-const LibFred::PublicRequestTypeIface& get_auth_info_post_iface()
+template<>
+const LibFred::PublicRequestTypeIface& get_iface_of<Post>()
 {
     static const AuthinfoPost singleton;
     return singleton;
 }
+
+template const LibFred::PublicRequestTypeIface& get_iface_of<Auto>();
+template const LibFred::PublicRequestTypeIface& get_iface_of<Email>();
+template const LibFred::PublicRequestTypeIface& get_iface_of<Post>();
 
 } // namespace Fred::Backend::PublicRequest::Type::Authinfo
 } // namespace Fred::Backend::PublicRequest::Type
