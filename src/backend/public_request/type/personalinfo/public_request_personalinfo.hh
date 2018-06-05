@@ -26,11 +26,15 @@
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
+namespace Type {
+namespace Personalinfo {
 
 const LibFred::PublicRequestTypeIface& get_personal_info_auto_iface();
 const LibFred::PublicRequestTypeIface& get_personal_info_email_iface();
 const LibFred::PublicRequestTypeIface& get_personal_info_post_iface();
 
+} // namespace Fred::Backend::PublicRequest::Type::Personalinfo
+} // namespace Fred::Backend::PublicRequest::Type
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend
 } // namespace Fred

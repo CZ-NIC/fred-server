@@ -28,6 +28,8 @@
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
+namespace Type {
+namespace Authinfo {
 
 unsigned long long send_authinfo(
         unsigned long long public_request_id,
@@ -41,6 +43,8 @@ const LibFred::PublicRequestTypeIface& get_auth_info_auto_iface();
 const LibFred::PublicRequestTypeIface& get_auth_info_email_iface();
 const LibFred::PublicRequestTypeIface& get_auth_info_post_iface();
 
+} // namespace Fred::Backend::PublicRequest::Type::Authinfo
+} // namespace Fred::Backend::PublicRequest::Type
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend
 } // namespace Fred

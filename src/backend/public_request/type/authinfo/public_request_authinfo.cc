@@ -24,6 +24,7 @@ namespace Fred {
 namespace Backend {
 namespace PublicRequest {
 namespace Type {
+namespace Authinfo {
 
 namespace {
 
@@ -50,7 +51,7 @@ struct AuthinfoImplementation
     }
 };
 
-typedef ImplementedBy<AuthinfoImplementation> AuthinfoPublicRequest;
+typedef Fred::Backend::PublicRequest::Type::Impl::ImplementedBy<AuthinfoImplementation> AuthinfoPublicRequest;
 
 extern const char authinfo_auto_pif[] = "authinfo_auto_pif";
 typedef AuthinfoPublicRequest::Named<authinfo_auto_pif> AuthinfoAuto;
@@ -61,7 +62,6 @@ typedef AuthinfoPublicRequest::Named<authinfo_email_pif> AuthinfoEmail;
 extern const char authinfo_post_pif[] = "authinfo_post_pif";
 typedef AuthinfoPublicRequest::Named<authinfo_post_pif> AuthinfoPost;
 
-} // namespace Fred::Backend::PublicRequest::Type::{anonymous}
 } // namespace Fred::Backend::PublicRequest::Type
 
 unsigned long long send_authinfo(
@@ -196,22 +196,24 @@ void check_authinfo_request_permission(const LibFred::ObjectStatesInfo& states)
 
 const LibFred::PublicRequestTypeIface& get_auth_info_auto_iface()
 {
-    static const Type::AuthinfoAuto singleton;
+    static const AuthinfoAuto singleton;
     return singleton;
 }
 
 const LibFred::PublicRequestTypeIface& get_auth_info_email_iface()
 {
-    static const Type::AuthinfoEmail singleton;
+    static const AuthinfoEmail singleton;
     return singleton;
 }
 
 const LibFred::PublicRequestTypeIface& get_auth_info_post_iface()
 {
-    static const Type::AuthinfoPost singleton;
+    static const AuthinfoPost singleton;
     return singleton;
 }
 
+} // namespace Fred::Backend::PublicRequest::Type::Authinfo
+} // namespace Fred::Backend::PublicRequest::Type
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend
 } // namespace Fred

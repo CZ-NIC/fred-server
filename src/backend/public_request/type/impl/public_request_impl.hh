@@ -22,12 +22,6 @@
 #include "src/libfred/public_request/public_request_type_iface.hh"
 #include "src/libfred/public_request/public_request_status.hh"
 #include "src/libfred/public_request/public_request_on_status_action.hh"
-#include "src/util/random.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/backend/public_request/public_request.hh"
-#include "src/util/log/context.hh"
-
-#include <boost/format.hpp>
 
 #include <string>
 
@@ -35,6 +29,7 @@ namespace Fred {
 namespace Backend {
 namespace PublicRequest {
 namespace Type {
+namespace Impl {
 
 template <class T>
 struct ImplementedBy
@@ -75,21 +70,8 @@ struct ImplementedBy
     };
 };
 
+} // namespace Fred::Backend::PublicRequest::Type::Impl
 } // namespace Fred::Backend::PublicRequest::Type
-
-unsigned long long get_id_of_registered_object(
-        LibFred::OperationContext& ctx,
-        PublicRequestImpl::ObjectType::Enum object_type,
-        const std::string& handle);
-
-unsigned long long get_id_of_contact(LibFred::OperationContext& ctx, const std::string& contact_handle);
-
-std::map<std::string, unsigned char> get_public_request_type_to_post_type_dictionary();
-
-short public_request_type_to_post_type(const std::string& public_request_type);
-
-std::string language_to_lang_code(PublicRequestImpl::Language::Enum lang);
-
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend
 } // namespace Fred

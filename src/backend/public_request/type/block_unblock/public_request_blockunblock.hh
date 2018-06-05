@@ -27,6 +27,8 @@
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
+namespace Type {
+namespace Blockunblock {
 
 const LibFred::PublicRequestTypeIface& get_block_changes_email_iface();
 const LibFred::PublicRequestTypeIface& get_block_changes_post_iface();
@@ -42,6 +44,8 @@ const LibFred::PublicRequestTypeIface& get_block_change_iface(PublicRequestImpl:
 const LibFred::PublicRequestTypeIface& get_unblock_transfer_iface(PublicRequestImpl::ConfirmedBy::Enum confirmation_method);
 const LibFred::PublicRequestTypeIface& get_unblock_changes_iface(PublicRequestImpl::ConfirmedBy::Enum confirmation_method);
 
+} // namespace Fred::Backend::PublicRequest::Type::Blockunblock::{anonymous}
+} // namespace Fred::Backend::PublicRequest::Type::{anonymous}
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend
 } // namespace Fred

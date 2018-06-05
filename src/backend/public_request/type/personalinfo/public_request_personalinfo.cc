@@ -24,6 +24,7 @@ namespace Fred {
 namespace Backend {
 namespace PublicRequest {
 namespace Type {
+namespace Personalinfo {
 
 namespace {
 
@@ -53,7 +54,7 @@ struct PersonalinfoImplementation
     }
 };
 
-typedef ImplementedBy<PersonalinfoImplementation> PersonalinfoPublicRequest;
+typedef Fred::Backend::PublicRequest::Type::Impl::ImplementedBy<PersonalinfoImplementation> PersonalinfoPublicRequest;
 
 extern const char personalinfo_auto_pif[] = "personalinfo_auto_pif";
 typedef PersonalinfoPublicRequest::Named<personalinfo_auto_pif> PersonalinfoAuto;
@@ -64,27 +65,28 @@ typedef PersonalinfoPublicRequest::Named<personalinfo_email_pif> PersonalinfoEma
 extern const char personalinfo_post_pif[] = "personalinfo_post_pif";
 typedef PersonalinfoPublicRequest::Named<personalinfo_post_pif> PersonalinfoPost;
 
-} // namespace Fred::Backend::PublicRequest::Type::{anonymous}
-} // namespace Fred::Backend::PublicRequest::Type
+} // namespace Fred::Backend::PublicRequest::Type::Personalinfo::{anonymous}
 
 const LibFred::PublicRequestTypeIface& get_personal_info_auto_iface()
 {
-    static const Type::PersonalinfoAuto singleton;
+    static const PersonalinfoAuto singleton;
     return singleton;
 }
 
 const LibFred::PublicRequestTypeIface& get_personal_info_email_iface()
 {
-    static const Type::PersonalinfoEmail singleton;
+    static const PersonalinfoEmail singleton;
     return singleton;
 }
 
 const LibFred::PublicRequestTypeIface& get_personal_info_post_iface()
 {
-    static const Type::PersonalinfoPost singleton;
+    static const PersonalinfoPost singleton;
     return singleton;
 }
 
+} // namespace Fred::Backend::PublicRequest::Type::Personalinfo
+} // namespace Fred::Backend::PublicRequest::Type
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend
 } // namespace Fred

@@ -24,6 +24,7 @@ namespace Fred {
 namespace Backend {
 namespace PublicRequest {
 namespace Type {
+namespace Blockunblock {
 
 namespace {
 
@@ -64,7 +65,7 @@ struct BlockUnblockImplementation
 
 struct Block
 {
-    typedef ImplementedBy<BlockUnblockImplementation> PublicRequest;
+    typedef Fred::Backend::PublicRequest::Type::Impl::ImplementedBy<BlockUnblockImplementation> PublicRequest;
     struct Changes
     {
         typedef PublicRequest::Named<block_changes_email_pif> ByEmail;
@@ -80,7 +81,7 @@ struct Block
 
 struct Unblock
 {
-    typedef ImplementedBy<BlockUnblockImplementation> PublicRequest;
+    typedef Fred::Backend::PublicRequest::Type::Impl::ImplementedBy<BlockUnblockImplementation> PublicRequest;
     struct Changes
     {
         typedef PublicRequest::Named<unblock_changes_email_pif> ByEmail;
@@ -108,54 +109,53 @@ LibFred::PublicRequestTypeIface::PublicRequestTypes get_block_unblock_public_req
     return res;
 }
 
-} // namespace Fred::Backend::PublicRequest::Type::{anonymous}
 } // namespace Fred::Backend::PublicRequest::Type
 
 const LibFred::PublicRequestTypeIface& get_block_changes_email_iface()
 {
-    static const Type::Block::Changes::ByEmail singleton;
+    static const Block::Changes::ByEmail singleton;
     return singleton;
 }
 
 const LibFred::PublicRequestTypeIface& get_block_changes_post_iface()
 {
-    static const Type::Block::Changes::ByPost singleton;
+    static const Block::Changes::ByPost singleton;
     return singleton;
 }
 
 const LibFred::PublicRequestTypeIface& get_block_transfer_email_iface()
 {
-    static const Type::Block::Transfer::ByEmail singleton;
+    static const Block::Transfer::ByEmail singleton;
     return singleton;
 }
 
 const LibFred::PublicRequestTypeIface& get_block_transfer_post_iface()
 {
-    static const Type::Block::Transfer::ByPost singleton;
+    static const Block::Transfer::ByPost singleton;
     return singleton;
 }
 
 const LibFred::PublicRequestTypeIface& get_unblock_changes_email_iface()
 {
-    static const Type::Unblock::Changes::ByEmail singleton;
+    static const Unblock::Changes::ByEmail singleton;
     return singleton;
 }
 
 const LibFred::PublicRequestTypeIface& get_unblock_changes_post_iface()
 {
-    static const Type::Unblock::Changes::ByPost singleton;
+    static const Unblock::Changes::ByPost singleton;
     return singleton;
 }
 
 const LibFred::PublicRequestTypeIface& get_unblock_transfer_email_iface()
 {
-    static const Type::Unblock::Transfer::ByEmail singleton;
+    static const Unblock::Transfer::ByEmail singleton;
     return singleton;
 }
 
 const LibFred::PublicRequestTypeIface& get_unblock_transfer_post_iface()
 {
-    static const Type::Unblock::Transfer::ByPost singleton;
+    static const Unblock::Transfer::ByPost singleton;
     return singleton;
 }
 
@@ -184,24 +184,26 @@ const LibFred::PublicRequestTypeIface& get_public_request_type(PublicRequestImpl
 
 const LibFred::PublicRequestTypeIface& get_block_transfer_iface(PublicRequestImpl::ConfirmedBy::Enum confirmation_method)
 {
-    return get_public_request_type<Type::Block::Transfer>(confirmation_method);
+    return get_public_request_type<Block::Transfer>(confirmation_method);
 }
 
 const LibFred::PublicRequestTypeIface& get_block_change_iface(PublicRequestImpl::ConfirmedBy::Enum confirmation_method)
 {
-    return get_public_request_type<Type::Block::Changes>(confirmation_method);
+    return get_public_request_type<Block::Changes>(confirmation_method);
 }
 
 const LibFred::PublicRequestTypeIface& get_unblock_transfer_iface(PublicRequestImpl::ConfirmedBy::Enum confirmation_method)
 {
-    return get_public_request_type<Type::Unblock::Transfer>(confirmation_method);
+    return get_public_request_type<Unblock::Transfer>(confirmation_method);
 }
 
 const LibFred::PublicRequestTypeIface& get_unblock_changes_iface(PublicRequestImpl::ConfirmedBy::Enum confirmation_method)
 {
-    return get_public_request_type<Type::Unblock::Changes>(confirmation_method);
+    return get_public_request_type<Unblock::Changes>(confirmation_method);
 }
 
+} // namespace Fred::Backend::PublicRequest::Type::Blockunblock::{anonymous}
+} // namespace Fred::Backend::PublicRequest::Type::{anonymous}
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend
 } // namespace Fred
