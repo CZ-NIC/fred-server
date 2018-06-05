@@ -77,34 +77,6 @@ struct ImplementedBy
 
 } // namespace Fred::Backend::PublicRequest::Type
 
-inline std::string create_ctx_name(const std::string& _name)
-{
-    return str(boost::format("%1%-<%2%>") % _name % Random::integer(0, 10000));
-}
-
-inline std::string create_ctx_function_name(const char* fnc)
-{
-    std::string name(fnc);
-    std::replace(name.begin(), name.end(), '_', '-');
-    return name;
-}
-
-class LogContext
-{
-public:
-    LogContext(const PublicRequestImpl& _impl, const std::string& _op_name)
-        : ctx_server_(create_ctx_name(_impl.get_server_name())),
-          ctx_interface_("PublicRequest"),
-          ctx_operation_(_op_name)
-    {
-    }
-
-private:
-    Logging::Context ctx_server_;
-    Logging::Context ctx_interface_;
-    Logging::Context ctx_operation_;
-};
-
 unsigned long long get_id_of_registered_object(
         LibFred::OperationContext& ctx,
         PublicRequestImpl::ObjectType::Enum object_type,
@@ -121,8 +93,5 @@ std::string language_to_lang_code(PublicRequestImpl::Language::Enum lang);
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend
 } // namespace Fred
-
-#define LOGGING_CONTEXT(CTX_VAR, IMPL_OBJ) \
-    Fred::Backend::PublicRequest::LogContext CTX_VAR((IMPL_OBJ), create_ctx_function_name(__FUNCTION__))
 
 #endif
