@@ -16,9 +16,9 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "src/backend/public_request/type/public_request_authinfo.hh"
 #include "src/libfred/public_request/public_request_status.hh"
 #include "src/libfred/public_request/public_request_on_status_action.hh"
-#include "src/backend/public_request/type/authinfo/public_request_authinfo.hh"
 #include "src/backend/public_request/type/impl/public_request_impl.hh"
 #include "src/backend/public_request/send_email.hh"
 
@@ -26,8 +26,7 @@ namespace Fred {
 namespace Backend {
 namespace PublicRequest {
 namespace Type {
-namespace Authinfo {
-
+namespace Impl {
 namespace {
 
 struct AuthinfoImplementation
@@ -64,8 +63,29 @@ typedef AuthinfoPublicRequest::Named<authinfo_email_pif> AuthinfoEmail;
 extern const char authinfo_post_pif[] = "authinfo_post_pif";
 typedef AuthinfoPublicRequest::Named<authinfo_post_pif> AuthinfoPost;
 
-} // namespace Fred::Backend::PublicRequest::Type
+} // namespace Fred::Backend::PublicRequest::Type::Impl::{anonymous}
+} // namespace Fred::Backend::PublicRequest::Type::Impl
 
+template<>
+const LibFred::PublicRequestTypeIface& get_iface_of<AuthinfoAuto>()
+{
+    static const Impl::AuthinfoAuto singleton;
+    return singleton;
+}
+
+template<>
+const LibFred::PublicRequestTypeIface& get_iface_of<AuthinfoEmail>()
+{
+    static const Impl::AuthinfoEmail singleton;
+    return singleton;
+}
+
+template<>
+const LibFred::PublicRequestTypeIface& get_iface_of<AuthinfoPost>()
+{
+    static const Impl::AuthinfoPost singleton;
+    return singleton;
+}
 unsigned long long send_authinfo(
         unsigned long long public_request_id,
         const std::string& handle,
@@ -196,32 +216,6 @@ void check_authinfo_request_permission(const LibFred::ObjectStatesInfo& states)
     }
 }
 
-template<>
-const LibFred::PublicRequestTypeIface& get_iface_of<Auto>()
-{
-    static const AuthinfoAuto singleton;
-    return singleton;
-}
-
-template<>
-const LibFred::PublicRequestTypeIface& get_iface_of<Email>()
-{
-    static const AuthinfoEmail singleton;
-    return singleton;
-}
-
-template<>
-const LibFred::PublicRequestTypeIface& get_iface_of<Post>()
-{
-    static const AuthinfoPost singleton;
-    return singleton;
-}
-
-template const LibFred::PublicRequestTypeIface& get_iface_of<Auto>();
-template const LibFred::PublicRequestTypeIface& get_iface_of<Email>();
-template const LibFred::PublicRequestTypeIface& get_iface_of<Post>();
-
-} // namespace Fred::Backend::PublicRequest::Type::Authinfo
 } // namespace Fred::Backend::PublicRequest::Type
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend

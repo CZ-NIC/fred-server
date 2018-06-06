@@ -16,12 +16,10 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PUBLIC_REQUEST_HH_CEE815BC12D247A297FBBE6E96897259
-#define PUBLIC_REQUEST_HH_CEE815BC12D247A297FBBE6E96897259
+#ifndef PUBLIC_REQUEST_IMPL_HH_CEE815BC12D247A297FBBE6E96897259
+#define PUBLIC_REQUEST_IMPL_HH_CEE815BC12D247A297FBBE6E96897259
 
 #include "src/libfred/public_request/public_request_type_iface.hh"
-#include "src/libfred/public_request/public_request_status.hh"
-#include "src/libfred/public_request/public_request_on_status_action.hh"
 
 #include <string>
 
@@ -35,7 +33,7 @@ template <class T>
 struct ImplementedBy
 {
     template <const char* name>
-    class Named : public LibFred::PublicRequestTypeIface
+    class Named final : public LibFred::PublicRequestTypeIface
     {
     public:
         typedef T Type;
@@ -43,26 +41,26 @@ struct ImplementedBy
             : implementation_()
         {
         }
-        std::string get_public_request_type() const
+        std::string get_public_request_type() const override
         {
             return name;
         }
 
     private:
-        PublicRequestTypes get_public_request_types_to_cancel_on_create() const
+        PublicRequestTypes get_public_request_types_to_cancel_on_create() const override
         {
             return implementation_.template get_public_request_types_to_cancel_on_create<Named>();
         }
         PublicRequestTypes get_public_request_types_to_cancel_on_update(
                 LibFred::PublicRequest::Status::Enum _old_status,
-                LibFred::PublicRequest::Status::Enum _new_status) const
+                LibFred::PublicRequest::Status::Enum _new_status) const override
         {
             return implementation_.template get_public_request_types_to_cancel_on_update<Named>(
                     _old_status,
                     _new_status);
         }
         LibFred::PublicRequest::OnStatusAction::Enum get_on_status_action(
-                LibFred::PublicRequest::Status::Enum _status) const
+                LibFred::PublicRequest::Status::Enum _status) const override
         {
             return implementation_.template get_on_status_action<Named>(_status);
         }

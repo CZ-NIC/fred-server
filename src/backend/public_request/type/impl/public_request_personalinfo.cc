@@ -16,18 +16,16 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/backend/public_request/type/personalinfo/public_request_personalinfo.hh"
-#include "src/backend/public_request/type/impl/public_request_impl.hh"
-#include "src/backend/public_request/public_request.hh"
+#include "src/backend/public_request/type/public_request_personalinfo.hh"
 #include "src/libfred/public_request/public_request_status.hh"
 #include "src/libfred/public_request/public_request_on_status_action.hh"
+#include "src/backend/public_request/type/impl/public_request_impl.hh"
 
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
 namespace Type {
-namespace Personalinfo {
-
+namespace Impl {
 namespace {
 
 struct PersonalinfoImplementation
@@ -59,42 +57,38 @@ struct PersonalinfoImplementation
 typedef Fred::Backend::PublicRequest::Type::Impl::ImplementedBy<PersonalinfoImplementation> PersonalinfoPublicRequest;
 
 extern const char personalinfo_auto_pif[] = "personalinfo_auto_pif";
-typedef PersonalinfoPublicRequest::Named<personalinfo_auto_pif> PersonalinfoAuto;
+typedef PersonalinfoPublicRequest::Named<personalinfo_auto_pif> PersonalinfoAutoType;
 
 extern const char personalinfo_email_pif[] = "personalinfo_email_pif";
-typedef PersonalinfoPublicRequest::Named<personalinfo_email_pif> PersonalinfoEmail;
+typedef PersonalinfoPublicRequest::Named<personalinfo_email_pif> PersonalinfoEmailType;
 
 extern const char personalinfo_post_pif[] = "personalinfo_post_pif";
-typedef PersonalinfoPublicRequest::Named<personalinfo_post_pif> PersonalinfoPost;
+typedef PersonalinfoPublicRequest::Named<personalinfo_post_pif> PersonalinfoPostType;
 
-} // namespace Fred::Backend::PublicRequest::Type::Personalinfo::{anonymous}
+} // namespace Fred::Backend::PublicRequest::Type::Impl::{anonymous}
+} // namespace Fred::Backend::PublicRequest::Type::Impl
 
 template<>
-const LibFred::PublicRequestTypeIface& get_iface_of<Auto>()
+const LibFred::PublicRequestTypeIface& get_iface_of<PersonalinfoAuto>()
 {
-    static const PersonalinfoAuto singleton;
+    static const Impl::PersonalinfoAutoType singleton;
     return singleton;
 }
 
 template<>
-const LibFred::PublicRequestTypeIface& get_iface_of<Email>()
+const LibFred::PublicRequestTypeIface& get_iface_of<PersonalinfoEmail>()
 {
-    static const PersonalinfoEmail singleton;
+    static const Impl::PersonalinfoEmailType singleton;
     return singleton;
 }
 
 template<>
-const LibFred::PublicRequestTypeIface& get_iface_of<Post>()
+const LibFred::PublicRequestTypeIface& get_iface_of<PersonalinfoPost>()
 {
-    static const PersonalinfoPost singleton;
+    static const Impl::PersonalinfoPostType singleton;
     return singleton;
 }
 
-template const LibFred::PublicRequestTypeIface& get_iface_of<Auto>();
-template const LibFred::PublicRequestTypeIface& get_iface_of<Email>();
-template const LibFred::PublicRequestTypeIface& get_iface_of<Post>();
-
-} // namespace Fred::Backend::PublicRequest::Type::Personalinfo
 } // namespace Fred::Backend::PublicRequest::Type
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend

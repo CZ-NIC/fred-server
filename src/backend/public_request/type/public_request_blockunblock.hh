@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PUBLIC_REQUEST_PERSONALINFO_HH_A366D7960D55468A86355804EEA01FC2
-#define PUBLIC_REQUEST_PERSONALINFO_HH_A366D7960D55468A86355804EEA01FC2
+#ifndef PUBLIC_REQUEST_BLOCKUNBLOCK_HH_53EF83ABD342468AB0B386243FC06F33
+#define PUBLIC_REQUEST_BLOCKUNBLOCK_HH_53EF83ABD342468AB0B386243FC06F33
 
 #include "src/libfred/public_request/public_request_type_iface.hh"
 #include "src/backend/public_request/public_request.hh"
@@ -26,7 +26,6 @@ namespace Fred {
 namespace Backend {
 namespace PublicRequest {
 namespace Type {
-namespace Blockunblock {
 
 template <typename T>
 const LibFred::PublicRequestTypeIface& get_iface_of();
@@ -35,6 +34,7 @@ struct BlockChangesEmail;
 struct BlockChangesPost;
 struct BlockTransferEmail;
 struct BlockTransferPost;
+
 struct UnblockChangesEmail;
 struct UnblockChangesPost;
 struct UnblockTransferEmail;
@@ -45,8 +45,7 @@ const LibFred::PublicRequestTypeIface& get_block_change_iface(PublicRequestImpl:
 const LibFred::PublicRequestTypeIface& get_unblock_transfer_iface(PublicRequestImpl::ConfirmedBy::Enum confirmation_method);
 const LibFred::PublicRequestTypeIface& get_unblock_changes_iface(PublicRequestImpl::ConfirmedBy::Enum confirmation_method);
 
-} // namespace Fred::Backend::PublicRequest::Type::Blockunblock::{anonymous}
-} // namespace Fred::Backend::PublicRequest::Type::{anonymous}
+} // namespace Fred::Backend::PublicRequest::Type
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend
 } // namespace Fred

@@ -16,25 +16,36 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PUBLIC_REQUEST_PERSONALINFO_HH_D1B2A453ABD94CD1A241FDEED46A3026
-#define PUBLIC_REQUEST_PERSONALINFO_HH_D1B2A453ABD94CD1A241FDEED46A3026
+#ifndef PUBLIC_REQUEST_AUTHINFO_HH_6A9E148ADE9D445C891AC330DC1E7634
+#define PUBLIC_REQUEST_AUTHINFO_HH_6A9E148ADE9D445C891AC330DC1E7634
 
 #include "src/libfred/public_request/public_request_type_iface.hh"
+#include "src/libfred/object/object_states_info.hh"
+#include "src/backend/public_request/public_request.hh"
+
+#include <string>
+#include <memory>
 
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
 namespace Type {
-namespace Personalinfo {
 
 template <typename T>
 const LibFred::PublicRequestTypeIface& get_iface_of();
 
-struct Auto;
-struct Email;
-struct Post;
+struct AuthinfoAuto;
+struct AuthinfoEmail;
+struct AuthinfoPost;
 
-} // namespace Fred::Backend::PublicRequest::Type::Personalinfo
+unsigned long long send_authinfo(
+        unsigned long long public_request_id,
+        const std::string& handle,
+        PublicRequestImpl::ObjectType::Enum object_type,
+        std::shared_ptr<LibFred::Mailer::Manager> manager);
+
+void check_authinfo_request_permission(const LibFred::ObjectStatesInfo& states);
+
 } // namespace Fred::Backend::PublicRequest::Type
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend
