@@ -20,6 +20,11 @@ void EndRegistrarGroupMembership::exec(OperationContext& _ctx)
         {
             throw MembershipNotFound();
         }
+        else if (membership.size() > 1)
+        {
+            LOGGER(PACKAGE).info("Failed to end registrar group membership due more duplicity records was found.");
+            throw;
+        }
 
         _ctx.get_conn().exec_params(
             "UPDATE registrar_group_map SET member_until=NOW()::date WHERE id=$1::bigint",

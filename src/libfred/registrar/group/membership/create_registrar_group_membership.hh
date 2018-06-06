@@ -25,7 +25,6 @@
 #define CREATE_REGISTRAR_GROUP_MEMBERSHIP_HH_A101FCFEC90C4CB799AFBE8F53F22EF6
 
 #include "src/libfred/opcontext.hh"
-#include "src/util/optional_value.hh"
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 

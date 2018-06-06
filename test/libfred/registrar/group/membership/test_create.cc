@@ -65,50 +65,52 @@ BOOST_AUTO_TEST_CASE(create_group_membership)
     BOOST_CHECK(today == from_string(result[0][3]));
 }
 
-BOOST_AUTO_TEST_CASE(inifite_membership_cut)
+BOOST_AUTO_TEST_CASE(create_already_existing_group_membership)
 {
     LibFred::OperationContextCreator ctx;
-    const unsigned long long mem_id1 = LibFred::Registrar::CreateRegistrarGroupMembership(
+    const unsigned long long created_id = LibFred::Registrar::CreateRegistrarGroupMembership(
             reg.id,
             group_id,
             today)
         .exec(ctx);
-    const char* query =
+    const std::string query =
             "SELECT registrar_id, registrar_group_id, member_from, member_until "
             "FROM registrar_group_map "
             "WHERE id = $1::bigint";
-    Database::Result result1 = ctx.get_conn().exec_params(
+    const Database::Result created_map = ctx.get_conn().exec_params(
             query,
-            Database::query_param_list(mem_id1));
-    BOOST_CHECK(reg.id == static_cast<unsigned long long>(result1[0][0]));
-    BOOST_CHECK(group_id == static_cast<unsigned long long>(result1[0][1]));
-    BOOST_CHECK(today ==
-            from_string(result1[0][2]));
-    BOOST_CHECK(static_cast<std::string>(result1[0][3]).empty());
+            Database::query_param_list(created_id));
+    BOOST_CHECK(reg.id == static_cast<unsigned long long>(created_map[0][0]));
+    BOOST_CHECK(group_id == static_cast<unsigned long long>(created_map[0][1]));
+    BOOST_CHECK(today == from_string(created_map[0][2]));
+    BOOST_CHECK(static_cast<std::string>(created_map[0][3]).empty());
 
     const date tomorrow = today + date_duration(1);
-    const unsigned long long mem_id2 =
+    const unsigned long long updated_id =
         LibFred::Registrar::CreateRegistrarGroupMembership(reg.id, group_id, tomorrow).exec(ctx);
 
-    result1 = ctx.get_conn().exec_params(query, Database::query_param_list(mem_id1));
-    BOOST_CHECK(reg.id == static_cast<unsigned long long>(result1[0][0]));
-    BOOST_CHECK(group_id == static_cast<unsigned long long>(result1[0][1]));
-    BOOST_CHECK(today == from_string(result1[0][2]));
-    BOOST_CHECK(today == from_string(result1[0][2]));
+    const Database::Result history_map = ctx.get_conn().exec_params(
+            query,
+            Database::query_param_list(created_id));
+    BOOST_CHECK(reg.id == static_cast<unsigned long long>(history_map[0][0]));
+    BOOST_CHECK(group_id == static_cast<unsigned long long>(history_map[0][1]));
+    BOOST_CHECK(today == from_string(history_map[0][2]));
+    BOOST_CHECK(tomorrow == from_string(history_map[0][3]));
 
-    const Database::Result result2 =
-        ctx.get_conn().exec_params(query, Database::query_param_list(mem_id2));
-    BOOST_CHECK(reg.id == static_cast<unsigned long long>(result2[0][0]));
-    BOOST_CHECK(group_id == static_cast<unsigned long long>(result2[0][1]));
-    BOOST_CHECK(tomorrow == from_string(result2[0][2]));
-    BOOST_CHECK(static_cast<std::string>(result2[0][3]).empty());
+    const Database::Result current_map =
+        ctx.get_conn().exec_params(query, Database::query_param_list(updated_id));
+    BOOST_CHECK(reg.id == static_cast<unsigned long long>(current_map[0][0]));
+    BOOST_CHECK(group_id == static_cast<unsigned long long>(current_map[0][1]));
+    BOOST_CHECK(tomorrow == from_string(current_map[0][2]));
+    BOOST_CHECK(static_cast<std::string>(current_map[0][3]).empty());
 }
 
 BOOST_AUTO_TEST_CASE(wrong_interval_order)
 {
     LibFred::OperationContextCreator ctx;
     BOOST_CHECK_THROW(
-        LibFred::Registrar::CreateRegistrarGroupMembership(reg.id, group_id, today, today - date_duration(1)).exec(ctx),
+        LibFred::Registrar::CreateRegistrarGroupMembership(reg.id, group_id, today, today - date_duration(1))
+                .exec(ctx),
         WrongIntervalOrder);
 }
 
@@ -118,7 +120,8 @@ BOOST_AUTO_TEST_CASE(interval_intersection)
     LibFred::Registrar::CreateRegistrarGroupMembership(reg.id, group_id, today, today).exec(ctx);
 
     BOOST_CHECK_THROW(
-        LibFred::Registrar::CreateRegistrarGroupMembership(reg.id, group_id, today - date_duration(1), today).exec(ctx),
+        LibFred::Registrar::CreateRegistrarGroupMembership(reg.id, group_id, today - date_duration(1), today)
+                .exec(ctx),
         IntervalIntersection);
 }
 

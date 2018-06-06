@@ -1644,7 +1644,7 @@ public:
         }
         catch (...)
         {
-            LOGGER(PACKAGE).error("createRegistrarGroupMembership: an error has occured");
+            LOGGER(PACKAGE).error("createRegistrarGroupMembership: an error has occurred");
             throw;
         }
     }
@@ -1662,7 +1662,7 @@ public:
 
             OperationContextCreator ctx;
             const Database::Result res_registrar = ctx.get_conn().exec_params(
-                    "SELECT id FROM registrar WHERE handle = UPPER($1:text)",
+                    "SELECT id FROM registrar WHERE handle = UPPER($1::text)",
                     Database::query_param_list(_registrar_handle));
             if((res_registrar.size() > 0) && (res_registrar[0].size() > 0))
             {
@@ -1672,8 +1672,8 @@ public:
             {
                 throw std::runtime_error("createRegistrarGroupMembership: failed to find registrar in database");
             }
-            const Database::Result res_group= ctx.get_conn().exec_params(
-                    "SELECT id FROM _registrar_group WHERE short_name = $1:text",
+            const Database::Result res_group = ctx.get_conn().exec_params(
+                    "SELECT id FROM registrar_group WHERE short_name = $1::text",
                     Database::query_param_list(_registrar_group));
             if ((res_group.size() > 0) && (res_group[0].size() > 0))
             {
@@ -1690,7 +1690,7 @@ public:
         }
         catch (...)
         {
-            LOGGER(PACKAGE).error("createRegistrarGroupMembership: an error has occured");
+            LOGGER(PACKAGE).error("createRegistrarGroupMembership: an error has occurred");
             throw;
         }
     }
@@ -1707,7 +1707,7 @@ public:
       }
       catch (...)
       {
-          LOGGER(PACKAGE).error("endRegistrarGroupMembership: an error has occured");
+          LOGGER(PACKAGE).error("endRegistrarGroupMembership: an error has occurred");
           throw;
       }
     }
@@ -1717,16 +1717,17 @@ public:
     MembershipByRegistrarSeq getMembershipByRegistrar(const TID registrar_id) final override
     {
       LibFred::OperationContextCreator ctx;
-      const std::vector<GroupMembershipByRegistrar> info = LibFred::Registrar::InfoGroupMembershipByRegistrar(registrar_id).exec(ctx);
+      const std::vector<GroupMembershipByRegistrar> info =
+              LibFred::Registrar::InfoGroupMembershipByRegistrar(registrar_id).exec(ctx);
       MembershipByRegistrarSeq result;
       result.reserve(info.size());
-      for (auto it: info)
+      for(const auto& i: info)
       {
           MembershipByRegistrar mbr;
-          mbr.id = it.membership_id;
-          mbr.group_id = it.group_id;
-          mbr.member_from = it.member_from;
-          mbr.member_until = it.member_until;
+          mbr.id = i.membership_id;
+          mbr.group_id = i.group_id;
+          mbr.member_from = i.member_from;
+          mbr.member_until = i.member_until;
           result.push_back(std::move(mbr));
       }
       return result;
@@ -1736,16 +1737,17 @@ public:
     MembershipByGroupSeq getMembershipByGroup(const TID group_id) final override
     {
       LibFred::OperationContextCreator ctx;
-      const std::vector<GroupMembershipByGroup> info = LibFred::Registrar::InfoGroupMembershipByGroup(group_id).exec(ctx);
+      const std::vector<GroupMembershipByGroup> info =
+              LibFred::Registrar::InfoGroupMembershipByGroup(group_id).exec(ctx);
       MembershipByGroupSeq result;
       result.reserve(info.size());
-      for (auto it: info)
+      for(const auto& i: info)
       {
           MembershipByGroup mbg;
-          mbg.id = it.membership_id;
-          mbg.registrar_id = it.registrar_id;
-          mbg.member_from = it.member_from;
-          mbg.member_until = it.member_until;
+          mbg.id = i.membership_id;
+          mbg.registrar_id = i.registrar_id;
+          mbg.member_from = i.member_from;
+          mbg.member_until = i.member_until;
           result.push_back(std::move(mbg));
       }
       return result;

@@ -66,14 +66,13 @@ BOOST_AUTO_TEST_CASE(info_by_registrar_membership)
     std::vector<LibFred::Registrar::GroupMembershipByRegistrar> info_list =
         LibFred::Registrar::InfoGroupMembershipByRegistrar(reg.id).exec(ctx);
     BOOST_CHECK_EQUAL(info_list.size(), mem_map.size());
-    BOOST_FOREACH(LibFred::Registrar::GroupMembershipByRegistrar it, info_list)
+    for (const auto& i: info_list)
     {
-        std::map<unsigned long long, unsigned long long>::iterator map_it =
-            mem_map.find(it.membership_id);
+        const auto map_it = mem_map.find(i.membership_id);
         BOOST_CHECK(map_it != mem_map.end());
-        BOOST_CHECK(it.group_id == map_it->second);
-        BOOST_CHECK(it.member_from == today);
-        BOOST_CHECK(it.member_until.is_pos_infinity());
+        BOOST_CHECK(i.group_id == map_it->second);
+        BOOST_CHECK(i.member_from == today);
+        BOOST_CHECK(i.member_until.is_pos_infinity());
     }
 }
 

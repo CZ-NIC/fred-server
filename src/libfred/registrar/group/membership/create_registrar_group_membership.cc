@@ -36,10 +36,11 @@ unsigned long long CreateRegistrarGroupMembership::exec(OperationContext& _ctx)
             }
         }
 
-        const char* query = "INSERT INTO registrar_group_map (registrar_id, registrar_group_id, member_from, member_until) "
+        const std::string query =
+                    "INSERT INTO registrar_group_map (registrar_id, registrar_group_id, member_from, member_until) "
                     "VALUES ($1::bigint, $2::bigint, $3::date, $4::date) RETURNING ID";
         Database::query_param_list query_list = Database::query_param_list(registrar_id_)(group_id_)(member_from_);
-        if (!member_until_.is_not_a_date() && ! member_until_.is_pos_infinity())
+        if (!member_until_.is_not_a_date() && !member_until_.is_pos_infinity())
         {
             query_list = query_list(member_until_);
         }
