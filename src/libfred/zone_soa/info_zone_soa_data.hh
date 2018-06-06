@@ -22,7 +22,7 @@
 #include <string>
 
 namespace LibFred {
-namespace Zone {
+namespace ZoneSoa {
 
 struct InfoZoneSoaData
 {
@@ -35,7 +35,7 @@ struct InfoZoneSoaData
     int minimum;
     std::string ns_fqdn;
 
-    bool operator==(const ::LibFred::Zone::InfoZoneSoaData& _other)
+    bool operator==(const ::LibFred::ZoneSoa::InfoZoneSoaData& _other)
     {
         return (zone == _other.zone
                 && ttl == _other.ttl
@@ -48,8 +48,8 @@ struct InfoZoneSoaData
     }
 };
 
-}
-}
+} // namespace LibFred::ZoneSoa
+} // namespace LibFred
 
 
 #endif

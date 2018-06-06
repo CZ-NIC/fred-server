@@ -16,12 +16,23 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/libfred/zone/zone_soa/create_zone_soa.hh"
-#include "src/libfred/zone/zone_soa/exceptions.hh"
+#include "src/libfred/zone_soa/create_zone_soa.hh"
+#include "src/libfred/zone_soa/exceptions.hh"
 
 namespace LibFred {
-namespace Zone {
+namespace ZoneSoa {
 
+CreateZoneSoa::CreateZoneSoa(const std::string& _fqdn)
+        : fqdn_(_fqdn),
+          ttl_(five_hours_in_seconds),
+          hostmaster_("hostmaster@localhost"),
+          refresh_(three_hours_in_seconds),
+          update_retr_(one_hour_in_seconds),
+          expiry_(two_weeks_in_seconds),
+          minimum_(two_hours_in_seconds),
+          ns_fqdn_("localhost")
+{
+}
 CreateZoneSoa& CreateZoneSoa::set_ttl(const int _ttl)
 {
     ttl_ = _ttl;
@@ -63,7 +74,7 @@ unsigned long long CreateZoneSoa::exec(OperationContext& _ctx) const
     const Database::Result zone_exists = _ctx.get_conn().exec_params(
             // clang-format off
             "SELECT id FROM zone WHERE fqdn=LOWER($1::text) ",
-            // clang-format off
+            // clang-format on
             Database::query_param_list(fqdn_));
     if (zone_exists.size() != 1)
     {
@@ -74,7 +85,7 @@ unsigned long long CreateZoneSoa::exec(OperationContext& _ctx) const
     const Database::Result zone_soa_exists = _ctx.get_conn().exec_params(
             // clang-format off
             "SELECT zone FROM zone_soa WHERE zone=$1::bigint ",
-            // clang-format off
+            // clang-format on
             Database::query_param_list(zone_id));
     if (zone_soa_exists.size() != 0)
     {
@@ -113,5 +124,5 @@ unsigned long long CreateZoneSoa::exec(OperationContext& _ctx) const
     throw CreateZoneSoaException();
 }
 
-}
-}
+} // namespace LibFred::ZoneSoa
+} // namespace LibFred

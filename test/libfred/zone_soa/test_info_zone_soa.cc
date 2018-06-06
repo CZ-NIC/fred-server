@@ -19,10 +19,10 @@
 #include "src/libfred/opcontext.hh"
 #include "src/libfred/opexception.hh"
 #include "src/libfred/zone/create_zone.hh"
-#include "src/libfred/zone/zone_soa/create_zone_soa.hh"
-#include "src/libfred/zone/zone_soa/info_zone_soa_data.hh"
-#include "src/libfred/zone/zone_soa/info_zone_soa.hh"
-#include "src/libfred/zone/zone_soa/exceptions.hh"
+#include "src/libfred/zone_soa/create_zone_soa.hh"
+#include "src/libfred/zone_soa/info_zone_soa_data.hh"
+#include "src/libfred/zone_soa/info_zone_soa.hh"
+#include "src/libfred/zone_soa/exceptions.hh"
 #include "src/util/random_data_generator.hh"
 #include "test/libfred/zone/util.hh"
 #include "test/setup/fixtures.hh"
@@ -34,7 +34,7 @@ namespace Test {
 
 struct info_zone_soa_fixture : public virtual Test::instantiate_db_template
 {
-    ::LibFred::Zone::InfoZoneSoaData zone_soa;
+    ::LibFred::ZoneSoa::InfoZoneSoaData zone_soa;
     std::string fqdn;
 
     info_zone_soa_fixture()
@@ -52,7 +52,7 @@ struct info_zone_soa_fixture : public virtual Test::instantiate_db_template
 
         zone_soa.zone = ::LibFred::Zone::CreateZone(fqdn, 6, 12).exec(ctx);
 
-        ::LibFred::Zone::CreateZoneSoa(fqdn)
+        ::LibFred::ZoneSoa::CreateZoneSoa(fqdn)
                 .set_ttl(zone_soa.ttl)
                 .set_hostmaster(zone_soa.hostmaster)
                 .set_refresh(zone_soa.refresh)
@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE(set_nonexistent_zone_soa)
 {
     ::LibFred::OperationContextCreator ctx;
 
-    BOOST_CHECK_THROW(::LibFred::Zone::InfoZoneSoa(RandomDataGenerator().xstring(5))
+    BOOST_CHECK_THROW(::LibFred::ZoneSoa::InfoZoneSoa(RandomDataGenerator().xstring(5))
                 .exec(ctx),
            NonExistentZone);
 }
@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE(set_info_zone)
 {
     ::LibFred::OperationContextCreator ctx;
 
-    ::LibFred::Zone::InfoZoneSoaData zone_soa_info = ::LibFred::Zone::InfoZoneSoa(fqdn).exec(ctx);
+    ::LibFred::ZoneSoa::InfoZoneSoaData zone_soa_info = ::LibFred::ZoneSoa::InfoZoneSoa(fqdn).exec(ctx);
     BOOST_CHECK(zone_soa == zone_soa_info);
 }
 

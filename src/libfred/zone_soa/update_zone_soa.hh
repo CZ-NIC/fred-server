@@ -24,7 +24,7 @@
 #include <boost/optional.hpp>
 
 namespace LibFred {
-namespace Zone {
+namespace ZoneSoa {
 
 class UpdateZoneSoa
 {
@@ -56,7 +56,7 @@ private:
     boost::optional<std::string> ns_fqdn_;
 };
 
-}
-}
+} // namespace LibFred::ZoneSoa
+} // namespace LibFred
 
 #endif

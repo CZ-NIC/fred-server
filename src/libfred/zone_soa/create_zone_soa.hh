@@ -22,24 +22,18 @@
 #include "src/libfred/opcontext.hh"
 
 namespace LibFred {
-namespace Zone {
+namespace ZoneSoa {
+
+constexpr int five_hours_in_seconds = 18000; // 5x60x60 sec
+constexpr int three_hours_in_seconds  = 10800; // 3x60x60 sec
+constexpr int one_hour_in_seconds = 3600; // 60x60 sec
+constexpr int two_weeks_in_seconds = 1209600; // 14x24x60x60 sec
+constexpr int two_hours_in_seconds = 7200; // 2x60x60 sec
 
 class CreateZoneSoa
 {
 public:
-    explicit CreateZoneSoa(
-            const std::string& _fqdn)
-            : fqdn_(_fqdn),
-              ttl_(18000),
-              hostmaster_("hostmaster@localhost"),
-              refresh_(10600),
-              update_retr_(3600),
-              expiry_(1209600),
-              minimum_(7200),
-              ns_fqdn_("localhost")
-    {
-    }
-
+    explicit CreateZoneSoa(const std::string& _fqdn);
     CreateZoneSoa& set_ttl(int _ttl);
     CreateZoneSoa& set_hostmaster(const std::string& _hostmaster);
     CreateZoneSoa& set_refresh(int _refresh);
@@ -59,9 +53,10 @@ private:
     int expiry_;
     int minimum_;
     std::string ns_fqdn_;
+
 };
 
-}
-}
+} // namespace LibFred::ZoneSoa
+} // namespace LibFred
 
 #endif

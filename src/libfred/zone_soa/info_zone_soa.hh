@@ -20,10 +20,10 @@
 #define INFO_ZONE_SOA_HH_D0F44B04C60244D3B7B7DE7E261CDADE
 
 #include "src/libfred/opcontext.hh"
-#include "src/libfred/zone/zone_soa/info_zone_soa_data.hh"
+#include "src/libfred/zone_soa/info_zone_soa_data.hh"
 
 namespace LibFred {
-namespace Zone {
+namespace ZoneSoa {
 
 class InfoZoneSoa
 {
@@ -39,8 +39,8 @@ private:
     std::string fqdn_;
 };
 
-}
-}
+} // namespace LibFred::ZoneSoa
+} // namespace LibFred
 
 
 #endif

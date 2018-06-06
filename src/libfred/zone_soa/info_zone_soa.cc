@@ -16,11 +16,11 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/libfred/zone/zone_soa/info_zone_soa.hh"
-#include "src/libfred/zone/zone_soa/exceptions.hh"
+#include "src/libfred/zone_soa/info_zone_soa.hh"
+#include "src/libfred/zone_soa/exceptions.hh"
 
 namespace LibFred {
-namespace Zone {
+namespace ZoneSoa {
 
 InfoZoneSoaData InfoZoneSoa::exec(OperationContext& _ctx) const
 {
@@ -70,5 +70,5 @@ InfoZoneSoaData InfoZoneSoa::exec(OperationContext& _ctx) const
     return info_zone_soa_data;
 }
 
-}
-}
+} // namespace LibFred::ZoneSoa
+} // namespace LibFred

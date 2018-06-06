@@ -16,11 +16,11 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/libfred/zone/zone_soa/update_zone_soa.hh"
-#include "src/libfred/zone/zone_soa/exceptions.hh"
+#include "src/libfred/zone_soa/update_zone_soa.hh"
+#include "src/libfred/zone_soa/exceptions.hh"
 
 namespace LibFred {
-namespace Zone {
+namespace ZoneSoa {
 
 UpdateZoneSoa& UpdateZoneSoa::set_ttl(const int _ttl)
 {
@@ -75,7 +75,7 @@ unsigned long long UpdateZoneSoa::exec(OperationContext& _ctx) const
     const Database::Result zone_exists = _ctx.get_conn().exec_params(
             // clang-format off
             "SELECT id FROM zone WHERE fqdn=LOWER($1::text) ",
-            // clang-format off
+            // clang-format on
             Database::query_param_list(fqdn_));
     if (zone_exists.size() != 1)
     {
@@ -86,7 +86,7 @@ unsigned long long UpdateZoneSoa::exec(OperationContext& _ctx) const
     const Database::Result zone_soa_exists = _ctx.get_conn().exec_params(
             // clang-format off
             "SELECT zone FROM zone_soa WHERE zone=$1::bigint ",
-            // clang-format off
+            // clang-format on
             Database::query_param_list(zone_id));
     if (zone_soa_exists.size() != 1)
     {
@@ -156,5 +156,5 @@ unsigned long long UpdateZoneSoa::exec(OperationContext& _ctx) const
     throw UpdateZoneSoaException();
 }
 
-}
-}
+} // namespace LibFred::ZoneSoa
+} // namespace LibFred
