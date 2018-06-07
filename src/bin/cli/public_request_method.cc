@@ -28,8 +28,34 @@
 
 #include <unordered_map>
 #include <functional>
+#include <utility>
 
 namespace Admin {
+
+namespace {
+
+template <typename ...T>
+std::unordered_map<std::string, const LibFred::PublicRequestTypeIface& (*)()> get_type_to_iface_mapping()
+{
+    std::unordered_map<std::string, const LibFred::PublicRequestTypeIface& (*)()> type_to_iface =
+        {
+            std::make_pair(Fred::Backend::PublicRequest::Type::get_iface_of<T>().get_public_request_type(),
+                           Fred::Backend::PublicRequest::Type::get_iface_of<T>)...
+        };
+    return type_to_iface;
+}
+
+template <typename ...T>
+std::set<std::string> get_request_type_filter()
+{
+    std::set<std::string> request_types_filter =
+        {
+            Fred::Backend::PublicRequest::Type::get_iface_of<T>().get_public_request_type()...
+        };
+    return request_types_filter;
+}
+
+} // namespace Admin::{anonymous}
 
 void PublicRequestProcedure::exec()
 {
@@ -37,11 +63,10 @@ void PublicRequestProcedure::exec()
 
     std::set<std::string> request_types_filter;
     {
-        std::set<std::string> request_types_filter_default = {
-            PublicRequestType::get_iface_of<PublicRequestType::PersonalinfoAuto>().get_public_request_type(),
-            PublicRequestType::get_iface_of<PublicRequestType::PersonalinfoEmail>().get_public_request_type(),
-            PublicRequestType::get_iface_of<PublicRequestType::PersonalinfoPost>().get_public_request_type()
-        };
+        std::set<std::string> request_types_filter_default =
+            get_request_type_filter<PublicRequestType::PersonalinfoAuto,
+                                    PublicRequestType::PersonalinfoEmail,
+                                    PublicRequestType::PersonalinfoPost>();
         for (const auto& argument: args.types)
         {
             const auto itr = request_types_filter_default.find(argument);
@@ -92,14 +117,9 @@ void PublicRequestProcedure::exec()
     }
 
     const std::unordered_map<std::string, const LibFred::PublicRequestTypeIface& (*)()> type_to_iface =
-        {
-            {PublicRequestType::get_iface_of<PublicRequestType::PersonalinfoAuto>().get_public_request_type(),
-             PublicRequestType::get_iface_of<PublicRequestType::PersonalinfoAuto>},
-            {PublicRequestType::get_iface_of<PublicRequestType::PersonalinfoEmail>().get_public_request_type(),
-             PublicRequestType::get_iface_of<PublicRequestType::PersonalinfoEmail>},
-            {PublicRequestType::get_iface_of<PublicRequestType::PersonalinfoPost>().get_public_request_type(),
-             PublicRequestType::get_iface_of<PublicRequestType::PersonalinfoPost>},
-        };
+        get_type_to_iface_mapping<PublicRequestType::PersonalinfoAuto,
+                                  PublicRequestType::PersonalinfoAuto,
+                                  PublicRequestType::PersonalinfoPost>();
     for (std::size_t i = 0; i < dbres.size(); ++i)
     {
         const auto request_id = static_cast<unsigned long long>(dbres[i][0]);
