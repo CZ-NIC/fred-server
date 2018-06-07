@@ -49,11 +49,6 @@ unsigned long long get_id_of_registered_object(
     throw std::logic_error("unexpected PublicRequestImpl::ObjectType::Enum value");
 }
 
-unsigned long long get_id_of_contact(LibFred::OperationContext& ctx, const std::string& contact_handle)
-{
-    return get_id_of_registered_object(ctx, PublicRequestImpl::ObjectType::contact, contact_handle);
-}
-
 std::map<std::string, unsigned char> get_public_request_type_to_post_type_dictionary()
 {
     std::map<std::string, unsigned char> dictionary;
@@ -464,7 +459,7 @@ unsigned long long PublicRequestImpl::create_personal_info_request_registry_emai
     try
     {
         LibFred::OperationContextCreator ctx;
-        const auto contact_id = get_id_of_contact(ctx, contact_handle);
+        const auto contact_id = LibFred::get_id_of_registered<LibFred::Object_Type::contact>(ctx, contact_handle);
         LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, contact_id);
         const auto public_request_id = LibFred::CreatePublicRequest()
             .exec(locked_object, Type::get_iface_of<Type::PersonalinfoAuto>(), log_request_id);
@@ -512,7 +507,8 @@ unsigned long long PublicRequestImpl::create_personal_info_request_non_registry_
     try
     {
         LibFred::OperationContextCreator ctx;
-        const unsigned long long contact_id = get_id_of_contact(ctx, contact_handle);
+        const unsigned long long contact_id =
+            LibFred::get_id_of_registered<LibFred::Object_Type::contact>(ctx, contact_handle);
         LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, contact_id);
         const auto create_public_request_op = LibFred::CreatePublicRequest().set_email_to_answer(specified_email);
         switch (confirmation_method)
