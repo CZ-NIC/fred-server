@@ -29,6 +29,7 @@ namespace Backend {
 namespace PublicRequest {
 
 namespace {
+
 unsigned long long get_id_of_registered_object(
         LibFred::OperationContext& ctx,
         PublicRequestImpl::ObjectType::Enum object_type,

@@ -21,14 +21,12 @@
 
 #include "src/libfred/public_request/public_request_type_iface.hh"
 #include "src/backend/public_request/public_request.hh"
+#include "src/backend/public_request/type/get_iface_of.hh"
 
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
 namespace Type {
-
-template <typename T>
-const LibFred::PublicRequestTypeIface& get_iface_of();
 
 struct BlockChangesEmail;
 struct BlockChangesPost;
