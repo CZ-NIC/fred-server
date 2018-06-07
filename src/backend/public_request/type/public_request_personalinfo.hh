@@ -20,7 +20,6 @@
 #define PUBLIC_REQUEST_PERSONALINFO_HH_6A9E148ADE9D445C891AC330DC1E7634
 
 #include "src/libfred/public_request/public_request_type_iface.hh"
-#include "src/backend/public_request/type/get_iface_of.hh"
 
 namespace Fred {
 namespace Backend {

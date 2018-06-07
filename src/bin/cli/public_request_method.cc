@@ -22,6 +22,7 @@
 #include "src/util/db/query_param.hh"
 #include "src/bin/cli/public_request_method.hh"
 #include "src/backend/public_request/type/public_request_personalinfo.hh"
+#include "src/backend/public_request/type/get_iface_of.hh"
 #include "src/libfred/public_request/public_request_status.hh"
 #include "src/libfred/opcontext.hh"
 

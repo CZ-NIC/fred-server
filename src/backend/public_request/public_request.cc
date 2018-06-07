@@ -3,6 +3,7 @@
 #include "src/backend/public_request/type/public_request_authinfo.hh"
 #include "src/backend/public_request/type/public_request_blockunblock.hh"
 #include "src/backend/public_request/type/public_request_personalinfo.hh"
+#include "src/backend/public_request/type/get_iface_of.hh"
 #include "src/libfred/object/get_id_of_registered.hh"
 #include "src/libfred/public_request/create_public_request.hh"
 #include "src/libfred/public_request/info_public_request.hh"
@@ -507,8 +508,7 @@ unsigned long long PublicRequestImpl::create_personal_info_request_non_registry_
     try
     {
         LibFred::OperationContextCreator ctx;
-        const unsigned long long contact_id =
-            LibFred::get_id_of_registered<LibFred::Object_Type::contact>(ctx, contact_handle);
+        const auto contact_id = LibFred::get_id_of_registered<LibFred::Object_Type::contact>(ctx, contact_handle);
         LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, contact_id);
         const auto create_public_request_op = LibFred::CreatePublicRequest().set_email_to_answer(specified_email);
         switch (confirmation_method)
