@@ -118,7 +118,7 @@ void PublicRequestProcedure::exec()
 
     const std::unordered_map<std::string, const LibFred::PublicRequestTypeIface& (*)()> type_to_iface =
         get_type_to_iface_mapping<PublicRequestType::PersonalinfoAuto,
-                                  PublicRequestType::PersonalinfoAuto,
+                                  PublicRequestType::PersonalinfoEmail,
                                   PublicRequestType::PersonalinfoPost>();
     for (std::size_t i = 0; i < dbres.size(); ++i)
     {
