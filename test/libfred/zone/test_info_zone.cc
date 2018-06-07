@@ -30,15 +30,13 @@
 
 namespace Test {
 
-struct info_zone_fixture : public virtual Test::instantiate_db_template
+struct info_zone_fixture
 {
     ::LibFred::Zone::NonEnumZone non_enum_zone;
     ::LibFred::Zone::EnumZone enum_zone;
 
-    info_zone_fixture()
+    info_zone_fixture(::LibFred::OperationContext& _ctx)
     {
-        ::LibFred::OperationContextCreator ctx;
-
         non_enum_zone.fqdn = "zoo";
         non_enum_zone.expiration_period_max_in_months = 6;
         non_enum_zone.expiration_period_min_in_months = 8;
@@ -46,7 +44,7 @@ struct info_zone_fixture : public virtual Test::instantiate_db_template
         non_enum_zone.sending_warning_letter = false;
 
         ::LibFred::Zone::CreateZone(non_enum_zone.fqdn, non_enum_zone.expiration_period_min_in_months, non_enum_zone.expiration_period_max_in_months)
-                .exec(ctx);
+                .exec(_ctx);
 
         enum_zone.fqdn = "3.2.1.e164.arpa";
         enum_zone.expiration_period_max_in_months = 12;
@@ -58,19 +56,17 @@ struct info_zone_fixture : public virtual Test::instantiate_db_template
         ::LibFred::Zone::CreateZone(enum_zone.fqdn, enum_zone.expiration_period_min_in_months, enum_zone.expiration_period_max_in_months)
                 .set_enum_validation_period_in_months(enum_zone.validation_period_in_months)
                 .set_sending_warning_letter(enum_zone.sending_warning_letter)
-                .exec(ctx);
-        ctx.commit_transaction();
+                .exec(_ctx);
     }
+
     ~info_zone_fixture()
     {}
 };
 
-BOOST_FIXTURE_TEST_SUITE(TestInfoZone, info_zone_fixture)
+BOOST_FIXTURE_TEST_SUITE(TestInfoZone, supply_fixture_ctx<info_zone_fixture>)
 
 BOOST_AUTO_TEST_CASE(set_nonexistent_zone)
 {
-    ::LibFred::OperationContextCreator ctx;
-
     std::string fqdn = RandomDataGenerator().xstring(5);
     BOOST_CHECK_THROW(::LibFred::Zone::InfoZone(fqdn)
                 .exec(ctx),
@@ -79,16 +75,12 @@ BOOST_AUTO_TEST_CASE(set_nonexistent_zone)
 
 BOOST_AUTO_TEST_CASE(set_info_zone)
 {
-    ::LibFred::OperationContextCreator ctx;
-
     ::LibFred::Zone::InfoZoneData zone_info = ::LibFred::Zone::InfoZone(non_enum_zone.fqdn).exec(ctx);
     BOOST_CHECK(non_enum_zone == boost::get<::LibFred::Zone::NonEnumZone>(zone_info));
 }
 
 BOOST_AUTO_TEST_CASE(set_info_enum_zone)
 {
-    ::LibFred::OperationContextCreator ctx;
-
     ::LibFred::Zone::InfoZoneData zone_info = ::LibFred::Zone::InfoZone(enum_zone.fqdn).exec(ctx);
     BOOST_CHECK(enum_zone == boost::get<::LibFred::Zone::EnumZone>(zone_info));
 }

@@ -28,13 +28,13 @@
 
 namespace Test {
 
-struct create_zone_fixture : public virtual Test::instantiate_db_template
+struct create_zone_fixture
 {
     std::string fqdn;
     int ex_period_min;
     int ex_period_max;
 
-    create_zone_fixture()
+    create_zone_fixture(::LibFred::OperationContext& _ctx)
         : fqdn(RandomDataGenerator().xstring(3)),
           ex_period_min(6),
           ex_period_max(12)
@@ -43,14 +43,13 @@ struct create_zone_fixture : public virtual Test::instantiate_db_template
     {}
 };
 
-BOOST_FIXTURE_TEST_SUITE(TestCreateZone, create_zone_fixture)
+BOOST_FIXTURE_TEST_SUITE(TestCreateZone, supply_fixture_ctx<create_zone_fixture>)
 
-size_t exists_new_zone(const std::string& _fqdn)
+size_t exists_new_zone(const std::string& _fqdn, ::LibFred::OperationContext& _ctx)
 {
-    ::LibFred::OperationContextCreator ctx;
-    const Database::Result db_result = ctx.get_conn().exec_params(
+    const Database::Result db_result = _ctx.get_conn().exec_params(
             "SELECT 1 FROM zone AS z "
-            "WHERE z.fqdn = LOWER($1::text) ",
+            "WHERE z.fqdn = LOWER($1::text)",
             Database::query_param_list(_fqdn));
     return db_result.size();
 }
@@ -58,8 +57,6 @@ size_t exists_new_zone(const std::string& _fqdn)
 
 BOOST_AUTO_TEST_CASE(set_enum_val_period)
 {
-    ::LibFred::OperationContextCreator ctx;
-
     BOOST_CHECK_THROW(::LibFred::Zone::CreateZone(fqdn, ex_period_min, ex_period_max)
                 .set_enum_validation_period_in_months(5)
                 .exec(ctx),
@@ -68,41 +65,33 @@ BOOST_AUTO_TEST_CASE(set_enum_val_period)
 
 BOOST_AUTO_TEST_CASE(set_min_create_zone)
 {
-   ::LibFred::OperationContextCreator ctx;
    ::LibFred::Zone::CreateZone(fqdn, ex_period_min, ex_period_max).exec(ctx);
-   ctx.commit_transaction();
-   BOOST_CHECK_EQUAL(exists_new_zone(fqdn), 1);
+   BOOST_CHECK_EQUAL(exists_new_zone(fqdn, ctx), 1);
 }
 
 BOOST_AUTO_TEST_CASE(set_max_create_zone)
 {
-   ::LibFred::OperationContextCreator ctx;
    ::LibFred::Zone::CreateZone(fqdn, ex_period_min, ex_period_max)
            .set_sending_warning_letter(true)
            .exec(ctx);
-   ctx.commit_transaction();
-   BOOST_CHECK_EQUAL(exists_new_zone(fqdn), 1);
+   BOOST_CHECK_EQUAL(exists_new_zone(fqdn, ctx), 1);
 }
 
 BOOST_AUTO_TEST_CASE(set_min_create_enum_zone)
 {
     const std::string fqdn = "0.3.4.e164.arpa";
-    ::LibFred::OperationContextCreator ctx;
     ::LibFred::Zone::CreateZone(fqdn, ex_period_min, ex_period_max).exec(ctx);
-    ctx.commit_transaction();
-    BOOST_CHECK_EQUAL(exists_new_zone(fqdn), 1);
+    BOOST_CHECK_EQUAL(exists_new_zone(fqdn, ctx), 1);
 }
 
 BOOST_AUTO_TEST_CASE(set_max_create_enum_zone)
 {
     const std::string fqdn = "1.2.E164.ArpA";
-    ::LibFred::OperationContextCreator ctx;
     ::LibFred::Zone::CreateZone(fqdn, ex_period_min, ex_period_max)
             .set_enum_validation_period_in_months(5)
             .set_sending_warning_letter(false)
             .exec(ctx);
-    ctx.commit_transaction();
-    BOOST_CHECK_EQUAL(exists_new_zone(fqdn), 1);
+    BOOST_CHECK_EQUAL(exists_new_zone(fqdn, ctx), 1);
 
 }
 

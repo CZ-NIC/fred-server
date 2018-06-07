@@ -44,11 +44,12 @@ unsigned long long CreateZone::exec(OperationContext& _ctx) const
     }
 
     const int dots_max = enum_zone ? 9 : 1;
-    const int default_val_period_months_nonenum = 0;
+    const int dummy_val_period_months_nonenum = 0;
     const int default_val_period_months_enum = 6;
-    const int validation_period_in_months = enum_validation_period_in_months_.value_or(
-            enum_zone ? default_val_period_months_enum
-                      : default_val_period_months_nonenum);
+    const int validation_period_in_months =
+            enum_zone
+                    ? enum_validation_period_in_months_.value_or(default_val_period_months_enum)
+                    : dummy_val_period_months_nonenum;
     try
     {
         const Database::Result create_result = _ctx.get_conn().exec_params(

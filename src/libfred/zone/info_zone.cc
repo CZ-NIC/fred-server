@@ -71,6 +71,7 @@ InfoZoneData InfoZone::exec(OperationContext& _ctx) const
         non_enum_zone.sending_warning_letter = static_cast<bool>(result[0]["warning_letter"]);
         info_zone_data = non_enum_zone;
     }
+
     return info_zone_data;
 }
 

@@ -19,9 +19,27 @@
 #ifndef UTIL_HH_768620FFC83747FE8C6479F25B1F4031
 #define UTIL_HH_768620FFC83747FE8C6479F25B1F4031
 
+#include "src/libfred/opcontext.hh"
 #include "src/libfred/zone/info_zone_data.hh"
+#include "test/setup/fixtures.hh"
 
 namespace Test {
+
+struct context_holder
+    : virtual instantiate_db_template
+{
+    LibFred::OperationContextCreator ctx;
+};
+
+template <class T>
+struct supply_fixture_ctx : context_holder, T
+{
+    supply_fixture_ctx()
+        : context_holder(),
+          T(ctx)
+    {
+    }
+};
 
 bool operator==(const ::LibFred::Zone::EnumZone& _lhs, const ::LibFred::Zone::EnumZone& _rhs);
 
