@@ -793,8 +793,6 @@ src_libfred_libfred_a_SOURCES = \
 		src/libfred/model_zone_soa.hh \
 		src/libfred/model_price_list.cc \
 		src/libfred/model_price_list.hh \
-		src/libfred/model_registrar_certification.hh \
-		src/libfred/model_registrar_certification.cc \
 		src/libfred/model_registrar_group_map.hh \
 		src/libfred/model_registrar_group_map.cc \
 		src/libfred/registrable_object/domain.cc \
@@ -1041,6 +1039,9 @@ src_libfred_libfred_a_SOURCES = \
 		src/libfred/registrar/group/cancel_registrar_group.cc \
 		src/libfred/registrar/group/get_registrar_groups.cc \
 		src/libfred/registrar/zone_credit.hh \
+		src/libfred/registrar/certification/create_registrar_certification.cc \
+		src/libfred/registrar/certification/update_registrar_certification.cc \
+		src/libfred/registrar/certification/get_registrar_certifications.cc \
 		src/libfred/registrar/zone_credit.cc \
 		src/libfred/registrar/registrar_zone_credit.hh \
 		src/libfred/registrar/registrar_zone_credit.cc \
@@ -3607,6 +3608,9 @@ test_test_libfred_SOURCES = \
 		test/libfred/notifier/test_gather_email_content_nsset_transfer.cc \
 		test/libfred/notifier/test_gather_email_content_nsset_update.cc \
 		test/libfred/notifier/test_process_one_notification_request.cc \
+		test/libfred/registrar/certification/test_create_registrar_certification.cc \
+		test/libfred/registrar/certification/test_update_registrar_certification.cc \
+		test/libfred/registrar/certification/test_get_registrar_certifications.cc \
 		test/libfred/test_opexception.cc \
 		test/libfred/test_check_handle.cc \
 		test/util/test_param_query.cc \
