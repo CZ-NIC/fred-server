@@ -56,7 +56,7 @@ struct test_update_certification_fixture : virtual public Test::instantiate_db_t
 };
 
 BOOST_FIXTURE_TEST_SUITE(TestUpdateRegistrarCertification, test_update_certification_fixture)
-    
+
 BOOST_AUTO_TEST_CASE(update_registrar_certification_date)
 {
     LibFred::OperationContextCreator ctx;
