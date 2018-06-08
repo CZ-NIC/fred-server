@@ -1664,7 +1664,7 @@ public:
             const Database::Result res_registrar = ctx.get_conn().exec_params(
                     "SELECT id FROM registrar WHERE handle = UPPER($1::text)",
                     Database::query_param_list(_registrar_handle));
-            if((res_registrar.size() > 0) && (res_registrar[0].size() > 0))
+            if ((res_registrar.size() > 0) && (res_registrar[0].size() > 0))
             {
                 registrar_id = res_registrar[0][0];
             }
@@ -1721,7 +1721,7 @@ public:
               LibFred::Registrar::InfoGroupMembershipByRegistrar(registrar_id).exec(ctx);
       MembershipByRegistrarSeq result;
       result.reserve(info.size());
-      for(const auto& i: info)
+      for (const auto& i: info)
       {
           MembershipByRegistrar mbr;
           mbr.id = i.membership_id;
@@ -1741,7 +1741,7 @@ public:
               LibFred::Registrar::InfoGroupMembershipByGroup(group_id).exec(ctx);
       MembershipByGroupSeq result;
       result.reserve(info.size());
-      for(const auto& i: info)
+      for (const auto& i: info)
       {
           MembershipByGroup mbg;
           mbg.id = i.membership_id;

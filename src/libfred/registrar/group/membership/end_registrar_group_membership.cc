@@ -22,7 +22,7 @@ void EndRegistrarGroupMembership::exec(OperationContext& _ctx)
         }
         else if (membership.size() > 1)
         {
-            LOGGER(PACKAGE).info("Failed to end registrar group membership due more duplicity records was found.");
+            LOGGER(PACKAGE).info("Failed to end registrar group membership because too many duplicate records were found.");
             throw;
         }
 
