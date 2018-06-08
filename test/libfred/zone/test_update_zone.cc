@@ -62,7 +62,7 @@ struct update_zone_fixture
 
 BOOST_FIXTURE_TEST_SUITE(TestUpdateZone, supply_fixture_ctx<update_zone_fixture>)
 
-::LibFred::Zone::InfoZoneData get_info_zone_data(const std::string& _fqdn, ::LibFred::OperationContext& _ctx)
+::LibFred::Zone::InfoZoneData get_info_zone_data(::LibFred::OperationContext& _ctx, const std::string& _fqdn)
 {
     return ::LibFred::Zone::InfoZone(_fqdn).exec(_ctx);
 }
@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE(set_enum_zone_update_all)
                 .set_enum_validation_period_in_months(enum_zone.validation_period_in_months)
                 .set_sending_warning_letter(enum_zone.sending_warning_letter)
                 .exec(ctx);
-   ::LibFred::Zone::InfoZoneData new_zone = get_info_zone_data(enum_zone.fqdn, ctx);
+   ::LibFred::Zone::InfoZoneData new_zone = get_info_zone_data(ctx, enum_zone.fqdn);
 
    BOOST_CHECK(enum_zone == boost::get<LibFred::Zone::EnumZone>(new_zone));
 }
