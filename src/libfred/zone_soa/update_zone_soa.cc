@@ -27,31 +27,37 @@ UpdateZoneSoa& UpdateZoneSoa::set_ttl(const int _ttl)
     ttl_ = _ttl;
     return *this;
 }
+
 UpdateZoneSoa& UpdateZoneSoa::set_hostmaster(const std::string& _hostmaster)
 {
     hostmaster_ = _hostmaster;
     return *this;
 }
+
 UpdateZoneSoa& UpdateZoneSoa::set_refresh(const int _refresh)
 {
     refresh_ = _refresh;
     return *this;
 }
+
 UpdateZoneSoa& UpdateZoneSoa::set_update_retr(const int _update_retr)
 {
     update_retr_ = _update_retr;
     return *this;
 }
+
 UpdateZoneSoa& UpdateZoneSoa::set_expiry(const int _expiry)
 {
     expiry_ = _expiry;
     return *this;
 }
+
 UpdateZoneSoa& UpdateZoneSoa::set_minimum(const int _minimum)
 {
     minimum_ = _minimum;
     return *this;
 }
+
 UpdateZoneSoa& UpdateZoneSoa::set_ns_fqdn(const std::string& _ns_fqdn)
 {
     ns_fqdn_ = _ns_fqdn;
@@ -74,7 +80,7 @@ unsigned long long UpdateZoneSoa::exec(OperationContext& _ctx) const
 
     const Database::Result zone_exists = _ctx.get_conn().exec_params(
             // clang-format off
-            "SELECT id FROM zone WHERE fqdn=LOWER($1::text) ",
+            "SELECT id FROM zone WHERE fqdn=LOWER($1::text)",
             // clang-format on
             Database::query_param_list(fqdn_));
     if (zone_exists.size() != 1)
@@ -85,7 +91,7 @@ unsigned long long UpdateZoneSoa::exec(OperationContext& _ctx) const
 
     const Database::Result zone_soa_exists = _ctx.get_conn().exec_params(
             // clang-format off
-            "SELECT zone FROM zone_soa WHERE zone=$1::bigint ",
+            "SELECT zone FROM zone_soa WHERE zone=$1::bigint",
             // clang-format on
             Database::query_param_list(zone_id));
     if (zone_soa_exists.size() != 1)

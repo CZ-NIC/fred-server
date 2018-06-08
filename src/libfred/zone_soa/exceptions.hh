@@ -22,17 +22,12 @@
 
 #include <exception>
 
-struct NonExistentZone : std::exception
-{
-    virtual const char* what() const noexcept
-    {
-        return "Zone does not exist.";
-    }
-};
+namespace LibFred {
+namespace ZoneSoa {
 
 struct NonExistentZoneSoa : std::exception
 {
-    virtual const char* what() const noexcept
+    const char* what() const noexcept override
     {
         return "Zone soa does not exist.";
     }
@@ -40,7 +35,7 @@ struct NonExistentZoneSoa : std::exception
 
 struct AlreadyExistingZoneSoa : std::exception
 {
-    virtual const char* what() const noexcept
+    const char* what() const noexcept override
     {
         return "Zone soa already exists.";
     }
@@ -48,7 +43,7 @@ struct AlreadyExistingZoneSoa : std::exception
 
 struct NoZoneSoaData : std::exception
 {
-    virtual const char* what() const noexcept
+    const char* what() const noexcept override
     {
         return "No zone soa data for update.";
     }
@@ -56,7 +51,7 @@ struct NoZoneSoaData : std::exception
 
 struct CreateZoneSoaException : std::exception
 {
-    virtual const char* what() const noexcept
+    const char* what() const noexcept override
     {
         return "Failed to create zone soa due to an unknown exception.";
     }
@@ -64,17 +59,20 @@ struct CreateZoneSoaException : std::exception
 
 struct UpdateZoneSoaException : std::exception
 {
-    virtual const char* what() const noexcept
+    const char* what() const noexcept override
     {
         return "Failed to update zone soa due to an unknown exception.";
     }
 };
 struct InfoZoneSoaException : std::exception
 {
-    virtual const char* what() const noexcept
+    const char* what() const noexcept override
     {
         return "Failed to get zone soa info due to an unknown exception.";
     }
 };
+
+} // namespace LibFred::ZoneSoa
+} // namespace LibFred
 
 #endif

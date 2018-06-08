@@ -35,7 +35,7 @@ struct InfoZoneSoaData
     int minimum;
     std::string ns_fqdn;
 
-    bool operator==(const ::LibFred::ZoneSoa::InfoZoneSoaData& _other)
+    bool operator==(const InfoZoneSoaData& _other)
     {
         return (zone == _other.zone
                 && ttl == _other.ttl

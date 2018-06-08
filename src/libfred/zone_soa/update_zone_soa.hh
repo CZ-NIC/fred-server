@@ -31,7 +31,7 @@ class UpdateZoneSoa
 public:
     explicit UpdateZoneSoa(
             const std::string& _fqdn)
-            : fqdn_(_fqdn)
+        : fqdn_(_fqdn)
     {
     }
 

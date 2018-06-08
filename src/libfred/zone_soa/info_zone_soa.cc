@@ -26,8 +26,8 @@ InfoZoneSoaData InfoZoneSoa::exec(OperationContext& _ctx) const
 {
     const Database::Result zone_exists = _ctx.get_conn().exec_params(
             // clang-format off
-            "SELECT id FROM zone WHERE fqdn=LOWER($1::text) ",
-            // clang-format off
+            "SELECT id FROM zone WHERE fqdn=LOWER($1::text)",
+            // clang-format on
             Database::query_param_list(fqdn_));
     if (zone_exists.size() != 1)
     {

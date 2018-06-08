@@ -24,12 +24,6 @@
 namespace LibFred {
 namespace ZoneSoa {
 
-constexpr int five_hours_in_seconds = 18000; // 5x60x60 sec
-constexpr int three_hours_in_seconds  = 10800; // 3x60x60 sec
-constexpr int one_hour_in_seconds = 3600; // 60x60 sec
-constexpr int two_weeks_in_seconds = 1209600; // 14x24x60x60 sec
-constexpr int two_hours_in_seconds = 7200; // 2x60x60 sec
-
 class CreateZoneSoa
 {
 public:

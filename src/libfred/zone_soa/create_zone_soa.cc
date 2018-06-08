@@ -22,47 +22,66 @@
 namespace LibFred {
 namespace ZoneSoa {
 
+namespace {
+constexpr int seconds_per_hour = 60 * 60;
+
+constexpr int default_ttl_in_seconds = 5 * seconds_per_hour;
+constexpr char default_hostmaster[] = "hostmaster@localhost";
+constexpr int default_refresh_in_seconds  = 3 * seconds_per_hour;
+constexpr int default_update_retr_in_seconds = seconds_per_hour;
+constexpr int default_expiry_in_seconds = 2 * 7 * 24 * seconds_per_hour;
+constexpr int default_minimum_in_seconds = 2 * seconds_per_hour;
+constexpr char default_ns_fqdn[] = "localhost";
+}
+
 CreateZoneSoa::CreateZoneSoa(const std::string& _fqdn)
         : fqdn_(_fqdn),
-          ttl_(five_hours_in_seconds),
-          hostmaster_("hostmaster@localhost"),
-          refresh_(three_hours_in_seconds),
-          update_retr_(one_hour_in_seconds),
-          expiry_(two_weeks_in_seconds),
-          minimum_(two_hours_in_seconds),
-          ns_fqdn_("localhost")
+          ttl_(default_ttl_in_seconds),
+          hostmaster_(default_hostmaster),
+          refresh_(default_refresh_in_seconds),
+          update_retr_(default_update_retr_in_seconds),
+          expiry_(default_expiry_in_seconds),
+          minimum_(default_minimum_in_seconds),
+          ns_fqdn_(default_ns_fqdn)
 {
 }
+
 CreateZoneSoa& CreateZoneSoa::set_ttl(const int _ttl)
 {
     ttl_ = _ttl;
     return *this;
 }
+
 CreateZoneSoa& CreateZoneSoa::set_hostmaster(const std::string& _hostmaster)
 {
     hostmaster_ = _hostmaster;
     return *this;
 }
+
 CreateZoneSoa& CreateZoneSoa::set_refresh(const int _refresh)
 {
     refresh_ = _refresh;
     return *this;
 }
+
 CreateZoneSoa& CreateZoneSoa::set_update_retr(const int _update_retr)
 {
     update_retr_ = _update_retr;
     return *this;
 }
+
 CreateZoneSoa& CreateZoneSoa::set_expiry(const int _expiry)
 {
     expiry_ = _expiry;
     return *this;
 }
+
 CreateZoneSoa& CreateZoneSoa::set_minimum(const int _minimum)
 {
     minimum_ = _minimum;
     return *this;
 }
+
 CreateZoneSoa& CreateZoneSoa::set_ns_fqdn(const std::string& _ns_fqdn)
 {
     ns_fqdn_ = _ns_fqdn;
@@ -73,7 +92,7 @@ unsigned long long CreateZoneSoa::exec(OperationContext& _ctx) const
 {
     const Database::Result zone_exists = _ctx.get_conn().exec_params(
             // clang-format off
-            "SELECT id FROM zone WHERE fqdn=LOWER($1::text) ",
+            "SELECT id FROM zone WHERE fqdn=LOWER($1::text)",
             // clang-format on
             Database::query_param_list(fqdn_));
     if (zone_exists.size() != 1)
@@ -84,7 +103,7 @@ unsigned long long CreateZoneSoa::exec(OperationContext& _ctx) const
 
     const Database::Result zone_soa_exists = _ctx.get_conn().exec_params(
             // clang-format off
-            "SELECT zone FROM zone_soa WHERE zone=$1::bigint ",
+            "SELECT zone FROM zone_soa WHERE zone=$1::bigint",
             // clang-format on
             Database::query_param_list(zone_id));
     if (zone_soa_exists.size() != 0)
