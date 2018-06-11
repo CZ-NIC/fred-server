@@ -24,7 +24,6 @@
 #include "test/setup/fixtures_utils.hh"
 #include "src/libfred/opcontext.hh"
 
-#include <boost/date_time/gregorian/greg_duration.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/test/unit_test.hpp>
 
