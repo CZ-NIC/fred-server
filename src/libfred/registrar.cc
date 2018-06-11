@@ -1544,7 +1544,7 @@ public:
 
             OperationContextCreator ctx;
             const Database::Result res = ctx.get_conn().exec_params(
-                    "SELECT id FROM registrar WHERE handle = UPPER($1:text)",
+                    "SELECT id FROM registrar WHERE handle = UPPER($1::text)",
                     Database::query_param_list(_registrar_handle));
             if ((res.size() > 0) && (res[0].size() > 0))
             {
