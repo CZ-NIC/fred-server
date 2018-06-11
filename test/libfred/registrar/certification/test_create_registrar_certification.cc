@@ -24,7 +24,6 @@
 #include "test/setup/fixtures_utils.hh"
 
 #include <boost/test/unit_test.hpp>
-#include <boost/date_time/gregorian/greg_duration.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 
 struct test_create_certification_fixture : virtual public Test::instantiate_db_template
