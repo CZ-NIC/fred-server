@@ -50,7 +50,6 @@
 
 #include "src/util/random_data_generator.hh"
 #include "src/util/concurrent_queue.hh"
-#include "src/libfred/model_files.hh"
 
 #include "src/util/cfg/handle_general_args.hh"
 #include "src/util/cfg/handle_database_args.hh"
@@ -62,9 +61,6 @@
 
 #include "src/util/cfg/config_handler_decl.hh"
 #include <boost/test/unit_test.hpp>
-
-ModelFiles mf;
-unsigned long long mfid = 0;
 
 #endif // TEST_REGISTRAR_GROUP_H_
 

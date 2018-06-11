@@ -1,43 +1,43 @@
-#include <algorithm>
-#include <boost/utility.hpp>
-
-// #include "src/libfred/common_impl.hh"
 #include "src/libfred/file.hh"
 #include "src/util/log/logger.hh"
 
-// #include "model_files.h"
+#include <algorithm>
+#include <boost/utility.hpp>
 
 namespace LibFred {
 namespace File {
 
-bool
-File::save()
+unsigned long long File::getId() const
 {
-    Database::Connection conn = Database::Manager::acquire();
-    Database::Transaction trans(conn);
-    try {
-        if (getId() == 0) {
-            insert();
-        } else {
-            update();
-        }
-    } catch (...) {
-        return false;
-    }
-    trans.commit();
-    return true;
+    return id_;
 }
-
-void
-File::setFileTypeDesc(const std::string &desc)
+const std::string& File::getName() const
 {
-    m_typeDesc = desc;
+    return name_;
 }
-
-const std::string &
-File::getFileTypeDesc() const
+const std::string& File::getPath() const
 {
-    return m_typeDesc;
+    return path_;
+}
+const std::string& File::getMimeType() const
+{
+    return mimeType_;
+}
+const Database::DateTime& File::getCrDate() const
+{
+    return crDate_;
+}
+unsigned long long File::getFilesize() const
+{
+    return filesize_;
+}
+unsigned long long File::getFileTypeId() const
+{
+    return fileTypeId_;
+}
+const std::string &File::getFileTypeDesc() const
+{
+    return fileTypeDesc_;
 }
 
 COMPARE_CLASS_IMPL_NEW(File, CrDate);
@@ -99,19 +99,11 @@ List::reload(Database::Filters::Union &filter)
             std::string        path     = *(++col);
             std::string        mimetype = *(++col);
             Database::DateTime crdate   = *(++col);
-            unsigned long      size     = *(++col);
-            unsigned           type     = *(++col);
+            unsigned long long size     = *(++col);
+            unsigned long long type     = *(++col);
             std::string        typedesc = *(++col);
 
-            File *file = new File();
-            file->setId(id);
-            file->setName(name);
-            file->setPath(path);
-            file->setMimeType(mimetype);
-            file->setCrDate(crdate);
-            file->setFilesize(size);
-            file->setFileTypeId(type);
-            file->setFileTypeDesc(typedesc);
+            File *file = new File(id, name, path, mimetype, crdate, size, type, typedesc);
 
             appendToList(file);
         }
@@ -200,13 +192,6 @@ public:
 
     virtual ~ManagerImpl()
     {
-    }
-
-    File *createFile() const
-    {
-        TRACE("[CALL] LibFred::File::ManagerImpl::createFile()");
-        File *file = new File();
-        return file;
     }
 
     List* createList() const 

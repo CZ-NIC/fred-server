@@ -59,12 +59,6 @@ public:
     {
         return m_fileId.get();
     }
-    /*
-    ModelFiles *getFile()
-    {
-        return file.getRelated(this);
-    }
-    */
     void setId(const unsigned long long &id)
     {
         m_id = id;
@@ -111,12 +105,6 @@ public:
     {
         m_fileId = fileId;
     }
-    /*
-    void setFile(ModelFiles *foreign_value)
-    {
-        file.setRelated(this, foreign_value);
-    }
-     */
     friend class Model::Base;
 
     void insert()
@@ -172,7 +160,6 @@ protected:
     Field::Field<unsigned long long> m_fileId;
 
     //Field::Lazy::Field<ModelBankAccount *> m_account;
-    //Field::Lazy::Field<ModelFiles *> m_file;
 
 public:
     static Model::Field::PrimaryKey<ModelBankStatement, unsigned long long> id;
@@ -187,7 +174,6 @@ public:
     static Model::Field::Basic<ModelBankStatement, unsigned long long> fileId;
 
     //static Model::Field::Related::OneToOne<ModelBankStatement, unsigned long long, ModelBankAccount> account;
-    //static Model::Field::Related::OneToOne<ModelBankStatement, unsigned long long, ModelFiles> file;
 
 private:
     static std::string table_name;  /** < model table name */

@@ -14,7 +14,6 @@ DEFINE_BASIC_FIELD(ModelBankStatement, std::string, balanceDebet, m_balanceDebet
 DEFINE_BASIC_FIELD(ModelBankStatement, unsigned long long, fileId, m_fileId, table_name, "file_id", .setForeignKey())
 
 //DEFINE_ONE_TO_ONE(ModelBankStatement, ModelBankAccount, account, m_account, unsigned long long, accountId, m_accountId)
-//DEFINE_ONE_TO_ONE(ModelBankStatement, ModelFiles, file, m_file, unsigned long long, fileId, m_fileId)
 
 ModelBankStatement::field_list ModelBankStatement::fields = list_of<ModelBankStatement::field_list::value_type>
     (&ModelBankStatement::id)

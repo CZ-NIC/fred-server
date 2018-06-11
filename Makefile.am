@@ -779,8 +779,6 @@ src_libfred_libfred_a_SOURCES = \
 		src/libfred/object_impl.hh \
 		src/libfred/common_impl_new.cc \
 		src/libfred/common_impl_new.hh \
-		src/libfred/model_files.cc \
-		src/libfred/model_files.hh \
 		src/libfred/model_registrar_acl.cc \
 		src/libfred/model_registrar_acl.hh \
 		src/libfred/model_registrar.cc \
@@ -3238,15 +3236,11 @@ test_test_server_SOURCES = \
 		test/deprecated/test_file_manager_client.cc \
 		test/deprecated/test_file_manager_client.hh \
 		test/deprecated/test_db.cc \
-		test/deprecated/test_model.cc \
-		test/deprecated/test_model.hh \
 		test/deprecated/test_registrar_group.cc \
 		test/deprecated/test_registrar_group.hh \
 		test/deprecated/test_registrar_blocking.cc \
 		src/bin/corba/admin/filter_impl.cc \
 		src/bin/corba/admin/filter_impl.hh \
-		test/deprecated/test_registrar_certification.cc \
-		test/deprecated/test_registrar_certification.hh \
 		test/deprecated/test_logd.cc \
 		test/deprecated/test_msgd.cc \
 		test/deprecated/test_msgd.hh \
