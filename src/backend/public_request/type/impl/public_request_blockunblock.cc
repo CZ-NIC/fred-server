@@ -110,103 +110,90 @@ LibFred::PublicRequestTypeIface::PublicRequestTypes get_block_unblock_public_req
     return res;
 }
 
-template <typename request>
-const LibFred::PublicRequestTypeIface& get_public_request_type(PublicRequestImpl::ConfirmedBy::Enum confirmation_method)
-{
-    switch (confirmation_method)
-    {
-        case PublicRequestImpl::ConfirmedBy::email:
-        {
-            static const typename request::ByEmail public_request_type;
-            return static_cast<const LibFred::PublicRequestTypeIface&>(public_request_type);
-        }
-        case PublicRequestImpl::ConfirmedBy::letter:
-        {
-            static const typename request::ByPost public_request_type;
-            return static_cast<const LibFred::PublicRequestTypeIface&>(public_request_type);
-        }
-    }
-    throw std::runtime_error("unexpected confirmation method");
-}
-
 } // namespace Fred::Backend::PublicRequest::Type::Impl::{anonymous}
 } // namespace Fred::Backend::PublicRequest::Type::Impl
 
 template<>
-const LibFred::PublicRequestTypeIface& get_iface_of<BlockChangesEmail>()
+const LibFred::PublicRequestTypeIface& get_iface_of<BlockChanges<PublicRequestImpl::ConfirmedBy::email>>()
 {
     static const Impl::Block::Changes::ByEmail singleton;
     return singleton;
 }
 
 template<>
-const LibFred::PublicRequestTypeIface& get_iface_of<BlockChangesPost>()
+const LibFred::PublicRequestTypeIface& get_iface_of<BlockChanges<PublicRequestImpl::ConfirmedBy::letter>>()
 {
     static const Impl::Block::Changes::ByPost singleton;
     return singleton;
 }
 
 template<>
-const LibFred::PublicRequestTypeIface& get_iface_of<BlockTransferEmail>()
+const LibFred::PublicRequestTypeIface& get_iface_of<BlockTransfer<PublicRequestImpl::ConfirmedBy::email>>()
 {
     static const Impl::Block::Transfer::ByEmail singleton;
     return singleton;
 }
 
 template<>
-const LibFred::PublicRequestTypeIface& get_iface_of<BlockTransferPost>()
+const LibFred::PublicRequestTypeIface& get_iface_of<BlockTransfer<PublicRequestImpl::ConfirmedBy::letter>>()
 {
     static const Impl::Block::Transfer::ByPost singleton;
     return singleton;
 }
 
 template<>
-const LibFred::PublicRequestTypeIface& get_iface_of<UnblockChangesEmail>()
+const LibFred::PublicRequestTypeIface& get_iface_of<UnblockChanges<PublicRequestImpl::ConfirmedBy::email>>()
 {
     static const Impl::Unblock::Changes::ByEmail singleton;
     return singleton;
 }
 
 template<>
-const LibFred::PublicRequestTypeIface& get_iface_of<UnblockChangesPost>()
+const LibFred::PublicRequestTypeIface& get_iface_of<UnblockChanges<PublicRequestImpl::ConfirmedBy::letter>>()
 {
     static const Impl::Unblock::Changes::ByPost singleton;
     return singleton;
 }
 
 template<>
-const LibFred::PublicRequestTypeIface& get_iface_of<UnblockTransferEmail>()
+const LibFred::PublicRequestTypeIface& get_iface_of<UnblockTransfer<PublicRequestImpl::ConfirmedBy::email>>()
 {
     static const Impl::Unblock::Transfer::ByEmail singleton;
     return singleton;
 }
 
 template<>
-const LibFred::PublicRequestTypeIface& get_iface_of<UnblockTransferPost>()
+const LibFred::PublicRequestTypeIface& get_iface_of<UnblockTransfer<PublicRequestImpl::ConfirmedBy::letter>>()
 {
     static const Impl::Unblock::Transfer::ByPost singleton;
     return singleton;
 }
 
-const LibFred::PublicRequestTypeIface& get_block_transfer_iface(PublicRequestImpl::ConfirmedBy::Enum confirmation_method)
+template<template<PublicRequestImpl::ConfirmedBy::Enum> typename T>
+const LibFred::PublicRequestTypeIface& get_iface_of(PublicRequestImpl::ConfirmedBy::Enum confirmation_method)
 {
-    return Impl::get_public_request_type<Impl::Block::Transfer>(confirmation_method);
+    switch (confirmation_method)
+    {
+        case PublicRequestImpl::ConfirmedBy::Enum::email:
+        {
+            return get_iface_of<T<PublicRequestImpl::ConfirmedBy::Enum::email>>();
+        }
+        case PublicRequestImpl::ConfirmedBy::Enum::letter:
+        {
+            return get_iface_of<T<PublicRequestImpl::ConfirmedBy::Enum::letter>>();
+        }
+    }
+    throw std::runtime_error("unexpected confirmation method");
 }
 
-const LibFred::PublicRequestTypeIface& get_block_change_iface(PublicRequestImpl::ConfirmedBy::Enum confirmation_method)
-{
-    return Impl::get_public_request_type<Impl::Block::Changes>(confirmation_method);
-}
-
-const LibFred::PublicRequestTypeIface& get_unblock_transfer_iface(PublicRequestImpl::ConfirmedBy::Enum confirmation_method)
-{
-    return Impl::get_public_request_type<Impl::Unblock::Transfer>(confirmation_method);
-}
-
-const LibFred::PublicRequestTypeIface& get_unblock_changes_iface(PublicRequestImpl::ConfirmedBy::Enum confirmation_method)
-{
-    return Impl::get_public_request_type<Impl::Unblock::Changes>(confirmation_method);
-}
+template const LibFred::PublicRequestTypeIface&
+get_iface_of<BlockChanges>(PublicRequestImpl::ConfirmedBy::Enum confirmation_method);
+template const LibFred::PublicRequestTypeIface&
+get_iface_of<BlockTransfer>(PublicRequestImpl::ConfirmedBy::Enum confirmation_method);
+template const LibFred::PublicRequestTypeIface&
+get_iface_of<UnblockChanges>(PublicRequestImpl::ConfirmedBy::Enum confirmation_method);
+template const LibFred::PublicRequestTypeIface&
+get_iface_of<UnblockTransfer>(PublicRequestImpl::ConfirmedBy::Enum confirmation_method);
 
 } // namespace Fred::Backend::PublicRequest::Type
 } // namespace Fred::Backend::PublicRequest

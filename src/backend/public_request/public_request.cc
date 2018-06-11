@@ -57,16 +57,16 @@ std::map<std::string, unsigned char> get_public_request_type_to_post_type_dictio
                 std::make_pair(Type::get_iface_of<Type::AuthinfoPost>()
                                .get_public_request_type(), 1)).second &&
         dictionary.insert(
-                std::make_pair(Type::get_iface_of<Type::BlockTransferPost>()
+                std::make_pair(Type::get_iface_of<Type::BlockTransfer<PublicRequestImpl::ConfirmedBy::letter>>()
                                .get_public_request_type(), 2)).second &&
         dictionary.insert(
-                std::make_pair(Type::get_iface_of<Type::UnblockTransferPost>()
+                std::make_pair(Type::get_iface_of<Type::UnblockTransfer<PublicRequestImpl::ConfirmedBy::letter>>()
                                .get_public_request_type(), 3)).second &&
         dictionary.insert(
-                std::make_pair(Type::get_iface_of<Type::BlockChangesPost>()
+                std::make_pair(Type::get_iface_of<Type::BlockChanges<PublicRequestImpl::ConfirmedBy::letter>>()
                                .get_public_request_type(), 4)).second &&
         dictionary.insert(
-                std::make_pair(Type::get_iface_of<Type::UnblockChangesPost>()
+                std::make_pair(Type::get_iface_of<Type::UnblockChanges<PublicRequestImpl::ConfirmedBy::letter>>()
                                .get_public_request_type(), 5)).second &&
         dictionary.insert(
                 std::make_pair(Type::get_iface_of<Type::PersonalinfoPost>()
@@ -345,7 +345,7 @@ unsigned long long PublicRequestImpl::create_block_unblock_request(
                 const unsigned long long request_id =
                         LibFred::CreatePublicRequest().exec(
                                 locked_object,
-                                Type::get_block_transfer_iface(confirmation_method),
+                                Type::get_iface_of<Type::BlockTransfer>(confirmation_method),
                                 log_request_id);
                 ctx.commit_transaction();
                 return request_id;
@@ -360,7 +360,7 @@ unsigned long long PublicRequestImpl::create_block_unblock_request(
                 const unsigned long long request_id =
                         LibFred::CreatePublicRequest().exec(
                                 locked_object,
-                                Type::get_block_change_iface(confirmation_method),
+                                Type::get_iface_of<Type::BlockChanges>(confirmation_method),
                                 log_request_id);
                 ctx.commit_transaction();
                 return request_id;
@@ -378,7 +378,7 @@ unsigned long long PublicRequestImpl::create_block_unblock_request(
                 const unsigned long long request_id =
                         LibFred::CreatePublicRequest().exec(
                                 locked_object,
-                                Type::get_unblock_transfer_iface(confirmation_method),
+                                Type::get_iface_of<Type::UnblockTransfer>(confirmation_method),
                                 log_request_id);
                 ctx.commit_transaction();
                 return request_id;
@@ -396,7 +396,7 @@ unsigned long long PublicRequestImpl::create_block_unblock_request(
                 const unsigned long long request_id =
                         LibFred::CreatePublicRequest().exec(
                                 locked_object,
-                                Type::get_unblock_changes_iface(confirmation_method),
+                                Type::get_iface_of<Type::UnblockChanges>(confirmation_method),
                                 log_request_id);
                 ctx.commit_transaction();
                 return request_id;

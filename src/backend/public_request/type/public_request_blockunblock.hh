@@ -27,20 +27,13 @@ namespace Backend {
 namespace PublicRequest {
 namespace Type {
 
-struct BlockChangesEmail;
-struct BlockChangesPost;
-struct BlockTransferEmail;
-struct BlockTransferPost;
+template<PublicRequestImpl::ConfirmedBy::Enum> struct BlockChanges;
+template<PublicRequestImpl::ConfirmedBy::Enum> struct BlockTransfer;
+template<PublicRequestImpl::ConfirmedBy::Enum> struct UnblockChanges;
+template<PublicRequestImpl::ConfirmedBy::Enum> struct UnblockTransfer;
 
-struct UnblockChangesEmail;
-struct UnblockChangesPost;
-struct UnblockTransferEmail;
-struct UnblockTransferPost;
-
-const LibFred::PublicRequestTypeIface& get_block_transfer_iface(PublicRequestImpl::ConfirmedBy::Enum confirmation_method);
-const LibFred::PublicRequestTypeIface& get_block_change_iface(PublicRequestImpl::ConfirmedBy::Enum confirmation_method);
-const LibFred::PublicRequestTypeIface& get_unblock_transfer_iface(PublicRequestImpl::ConfirmedBy::Enum confirmation_method);
-const LibFred::PublicRequestTypeIface& get_unblock_changes_iface(PublicRequestImpl::ConfirmedBy::Enum confirmation_method);
+template<template<PublicRequestImpl::ConfirmedBy::Enum> typename T>
+const LibFred::PublicRequestTypeIface& get_iface_of(PublicRequestImpl::ConfirmedBy::Enum confirmation_method);
 
 } // namespace Fred::Backend::PublicRequest::Type
 } // namespace Fred::Backend::PublicRequest
