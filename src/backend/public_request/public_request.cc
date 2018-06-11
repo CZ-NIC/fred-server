@@ -24,6 +24,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <utility>
+#include <map>
 
 namespace Fred {
 namespace Backend {
