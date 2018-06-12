@@ -43,7 +43,7 @@ struct create_zone_fixture
     {}
 };
 
-BOOST_FIXTURE_TEST_SUITE(TestCreateZone, supply_fixture_ctx<create_zone_fixture>)
+BOOST_FIXTURE_TEST_SUITE(TestCreateZone, SupplyFixtureCtx<create_zone_fixture>)
 
 size_t exists_new_zone(const std::string& _fqdn, ::LibFred::OperationContext& _ctx)
 {

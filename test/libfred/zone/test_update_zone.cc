@@ -43,7 +43,7 @@ struct update_zone_fixture
         non_enum_zone.dots_max = 1;
         non_enum_zone.sending_warning_letter = false;
 
-        ::LibFred::Zone::CreateZone(non_enum_zone.fqdn, 6, 12)
+        non_enum_zone.zone_id = ::LibFred::Zone::CreateZone(non_enum_zone.fqdn, 6, 12)
                 .exec(_ctx);
 
         enum_zone.fqdn = "3.2.1.e164.arpa";
@@ -52,7 +52,7 @@ struct update_zone_fixture
         enum_zone.validation_period_in_months = 10;
         enum_zone.dots_max = 9;
         enum_zone.sending_warning_letter = true;
-        ::LibFred::Zone::CreateZone(enum_zone.fqdn, 6, 12)
+        enum_zone.zone_id = ::LibFred::Zone::CreateZone(enum_zone.fqdn, 6, 12)
                 .exec(_ctx);
     }
 
@@ -60,7 +60,7 @@ struct update_zone_fixture
     {}
 };
 
-BOOST_FIXTURE_TEST_SUITE(TestUpdateZone, supply_fixture_ctx<update_zone_fixture>)
+BOOST_FIXTURE_TEST_SUITE(TestUpdateZone, SupplyFixtureCtx<update_zone_fixture>)
 
 ::LibFred::Zone::InfoZoneData get_info_zone_data(::LibFred::OperationContext& _ctx, const std::string& _fqdn)
 {

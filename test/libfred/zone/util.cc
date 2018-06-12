@@ -21,7 +21,8 @@ namespace Test {
 
 bool operator==(const ::LibFred::Zone::EnumZone& _lhs, const ::LibFred::Zone::EnumZone& _rhs)
 {
-        return (_lhs.fqdn == _rhs.fqdn
+        return (_lhs.zone_id == _rhs.zone_id
+            && _lhs.fqdn == _rhs.fqdn
             && _lhs.expiration_period_max_in_months == _rhs.expiration_period_max_in_months
             && _lhs.expiration_period_min_in_months == _rhs.expiration_period_min_in_months
             && _lhs.validation_period_in_months == _rhs.validation_period_in_months
@@ -31,7 +32,8 @@ bool operator==(const ::LibFred::Zone::EnumZone& _lhs, const ::LibFred::Zone::En
 
 bool operator==(const ::LibFred::Zone::NonEnumZone& _lhs, const ::LibFred::Zone::NonEnumZone& _rhs)
 {
-        return (_lhs.fqdn == _rhs.fqdn
+        return (_lhs.zone_id == _rhs.zone_id
+            && _lhs.fqdn == _rhs.fqdn
             && _lhs.expiration_period_max_in_months == _rhs.expiration_period_max_in_months
             && _lhs.expiration_period_min_in_months == _rhs.expiration_period_min_in_months
             && _lhs.dots_max == _rhs.dots_max

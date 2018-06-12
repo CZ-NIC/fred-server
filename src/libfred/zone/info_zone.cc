@@ -31,7 +31,7 @@ InfoZoneData InfoZone::exec(OperationContext& _ctx) const
     {
         result = _ctx.get_conn().exec_params(
                 // clang-format off
-                "SELECT fqdn, ex_period_max, ex_period_min, val_period, dots_max, enum_zone, warning_letter "
+                "SELECT id, fqdn, ex_period_max, ex_period_min, val_period, dots_max, enum_zone, warning_letter "
                 "FROM zone "
                 "WHERE fqdn = LOWER($1::text)",
                 // clang-format on
@@ -53,6 +53,7 @@ InfoZoneData InfoZone::exec(OperationContext& _ctx) const
     if (enum_zone)
     {
         EnumZone enum_zone;
+        enum_zone.zone_id = static_cast<unsigned long long>(result[0]["id"]);
         enum_zone.fqdn = static_cast<std::string>(result[0]["fqdn"]);
         enum_zone.expiration_period_max_in_months = static_cast<int>(result[0]["ex_period_max"]);
         enum_zone.expiration_period_min_in_months = static_cast<int>(result[0]["ex_period_min"]);
@@ -64,6 +65,7 @@ InfoZoneData InfoZone::exec(OperationContext& _ctx) const
     else
     {
         NonEnumZone non_enum_zone;
+        non_enum_zone.zone_id = static_cast<unsigned long long>(result[0]["id"]);
         non_enum_zone.fqdn = static_cast<std::string>(result[0]["fqdn"]);
         non_enum_zone.expiration_period_max_in_months = static_cast<int>(result[0]["ex_period_max"]);
         non_enum_zone.expiration_period_min_in_months = static_cast<int>(result[0]["ex_period_min"]);

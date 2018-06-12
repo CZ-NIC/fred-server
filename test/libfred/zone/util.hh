@@ -25,17 +25,17 @@
 
 namespace Test {
 
-struct context_holder
+struct ContextHolder
     : virtual instantiate_db_template
 {
     LibFred::OperationContextCreator ctx;
 };
 
 template <class T>
-struct supply_fixture_ctx : context_holder, T
+struct SupplyFixtureCtx : ContextHolder, T
 {
-    supply_fixture_ctx()
-        : context_holder(),
+    SupplyFixtureCtx()
+        : ContextHolder(),
           T(ctx)
     {
     }

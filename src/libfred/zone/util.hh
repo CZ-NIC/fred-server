@@ -27,7 +27,7 @@ namespace Zone {
 
 struct NonExistentZone : std::exception
 {
-    virtual const char* what() const noexcept
+    const char* what() const noexcept override
     {
         return "Zone does not exist.";
     }
@@ -35,7 +35,7 @@ struct NonExistentZone : std::exception
 
 struct NotEnumZone : std::exception
 {
-    virtual const char* what() const noexcept
+    const char* what() const noexcept override
     {
         return "Could not set enum validation period for non-enum zone.";
     }
@@ -43,7 +43,7 @@ struct NotEnumZone : std::exception
 
 struct NoZoneData : std::exception
 {
-    virtual const char* what() const noexcept
+    const char* what() const noexcept override
     {
         return "No zone data for update.";
     }
@@ -51,7 +51,7 @@ struct NoZoneData : std::exception
 
 struct CreateZoneException : std::exception
 {
-    virtual const char* what() const noexcept
+    const char* what() const noexcept override
     {
         return "Failed to create zone due to an unknown exception.";
     }
@@ -59,7 +59,7 @@ struct CreateZoneException : std::exception
 
 struct InfoZoneException : std::exception
 {
-    virtual const char* what() const noexcept
+    const char* what() const noexcept override
     {
         return "Failed to get zone info due to an unknown exception.";
     }
@@ -67,7 +67,7 @@ struct InfoZoneException : std::exception
 
 struct UpdateZoneException : std::exception
 {
-    virtual const char* what() const noexcept
+    const char* what() const noexcept override
     {
         return "Failed to update zone due to an unknown exception.";
     }

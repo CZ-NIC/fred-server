@@ -28,6 +28,7 @@ namespace Zone {
 
 struct NonEnumZone
 {
+    unsigned long long zone_id;
     std::string fqdn;
     int expiration_period_min_in_months;
     int expiration_period_max_in_months;
@@ -37,6 +38,7 @@ struct NonEnumZone
 
 struct EnumZone
 {
+    unsigned long long zone_id;
     std::string fqdn;
     int expiration_period_min_in_months;
     int expiration_period_max_in_months;
