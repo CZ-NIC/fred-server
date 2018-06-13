@@ -1909,6 +1909,7 @@ target_link_libraries(fred-pifd
     oldutils
     log
     util)
+link_targets_against_boost_random(fred-pifd)
 link_targets_against_boost_thread(fred-pifd)
 link_targets_against_boost_regex(fred-pifd)
 link_targets_against_boost_date_time(fred-pifd)
@@ -2302,6 +2303,7 @@ link_targets_against_boost_thread(fred-disclose-flag-updater)
 link_targets_against_boost_program_options(fred-disclose-flag-updater)
 link_targets_against_boost_random(fred-disclose-flag-updater)
 link_targets_against_boost_system(fred-disclose-flag-updater)
+link_targets_against_threads(fred-disclose-flag-updater)
 
 # crc32
 prepare_executable(crc32
@@ -2478,7 +2480,6 @@ link_targets_against_boost_system(test-automatic-keyset-management)
 link_targets_against_boost_thread(test-automatic-keyset-management)
 link_targets_against_boost_random(test-automatic-keyset-management)
 link_targets_against_boost_regex(test-automatic-keyset-management)
-link_targets_against_boost_regex(test-automatic-keyset-management)
 link_targets_against_boost_date_time(test-automatic-keyset-management)
 link_targets_against_boost_program_options(test-automatic-keyset-management)
 link_targets_against_boost_unit_test_framework(test-automatic-keyset-management)
@@ -2543,6 +2544,7 @@ link_targets_against_omniorb4(test-blocking)
 link_targets_against_threads(test-blocking)
 link_targets_against_postgres(test-blocking)
 link_targets_against_openssl(test-blocking)
+link_targets_against_boost_random(test-blocking)
 link_targets_against_boost_regex(test-blocking)
 link_targets_against_boost_thread(test-blocking)
 link_targets_against_boost_date_time(test-blocking)
