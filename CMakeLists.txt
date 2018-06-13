@@ -3004,7 +3004,6 @@ target_link_libraries(test-server
     log
     util
     corbamessages
-    corbamessages
     corbazone
     filemanager
     mailer
@@ -3017,8 +3016,7 @@ target_link_libraries(test-server
     corbawhois
     corbaregistry
     corbafilters
-    corbadatatypes
-    mailer)
+    corbadatatypes)
 link_targets_against_boost_system(test-server)
 link_targets_against_boost_serialization(test-server)
 link_targets_against_boost_regex(test-server)
