@@ -19,6 +19,7 @@ if(NOT VERSION)
                     OUTPUT_VARIABLE RAWVERSION)
     string(REGEX REPLACE "-.*\n" "" VERSION ${RAWVERSION})
 endif()
+set(TARBALL_FILE_NAME "${program_name}-${VERSION}")
 
 if(NOT IDL_DIR)
     set(IDL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../idl/idl)
@@ -3131,8 +3132,38 @@ if(NOT TARGET uninstall)
 endif()
 
 if(NOT TARGET dist)
-    set(TARBALL_FILE_NAME "${program_name}-${VERSION}")
     add_custom_target(dist
         COMMAND git archive --format=tar --prefix=${TARBALL_FILE_NAME}/ HEAD | gzip > ${CMAKE_BINARY_DIR}/${TARBALL_FILE_NAME}.tar.gz
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+endif()
+
+if(NOT TARGET distcheck)
+    set(DISTCHECK_BUILD_DIR "_build")
+    set(DISTCHECK_INSTALL_DIR "_inst")
+    execute_process(COMMAND "grep" "-c" "model name" "/proc/cpuinfo"
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_VARIABLE NOCPUS)
+    string(REGEX REPLACE "\n" "" NOCPUS ${NOCPUS})
+    add_custom_target(distcheck
+        COMMAND
+        rm -rf ${DISTCHECK_BUILD_DIR} ${DISTCHECK_INSTALL_DIR} ${TARBALL_FILE_NAME}
+        && mkdir ${DISTCHECK_BUILD_DIR} ${DISTCHECK_INSTALL_DIR}
+        && (tar xzf ${TARBALL_FILE_NAME}.tar.gz
+            || (echo 'Error: failed to unpack the archive' 2>&1\; false))
+        && (cd ${DISTCHECK_BUILD_DIR}
+            && (cmake -DCMAKE_INSTALL_PREFIX=../${DISTCHECK_INSTALL_DIR} -DIDL_DIR=${IDL_DIR} ../${TARBALL_FILE_NAME}
+                || (echo 'Error: failed to configure the archive' 2>&1\; false))
+            && (MAKEFLAGS=-j${NOCPUS} make
+                || (echo 'Error: the build target failed ' 2>&1\; false))
+            && (make install
+                || (echo 'Error: the install target failed' 2>&1\; false))
+            && (make uninstall
+                || (echo 'Error: the uninstall target failed' 2>&1\; false))
+            && (make clean
+                || (echo 'Error: the clean target failed' 2>&1\; false)))
+        && rm -rf ${DISTCHECK_BUILD_DIR} ${DISTCHECK_INSTALL_DIR} ${TARBALL_FILE_NAME}
+        && echo ${TARBALL_FILE_NAME}.tar.gz 'is ready for distribution.'
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        COMMENT "Checking the distribution archive...")
+    add_dependencies(distcheck dist)
 endif()
