@@ -3140,10 +3140,17 @@ endif()
 if(NOT TARGET distcheck)
     set(DISTCHECK_BUILD_DIR "_build")
     set(DISTCHECK_INSTALL_DIR "_inst")
-    execute_process(COMMAND "grep" "-c" "model name" "/proc/cpuinfo"
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        OUTPUT_VARIABLE NOCPUS)
-    string(REGEX REPLACE "\n" "" NOCPUS ${NOCPUS})
+    if(${CMAKE_GENERATOR} STREQUAL "Ninja")
+        set(DISTCHECK_BUILD_CMD "ninja")
+        set(DISTCHECK_MAKEFLAGS "")
+    else()
+        set(DISTCHECK_BUILD_CMD "make")
+        execute_process(COMMAND "grep" "-c" "model name" "/proc/cpuinfo"
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            OUTPUT_VARIABLE NOCPUS)
+        string(REGEX REPLACE "\n" "" NOCPUS ${NOCPUS})
+        set(DISTCHECK_MAKEFLAGS "MAKEFLAGS=-j${NOCPUS}")
+    endif()
     add_custom_target(distcheck
         COMMAND
         rm -rf ${DISTCHECK_BUILD_DIR} ${DISTCHECK_INSTALL_DIR} ${TARBALL_FILE_NAME}
@@ -3151,18 +3158,18 @@ if(NOT TARGET distcheck)
         && (tar xzf ${TARBALL_FILE_NAME}.tar.gz
             || (echo 'Error: failed to unpack the archive' 2>&1\; false))
         && (cd ${DISTCHECK_BUILD_DIR}
-            && (cmake -DCMAKE_INSTALL_PREFIX=../${DISTCHECK_INSTALL_DIR} -DIDL_DIR=${IDL_DIR} ../${TARBALL_FILE_NAME}
+            && (cmake -G${CMAKE_GENERATOR} -DCMAKE_INSTALL_PREFIX=../${DISTCHECK_INSTALL_DIR} -DIDL_DIR=${IDL_DIR} ../${TARBALL_FILE_NAME}
                 || (echo 'Error: failed to configure the archive' 2>&1\; false))
-            && (MAKEFLAGS=-j${NOCPUS} make
+            && (${DISTCHECK_MAKEFLAGS} ${DISTCHECK_BUILD_CMD}
                 || (echo 'Error: the build target failed ' 2>&1\; false))
-            && (make install
+            && (${DISTCHECK_BUILD_CMD} install
                 || (echo 'Error: the install target failed' 2>&1\; false))
-            && (make uninstall
+            && (${DISTCHECK_BUILD_CMD} uninstall
                 || (echo 'Error: the uninstall target failed' 2>&1\; false))
-            && (make clean
+            && (${DISTCHECK_BUILD_CMD} clean
                 || (echo 'Error: the clean target failed' 2>&1\; false)))
         && rm -rf ${DISTCHECK_BUILD_DIR} ${DISTCHECK_INSTALL_DIR} ${TARBALL_FILE_NAME}
-        && echo ${TARBALL_FILE_NAME}.tar.gz 'is ready for distribution.'
+        && echo 'PASS: ' ${TARBALL_FILE_NAME}.tar.gz 'is ready for distribution.'
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         COMMENT "Checking the distribution archive...")
     add_dependencies(distcheck dist)
