@@ -3130,9 +3130,9 @@ if(NOT TARGET uninstall)
         COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
 endif()
 
-set(CPACK_SOURCE_GENERATOR "TGZ")
-set(CPACK_PACKAGE_VERSION ${VERSION})
-set(CPACK_SOURCE_IGNORE_FILES "_CPack_Packages;CMakeCache;CPack*;cmake_install.cmake;CMakeFiles;CTestTestfile*;.git*")
-set(CPACK_SOURCE_PACKAGE_FILE_NAME "${program_name}-${VERSION}")
-include(CPack)
-add_custom_target(dist COMMAND ${CMAKE_MAKE_PROGRAM} package_source)
+if(NOT TARGET dist)
+    set(TARBALL_FILE_NAME "${program_name}-${VERSION}")
+    add_custom_target(dist
+        COMMAND git archive --format=tar --prefix=${TARBALL_FILE_NAME}/ HEAD | gzip > ${CMAKE_BINARY_DIR}/${TARBALL_FILE_NAME}.tar.gz
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+endif()
