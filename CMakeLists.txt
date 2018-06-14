@@ -3121,6 +3121,15 @@ install(TARGETS test-server DESTINATION bin)
 install(TARGETS test-whois DESTINATION bin)
 install(TARGETS test-admin-domain DESTINATION bin)
 
+if(NOT TARGET uninstall)
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+        IMMEDIATE @ONLY)
+    add_custom_target(uninstall
+        COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+endif()
+
 set(CPACK_SOURCE_GENERATOR "TGZ")
 set(CPACK_PACKAGE_VERSION ${VERSION})
 set(CPACK_SOURCE_IGNORE_FILES "_CPack_Packages;CMakeCache;CPack*;cmake_install.cmake;CMakeFiles;CTestTestfile*;.git*")
