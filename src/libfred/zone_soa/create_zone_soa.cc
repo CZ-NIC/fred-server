@@ -93,15 +93,7 @@ unsigned long long CreateZoneSoa::exec(OperationContext& _ctx) const
 {
     const LibFred::Zone::InfoZoneData zone_info = LibFred::Zone::InfoZone(fqdn_).exec(_ctx);
 
-    unsigned long long zone_id;
-    if (zone_info.type() == typeid(LibFred::Zone::EnumZone))
-    {
-        zone_id = boost::get<LibFred::Zone::EnumZone>(zone_info).id;
-    }
-    else
-    {
-        zone_id = boost::get<LibFred::Zone::NonEnumZone>(zone_info).id;
-    }
+    const unsigned long long zone_id = boost::apply_visitor(LibFred::Zone::GetZoneId(), zone_info);
 
     const Database::Result select_result = _ctx.get_conn().exec_params(
             // clang-format off
