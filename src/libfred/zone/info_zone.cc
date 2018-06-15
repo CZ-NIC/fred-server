@@ -48,12 +48,12 @@ InfoZoneData InfoZone::exec(OperationContext& _ctx) const
     }
 
     InfoZoneData info_zone_data;
-    const bool enum_zone = static_cast<bool>(result[0]["enum_zone"]);
+    const bool is_enum_zone = static_cast<bool>(result[0]["enum_zone"]);
 
-    if (enum_zone)
+    if (is_enum_zone)
     {
         EnumZone enum_zone;
-        enum_zone.zone_id = static_cast<unsigned long long>(result[0]["id"]);
+        enum_zone.id = static_cast<unsigned long long>(result[0]["id"]);
         enum_zone.fqdn = static_cast<std::string>(result[0]["fqdn"]);
         enum_zone.expiration_period_max_in_months = static_cast<int>(result[0]["ex_period_max"]);
         enum_zone.expiration_period_min_in_months = static_cast<int>(result[0]["ex_period_min"]);
@@ -65,7 +65,7 @@ InfoZoneData InfoZone::exec(OperationContext& _ctx) const
     else
     {
         NonEnumZone non_enum_zone;
-        non_enum_zone.zone_id = static_cast<unsigned long long>(result[0]["id"]);
+        non_enum_zone.id = static_cast<unsigned long long>(result[0]["id"]);
         non_enum_zone.fqdn = static_cast<std::string>(result[0]["fqdn"]);
         non_enum_zone.expiration_period_max_in_months = static_cast<int>(result[0]["ex_period_max"]);
         non_enum_zone.expiration_period_min_in_months = static_cast<int>(result[0]["ex_period_min"]);

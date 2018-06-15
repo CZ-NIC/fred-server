@@ -43,7 +43,7 @@ struct info_zone_fixture
         non_enum_zone.dots_max = 1;
         non_enum_zone.sending_warning_letter = false;
 
-        non_enum_zone.zone_id = ::LibFred::Zone::CreateZone(non_enum_zone.fqdn, non_enum_zone.expiration_period_min_in_months, non_enum_zone.expiration_period_max_in_months)
+        non_enum_zone.id = ::LibFred::Zone::CreateZone(non_enum_zone.fqdn, non_enum_zone.expiration_period_min_in_months, non_enum_zone.expiration_period_max_in_months)
                 .exec(_ctx);
 
         enum_zone.fqdn = "3.2.1.e164.arpa";
@@ -53,7 +53,7 @@ struct info_zone_fixture
         enum_zone.dots_max = 9;
         enum_zone.sending_warning_letter = true;
 
-        enum_zone.zone_id = ::LibFred::Zone::CreateZone(enum_zone.fqdn, enum_zone.expiration_period_min_in_months, enum_zone.expiration_period_max_in_months)
+        enum_zone.id = ::LibFred::Zone::CreateZone(enum_zone.fqdn, enum_zone.expiration_period_min_in_months, enum_zone.expiration_period_max_in_months)
                 .set_enum_validation_period_in_months(enum_zone.validation_period_in_months)
                 .set_sending_warning_letter(enum_zone.sending_warning_letter)
                 .exec(_ctx);
