@@ -17,5 +17,6 @@ RUN dnf -y install       \
         libidn-devel     \
         mpdecimal-devel  \
         libssh-devel     \
+        openssl-devel    \
         minizip-devel    \
         omniORB-devel
