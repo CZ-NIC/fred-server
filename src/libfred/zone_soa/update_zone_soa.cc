@@ -16,6 +16,7 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "src/libfred/zone_soa/info_zone_soa.hh"
 #include "src/libfred/zone_soa/update_zone_soa.hh"
 #include "src/libfred/zone_soa/exceptions.hh"
 
@@ -78,26 +79,8 @@ unsigned long long UpdateZoneSoa::exec(OperationContext& _ctx) const
         throw NoZoneSoaData();
     }
 
-    const Database::Result zone_exists = _ctx.get_conn().exec_params(
-            // clang-format off
-            "SELECT id FROM zone WHERE fqdn=LOWER($1::text)",
-            // clang-format on
-            Database::query_param_list(fqdn_));
-    if (zone_exists.size() != 1)
-    {
-        throw NonExistentZone();
-    }
-    const unsigned long long zone_id = zone_exists[0][0];
-
-    const Database::Result zone_soa_exists = _ctx.get_conn().exec_params(
-            // clang-format off
-            "SELECT zone FROM zone_soa WHERE zone=$1::bigint",
-            // clang-format on
-            Database::query_param_list(zone_id));
-    if (zone_soa_exists.size() != 1)
-    {
-        throw NonExistentZoneSoa();
-    }
+    const LibFred::ZoneSoa::InfoZoneSoaData zone_info = LibFred::ZoneSoa::InfoZoneSoa(fqdn_).exec(_ctx);
+    const unsigned long long zone_id = zone_info.zone;
 
     Database::QueryParams params;
     std::ostringstream object_sql;
@@ -154,11 +137,11 @@ unsigned long long UpdateZoneSoa::exec(OperationContext& _ctx) const
             return id;
         }
     }
-
     catch (const std::exception&)
     {
         throw UpdateZoneSoaException();
     }
+
     throw UpdateZoneSoaException();
 }
 

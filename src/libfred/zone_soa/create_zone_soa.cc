@@ -16,6 +16,7 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "src/libfred/zone/info_zone.hh"
 #include "src/libfred/zone_soa/create_zone_soa.hh"
 #include "src/libfred/zone_soa/exceptions.hh"
 
@@ -90,30 +91,31 @@ CreateZoneSoa& CreateZoneSoa::set_ns_fqdn(const std::string& _ns_fqdn)
 
 unsigned long long CreateZoneSoa::exec(OperationContext& _ctx) const
 {
-    const Database::Result zone_exists = _ctx.get_conn().exec_params(
-            // clang-format off
-            "SELECT id FROM zone WHERE fqdn=LOWER($1::text)",
-            // clang-format on
-            Database::query_param_list(fqdn_));
-    if (zone_exists.size() != 1)
-    {
-        throw NonExistentZone();
-    }
-    const unsigned long long zone_id = static_cast<unsigned long long>(zone_exists[0][0]);
+    const LibFred::Zone::InfoZoneData zone_info = LibFred::Zone::InfoZone(fqdn_).exec(_ctx);
 
-    const Database::Result zone_soa_exists = _ctx.get_conn().exec_params(
+    unsigned long long zone_id;
+    if (zone_info.type() == typeid(LibFred::Zone::EnumZone))
+    {
+        zone_id = boost::get<LibFred::Zone::EnumZone>(zone_info).id;
+    }
+    else
+    {
+        zone_id = boost::get<LibFred::Zone::NonEnumZone>(zone_info).id;
+    }
+
+    const Database::Result select_result = _ctx.get_conn().exec_params(
             // clang-format off
             "SELECT zone FROM zone_soa WHERE zone=$1::bigint",
             // clang-format on
             Database::query_param_list(zone_id));
-    if (zone_soa_exists.size() != 0)
+    if (select_result.size() > 0)
     {
         throw AlreadyExistingZoneSoa();
     }
 
     try
     {
-        const Database::Result create_result = _ctx.get_conn().exec_params(
+        const Database::Result insert_result = _ctx.get_conn().exec_params(
                 // clang-format off
                 "INSERT INTO zone_soa (zone, ttl, hostmaster, refresh, update_retr, expiry, minimum, ns_fqdn) "
                 "VALUES ($1::bigint, $2::integer, $3::text, $4::integer, $5::integer, $6::integer, $7::integer, $8::text) "
@@ -129,14 +131,13 @@ unsigned long long CreateZoneSoa::exec(OperationContext& _ctx) const
                                         (ns_fqdn_)
                 );
 
-        if (create_result.size() == 1)
+        if (insert_result.size() == 1)
         {
-            const unsigned long long id = static_cast<unsigned long long>(create_result[0][0]);
+            const unsigned long long id = static_cast<unsigned long long>(insert_result[0][0]);
             return id;
         }
-
     }
-    catch (const std::exception& e)
+    catch (const std::exception&)
     {
         throw CreateZoneSoaException();
     }
