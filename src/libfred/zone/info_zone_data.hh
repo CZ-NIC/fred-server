@@ -49,6 +49,19 @@ struct EnumZone
 
 using InfoZoneData = boost::variant<boost::blank, NonEnumZone, EnumZone>;
 
+class GetZoneId :public boost::static_visitor<unsigned long long>
+{
+public:
+    unsigned long long operator()(const EnumZone& _zone) const;
+
+    unsigned long long operator()(const NonEnumZone& _zone) const;
+
+    unsigned long long operator()(const boost::blank&) const;
+
+    template <typename T>
+    unsigned long long operator()(const T&) const;
+};
+
 } // namespace LibFred::Zone
 } // namespace LibFred
 

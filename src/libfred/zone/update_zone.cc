@@ -102,8 +102,12 @@ unsigned long long UpdateZone::exec(OperationContext& _ctx) const
             const unsigned long long id = static_cast<unsigned long long>(update_result[0][0]);
             return id;
         }
+        else if (update_result.size() > 1)
+        {
+            throw;
+        }
     }
-    catch (const std::exception&)
+    catch (const std::exception& e)
     {
         throw UpdateZoneException();
     }

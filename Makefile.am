@@ -973,6 +973,7 @@ src_libfred_libfred_a_SOURCES = \
 		src/libfred/zone/create_zone.hh \
 		src/libfred/zone/create_zone.cc \
 		src/libfred/zone/info_zone_data.hh \
+		src/libfred/zone/info_zone_data.cc \
 		src/libfred/zone/info_zone.hh \
 		src/libfred/zone/info_zone.cc \
 		src/libfred/zone/update_zone.hh \
