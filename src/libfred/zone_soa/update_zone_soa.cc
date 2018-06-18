@@ -20,6 +20,8 @@
 #include "src/libfred/zone_soa/update_zone_soa.hh"
 #include "src/libfred/zone_soa/exceptions.hh"
 
+#include <sstream>
+
 namespace LibFred {
 namespace ZoneSoa {
 

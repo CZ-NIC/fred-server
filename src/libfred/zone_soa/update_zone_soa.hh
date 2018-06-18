@@ -22,6 +22,7 @@
 #include "src/libfred/opcontext.hh"
 
 #include <boost/optional.hpp>
+#include <string>
 
 namespace LibFred {
 namespace ZoneSoa {

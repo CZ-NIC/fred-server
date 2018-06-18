@@ -22,6 +22,8 @@
 #include "src/libfred/opcontext.hh"
 #include "src/libfred/zone_soa/info_zone_soa_data.hh"
 
+#include <string>
+
 namespace LibFred {
 namespace ZoneSoa {
 
