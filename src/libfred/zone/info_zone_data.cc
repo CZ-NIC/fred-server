@@ -22,25 +22,32 @@
 namespace LibFred {
 namespace Zone {
 
-unsigned long long GetZoneId::operator()(const EnumZone& _zone) const
-{
-    return _zone.id;
-}
+namespace {
 
-unsigned long long GetZoneId::operator()(const NonEnumZone& _zone) const
+class GetZoneId : public boost::static_visitor<unsigned long long>
 {
-    return _zone.id;
-}
+public:
+    unsigned long long operator()(const EnumZone& _zone) const
+    {
+            return _zone.id;
+    }
 
-unsigned long long GetZoneId::operator()(const boost::blank& _zone) const
-{
-    throw NonExistentZone();
-}
+    unsigned long long operator()(const NonEnumZone& _zone) const
+    {
+            return _zone.id;
+    }
 
-template <typename T>
-unsigned long long GetZoneId::operator()(const T&) const
+    unsigned long long operator()(const boost::blank&) const
+    {
+            throw std::runtime_error("Get zone id failed");
+    }
+};
+
+} // namespace LibFred::Zone::{anonymous}
+
+unsigned long long get_zone_id(const InfoZoneData& _zone)
 {
-    throw std::runtime_error("Unexpected data type.");
+    return boost::apply_visitor(GetZoneId(), _zone);
 }
 
 } // namespace LibFred::Zone

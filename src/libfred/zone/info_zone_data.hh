@@ -19,9 +19,8 @@
 #ifndef INFO_ZONE_DATA_HH_D239F816DDA648F1B5728C1B1767F185
 #define INFO_ZONE_DATA_HH_D239F816DDA648F1B5728C1B1767F185
 
-#include "src/libfred/opcontext.hh"
-
 #include <boost/variant.hpp>
+#include <string>
 
 namespace LibFred {
 namespace Zone {
@@ -49,18 +48,7 @@ struct EnumZone
 
 using InfoZoneData = boost::variant<boost::blank, NonEnumZone, EnumZone>;
 
-class GetZoneId :public boost::static_visitor<unsigned long long>
-{
-public:
-    unsigned long long operator()(const EnumZone& _zone) const;
-
-    unsigned long long operator()(const NonEnumZone& _zone) const;
-
-    unsigned long long operator()(const boost::blank&) const;
-
-    template <typename T>
-    unsigned long long operator()(const T&) const;
-};
+unsigned long long get_zone_id(const InfoZoneData& _zone);
 
 } // namespace LibFred::Zone
 } // namespace LibFred

@@ -102,16 +102,23 @@ unsigned long long UpdateZone::exec(OperationContext& _ctx) const
             const unsigned long long id = static_cast<unsigned long long>(update_result[0][0]);
             return id;
         }
-        else if (update_result.size() > 1)
+        else if (update_result.size() < 1)
         {
-            throw;
+            throw NonExistentZone();
+        }
+        else
+        {
+            throw std::runtime_error("Duplicity in database");
         }
     }
-    catch (const std::exception& e)
+    catch (const NonExistentZone&)
+    {
+        throw;
+    }
+    catch (const std::exception&)
     {
         throw UpdateZoneException();
     }
-    throw NonExistentZone();
 }
 
 } // namespace LibFred::Zone
