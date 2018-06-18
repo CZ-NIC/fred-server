@@ -93,7 +93,7 @@ unsigned long long CreateZoneSoa::exec(OperationContext& _ctx) const
 {
     const LibFred::Zone::InfoZoneData zone_info = LibFred::Zone::InfoZone(fqdn_).exec(_ctx);
 
-    const unsigned long long zone_id = boost::apply_visitor(LibFred::Zone::GetZoneId(), zone_info);
+    const unsigned long long zone_id = LibFred::Zone::get_zone_id(zone_info);
 
     const Database::Result select_result = _ctx.get_conn().exec_params(
             // clang-format off
