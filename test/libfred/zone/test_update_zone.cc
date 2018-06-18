@@ -27,6 +27,7 @@
 
 #include <boost/test/test_tools.hpp>
 #include <boost/test/unit_test.hpp>
+#include <string>
 
 namespace Test {
 

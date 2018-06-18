@@ -22,6 +22,8 @@
 #include "src/libfred/opcontext.hh"
 #include "src/libfred/zone/info_zone_data.hh"
 
+#include <string>
+
 namespace LibFred {
 namespace Zone {
 

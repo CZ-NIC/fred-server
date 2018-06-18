@@ -17,7 +17,8 @@
  */
 
 #include "src/libfred/zone/info_zone_data.hh"
-#include "src/libfred/zone/util.hh"
+
+#include <stdexcept>
 
 namespace LibFred {
 namespace Zone {

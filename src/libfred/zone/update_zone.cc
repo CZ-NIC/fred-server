@@ -18,6 +18,11 @@
 
 #include "src/libfred/zone/update_zone.hh"
 #include "src/libfred/zone/util.hh"
+#include "src/util/db/query_param.hh"
+#include "src/util/util.hh"
+
+#include <sstream>
+#include <stdexcept>
 
 namespace LibFred {
 namespace Zone {
