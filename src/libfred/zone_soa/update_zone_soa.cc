@@ -16,9 +16,11 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "src/libfred/zone_soa/exceptions.hh"
 #include "src/libfred/zone_soa/info_zone_soa.hh"
 #include "src/libfred/zone_soa/update_zone_soa.hh"
-#include "src/libfred/zone_soa/exceptions.hh"
+#include "src/util/db/query_param.hh"
+#include "src/util/util.hh"
 
 #include <sstream>
 

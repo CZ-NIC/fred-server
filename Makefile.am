@@ -3708,6 +3708,7 @@ test_test_libfred_SOURCES = \
 		test/libfred/zone_soa/test_info_zone_soa.cc \
 		test/libfred/zone_soa/test_update_zone_soa.cc \
 		test/libfred/zone_soa/util.hh \
+		test/libfred/zone_soa/util.cc \
 		test/util/test_param_query.cc \
 		test/setup/fixtures_utils.hh \
 		test/setup/fixtures_utils.cc \

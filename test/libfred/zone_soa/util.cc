@@ -16,28 +16,20 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef INFO_ZONE_SOA_DATA_HH_17AB51EB359B448AA1B70336C30C8457
-#define INFO_ZONE_SOA_DATA_HH_17AB51EB359B448AA1B70336C30C8457
+#include "test/libfred/zone_soa/util.hh"
 
-#include <string>
+namespace Test {
 
-namespace LibFred {
-namespace ZoneSoa {
-
-struct InfoZoneSoaData
+bool operator==(const ::LibFred::ZoneSoa::InfoZoneSoaData& _lhs, const ::LibFred::ZoneSoa::InfoZoneSoaData& _rhs)
 {
-    unsigned long long zone;
-    int ttl;
-    std::string hostmaster;
-    int refresh;
-    int update_retr;
-    int expiry;
-    int minimum;
-    std::string ns_fqdn;
-};
+    return (_rhs.zone == _lhs.zone
+            && _rhs.ttl == _lhs.ttl
+            && _rhs.hostmaster == _lhs.hostmaster
+            && _rhs.refresh == _lhs.refresh
+            && _rhs.update_retr == _lhs.update_retr
+            && _rhs.expiry == _lhs.expiry
+            && _rhs.minimum == _lhs.minimum
+            && _rhs.ns_fqdn == _lhs.ns_fqdn);
+}
 
-} // namespace LibFred::ZoneSoa
-} // namespace LibFred
-
-
-#endif
+} // namespace Test
