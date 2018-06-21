@@ -2201,6 +2201,14 @@ src_bin_corba_fred_pifd_SOURCES = \
 		src/backend/buffer.hh \
 		src/backend/public_request/public_request.cc \
 		src/backend/public_request/public_request.hh \
+		src/backend/public_request/type/get_iface_of.hh \
+		src/backend/public_request/type/impl/public_request_authinfo.cc \
+		src/backend/public_request/type/public_request_authinfo.hh \
+		src/backend/public_request/type/impl/public_request_blockunblock.cc \
+		src/backend/public_request/type/public_request_blockunblock.hh \
+		src/backend/public_request/type/impl/public_request_personalinfo.cc \
+		src/backend/public_request/type/public_request_personalinfo.hh \
+		src/backend/public_request/type/impl/implemented_by.hh \
 		src/backend/public_request/send_email.cc \
 		src/backend/public_request/send_email.hh \
 		src/bin/corba/public_request/server_i.cc \
@@ -2693,6 +2701,14 @@ src_bin_cli_fred_admin_SOURCES = \
 		src/backend/buffer.cc \
 		src/backend/buffer.hh \
 		src/backend/public_request/public_request.cc \
+		src/backend/public_request/type/get_iface_of.hh \
+		src/backend/public_request/type/impl/public_request_authinfo.cc \
+		src/backend/public_request/type/public_request_authinfo.hh \
+		src/backend/public_request/type/impl/public_request_blockunblock.cc \
+		src/backend/public_request/type/public_request_blockunblock.hh \
+		src/backend/public_request/type/impl/public_request_personalinfo.cc \
+		src/backend/public_request/type/public_request_personalinfo.hh \
+		src/backend/public_request/type/impl/implemented_by.hh \
 	        src/backend/public_request/get_type_names.hh \
 		src/bin/cli/public_request_params.hh \
 		src/libfred/public_request/public_request_on_status_action.hh \
@@ -3368,6 +3384,14 @@ test_backend_test_public_request_SOURCES = \
 		test/backend/public_request/main.cc \
 		src/backend/buffer.cc \
 		src/backend/public_request/public_request.cc \
+		src/backend/public_request/type/get_iface_of.hh \
+		src/backend/public_request/type/impl/public_request_authinfo.cc \
+		src/backend/public_request/type/public_request_authinfo.hh \
+		src/backend/public_request/type/impl/public_request_blockunblock.cc \
+		src/backend/public_request/type/public_request_blockunblock.hh \
+		src/backend/public_request/type/impl/public_request_personalinfo.cc \
+		src/backend/public_request/type/public_request_personalinfo.hh \
+		src/backend/public_request/type/impl/implemented_by.hh \
 		src/backend/public_request/send_email.cc \
 		test/backend/public_request/test_registry_email.cc \
 		test/backend/public_request/test_non_registry_email.cc \

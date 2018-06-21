@@ -8,7 +8,6 @@
 #include "src/libfred/public_request/public_request_lock_guard.hh"
 #include "src/libfred/public_request/info_public_request.hh"
 #include "src/libfred/public_request/update_public_request.hh"
-#include "src/deprecated/model/public_request_filter.hh"
 #include "src/backend/public_request/public_request.hh"
 #include "src/libfred/opcontext.hh"
 #include "src/util/csv/csv.hh"
