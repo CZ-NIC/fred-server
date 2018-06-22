@@ -51,6 +51,22 @@ struct NonExistentZoneNs : std::exception
     }
 };
 
+struct NoZoneNsData : std::exception
+{
+    const char* what() const noexcept override
+    {
+        return "No zone ns data for update.";
+    }
+};
+
+struct UpdateZoneNsException : std::exception
+{
+    const char* what() const noexcept override
+    {
+        return "Failed to update zone ns due to an unknown exception.";
+    }
+};
+
 std::string ip_addresses_to_string(
         const std::vector<boost::asio::ip::address> _ip_addresses);
 
