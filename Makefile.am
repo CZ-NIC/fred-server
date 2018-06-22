@@ -807,6 +807,9 @@ src_libfred_libfred_a_SOURCES = \
 		src/libfred/zone.hh \
 		src/libfred/zone_ns/create_zone_ns.cc \
 		src/libfred/zone_ns/create_zone_ns.hh \
+		src/libfred/zone_ns/info_zone_ns_data.hh \
+		src/libfred/zone_ns/info_zone_ns.cc \
+		src/libfred/zone_ns/info_zone_ns.hh \
 		src/libfred/zone_ns/util.cc \
 		src/libfred/zone_ns/util.hh \
 		src/libfred/blacklist.cc \
@@ -3713,7 +3716,10 @@ test_test_libfred_SOURCES = \
 		test/libfred/zone_soa/test_update_zone_soa.cc \
 		test/libfred/zone_soa/util.hh \
 		test/libfred/zone_soa/util.cc \
+		test/libfred/zone_ns/util.cc \
+		test/libfred/zone_ns/util.hh \
 		test/libfred/zone_ns/test_create_zone_ns.cc \
+		test/libfred/zone_ns/test_info_zone_ns.cc \
 		test/util/test_param_query.cc \
 		test/setup/fixtures_utils.hh \
 		test/setup/fixtures_utils.cc \

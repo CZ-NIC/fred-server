@@ -16,43 +16,23 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef UTIL_HH_F13E44D632884171A2427E7F474CC8E9
-#define UTIL_HH_F13E44D632884171A2427E7F474CC8E9
+#ifndef INFO_ZONE_NS_DATA_HH_630870DB7F4141399329A97A85D26A5D
+#define INFO_ZONE_NS_DATA_HH_630870DB7F4141399329A97A85D26A5D
 
 #include <boost/asio/ip/address.hpp>
-#include <exception>
 #include <string>
 #include <vector>
 
 namespace LibFred {
 namespace ZoneNs {
 
-struct CreateZoneNsException : std::exception
+struct InfoZoneNsData
 {
-    const char* what() const noexcept override
-    {
-        return "Failed to create zone ns due to an unknown exception.";
-    }
+    unsigned long long id;
+    unsigned long long zone_id;
+    std::string nameserver_fqdn;
+    std::vector<boost::asio::ip::address> nameserver_ip_addresses;
 };
-
-struct InfoZoneNsException : std::exception
-{
-    const char* what() const noexcept override
-    {
-        return "Failed to get zone ns info due to an unknown exception.";
-    }
-};
-
-struct NonExistentZoneNs : std::exception
-{
-    const char* what() const noexcept override
-    {
-        return "Zone ns does not exist.";
-    }
-};
-
-std::string ip_addresses_to_string(
-        const std::vector<boost::asio::ip::address> _ip_addresses);
 
 } // namespace LibFred::ZoneNs
 } // namespace LibFred
