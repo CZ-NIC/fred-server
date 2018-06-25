@@ -76,6 +76,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config/server.conf.in ${CMAKE_BINARY_
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/init-scripts/fred-server.in ${CMAKE_BINARY_DIR}/init-scripts/fred-server)
 
 find_package(Threads REQUIRED)
+set(Threads_LIBRARIES Threads::Threads)
 find_package(PostgreSQL REQUIRED)
 find_package(Boost 1.53.0
     COMPONENTS
@@ -104,14 +105,6 @@ pkg_search_module(OMNIDYNAMIC4 REQUIRED omniDynamic4>=4.1.2)
 pkg_search_module(OPENSSL REQUIRED openssl)
 pkg_search_module(LIBCURL REQUIRED libcurl)
 
-# ???
-function(link_targets_against_threads)
-    foreach(target_name ${ARGN})
-        message(STATUS "link with threads: " ${target_name})
-        target_link_libraries(${target_name} Threads::Threads)
-    endforeach()
-endfunction()
-
 macro(create_link_function some_package its_dependencies)
     function(link_targets_against_${some_package})
         set(func_ARGN ARGN)
@@ -122,6 +115,7 @@ macro(create_link_function some_package its_dependencies)
     endfunction()
 endmacro()
 
+create_link_function(threads Threads_LIBRARIES)
 create_link_function(boost_system Boost_SYSTEM_LIBRARY)
 create_link_function(boost_thread Boost_THREAD_LIBRARY)
 create_link_function(boost_date_time Boost_DATE_TIME_LIBRARY)
