@@ -1034,10 +1034,15 @@ src_libfred_libfred_a_SOURCES = \
 		src/libfred/registrar/group/update_registrar_group.cc \
 		src/libfred/registrar/group/cancel_registrar_group.cc \
 		src/libfred/registrar/group/get_registrar_groups.cc \
-		src/libfred/registrar/zone_credit.hh \
+		src/libfred/registrar/certification/exceptions.hh \
+		src/libfred/registrar/certification/registrar_certification_type.hh \
+		src/libfred/registrar/certification/create_registrar_certification.hh \
 		src/libfred/registrar/certification/create_registrar_certification.cc \
+		src/libfred/registrar/certification/update_registrar_certification.hh \
 		src/libfred/registrar/certification/update_registrar_certification.cc \
+		src/libfred/registrar/certification/get_registrar_certifications.hh \
 		src/libfred/registrar/certification/get_registrar_certifications.cc \
+		src/libfred/registrar/zone_credit.hh \
 		src/libfred/registrar/zone_credit.cc \
 		src/libfred/registrar/registrar_zone_credit.hh \
 		src/libfred/registrar/registrar_zone_credit.cc \
