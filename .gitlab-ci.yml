@@ -72,8 +72,9 @@ docker:server:centos:
     - git clone git@gitlab.office.nic.cz:fred/idl.git --single-branch --branch $IDL_BRANCH
   script:
     - autoreconf -vfi
+    - echo "\$PWD=$PWD"
     - ./configure --with-idldir=./idl/idl || ( cat config.log && exit 1 )
-    - DISTCHECK_CONFIGURE_FLAGS="--with-idldir=./idl/idl" make -j $(expr $(cat /proc/cpuinfo | grep processor | wc -l) / 2)
+    - DISTCHECK_CONFIGURE_FLAGS="--with-idldir=/builds/fred/server/idl/idl" make -j $(($(grep -c processor /proc/cpuinfo) / 2 + 1)) distcheck
 
 build:ubuntu:amd64:
   <<: *ubuntu_16_04
