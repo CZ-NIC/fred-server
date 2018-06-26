@@ -1030,9 +1030,15 @@ src_libfred_libfred_a_SOURCES = \
 		src/libfred/registrar/get_registrar_handles.hh \
 		src/libfred/registrar/check_registrar.hh \
 		src/libfred/registrar/check_registrar.cc \
+		src/libfred/registrar/group/exceptions.hh \
+		src/libfred/registrar/group/registrar_group_type.hh \
+		src/libfred/registrar/group/create_registrar_group.hh \
 		src/libfred/registrar/group/create_registrar_group.cc \
+		src/libfred/registrar/group/update_registrar_group.hh \
 		src/libfred/registrar/group/update_registrar_group.cc \
+		src/libfred/registrar/group/cancel_registrar_group.hh \
 		src/libfred/registrar/group/cancel_registrar_group.cc \
+		src/libfred/registrar/group/get_registrar_groups.hh \
 		src/libfred/registrar/group/get_registrar_groups.cc \
 		src/libfred/registrar/certification/exceptions.hh \
 		src/libfred/registrar/certification/registrar_certification_type.hh \
