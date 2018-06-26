@@ -1,5 +1,6 @@
 #include "src/backend/public_request/public_request.hh"
 
+#include "src/backend/buffer.hh"
 #include "src/backend/public_request/type/public_request_authinfo.hh"
 #include "src/backend/public_request/type/public_request_blockunblock.hh"
 #include "src/backend/public_request/type/public_request_personalinfo.hh"
@@ -151,68 +152,27 @@ const std::string& PublicRequestImpl::get_server_name() const
     return server_name_;
 }
 
-unsigned long long PublicRequestImpl::create_authinfo_request_registry_email(
+unsigned long long PublicRequestImpl::create_authinfo_request_registry_email_rif(
         ObjectType::Enum object_type,
         const std::string& object_handle,
-        const Optional<unsigned long long>& log_request_id,
-        std::shared_ptr<LibFred::Mailer::Manager> manager) const // potentially put as member
+        const unsigned long long _registrar_id,
+        const Optional<unsigned long long>& log_request_id) const
 {
     LOGGING_CONTEXT(log_ctx, *this);
     try
     {
-        unsigned long long object_id;
-        unsigned long long public_request_id;
-        {
-            LibFred::OperationContextCreator ctx;
-            object_id = get_id_of_registered_object(ctx, object_type, object_handle);
-            const LibFred::ObjectStatesInfo states(LibFred::GetObjectStates(object_id).exec(ctx));
-            Type::check_authinfo_request_permission(states);
-            LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, object_id);
-            public_request_id = LibFred::CreatePublicRequest(
-                    "create_authinfo_request_registry_email call",
-                    Optional<std::string>(),
-                    Optional<unsigned long long>())
-                .exec(locked_object, Type::get_iface_of<Type::AuthinfoAuto>(), log_request_id);
-            ctx.commit_transaction();
-        }
-        try
-        {
-            const unsigned long long email_id =
-                Type::send_authinfo(public_request_id, object_handle, object_type, manager);
-            try
-            {
-                LibFred::OperationContextCreator ctx;
-                LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, object_id);
-                LibFred::UpdatePublicRequest(
-                        LibFred::PublicRequest::Status::resolved,
-                        Optional<Nullable<std::string> >(),
-                        Optional<Nullable<std::string> >(),
-                        email_id,
-                        Optional<Nullable<LibFred::RegistrarId> >())
-                    .exec(locked_object, Type::get_iface_of<Type::AuthinfoAuto>(), log_request_id);
-                ctx.commit_transaction();
-            }
-            catch (...)
-            {
-                LOGGER(PACKAGE).info(boost::format("Request %1% update failed, but email %2% sent") % public_request_id % email_id);
-                //no throw as main part is completed
-            }
-            return public_request_id;
-        }
-        catch (...)
-        {
-            LibFred::OperationContextCreator ctx;
-            LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, object_id);
-            LibFred::UpdatePublicRequest(
-                    LibFred::PublicRequest::Status::invalidated,
-                    Optional<Nullable<std::string> >(),
-                    Optional<Nullable<std::string> >(),
-                    Optional<Nullable<unsigned long long> >(),
-                    Optional<Nullable<LibFred::RegistrarId> >())
-                .exec(locked_object, Type::get_iface_of<Type::AuthinfoAuto>(), log_request_id);
-            ctx.commit_transaction();
-            throw;
-        }
+        LibFred::OperationContextCreator ctx;
+        const auto object_id = get_id_of_registered_object(ctx, object_type, object_handle);
+        LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, object_id);
+        const auto public_request_id = LibFred::CreatePublicRequest()
+                .set_registrar_id(LibFred::RegistrarId(_registrar_id))
+                .exec(locked_object, Type::get_iface_of<Type::AuthinfoAutoRif>(), log_request_id);
+        LibFred::UpdatePublicRequest()
+            .set_status(LibFred::PublicRequest::Status::resolved)
+            .exec(locked_object, Type::get_iface_of<Type::AuthinfoAutoRif>(), log_request_id);
+        ctx.commit_transaction();
+
+        return public_request_id;
     }
     catch (const NoPublicRequest& e)
     {
@@ -223,11 +183,6 @@ unsigned long long PublicRequestImpl::create_authinfo_request_registry_email(
     {
         LOGGER(PACKAGE).info(e.what());
         throw NoContactEmail();
-    }
-    catch (const ObjectTransferProhibited& e)
-    {
-        LOGGER(PACKAGE).info(e.what());
-        throw ObjectTransferProhibited();
     }
     catch (const LibFred::UnknownObject& e)
     {
@@ -241,7 +196,54 @@ unsigned long long PublicRequestImpl::create_authinfo_request_registry_email(
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("Unknown error");
+        LOGGER(PACKAGE).error("create_authinfo_request (registry) failed due to an unknown exception");
+        throw;
+    }
+}
+
+unsigned long long PublicRequestImpl::create_authinfo_request_registry_email(
+        ObjectType::Enum object_type,
+        const std::string& object_handle,
+        const Optional<unsigned long long>& log_request_id) const
+{
+    LOGGING_CONTEXT(log_ctx, *this);
+    try
+    {
+        LibFred::OperationContextCreator ctx;
+        const auto object_id = get_id_of_registered_object(ctx, object_type, object_handle);
+        LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, object_id);
+        const auto public_request_id = LibFred::CreatePublicRequest()
+            .exec(locked_object, Type::get_iface_of<Type::AuthinfoAuto>(), log_request_id);
+        LibFred::UpdatePublicRequest()
+            .set_status(LibFred::PublicRequest::Status::resolved)
+            .exec(locked_object, Type::get_iface_of<Type::AuthinfoAuto>(), log_request_id);
+        ctx.commit_transaction();
+
+        return public_request_id;
+    }
+    catch (const NoPublicRequest& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw ObjectNotFound();
+    }
+    catch (const NoContactEmail& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw NoContactEmail();
+    }
+    catch (const LibFred::UnknownObject& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw ObjectNotFound();
+    }
+    catch (const std::exception& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw;
+    }
+    catch (...)
+    {
+        LOGGER(PACKAGE).error("create_authinfo_request (registry) failed due to an unknown exception");
         throw;
     }
 }
@@ -257,14 +259,9 @@ unsigned long long PublicRequestImpl::create_authinfo_request_non_registry_email
     try
     {
         LibFred::OperationContextCreator ctx;
-        const unsigned long long object_id = get_id_of_registered_object(ctx, object_type, object_handle);
-        const LibFred::ObjectStatesInfo states(LibFred::GetObjectStates(object_id).exec(ctx));
-        Type::check_authinfo_request_permission(states);
+        const auto object_id = get_id_of_registered_object(ctx, object_type, object_handle);
         LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, object_id);
-        const LibFred::CreatePublicRequest create_public_request_op(
-                "create_authinfo_request_non_registry_email call",
-                specified_email,
-                Optional<unsigned long long>());
+        const auto create_public_request_op = LibFred::CreatePublicRequest().set_email_to_answer(specified_email);
         switch (confirmation_method)
         {
             case ConfirmedBy::email:
@@ -289,11 +286,6 @@ unsigned long long PublicRequestImpl::create_authinfo_request_non_registry_email
         LOGGER(PACKAGE).info(e.what());
         throw ObjectNotFound();
     }
-    catch (const ObjectTransferProhibited& e)
-    {
-        LOGGER(PACKAGE).info(e.what());
-        throw ObjectTransferProhibited();
-    }
     catch (const LibFred::CreatePublicRequest::Exception& e)
     {
         if (e.is_set_wrong_email())
@@ -311,7 +303,7 @@ unsigned long long PublicRequestImpl::create_authinfo_request_non_registry_email
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("Unknown error");
+        LOGGER(PACKAGE).error("create_authinfo_request (non registry) failed due to an unknown exception");
         throw;
     }
 }

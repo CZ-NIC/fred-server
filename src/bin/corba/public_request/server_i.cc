@@ -65,8 +65,7 @@ Server_i::~Server_i()
         const unsigned long long public_request_id = pimpl_->create_authinfo_request_registry_email(
                 unwrap_objecttype_pr_to_objecttype(object_type),
                 LibFred::Corba::unwrap_string_from_const_char_ptr(object_handle),
-                unwrap_nullableulonglong_to_optional_unsigned_long_long(log_request_id),
-                Fred::Backend::PublicRequest::PublicRequestImpl::get_default_mailer_manager());
+                unwrap_nullableulonglong_to_optional_unsigned_long_long(log_request_id));
         ::CORBA::ULongLong result;
         CorbaConversion::wrap_int(public_request_id, result);
         return result;

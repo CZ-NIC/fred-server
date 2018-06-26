@@ -172,11 +172,16 @@ public:
         }
     };
 
+    unsigned long long create_authinfo_request_registry_email_rif(
+            ObjectType::Enum object_type,
+            const std::string& object_handle,
+            unsigned long long registrar_id,
+            const Optional<unsigned long long>& log_request_id) const;
+
     unsigned long long create_authinfo_request_registry_email(
             ObjectType::Enum object_type,
             const std::string& object_handle,
-            const Optional<unsigned long long>& log_request_id,
-            std::shared_ptr<LibFred::Mailer::Manager> manager) const;
+            const Optional<unsigned long long>& log_request_id) const;
 
     unsigned long long create_authinfo_request_non_registry_email(
             ObjectType::Enum object_type,

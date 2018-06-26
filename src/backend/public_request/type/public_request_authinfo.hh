@@ -31,6 +31,7 @@ namespace Backend {
 namespace PublicRequest {
 namespace Type {
 
+struct AuthinfoAutoRif;
 struct AuthinfoAuto;
 struct AuthinfoEmail;
 struct AuthinfoPost;

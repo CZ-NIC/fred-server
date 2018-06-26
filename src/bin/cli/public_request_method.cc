@@ -122,7 +122,8 @@ void PublicRequestProcedure::exec()
     }
 
     const std::unordered_map<std::string, const LibFred::PublicRequestTypeIface& (*)()> type_to_iface =
-        get_type_to_iface_mapping<PublicRequestType::AuthinfoAuto,
+        get_type_to_iface_mapping<PublicRequestType::AuthinfoAutoRif,
+                                  PublicRequestType::AuthinfoAuto,
                                   PublicRequestType::AuthinfoEmail,
                                   PublicRequestType::AuthinfoPost,
                                   PublicRequestType::PersonalinfoAuto,
@@ -148,7 +149,8 @@ void PublicRequestProcedure::exec()
                             mailer_manager,
                             file_manager_client);
                 }
-                else if (request_type == "authinfo_auto_pif" ||
+                else if (request_type == "authinfo_auto_rif" ||
+                         request_type == "authinfo_auto_pif" ||
                          request_type == "authinfo_email_pif" ||
                          request_type == "authinfo_post_pif")
                 {

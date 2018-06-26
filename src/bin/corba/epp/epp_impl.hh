@@ -115,7 +115,6 @@ public:
           );
   virtual ~ccReg_EPP_i();
 
-
   const std::string& get_disable_epp_notifier_cltrid_prefix() const
   {
       return disable_epp_notifier_cltrid_prefix_;

@@ -21,7 +21,6 @@
 #include "src/libfred/public_request/public_request_status.hh"
 #include "src/libfred/public_request/public_request_on_status_action.hh"
 #include "src/backend/public_request/type/impl/implemented_by.hh"
-#include "src/backend/public_request/send_email.hh"
 
 namespace Fred {
 namespace Backend {
@@ -46,14 +45,22 @@ struct AuthinfoImplementation
     {
         return LibFred::PublicRequestTypeIface::PublicRequestTypes();
     }
+
     template <typename T>
     LibFred::PublicRequest::OnStatusAction::Enum get_on_status_action(LibFred::PublicRequest::Status::Enum _status) const
     {
+        if (_status == LibFred::PublicRequest::Status::resolved)
+        {
+            return LibFred::PublicRequest::OnStatusAction::scheduled;
+        }
         return LibFred::PublicRequest::OnStatusAction::processed;
     }
 };
 
 typedef Fred::Backend::PublicRequest::Type::Impl::ImplementedBy<AuthinfoImplementation> AuthinfoPublicRequest;
+
+extern const char authinfo_auto_rif[] = "authinfo_auto_rif";
+typedef AuthinfoPublicRequest::Named<authinfo_auto_rif> AuthinfoAutoRif;
 
 extern const char authinfo_auto_pif[] = "authinfo_auto_pif";
 typedef AuthinfoPublicRequest::Named<authinfo_auto_pif> AuthinfoAuto;
@@ -66,6 +73,13 @@ typedef AuthinfoPublicRequest::Named<authinfo_post_pif> AuthinfoPost;
 
 } // namespace Fred::Backend::PublicRequest::Type::Impl::{anonymous}
 } // namespace Fred::Backend::PublicRequest::Type::Impl
+
+template<>
+const LibFred::PublicRequestTypeIface& get_iface_of<AuthinfoAutoRif>()
+{
+    static const Impl::AuthinfoAutoRif singleton;
+    return singleton;
+}
 
 template<>
 const LibFred::PublicRequestTypeIface& get_iface_of<AuthinfoAuto>()

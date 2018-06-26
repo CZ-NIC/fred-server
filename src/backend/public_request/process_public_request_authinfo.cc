@@ -60,7 +60,7 @@ unsigned long long send_authinfo(
             Database::query_param_list(object_id));
     if (db_result.size() < 1)
     {
-        throw ObjectNotFound();
+        throw PublicRequestImpl::ObjectNotFound();
     }
     if (db_result.size() > 1)
     {

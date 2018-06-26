@@ -303,7 +303,8 @@ noinst_HEADERS = \
 		src/backend/epp/nsset/dns_host_input.hh \
 		src/backend/epp/nsset/nsset_handle_state_to_check_result.hh \
 		src/backend/epp/nsset/impl/limits.hh \
-		test/backend/epp/nsset/fixture.hh
+		test/backend/epp/nsset/fixture.hh \
+		src/backend/public_request/process_public_request_authinfo.hh
 
 noinst_LIBRARIES = \
 		src/util/libutil.a \
@@ -2039,7 +2040,21 @@ src_bin_corba_epp_libepp_impl_a_SOURCES = \
 		src/backend/epp/nsset/impl/nsset.hh \
 		src/backend/epp/nsset/impl/nsset_output.cc \
 		src/backend/epp/nsset/impl/nsset_output.hh \
-		src/backend/epp/nsset/status_value.hh
+		src/backend/epp/nsset/status_value.hh \
+		src/backend/public_request/public_request.cc \
+		src/backend/public_request/public_request.hh \
+		src/backend/public_request/type/get_iface_of.hh \
+		src/backend/public_request/type/impl/public_request_authinfo.cc \
+		src/backend/public_request/type/public_request_authinfo.hh \
+		src/backend/public_request/type/impl/public_request_blockunblock.cc \
+		src/backend/public_request/type/public_request_blockunblock.hh \
+		src/backend/public_request/type/impl/public_request_personalinfo.cc \
+		src/backend/public_request/type/public_request_personalinfo.hh \
+		src/backend/public_request/type/impl/implemented_by.hh \
+		src/backend/public_request/process_public_request_authinfo.cc \
+		src/backend/public_request/process_public_request_authinfo.hh \
+		src/backend/buffer.cc \
+		src/backend/buffer.hh
 #
 # src/bin/corba/epp/libepp_impl.a
 
@@ -2748,6 +2763,8 @@ src_bin_cli_fred_admin_SOURCES = \
 		src/backend/public_request/send_email.hh \
 		src/backend/public_request/process_public_requests.cc \
 		src/backend/public_request/process_public_requests.hh \
+		src/backend/public_request/process_public_request_authinfo.cc \
+		src/backend/public_request/process_public_request_authinfo.hh \
 		src/backend/buffer.cc \
 		src/backend/buffer.hh \
 		src/backend/public_request/public_request.cc \

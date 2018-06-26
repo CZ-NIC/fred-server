@@ -158,6 +158,8 @@
 #include "src/backend/epp/nsset/transfer_nsset_config_data.hh"
 #include "src/backend/epp/nsset/update_nsset_config_data.hh"
 
+#include "src/backend/public_request/public_request.hh"
+
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/local_time_adjustor.hpp>
 #include <boost/date_time/c_local_time_adjustor.hpp>
@@ -532,16 +534,17 @@ ccReg_EPP_i::ccReg_EPP_i(
   Logging::Context ctx("rifd");
 
   // factory_check - required keys are in factory
-  FactoryHaveSupersetOfKeysChecker<LibFred::PublicRequest::Factory>
-  ::KeyVector required_keys = boost::assign::list_of
-   (LibFred::PublicRequest::PRT_AUTHINFO_AUTO_RIF);
+  // XXX
+  // FactoryHaveSupersetOfKeysChecker<LibFred::PublicRequest::Factory>
+  // ::KeyVector required_keys = boost::assign::list_of
+  //  (LibFred::PublicRequest::PRT_AUTHINFO_AUTO_RIF);
 
-  FactoryHaveSupersetOfKeysChecker<LibFred::PublicRequest::Factory>
-      (required_keys).check();
+  // FactoryHaveSupersetOfKeysChecker<LibFred::PublicRequest::Factory>
+  //     (required_keys).check();
 
-  // factory_check - factory keys are in database
-  FactoryHaveSubsetOfKeysChecker<LibFred::PublicRequest::Factory>
-      (LibFred::PublicRequest::get_enum_public_request_type()).check();
+  // // factory_check - factory keys are in database
+  // FactoryHaveSubsetOfKeysChecker<LibFred::PublicRequest::Factory>
+  //     (LibFred::PublicRequest::get_enum_public_request_type()).check();
 
   // objects are shared between threads!!!
   // init at the beginning and do not change
@@ -3436,6 +3439,7 @@ ccReg_EPP_i::ObjectSendAuthInfo(
     short int code = 0;
 
     EPPAction action(this, params.loginID, act, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
+    const Epp::RequestParams epp_request_params = LibFred::Corba::unwrap_EppParams(params);
 
     // Database::Manager db(new Database::ConnectionFactory(database));
     // std::auto_ptr<Database::Connection> conn;
@@ -3515,36 +3519,96 @@ ccReg_EPP_i::ObjectSendAuthInfo(
                     ns->getHostName()
                     )
                 );
-        std::unique_ptr<LibFred::PublicRequest::Manager> request_manager(
-                LibFred::PublicRequest::Manager::create(
-                    regMan->getDomainManager(),
-                    regMan->getContactManager(),
-                    regMan->getNssetManager(),
-                    regMan->getKeysetManager(),
-                    mm,
-                    doc_manager.get(),
-                    regMan->getMessageManager()
-                    )
-                );
+        //std::unique_ptr<LibFred::PublicRequest::Manager> request_manager(
+        //        LibFred::PublicRequest::Manager::create(
+        //            regMan->getDomainManager(),
+        //            regMan->getContactManager(),
+        //            regMan->getNssetManager(),
+        //            regMan->getKeysetManager(),
+        //            mm,
+        //            doc_manager.get(),
+        //            regMan->getMessageManager()
+        //            )
+        //        );
         try {
             LOG(
                     NOTICE_LOG , "createRequest objectID %d" ,
                     id
                );
-            std::unique_ptr<LibFred::PublicRequest::PublicRequest> new_request(request_manager->createRequest(
-                        LibFred::PublicRequest::PRT_AUTHINFO_AUTO_RIF));
 
-            new_request->setRequestId(params.requestID);
-            new_request->setRegistrarId(GetRegistrarID(params.loginID));
-            new_request->addObject(LibFred::PublicRequest::OID(id));
-            if (!new_request->check()) {
-                LOG(WARNING_LOG, "authinfo request for %s is prohibited",name);
-                code = COMMAND_STATUS_PROHIBITS_OPERATION;
-            } else {
-                code=COMMAND_OK;
-                new_request->save();
+            const std::unique_ptr<Fred::Backend::PublicRequest::PublicRequestImpl> public_request(
+                    new Fred::Backend::PublicRequest::PublicRequestImpl(get_server_name()));
+
+            const unsigned long long registrar_id =
+                    static_cast<unsigned long long>(GetRegistrarID(epp_request_params.session_id));
+
+            switch (act) {
+                case EPP_ContactSendAuthInfo:
+                    public_request->create_authinfo_request_registry_email_rif(
+                            Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::contact,
+                            name,
+                            registrar_id,
+                            epp_request_params.log_request_id != boost::none
+                                ? *epp_request_params.log_request_id
+                                : Optional<unsigned long long>());
+                    break;
+                case EPP_NssetSendAuthInfo:
+                    public_request->create_authinfo_request_registry_email_rif(
+                            Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::nsset,
+                            name,
+                            registrar_id,
+                            epp_request_params.log_request_id != boost::none
+                                ? *epp_request_params.log_request_id
+                                : Optional<unsigned long long>());
+                    break;
+                case EPP_DomainSendAuthInfo:
+                    public_request->create_authinfo_request_registry_email_rif(
+                            Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::domain,
+                            FQDN,
+                            registrar_id,
+                            epp_request_params.log_request_id != boost::none
+                                ? *epp_request_params.log_request_id
+                                : Optional<unsigned long long>());
+                    break;
+                case EPP_KeysetSendAuthInfo:
+                    public_request->create_authinfo_request_registry_email_rif(
+                            Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::keyset,
+                            name,
+                            registrar_id,
+                            epp_request_params.log_request_id != boost::none
+                                ? *epp_request_params.log_request_id
+                                : Optional<unsigned long long>());
+                    break;
             }
-        } catch (...) {
+            //std::unique_ptr<LibFred::PublicRequest::PublicRequest> new_request(request_manager->createRequest(
+            //            LibFred::PublicRequest::PRT_AUTHINFO_AUTO_RIF));
+
+            //new_request->setRequestId(params.requestID);
+            //new_request->setRegistrarId(GetRegistrarID(params.loginID));
+            //new_request->addObject(LibFred::PublicRequest::OID(id));
+            //if (!new_request->check()) {
+            //    LOG(WARNING_LOG, "authinfo request for %s is prohibited",name);
+            //    code = COMMAND_STATUS_PROHIBITS_OPERATION;
+            //} else {
+            //    code=COMMAND_OK;
+            //    new_request->save();
+            //}
+            code=COMMAND_OK;
+        }
+        // TODO
+        catch (const Fred::Backend::PublicRequest::PublicRequestImpl::ObjectNotFound&)
+        {
+            code = COMMAND_OBJECT_NOT_EXIST;
+        }
+        catch (const Fred::Backend::PublicRequest::PublicRequestImpl::NoContactEmail&)
+        {
+            code=COMMAND_FAILED;
+        }
+        catch (const std::exception&)
+        {
+            code=COMMAND_FAILED;
+        }
+        catch (...) {
             LOG( WARNING_LOG, "cannot create and process request");
             code=COMMAND_FAILED;
         }
