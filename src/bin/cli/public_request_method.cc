@@ -18,9 +18,11 @@
 
 #include "src/libfred/registry.hh"
 #include "src/libfred/public_request/public_request_on_status_action.hh"
+#include "src/backend/public_request/process_public_request_authinfo.hh"
 #include "src/backend/public_request/process_public_requests.hh"
 #include "src/util/db/query_param.hh"
 #include "src/bin/cli/public_request_method.hh"
+#include "src/backend/public_request/type/public_request_authinfo.hh"
 #include "src/backend/public_request/type/public_request_personalinfo.hh"
 #include "src/backend/public_request/type/get_iface_of.hh"
 #include "src/libfred/public_request/public_request_status.hh"
@@ -64,7 +66,10 @@ void PublicRequestProcedure::exec()
     std::set<std::string> request_types_filter;
     {
         std::set<std::string> request_types_filter_default =
-            get_request_type_filter<PublicRequestType::PersonalinfoAuto,
+            get_request_type_filter<PublicRequestType::AuthinfoAuto,
+                                    PublicRequestType::AuthinfoEmail,
+                                    PublicRequestType::AuthinfoPost,
+                                    PublicRequestType::PersonalinfoAuto,
                                     PublicRequestType::PersonalinfoEmail,
                                     PublicRequestType::PersonalinfoPost>();
         for (const auto& argument: args.types)
@@ -117,7 +122,10 @@ void PublicRequestProcedure::exec()
     }
 
     const std::unordered_map<std::string, const LibFred::PublicRequestTypeIface& (*)()> type_to_iface =
-        get_type_to_iface_mapping<PublicRequestType::PersonalinfoAuto,
+        get_type_to_iface_mapping<PublicRequestType::AuthinfoAuto,
+                                  PublicRequestType::AuthinfoEmail,
+                                  PublicRequestType::AuthinfoPost,
+                                  PublicRequestType::PersonalinfoAuto,
                                   PublicRequestType::PersonalinfoEmail,
                                   PublicRequestType::PersonalinfoPost>();
     for (std::size_t i = 0; i < dbres.size(); ++i)
@@ -130,11 +138,25 @@ void PublicRequestProcedure::exec()
         {
             if (request_status == LibFred::PublicRequest::Status::resolved)
             {
-                Fred::Backend::PublicRequest::process_public_request_personal_info_resolved(
-                        request_id,
-                        type_to_iface.at(request_type)(),
-                        mailer_manager,
-                        file_manager_client);
+                if (request_type == "personalinfo_auto_pif" ||
+                    request_type == "personalinfo_email_pif" ||
+                    request_type == "personalinfo_post_pif")
+                {
+                    Fred::Backend::PublicRequest::process_public_request_personal_info_resolved(
+                            request_id,
+                            type_to_iface.at(request_type)(),
+                            mailer_manager,
+                            file_manager_client);
+                }
+                else if (request_type == "authinfo_auto_pif" ||
+                         request_type == "authinfo_email_pif" ||
+                         request_type == "authinfo_post_pif")
+                {
+                    Fred::Backend::PublicRequest::process_public_request_auth_info_resolved(
+                            request_id,
+                            type_to_iface.at(request_type)(),
+                            mailer_manager);
+                }
             }
         }
         catch (const std::exception& e)
