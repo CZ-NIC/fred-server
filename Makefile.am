@@ -2709,7 +2709,6 @@ src_bin_cli_fred_admin_SOURCES = \
 		src/backend/public_request/type/impl/public_request_personalinfo.cc \
 		src/backend/public_request/type/public_request_personalinfo.hh \
 		src/backend/public_request/type/impl/implemented_by.hh \
-	        src/backend/public_request/get_type_names.hh \
 		src/bin/cli/public_request_params.hh \
 		src/libfred/public_request/public_request_on_status_action.hh \
 		src/bin/cli/public_request_impl.hh \
