@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.5)
 
+find_program(IDL_PROGRAM omniidl)
+find_program(GIT_PROGRAM git)
 find_program(CCACHE_PROGRAM ccache)
+
 if(CCACHE_PROGRAM)
     set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCACHE_PROGRAM}")
 endif()
@@ -18,7 +21,13 @@ set_default(CMAKE_BUILD_TYPE "Release")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2")
 
 if(NOT VERSION)
-    execute_process(COMMAND "git" "describe" "--tags"
+    if(NOT GIT_PROGRAM)
+        message(FATAL_ERROR "git not found; you need to pass -DVERSION=")
+    endif()
+    if(NOT EXISTS ${CMAKE_SOURCE_DIR}/.git)
+        message(FATAL_ERROR "${CMAKE_SOURCE_DIR}/.git not found; you need to pass -DVERSION=")
+    endif()
+    execute_process(COMMAND ${GIT_PROGRAM} "describe" "--tags"
                     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
                     OUTPUT_VARIABLE RAWVERSION)
     string(REGEX REPLACE "-.*\n" "" VERSION ${RAWVERSION})
@@ -269,12 +278,18 @@ endfunction()
 
 function(compile_idl_files)
     message(STATUS "Compiling idl...")
+    if(NOT IDL_PROGRAM)
+        message(FATAL_ERROR "omniidl not found")
+    endif()
     execute_process(
         COMMAND mkdir -p src/bin/corba
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
     foreach(idl_name ${ARGN})
+        if(NOT EXISTS ${IDL_DIR}/${idl_name}.idl)
+            message(FATAL_ERROR "${IDL_DIR}/${idl_name}.idl does not exists; you need to pass -DIDL_DIR")
+        endif()
         execute_process(
-            COMMAND omniidl -bcxx -Wbuse_quotes -Wba -C . ${IDL_DIR}/${idl_name}.idl
+            COMMAND ${IDL_PROGRAM} -bcxx -Wbuse_quotes -Wba -C . ${IDL_DIR}/${idl_name}.idl
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/src/bin/corba
             OUTPUT_VARIABLE OMNIIDL_MESSAGE${idl_name})
         message(STATUS ${OMNIIDL_MESSAGE}${idl_name})
@@ -3195,46 +3210,50 @@ if(NOT TARGET uninstall)
         COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
 endif()
 
-if(NOT TARGET dist)
-    add_custom_target(dist
-        COMMAND git archive --format=tar --prefix=${TARBALL_FILE_NAME}/ HEAD | gzip > ${CMAKE_BINARY_DIR}/${TARBALL_FILE_NAME}.tar.gz
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-endif()
-
-if(NOT TARGET distcheck)
-    set(DISTCHECK_BUILD_DIR "_build")
-    set(DISTCHECK_INSTALL_DIR "_inst")
-    if(${CMAKE_GENERATOR} STREQUAL "Ninja")
-        set(DISTCHECK_BUILD_CMD "ninja")
-        set(DISTCHECK_MAKEFLAGS "")
-    else()
-        set(DISTCHECK_BUILD_CMD "make")
-        execute_process(COMMAND "grep" "-c" "model name" "/proc/cpuinfo"
-            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-            OUTPUT_VARIABLE NOCPUS)
-        string(REGEX REPLACE "\n" "" NOCPUS ${NOCPUS})
-        set(DISTCHECK_MAKEFLAGS "MAKEFLAGS=-j${NOCPUS}")
+if(EXISTS ${CMAKE_SOURCE_DIR}/.git AND GIT_PROGRAM)
+    if(NOT TARGET dist)
+        add_custom_target(dist
+            COMMAND ${GIT_PROGRAM} archive --format=tar --prefix=${TARBALL_FILE_NAME}/ HEAD | gzip > ${CMAKE_BINARY_DIR}/${TARBALL_FILE_NAME}.tar.gz
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
     endif()
-    add_custom_target(distcheck
-        COMMAND
-        rm -rf ${DISTCHECK_BUILD_DIR} ${DISTCHECK_INSTALL_DIR} ${TARBALL_FILE_NAME}
-        && mkdir ${DISTCHECK_BUILD_DIR} ${DISTCHECK_INSTALL_DIR}
-        && (tar xzf ${TARBALL_FILE_NAME}.tar.gz
-            || (echo 'Error: failed to unpack the archive' 2>&1\; false))
-        && (cd ${DISTCHECK_BUILD_DIR}
-            && (cmake -G${CMAKE_GENERATOR} -DCMAKE_INSTALL_PREFIX=../${DISTCHECK_INSTALL_DIR} -DIDL_DIR=${IDL_DIR} ../${TARBALL_FILE_NAME}
-                || (echo 'Error: failed to configure the archive' 2>&1\; false))
-            && (${DISTCHECK_MAKEFLAGS} ${DISTCHECK_BUILD_CMD}
-                || (echo 'Error: the build target failed ' 2>&1\; false))
-            && (${DISTCHECK_BUILD_CMD} install
-                || (echo 'Error: the install target failed' 2>&1\; false))
-            && (${DISTCHECK_BUILD_CMD} uninstall
-                || (echo 'Error: the uninstall target failed' 2>&1\; false))
-            && (${DISTCHECK_BUILD_CMD} clean
-                || (echo 'Error: the clean target failed' 2>&1\; false)))
-        && rm -rf ${DISTCHECK_BUILD_DIR} ${DISTCHECK_INSTALL_DIR} ${TARBALL_FILE_NAME}
-        && echo 'PASS: ' ${TARBALL_FILE_NAME}.tar.gz 'is ready for distribution.'
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-        COMMENT "Checking the distribution archive...")
-    add_dependencies(distcheck dist)
+
+    if(NOT TARGET distcheck)
+        set(DISTCHECK_BUILD_DIR "_build")
+        set(DISTCHECK_INSTALL_DIR "_inst")
+        if(${CMAKE_GENERATOR} STREQUAL "Ninja")
+            set(DISTCHECK_BUILD_CMD "ninja")
+            set(DISTCHECK_MAKEFLAGS "")
+        else()
+            set(DISTCHECK_BUILD_CMD "make")
+            execute_process(COMMAND "grep" "-c" "model name" "/proc/cpuinfo"
+                WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+                OUTPUT_VARIABLE NOCPUS)
+            string(REGEX REPLACE "\n" "" NOCPUS ${NOCPUS})
+            set(DISTCHECK_MAKEFLAGS "MAKEFLAGS=-j${NOCPUS}")
+        endif()
+        add_custom_target(distcheck
+            COMMAND
+            rm -rf ${DISTCHECK_BUILD_DIR} ${DISTCHECK_INSTALL_DIR} ${TARBALL_FILE_NAME}
+            && mkdir ${DISTCHECK_BUILD_DIR} ${DISTCHECK_INSTALL_DIR}
+            && (tar xzf ${TARBALL_FILE_NAME}.tar.gz
+                || (echo 'Error: failed to unpack the archive' 2>&1\; false))
+            && (cd ${DISTCHECK_BUILD_DIR}
+                && (cmake -G${CMAKE_GENERATOR} -DCMAKE_INSTALL_PREFIX=../${DISTCHECK_INSTALL_DIR} -DIDL_DIR=${IDL_DIR} ../${TARBALL_FILE_NAME}
+                    || (echo 'Error: failed to configure the archive' 2>&1\; false))
+                && (${DISTCHECK_MAKEFLAGS} ${DISTCHECK_BUILD_CMD}
+                    || (echo 'Error: the build target failed ' 2>&1\; false))
+                && (${DISTCHECK_BUILD_CMD} install
+                    || (echo 'Error: the install target failed' 2>&1\; false))
+                && (${DISTCHECK_BUILD_CMD} uninstall
+                    || (echo 'Error: the uninstall target failed' 2>&1\; false))
+                && (${DISTCHECK_BUILD_CMD} clean
+                    || (echo 'Error: the clean target failed' 2>&1\; false)))
+            && rm -rf ${DISTCHECK_BUILD_DIR} ${DISTCHECK_INSTALL_DIR} ${TARBALL_FILE_NAME}
+            && echo 'PASS: ' ${TARBALL_FILE_NAME}.tar.gz 'is ready for distribution.'
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+            COMMENT "Checking the distribution archive...")
+        add_dependencies(distcheck dist)
+    endif()
+else()
+    message(STATUS "no git -- not including dist and distcheck targets")
 endif()
