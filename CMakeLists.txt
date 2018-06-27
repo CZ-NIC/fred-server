@@ -105,38 +105,63 @@ pkg_search_module(OMNIDYNAMIC4 REQUIRED omniDynamic4>=4.1.2)
 pkg_search_module(OPENSSL REQUIRED openssl)
 pkg_search_module(LIBCURL REQUIRED libcurl)
 
-macro(create_link_function some_package its_dependencies)
-    function(link_targets_against_${some_package})
-        set(func_ARGN ARGN)
-        foreach(target_name ${${func_ARGN}})
-            message(STATUS "link against " ${some_package} ": " ${target_name})
-            target_link_libraries(${target_name} ${${its_dependencies}})
-        endforeach()
-    endfunction()
+include(CheckIncludeFileCXX)
+function(abort_if_headers_not_found)
+    foreach(header_name ${ARGN})
+        check_include_file_cxx(${header_name} FOUND${header_name})
+        if(NOT FOUND${header_name})
+            message(FATAL_ERROR "Header ${header_name} not found!")
+        endif()
+    endforeach()
+endfunction()
+
+# In the name of speed, use this only for headers from libraries for which we don't have some other form of detection.
+abort_if_headers_not_found(
+    mpdecimal.h)
+
+set(Resolv_LIBRARIES resolv)
+set(Rt_LIBRARIES rt)
+set(Mpdec_LIBRARIES mpdec)
+
+function(target_link_external_libraries)
+    list(GET ARGN 0 target_name)
+    list(REMOVE_AT ARGN 0)
+    foreach(library_name ${ARGN})
+        target_link_libraries(${target_name} "${${linker_info_${library_name}}}")
+    endforeach()
+endfunction()
+
+macro(store_linker_info key value)
+    set(linker_info_${key} "${value}")
 endmacro()
 
-create_link_function(threads Threads_LIBRARIES)
-create_link_function(boost_system Boost_SYSTEM_LIBRARY)
-create_link_function(boost_thread Boost_THREAD_LIBRARY)
-create_link_function(boost_date_time Boost_DATE_TIME_LIBRARY)
-create_link_function(boost_random Boost_RANDOM_LIBRARY)
-create_link_function(boost_regex Boost_REGEX_LIBRARY)
-create_link_function(boost_filesystem Boost_FILESYSTEM_LIBRARY)
-create_link_function(boost_serialization Boost_SERIALIZATION_LIBRARY)
-create_link_function(boost_program_options Boost_PROGRAM_OPTIONS_LIBRARY)
-create_link_function(boost_unit_test_framework Boost_UNIT_TEST_FRAMEWORK_LIBRARY)
-create_link_function(libcrypto LIBCRYPTO_LIBRARIES)
-create_link_function(libcurl LIBCURL_LIBRARIES)
-create_link_function(libidn LIBIDN_LIBRARIES)
-create_link_function(libssh LIBSSH_LIBRARIES)
-create_link_function(libxml2 XML2_LIBRARIES)
-create_link_function(minizip MINIZIP_LIBRARIES)
-create_link_function(omniorb4 OMNIORB4_LIBRARIES)
-create_link_function(omnidynamic4 OMNIDYNAMIC4_LIBRARIES)
-create_link_function(openssl OPENSSL_LIBRARIES)
-create_link_function(zlib ZLIB_LIBRARIES)
-create_link_function(postgres PostgreSQL_LIBRARIES)
-create_link_function(libcurl LIBCURL_LIBRARIES)
+store_linker_info(resolv Resolv_LIBRARIES)
+store_linker_info(rt Rt_LIBRARIES)
+store_linker_info(mpdec Mpdec_LIBRARIES)
+store_linker_info(threads Threads_LIBRARIES)
+store_linker_info(threads Threads_LIBRARIES)
+store_linker_info(boost_system Boost_SYSTEM_LIBRARY)
+store_linker_info(boost_thread Boost_THREAD_LIBRARY)
+store_linker_info(boost_date_time Boost_DATE_TIME_LIBRARY)
+store_linker_info(boost_random Boost_RANDOM_LIBRARY)
+store_linker_info(boost_regex Boost_REGEX_LIBRARY)
+store_linker_info(boost_filesystem Boost_FILESYSTEM_LIBRARY)
+store_linker_info(boost_serialization Boost_SERIALIZATION_LIBRARY)
+store_linker_info(boost_program_options Boost_PROGRAM_OPTIONS_LIBRARY)
+store_linker_info(boost_unit_test_framework Boost_UNIT_TEST_FRAMEWORK_LIBRARY)
+store_linker_info(libcrypto LIBCRYPTO_LIBRARIES)
+store_linker_info(libcurl LIBCURL_LIBRARIES)
+store_linker_info(libidn LIBIDN_LIBRARIES)
+store_linker_info(libssh LIBSSH_LIBRARIES)
+store_linker_info(libxml2 XML2_LIBRARIES)
+store_linker_info(minizip MINIZIP_LIBRARIES)
+store_linker_info(omniorb4 OMNIORB4_LIBRARIES)
+store_linker_info(omnidynamic4 OMNIDYNAMIC4_LIBRARIES)
+store_linker_info(openssl OPENSSL_LIBRARIES)
+store_linker_info(zlib ZLIB_LIBRARIES)
+store_linker_info(postgres PostgreSQL_LIBRARIES)
+store_linker_info(libcurl LIBCURL_LIBRARIES)
+
 
 macro(create_compile_flags_function some_package its_flags)
     function(compile_targets_with_flags_for_${some_package})
@@ -242,20 +267,6 @@ function(prepare_executable)
     add_executable(${name} ${add_executable_arguments})
     set_common_properties_on_targets(${name})
 endfunction()
-
-include(CheckIncludeFileCXX)
-function(abort_if_headers_not_found)
-    foreach(header_name ${ARGN})
-        check_include_file_cxx(${header_name} FOUND${header_name})
-        if(NOT FOUND${header_name})
-            message(FATAL_ERROR "Header ${header_name} not found!")
-        endif()
-    endforeach()
-endfunction()
-
-# In the name of speed, use this only for headers from libraries for which we don't have some other form of detection.
-abort_if_headers_not_found(
-    mpdecimal.h)
 
 function(compile_idl_files)
     message(STATUS "Compiling idl...")
@@ -1760,21 +1771,22 @@ target_link_libraries(fred-rifd
     log
     oldutils
     util)
-link_targets_against_boost_thread(fred-rifd)
-link_targets_against_boost_random(fred-rifd)
-link_targets_against_boost_date_time(fred-rifd)
-link_targets_against_boost_regex(fred-rifd)
-link_targets_against_boost_serialization(fred-rifd)
-link_targets_against_boost_program_options(fred-rifd)
-link_targets_against_boost_system(fred-rifd)
-link_targets_against_libidn(fred-rifd)
-link_targets_against_omniorb4(fred-rifd)
-link_targets_against_omnidynamic4(fred-rifd)
-link_targets_against_threads(fred-rifd)
-link_targets_against_postgres(fred-rifd)
-link_targets_against_threads(fred-rifd)
-link_targets_against_openssl(fred-rifd)
-target_link_libraries(fred-rifd mpdec)
+target_link_external_libraries(fred-rifd
+    boost_thread
+    boost_random
+    boost_date_time
+    boost_regex
+    boost_serialization
+    boost_program_options
+    boost_system
+    libidn
+    omniorb4
+    omnidynamic4
+    threads
+    postgres
+    threads
+    openssl
+    mpdec)
 
 # fred-adifd
 prepare_executable(fred-adifd
@@ -1859,22 +1871,23 @@ target_link_libraries(fred-adifd
     util
     whois2_impl
     whois_impl)
-link_targets_against_boost_random(fred-adifd)
-link_targets_against_boost_system(fred-adifd)
-link_targets_against_boost_regex(fred-adifd)
-link_targets_against_boost_date_time(fred-adifd)
-link_targets_against_boost_thread(fred-adifd)
-link_targets_against_boost_program_options(fred-adifd)
-link_targets_against_boost_serialization(fred-adifd)
-link_targets_against_libidn(fred-adifd)
-link_targets_against_postgres(fred-adifd)
-link_targets_against_omniorb4(fred-adifd)
-link_targets_against_omnidynamic4(fred-adifd)
-link_targets_against_libxml2(fred-adifd)
-link_targets_against_openssl(fred-adifd)
-link_targets_against_threads(fred-adifd)
-target_link_libraries(fred-adifd resolv)
-target_link_libraries(fred-adifd mpdec)
+target_link_external_libraries(fred-adifd
+    boost_random
+    boost_system
+    boost_regex
+    boost_date_time
+    boost_thread
+    boost_program_options
+    boost_serialization
+    libidn
+    postgres
+    omniorb4
+    omnidynamic4
+    libxml2
+    openssl
+    threads
+    resolv
+    mpdec)
 
 # fred-pifd
 prepare_executable(fred-pifd
@@ -1925,20 +1938,21 @@ target_link_libraries(fred-pifd
     oldutils
     log
     util)
-link_targets_against_boost_random(fred-pifd)
-link_targets_against_boost_thread(fred-pifd)
-link_targets_against_boost_regex(fred-pifd)
-link_targets_against_boost_date_time(fred-pifd)
-link_targets_against_boost_serialization(fred-pifd)
-link_targets_against_boost_program_options(fred-pifd)
-link_targets_against_boost_system(fred-pifd)
-link_targets_against_threads(fred-pifd)
-link_targets_against_postgres(fred-pifd)
-link_targets_against_openssl(fred-pifd)
-link_targets_against_libidn(fred-pifd)
-link_targets_against_omniorb4(fred-pifd)
-link_targets_against_omnidynamic4(fred-pifd)
-target_link_libraries(fred-pifd mpdec)
+target_link_external_libraries(fred-pifd
+    boost_random
+    boost_thread
+    boost_regex
+    boost_date_time
+    boost_serialization
+    boost_program_options
+    boost_system
+    threads
+    postgres
+    openssl
+    libidn
+    omniorb4
+    omnidynamic4
+    mpdec)
 
 # fred-logd
 prepare_executable(fred-logd
@@ -1962,16 +1976,17 @@ target_link_libraries(fred-logd
     log
     util
     oldutils)
-link_targets_against_boost_system(fred-logd)
-link_targets_against_boost_regex(fred-logd)
-link_targets_against_boost_date_time(fred-logd)
-link_targets_against_boost_serialization(fred-logd)
-link_targets_against_boost_thread(fred-logd)
-link_targets_against_boost_program_options(fred-logd)
-link_targets_against_omniorb4(fred-logd)
-link_targets_against_omnidynamic4(fred-logd)
-link_targets_against_postgres(fred-logd)
-target_link_libraries(fred-logd mpdec)
+target_link_external_libraries(fred-logd
+    boost_system
+    boost_regex
+    boost_date_time
+    boost_serialization
+    boost_thread
+    boost_program_options
+    omniorb4
+    omnidynamic4
+    postgres
+    mpdec)
 
 # fred-msgd
 prepare_executable(fred-msgd
@@ -1991,13 +2006,14 @@ target_link_libraries(fred-msgd
     oldutils
     util
     corbadatatypes)
-link_targets_against_boost_thread(fred-msgd)
-link_targets_against_boost_system(fred-msgd)
-link_targets_against_boost_regex(fred-msgd)
-link_targets_against_boost_date_time(fred-msgd)
-link_targets_against_boost_program_options(fred-msgd)
-link_targets_against_postgres(fred-msgd)
-link_targets_against_omniorb4(fred-msgd)
+target_link_external_libraries(fred-msgd
+    boost_thread
+    boost_system
+    boost_regex
+    boost_date_time
+    boost_program_options
+    postgres
+    omniorb4)
 
 # fred-mifd
 prepare_executable(fred-mifd
@@ -2034,17 +2050,18 @@ target_link_libraries(fred-mifd
     types
     db
     corba)
-link_targets_against_boost_random(fred-mifd)
-link_targets_against_boost_system(fred-mifd)
-link_targets_against_boost_regex(fred-mifd)
-link_targets_against_boost_thread(fred-mifd)
-link_targets_against_boost_date_time(fred-mifd)
-link_targets_against_boost_program_options(fred-mifd)
-link_targets_against_omniorb4(fred-mifd)
-link_targets_against_omnidynamic4(fred-mifd)
-link_targets_against_postgres(fred-mifd)
-link_targets_against_threads(fred-mifd)
-link_targets_against_libidn(fred-mifd)
+target_link_external_libraries(fred-mifd
+    boost_random
+    boost_system
+    boost_regex
+    boost_thread
+    boost_date_time
+    boost_program_options
+    omniorb4
+    omnidynamic4
+    postgres
+    threads
+    libidn)
 
 # fred-mojeid-msgen
 prepare_executable(fred-mojeid-msgen
@@ -2055,10 +2072,11 @@ target_link_libraries(fred-mojeid-msgen
     corbabuffer
     corbanullableisodate
     corbaisodatetime)
-link_targets_against_boost_program_options(fred-mojeid-msgen)
-link_targets_against_boost_date_time(fred-mojeid-msgen)
-link_targets_against_omniorb4(fred-mojeid-msgen)
-link_targets_against_omnidynamic4(fred-mojeid-msgen)
+target_link_external_libraries(fred-mojeid-msgen
+    boost_program_options
+    boost_date_time
+    omniorb4
+    omnidynamic4)
 
 # fred-dbifd
 prepare_executable(fred-dbifd
@@ -2073,15 +2091,16 @@ target_link_libraries(fred-dbifd
     util
     log
     db)
-link_targets_against_boost_system(fred-dbifd)
-link_targets_against_boost_random(fred-dbifd)
-link_targets_against_boost_regex(fred-dbifd)
-link_targets_against_boost_thread(fred-dbifd)
-link_targets_against_boost_date_time(fred-dbifd)
-link_targets_against_boost_program_options(fred-dbifd)
-link_targets_against_omniorb4(fred-dbifd)
-link_targets_against_omnidynamic4(fred-dbifd)
-link_targets_against_postgres(fred-dbifd)
+target_link_external_libraries(fred-dbifd
+    boost_system
+    boost_random
+    boost_regex
+    boost_thread
+    boost_date_time
+    boost_program_options
+    omniorb4
+    omnidynamic4
+    postgres)
 
 # fred-akmd
 prepare_executable(fred-akmd
@@ -2111,15 +2130,16 @@ target_link_libraries(fred-akmd
     util
     log
     db)
-link_targets_against_omnidynamic4(fred-akmd)
-link_targets_against_omniorb4(fred-akmd)
-link_targets_against_boost_system(fred-akmd)
-link_targets_against_boost_random(fred-akmd)
-link_targets_against_boost_thread(fred-akmd)
-link_targets_against_boost_regex(fred-akmd)
-link_targets_against_boost_date_time(fred-akmd)
-link_targets_against_boost_program_options(fred-akmd)
-link_targets_against_postgres(fred-akmd)
+target_link_external_libraries(fred-akmd
+    omnidynamic4
+    omniorb4
+    boost_system
+    boost_random
+    boost_thread
+    boost_regex
+    boost_date_time
+    boost_program_options
+    postgres)
 
 # fred-rsifd
 prepare_executable(fred-rsifd
@@ -2149,14 +2169,15 @@ target_link_libraries(fred-rsifd
     corbaisodate
     corbaisodatetime
     corbanullableisodate)
-link_targets_against_omniorb4(fred-rsifd)
-link_targets_against_threads(fred-rsifd)
-link_targets_against_postgres(fred-rsifd)
-link_targets_against_boost_date_time(fred-rsifd)
-link_targets_against_boost_program_options(fred-rsifd)
-link_targets_against_boost_thread(fred-rsifd)
-link_targets_against_boost_system(fred-rsifd)
-link_targets_against_boost_regex(fred-rsifd)
+target_link_external_libraries(fred-rsifd
+    omniorb4
+    threads
+    postgres
+    boost_date_time
+    boost_program_options
+    boost_thread
+    boost_system
+    boost_regex)
 
 # fred-admin
 prepare_executable(fred-admin
@@ -2219,29 +2240,30 @@ target_link_libraries(fred-admin
     util
     hp
     public_request)
-link_targets_against_boost_system(fred-admin)
-link_targets_against_boost_filesystem(fred-admin)
-link_targets_against_boost_regex(fred-admin)
-link_targets_against_boost_program_options(fred-admin)
-link_targets_against_boost_date_time(fred-admin)
-link_targets_against_boost_random(fred-admin)
-link_targets_against_boost_thread(fred-admin)
-link_targets_against_boost_filesystem(fred-admin)
-link_targets_against_boost_serialization(fred-admin)
-link_targets_against_omniorb4(fred-admin)
-link_targets_against_omnidynamic4(fred-admin)
-link_targets_against_postgres(fred-admin)
-link_targets_against_threads(fred-admin)
-link_targets_against_openssl(fred-admin)
-link_targets_against_libidn(fred-admin)
-link_targets_against_libcurl(fred-admin)
-link_targets_against_libxml2(fred-admin)
-link_targets_against_minizip(fred-admin)
-link_targets_against_libssh(fred-admin)
-link_targets_against_zlib(fred-admin)
-target_link_libraries(fred-admin resolv)
-target_link_libraries(fred-admin mpdec)
-target_link_libraries(fred-admin rt)
+target_link_external_libraries(fred-admin
+    boost_system
+    boost_filesystem
+    boost_regex
+    boost_program_options
+    boost_date_time
+    boost_random
+    boost_thread
+    boost_filesystem
+    boost_serialization
+    omniorb4
+    omnidynamic4
+    postgres
+    threads
+    openssl
+    libidn
+    libcurl
+    libxml2
+    minizip
+    libssh
+    zlib
+    resolv
+    mpdec
+    rt)
 
 # migrate_log
 prepare_executable(migrate_log
@@ -2259,12 +2281,13 @@ target_link_libraries(migrate_log
     db
     util
     oldutils)
-link_targets_against_boost_system(migrate_log)
-link_targets_against_boost_regex(migrate_log)
-link_targets_against_boost_thread(migrate_log)
-link_targets_against_boost_date_time(migrate_log)
-link_targets_against_postgres(migrate_log)
-link_targets_against_libxml2(migrate_log)
+target_link_external_libraries(migrate_log
+    boost_system
+    boost_regex
+    boost_thread
+    boost_date_time
+    postgres
+    libxml2)
 
 # mojeid_contact_address_import
 prepare_executable(mojeid_contact_address_import
@@ -2274,12 +2297,13 @@ target_link_libraries(mojeid_contact_address_import
     log
     db
     util)
-link_targets_against_boost_system(mojeid_contact_address_import)
-link_targets_against_boost_regex(mojeid_contact_address_import)
-link_targets_against_boost_date_time(mojeid_contact_address_import)
-link_targets_against_boost_thread(mojeid_contact_address_import)
-link_targets_against_boost_random(mojeid_contact_address_import)
-link_targets_against_postgres(mojeid_contact_address_import)
+target_link_external_libraries(mojeid_contact_address_import
+    boost_system
+    boost_regex
+    boost_date_time
+    boost_thread
+    boost_random
+    postgres)
 
 # mojeid_contact_ssn_fix
 prepare_executable(mojeid_contact_ssn_fix
@@ -2292,12 +2316,13 @@ target_link_libraries(mojeid_contact_ssn_fix
     corbaisodatetime
     corbanullableisodate
     util)
-link_targets_against_boost_system(mojeid_contact_ssn_fix)
-link_targets_against_boost_thread(mojeid_contact_ssn_fix)
-link_targets_against_boost_regex(mojeid_contact_ssn_fix)
-link_targets_against_boost_random(mojeid_contact_ssn_fix)
-link_targets_against_boost_date_time(mojeid_contact_ssn_fix)
-link_targets_against_postgres(mojeid_contact_ssn_fix)
+target_link_external_libraries(mojeid_contact_ssn_fix
+    boost_system
+    boost_thread
+    boost_regex
+    boost_random
+    boost_date_time
+    postgres)
 
 # fred-disclose-flag-updater
 prepare_executable(fred-disclose-flag-updater
@@ -2312,14 +2337,15 @@ target_link_libraries(fred-disclose-flag-updater
     log
     db
     util)
-link_targets_against_postgres(fred-disclose-flag-updater)
-link_targets_against_boost_regex(fred-disclose-flag-updater)
-link_targets_against_boost_date_time(fred-disclose-flag-updater)
-link_targets_against_boost_thread(fred-disclose-flag-updater)
-link_targets_against_boost_program_options(fred-disclose-flag-updater)
-link_targets_against_boost_random(fred-disclose-flag-updater)
-link_targets_against_boost_system(fred-disclose-flag-updater)
-link_targets_against_threads(fred-disclose-flag-updater)
+target_link_external_libraries(fred-disclose-flag-updater
+    postgres
+    boost_regex
+    boost_date_time
+    boost_thread
+    boost_program_options
+    boost_random
+    boost_system
+    threads)
 
 # crc32
 prepare_executable(crc32
@@ -2331,10 +2357,11 @@ prepare_executable(test-mockdb
 target_link_libraries(test-mockdb
     log
     types)
-link_targets_against_boost_thread(test-mockdb)
-link_targets_against_boost_regex(test-mockdb)
-link_targets_against_boost_date_time(test-mockdb)
-link_targets_against_boost_system(test-mockdb)
+target_link_external_libraries(test-mockdb
+    boost_thread
+    boost_regex
+    boost_date_time
+    boost_system)
 
 # test-model
 prepare_executable(test-model
@@ -2345,20 +2372,22 @@ target_link_libraries(test-model
     log
     types
     db)
-link_targets_against_boost_system(test-model)
-link_targets_against_boost_regex(test-model)
-link_targets_against_boost_thread(test-model)
-link_targets_against_boost_date_time(test-model)
-link_targets_against_postgres(test-model)
+target_link_external_libraries(test-model
+    boost_system
+    boost_regex
+    boost_thread
+    boost_date_time
+    postgres)
 
 # test-log
 prepare_executable(test-log
     src/util/log/test-log.cc)
 target_link_libraries(test-log
     log)
-link_targets_against_boost_thread(test-log)
-link_targets_against_boost_date_time(test-log)
-link_targets_against_boost_system(test-log)
+target_link_external_libraries(test-log
+    boost_thread
+    boost_date_time
+    boost_system)
 
 # test-db
 prepare_executable(test-db
@@ -2367,11 +2396,12 @@ target_link_libraries(test-db
     log
     types
     db)
-link_targets_against_boost_thread(test-db)
-link_targets_against_boost_system(test-db)
-link_targets_against_boost_regex(test-db)
-link_targets_against_boost_date_time(test-db)
-link_targets_against_postgres(test-db)
+target_link_external_libraries(test-db
+    boost_thread
+    boost_system
+    boost_regex
+    boost_date_time
+    postgres)
 
 # test-admin-contact-automerge
 prepare_executable(test-admin-contact-automerge
@@ -2400,15 +2430,16 @@ target_link_libraries(test-admin-contact-automerge
     oldutils
     util
     timezones)
-link_targets_against_boost_system(test-admin-contact-automerge)
-link_targets_against_boost_thread(test-admin-contact-automerge)
-link_targets_against_boost_regex(test-admin-contact-automerge)
-link_targets_against_boost_date_time(test-admin-contact-automerge)
-link_targets_against_boost_random(test-admin-contact-automerge)
-link_targets_against_boost_unit_test_framework(test-admin-contact-automerge)
-link_targets_against_boost_program_options(test-admin-contact-automerge)
-link_targets_against_omniorb4(test-admin-contact-automerge)
-link_targets_against_postgres(test-admin-contact-automerge)
+target_link_external_libraries(test-admin-contact-automerge
+    boost_system
+    boost_thread
+    boost_regex
+    boost_date_time
+    boost_random
+    boost_unit_test_framework
+    boost_program_options
+    omniorb4
+    postgres)
 
 # test-admin-contact-verification
 prepare_executable(test-admin-contact-verification
@@ -2429,14 +2460,15 @@ target_link_libraries(test-admin-contact-verification
     db
     util
     timezones)
-link_targets_against_boost_system(test-admin-contact-verification)
-link_targets_against_boost_unit_test_framework(test-admin-contact-verification)
-link_targets_against_boost_thread(test-admin-contact-verification)
-link_targets_against_boost_regex(test-admin-contact-verification)
-link_targets_against_boost_random(test-admin-contact-verification)
-link_targets_against_boost_program_options(test-admin-contact-verification)
-link_targets_against_boost_date_time(test-admin-contact-verification)
-link_targets_against_postgres(test-admin-contact-verification)
+target_link_external_libraries(test-admin-contact-verification
+    boost_system
+    boost_unit_test_framework
+    boost_thread
+    boost_regex
+    boost_random
+    boost_program_options
+    boost_date_time
+    postgres)
 
 # test-admin-notification
 prepare_executable(test-admin-notification
@@ -2451,16 +2483,17 @@ target_link_libraries(test-admin-notification
     db
     util
     timezones)
-link_targets_against_boost_system(test-admin-notification)
-link_targets_against_boost_random(test-admin-notification)
-link_targets_against_boost_regex(test-admin-notification)
-link_targets_against_boost_thread(test-admin-notification)
-link_targets_against_boost_date_time(test-admin-notification)
-link_targets_against_boost_unit_test_framework(test-admin-notification)
-link_targets_against_boost_program_options(test-admin-notification)
-link_targets_against_omniorb4(test-admin-notification)
-link_targets_against_libidn(test-admin-notification)
-link_targets_against_postgres(test-admin-notification)
+target_link_external_libraries(test-admin-notification
+    boost_system
+    boost_random
+    boost_regex
+    boost_thread
+    boost_date_time
+    boost_unit_test_framework
+    boost_program_options
+    omniorb4
+    libidn
+    postgres)
 
 # test-automatic-keyset-management
 prepare_executable(test-automatic-keyset-management
@@ -2492,16 +2525,17 @@ target_link_libraries(test-automatic-keyset-management
     log
     db
     timezones)
-link_targets_against_boost_system(test-automatic-keyset-management)
-link_targets_against_boost_thread(test-automatic-keyset-management)
-link_targets_against_boost_random(test-automatic-keyset-management)
-link_targets_against_boost_regex(test-automatic-keyset-management)
-link_targets_against_boost_date_time(test-automatic-keyset-management)
-link_targets_against_boost_program_options(test-automatic-keyset-management)
-link_targets_against_boost_unit_test_framework(test-automatic-keyset-management)
-link_targets_against_omniorb4(test-automatic-keyset-management)
-link_targets_against_omnidynamic4(test-automatic-keyset-management)
-link_targets_against_postgres(test-automatic-keyset-management)
+target_link_external_libraries(test-automatic-keyset-management
+    boost_system
+    boost_thread
+    boost_random
+    boost_regex
+    boost_date_time
+    boost_program_options
+    boost_unit_test_framework
+    omniorb4
+    omnidynamic4
+    postgres)
 
 # test-blocking
 prepare_executable(test-blocking
@@ -2556,20 +2590,21 @@ target_link_libraries(test-blocking
     corbafilters
     corbadatatypes
     mailer)
-link_targets_against_omniorb4(test-blocking)
-link_targets_against_threads(test-blocking)
-link_targets_against_postgres(test-blocking)
-link_targets_against_openssl(test-blocking)
-link_targets_against_boost_random(test-blocking)
-link_targets_against_boost_regex(test-blocking)
-link_targets_against_boost_thread(test-blocking)
-link_targets_against_boost_date_time(test-blocking)
-link_targets_against_boost_system(test-blocking)
-link_targets_against_boost_serialization(test-blocking)
-link_targets_against_boost_program_options(test-blocking)
-link_targets_against_boost_thread(test-blocking)
-link_targets_against_libidn(test-blocking)
-target_link_libraries(test-blocking mpdec)
+target_link_external_libraries(test-blocking
+    omniorb4
+    threads
+    postgres
+    openssl
+    boost_random
+    boost_regex
+    boost_thread
+    boost_date_time
+    boost_system
+    boost_serialization
+    boost_program_options
+    boost_thread
+    libidn
+    mpdec)
 
 # test-corba-conversion
 prepare_executable(test-corba-conversion
@@ -2595,16 +2630,17 @@ target_link_libraries(test-corba-conversion
     util
     log
     timezones)
-link_targets_against_postgres(test-corba-conversion)
-link_targets_against_boost_system(test-corba-conversion)
-link_targets_against_boost_random(test-corba-conversion)
-link_targets_against_boost_thread(test-corba-conversion)
-link_targets_against_boost_unit_test_framework(test-corba-conversion)
-link_targets_against_boost_program_options(test-corba-conversion)
-link_targets_against_boost_regex(test-corba-conversion)
-link_targets_against_boost_date_time(test-corba-conversion)
-link_targets_against_omniorb4(test-corba-conversion)
-link_targets_against_omnidynamic4(test-corba-conversion)
+target_link_external_libraries(test-corba-conversion
+    postgres
+    boost_system
+    boost_random
+    boost_thread
+    boost_unit_test_framework
+    boost_program_options
+    boost_regex
+    boost_date_time
+    omniorb4
+    omnidynamic4)
 
 # test-epp
 prepare_executable(test-epp
@@ -2653,22 +2689,24 @@ target_link_libraries(test-epp
     db
     log
     util)
-link_targets_against_boost_system(test-epp)
-link_targets_against_boost_unit_test_framework(test-epp)
-link_targets_against_boost_regex(test-epp)
-link_targets_against_boost_program_options(test-epp)
-link_targets_against_boost_random(test-epp)
-link_targets_against_boost_thread(test-epp)
-link_targets_against_boost_date_time(test-epp)
-link_targets_against_postgres(test-epp)
-link_targets_against_omnidynamic4(test-epp)
-target_link_libraries(test-epp mpdec)
+target_link_external_libraries(test-epp
+    boost_system
+    boost_unit_test_framework
+    boost_regex
+    boost_program_options
+    boost_random
+    boost_thread
+    boost_date_time
+    postgres
+    omnidynamic4
+    mpdec)
 
 # test-exception
 prepare_executable(test-exception
     test/util/test_exception.cc)
-link_targets_against_boost_system(test-exception)
-target_link_libraries(test-exception mpdec)
+target_link_external_libraries(test-exception
+    boost_system
+    mpdec)
 
 # test-admin-domain
 prepare_executable(test-admin-domain
@@ -2685,15 +2723,16 @@ target_link_libraries(test-admin-domain
     db
     util
     timezones)
-link_targets_against_boost_system(test-admin-domain)
-link_targets_against_boost_unit_test_framework(test-admin-domain)
-link_targets_against_boost_regex(test-admin-domain)
-link_targets_against_boost_program_options(test-admin-domain)
-link_targets_against_boost_random(test-admin-domain)
-link_targets_against_boost_thread(test-admin-domain)
-link_targets_against_boost_date_time(test-admin-domain)
-link_targets_against_postgres(test-admin-domain)
-link_targets_against_omniorb4(test-admin-domain)
+target_link_external_libraries(test-admin-domain
+    boost_system
+    boost_unit_test_framework
+    boost_regex
+    boost_program_options
+    boost_random
+    boost_thread
+    boost_date_time
+    postgres
+    omniorb4)
 
 # test-libfred
 prepare_executable(test-libfred
@@ -2815,17 +2854,18 @@ target_link_libraries(test-libfred
     mailer
     corbadatatypes
     public_request)
-link_targets_against_postgres(test-libfred)
-link_targets_against_boost_program_options(test-libfred)
-link_targets_against_boost_regex(test-libfred)
-link_targets_against_boost_date_time(test-libfred)
-link_targets_against_boost_random(test-libfred)
-link_targets_against_boost_thread(test-libfred)
-link_targets_against_boost_system(test-libfred)
-link_targets_against_boost_unit_test_framework(test-libfred)
-link_targets_against_omniorb4(test-libfred)
-link_targets_against_libidn(test-libfred)
-target_link_libraries(test-libfred mpdec)
+target_link_external_libraries(test-libfred
+    postgres
+    boost_program_options
+    boost_regex
+    boost_date_time
+    boost_random
+    boost_thread
+    boost_system
+    boost_unit_test_framework
+    omniorb4
+    libidn
+    mpdec)
 
 # test-optys
 prepare_executable(test-optys
@@ -2841,16 +2881,17 @@ target_link_libraries(test-optys
     log
     types
     timezones)
-link_targets_against_postgres(test-optys)
-link_targets_against_boost_unit_test_framework(test-optys)
-link_targets_against_boost_program_options(test-optys)
-link_targets_against_boost_filesystem(test-optys)
-link_targets_against_boost_regex(test-optys)
-link_targets_against_boost_thread(test-optys)
-link_targets_against_boost_random(test-optys)
-link_targets_against_boost_date_time(test-optys)
-link_targets_against_boost_system(test-optys)
-link_targets_against_threads(test-optys)
+target_link_external_libraries(test-optys
+    postgres
+    boost_unit_test_framework
+    boost_program_options
+    boost_filesystem
+    boost_regex
+    boost_thread
+    boost_random
+    boost_date_time
+    boost_system
+    threads)
 
 # test-password-storage
 prepare_executable(test-password-storage
@@ -2865,15 +2906,16 @@ target_link_libraries(test-password-storage
     password_storage
     util
     log)
-link_targets_against_boost_random(test-password-storage)
-link_targets_against_boost_date_time(test-password-storage)
-link_targets_against_boost_system(test-password-storage)
-link_targets_against_boost_regex(test-password-storage)
-link_targets_against_boost_thread(test-password-storage)
-link_targets_against_boost_program_options(test-password-storage)
-link_targets_against_boost_unit_test_framework(test-password-storage)
-link_targets_against_postgres(test-password-storage)
-link_targets_against_openssl(test-password-storage)
+target_link_external_libraries(test-password-storage
+    boost_random
+    boost_date_time
+    boost_system
+    boost_regex
+    boost_thread
+    boost_program_options
+    boost_unit_test_framework
+    postgres
+    openssl)
 
 # test-public-request
 prepare_executable(test-public-request
@@ -2899,17 +2941,18 @@ target_link_libraries(test-public-request
     db
     util
     timezones)
-link_targets_against_boost_regex(test-public-request)
-link_targets_against_boost_thread(test-public-request)
-link_targets_against_boost_date_time(test-public-request)
-link_targets_against_boost_program_options(test-public-request)
-link_targets_against_boost_random(test-public-request)
-link_targets_against_boost_system(test-public-request)
-link_targets_against_boost_unit_test_framework(test-public-request)
-link_targets_against_omniorb4(test-public-request)
-link_targets_against_postgres(test-public-request)
-link_targets_against_libidn(test-public-request)
-link_targets_against_threads(test-public-request)
+target_link_external_libraries(test-public-request
+    boost_regex
+    boost_thread
+    boost_date_time
+    boost_program_options
+    boost_random
+    boost_system
+    boost_unit_test_framework
+    omniorb4
+    postgres
+    libidn
+    threads)
 
 # test-record-statement
 prepare_executable(test-record-statement
@@ -2937,16 +2980,17 @@ target_link_libraries(test-record-statement
     corba
     mailer
     corbadatatypes)
-link_targets_against_boost_regex(test-record-statement)
-link_targets_against_boost_thread(test-record-statement)
-link_targets_against_boost_date_time(test-record-statement)
-link_targets_against_boost_program_options(test-record-statement)
-link_targets_against_boost_random(test-record-statement)
-link_targets_against_boost_unit_test_framework(test-record-statement)
-link_targets_against_boost_system(test-record-statement)
-link_targets_against_postgres(test-record-statement)
-link_targets_against_omniorb4(test-record-statement)
-link_targets_against_threads(test-record-statement)
+target_link_external_libraries(test-record-statement
+    boost_regex
+    boost_thread
+    boost_date_time
+    boost_program_options
+    boost_random
+    boost_unit_test_framework
+    boost_system
+    postgres
+    omniorb4
+    threads)
 
 # test-server
 prepare_executable(test-server
@@ -3033,22 +3077,23 @@ target_link_libraries(test-server
     corbaregistry
     corbafilters
     corbadatatypes)
-link_targets_against_boost_system(test-server)
-link_targets_against_boost_serialization(test-server)
-link_targets_against_boost_regex(test-server)
-link_targets_against_boost_thread(test-server)
-link_targets_against_boost_filesystem(test-server)
-link_targets_against_boost_date_time(test-server)
-link_targets_against_boost_program_options(test-server)
-link_targets_against_boost_random(test-server)
-link_targets_against_omniorb4(test-server)
-link_targets_against_omnidynamic4(test-server)
-link_targets_against_openssl(test-server)
-link_targets_against_libidn(test-server)
-link_targets_against_postgres(test-server)
-link_targets_against_libxml2(test-server)
-link_targets_against_threads(test-server)
-target_link_libraries(test-server mpdec)
+target_link_external_libraries(test-server
+    boost_system
+    boost_serialization
+    boost_regex
+    boost_thread
+    boost_filesystem
+    boost_date_time
+    boost_program_options
+    boost_random
+    omniorb4
+    omnidynamic4
+    openssl
+    libidn
+    postgres
+    libxml2
+    threads
+    mpdec)
 
 # test-whois
 prepare_executable(test-whois
@@ -3093,16 +3138,18 @@ target_link_libraries(test-whois
     oldutils
     util
     timezones)
-link_targets_against_boost_regex(test-whois)
-link_targets_against_boost_thread(test-whois)
-link_targets_against_boost_date_time(test-whois)
-link_targets_against_boost_program_options(test-whois)
-link_targets_against_boost_random(test-whois)
-link_targets_against_boost_system(test-whois)
-link_targets_against_boost_unit_test_framework(test-whois)
-link_targets_against_postgres(test-whois)
-link_targets_against_omniorb4(test-whois)
-target_link_libraries(test-whois mpdec)
+target_link_external_libraries(test-whois
+    boost_regex
+    boost_thread
+    boost_date_time
+    boost_program_options
+    boost_random
+    boost_system
+    boost_unit_test_framework
+    postgres
+    omniorb4
+    mpdec)
+
 
 install(TARGETS fred-adifd DESTINATION sbin)
 install(TARGETS fred-admin DESTINATION sbin)
