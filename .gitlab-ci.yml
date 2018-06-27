@@ -1,0 +1,87 @@
+stages:
+  - image
+  - build
+
+.image: &image
+  stage: image
+  before_script:
+    - docker info
+  script:
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
+    - docker pull "$IMAGE_TAG" || true
+    - docker build --cache-from "$IMAGE_TAG" -t "$IMAGE_TAG" "scripts/docker/$IMAGE_NAME"
+    - docker push "$IMAGE_TAG"
+  tags:
+    - dind
+    - old
+
+docker:server:ubuntu:
+  <<: *image
+  variables:
+    IMAGE_NAME: ubuntu:16.04
+    IMAGE_TAG: $CI_REGISTRY_IMAGE/$IMAGE_NAME
+
+docker:server:fedora:
+  <<: *image
+  variables:
+    IMAGE_NAME: fedora:27
+    IMAGE_TAG: $CI_REGISTRY_IMAGE/$IMAGE_NAME
+
+docker:server:centos:
+  <<: *image
+  variables:
+    IMAGE_NAME: centos:7
+    IMAGE_TAG: $CI_REGISTRY_IMAGE/$IMAGE_NAME
+
+.ubuntu_16_04: &ubuntu_16_04
+  image: "$CI_REGISTRY/fred/server/ubuntu:16.04"
+  tags:
+    - amd64
+    - builder
+    - linux
+
+.fedora_27: &fedora_27
+  image: "$CI_REGISTRY/fred/server/fedora:27"
+  tags:
+    - amd64
+    - builder
+    - linux
+
+.centos_7: &centos_7
+  image: "$CI_REGISTRY/fred/server/centos:7"
+  tags:
+    - amd64
+    - builder
+    - linux
+
+.build: &build_job
+  variables:
+    SRC_DIR: /usr/local/env
+  stage: build
+  before_script:
+    - echo "\$SRC_DIR=$SRC_DIR"
+    - echo "\$HOME=$HOME"
+    - install -m 700 -d $HOME/.ssh
+    - install -m 600 $SRC_DIR/{id_rsa,id_rsa.pub,known_hosts} $HOME/.ssh/
+    # get pr-version repository to get idl branch name
+    - git clone git@gitlab.office.nic.cz:pr-utils/pr-version.git
+    - if [ -e pr-version/devel/$CI_BUILD_REF_NAME.conf ]; then IDL_BRANCH=$(python -c "import json;obj=json.loads(open('pr-version/devel/${CI_BUILD_REF_NAME}.conf').read());print obj.get('idl',{}).get('revision', 'master')"); else IDL_BRANCH="master"; fi
+    # get idl repository and checkout corresponding branch
+    - git clone git@gitlab.office.nic.cz:fred/idl.git --single-branch --depth 1 --branch $IDL_BRANCH
+  script:
+    - autoreconf -vfi
+    - echo "\$PWD=$PWD"
+    - ./configure --with-idldir=./idl/idl || ( cat config.log && exit 1 )
+    - DISTCHECK_CONFIGURE_FLAGS="--with-idldir=/builds/fred/server/idl/idl" make -j $(($(grep -c processor /proc/cpuinfo) / 2 + 1)) distcheck
+
+build:ubuntu:amd64:
+  <<: *ubuntu_16_04
+  <<: *build_job
+
+build:fedora:amd64:
+  <<: *fedora_27
+  <<: *build_job
+
+build:centos:amd64:
+  <<: *centos_7
+  <<: *build_job
