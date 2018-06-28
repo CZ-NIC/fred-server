@@ -24,9 +24,6 @@ if(NOT VERSION)
     if(NOT GIT_PROGRAM)
         message(FATAL_ERROR "git not found; you need to pass -DVERSION=")
     endif()
-    if(NOT EXISTS ${CMAKE_SOURCE_DIR}/.git)
-        message(FATAL_ERROR "${CMAKE_SOURCE_DIR}/.git not found; you need to pass -DVERSION=")
-    endif()
     execute_process(COMMAND ${GIT_PROGRAM} "describe" "--tags"
                     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
                     OUTPUT_VARIABLE RAWVERSION)
