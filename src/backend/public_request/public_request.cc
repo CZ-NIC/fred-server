@@ -446,8 +446,7 @@ unsigned long long PublicRequestImpl::create_block_unblock_request(
 
 unsigned long long PublicRequestImpl::create_personal_info_request_registry_email(
         const std::string& contact_handle,
-        const Optional<unsigned long long>& log_request_id,
-        std::shared_ptr<LibFred::Mailer::Manager> manager) const
+        const Optional<unsigned long long>& log_request_id) const
 {
     LOGGING_CONTEXT(log_ctx, *this);
     try
@@ -616,12 +615,6 @@ Fred::Backend::Buffer PublicRequestImpl::create_public_request_pdf(
     docgen_ptr->closeInput();
 
     return Fred::Backend::Buffer(pdf_content.str());
-}
-
-std::shared_ptr<LibFred::Mailer::Manager> PublicRequestImpl::get_default_mailer_manager()
-{
-    return std::shared_ptr<LibFred::Mailer::Manager>(
-            new MailerManager(CorbaContainer::get_instance()->getNS()));
 }
 
 std::shared_ptr<LibFred::Document::Manager> PublicRequestImpl::get_default_document_manager()

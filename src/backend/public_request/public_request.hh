@@ -25,7 +25,6 @@
 #define PUBLIC_REQUEST_HH_609D44EB1F5A4BC98E8A88B662EE3761
 
 #include "src/backend/buffer.hh"
-#include "src/bin/corba/mailer_manager.hh"
 #include "src/libfred/documents.hh"
 #include "src/libfred/mailer.hh"
 #include "src/libfred/object/object_type.hh"
@@ -199,8 +198,7 @@ public:
 
     unsigned long long create_personal_info_request_registry_email(
             const std::string& contact_handle,
-            const Optional<unsigned long long>& log_request_id,
-            std::shared_ptr<LibFred::Mailer::Manager> manager) const;
+            const Optional<unsigned long long>& log_request_id) const;
 
     unsigned long long create_personal_info_request_non_registry_email(
             const std::string& contact_handle,
@@ -213,7 +211,6 @@ public:
             Language::Enum lang,
             std::shared_ptr<LibFred::Document::Manager> manager) const;
 
-    static std::shared_ptr<LibFred::Mailer::Manager> get_default_mailer_manager();
     static std::shared_ptr<LibFred::Document::Manager> get_default_document_manager();
 
 private:
