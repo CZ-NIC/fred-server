@@ -283,7 +283,7 @@ function(compile_idl_files)
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
     foreach(idl_name ${ARGN})
         if(NOT EXISTS ${IDL_DIR}/${idl_name}.idl)
-            message(FATAL_ERROR "${IDL_DIR}/${idl_name}.idl does not exists; you need to pass -DIDL_DIR")
+            message(FATAL_ERROR "${IDL_DIR}/${idl_name}.idl does not exist; you need to pass -DIDL_DIR")
         endif()
         execute_process(
             COMMAND ${IDL_PROGRAM} -bcxx -Wbuse_quotes -Wba -C . ${IDL_DIR}/${idl_name}.idl
