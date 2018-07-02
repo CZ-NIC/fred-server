@@ -171,7 +171,8 @@ public:
         }
     };
 
-    unsigned long long create_authinfo_request_registry_email_rif(
+    unsigned long long create_authinfo_request_registry_email(
+            LibFred::OperationContext& _ctx,
             ObjectType::Enum object_type,
             const std::string& object_handle,
             unsigned long long registrar_id,

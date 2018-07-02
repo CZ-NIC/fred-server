@@ -210,9 +210,6 @@ public:
   // general check function for all objects
   ccReg::Response* ObjectCheck(short act, const char * table, const char *fname, const ccReg::Check& chck, ccReg::CheckResp_out a, const ccReg::EppParams &params);
 
-  // general send auth info for objects
-  ccReg::Response * ObjectSendAuthInfo(short act, const char * table, const char *fname, const char *name, const ccReg::EppParams &params);
-
   void sessionClosed(CORBA::ULongLong clientID);
 
   // methods corresponding to defined IDL attributes and operations
@@ -566,14 +563,61 @@ public:
   //common function for transfer object
   ccReg::Response* ObjectTransfer(short act, const char*table, const char *fname, const char *name, const char* authInfo, const ccReg::EppParams &params);
 
-  //
-  ccReg::Response* domainSendAuthInfo(const char* fqdn, const ccReg::EppParams &params);
+    /**
+      * domainSendAuthInfo - create Public Request to send authinfopw
+      *
+      * \param _fqdn - identifier of domain - fully qualified domain name
+      * \param _epp_params - parameters of EPP session
+      *
+      * \return ccReg::Response
+      *
+      * \throws ccReg::EPP::EppError
+      */
+    ccReg::Response* domainSendAuthInfo(
+            const char* _fqdn,
+            const ccReg::EppParams& _epp_params);
 
-  ccReg::Response* contactSendAuthInfo(const char* handle, const ccReg::EppParams &params);
+    /**
+      * contactSendAuthInfo - create Public Request to send authinfopw
+      *
+      * \param _handle - contact identifier
+      * \param _epp_params - parameters of EPP session
+      *
+      * \return ccReg::Response
+      *
+      * \throws ccReg::EPP::EppError
+      */
+    ccReg::Response* contactSendAuthInfo(
+            const char* _handle,
+            const ccReg::EppParams& _epp_params);
 
-  ccReg::Response* nssetSendAuthInfo(const char* handle, const ccReg::EppParams &params);
+    /**
+      * nssetSendAuthInfo - create Public Request to send authinfopw
+      *
+      * \param _handle - nsset identifier
+      * \param _epp_params - parameters of EPP session
+      *
+      * \return ccReg::Response
+      *
+      * \throws ccReg::EPP::EppError
+      */
+    ccReg::Response* nssetSendAuthInfo(
+            const char* _handle,
+            const ccReg::EppParams& _epp_params);
 
-  ccReg::Response *keysetSendAuthInfo( const char *handle, const ccReg::EppParams &params);
+    /**
+      * keysetSendAuthInfo - create Public Request to send authinfopw
+      *
+      * \param _handle - keyset identifier
+      * \param _epp_params - parameters of EPP session
+      *
+      * \return ccReg::Response
+      *
+      * \throws ccReg::EPP::EppError
+      */
+    ccReg::Response* keysetSendAuthInfo(
+            const char* _handle,
+            const ccReg::EppParams& _epp_params);
 
   // EPP print out
   ccReg::Response* ContactList(ccReg::Lists_out contacts, const ccReg::EppParams &params);

@@ -2053,6 +2053,22 @@ src_bin_corba_epp_libepp_impl_a_SOURCES = \
 		src/backend/public_request/type/impl/implemented_by.hh \
 		src/backend/public_request/process_public_request_authinfo.cc \
 		src/backend/public_request/process_public_request_authinfo.hh \
+		src/backend/epp/contact/authinfo_contact.cc \
+		src/backend/epp/contact/authinfo_contact.hh \
+		src/backend/epp/contact/authinfo_contact_localized.cc \
+		src/backend/epp/contact/authinfo_contact_localized.hh \
+		src/backend/epp/domain/authinfo_domain.cc \
+		src/backend/epp/domain/authinfo_domain.hh \
+		src/backend/epp/domain/authinfo_domain_localized.cc \
+		src/backend/epp/domain/authinfo_domain_localized.hh \
+		src/backend/epp/nsset/authinfo_nsset.cc \
+		src/backend/epp/nsset/authinfo_nsset.hh \
+		src/backend/epp/nsset/authinfo_nsset_localized.cc \
+		src/backend/epp/nsset/authinfo_nsset_localized.hh \
+		src/backend/epp/keyset/authinfo_keyset.cc \
+		src/backend/epp/keyset/authinfo_keyset.hh \
+		src/backend/epp/keyset/authinfo_keyset_localized.cc \
+		src/backend/epp/keyset/authinfo_keyset_localized.hh \
 		src/backend/buffer.cc \
 		src/backend/buffer.hh
 #

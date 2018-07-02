@@ -152,25 +152,24 @@ const std::string& PublicRequestImpl::get_server_name() const
     return server_name_;
 }
 
-unsigned long long PublicRequestImpl::create_authinfo_request_registry_email_rif(
-        ObjectType::Enum object_type,
-        const std::string& object_handle,
+unsigned long long PublicRequestImpl::create_authinfo_request_registry_email(
+        LibFred::OperationContext& _ctx,
+        ObjectType::Enum _object_type,
+        const std::string& _object_handle,
         const unsigned long long _registrar_id,
-        const Optional<unsigned long long>& log_request_id) const
+        const Optional<unsigned long long>& _log_request_id) const
 {
     LOGGING_CONTEXT(log_ctx, *this);
     try
     {
-        LibFred::OperationContextCreator ctx;
-        const auto object_id = get_id_of_registered_object(ctx, object_type, object_handle);
-        LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, object_id);
+        const auto object_id = get_id_of_registered_object(_ctx, _object_type, _object_handle);
+        LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_object(_ctx, object_id);
         const auto public_request_id = LibFred::CreatePublicRequest()
                 .set_registrar_id(LibFred::RegistrarId(_registrar_id))
-                .exec(locked_object, Type::get_iface_of<Type::AuthinfoAutoRif>(), log_request_id);
+                .exec(locked_object, Type::get_iface_of<Type::AuthinfoAutoRif>(), _log_request_id);
         LibFred::UpdatePublicRequest()
             .set_status(LibFred::PublicRequest::Status::resolved)
-            .exec(locked_object, Type::get_iface_of<Type::AuthinfoAutoRif>(), log_request_id);
-        ctx.commit_transaction();
+            .exec(locked_object, Type::get_iface_of<Type::AuthinfoAutoRif>(), _log_request_id);
 
         return public_request_id;
     }
