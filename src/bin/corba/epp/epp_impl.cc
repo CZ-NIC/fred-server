@@ -420,26 +420,6 @@ private:
   std::unique_ptr<Database::Transaction> tx_;
 };
 
-/// replace GetContactID
-static long int getIdOfContact(
-DBSharedPtr db, const char *handle, bool restricted_handles
-    , bool lock_epp_commands, bool lock = false)
-{
-  if (lock && !lock_epp_commands) lock = false;
-  std::unique_ptr<LibFred::Contact::Manager>
-      cman(LibFred::Contact::Manager::create(db, restricted_handles) );
-  LibFred::Contact::Manager::CheckAvailType caType;
-  long int ret = -1;
-  try {
-    LibFred::NameIdPair nameId;
-    caType = cman->checkAvail(handle,nameId, lock);
-    ret = nameId.id;
-    if (caType == LibFred::Contact::Manager::CA_INVALID_HANDLE)
-    ret = -1;
-  } catch (...) {}
-  return ret;
-}
-
 /// replace GetNssetID
 static long int getIdOfNsset(
 DBSharedPtr db, const char *handle, bool restricted_handles
@@ -460,27 +440,6 @@ DBSharedPtr db, const char *handle, bool restricted_handles
     ret = -1;
   } catch (...) {}
   return ret;
-}
-
-/// replace GetKeysetID
-static long int
-getIdOfKeyset(DBSharedPtr db, const char *handle, bool restricted_handles
-    , bool lock_epp_commands, bool lock = false)
-{
-    if (lock && !lock_epp_commands)
-        lock = false;
-    std::unique_ptr<LibFred::Keyset::Manager> man(
-            LibFred::Keyset::Manager::create(db, restricted_handles));
-    LibFred::Keyset::Manager::CheckAvailType caType;
-    long int ret = -1;
-    try {
-        LibFred::NameIdPair nameId;
-        caType = man->checkAvail(handle, nameId, lock);
-        ret = nameId.id;
-        if (caType == LibFred::Keyset::Manager::CA_INVALID_HANDLE)
-            ret = -1;
-    } catch (...) {}
-    return ret;
 }
 
 //
