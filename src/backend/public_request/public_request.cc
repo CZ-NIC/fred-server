@@ -132,6 +132,14 @@ private:
     Logging::Context ctx_operation_;
 };
 
+void check_authinfo_request_permission(const LibFred::ObjectStatesInfo& states)
+{
+    if (states.presents(LibFred::Object_State::server_transfer_prohibited))
+    {
+        throw PublicRequestImpl::ObjectTransferProhibited();
+    }
+}
+
 } // namespace Fred::Backend::PublicRequest::{anonymous}
 
 #define LOGGING_CONTEXT(CTX_VAR, IMPL_OBJ) \
@@ -163,7 +171,9 @@ unsigned long long PublicRequestImpl::create_authinfo_request_registry_email(
     try
     {
         const auto object_id = get_id_of_registered_object(_ctx, _object_type, _object_handle);
+        const LibFred::ObjectStatesInfo states(LibFred::GetObjectStates(object_id).exec(_ctx));
         LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_object(_ctx, object_id);
+        check_authinfo_request_permission(states);
         const auto public_request_id = LibFred::CreatePublicRequest()
                 .set_registrar_id(LibFred::RegistrarId(_registrar_id))
                 .exec(locked_object, Type::get_iface_of<Type::AuthinfoAutoRif>(), _log_request_id);
@@ -210,7 +220,9 @@ unsigned long long PublicRequestImpl::create_authinfo_request_registry_email(
     {
         LibFred::OperationContextCreator ctx;
         const auto object_id = get_id_of_registered_object(ctx, object_type, object_handle);
+        const LibFred::ObjectStatesInfo states(LibFred::GetObjectStates(object_id).exec(ctx));
         LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, object_id);
+        check_authinfo_request_permission(states);
         const auto public_request_id = LibFred::CreatePublicRequest()
             .exec(locked_object, Type::get_iface_of<Type::AuthinfoAuto>(), log_request_id);
         LibFred::UpdatePublicRequest()
@@ -259,7 +271,9 @@ unsigned long long PublicRequestImpl::create_authinfo_request_non_registry_email
     {
         LibFred::OperationContextCreator ctx;
         const auto object_id = get_id_of_registered_object(ctx, object_type, object_handle);
+        const LibFred::ObjectStatesInfo states(LibFred::GetObjectStates(object_id).exec(ctx));
         LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, object_id);
+        check_authinfo_request_permission(states);
         const auto create_public_request_op = LibFred::CreatePublicRequest().set_email_to_answer(specified_email);
         switch (confirmation_method)
         {

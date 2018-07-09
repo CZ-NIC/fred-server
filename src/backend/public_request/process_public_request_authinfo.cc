@@ -184,14 +184,6 @@ unsigned long long send_authinfo(
     return send_joined_addresses_email(_mailer_manager, data);
 }
 
-void check_authinfo_request_permission(const LibFred::ObjectStatesInfo& states)
-{
-    if (states.presents(LibFred::Object_State::server_transfer_prohibited))
-    {
-        throw PublicRequestImpl::ObjectTransferProhibited();
-    }
-}
-
 } // namespace Fred::Backend::PublicRequest::{anonymous}
 
 void process_public_request_auth_info_resolved(

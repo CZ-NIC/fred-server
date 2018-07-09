@@ -42,8 +42,6 @@ unsigned long long send_authinfo(
         PublicRequestImpl::ObjectType::Enum object_type,
         std::shared_ptr<LibFred::Mailer::Manager> manager);
 
-void check_authinfo_request_permission(const LibFred::ObjectStatesInfo& states);
-
 } // namespace Fred::Backend::PublicRequest::Type
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend
