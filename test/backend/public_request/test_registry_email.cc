@@ -102,19 +102,19 @@ struct registry_email_fixture : Test::instantiate_db_template
 
         Fred::Backend::PublicRequest::PublicRequestImpl pr("public-request-test");
         contact_id = pr.create_authinfo_request_registry_email(
-                Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::contact,
+                Fred::Backend::PublicRequest::ObjectType::contact,
                 contact.handle,
                 Optional<unsigned long long>());
         nsset_id = pr.create_authinfo_request_registry_email(
-                Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::nsset,
+                Fred::Backend::PublicRequest::ObjectType::nsset,
                 nsset.handle,
                 Optional<unsigned long long>());
         domain_id = pr.create_authinfo_request_registry_email(
-                Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::domain,
+                Fred::Backend::PublicRequest::ObjectType::domain,
                 domain.fqdn,
                 Optional<unsigned long long>());
         keyset_id = pr.create_authinfo_request_registry_email(
-                Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::keyset,
+                Fred::Backend::PublicRequest::ObjectType::keyset,
                 keyset.handle,
                 Optional<unsigned long long>());
     }
@@ -147,52 +147,52 @@ BOOST_FIXTURE_TEST_CASE(no_entity_email, Test::instantiate_db_template)
     try
     {
         Fred::Backend::PublicRequest::PublicRequestImpl("public-request-test").create_authinfo_request_registry_email(
-                Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::contact,
+                Fred::Backend::PublicRequest::ObjectType::contact,
                 contact.handle,
                 Optional<unsigned long long>());
         BOOST_ERROR("exception of no email awaited");
     }
-    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::NoContactEmail&) { }
+    catch (const Fred::Backend::PublicRequest::NoContactEmail&) { }
 
     try
     {
         Fred::Backend::PublicRequest::PublicRequestImpl("public-request-test").create_authinfo_request_registry_email(
-                Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::nsset,
+                Fred::Backend::PublicRequest::ObjectType::nsset,
                 nsset.handle,
                 Optional<unsigned long long>());
         BOOST_ERROR("exception of no email awaited");
     }
-    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::NoContactEmail&) { }
+    catch (const Fred::Backend::PublicRequest::NoContactEmail&) { }
 
     try
     {
         Fred::Backend::PublicRequest::PublicRequestImpl("public-request-test").create_authinfo_request_registry_email(
-                Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::domain,
+                Fred::Backend::PublicRequest::ObjectType::domain,
                 domain.fqdn,
                 Optional<unsigned long long>());
         BOOST_ERROR("exception of no email awaited");
     }
-    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::NoContactEmail&) { }
+    catch (const Fred::Backend::PublicRequest::NoContactEmail&) { }
 
     try
     {
         Fred::Backend::PublicRequest::PublicRequestImpl("public-request-test").create_authinfo_request_registry_email(
-                Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::keyset,
+                Fred::Backend::PublicRequest::ObjectType::keyset,
                 keyset.handle,
                 Optional<unsigned long long>());
         BOOST_ERROR("exception of no email awaited");
     }
-    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::NoContactEmail&) { }
+    catch (const Fred::Backend::PublicRequest::NoContactEmail&) { }
 }
 
 BOOST_FIXTURE_TEST_CASE(no_object, Test::instantiate_db_template)
 {
     BOOST_CHECK_THROW(
             Fred::Backend::PublicRequest::PublicRequestImpl("public-request-test").create_authinfo_request_registry_email(
-                Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::contact,
+                Fred::Backend::PublicRequest::ObjectType::contact,
                 "test handle",
                 Optional<unsigned long long>()),
-            Fred::Backend::PublicRequest::PublicRequestImpl::ObjectNotFound);
+            Fred::Backend::PublicRequest::ObjectNotFound);
 }
 
 BOOST_AUTO_TEST_SUITE_END()//TestPublicRequest/RegistryEmail

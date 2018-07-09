@@ -60,7 +60,7 @@ unsigned long long send_authinfo(
             Database::query_param_list(object_id));
     if (db_result.size() < 1)
     {
-        throw PublicRequestImpl::ObjectNotFound();
+        throw ObjectNotFound();
     }
     if (db_result.size() > 1)
     {
@@ -92,7 +92,7 @@ unsigned long long send_authinfo(
     std::string object_type_handle;
     switch (object_type)
     {
-        case PublicRequestImpl::ObjectType::contact:
+        case ObjectType::contact:
             // clang-format off
             sql = "SELECT o.authinfopw,TRIM(c.email) "
                   "FROM object o "
@@ -106,7 +106,7 @@ unsigned long long send_authinfo(
             object_type_handle = Conversion::Enums::to_db_handle(LibFred::Object_Type::contact);
             email_template_params.insert(LibFred::Mailer::Parameters::value_type("type", "1"));
             break;
-        case PublicRequestImpl::ObjectType::nsset:
+        case ObjectType::nsset:
             // clang-format off
             sql = "SELECT o.authinfopw,TRIM(c.email) "
                   "FROM object o "
@@ -122,7 +122,7 @@ unsigned long long send_authinfo(
             object_type_handle = Conversion::Enums::to_db_handle(LibFred::Object_Type::nsset);
             email_template_params.insert(LibFred::Mailer::Parameters::value_type("type", "2"));
             break;
-        case PublicRequestImpl::ObjectType::domain:
+        case ObjectType::domain:
             // clang-format off
             sql = "SELECT o.authinfopw,TRIM(c.email) "
                   "FROM object o "
@@ -149,7 +149,7 @@ unsigned long long send_authinfo(
             object_type_handle = Conversion::Enums::to_db_handle(LibFred::Object_Type::domain);
             email_template_params.insert(LibFred::Mailer::Parameters::value_type("type", "3"));
             break;
-        case PublicRequestImpl::ObjectType::keyset:
+        case ObjectType::keyset:
             // clang-format off
             sql = "SELECT o.authinfopw,TRIM(c.email) "
                   "FROM object o "
@@ -171,7 +171,7 @@ unsigned long long send_authinfo(
             Database::query_param_list(handle)(object_type_handle));
     if (dbres.size() < 1)
     {
-        throw PublicRequestImpl::NoContactEmail();
+        throw NoContactEmail();
     }
 
     email_template_params.insert(LibFred::Mailer::Parameters::value_type("authinfo", static_cast<std::string>(dbres[0][0])));

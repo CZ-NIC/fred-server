@@ -1172,6 +1172,13 @@ src_epp_impl_registraracl_libauthentic_registrar_a_SOURCES = \
 # src/libfred/public_request/libpublic_request.a
 #
 src_libfred_public_request_libpublic_request_a_SOURCES = \
+		src/backend/public_request/type/get_iface_of.hh \
+		src/backend/public_request/type/impl/public_request_authinfo.cc \
+		src/backend/public_request/type/public_request_authinfo.hh \
+		src/backend/public_request/type/impl/public_request_blockunblock.cc \
+		src/backend/public_request/type/public_request_blockunblock.hh \
+		src/libfred/public_request/exceptions.hh \
+		src/libfred/public_request/object_type.hh \
 		src/libfred/public_request/public_request.cc \
 		src/libfred/public_request/public_request.hh \
 		src/libfred/public_request/public_request_impl.cc \
@@ -2041,8 +2048,12 @@ src_bin_corba_epp_libepp_impl_a_SOURCES = \
 		src/backend/epp/nsset/impl/nsset_output.cc \
 		src/backend/epp/nsset/impl/nsset_output.hh \
 		src/backend/epp/nsset/status_value.hh \
+		src/libfred/public_request/exceptions.hh \
+		src/libfred/public_request/object_type.hh \
 		src/backend/public_request/public_request.cc \
 		src/backend/public_request/public_request.hh \
+		src/backend/public_request/public_requests.cc \
+		src/backend/public_request/public_requests.hh \
 		src/backend/public_request/type/get_iface_of.hh \
 		src/backend/public_request/type/impl/public_request_authinfo.cc \
 		src/backend/public_request/type/public_request_authinfo.hh \
@@ -2280,8 +2291,6 @@ src_bin_corba_fred_pifd_SOURCES = \
 		src/backend/contact_verification/public_request_contact_verification_wrapper.hh \
 		src/backend/buffer.cc \
 		src/backend/buffer.hh \
-		src/backend/public_request/public_request.cc \
-		src/backend/public_request/public_request.hh \
 		src/backend/public_request/type/get_iface_of.hh \
 		src/backend/public_request/type/impl/public_request_authinfo.cc \
 		src/backend/public_request/type/public_request_authinfo.hh \
@@ -2289,9 +2298,10 @@ src_bin_corba_fred_pifd_SOURCES = \
 		src/backend/public_request/type/public_request_blockunblock.hh \
 		src/backend/public_request/type/impl/public_request_personalinfo.cc \
 		src/backend/public_request/type/public_request_personalinfo.hh \
-		src/backend/public_request/type/impl/implemented_by.hh \
-		src/backend/public_request/send_email.cc \
-		src/backend/public_request/send_email.hh \
+		src/backend/public_request/public_request.cc \
+		src/backend/public_request/public_request.hh \
+		src/libfred/public_request/exceptions.hh \
+		src/libfred/public_request/object_type.hh \
 		src/bin/corba/public_request/server_i.cc \
 		src/bin/corba/public_request/server_i.hh \
 		src/bin/corba/util/corba_conversions_buffer.cc \

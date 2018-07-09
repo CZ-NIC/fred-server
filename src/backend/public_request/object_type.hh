@@ -16,28 +16,33 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PUBLIC_REQUEST_AUTHINFO_HH_6A9E148ADE9D445C891AC330DC1E7634
-#define PUBLIC_REQUEST_AUTHINFO_HH_6A9E148ADE9D445C891AC330DC1E7634
+#ifndef OBJECT_TYPE_HH_A5A290117166457FA6053D0159EDE046
+#define OBJECT_TYPE_HH_A5A290117166457FA6053D0159EDE046
 
-#include "src/libfred/public_request/public_request_type_iface.hh"
-#include "src/libfred/object/object_states_info.hh"
-#include "src/backend/public_request/object_type.hh"
-#include "src/backend/public_request/public_request.hh"
+#include "src/libfred/opcontext.hh"
 
 #include <string>
-#include <memory>
 
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
-namespace Type {
 
-struct AuthinfoAutoRif;
-struct AuthinfoAuto;
-struct AuthinfoEmail;
-struct AuthinfoPost;
+struct ObjectType
+{
+    enum Enum
+    {
+        contact,
+        nsset,
+        domain,
+        keyset
+    };
+};
 
-} // namespace Fred::Backend::PublicRequest::Type
+unsigned long long get_id_of_registered_object(
+        LibFred::OperationContext& ctx,
+        ObjectType::Enum object_type,
+        const std::string& handle);
+
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend
 } // namespace Fred

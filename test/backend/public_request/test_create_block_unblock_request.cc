@@ -16,6 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "src/backend/public_request/exceptions.hh"
+#include "src/backend/public_request/object_type.hh"
 #include "src/backend/public_request/public_request.hh"
 
 #include "src/libfred/public_request/create_public_request.hh"
@@ -55,20 +57,20 @@ void boost_check_fail_blocks(const std::string& handle)
     Fred::Backend::PublicRequest::PublicRequestImpl pr("public-request-test");
     BOOST_CHECK_THROW(
             pr.create_block_unblock_request(
-                Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::contact,
+                Fred::Backend::PublicRequest::ObjectType::contact,
                 handle,
                 Optional<unsigned long long>(),
                 Fred::Backend::PublicRequest::PublicRequestImpl::ConfirmedBy::email,
                 Fred::Backend::PublicRequest::PublicRequestImpl::LockRequestType::block_transfer),
-            Fred::Backend::PublicRequest::PublicRequestImpl::ObjectAlreadyBlocked);
+            Fred::Backend::PublicRequest::ObjectAlreadyBlocked);
     BOOST_CHECK_THROW(
             pr.create_block_unblock_request(
-                Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::contact,
+                Fred::Backend::PublicRequest::ObjectType::contact,
                 handle,
                 Optional<unsigned long long>(),
                 Fred::Backend::PublicRequest::PublicRequestImpl::ConfirmedBy::letter,
                 Fred::Backend::PublicRequest::PublicRequestImpl::LockRequestType::block_transfer),
-            Fred::Backend::PublicRequest::PublicRequestImpl::ObjectAlreadyBlocked);
+            Fred::Backend::PublicRequest::ObjectAlreadyBlocked);
 }
 
 void make_fake_state_request(
@@ -97,7 +99,7 @@ void make_fake_state_request(
 BOOST_FIXTURE_TEST_CASE(block_transfer_then_unblock_transfer_email, lock_request_fixture) // checks for wrong blocks
 {
     const unsigned long long block_transfer = pr.create_block_unblock_request(
-            Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::contact,
+            Fred::Backend::PublicRequest::ObjectType::contact,
             contact.handle,
             Optional<unsigned long long>(),
             Fred::Backend::PublicRequest::PublicRequestImpl::ConfirmedBy::email,
@@ -114,7 +116,7 @@ BOOST_FIXTURE_TEST_CASE(block_transfer_then_unblock_transfer_email, lock_request
 
     // successful unblock
     const unsigned long long unblock_transfer = pr.create_block_unblock_request(
-            Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::contact,
+            Fred::Backend::PublicRequest::ObjectType::contact,
             contact.handle,
             Optional<unsigned long long>(),
             Fred::Backend::PublicRequest::PublicRequestImpl::ConfirmedBy::email,
@@ -127,7 +129,7 @@ BOOST_FIXTURE_TEST_CASE(block_transfer_then_unblock_transfer_email, lock_request
 BOOST_FIXTURE_TEST_CASE(block_transfer_then_unblock_transfer_post, lock_request_fixture)
 {
     const unsigned long long block_transfer = pr.create_block_unblock_request(
-            Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::contact,
+            Fred::Backend::PublicRequest::ObjectType::contact,
             contact.handle,
             Optional<unsigned long long>(),
             Fred::Backend::PublicRequest::PublicRequestImpl::ConfirmedBy::letter,
@@ -141,7 +143,7 @@ BOOST_FIXTURE_TEST_CASE(block_transfer_then_unblock_transfer_post, lock_request_
     ctx.commit_transaction();
 
     const unsigned long long unblock_transfer = pr.create_block_unblock_request(
-            Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::contact,
+            Fred::Backend::PublicRequest::ObjectType::contact,
             contact.handle,
             Optional<unsigned long long>(),
             Fred::Backend::PublicRequest::PublicRequestImpl::ConfirmedBy::letter,
@@ -154,7 +156,7 @@ BOOST_FIXTURE_TEST_CASE(block_transfer_then_unblock_transfer_post, lock_request_
 BOOST_FIXTURE_TEST_CASE(block_transfer_then_block_update_email, lock_request_fixture)
 {
     const unsigned long long block_transfer = pr.create_block_unblock_request(
-            Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::contact,
+            Fred::Backend::PublicRequest::ObjectType::contact,
             contact.handle,
             Optional<unsigned long long>(),
             Fred::Backend::PublicRequest::PublicRequestImpl::ConfirmedBy::email,
@@ -168,7 +170,7 @@ BOOST_FIXTURE_TEST_CASE(block_transfer_then_block_update_email, lock_request_fix
     ctx.commit_transaction();
 
     const unsigned long long block_update = pr.create_block_unblock_request(
-            Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::contact,
+            Fred::Backend::PublicRequest::ObjectType::contact,
             contact.handle,
             Optional<unsigned long long>(),
             Fred::Backend::PublicRequest::PublicRequestImpl::ConfirmedBy::email,
@@ -181,7 +183,7 @@ BOOST_FIXTURE_TEST_CASE(block_transfer_then_block_update_email, lock_request_fix
 BOOST_FIXTURE_TEST_CASE(block_transfer_then_block_update_post, lock_request_fixture)
 {
     const unsigned long long block_transfer = pr.create_block_unblock_request(
-            Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::contact,
+            Fred::Backend::PublicRequest::ObjectType::contact,
             contact.handle,
             Optional<unsigned long long>(),
             Fred::Backend::PublicRequest::PublicRequestImpl::ConfirmedBy::letter,
@@ -193,7 +195,7 @@ BOOST_FIXTURE_TEST_CASE(block_transfer_then_block_update_post, lock_request_fixt
     ctx.commit_transaction();
 
     const unsigned long long block_update = pr.create_block_unblock_request(
-            Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::contact,
+            Fred::Backend::PublicRequest::ObjectType::contact,
             contact.handle,
             Optional<unsigned long long>(),
             Fred::Backend::PublicRequest::PublicRequestImpl::ConfirmedBy::letter,
@@ -206,7 +208,7 @@ BOOST_FIXTURE_TEST_CASE(block_transfer_then_block_update_post, lock_request_fixt
 BOOST_FIXTURE_TEST_CASE(block_update_then_unblock_update_email, lock_request_fixture)
 {
     const unsigned long long block_update = pr.create_block_unblock_request(
-            Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::contact,
+            Fred::Backend::PublicRequest::ObjectType::contact,
             contact.handle,
             Optional<unsigned long long>(),
             Fred::Backend::PublicRequest::PublicRequestImpl::ConfirmedBy::email,
@@ -220,7 +222,7 @@ BOOST_FIXTURE_TEST_CASE(block_update_then_unblock_update_email, lock_request_fix
     ctx.commit_transaction();
 
     const unsigned long long unblock_update = pr.create_block_unblock_request(
-            Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::contact,
+            Fred::Backend::PublicRequest::ObjectType::contact,
             contact.handle,
             Optional<unsigned long long>(),
             Fred::Backend::PublicRequest::PublicRequestImpl::ConfirmedBy::email,
@@ -233,7 +235,7 @@ BOOST_FIXTURE_TEST_CASE(block_update_then_unblock_update_email, lock_request_fix
 BOOST_FIXTURE_TEST_CASE(block_update_then_unblock_update_post, lock_request_fixture) // checks for wrong blocks
 {
     const unsigned long long block_update = pr.create_block_unblock_request(
-            Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::contact,
+            Fred::Backend::PublicRequest::ObjectType::contact,
             contact.handle,
             Optional<unsigned long long>(),
             Fred::Backend::PublicRequest::PublicRequestImpl::ConfirmedBy::letter,
@@ -249,23 +251,23 @@ BOOST_FIXTURE_TEST_CASE(block_update_then_unblock_update_post, lock_request_fixt
     boost_check_fail_blocks(contact.handle);
     BOOST_CHECK_THROW(
             pr.create_block_unblock_request(
-                Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::contact,
+                Fred::Backend::PublicRequest::ObjectType::contact,
                 contact.handle,
                 Optional<unsigned long long>(),
                 Fred::Backend::PublicRequest::PublicRequestImpl::ConfirmedBy::email,
                 Fred::Backend::PublicRequest::PublicRequestImpl::LockRequestType::block_transfer_and_update),
-            Fred::Backend::PublicRequest::PublicRequestImpl::ObjectAlreadyBlocked);
+            Fred::Backend::PublicRequest::ObjectAlreadyBlocked);
     BOOST_CHECK_THROW(
             pr.create_block_unblock_request(
-                Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::contact,
+                Fred::Backend::PublicRequest::ObjectType::contact,
                 contact.handle,
                 Optional<unsigned long long>(),
                 Fred::Backend::PublicRequest::PublicRequestImpl::ConfirmedBy::letter,
                 Fred::Backend::PublicRequest::PublicRequestImpl::LockRequestType::block_transfer_and_update),
-            Fred::Backend::PublicRequest::PublicRequestImpl::ObjectAlreadyBlocked);
+            Fred::Backend::PublicRequest::ObjectAlreadyBlocked);
 
     const unsigned long long unblock_update = pr.create_block_unblock_request(
-            Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::contact,
+            Fred::Backend::PublicRequest::ObjectType::contact,
             contact.handle,
             Optional<unsigned long long>(),
             Fred::Backend::PublicRequest::PublicRequestImpl::ConfirmedBy::letter,
@@ -282,12 +284,12 @@ BOOST_FIXTURE_TEST_CASE(block_transfer_then_block_transfer, lock_request_fixture
     ctx.commit_transaction();
     BOOST_CHECK_THROW(
             pr.create_block_unblock_request(
-                Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::contact,
+                Fred::Backend::PublicRequest::ObjectType::contact,
                 contact.handle,
                 Optional<unsigned long long>(),
                 Fred::Backend::PublicRequest::PublicRequestImpl::ConfirmedBy::email,
                 Fred::Backend::PublicRequest::PublicRequestImpl::LockRequestType::block_transfer),
-            Fred::Backend::PublicRequest::PublicRequestImpl::ObjectAlreadyBlocked);
+            Fred::Backend::PublicRequest::ObjectAlreadyBlocked);
 }
 
 BOOST_FIXTURE_TEST_CASE(block_update_then_block_transfer, lock_request_fixture)
@@ -297,12 +299,12 @@ BOOST_FIXTURE_TEST_CASE(block_update_then_block_transfer, lock_request_fixture)
     ctx.commit_transaction();
     BOOST_CHECK_THROW(
             pr.create_block_unblock_request(
-                Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::contact,
+                Fred::Backend::PublicRequest::ObjectType::contact,
                 contact.handle,
                 Optional<unsigned long long>(),
                 Fred::Backend::PublicRequest::PublicRequestImpl::ConfirmedBy::letter,
                 Fred::Backend::PublicRequest::PublicRequestImpl::LockRequestType::block_transfer),
-            Fred::Backend::PublicRequest::PublicRequestImpl::ObjectAlreadyBlocked);
+            Fred::Backend::PublicRequest::ObjectAlreadyBlocked);
 }
 
 BOOST_FIXTURE_TEST_CASE(block_update_then_block_update, lock_request_fixture)
@@ -312,12 +314,12 @@ BOOST_FIXTURE_TEST_CASE(block_update_then_block_update, lock_request_fixture)
     ctx.commit_transaction();
     BOOST_CHECK_THROW(
             pr.create_block_unblock_request(
-                Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::contact,
+                Fred::Backend::PublicRequest::ObjectType::contact,
                 contact.handle,
                 Optional<unsigned long long>(),
                 Fred::Backend::PublicRequest::PublicRequestImpl::ConfirmedBy::letter,
                 Fred::Backend::PublicRequest::PublicRequestImpl::LockRequestType::block_transfer_and_update),
-            Fred::Backend::PublicRequest::PublicRequestImpl::ObjectAlreadyBlocked);
+            Fred::Backend::PublicRequest::ObjectAlreadyBlocked);
 }
 
 BOOST_FIXTURE_TEST_CASE(block_transfer_then_unblock_update, lock_request_fixture)
@@ -327,12 +329,12 @@ BOOST_FIXTURE_TEST_CASE(block_transfer_then_unblock_update, lock_request_fixture
     ctx.commit_transaction();
     BOOST_CHECK_THROW(
             pr.create_block_unblock_request(
-                Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::contact,
+                Fred::Backend::PublicRequest::ObjectType::contact,
                 contact.handle,
                 Optional<unsigned long long>(),
                 Fred::Backend::PublicRequest::PublicRequestImpl::ConfirmedBy::letter,
                 Fred::Backend::PublicRequest::PublicRequestImpl::LockRequestType::unblock_transfer_and_update),
-            Fred::Backend::PublicRequest::PublicRequestImpl::HasDifferentBlock);
+            Fred::Backend::PublicRequest::HasDifferentBlock);
 }
 
 BOOST_FIXTURE_TEST_CASE(block_update_then_unblock_transfer, lock_request_fixture)
@@ -342,12 +344,12 @@ BOOST_FIXTURE_TEST_CASE(block_update_then_unblock_transfer, lock_request_fixture
     ctx.commit_transaction();
     BOOST_CHECK_THROW(
             pr.create_block_unblock_request(
-                Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::contact,
+                Fred::Backend::PublicRequest::ObjectType::contact,
                 contact.handle,
                 Optional<unsigned long long>(),
                 Fred::Backend::PublicRequest::PublicRequestImpl::ConfirmedBy::email,
                 Fred::Backend::PublicRequest::PublicRequestImpl::LockRequestType::unblock_transfer),
-            Fred::Backend::PublicRequest::PublicRequestImpl::HasDifferentBlock);
+            Fred::Backend::PublicRequest::HasDifferentBlock);
 }
 
 BOOST_FIXTURE_TEST_CASE(unblock_not_blocked_object, lock_request_fixture)
@@ -355,20 +357,20 @@ BOOST_FIXTURE_TEST_CASE(unblock_not_blocked_object, lock_request_fixture)
     ::LibFred::OperationContextCreator ctx;
     BOOST_CHECK_THROW(
             pr.create_block_unblock_request(
-                Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::contact,
+                Fred::Backend::PublicRequest::ObjectType::contact,
                 contact.handle,
                 Optional<unsigned long long>(),
                 Fred::Backend::PublicRequest::PublicRequestImpl::ConfirmedBy::email,
                 Fred::Backend::PublicRequest::PublicRequestImpl::LockRequestType::unblock_transfer),
-            Fred::Backend::PublicRequest::PublicRequestImpl::ObjectNotBlocked);
+            Fred::Backend::PublicRequest::ObjectNotBlocked);
     BOOST_CHECK_THROW(
             pr.create_block_unblock_request(
-                Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::contact,
+                Fred::Backend::PublicRequest::ObjectType::contact,
                 contact.handle,
                 Optional<unsigned long long>(),
                 Fred::Backend::PublicRequest::PublicRequestImpl::ConfirmedBy::letter,
                 Fred::Backend::PublicRequest::PublicRequestImpl::LockRequestType::unblock_transfer_and_update),
-            Fred::Backend::PublicRequest::PublicRequestImpl::ObjectNotBlocked);
+            Fred::Backend::PublicRequest::ObjectNotBlocked);
 }
 
 BOOST_AUTO_TEST_SUITE_END()//TestPublicRequest/LockRequest

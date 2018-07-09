@@ -1,11 +1,14 @@
 #include "src/backend/public_request/public_request.hh"
 
 #include "src/backend/buffer.hh"
+#include "src/backend/public_request/exceptions.hh"
+#include "src/backend/public_request/object_type.hh"
 #include "src/backend/public_request/type/public_request_authinfo.hh"
 #include "src/backend/public_request/type/public_request_blockunblock.hh"
 #include "src/backend/public_request/type/public_request_personalinfo.hh"
 #include "src/backend/public_request/type/get_iface_of.hh"
 #include "src/libfred/object/get_id_of_registered.hh"
+#include "src/libfred/object/object_states_info.hh"
 #include "src/libfred/public_request/create_public_request.hh"
 #include "src/libfred/public_request/info_public_request.hh"
 #include "src/libfred/public_request/public_request_lock_guard.hh"
@@ -32,25 +35,6 @@ namespace Backend {
 namespace PublicRequest {
 
 namespace {
-
-unsigned long long get_id_of_registered_object(
-        LibFred::OperationContext& ctx,
-        PublicRequestImpl::ObjectType::Enum object_type,
-        const std::string& handle)
-{
-    switch (object_type)
-    {
-        case PublicRequestImpl::ObjectType::contact:
-            return LibFred::get_id_of_registered<LibFred::Object_Type::contact>(ctx, handle);
-        case PublicRequestImpl::ObjectType::nsset:
-            return LibFred::get_id_of_registered<LibFred::Object_Type::nsset>(ctx, handle);
-        case PublicRequestImpl::ObjectType::domain:
-            return LibFred::get_id_of_registered<LibFred::Object_Type::domain>(ctx, handle);
-        case PublicRequestImpl::ObjectType::keyset:
-            return LibFred::get_id_of_registered<LibFred::Object_Type::keyset>(ctx, handle);
-    }
-    throw std::logic_error("unexpected PublicRequestImpl::ObjectType::Enum value");
-}
 
 std::map<std::string, unsigned char> get_public_request_type_to_post_type_dictionary()
 {
@@ -89,7 +73,7 @@ short public_request_type_to_post_type(const std::string& public_request_type)
     {
         return result_ptr->second;
     }
-    throw PublicRequestImpl::InvalidPublicRequestType();
+    throw InvalidPublicRequestType();
 }
 
 std::string language_to_lang_code(PublicRequestImpl::Language::Enum lang)
@@ -132,14 +116,6 @@ private:
     Logging::Context ctx_operation_;
 };
 
-void check_authinfo_request_permission(const LibFred::ObjectStatesInfo& states)
-{
-    if (states.presents(LibFred::Object_State::server_transfer_prohibited))
-    {
-        throw PublicRequestImpl::ObjectTransferProhibited();
-    }
-}
-
 } // namespace Fred::Backend::PublicRequest::{anonymous}
 
 #define LOGGING_CONTEXT(CTX_VAR, IMPL_OBJ) \
@@ -161,56 +137,6 @@ const std::string& PublicRequestImpl::get_server_name() const
 }
 
 unsigned long long PublicRequestImpl::create_authinfo_request_registry_email(
-        LibFred::OperationContext& _ctx,
-        ObjectType::Enum _object_type,
-        const std::string& _object_handle,
-        const unsigned long long _registrar_id,
-        const Optional<unsigned long long>& _log_request_id) const
-{
-    LOGGING_CONTEXT(log_ctx, *this);
-    try
-    {
-        const auto object_id = get_id_of_registered_object(_ctx, _object_type, _object_handle);
-        const LibFred::ObjectStatesInfo states(LibFred::GetObjectStates(object_id).exec(_ctx));
-        LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_object(_ctx, object_id);
-        check_authinfo_request_permission(states);
-        const auto public_request_id = LibFred::CreatePublicRequest()
-                .set_registrar_id(LibFred::RegistrarId(_registrar_id))
-                .exec(locked_object, Type::get_iface_of<Type::AuthinfoAutoRif>(), _log_request_id);
-        LibFred::UpdatePublicRequest()
-            .set_status(LibFred::PublicRequest::Status::resolved)
-            .exec(locked_object, Type::get_iface_of<Type::AuthinfoAutoRif>(), _log_request_id);
-
-        return public_request_id;
-    }
-    catch (const NoPublicRequest& e)
-    {
-        LOGGER(PACKAGE).info(e.what());
-        throw ObjectNotFound();
-    }
-    catch (const NoContactEmail& e)
-    {
-        LOGGER(PACKAGE).info(e.what());
-        throw NoContactEmail();
-    }
-    catch (const LibFred::UnknownObject& e)
-    {
-        LOGGER(PACKAGE).info(e.what());
-        throw ObjectNotFound();
-    }
-    catch (const std::exception& e)
-    {
-        LOGGER(PACKAGE).error(e.what());
-        throw;
-    }
-    catch (...)
-    {
-        LOGGER(PACKAGE).error("create_authinfo_request (registry) failed due to an unknown exception");
-        throw;
-    }
-}
-
-unsigned long long PublicRequestImpl::create_authinfo_request_registry_email(
         ObjectType::Enum object_type,
         const std::string& object_handle,
         const Optional<unsigned long long>& log_request_id) const
@@ -222,7 +148,10 @@ unsigned long long PublicRequestImpl::create_authinfo_request_registry_email(
         const auto object_id = get_id_of_registered_object(ctx, object_type, object_handle);
         const LibFred::ObjectStatesInfo states(LibFred::GetObjectStates(object_id).exec(ctx));
         LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, object_id);
-        check_authinfo_request_permission(states);
+        if (states.presents(LibFred::Object_State::server_transfer_prohibited))
+        {
+            throw ObjectTransferProhibited();
+        }
         const auto public_request_id = LibFred::CreatePublicRequest()
             .exec(locked_object, Type::get_iface_of<Type::AuthinfoAuto>(), log_request_id);
         LibFred::UpdatePublicRequest()
@@ -273,7 +202,10 @@ unsigned long long PublicRequestImpl::create_authinfo_request_non_registry_email
         const auto object_id = get_id_of_registered_object(ctx, object_type, object_handle);
         const LibFred::ObjectStatesInfo states(LibFred::GetObjectStates(object_id).exec(ctx));
         LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, object_id);
-        check_authinfo_request_permission(states);
+        if (states.presents(LibFred::Object_State::server_transfer_prohibited))
+        {
+            throw ObjectTransferProhibited();
+        }
         const auto create_public_request_op = LibFred::CreatePublicRequest().set_email_to_answer(specified_email);
         switch (confirmation_method)
         {

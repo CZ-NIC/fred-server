@@ -21,7 +21,9 @@
 #include "src/backend/epp/epp_response_failure.hh"
 #include "src/backend/epp/epp_result_code.hh"
 #include "src/backend/epp/epp_result_failure.hh"
-#include "src/backend/public_request/public_request.hh"
+#include "src/backend/public_request/exceptions.hh"
+#include "src/backend/public_request/object_type.hh"
+#include "src/backend/public_request/public_requests.hh"
 #include "src/libfred/opcontext.hh"
 
 #include <string>
@@ -36,21 +38,18 @@ void authinfo_nsset(
 {
     try
     {
-        const std::unique_ptr<Fred::Backend::PublicRequest::PublicRequestImpl> public_request(
-                new Fred::Backend::PublicRequest::PublicRequestImpl(_server_name));
-
-        public_request->create_authinfo_request_registry_email(
+        create_authinfo_request_registry_email_rif(
                 _ctx,
-                Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::nsset,
+                Fred::Backend::PublicRequest::ObjectType::nsset,
                 _nsset_handle,
                 _session_data.registrar_id,
                 _session_data.logd_request_id);
     }
-    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::ObjectNotFound&)
+    catch (const Fred::Backend::PublicRequest::ObjectNotFound&)
     {
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
     }
-    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::NoContactEmail&)
+    catch (const Fred::Backend::PublicRequest::NoContactEmail&)
     {
         throw EppResponseFailure(EppResultFailure(EppResultCode::command_failed));
     }

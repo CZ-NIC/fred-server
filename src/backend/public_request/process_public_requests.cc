@@ -77,7 +77,7 @@ unsigned long long send_personalinfo(
     {
         if (ex.is_set_unknown_contact_handle())
         {
-            throw PublicRequestImpl::NoContactEmail();
+            throw NoContactEmail();
         }
         throw;
     }
@@ -140,7 +140,7 @@ unsigned long long send_personalinfo(
             LibFred::Mailer::Parameters::value_type("fax", info_contact_data.fax.get_value_or_default()));
     if (info_contact_data.email.isnull())
     {
-        throw PublicRequestImpl::NoContactEmail();
+        throw NoContactEmail();
     }
     email_template_params.insert(
             LibFred::Mailer::Parameters::value_type("email", info_contact_data.email.get_value()));

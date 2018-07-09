@@ -25,16 +25,19 @@
 #define PUBLIC_REQUEST_HH_609D44EB1F5A4BC98E8A88B662EE3761
 
 #include "src/backend/buffer.hh"
+#include "src/backend/public_request/exceptions.hh"
+#include "src/backend/public_request/object_type.hh"
 #include "src/libfred/documents.hh"
 #include "src/libfred/mailer.hh"
+#include "src/libfred/object/object_states_info.hh"
 #include "src/libfred/object/object_type.hh"
 #include "src/libfred/opcontext.hh"
 #include "src/util/optional_value.hh"
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <memory>
 
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -43,13 +46,7 @@ namespace Fred {
 namespace Backend {
 namespace PublicRequest {
 
-struct NoPublicRequest : std::exception
-{
-    virtual const char* what() const noexcept
-    {
-        return "no public request found";
-    }
-};
+bool is_authinfo_request_possible(const LibFred::ObjectStatesInfo& states);
 
 class PublicRequestImpl
 {
@@ -87,96 +84,6 @@ public:
             cs
         };
     };
-
-    struct ObjectType
-    {
-        enum Enum
-        {
-            contact,
-            nsset,
-            domain,
-            keyset,
-        };
-    };
-
-    struct ObjectAlreadyBlocked : std::exception
-    {
-        virtual const char* what() const noexcept
-        {
-            return "object is already blocked";
-        }
-    };
-
-    struct ObjectTransferProhibited : std::exception
-    {
-        virtual const char* what() const noexcept
-        {
-            return "object transfer is prohibited";
-        }
-    };
-
-    struct ObjectNotBlocked : std::exception
-    {
-        virtual const char* what() const noexcept
-        {
-            return "object is not blocked";
-        }
-    };
-
-    struct HasDifferentBlock : std::exception
-    {
-        virtual const char* what() const noexcept
-        {
-            return "a different unblock request has to be issued";
-        }
-    };
-
-    struct ObjectNotFound : std::exception
-    {
-        virtual const char* what() const noexcept
-        {
-            return "registry object with specified ID does not exist";
-        }
-    };
-
-    struct InvalidPublicRequestType : std::exception
-    {
-        virtual const char* what() const noexcept
-        {
-            return "public request is not of post type";
-        }
-    };
-
-    struct NoContactEmail : std::exception
-    {
-        virtual const char* what() const noexcept
-        {
-            return "no contact email associated with this object";
-        }
-    };
-
-    struct InvalidContactEmail : std::exception
-    {
-        virtual const char* what() const noexcept
-        {
-            return "invalid contact email associated with this object";
-        }
-    };
-
-    struct OperationProhibited : std::exception
-    {
-        virtual const char* what() const noexcept
-        {
-            return "operation is prohibited";
-        }
-    };
-
-    unsigned long long create_authinfo_request_registry_email(
-            LibFred::OperationContext& _ctx,
-            ObjectType::Enum object_type,
-            const std::string& object_handle,
-            unsigned long long registrar_id,
-            const Optional<unsigned long long>& log_request_id) const;
 
     unsigned long long create_authinfo_request_registry_email(
             ObjectType::Enum object_type,
