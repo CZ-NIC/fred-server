@@ -19,10 +19,12 @@
 #include "src/libfred/registry.hh"
 #include "src/libfred/public_request/public_request_on_status_action.hh"
 #include "src/backend/public_request/process_public_request_authinfo.hh"
+#include "src/backend/public_request/process_public_request_block_unblock.hh"
 #include "src/backend/public_request/process_public_request_personal_info.hh"
 #include "src/util/db/query_param.hh"
 #include "src/bin/cli/public_request_method.hh"
 #include "src/backend/public_request/type/public_request_authinfo.hh"
+#include "src/backend/public_request/type/public_request_block_unblock.hh"
 #include "src/backend/public_request/type/public_request_personal_info.hh"
 #include "src/backend/public_request/type/get_iface_of.hh"
 #include "src/libfred/public_request/public_request_status.hh"
@@ -62,6 +64,7 @@ std::set<std::string> get_request_type_filter()
 void PublicRequestProcedure::exec()
 {
     namespace PublicRequestType = Fred::Backend::PublicRequest::Type;
+    namespace PublicRequest = Fred::Backend::PublicRequest;
 
     std::set<std::string> request_types_filter;
     {
@@ -71,8 +74,16 @@ void PublicRequestProcedure::exec()
                                     PublicRequestType::AuthinfoPost,
                                     PublicRequestType::PersonalInfoAuto,
                                     PublicRequestType::PersonalInfoEmail,
-                                    PublicRequestType::PersonalInfoPost>();
-        for (const auto& argument: args.types)
+                                    PublicRequestType::PersonalInfoPost,
+                                    PublicRequestType::BlockTransfer<PublicRequest::PublicRequestImpl::ConfirmedBy::email>,
+                                    PublicRequestType::BlockTransfer<PublicRequest::PublicRequestImpl::ConfirmedBy::letter>,
+                                    PublicRequestType::BlockChanges<PublicRequest::PublicRequestImpl::ConfirmedBy::email>,
+                                    PublicRequestType::BlockChanges<PublicRequest::PublicRequestImpl::ConfirmedBy::letter>,
+                                    PublicRequestType::UnblockTransfer<PublicRequest::PublicRequestImpl::ConfirmedBy::email>,
+                                    PublicRequestType::UnblockTransfer<PublicRequest::PublicRequestImpl::ConfirmedBy::letter>,
+                                    PublicRequestType::UnblockChanges<PublicRequest::PublicRequestImpl::ConfirmedBy::email>,
+                                    PublicRequestType::UnblockChanges<PublicRequest::PublicRequestImpl::ConfirmedBy::letter>>();
+        for (const auto& argument: args_.types)
         {
             const auto itr = request_types_filter_default.find(argument);
             if (itr != request_types_filter_default.end())
@@ -146,8 +157,8 @@ void PublicRequestProcedure::exec()
                     Fred::Backend::PublicRequest::process_public_request_personal_info_resolved(
                             request_id,
                             type_to_iface.at(request_type)(),
-                            mailer_manager,
-                            file_manager_client);
+                            mailer_manager_,
+                            file_manager_client_);
                 }
                 else if (request_type == "authinfo_auto_rif" ||
                          request_type == "authinfo_auto_pif" ||
@@ -157,7 +168,20 @@ void PublicRequestProcedure::exec()
                     Fred::Backend::PublicRequest::process_public_request_auth_info_resolved(
                             request_id,
                             type_to_iface.at(request_type)(),
-                            mailer_manager);
+                            mailer_manager_);
+                }
+                else if (request_type == "block_transfer_email_pif" ||
+                         request_type == "block_transfer_post_pif" ||
+                         request_type == "block_changes_email_pif" ||
+                         request_type == "block_changes_post_pif" ||
+                         request_type == "unblock_transfer_email_pif" ||
+                         request_type == "unblock_transfer_post_pif" ||
+                         request_type == "unblock_changes_email_pif" ||
+                         request_type == "unblock_changes_post_pif")
+                {
+                    Fred::Backend::PublicRequest::process_public_request_block_unblock_resolved(
+                            request_id,
+                            type_to_iface.at(request_type)());
                 }
             }
         }
