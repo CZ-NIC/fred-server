@@ -20,7 +20,6 @@
 #define EXCEPTIONS_HH_FF025438A7C648E18057D7BFA7B5572D
 
 #include <stdexcept>
-#include <string>
 
 namespace Fred {
 namespace Backend {
@@ -28,82 +27,52 @@ namespace PublicRequest {
 
 struct NoPublicRequest : std::exception
 {
-    virtual const char* what() const noexcept
-    {
-        return "no public request found";
-    }
+    virtual const char* what() const noexcept;
 };
 
 struct ObjectAlreadyBlocked : std::exception
 {
-    virtual const char* what() const noexcept
-    {
-        return "object is already blocked";
-    }
+    virtual const char* what() const noexcept;
 };
 
 struct ObjectTransferProhibited : std::exception
 {
-    virtual const char* what() const noexcept
-    {
-        return "object transfer is prohibited";
-    }
+    virtual const char* what() const noexcept;
 };
 
 struct ObjectNotBlocked : std::exception
 {
-    virtual const char* what() const noexcept
-    {
-        return "object is not blocked";
-    }
+    virtual const char* what() const noexcept;
 };
 
 struct HasDifferentBlock : std::exception
 {
-    virtual const char* what() const noexcept
-    {
-        return "a different unblock request has to be issued";
-    }
+    virtual const char* what() const noexcept;
 };
 
 struct ObjectNotFound : std::exception
 {
-    virtual const char* what() const noexcept
-    {
-        return "registry object with specified ID does not exist";
-    }
+    virtual const char* what() const noexcept;
 };
 
 struct InvalidPublicRequestType : std::exception
 {
-    virtual const char* what() const noexcept
-    {
-        return "public request is not of post type";
-    }
+    virtual const char* what() const noexcept;
 };
 
 struct NoContactEmail : std::exception
 {
-    virtual const char* what() const noexcept
-    {
-        return "no contact email associated with this object";
-    }
+    virtual const char* what() const noexcept;
 };
 
 struct InvalidContactEmail : std::exception
 {
-    virtual const char* what() const noexcept
-    {
-        return "invalid contact email associated with this object";
-    }
+    virtual const char* what() const noexcept;
 };
 
 struct OperationProhibited : std::exception
 {
-    virtual const char* what() const noexcept
-    {
-        return "operation is prohibited";
-    }
+    virtual const char* what() const noexcept;
 };
 
 } // namespace Fred::Backend::PublicRequest

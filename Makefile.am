@@ -1174,6 +1174,8 @@ src_epp_impl_registraracl_libauthentic_registrar_a_SOURCES = \
 src_libfred_public_request_libpublic_request_a_SOURCES = \
 		src/backend/buffer.cc \
 		src/backend/buffer.hh \
+		src/backend/public_request/exceptions.cc \
+		src/backend/public_request/exceptions.hh \
 		src/backend/public_request/object_type.cc \
 		src/backend/public_request/object_type.hh \
 		src/backend/public_request/process_public_request_authinfo.cc \
