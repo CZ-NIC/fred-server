@@ -26,12 +26,20 @@ docker:server:fedora:
   variables:
     IMAGE_NAME: fedora:27
     IMAGE_TAG: $CI_REGISTRY_IMAGE/$IMAGE_NAME
+  only:
+    - master
+    - triggers
+    - schedules
 
 docker:server:centos:
   <<: *image
   variables:
     IMAGE_NAME: centos:7
     IMAGE_TAG: $CI_REGISTRY_IMAGE/$IMAGE_NAME
+  only:
+    - master
+    - triggers
+    - schedules
 
 .ubuntu_16_04: &ubuntu_16_04
   image: "$CI_REGISTRY/fred/server/ubuntu:16.04"
@@ -81,7 +89,15 @@ build:ubuntu:amd64:
 build:fedora:amd64:
   <<: *fedora_27
   <<: *build_job
+  only:
+    - master
+    - triggers
+    - schedules
 
 build:centos:amd64:
   <<: *centos_7
   <<: *build_job
+  only:
+    - master
+    - triggers
+    - schedules
