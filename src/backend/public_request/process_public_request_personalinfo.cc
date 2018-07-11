@@ -1,4 +1,4 @@
-#include "src/backend/public_request/process_public_requests.hh"
+#include "src/backend/public_request/process_public_request_personalinfo.hh"
 #include "src/libfred/public_request/public_request_on_status_action.hh"
 #include "src/libfred/registrable_object/contact/info_contact.hh"
 #include "src/libfred/registrar/info_registrar.hh"

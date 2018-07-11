@@ -19,7 +19,7 @@
 #include "src/libfred/registry.hh"
 #include "src/libfred/public_request/public_request_on_status_action.hh"
 #include "src/backend/public_request/process_public_request_authinfo.hh"
-#include "src/backend/public_request/process_public_requests.hh"
+#include "src/backend/public_request/process_public_request_personalinfo.hh"
 #include "src/util/db/query_param.hh"
 #include "src/bin/cli/public_request_method.hh"
 #include "src/backend/public_request/type/public_request_authinfo.hh"
