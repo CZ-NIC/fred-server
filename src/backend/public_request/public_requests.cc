@@ -26,6 +26,7 @@
 #include "src/libfred/public_request/create_public_request.hh"
 #include "src/libfred/public_request/public_request_lock_guard.hh"
 #include "src/libfred/public_request/update_public_request.hh"
+#include "src/util/log/context.hh"
 #include "src/util/optional_value.hh"
 
 #include <boost/optional.hpp>
@@ -34,6 +35,29 @@ namespace Fred {
 namespace Backend {
 namespace PublicRequest {
 
+namespace {
+
+std::string create_ctx_function_name(const char *fnc)
+{
+    std::string name(fnc);
+    std::replace(name.begin(), name.end(), '_', '-');
+    return name;
+}
+
+class LogContext
+{
+public:
+    LogContext(const std::string &_op_name)
+        : ctx_operation_(_op_name)
+    { }
+private:
+    Logging::Context ctx_operation_;
+};
+
+#define LOGGING_CONTEXT(CTX_VAR) LogContext CTX_VAR(create_ctx_function_name(__FUNCTION__))
+
+} // namespace Admin::{anonymous}
+
 unsigned long long create_authinfo_request_registry_email_rif(
         LibFred::OperationContext& _ctx,
         ObjectType::Enum _object_type,
@@ -41,7 +65,7 @@ unsigned long long create_authinfo_request_registry_email_rif(
         const unsigned long long _registrar_id,
         const Optional<unsigned long long>& _log_request_id)
 {
-    //LOGGING_CONTEXT(log_ctx, *this); // TODO
+    LOGGING_CONTEXT(log_ctx);
     try
     {
         const auto object_id = get_id_of_registered_object(_ctx, _object_type, _object_handle);
