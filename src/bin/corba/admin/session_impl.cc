@@ -34,7 +34,7 @@
 #include "src/bin/corba/admin/common.hh"
 #include "src/libfred/public_request/public_request_authinfo_impl.hh"
 #include "src/libfred/public_request/public_request_block_impl.hh"
-#include "src/libfred/public_request/public_request_personalinfo_impl.hh"
+#include "src/libfred/public_request/public_request_personal_info_impl.hh"
 #include "src/backend/contact_verification/public_request_contact_verification_impl.hh"
 #include "src/util/log/logger.hh"
 #include "src/util/log/context.hh"

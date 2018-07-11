@@ -1,4 +1,4 @@
-#include "src/backend/public_request/process_public_request_personalinfo.hh"
+#include "src/backend/public_request/process_public_request_personal_info.hh"
 #include "src/libfred/public_request/public_request_on_status_action.hh"
 #include "src/libfred/registrable_object/contact/info_contact.hh"
 #include "src/libfred/registrar/info_registrar.hh"
@@ -43,7 +43,7 @@ std::string pretty_print_address(const T& _address)
     return address.str();
 }
 
-unsigned long long send_personalinfo(
+unsigned long long send_personal_info(
         unsigned long long _public_request_id,
         LibFred::OperationContext& _ctx,
         std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager,
@@ -303,7 +303,7 @@ void process_public_request_personal_info_resolved(
     {
         LibFred::OperationContextCreator ctx;
         const LibFred::PublicRequestLockGuardById locked_request(ctx, _public_request_id);
-        const unsigned long long email_id = send_personalinfo(_public_request_id, ctx, _mailer_manager, _file_manager_client);
+        const unsigned long long email_id = send_personal_info(_public_request_id, ctx, _mailer_manager, _file_manager_client);
         try
         {
             LibFred::UpdatePublicRequest()

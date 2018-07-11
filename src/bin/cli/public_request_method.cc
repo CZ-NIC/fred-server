@@ -19,11 +19,11 @@
 #include "src/libfred/registry.hh"
 #include "src/libfred/public_request/public_request_on_status_action.hh"
 #include "src/backend/public_request/process_public_request_authinfo.hh"
-#include "src/backend/public_request/process_public_request_personalinfo.hh"
+#include "src/backend/public_request/process_public_request_personal_info.hh"
 #include "src/util/db/query_param.hh"
 #include "src/bin/cli/public_request_method.hh"
 #include "src/backend/public_request/type/public_request_authinfo.hh"
-#include "src/backend/public_request/type/public_request_personalinfo.hh"
+#include "src/backend/public_request/type/public_request_personal_info.hh"
 #include "src/backend/public_request/type/get_iface_of.hh"
 #include "src/libfred/public_request/public_request_status.hh"
 #include "src/libfred/opcontext.hh"
@@ -69,9 +69,9 @@ void PublicRequestProcedure::exec()
             get_request_type_filter<PublicRequestType::AuthinfoAuto,
                                     PublicRequestType::AuthinfoEmail,
                                     PublicRequestType::AuthinfoPost,
-                                    PublicRequestType::PersonalinfoAuto,
-                                    PublicRequestType::PersonalinfoEmail,
-                                    PublicRequestType::PersonalinfoPost>();
+                                    PublicRequestType::PersonalInfoAuto,
+                                    PublicRequestType::PersonalInfoEmail,
+                                    PublicRequestType::PersonalInfoPost>();
         for (const auto& argument: args.types)
         {
             const auto itr = request_types_filter_default.find(argument);
@@ -126,9 +126,9 @@ void PublicRequestProcedure::exec()
                                   PublicRequestType::AuthinfoAuto,
                                   PublicRequestType::AuthinfoEmail,
                                   PublicRequestType::AuthinfoPost,
-                                  PublicRequestType::PersonalinfoAuto,
-                                  PublicRequestType::PersonalinfoEmail,
-                                  PublicRequestType::PersonalinfoPost>();
+                                  PublicRequestType::PersonalInfoAuto,
+                                  PublicRequestType::PersonalInfoEmail,
+                                  PublicRequestType::PersonalInfoPost>();
     for (std::size_t i = 0; i < dbres.size(); ++i)
     {
         const auto request_id = static_cast<unsigned long long>(dbres[i][0]);

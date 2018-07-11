@@ -16,21 +16,25 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PUBLIC_REQUEST_PERSONALINFO_HH_6A9E148ADE9D445C891AC330DC1E7634
-#define PUBLIC_REQUEST_PERSONALINFO_HH_6A9E148ADE9D445C891AC330DC1E7634
+#ifndef PROCESS_PUBLIC_REQUEST_PERSONAL_INFO_HH_9CC977C4F3F344748AB821941D44B2F7
+#define PROCESS_PUBLIC_REQUEST_PERSONAL_INFO_HH_9CC977C4F3F344748AB821941D44B2F7
 
+#include "src/libfred/mailer.hh"
+#include "src/bin/corba/mailer_manager.hh"
+#include "src/bin/corba/file_manager_client.hh"
+#include "src/libfred/file_transferer.hh"
 #include "src/libfred/public_request/public_request_type_iface.hh"
 
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
-namespace Type {
 
-struct PersonalinfoAuto;
-struct PersonalinfoEmail;
-struct PersonalinfoPost;
+void process_public_request_personal_info_resolved(
+        unsigned long long _public_request_id,
+        const LibFred::PublicRequestTypeIface& _public_request_type,
+        std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager,
+        std::shared_ptr<LibFred::File::Transferer> _file_manager_client);
 
-} // namespace Fred::Backend::PublicRequest::Type
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend
 } // namespace Fred

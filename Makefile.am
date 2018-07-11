@@ -1180,8 +1180,8 @@ src_libfred_public_request_libpublic_request_a_SOURCES = \
 		src/backend/public_request/object_type.hh \
 		src/backend/public_request/process_public_request_authinfo.cc \
 		src/backend/public_request/process_public_request_authinfo.hh \
-		src/backend/public_request/process_public_request_personalinfo.cc \
-		src/backend/public_request/process_public_request_personalinfo.hh \
+		src/backend/public_request/process_public_request_personal_info.cc \
+		src/backend/public_request/process_public_request_personal_info.hh \
 		src/backend/public_request/public_request.cc \
 		src/backend/public_request/public_request.hh \
 		src/backend/public_request/public_requests.cc \
@@ -1191,10 +1191,10 @@ src_libfred_public_request_libpublic_request_a_SOURCES = \
 		src/backend/public_request/type/impl/implemented_by.hh \
 		src/backend/public_request/type/impl/public_request_authinfo.cc \
 		src/backend/public_request/type/impl/public_request_blockunblock.cc \
-		src/backend/public_request/type/impl/public_request_personalinfo.cc \
+		src/backend/public_request/type/impl/public_request_personal_info.cc \
 		src/backend/public_request/type/public_request_authinfo.hh \
 		src/backend/public_request/type/public_request_blockunblock.hh \
-		src/backend/public_request/type/public_request_personalinfo.hh \
+		src/backend/public_request/type/public_request_personal_info.hh \
 		src/libfred/public_request/create_public_request.cc \
 		src/libfred/public_request/create_public_request.hh \
 		src/libfred/public_request/create_public_request_auth.cc \
@@ -1217,8 +1217,8 @@ src_libfred_public_request_libpublic_request_a_SOURCES = \
 		src/libfred/public_request/public_request_lock_guard.hh \
 		src/libfred/public_request/public_request_object_lock_guard.cc \
 		src/libfred/public_request/public_request_object_lock_guard.hh \
-		src/libfred/public_request/public_request_personalinfo_impl.cc \
-		src/libfred/public_request/public_request_personalinfo_impl.hh \
+		src/libfred/public_request/public_request_personal_info_impl.cc \
+		src/libfred/public_request/public_request_personal_info_impl.hh \
 		src/libfred/public_request/public_request_type_iface.hh \
 		src/libfred/public_request/update_public_request.cc \
 		src/libfred/public_request/update_public_request.hh

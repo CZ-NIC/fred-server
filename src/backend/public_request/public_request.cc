@@ -5,7 +5,7 @@
 #include "src/backend/public_request/object_type.hh"
 #include "src/backend/public_request/type/public_request_authinfo.hh"
 #include "src/backend/public_request/type/public_request_blockunblock.hh"
-#include "src/backend/public_request/type/public_request_personalinfo.hh"
+#include "src/backend/public_request/type/public_request_personal_info.hh"
 #include "src/backend/public_request/type/get_iface_of.hh"
 #include "src/libfred/object/get_id_of_registered.hh"
 #include "src/libfred/object/object_states_info.hh"
@@ -55,7 +55,7 @@ std::map<std::string, unsigned char> get_public_request_type_to_post_type_dictio
                 std::make_pair(Type::get_iface_of<Type::UnblockChanges<PublicRequestImpl::ConfirmedBy::letter>>()
                                .get_public_request_type(), 5)).second &&
         dictionary.insert(
-                std::make_pair(Type::get_iface_of<Type::PersonalinfoPost>()
+                std::make_pair(Type::get_iface_of<Type::PersonalInfoPost>()
                                .get_public_request_type(), 6)).second)
     {
         return dictionary;
@@ -400,10 +400,10 @@ unsigned long long PublicRequestImpl::create_personal_info_request_registry_emai
         const auto contact_id = LibFred::get_id_of_registered<LibFred::Object_Type::contact>(ctx, contact_handle);
         LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, contact_id);
         const auto public_request_id = LibFred::CreatePublicRequest()
-            .exec(locked_object, Type::get_iface_of<Type::PersonalinfoAuto>(), log_request_id);
+            .exec(locked_object, Type::get_iface_of<Type::PersonalInfoAuto>(), log_request_id);
         LibFred::UpdatePublicRequest()
             .set_status(LibFred::PublicRequest::Status::resolved)
-            .exec(locked_object, Type::get_iface_of<Type::PersonalinfoAuto>(), log_request_id);
+            .exec(locked_object, Type::get_iface_of<Type::PersonalInfoAuto>(), log_request_id);
         ctx.commit_transaction();
 
         return public_request_id;
@@ -453,14 +453,14 @@ unsigned long long PublicRequestImpl::create_personal_info_request_non_registry_
             case ConfirmedBy::email:
             {
                 const unsigned long long request_id =
-                    create_public_request_op.exec(locked_object, Type::get_iface_of<Type::PersonalinfoEmail>(), log_request_id);
+                    create_public_request_op.exec(locked_object, Type::get_iface_of<Type::PersonalInfoEmail>(), log_request_id);
                 ctx.commit_transaction();
                 return request_id;
             }
             case ConfirmedBy::letter:
             {
                 const unsigned long long request_id =
-                    create_public_request_op.exec(locked_object, Type::get_iface_of<Type::PersonalinfoPost>(), log_request_id);
+                    create_public_request_op.exec(locked_object, Type::get_iface_of<Type::PersonalInfoPost>(), log_request_id);
                 ctx.commit_transaction();
                 return request_id;
             }
