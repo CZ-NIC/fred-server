@@ -29,6 +29,7 @@ namespace Type {
 struct PersonalInfoAuto;
 struct PersonalInfoEmail;
 struct PersonalInfoPost;
+struct PersonalInfoGovernment;
 
 } // namespace Fred::Backend::PublicRequest::Type
 } // namespace Fred::Backend::PublicRequest

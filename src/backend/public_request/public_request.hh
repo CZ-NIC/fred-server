@@ -61,7 +61,8 @@ public:
         enum Enum
         {
             email,
-            letter
+            letter,
+            government
         };
     };
 

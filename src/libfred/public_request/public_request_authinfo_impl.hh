@@ -15,6 +15,7 @@ extern const Type PRT_AUTHINFO_AUTO_RIF;
 extern const Type PRT_AUTHINFO_AUTO_PIF;
 extern const Type PRT_AUTHINFO_EMAIL_PIF;
 extern const Type PRT_AUTHINFO_POST_PIF;
+extern const Type PRT_AUTHINFO_GOVERNMENT_PIF;
 
 
 } // namespace LibFred::PublicRequest

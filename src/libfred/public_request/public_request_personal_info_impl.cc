@@ -13,6 +13,7 @@ FACTORY_MODULE_INIT_DEFI(personal_info)
 const Type PRT_PERSONALINFO_AUTO_PIF = "personalinfo_auto_pif";
 const Type PRT_PERSONALINFO_EMAIL_PIF = "personalinfo_email_pif";
 const Type PRT_PERSONALINFO_POST_PIF = "personalinfo_post_pif";
+const Type PRT_PERSONALINFO_GOVERNMENT_PIF = "personalinfo_government_pif";
 
 class PersonalInfoRequestImpl
         : public PublicRequestImpl
@@ -88,6 +89,18 @@ public:
     static std::string registration_name()
     {
         return PRT_PERSONALINFO_POST_PIF;
+    }
+};
+
+
+class PersonalInfoRequestPIFGovernmentImpl
+        : public PersonalInfoRequestImpl,
+          public Util::FactoryAutoRegister<PublicRequest, PersonalInfoRequestPIFGovernmentImpl>
+{
+public:
+    static std::string registration_name()
+    {
+        return PRT_PERSONALINFO_GOVERNMENT_PIF;
     }
 };
 

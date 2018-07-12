@@ -109,6 +109,8 @@ Fred::Backend::PublicRequest::PublicRequestImpl::ConfirmedBy::Enum unwrap_confir
             return Fred::Backend::PublicRequest::PublicRequestImpl::ConfirmedBy::email;
         case Registry::PublicRequest::ConfirmedBy::notarized_letter:
             return Fred::Backend::PublicRequest::PublicRequestImpl::ConfirmedBy::letter;
+        case Registry::PublicRequest::ConfirmedBy::government:
+            return Fred::Backend::PublicRequest::PublicRequestImpl::ConfirmedBy::government;
     }
     throw std::invalid_argument("value doesn't exist in Registry::PublicRequest::ConfirmedBy");
 }

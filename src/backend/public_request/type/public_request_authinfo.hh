@@ -36,6 +36,7 @@ struct AuthinfoAutoRif;
 struct AuthinfoAuto;
 struct AuthinfoEmail;
 struct AuthinfoPost;
+struct AuthinfoGovernment;
 
 } // namespace Fred::Backend::PublicRequest::Type
 } // namespace Fred::Backend::PublicRequest

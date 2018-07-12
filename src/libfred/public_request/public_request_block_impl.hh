@@ -19,6 +19,10 @@ extern const Type PRT_BLOCK_TRANSFER_POST_PIF;
 extern const Type PRT_BLOCK_CHANGES_POST_PIF;
 extern const Type PRT_UNBLOCK_TRANSFER_POST_PIF;
 extern const Type PRT_UNBLOCK_CHANGES_POST_PIF;
+extern const Type PRT_BLOCK_TRANSFER_GOVERNMENT_PIF;
+extern const Type PRT_BLOCK_CHANGES_GOVERNMENT_PIF;
+extern const Type PRT_UNBLOCK_TRANSFER_GOVERNMENT_PIF;
+extern const Type PRT_UNBLOCK_CHANGES_GOVERNMENT_PIF;
 
 
 } // namespace LibFred::PublicRequest

@@ -66,6 +66,9 @@ typedef PersonalInfoPublicRequest::Named<personal_info_email_pif> PersonalInfoEm
 extern const char personal_info_post_pif[] = "personalinfo_post_pif";
 typedef PersonalInfoPublicRequest::Named<personal_info_post_pif> PersonalInfoPostType;
 
+extern const char personal_info_government_pif[] = "personalinfo_government_pif";
+typedef PersonalInfoPublicRequest::Named<personal_info_government_pif> PersonalInfoGovernmentType;
+
 } // namespace Fred::Backend::PublicRequest::Type::Impl::{anonymous}
 } // namespace Fred::Backend::PublicRequest::Type::Impl
 
@@ -87,6 +90,13 @@ template<>
 const LibFred::PublicRequestTypeIface& get_iface_of<PersonalInfoPost>()
 {
     static const Impl::PersonalInfoPostType singleton;
+    return singleton;
+}
+
+template<>
+const LibFred::PublicRequestTypeIface& get_iface_of<PersonalInfoGovernment>()
+{
+    static const Impl::PersonalInfoGovernmentType singleton;
     return singleton;
 }
 

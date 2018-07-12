@@ -23,8 +23,10 @@
 
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/handle_database_args.hh"
+#include "src/util/corba_wrapper_decl.hh"
 #include "src/bin/cli/handle_adminclientselection_args.hh"
 #include "src/bin/cli/public_request_method.hh"
+#include "src/util/cfg/handle_corbanameservice_args.hh"
 #include "src/util/log/context.hh"
 #include "src/bin/corba/mailer_manager.hh"
 #include "src/bin/corba/file_manager_client.hh"

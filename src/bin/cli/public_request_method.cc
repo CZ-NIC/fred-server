@@ -72,17 +72,23 @@ void PublicRequestProcedure::exec()
             get_request_type_filter<PublicRequestType::AuthinfoAuto,
                                     PublicRequestType::AuthinfoEmail,
                                     PublicRequestType::AuthinfoPost,
+                                    PublicRequestType::AuthinfoGovernment,
                                     PublicRequestType::PersonalInfoAuto,
                                     PublicRequestType::PersonalInfoEmail,
                                     PublicRequestType::PersonalInfoPost,
+                                    PublicRequestType::PersonalInfoGovernment,
                                     PublicRequestType::BlockTransfer<PublicRequest::PublicRequestImpl::ConfirmedBy::email>,
                                     PublicRequestType::BlockTransfer<PublicRequest::PublicRequestImpl::ConfirmedBy::letter>,
+                                    PublicRequestType::BlockTransfer<PublicRequest::PublicRequestImpl::ConfirmedBy::government>,
                                     PublicRequestType::BlockChanges<PublicRequest::PublicRequestImpl::ConfirmedBy::email>,
                                     PublicRequestType::BlockChanges<PublicRequest::PublicRequestImpl::ConfirmedBy::letter>,
+                                    PublicRequestType::BlockChanges<PublicRequest::PublicRequestImpl::ConfirmedBy::government>,
                                     PublicRequestType::UnblockTransfer<PublicRequest::PublicRequestImpl::ConfirmedBy::email>,
                                     PublicRequestType::UnblockTransfer<PublicRequest::PublicRequestImpl::ConfirmedBy::letter>,
+                                    PublicRequestType::UnblockTransfer<PublicRequest::PublicRequestImpl::ConfirmedBy::government>,
                                     PublicRequestType::UnblockChanges<PublicRequest::PublicRequestImpl::ConfirmedBy::email>,
-                                    PublicRequestType::UnblockChanges<PublicRequest::PublicRequestImpl::ConfirmedBy::letter>>();
+                                    PublicRequestType::UnblockChanges<PublicRequest::PublicRequestImpl::ConfirmedBy::letter>,
+                                    PublicRequestType::UnblockChanges<PublicRequest::PublicRequestImpl::ConfirmedBy::government>>();
         for (const auto& argument: args_.types)
         {
             const auto itr = request_types_filter_default.find(argument);
@@ -137,9 +143,23 @@ void PublicRequestProcedure::exec()
                                   PublicRequestType::AuthinfoAuto,
                                   PublicRequestType::AuthinfoEmail,
                                   PublicRequestType::AuthinfoPost,
+                                  PublicRequestType::AuthinfoGovernment,
                                   PublicRequestType::PersonalInfoAuto,
                                   PublicRequestType::PersonalInfoEmail,
-                                  PublicRequestType::PersonalInfoPost>();
+                                  PublicRequestType::PersonalInfoPost,
+                                  PublicRequestType::PersonalInfoGovernment,
+                                  PublicRequestType::BlockTransfer<PublicRequest::PublicRequestImpl::ConfirmedBy::email>,
+                                  PublicRequestType::BlockTransfer<PublicRequest::PublicRequestImpl::ConfirmedBy::letter>,
+                                  PublicRequestType::BlockTransfer<PublicRequest::PublicRequestImpl::ConfirmedBy::government>,
+                                  PublicRequestType::BlockChanges<PublicRequest::PublicRequestImpl::ConfirmedBy::email>,
+                                  PublicRequestType::BlockChanges<PublicRequest::PublicRequestImpl::ConfirmedBy::letter>,
+                                  PublicRequestType::BlockChanges<PublicRequest::PublicRequestImpl::ConfirmedBy::government>,
+                                  PublicRequestType::UnblockTransfer<PublicRequest::PublicRequestImpl::ConfirmedBy::email>,
+                                  PublicRequestType::UnblockTransfer<PublicRequest::PublicRequestImpl::ConfirmedBy::letter>,
+                                  PublicRequestType::UnblockTransfer<PublicRequest::PublicRequestImpl::ConfirmedBy::government>,
+                                  PublicRequestType::UnblockChanges<PublicRequest::PublicRequestImpl::ConfirmedBy::email>,
+                                  PublicRequestType::UnblockChanges<PublicRequest::PublicRequestImpl::ConfirmedBy::letter>,
+                                  PublicRequestType::UnblockChanges<PublicRequest::PublicRequestImpl::ConfirmedBy::government>>();
     for (std::size_t i = 0; i < dbres.size(); ++i)
     {
         const auto request_id = static_cast<unsigned long long>(dbres[i][0]);
@@ -152,7 +172,8 @@ void PublicRequestProcedure::exec()
             {
                 if (request_type == "personalinfo_auto_pif" ||
                     request_type == "personalinfo_email_pif" ||
-                    request_type == "personalinfo_post_pif")
+                    request_type == "personalinfo_post_pif" ||
+                    request_type == "personalinfo_government_pif")
                 {
                     Fred::Backend::PublicRequest::process_public_request_personal_info_resolved(
                             request_id,
@@ -163,7 +184,8 @@ void PublicRequestProcedure::exec()
                 else if (request_type == "authinfo_auto_rif" ||
                          request_type == "authinfo_auto_pif" ||
                          request_type == "authinfo_email_pif" ||
-                         request_type == "authinfo_post_pif")
+                         request_type == "authinfo_post_pif" ||
+                         request_type == "authinfo_government_pif")
                 {
                     Fred::Backend::PublicRequest::process_public_request_auth_info_resolved(
                             request_id,
@@ -172,12 +194,16 @@ void PublicRequestProcedure::exec()
                 }
                 else if (request_type == "block_transfer_email_pif" ||
                          request_type == "block_transfer_post_pif" ||
+                         request_type == "block_transfer_government_pif" ||
                          request_type == "block_changes_email_pif" ||
                          request_type == "block_changes_post_pif" ||
+                         request_type == "block_changes_government_pif" ||
                          request_type == "unblock_transfer_email_pif" ||
                          request_type == "unblock_transfer_post_pif" ||
+                         request_type == "unblock_transfer_government_pif" ||
                          request_type == "unblock_changes_email_pif" ||
-                         request_type == "unblock_changes_post_pif")
+                         request_type == "unblock_changes_post_pif" ||
+                         request_type == "unblock_changes_government_pif")
                 {
                     Fred::Backend::PublicRequest::process_public_request_block_unblock_resolved(
                             request_id,

@@ -223,6 +223,13 @@ unsigned long long PublicRequestImpl::create_authinfo_request_non_registry_email
                 ctx.commit_transaction();
                 return request_id;
             }
+            case ConfirmedBy::government:
+            {
+                const unsigned long long request_id =
+                    create_public_request_op.exec(locked_object, Type::get_iface_of<Type::AuthinfoGovernment>(), log_request_id);
+                ctx.commit_transaction();
+                return request_id;
+            }
         }
         throw std::runtime_error("unexpected confirmation method");
     }
@@ -461,6 +468,13 @@ unsigned long long PublicRequestImpl::create_personal_info_request_non_registry_
             {
                 const unsigned long long request_id =
                     create_public_request_op.exec(locked_object, Type::get_iface_of<Type::PersonalInfoPost>(), log_request_id);
+                ctx.commit_transaction();
+                return request_id;
+            }
+            case ConfirmedBy::government:
+            {
+                const unsigned long long request_id =
+                    create_public_request_op.exec(locked_object, Type::get_iface_of<Type::PersonalInfoGovernment>(), log_request_id);
                 ctx.commit_transaction();
                 return request_id;
             }

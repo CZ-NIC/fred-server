@@ -14,6 +14,7 @@ FACTORY_MODULE_INIT_DECL(personal_info)
 extern const Type PRT_PERSONALINFO_AUTO_PIF;
 extern const Type PRT_PERSONALINFO_EMAIL_PIF;
 extern const Type PRT_PERSONALINFO_POST_PIF;
+extern const Type PRT_PERSONALINFO_GOVERNMENT_PIF;
 
 
 } // namespace LibFred::PublicRequest

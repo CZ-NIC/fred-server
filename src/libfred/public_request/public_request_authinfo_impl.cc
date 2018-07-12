@@ -15,6 +15,7 @@ const Type PRT_AUTHINFO_AUTO_RIF = "authinfo_auto_rif";
 const Type PRT_AUTHINFO_AUTO_PIF = "authinfo_auto_pif";
 const Type PRT_AUTHINFO_EMAIL_PIF = "authinfo_email_pif";
 const Type PRT_AUTHINFO_POST_PIF = "authinfo_post_pif";
+const Type PRT_AUTHINFO_GOVERNMENT_PIF = "authinfo_government_pif";
 
 class AuthInfoRequestImpl
         : public PublicRequestImpl
@@ -90,6 +91,18 @@ public:
     static std::string registration_name()
     {
         return PRT_AUTHINFO_POST_PIF;
+    }
+};
+
+
+class AuthInfoRequestPIFGovernmentImpl
+        : public AuthInfoRequestImpl,
+          public Util::FactoryAutoRegister<PublicRequest, AuthInfoRequestPIFGovernmentImpl>
+{
+public:
+    static std::string registration_name()
+    {
+        return PRT_AUTHINFO_GOVERNMENT_PIF;
     }
 };
 

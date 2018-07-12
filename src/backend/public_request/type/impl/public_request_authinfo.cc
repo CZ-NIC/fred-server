@@ -71,6 +71,9 @@ typedef AuthinfoPublicRequest::Named<authinfo_email_pif> AuthinfoEmail;
 extern const char authinfo_post_pif[] = "authinfo_post_pif";
 typedef AuthinfoPublicRequest::Named<authinfo_post_pif> AuthinfoPost;
 
+extern const char authinfo_government_pif[] = "authinfo_government_pif";
+typedef AuthinfoPublicRequest::Named<authinfo_post_pif> AuthinfoGovernment;
+
 } // namespace Fred::Backend::PublicRequest::Type::Impl::{anonymous}
 } // namespace Fred::Backend::PublicRequest::Type::Impl
 
@@ -99,6 +102,13 @@ template<>
 const LibFred::PublicRequestTypeIface& get_iface_of<AuthinfoPost>()
 {
     static const Impl::AuthinfoPost singleton;
+    return singleton;
+}
+
+template<>
+const LibFred::PublicRequestTypeIface& get_iface_of<AuthinfoGovernment>()
+{
+    static const Impl::AuthinfoGovernment singleton;
     return singleton;
 }
 
