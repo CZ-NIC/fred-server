@@ -83,6 +83,11 @@ void block_unblock(
                 throw ObjectAlreadyBlocked();
             }
 
+            if (object_states.presents(LibFred::Object_State::server_update_prohibited))
+            {
+                throw HasDifferentBlock(); // different from request impl src/backend/public_request/public_request.cc
+            }
+
             LibFred::StatusList status_list;
             status_list.insert(Conversion::Enums::to_db_handle(LibFred::Object_State::server_transfer_prohibited));
             LibFred::CreateObjectStateRequestId(object_id, status_list).exec(_ctx);
@@ -93,6 +98,15 @@ void block_unblock(
                 object_states.presents(LibFred::Object_State::server_update_prohibited))
             {
                 throw ObjectAlreadyBlocked();
+            }
+
+            // different from request impl src/backend/public_request/public_request.cc
+            if (object_states.presents(LibFred::Object_State::server_update_prohibited) &&
+               !object_states.presents(LibFred::Object_State::server_transfer_prohibited))
+            {
+                _ctx.get_log().warning(
+                        boost::format("Request %1% inconsistent states: server_update_prohibited without server_transfer_prohibited") %
+                        _public_request_id);
             }
 
             LibFred::StatusList status_list;
@@ -149,27 +163,44 @@ void process_public_request_block_unblock_resolved(
         LibFred::OperationContextCreator ctx;
         const LibFred::PublicRequestLockGuardById locked_request(ctx, _public_request_id);
 
-        const std::string public_request_type = _public_request_type.get_public_request_type();
+        try
+        {
+            const std::string public_request_type = _public_request_type.get_public_request_type();
 
-        if (public_request_type == "block_transfer_email_pif" ||
-            public_request_type == "block_transfer_post_pif")
-        {
-            block_unblock(ctx, LockRequestType::block_transfer, _public_request_id);
+            if (public_request_type == "block_transfer_email_pif" ||
+                public_request_type == "block_transfer_post_pif")
+            {
+                block_unblock(ctx, LockRequestType::block_transfer, _public_request_id);
+            }
+            else if (public_request_type == "block_changes_email_pif" ||
+                     public_request_type == "block_changes_post_pif")
+            {
+                block_unblock(ctx, LockRequestType::block_transfer_and_update, _public_request_id);
+            }
+            else if (public_request_type == "unblock_transfer_email_pif" ||
+                     public_request_type == "unblock_transfer_post_pif")
+            {
+                block_unblock(ctx, LockRequestType::unblock_transfer, _public_request_id);
+            }
+            else if (public_request_type == "unblock_changes_email_pif" ||
+                     public_request_type == "unblock_changes_post_pif")
+            {
+                block_unblock(ctx, LockRequestType::unblock_transfer_and_update, _public_request_id);
+            }
         }
-        else if (public_request_type == "block_changes_email_pif" ||
-                 public_request_type == "block_changes_post_pif")
+        catch (const ObjectAlreadyBlocked& e)
         {
-            block_unblock(ctx, LockRequestType::block_transfer_and_update, _public_request_id);
+            ctx.get_log().info(
+                    boost::format("Request %1% no action needed (%2%)") %
+                    _public_request_id %
+                    e.what());
         }
-        else if (public_request_type == "unblock_transfer_email_pif" ||
-                 public_request_type == "unblock_transfer_post_pif")
+        catch (const ObjectNotBlocked& e)
         {
-            block_unblock(ctx, LockRequestType::unblock_transfer, _public_request_id);
-        }
-        else if (public_request_type == "unblock_changes_email_pif" ||
-                 public_request_type == "unblock_changes_post_pif")
-        {
-            block_unblock(ctx, LockRequestType::unblock_transfer_and_update, _public_request_id);
+            ctx.get_log().info(
+                    boost::format("Request %1% no action needed (%2%)") %
+                    _public_request_id %
+                    e.what());
         }
 
         try
