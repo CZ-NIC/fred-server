@@ -20,7 +20,7 @@
 #include "src/libfred/zone/create_zone.hh"
 #include "src/libfred/zone/info_zone.hh"
 #include "src/libfred/zone/update_zone.hh"
-#include "src/libfred/zone/util.hh"
+#include "src/libfred/zone/exceptions.hh"
 #include "src/util/random_data_generator.hh"
 #include "test/libfred/zone/util.hh"
 #include "test/setup/fixtures.hh"

@@ -16,10 +16,9 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "src/libfred/zone/exceptions.hh"
 #include "src/libfred/zone/info_zone_data.hh"
 #include "src/libfred/zone/info_zone.hh"
-#include "src/libfred/zone/util.hh"
-
 
 namespace LibFred {
 namespace Zone {
@@ -45,6 +44,10 @@ InfoZoneData InfoZone::exec(OperationContext& _ctx) const
     if (result.size() != 1)
     {
         throw NonExistentZone();
+    }
+    else if (result.size() > 1)
+    {
+        throw std::runtime_error("Duplicity in database");
     }
 
     InfoZoneData info_zone_data;

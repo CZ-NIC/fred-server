@@ -16,6 +16,7 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "src/libfred/zone/exceptions.hh"
 #include "src/libfred/zone/update_zone.hh"
 #include "src/libfred/zone/util.hh"
 #include "src/util/db/query_param.hh"

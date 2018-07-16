@@ -16,17 +16,40 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef UTIL_HH_3D464D2FBF714314991D5DF2D86C15F6
-#define UTIL_HH_3D464D2FBF714314991D5DF2D86C15F6
-
-#include <string>
+#include "src/libfred/zone/exceptions.hh"
 
 namespace LibFred {
 namespace Zone {
 
-bool is_enum_zone(const std::string& _fqdn);
+const char* NonExistentZone::what() const noexcept
+{
+    return "Zone does not exist.";
+}
+
+const char* NotEnumZone::what() const noexcept
+{
+    return "Could not set enum validation period for non-enum zone.";
+}
+
+const char* NoZoneData::what() const noexcept
+{
+    return "No zone data for update.";
+}
+
+const char* CreateZoneException::what() const noexcept
+{
+    return "Failed to create zone due to an unknown exception.";
+}
+
+const char* InfoZoneException::what() const noexcept
+{
+    return "Failed to get zone info due to an unknown exception.";
+}
+
+const char* UpdateZoneException::what() const noexcept
+{
+    return "Failed to update zone due to an unknown exception.";
+}
 
 } // namespace LibFred::Zone
 } // namespace LibFred
-
-#endif

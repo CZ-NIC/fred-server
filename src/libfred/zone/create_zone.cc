@@ -17,6 +17,7 @@
  */
 
 #include "src/libfred/zone/create_zone.hh"
+#include "src/libfred/zone/exceptions.hh"
 #include "src/libfred/zone/util.hh"
 
 namespace LibFred {

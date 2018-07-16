@@ -16,15 +16,43 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef UTIL_HH_3D464D2FBF714314991D5DF2D86C15F6
-#define UTIL_HH_3D464D2FBF714314991D5DF2D86C15F6
+#ifndef EXCEPTIONS_HH_E5ED550598D54E5088577F9CDD9FEC93
+#define EXCEPTIONS_HH_E5ED550598D54E5088577F9CDD9FEC93
 
-#include <string>
+#include <exception>
 
 namespace LibFred {
 namespace Zone {
 
-bool is_enum_zone(const std::string& _fqdn);
+struct NonExistentZone : std::exception
+{
+    const char* what() const noexcept override;
+};
+
+struct NotEnumZone : std::exception
+{
+    const char* what() const noexcept override;
+};
+
+struct NoZoneData : std::exception
+{
+    const char* what() const noexcept override;
+};
+
+struct CreateZoneException : std::exception
+{
+    const char* what() const noexcept override;
+};
+
+struct InfoZoneException : std::exception
+{
+    const char* what() const noexcept override;
+};
+
+struct UpdateZoneException : std::exception
+{
+    const char* what() const noexcept override;
+};
 
 } // namespace LibFred::Zone
 } // namespace LibFred

@@ -43,7 +43,9 @@ public:
     }
 
     CreateZone& set_enum_validation_period_in_months(int _enum_validation_period_in_months);
+
     CreateZone& set_sending_warning_letter(bool _sending_warning_letter);
+
     unsigned long long exec(OperationContext& _ctx) const;
 
 private:
