@@ -30,12 +30,19 @@ class CreateZoneSoa
 {
 public:
     explicit CreateZoneSoa(const std::string& _fqdn);
+
     CreateZoneSoa& set_ttl(int _ttl);
+
     CreateZoneSoa& set_hostmaster(const std::string& _hostmaster);
+
     CreateZoneSoa& set_refresh(int _refresh);
+
     CreateZoneSoa& set_update_retr(int _update_retr);
+
     CreateZoneSoa& set_expiry(int _expiry);
+
     CreateZoneSoa& set_minimum(int _minimum);
+
     CreateZoneSoa& set_ns_fqdn(const std::string& _ns_fqdn);
 
     unsigned long long exec(OperationContext& _ctx) const;

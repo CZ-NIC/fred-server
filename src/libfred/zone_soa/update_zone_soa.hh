@@ -37,11 +37,17 @@ public:
     }
 
     UpdateZoneSoa& set_ttl(int _ttl);
+
     UpdateZoneSoa& set_hostmaster(const std::string& _hostmaster);
+
     UpdateZoneSoa& set_refresh(int _refresh);
+
     UpdateZoneSoa& set_update_retr(int _update_retr);
+
     UpdateZoneSoa& set_expiry(int _expiry);
+
     UpdateZoneSoa& set_minimum(int _minimum);
+
     UpdateZoneSoa& set_ns_fqdn(const std::string& _ns_fqdn);
 
     unsigned long long exec(OperationContext& _ctx) const;

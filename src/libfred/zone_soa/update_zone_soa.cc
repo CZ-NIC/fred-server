@@ -71,13 +71,15 @@ UpdateZoneSoa& UpdateZoneSoa::set_ns_fqdn(const std::string& _ns_fqdn)
 
 unsigned long long UpdateZoneSoa::exec(OperationContext& _ctx) const
 {
-    const bool values_for_update_are_set = (ttl_ != boost::none
-            || hostmaster_ != boost::none
-            || refresh_ != boost::none
-            || update_retr_ != boost::none
-            || expiry_ != boost::none
-            || minimum_ != boost::none
-            || ns_fqdn_ != boost::none);
+    const bool values_for_update_are_set =
+            (ttl_ != boost::none ||
+             hostmaster_ != boost::none ||
+             refresh_ != boost::none ||
+             update_retr_ != boost::none ||
+             expiry_ != boost::none ||
+             minimum_ != boost::none ||
+             ns_fqdn_ != boost::none);
+
     if (!values_for_update_are_set)
     {
         throw NoZoneSoaData();

@@ -19,7 +19,7 @@
 #include "src/libfred/opcontext.hh"
 #include "src/libfred/opexception.hh"
 #include "src/libfred/zone/create_zone.hh"
-#include "src/libfred/zone/util.hh"
+#include "src/libfred/zone/exceptions.hh"
 #include "src/libfred/zone_soa/create_zone_soa.hh"
 #include "src/libfred/zone_soa/info_zone_soa.hh"
 #include "src/libfred/zone_soa/update_zone_soa.hh"

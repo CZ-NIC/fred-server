@@ -18,7 +18,7 @@
 #include "src/libfred/opcontext.hh"
 #include "src/libfred/opexception.hh"
 #include "src/libfred/zone/create_zone.hh"
-#include "src/libfred/zone/util.hh"
+#include "src/libfred/zone/exceptions.hh"
 #include "src/libfred/zone_soa/create_zone_soa.hh"
 #include "src/libfred/zone_soa/exceptions.hh"
 #include "src/util/random_data_generator.hh"
