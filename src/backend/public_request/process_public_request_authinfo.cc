@@ -39,23 +39,22 @@ namespace PublicRequest {
 namespace {
 
 unsigned long long send_authinfo(
-        LibFred::OperationContext& _ctx,
-        unsigned long long _public_request_id,
+        const LibFred::LockedPublicRequestForUpdate& _locked_request,
         std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager)
 {
-    LibFred::PublicRequestLockGuardById locked_request(_ctx, _public_request_id);
-    const LibFred::PublicRequestInfo request_info = LibFred::InfoPublicRequest().exec(_ctx, locked_request);
+    auto& ctx = _locked_request.get_ctx();
+    const LibFred::PublicRequestInfo request_info = LibFred::InfoPublicRequest().exec(ctx, _locked_request);
     const auto object_id = request_info.get_object_id().get_value(); // oops
     // clang-format off
     const std::string sql_query =
             "SELECT oreg.name AS handle, eot.name AS object_type "
               "FROM object_registry oreg "
-              "LEFT JOIN enum_object_type eot "
+              "JOIN enum_object_type eot "
                 "ON oreg.type = eot.id "
              "WHERE oreg.id = $1::BIGINT "
                "AND oreg.erdate IS NULL";
     // clang-format on
-    const Database::Result db_result = _ctx.get_conn().exec_params(
+    const Database::Result db_result = ctx.get_conn().exec_params(
             sql_query,
             Database::query_param_list(object_id));
     if (db_result.size() < 1)
@@ -67,11 +66,11 @@ unsigned long long send_authinfo(
         throw std::runtime_error("too many objects for given id");
     }
     const std::string handle = static_cast<std::string>(db_result[0]["handle"]);
-    const LibFred::Object_Type::Enum object_type = Conversion::Enums::from_db_handle<LibFred::Object_Type>(db_result[0]["object_type"]);
+    const LibFred::Object_Type::Enum object_type = Conversion::Enums::from_db_handle<LibFred::Object_Type>(static_cast<std::string>(db_result[0]["object_type"]));
 
     LibFred::Mailer::Parameters email_template_params;
     {
-        const Database::Result dbres = _ctx.get_conn().exec_params(
+        const Database::Result dbres = ctx.get_conn().exec_params(
                 "SELECT (create_time AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Prague')::DATE FROM public_request "
                 "WHERE id=$1::BIGINT",
                 Database::query_param_list(_public_request_id));
@@ -195,7 +194,7 @@ void process_public_request_auth_info_resolved(
     {
         LibFred::OperationContextCreator ctx;
         const LibFred::PublicRequestLockGuardById locked_request(ctx, _public_request_id);
-        const unsigned long long email_id = send_authinfo(ctx, _public_request_id, _mailer_manager);
+        const unsigned long long email_id = send_authinfo(locked_request, _mailer_manager);
         try
         {
             LibFred::UpdatePublicRequest()
