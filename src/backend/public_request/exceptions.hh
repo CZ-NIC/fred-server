@@ -27,52 +27,52 @@ namespace PublicRequest {
 
 struct NoPublicRequest : std::exception
 {
-    virtual const char* what() const noexcept;
+    const char* what() const noexcept override;
 };
 
 struct ObjectAlreadyBlocked : std::exception
 {
-    virtual const char* what() const noexcept;
+    const char* what() const noexcept override;
 };
 
 struct ObjectTransferProhibited : std::exception
 {
-    virtual const char* what() const noexcept;
+    const char* what() const noexcept override;
 };
 
 struct ObjectNotBlocked : std::exception
 {
-    virtual const char* what() const noexcept;
+    const char* what() const noexcept override;
 };
 
 struct HasDifferentBlock : std::exception
 {
-    virtual const char* what() const noexcept;
+    const char* what() const noexcept override;
 };
 
 struct ObjectNotFound : std::exception
 {
-    virtual const char* what() const noexcept;
+    const char* what() const noexcept override;
 };
 
 struct InvalidPublicRequestType : std::exception
 {
-    virtual const char* what() const noexcept;
+    const char* what() const noexcept override;
 };
 
 struct NoContactEmail : std::exception
 {
-    virtual const char* what() const noexcept;
+    const char* what() const noexcept override;
 };
 
 struct InvalidContactEmail : std::exception
 {
-    virtual const char* what() const noexcept;
+    const char* what() const noexcept override;
 };
 
 struct OperationProhibited : std::exception
 {
-    virtual const char* what() const noexcept;
+    const char* what() const noexcept override;
 };
 
 } // namespace Fred::Backend::PublicRequest

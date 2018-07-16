@@ -36,7 +36,6 @@ void authinfo_domain(
         const std::string& _fqdn,
         const SessionData& _session_data)
 {
-    // TODO log
     try
     {
         create_authinfo_request_registry_email_rif(
