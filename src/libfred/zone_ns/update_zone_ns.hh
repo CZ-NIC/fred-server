@@ -38,7 +38,9 @@ public:
     }
 
     UpdateZoneNs& set_zone_fqdn(const std::string& _zone_fqdn);
+
     UpdateZoneNs& set_nameserver_fqdn(const std::string& _nameserver_fqdn);
+
     UpdateZoneNs& set_nameserver_ip_addresses(
             const std::vector<boost::asio::ip::address>& _nameserver_ip_addresses);
 

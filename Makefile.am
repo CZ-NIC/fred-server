@@ -807,6 +807,8 @@ src_libfred_libfred_a_SOURCES = \
 		src/libfred/zone.hh \
 		src/libfred/zone_ns/create_zone_ns.cc \
 		src/libfred/zone_ns/create_zone_ns.hh \
+		src/libfred/zone_ns/exceptions.cc \
+		src/libfred/zone_ns/exceptions.hh \
 		src/libfred/zone_ns/info_zone_ns_data.hh \
 		src/libfred/zone_ns/info_zone_ns.cc \
 		src/libfred/zone_ns/info_zone_ns.hh \

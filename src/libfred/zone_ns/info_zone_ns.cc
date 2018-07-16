@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "src/libfred/zone_ns/exceptions.hh"
 #include "src/libfred/zone_ns/info_zone_ns.hh"
-#include "src/libfred/zone_ns/util.hh"
 
 #include <algorithm>
 #include <boost/algorithm/string.hpp>
@@ -69,6 +69,10 @@ InfoZoneNsData InfoZoneNs::exec(OperationContext& _ctx) const
     if (result.size() < 1)
     {
         throw NonExistentZoneNs();
+    }
+    else if (result.size() > 1)
+    {
+        throw std::runtime_error("Duplicity in database");
     }
 
     InfoZoneNsData info_zone_ns_data;

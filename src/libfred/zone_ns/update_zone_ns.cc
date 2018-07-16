@@ -17,6 +17,7 @@
  */
 
 #include "src/libfred/zone/info_zone.hh"
+#include "src/libfred/zone_ns/exceptions.hh"
 #include "src/libfred/zone_ns/update_zone_ns.hh"
 #include "src/libfred/zone_ns/util.hh"
 #include "src/util/db/query_param.hh"

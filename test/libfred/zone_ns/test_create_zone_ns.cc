@@ -18,10 +18,10 @@
 
 #include "src/libfred/zone_ns/create_zone_ns.hh"
 #include "src/libfred/zone/create_zone.hh"
-#include "src/libfred/zone/util.hh"
+#include "src/libfred/zone/exceptions.hh"
+#include "src/util/random_data_generator.hh"
 #include "test/libfred/zone/util.hh"
 #include "test/setup/fixtures.hh"
-#include "src/util/random_data_generator.hh"
 
 #include <boost/test/test_tools.hpp>
 #include <boost/test/unit_test.hpp>

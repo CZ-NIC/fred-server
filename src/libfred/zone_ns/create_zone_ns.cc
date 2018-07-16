@@ -17,6 +17,7 @@
  */
 
 #include "src/libfred/zone_ns/create_zone_ns.hh"
+#include "src/libfred/zone_ns/exceptions.hh"
 #include "src/libfred/zone_ns/util.hh"
 #include "src/libfred/zone/info_zone.hh"
 

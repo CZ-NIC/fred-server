@@ -16,20 +16,35 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef UTIL_HH_F13E44D632884171A2427E7F474CC8E9
-#define UTIL_HH_F13E44D632884171A2427E7F474CC8E9
-
-#include <boost/asio/ip/address.hpp>
-#include <string>
-#include <vector>
+#include "src/libfred/zone_ns/exceptions.hh"
 
 namespace LibFred {
 namespace ZoneNs {
 
-std::string ip_addresses_to_string(
-        const std::vector<boost::asio::ip::address> _ip_addresses);
+const char* CreateZoneNsException::what() const noexcept
+{
+    return "Failed to create zone ns due to an unknown exception.";
+}
+
+const char* InfoZoneNsException::what() const noexcept
+{
+    return "Failed to get zone ns info due to an unknown exception.";
+}
+
+const char* NonExistentZoneNs::what() const noexcept
+{
+    return "Zone ns does not exist.";
+}
+
+const char* NoZoneNsData::what() const noexcept
+{
+    return "No zone ns data for update.";
+}
+
+const char* UpdateZoneNsException::what() const noexcept
+{
+    return "Failed to update zone ns due to an unknown exception.";
+}
 
 } // namespace LibFred::ZoneNs
 } // namespace LibFred
-
-#endif

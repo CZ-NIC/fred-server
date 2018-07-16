@@ -21,7 +21,7 @@
 #include "src/libfred/zone_ns/create_zone_ns.hh"
 #include "src/libfred/zone_ns/info_zone_ns_data.hh"
 #include "src/libfred/zone_ns/info_zone_ns.hh"
-#include "src/libfred/zone_ns/util.hh"
+#include "src/libfred/zone_ns/exceptions.hh"
 #include "src/util/random_data_generator.hh"
 #include "test/libfred/zone_ns/util.hh"
 #include "test/libfred/zone/util.hh"
