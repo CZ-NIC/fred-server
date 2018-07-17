@@ -62,9 +62,9 @@ public:
 };
 
 
-class BlockTransferFequestPIFEmailImpl
+class BlockTransferRequestPIFEmailImpl
         : public BlockUnblockRequestImpl,
-          public Util::FactoryAutoRegister<PublicRequest, BlockTransferFequestPIFEmailImpl>
+          public Util::FactoryAutoRegister<PublicRequest, BlockTransferRequestPIFEmailImpl>
 {
 public:
     static std::string registration_name()

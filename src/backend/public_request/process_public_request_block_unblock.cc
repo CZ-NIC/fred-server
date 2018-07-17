@@ -36,7 +36,6 @@
 #include "src/libfred/registrar/info_registrar.hh"
 #include "src/util/corba_wrapper_decl.hh"
 
-#include <array>
 #include <exception>
 
 namespace Fred {
@@ -57,16 +56,16 @@ struct LockRequestType
 };
 
 void block_unblock(
-        LibFred::OperationContext& _ctx,
-        LockRequestType::Enum _lock_request_type,
-        unsigned long long _public_request_id)
+        const LibFred::LockedPublicRequestForUpdate& _locked_request,
+        LockRequestType::Enum _lock_request_type)
 {
-    LibFred::PublicRequestLockGuardById locked_request(_ctx, _public_request_id);
-    const LibFred::PublicRequestInfo request_info = LibFred::InfoPublicRequest().exec(_ctx, locked_request);
+    auto& ctx = _locked_request.get_ctx();
+    const auto public_request_id = _locked_request.get_id();
+    const LibFred::PublicRequestInfo request_info = LibFred::InfoPublicRequest().exec(ctx, _locked_request);
     const auto object_id = request_info.get_object_id().get_value(); // oops
 
-    LibFred::LockObjectStateRequestLock(object_id).exec(_ctx);
-    const LibFred::ObjectStatesInfo object_states(LibFred::GetObjectStates(object_id).exec(_ctx));
+    LibFred::LockObjectStateRequestLock(object_id).exec(ctx);
+    const LibFred::ObjectStatesInfo object_states(LibFred::GetObjectStates(object_id).exec(ctx));
 
     if (object_states.presents(LibFred::Object_State::mojeid_contact) ||
         object_states.presents(LibFred::Object_State::server_blocked))
@@ -90,7 +89,8 @@ void block_unblock(
 
             LibFred::StatusList status_list;
             status_list.insert(Conversion::Enums::to_db_handle(LibFred::Object_State::server_transfer_prohibited));
-            LibFred::CreateObjectStateRequestId(object_id, status_list).exec(_ctx);
+            LibFred::CreateObjectStateRequestId(object_id, status_list).exec(ctx);
+            LibFred::PerformObjectStateRequest(object_id).exec(ctx);
         }
         case LockRequestType::block_transfer_and_update:
         {
@@ -104,15 +104,16 @@ void block_unblock(
             if (object_states.presents(LibFred::Object_State::server_update_prohibited) &&
                !object_states.presents(LibFred::Object_State::server_transfer_prohibited))
             {
-                _ctx.get_log().warning(
+                ctx.get_log().warning(
                         boost::format("Request %1% inconsistent states: server_update_prohibited without server_transfer_prohibited") %
-                        _public_request_id);
+                        public_request_id);
             }
 
             LibFred::StatusList status_list;
             status_list.insert(Conversion::Enums::to_db_handle(LibFred::Object_State::server_transfer_prohibited));
             status_list.insert(Conversion::Enums::to_db_handle(LibFred::Object_State::server_update_prohibited));
-            LibFred::CreateObjectStateRequestId(object_id, status_list).exec(_ctx);
+            LibFred::CreateObjectStateRequestId(object_id, status_list).exec(ctx);
+            LibFred::PerformObjectStateRequest(object_id).exec(ctx);
         }
         case LockRequestType::unblock_transfer:
         {
@@ -128,7 +129,8 @@ void block_unblock(
 
             LibFred::StatusList status_list;
             status_list.insert(Conversion::Enums::to_db_handle(LibFred::Object_State::server_transfer_prohibited));
-            LibFred::CancelObjectStateRequestId(object_id, status_list).exec(_ctx);
+            LibFred::CancelObjectStateRequestId(object_id, status_list).exec(ctx);
+            LibFred::PerformObjectStateRequest(object_id).exec(ctx);
         }
         case LockRequestType::unblock_transfer_and_update:
         {
@@ -144,12 +146,11 @@ void block_unblock(
             LibFred::StatusList status_list;
             status_list.insert(Conversion::Enums::to_db_handle(LibFred::Object_State::server_transfer_prohibited));
             status_list.insert(Conversion::Enums::to_db_handle(LibFred::Object_State::server_update_prohibited));
-            LibFred::CancelObjectStateRequestId(object_id, status_list).exec(_ctx);
+            LibFred::CancelObjectStateRequestId(object_id, status_list).exec(ctx);
+            LibFred::PerformObjectStateRequest(object_id).exec(ctx);
         }
     }
     throw std::logic_error("unexpected lock request type");
-
-    LibFred::PerformObjectStateRequest(object_id).exec(_ctx);
 }
 
 } // namespace Fred::Backend::PublicRequest::{anonymous}
@@ -170,22 +171,22 @@ void process_public_request_block_unblock_resolved(
             if (public_request_type == "block_transfer_email_pif" ||
                 public_request_type == "block_transfer_post_pif")
             {
-                block_unblock(ctx, LockRequestType::block_transfer, _public_request_id);
+                block_unblock(locked_request, LockRequestType::block_transfer);
             }
             else if (public_request_type == "block_changes_email_pif" ||
                      public_request_type == "block_changes_post_pif")
             {
-                block_unblock(ctx, LockRequestType::block_transfer_and_update, _public_request_id);
+                block_unblock(locked_request, LockRequestType::block_transfer_and_update);
             }
             else if (public_request_type == "unblock_transfer_email_pif" ||
                      public_request_type == "unblock_transfer_post_pif")
             {
-                block_unblock(ctx, LockRequestType::unblock_transfer, _public_request_id);
+                block_unblock(locked_request, LockRequestType::unblock_transfer);
             }
             else if (public_request_type == "unblock_changes_email_pif" ||
                      public_request_type == "unblock_changes_post_pif")
             {
-                block_unblock(ctx, LockRequestType::unblock_transfer_and_update, _public_request_id);
+                block_unblock(locked_request, LockRequestType::unblock_transfer_and_update);
             }
         }
         catch (const ObjectAlreadyBlocked& e)

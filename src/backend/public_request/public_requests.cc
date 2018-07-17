@@ -31,6 +31,8 @@
 
 #include <boost/optional.hpp>
 
+#include <algorithm>
+
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
