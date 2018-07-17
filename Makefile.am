@@ -277,6 +277,7 @@ noinst_HEADERS = \
 		src/libfred/object/object_states_info.hh \
 		src/libfred/object/object_state.hh \
 		src/backend/epp/contact/contact_handle_state_to_check_result.hh \
+		src/libfred/public_request/public_request_on_status_action.hh \
 		src/libfred/public_request/public_request_status.hh \
 		src/libfred/public_request/get_opened_public_request.hh \
 		src/libfred/public_request/info_public_request.hh \
@@ -1248,6 +1249,7 @@ src_libfred_public_request_libpublic_request_a_SOURCES = \
 		src/libfred/public_request/public_request_lock_guard.hh \
 		src/libfred/public_request/public_request_object_lock_guard.cc \
 		src/libfred/public_request/public_request_object_lock_guard.hh \
+		src/libfred/public_request/public_request_on_status_action.hh \
 		src/libfred/public_request/public_request_personal_info_impl.cc \
 		src/libfred/public_request/public_request_personal_info_impl.hh \
 		src/libfred/public_request/public_request_type_iface.hh \
