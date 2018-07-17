@@ -3178,8 +3178,8 @@ install(TARGETS mojeid_contact_address_import DESTINATION sbin)
 install(TARGETS mojeid_contact_ssn_fix DESTINATION sbin)
 install(TARGETS fred-disclose-flag-updater DESTINATION sbin)
 
-install(DIRECTORY config/ DESTINATION etc/fred FILES_MATCHING PATTERN "*.conf")
-install(DIRECTORY init-scripts/ DESTINATION etc/inid.d FILES_MATCHING PATTERN "fred-*")
+install(DIRECTORY ${CMAKE_BINARY_DIR}/config/ DESTINATION etc/fred FILES_MATCHING PATTERN "*.conf")
+install(DIRECTORY ${CMAKE_BINARY_DIR}/init-scripts/ DESTINATION etc/inid.d FILES_MATCHING PATTERN "fred-*")
 
 install(TARGETS test-admin-contact-automerge DESTINATION bin)
 install(TARGETS test-admin-contact-verification DESTINATION bin)
