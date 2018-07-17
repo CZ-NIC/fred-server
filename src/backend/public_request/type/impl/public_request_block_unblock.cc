@@ -16,7 +16,10 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "src/backend/public_request/confirmed_by.hh"
+#include "src/backend/public_request/type/public_request_authinfo.hh"
 #include "src/backend/public_request/type/public_request_block_unblock.hh"
+#include "src/backend/public_request/type/public_request_personal_info.hh"
 #include "src/backend/public_request/type/get_iface_of.hh"
 #include "src/libfred/public_request/public_request_status.hh"
 #include "src/libfred/public_request/public_request_on_status_action.hh"
@@ -126,118 +129,118 @@ LibFred::PublicRequestTypeIface::PublicRequestTypes get_block_unblock_public_req
 } // namespace Fred::Backend::PublicRequest::Type::Impl
 
 template<>
-const LibFred::PublicRequestTypeIface& get_iface_of<BlockChanges<PublicRequestImpl::ConfirmedBy::email>>()
+const LibFred::PublicRequestTypeIface& get_iface_of<BlockChanges<ConfirmedBy::email>>()
 {
     static const Impl::Block::Changes::ByEmail singleton;
     return singleton;
 }
 
 template<>
-const LibFred::PublicRequestTypeIface& get_iface_of<BlockChanges<PublicRequestImpl::ConfirmedBy::letter>>()
+const LibFred::PublicRequestTypeIface& get_iface_of<BlockChanges<ConfirmedBy::letter>>()
 {
     static const Impl::Block::Changes::ByPost singleton;
     return singleton;
 }
 
 template<>
-const LibFred::PublicRequestTypeIface& get_iface_of<BlockChanges<PublicRequestImpl::ConfirmedBy::government>>()
+const LibFred::PublicRequestTypeIface& get_iface_of<BlockChanges<ConfirmedBy::government>>()
 {
     static const Impl::Block::Changes::ByGovernment singleton;
     return singleton;
 }
 
 template<>
-const LibFred::PublicRequestTypeIface& get_iface_of<BlockTransfer<PublicRequestImpl::ConfirmedBy::email>>()
+const LibFred::PublicRequestTypeIface& get_iface_of<BlockTransfer<ConfirmedBy::email>>()
 {
     static const Impl::Block::Transfer::ByEmail singleton;
     return singleton;
 }
 
 template<>
-const LibFred::PublicRequestTypeIface& get_iface_of<BlockTransfer<PublicRequestImpl::ConfirmedBy::letter>>()
+const LibFred::PublicRequestTypeIface& get_iface_of<BlockTransfer<ConfirmedBy::letter>>()
 {
     static const Impl::Block::Transfer::ByPost singleton;
     return singleton;
 }
 
 template<>
-const LibFred::PublicRequestTypeIface& get_iface_of<BlockTransfer<PublicRequestImpl::ConfirmedBy::government>>()
+const LibFred::PublicRequestTypeIface& get_iface_of<BlockTransfer<ConfirmedBy::government>>()
 {
     static const Impl::Block::Transfer::ByGovernment singleton;
     return singleton;
 }
 
 template<>
-const LibFred::PublicRequestTypeIface& get_iface_of<UnblockChanges<PublicRequestImpl::ConfirmedBy::email>>()
+const LibFred::PublicRequestTypeIface& get_iface_of<UnblockChanges<ConfirmedBy::email>>()
 {
     static const Impl::Unblock::Changes::ByEmail singleton;
     return singleton;
 }
 
 template<>
-const LibFred::PublicRequestTypeIface& get_iface_of<UnblockChanges<PublicRequestImpl::ConfirmedBy::letter>>()
+const LibFred::PublicRequestTypeIface& get_iface_of<UnblockChanges<ConfirmedBy::letter>>()
 {
     static const Impl::Unblock::Changes::ByPost singleton;
     return singleton;
 }
 
 template<>
-const LibFred::PublicRequestTypeIface& get_iface_of<UnblockChanges<PublicRequestImpl::ConfirmedBy::government>>()
+const LibFred::PublicRequestTypeIface& get_iface_of<UnblockChanges<ConfirmedBy::government>>()
 {
     static const Impl::Unblock::Changes::ByGovernment singleton;
     return singleton;
 }
 
 template<>
-const LibFred::PublicRequestTypeIface& get_iface_of<UnblockTransfer<PublicRequestImpl::ConfirmedBy::email>>()
+const LibFred::PublicRequestTypeIface& get_iface_of<UnblockTransfer<ConfirmedBy::email>>()
 {
     static const Impl::Unblock::Transfer::ByEmail singleton;
     return singleton;
 }
 
 template<>
-const LibFred::PublicRequestTypeIface& get_iface_of<UnblockTransfer<PublicRequestImpl::ConfirmedBy::letter>>()
+const LibFred::PublicRequestTypeIface& get_iface_of<UnblockTransfer<ConfirmedBy::letter>>()
 {
     static const Impl::Unblock::Transfer::ByPost singleton;
     return singleton;
 }
 
 template<>
-const LibFred::PublicRequestTypeIface& get_iface_of<UnblockTransfer<PublicRequestImpl::ConfirmedBy::government>>()
+const LibFred::PublicRequestTypeIface& get_iface_of<UnblockTransfer<ConfirmedBy::government>>()
 {
     static const Impl::Unblock::Transfer::ByGovernment singleton;
     return singleton;
 }
 
-template<template<PublicRequestImpl::ConfirmedBy::Enum> typename T>
-const LibFred::PublicRequestTypeIface& get_iface_of(PublicRequestImpl::ConfirmedBy::Enum confirmation_method)
+template<template<ConfirmedBy::Enum> typename T>
+const LibFred::PublicRequestTypeIface& get_iface_of(ConfirmedBy::Enum confirmation_method)
 {
     switch (confirmation_method)
     {
-        case PublicRequestImpl::ConfirmedBy::Enum::email:
+        case ConfirmedBy::Enum::email:
         {
-            return get_iface_of<T<PublicRequestImpl::ConfirmedBy::Enum::email>>();
+            return get_iface_of<T<ConfirmedBy::Enum::email>>();
         }
-        case PublicRequestImpl::ConfirmedBy::Enum::letter:
+        case ConfirmedBy::Enum::letter:
         {
-            return get_iface_of<T<PublicRequestImpl::ConfirmedBy::Enum::letter>>();
+            return get_iface_of<T<ConfirmedBy::Enum::letter>>();
         }
-        case PublicRequestImpl::ConfirmedBy::Enum::government:
+        case ConfirmedBy::Enum::government:
         {
-            return get_iface_of<T<PublicRequestImpl::ConfirmedBy::Enum::government>>();
+            return get_iface_of<T<ConfirmedBy::Enum::government>>();
         }
     }
     throw std::runtime_error("unexpected confirmation method");
 }
 
 template const LibFred::PublicRequestTypeIface&
-get_iface_of<BlockChanges>(PublicRequestImpl::ConfirmedBy::Enum confirmation_method);
+get_iface_of<BlockChanges>(ConfirmedBy::Enum confirmation_method);
 template const LibFred::PublicRequestTypeIface&
-get_iface_of<BlockTransfer>(PublicRequestImpl::ConfirmedBy::Enum confirmation_method);
+get_iface_of<BlockTransfer>(ConfirmedBy::Enum confirmation_method);
 template const LibFred::PublicRequestTypeIface&
-get_iface_of<UnblockChanges>(PublicRequestImpl::ConfirmedBy::Enum confirmation_method);
+get_iface_of<UnblockChanges>(ConfirmedBy::Enum confirmation_method);
 template const LibFred::PublicRequestTypeIface&
-get_iface_of<UnblockTransfer>(PublicRequestImpl::ConfirmedBy::Enum confirmation_method);
+get_iface_of<UnblockTransfer>(ConfirmedBy::Enum confirmation_method);
 
 } // namespace Fred::Backend::PublicRequest::Type
 } // namespace Fred::Backend::PublicRequest

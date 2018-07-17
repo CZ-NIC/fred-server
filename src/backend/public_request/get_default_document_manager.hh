@@ -16,26 +16,19 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PUBLIC_REQUEST_BLOCKUNBLOCK_HH_53EF83ABD342468AB0B386243FC06F33
-#define PUBLIC_REQUEST_BLOCKUNBLOCK_HH_53EF83ABD342468AB0B386243FC06F33
+#ifndef GET_DEFAULT_DOCUMENT_MANAGER_HH_2CA35F58124F4C64AF71A45D2CAEA4FA
+#define GET_DEFAULT_DOCUMENT_MANAGER_HH_2CA35F58124F4C64AF71A45D2CAEA4FA
 
-#include "src/libfred/public_request/public_request_type_iface.hh"
-#include "src/backend/public_request/confirmed_by.hh"
+#include "src/libfred/documents.hh"
+
+#include <memory>
 
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
-namespace Type {
 
-template<ConfirmedBy::Enum> struct BlockChanges;
-template<ConfirmedBy::Enum> struct BlockTransfer;
-template<ConfirmedBy::Enum> struct UnblockChanges;
-template<ConfirmedBy::Enum> struct UnblockTransfer;
+std::shared_ptr<LibFred::Document::Manager> get_default_document_manager();
 
-template<template<ConfirmedBy::Enum> typename T>
-const LibFred::PublicRequestTypeIface& get_iface_of(ConfirmedBy::Enum confirmation_method);
-
-} // namespace Fred::Backend::PublicRequest::Type
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend
 } // namespace Fred

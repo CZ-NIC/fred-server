@@ -16,26 +16,23 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PUBLIC_REQUEST_BLOCKUNBLOCK_HH_53EF83ABD342468AB0B386243FC06F33
-#define PUBLIC_REQUEST_BLOCKUNBLOCK_HH_53EF83ABD342468AB0B386243FC06F33
-
-#include "src/libfred/public_request/public_request_type_iface.hh"
-#include "src/backend/public_request/confirmed_by.hh"
+#ifndef CONFIRMED_BY_HH_C0CCDCCC456C4586B3F98BF7245CCB16
+#define CONFIRMED_BY_HH_C0CCDCCC456C4586B3F98BF7245CCB16
 
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
-namespace Type {
 
-template<ConfirmedBy::Enum> struct BlockChanges;
-template<ConfirmedBy::Enum> struct BlockTransfer;
-template<ConfirmedBy::Enum> struct UnblockChanges;
-template<ConfirmedBy::Enum> struct UnblockTransfer;
+struct ConfirmedBy
+{
+    enum Enum
+    {
+        email,
+        letter,
+        government
+    };
+};
 
-template<template<ConfirmedBy::Enum> typename T>
-const LibFred::PublicRequestTypeIface& get_iface_of(ConfirmedBy::Enum confirmation_method);
-
-} // namespace Fred::Backend::PublicRequest::Type
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend
 } // namespace Fred

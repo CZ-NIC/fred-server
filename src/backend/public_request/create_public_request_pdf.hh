@@ -16,10 +16,13 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PUBLIC_REQUESTS_HH_E22CB50FF8D84815ACE87616441DA7BA
-#define PUBLIC_REQUESTS_HH_E22CB50FF8D84815ACE87616441DA7BA
+#ifndef CREATE_PUBLIC_REQUEST_PDF_HH_3F9408F88CAC4028980B1973D4BE1E9A
+#define CREATE_PUBLIC_REQUEST_PDF_HH_3F9408F88CAC4028980B1973D4BE1E9A
 
+#include "src/backend/buffer.hh"
+#include "src/backend/public_request/language.hh"
 #include "src/backend/public_request/object_type.hh"
+#include "src/libfred/documents.hh"
 #include "src/libfred/opcontext.hh"
 #include "src/util/optional_value.hh"
 
@@ -29,12 +32,10 @@ namespace Fred {
 namespace Backend {
 namespace PublicRequest {
 
-unsigned long long create_authinfo_request_registry_email_rif(
-        LibFred::OperationContext& _ctx,
-        ObjectType::Enum _object_type,
-        const std::string& _object_handle,
-        unsigned long long _registrar_id,
-        const Optional<unsigned long long>& _log_request_id);
+Fred::Backend::Buffer create_public_request_pdf(
+        unsigned long long public_request_id,
+        Language::Enum lang,
+        std::shared_ptr<LibFred::Document::Manager> manager);
 
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend

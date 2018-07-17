@@ -16,19 +16,27 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PROCESS_PUBLIC_REQUEST_BLOCK_UNBLOCK_HH_FC176C0453EF424088B10AC225C96498
-#define PROCESS_PUBLIC_REQUEST_BLOCK_UNBLOCK_HH_FC176C0453EF424088B10AC225C96498
+#ifndef CREATE_BLOCK_UNBLOCK_REQUEST_HH_CC4EA6F18641409F805F9886E79739E1
+#define CREATE_BLOCK_UNBLOCK_REQUEST_HH_CC4EA6F18641409F805F9886E79739E1
 
-#include "src/libfred/mailer.hh"
-#include "src/libfred/public_request/public_request_type_iface.hh"
+#include "src/backend/public_request/confirmed_by.hh"
+#include "src/backend/public_request/lock_request_type.hh"
+#include "src/backend/public_request/object_type.hh"
+#include "src/libfred/opcontext.hh"
+#include "src/util/optional_value.hh"
+
+#include <string>
 
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
 
-void process_public_request_block_unblock_resolved(
-        unsigned long long _public_request_id,
-        const LibFred::PublicRequestTypeIface& _public_request_type);
+unsigned long long create_block_unblock_request(
+        ObjectType::Enum object_type,
+        const std::string& object_handle,
+        const Optional<unsigned long long>& log_request_id,
+        ConfirmedBy::Enum confirmation_method,
+        LockRequestType::Enum lock_request_type);
 
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend

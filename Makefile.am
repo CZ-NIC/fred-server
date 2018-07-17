@@ -303,7 +303,25 @@ noinst_HEADERS = \
 		src/backend/epp/nsset/dns_host_input.hh \
 		src/backend/epp/nsset/nsset_handle_state_to_check_result.hh \
 		src/backend/epp/nsset/impl/limits.hh \
-		src/backend/public_request/process_public_request_authinfo.hh \
+		src/backend/public_request/process/authinfo.hh \
+		src/backend/public_request/process/block_unblock.hh \
+		src/backend/public_request/process/personal_info.hh \
+		src/backend/public_request/confirmed_by.hh \
+		src/backend/public_request/create_authinfo_request_non_registry_email.hh \
+		src/backend/public_request/create_authinfo_request_registry_email.hh \
+		src/backend/epp/public_request/create_authinfo_request_registry_email.hh \
+		src/backend/public_request/create_block_unblock_request.hh \
+		src/backend/public_request/create_personal_info_request_non_registry_email.hh \
+		src/backend/public_request/create_personal_info_request_registry_email.hh \
+		src/backend/public_request/create_public_request_pdf.hh \
+		src/backend/public_request/exceptions.hh \
+		src/backend/public_request/language.hh \
+		src/backend/public_request/get_default_document_manager.hh \
+		src/backend/public_request/lock_request_type.hh \
+		src/backend/public_request/object_type.hh \
+		src/backend/public_request/process/authinfo.hh \
+		src/backend/public_request/process/block_unblock.hh \
+		src/backend/public_request/process/personal_info.hh \
 		test/backend/epp/nsset/fixture.hh
 
 noinst_LIBRARIES = \
@@ -1174,21 +1192,33 @@ src_epp_impl_registraracl_libauthentic_registrar_a_SOURCES = \
 src_libfred_public_request_libpublic_request_a_SOURCES = \
 		src/backend/buffer.cc \
 		src/backend/buffer.hh \
+		src/backend/public_request/confirmed_by.hh \
+		src/backend/public_request/create_authinfo_request_non_registry_email.cc \
+		src/backend/public_request/create_authinfo_request_non_registry_email.hh \
+		src/backend/public_request/create_authinfo_request_registry_email.cc \
+		src/backend/public_request/create_authinfo_request_registry_email.hh \
+		src/backend/public_request/create_block_unblock_request.cc \
+		src/backend/public_request/create_block_unblock_request.hh \
+		src/backend/public_request/create_personal_info_request_non_registry_email.cc \
+		src/backend/public_request/create_personal_info_request_non_registry_email.hh \
+		src/backend/public_request/create_personal_info_request_registry_email.cc \
+		src/backend/public_request/create_personal_info_request_registry_email.hh \
+		src/backend/public_request/create_public_request_pdf.cc \
+		src/backend/public_request/create_public_request_pdf.hh \
 		src/backend/public_request/exceptions.cc \
 		src/backend/public_request/exceptions.hh \
+		src/backend/public_request/language.hh \
+		src/backend/public_request/get_default_document_manager.cc \
+		src/backend/public_request/get_default_document_manager.hh \
+		src/backend/public_request/lock_request_type.hh \
 		src/backend/public_request/object_type.cc \
 		src/backend/public_request/object_type.hh \
-		src/backend/public_request/process_public_request_authinfo.cc \
-		src/backend/public_request/process_public_request_authinfo.hh \
-		src/backend/public_request/process_public_request_block_unblock.cc \
-		src/backend/public_request/process_public_request_block_unblock.hh \
-		src/backend/public_request/process_public_request_personal_info.cc \
-		src/backend/public_request/process_public_request_personal_info.hh \
-		src/backend/public_request/public_request.cc \
-		src/backend/public_request/public_request.hh \
-		src/backend/public_request/public_requests.cc \
-		src/backend/public_request/public_requests.hh \
-		src/backend/public_request/send_email.cc \
+		src/backend/public_request/process/authinfo.cc \
+		src/backend/public_request/process/authinfo.hh \
+		src/backend/public_request/process/block_unblock.cc \
+		src/backend/public_request/process/block_unblock.hh \
+		src/backend/public_request/process/personal_info.cc \
+		src/backend/public_request/process/personal_info.hh \
 		src/backend/public_request/type/get_iface_of.hh \
 		src/backend/public_request/type/impl/implemented_by.hh \
 		src/backend/public_request/type/impl/public_request_authinfo.cc \
@@ -1197,15 +1227,14 @@ src_libfred_public_request_libpublic_request_a_SOURCES = \
 		src/backend/public_request/type/public_request_authinfo.hh \
 		src/backend/public_request/type/public_request_block_unblock.hh \
 		src/backend/public_request/type/public_request_personal_info.hh \
+		src/backend/public_request/util/send_joined_address_email.cc \
 		src/libfred/public_request/create_public_request.cc \
 		src/libfred/public_request/create_public_request.hh \
 		src/libfred/public_request/create_public_request_auth.cc \
 		src/libfred/public_request/create_public_request_auth.hh \
-		src/libfred/public_request/exceptions.hh \
 		src/libfred/public_request/get_opened_public_request.cc \
 		src/libfred/public_request/info_public_request.cc \
 		src/libfred/public_request/info_public_request_auth.cc \
-		src/libfred/public_request/object_type.hh \
 		src/libfred/public_request/public_request.cc \
 		src/libfred/public_request/public_request.hh \
 		src/libfred/public_request/public_request_auth_type_iface.hh \
@@ -1845,6 +1874,10 @@ src_bin_corba_epp_libepp_impl_a_SOURCES = \
 		src/backend/epp/session_data.cc \
 		src/backend/epp/impl/conditionally_enqueue_notification.hh \
 		src/backend/epp/impl/conditionally_enqueue_notification.cc \
+		src/backend/epp/contact/authinfo_contact.cc \
+		src/backend/epp/contact/authinfo_contact.hh \
+		src/backend/epp/contact/authinfo_contact_localized.cc \
+		src/backend/epp/contact/authinfo_contact_localized.hh \
 		src/backend/epp/contact/create_contact_localized.cc \
 		src/backend/epp/contact/create_contact_localized.hh \
 		src/backend/epp/contact/create_contact.cc \
@@ -1903,6 +1936,10 @@ src_bin_corba_epp_libepp_impl_a_SOURCES = \
 		src/backend/epp/credit/client_credit_localized_response.hh \
 		src/backend/epp/credit/client_credit_localized.cc \
 		src/backend/epp/credit/client_credit_localized.hh \
+		src/backend/epp/domain/authinfo_domain.cc \
+		src/backend/epp/domain/authinfo_domain.hh \
+		src/backend/epp/domain/authinfo_domain_localized.cc \
+		src/backend/epp/domain/authinfo_domain_localized.hh \
 		src/backend/epp/domain/check_domain_localized.cc \
 		src/backend/epp/domain/check_domain_localized.hh \
 		src/backend/epp/domain/check_domain_localized_response.hh \
@@ -1980,6 +2017,10 @@ src_bin_corba_epp_libepp_impl_a_SOURCES = \
 		src/backend/epp/domain/domain_registration_obstruction.hh \
 		src/backend/epp/domain/update_domain_input_data.hh \
 		src/backend/epp/domain/status_value.hh \
+		src/backend/epp/keyset/authinfo_keyset.cc \
+		src/backend/epp/keyset/authinfo_keyset.hh \
+		src/backend/epp/keyset/authinfo_keyset_localized.cc \
+		src/backend/epp/keyset/authinfo_keyset_localized.hh \
 		src/backend/epp/keyset/dns_key.cc \
 		src/backend/epp/keyset/dns_key.hh \
 		src/backend/epp/keyset/ds_record.hh \
@@ -2025,6 +2066,10 @@ src_bin_corba_epp_libepp_impl_a_SOURCES = \
 		src/backend/epp/keyset/transfer_keyset_localized.hh \
 		src/backend/epp/keyset/transfer_keyset_config_data.hh \
 		src/backend/epp/keyset/status_value.hh \
+		src/backend/epp/nsset/authinfo_nsset.cc \
+		src/backend/epp/nsset/authinfo_nsset.hh \
+		src/backend/epp/nsset/authinfo_nsset_localized.cc \
+		src/backend/epp/nsset/authinfo_nsset_localized.hh \
 		src/backend/epp/nsset/check_nsset_localized.cc \
 		src/backend/epp/nsset/check_nsset_localized.hh \
 		src/backend/epp/nsset/check_nsset_localized_response.hh \
@@ -2068,22 +2113,8 @@ src_bin_corba_epp_libepp_impl_a_SOURCES = \
 		src/backend/epp/nsset/impl/nsset_output.cc \
 		src/backend/epp/nsset/impl/nsset_output.hh \
 		src/backend/epp/nsset/status_value.hh \
-		src/backend/epp/contact/authinfo_contact.cc \
-		src/backend/epp/contact/authinfo_contact.hh \
-		src/backend/epp/contact/authinfo_contact_localized.cc \
-		src/backend/epp/contact/authinfo_contact_localized.hh \
-		src/backend/epp/domain/authinfo_domain.cc \
-		src/backend/epp/domain/authinfo_domain.hh \
-		src/backend/epp/domain/authinfo_domain_localized.cc \
-		src/backend/epp/domain/authinfo_domain_localized.hh \
-		src/backend/epp/nsset/authinfo_nsset.cc \
-		src/backend/epp/nsset/authinfo_nsset.hh \
-		src/backend/epp/nsset/authinfo_nsset_localized.cc \
-		src/backend/epp/nsset/authinfo_nsset_localized.hh \
-		src/backend/epp/keyset/authinfo_keyset.cc \
-		src/backend/epp/keyset/authinfo_keyset.hh \
-		src/backend/epp/keyset/authinfo_keyset_localized.cc \
-		src/backend/epp/keyset/authinfo_keyset_localized.hh \
+		src/backend/epp/public_request/create_authinfo_request_registry_email.cc \
+		src/backend/epp/public_request/create_authinfo_request_registry_email.hh \
 		src/backend/buffer.cc \
 		src/backend/buffer.hh
 #

@@ -16,22 +16,23 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/libfred/registry.hh"
-#include "src/libfred/public_request/public_request_on_status_action.hh"
-#include "src/backend/public_request/process_public_request_authinfo.hh"
-#include "src/backend/public_request/process_public_request_block_unblock.hh"
-#include "src/backend/public_request/process_public_request_personal_info.hh"
-#include "src/util/db/query_param.hh"
-#include "src/bin/cli/public_request_method.hh"
+#include "src/backend/public_request/confirmed_by.hh"
+#include "src/backend/public_request/process/authinfo.hh"
+#include "src/backend/public_request/process/block_unblock.hh"
+#include "src/backend/public_request/process/personal_info.hh"
+#include "src/backend/public_request/type/get_iface_of.hh"
 #include "src/backend/public_request/type/public_request_authinfo.hh"
 #include "src/backend/public_request/type/public_request_block_unblock.hh"
 #include "src/backend/public_request/type/public_request_personal_info.hh"
-#include "src/backend/public_request/type/get_iface_of.hh"
-#include "src/libfred/public_request/public_request_status.hh"
+#include "src/bin/cli/public_request_method.hh"
 #include "src/libfred/opcontext.hh"
+#include "src/libfred/public_request/public_request_on_status_action.hh"
+#include "src/libfred/public_request/public_request_status.hh"
+#include "src/libfred/registry.hh"
+#include "src/util/db/query_param.hh"
 
-#include <unordered_map>
 #include <functional>
+#include <unordered_map>
 #include <utility>
 
 namespace Admin {
@@ -77,18 +78,18 @@ void PublicRequestProcedure::exec()
                                     PublicRequestType::PersonalInfoEmail,
                                     PublicRequestType::PersonalInfoPost,
                                     PublicRequestType::PersonalInfoGovernment,
-                                    PublicRequestType::BlockTransfer<PublicRequest::PublicRequestImpl::ConfirmedBy::email>,
-                                    PublicRequestType::BlockTransfer<PublicRequest::PublicRequestImpl::ConfirmedBy::letter>,
-                                    PublicRequestType::BlockTransfer<PublicRequest::PublicRequestImpl::ConfirmedBy::government>,
-                                    PublicRequestType::BlockChanges<PublicRequest::PublicRequestImpl::ConfirmedBy::email>,
-                                    PublicRequestType::BlockChanges<PublicRequest::PublicRequestImpl::ConfirmedBy::letter>,
-                                    PublicRequestType::BlockChanges<PublicRequest::PublicRequestImpl::ConfirmedBy::government>,
-                                    PublicRequestType::UnblockTransfer<PublicRequest::PublicRequestImpl::ConfirmedBy::email>,
-                                    PublicRequestType::UnblockTransfer<PublicRequest::PublicRequestImpl::ConfirmedBy::letter>,
-                                    PublicRequestType::UnblockTransfer<PublicRequest::PublicRequestImpl::ConfirmedBy::government>,
-                                    PublicRequestType::UnblockChanges<PublicRequest::PublicRequestImpl::ConfirmedBy::email>,
-                                    PublicRequestType::UnblockChanges<PublicRequest::PublicRequestImpl::ConfirmedBy::letter>,
-                                    PublicRequestType::UnblockChanges<PublicRequest::PublicRequestImpl::ConfirmedBy::government>>();
+                                    PublicRequestType::BlockTransfer<PublicRequest::ConfirmedBy::email>,
+                                    PublicRequestType::BlockTransfer<PublicRequest::ConfirmedBy::letter>,
+                                    PublicRequestType::BlockTransfer<PublicRequest::ConfirmedBy::government>,
+                                    PublicRequestType::BlockChanges<PublicRequest::ConfirmedBy::email>,
+                                    PublicRequestType::BlockChanges<PublicRequest::ConfirmedBy::letter>,
+                                    PublicRequestType::BlockChanges<PublicRequest::ConfirmedBy::government>,
+                                    PublicRequestType::UnblockTransfer<PublicRequest::ConfirmedBy::email>,
+                                    PublicRequestType::UnblockTransfer<PublicRequest::ConfirmedBy::letter>,
+                                    PublicRequestType::UnblockTransfer<PublicRequest::ConfirmedBy::government>,
+                                    PublicRequestType::UnblockChanges<PublicRequest::ConfirmedBy::email>,
+                                    PublicRequestType::UnblockChanges<PublicRequest::ConfirmedBy::letter>,
+                                    PublicRequestType::UnblockChanges<PublicRequest::ConfirmedBy::government>>();
         for (const auto& argument: args_.types)
         {
             const auto itr = request_types_filter_default.find(argument);
@@ -148,18 +149,18 @@ void PublicRequestProcedure::exec()
                                   PublicRequestType::PersonalInfoEmail,
                                   PublicRequestType::PersonalInfoPost,
                                   PublicRequestType::PersonalInfoGovernment,
-                                  PublicRequestType::BlockTransfer<PublicRequest::PublicRequestImpl::ConfirmedBy::email>,
-                                  PublicRequestType::BlockTransfer<PublicRequest::PublicRequestImpl::ConfirmedBy::letter>,
-                                  PublicRequestType::BlockTransfer<PublicRequest::PublicRequestImpl::ConfirmedBy::government>,
-                                  PublicRequestType::BlockChanges<PublicRequest::PublicRequestImpl::ConfirmedBy::email>,
-                                  PublicRequestType::BlockChanges<PublicRequest::PublicRequestImpl::ConfirmedBy::letter>,
-                                  PublicRequestType::BlockChanges<PublicRequest::PublicRequestImpl::ConfirmedBy::government>,
-                                  PublicRequestType::UnblockTransfer<PublicRequest::PublicRequestImpl::ConfirmedBy::email>,
-                                  PublicRequestType::UnblockTransfer<PublicRequest::PublicRequestImpl::ConfirmedBy::letter>,
-                                  PublicRequestType::UnblockTransfer<PublicRequest::PublicRequestImpl::ConfirmedBy::government>,
-                                  PublicRequestType::UnblockChanges<PublicRequest::PublicRequestImpl::ConfirmedBy::email>,
-                                  PublicRequestType::UnblockChanges<PublicRequest::PublicRequestImpl::ConfirmedBy::letter>,
-                                  PublicRequestType::UnblockChanges<PublicRequest::PublicRequestImpl::ConfirmedBy::government>>();
+                                  PublicRequestType::BlockTransfer<PublicRequest::ConfirmedBy::email>,
+                                  PublicRequestType::BlockTransfer<PublicRequest::ConfirmedBy::letter>,
+                                  PublicRequestType::BlockTransfer<PublicRequest::ConfirmedBy::government>,
+                                  PublicRequestType::BlockChanges<PublicRequest::ConfirmedBy::email>,
+                                  PublicRequestType::BlockChanges<PublicRequest::ConfirmedBy::letter>,
+                                  PublicRequestType::BlockChanges<PublicRequest::ConfirmedBy::government>,
+                                  PublicRequestType::UnblockTransfer<PublicRequest::ConfirmedBy::email>,
+                                  PublicRequestType::UnblockTransfer<PublicRequest::ConfirmedBy::letter>,
+                                  PublicRequestType::UnblockTransfer<PublicRequest::ConfirmedBy::government>,
+                                  PublicRequestType::UnblockChanges<PublicRequest::ConfirmedBy::email>,
+                                  PublicRequestType::UnblockChanges<PublicRequest::ConfirmedBy::letter>,
+                                  PublicRequestType::UnblockChanges<PublicRequest::ConfirmedBy::government>>();
     for (std::size_t i = 0; i < dbres.size(); ++i)
     {
         const auto request_id = static_cast<unsigned long long>(dbres[i][0]);
@@ -168,44 +169,45 @@ void PublicRequestProcedure::exec()
             Conversion::Enums::from_db_handle<LibFred::PublicRequest::Status>(static_cast<std::string>(dbres[i][2]));
         try
         {
+            namespace Fbpr = Fred::Backend::PublicRequest;
             if (request_status == LibFred::PublicRequest::Status::resolved)
             {
-                if (request_type == "personalinfo_auto_pif" ||
-                    request_type == "personalinfo_email_pif" ||
-                    request_type == "personalinfo_post_pif" ||
-                    request_type == "personalinfo_government_pif")
+                if (request_type == Fbpr::Type::get_iface_of<Fbpr::Type::PersonalInfoAuto>().get_public_request_type() ||
+                    request_type == Fbpr::Type::get_iface_of<Fbpr::Type::PersonalInfoEmail>().get_public_request_type() ||
+                    request_type == Fbpr::Type::get_iface_of<Fbpr::Type::PersonalInfoPost>().get_public_request_type() ||
+                    request_type == Fbpr::Type::get_iface_of<Fbpr::Type::PersonalInfoGovernment>().get_public_request_type())
                 {
-                    Fred::Backend::PublicRequest::process_public_request_personal_info_resolved(
+                    Fbpr::Process::process_public_request_personal_info_resolved(
                             request_id,
                             type_to_iface.at(request_type)(),
                             mailer_manager_,
                             file_manager_client_);
                 }
-                else if (request_type == "authinfo_auto_rif" ||
-                         request_type == "authinfo_auto_pif" ||
-                         request_type == "authinfo_email_pif" ||
-                         request_type == "authinfo_post_pif" ||
-                         request_type == "authinfo_government_pif")
+                else if (request_type == Fbpr::Type::get_iface_of<Fbpr::Type::AuthinfoAutoRif>().get_public_request_type() ||
+                         request_type == Fbpr::Type::get_iface_of<Fbpr::Type::AuthinfoAuto>().get_public_request_type() ||
+                         request_type == Fbpr::Type::get_iface_of<Fbpr::Type::AuthinfoEmail>().get_public_request_type() ||
+                         request_type == Fbpr::Type::get_iface_of<Fbpr::Type::AuthinfoPost>().get_public_request_type() ||
+                         request_type == Fbpr::Type::get_iface_of<Fbpr::Type::AuthinfoGovernment>().get_public_request_type())
                 {
-                    Fred::Backend::PublicRequest::process_public_request_auth_info_resolved(
+                    Fbpr::Process::process_public_request_authinfo_resolved(
                             request_id,
                             type_to_iface.at(request_type)(),
                             mailer_manager_);
                 }
-                else if (request_type == "block_transfer_email_pif" ||
-                         request_type == "block_transfer_post_pif" ||
-                         request_type == "block_transfer_government_pif" ||
-                         request_type == "block_changes_email_pif" ||
-                         request_type == "block_changes_post_pif" ||
-                         request_type == "block_changes_government_pif" ||
-                         request_type == "unblock_transfer_email_pif" ||
-                         request_type == "unblock_transfer_post_pif" ||
-                         request_type == "unblock_transfer_government_pif" ||
-                         request_type == "unblock_changes_email_pif" ||
-                         request_type == "unblock_changes_post_pif" ||
-                         request_type == "unblock_changes_government_pif")
+                else if (request_type == Fbpr::Type::get_iface_of<Fbpr::Type::BlockTransfer<Fbpr::ConfirmedBy::email>>().get_public_request_type() ||
+                         request_type == Fbpr::Type::get_iface_of<Fbpr::Type::BlockTransfer<Fbpr::ConfirmedBy::letter>>().get_public_request_type() ||
+                         request_type == Fbpr::Type::get_iface_of<Fbpr::Type::BlockTransfer<Fbpr::ConfirmedBy::government>>().get_public_request_type() ||
+                         request_type == Fbpr::Type::get_iface_of<Fbpr::Type::BlockChanges<Fbpr::ConfirmedBy::email>>().get_public_request_type() ||
+                         request_type == Fbpr::Type::get_iface_of<Fbpr::Type::BlockChanges<Fbpr::ConfirmedBy::letter>>().get_public_request_type() ||
+                         request_type == Fbpr::Type::get_iface_of<Fbpr::Type::BlockChanges<Fbpr::ConfirmedBy::government>>().get_public_request_type() ||
+                         request_type == Fbpr::Type::get_iface_of<Fbpr::Type::UnblockTransfer<Fbpr::ConfirmedBy::email>>().get_public_request_type() ||
+                         request_type == Fbpr::Type::get_iface_of<Fbpr::Type::UnblockTransfer<Fbpr::ConfirmedBy::letter>>().get_public_request_type() ||
+                         request_type == Fbpr::Type::get_iface_of<Fbpr::Type::UnblockTransfer<Fbpr::ConfirmedBy::government>>().get_public_request_type() ||
+                         request_type == Fbpr::Type::get_iface_of<Fbpr::Type::UnblockChanges<Fbpr::ConfirmedBy::email>>().get_public_request_type() ||
+                         request_type == Fbpr::Type::get_iface_of<Fbpr::Type::UnblockChanges<Fbpr::ConfirmedBy::letter>>().get_public_request_type() ||
+                         request_type == Fbpr::Type::get_iface_of<Fbpr::Type::UnblockChanges<Fbpr::ConfirmedBy::government>>().get_public_request_type())
                 {
-                    Fred::Backend::PublicRequest::process_public_request_block_unblock_resolved(
+                    Fbpr::Process::process_public_request_block_unblock_resolved(
                             request_id,
                             type_to_iface.at(request_type)());
                 }

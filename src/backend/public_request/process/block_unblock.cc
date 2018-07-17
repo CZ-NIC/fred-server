@@ -16,10 +16,12 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/backend/public_request/process_public_request_block_unblock.hh"
+#include "src/backend/public_request/process/block_unblock.hh"
 
 #include "src/backend/public_request/exceptions.hh"
-#include "src/backend/public_request/public_request.hh"
+#include "src/backend/public_request/lock_request_type.hh"
+#include "src/backend/public_request/type/get_iface_of.hh"
+#include "src/backend/public_request/type/public_request_block_unblock.hh"
 #include "src/libfred/object/object_state.hh"
 #include "src/libfred/object/object_states_info.hh"
 #include "src/libfred/object_state/cancel_object_state_request_id.hh"
@@ -41,19 +43,9 @@
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
+namespace Process {
 
 namespace {
-
-struct LockRequestType
-{
-    enum Enum
-    {
-        block_transfer,
-        block_transfer_and_update,
-        unblock_transfer,
-        unblock_transfer_and_update
-    };
-};
 
 void block_unblock(
         const LibFred::LockedPublicRequestForUpdate& _locked_request,
@@ -91,6 +83,7 @@ void block_unblock(
             status_list.insert(Conversion::Enums::to_db_handle(LibFred::Object_State::server_transfer_prohibited));
             LibFred::CreateObjectStateRequestId(object_id, status_list).exec(ctx);
             LibFred::PerformObjectStateRequest(object_id).exec(ctx);
+            return;
         }
         case LockRequestType::block_transfer_and_update:
         {
@@ -114,6 +107,7 @@ void block_unblock(
             status_list.insert(Conversion::Enums::to_db_handle(LibFred::Object_State::server_update_prohibited));
             LibFred::CreateObjectStateRequestId(object_id, status_list).exec(ctx);
             LibFred::PerformObjectStateRequest(object_id).exec(ctx);
+            return;
         }
         case LockRequestType::unblock_transfer:
         {
@@ -131,6 +125,7 @@ void block_unblock(
             status_list.insert(Conversion::Enums::to_db_handle(LibFred::Object_State::server_transfer_prohibited));
             LibFred::CancelObjectStateRequestId(object_id, status_list).exec(ctx);
             LibFred::PerformObjectStateRequest(object_id).exec(ctx);
+            return;
         }
         case LockRequestType::unblock_transfer_and_update:
         {
@@ -148,12 +143,13 @@ void block_unblock(
             status_list.insert(Conversion::Enums::to_db_handle(LibFred::Object_State::server_update_prohibited));
             LibFred::CancelObjectStateRequestId(object_id, status_list).exec(ctx);
             LibFred::PerformObjectStateRequest(object_id).exec(ctx);
+            return;
         }
     }
     throw std::logic_error("unexpected lock request type");
 }
 
-} // namespace Fred::Backend::PublicRequest::{anonymous}
+} // namespace Fred::Backend::PublicRequest::Process::{anonymous}
 
 void process_public_request_block_unblock_resolved(
         unsigned long long _public_request_id,
@@ -168,23 +164,23 @@ void process_public_request_block_unblock_resolved(
         {
             const std::string public_request_type = _public_request_type.get_public_request_type();
 
-            if (public_request_type == "block_transfer_email_pif" ||
-                public_request_type == "block_transfer_post_pif")
+            if (public_request_type == Type::get_iface_of<Type::BlockTransfer<ConfirmedBy::email>>().get_public_request_type() ||
+                public_request_type == Type::get_iface_of<Type::BlockTransfer<ConfirmedBy::letter>>().get_public_request_type())
             {
                 block_unblock(locked_request, LockRequestType::block_transfer);
             }
-            else if (public_request_type == "block_changes_email_pif" ||
-                     public_request_type == "block_changes_post_pif")
+            else if (public_request_type == Type::get_iface_of<Type::BlockChanges<ConfirmedBy::email>>().get_public_request_type() ||
+                     public_request_type == Type::get_iface_of<Type::BlockChanges<ConfirmedBy::letter>>().get_public_request_type())
             {
                 block_unblock(locked_request, LockRequestType::block_transfer_and_update);
             }
-            else if (public_request_type == "unblock_transfer_email_pif" ||
-                     public_request_type == "unblock_transfer_post_pif")
+            else if (public_request_type == Type::get_iface_of<Type::UnblockTransfer<ConfirmedBy::email>>().get_public_request_type() ||
+                     public_request_type == Type::get_iface_of<Type::UnblockTransfer<ConfirmedBy::letter>>().get_public_request_type())
             {
                 block_unblock(locked_request, LockRequestType::unblock_transfer);
             }
-            else if (public_request_type == "unblock_changes_email_pif" ||
-                     public_request_type == "unblock_changes_post_pif")
+            else if (public_request_type == Type::get_iface_of<Type::UnblockChanges<ConfirmedBy::email>>().get_public_request_type() ||
+                     public_request_type == Type::get_iface_of<Type::UnblockChanges<ConfirmedBy::letter>>().get_public_request_type())
             {
                 block_unblock(locked_request, LockRequestType::unblock_transfer_and_update);
             }
@@ -237,6 +233,7 @@ void process_public_request_block_unblock_resolved(
     }
 }
 
+} // namespace Fred::Backend::PublicRequest::Process
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend
 } // namespace Fred

@@ -16,26 +16,22 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PUBLIC_REQUEST_BLOCKUNBLOCK_HH_53EF83ABD342468AB0B386243FC06F33
-#define PUBLIC_REQUEST_BLOCKUNBLOCK_HH_53EF83ABD342468AB0B386243FC06F33
+#ifndef PROCESS_PUBLIC_REQUEST_BLOCK_UNBLOCK_HH_FC176C0453EF424088B10AC225C96498
+#define PROCESS_PUBLIC_REQUEST_BLOCK_UNBLOCK_HH_FC176C0453EF424088B10AC225C96498
 
+#include "src/libfred/mailer.hh"
 #include "src/libfred/public_request/public_request_type_iface.hh"
-#include "src/backend/public_request/confirmed_by.hh"
 
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
-namespace Type {
+namespace Process {
 
-template<ConfirmedBy::Enum> struct BlockChanges;
-template<ConfirmedBy::Enum> struct BlockTransfer;
-template<ConfirmedBy::Enum> struct UnblockChanges;
-template<ConfirmedBy::Enum> struct UnblockTransfer;
+void process_public_request_block_unblock_resolved(
+        unsigned long long _public_request_id,
+        const LibFred::PublicRequestTypeIface& _public_request_type);
 
-template<template<ConfirmedBy::Enum> typename T>
-const LibFred::PublicRequestTypeIface& get_iface_of(ConfirmedBy::Enum confirmation_method);
-
-} // namespace Fred::Backend::PublicRequest::Type
+} // namespace Fred::Backend::PublicRequest::Process
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend
 } // namespace Fred

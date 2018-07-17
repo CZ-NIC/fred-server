@@ -16,26 +16,26 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PUBLIC_REQUEST_BLOCKUNBLOCK_HH_53EF83ABD342468AB0B386243FC06F33
-#define PUBLIC_REQUEST_BLOCKUNBLOCK_HH_53EF83ABD342468AB0B386243FC06F33
+#ifndef CREATE_PERSONAL_INFO_REQUEST_NON_REGISTRY_EMAIL_HH_CB2032238CDC4AD795D535C947A65199
+#define CREATE_PERSONAL_INFO_REQUEST_NON_REGISTRY_EMAIL_HH_CB2032238CDC4AD795D535C947A65199
 
-#include "src/libfred/public_request/public_request_type_iface.hh"
 #include "src/backend/public_request/confirmed_by.hh"
+#include "src/backend/public_request/object_type.hh"
+#include "src/libfred/opcontext.hh"
+#include "src/util/optional_value.hh"
+
+#include <string>
 
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
-namespace Type {
 
-template<ConfirmedBy::Enum> struct BlockChanges;
-template<ConfirmedBy::Enum> struct BlockTransfer;
-template<ConfirmedBy::Enum> struct UnblockChanges;
-template<ConfirmedBy::Enum> struct UnblockTransfer;
+unsigned long long create_personal_info_request_non_registry_email(
+        const std::string& contact_handle,
+        const Optional<unsigned long long>& log_request_id,
+        ConfirmedBy::Enum confirmation_method,
+        const std::string& specified_email);
 
-template<template<ConfirmedBy::Enum> typename T>
-const LibFred::PublicRequestTypeIface& get_iface_of(ConfirmedBy::Enum confirmation_method);
-
-} // namespace Fred::Backend::PublicRequest::Type
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend
 } // namespace Fred

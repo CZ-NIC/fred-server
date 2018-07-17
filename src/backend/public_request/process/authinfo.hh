@@ -28,12 +28,14 @@
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
+namespace Process {
 
-void process_public_request_auth_info_resolved(
+void process_public_request_authinfo_resolved(
         unsigned long long _public_request_id,
         const LibFred::PublicRequestTypeIface& _public_request_type,
         std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager);
 
+} // namespace Fred::Backend::PublicRequest::Process
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend
 } // namespace Fred

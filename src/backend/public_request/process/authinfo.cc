@@ -16,12 +16,14 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/backend/public_request/process_public_request_authinfo.hh"
+#include "src/backend/public_request/process/authinfo.hh"
 
-#include "src/backend/public_request/public_request.hh"
-#include "src/backend/public_request/send_email.hh"
+#include "src/backend/public_request/exceptions.hh"
+#include "src/backend/public_request/object_type.hh"
+#include "src/backend/public_request/util/send_joined_address_email.hh"
 #include "src/bin/corba/mailer_manager.hh"
 #include "src/libfred/object/object_states_info.hh"
+#include "src/libfred/object/object_type.hh"
 #include "src/libfred/public_request/info_public_request.hh"
 #include "src/libfred/public_request/public_request_lock_guard.hh"
 #include "src/libfred/public_request/public_request_on_status_action.hh"
@@ -33,6 +35,7 @@
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
+namespace Process {
 
 namespace {
 
@@ -178,13 +181,13 @@ unsigned long long send_authinfo(
     {
         recipients.insert(static_cast<std::string>(dbres[idx][1]));
     }
-    const EmailData data(recipients, "sendauthinfo_pif", email_template_params, std::vector<unsigned long long>());
+    const Util::EmailData data(recipients, "sendauthinfo_pif", email_template_params, std::vector<unsigned long long>());
     return send_joined_addresses_email(_mailer_manager, data);
 }
 
-} // namespace Fred::Backend::PublicRequest::{anonymous}
+} // namespace Fred::Backend::PublicRequest::Process::{anonymous}
 
-void process_public_request_auth_info_resolved(
+void process_public_request_authinfo_resolved(
         unsigned long long _public_request_id,
         const LibFred::PublicRequestTypeIface& _public_request_type,
         std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager)
@@ -230,6 +233,7 @@ void process_public_request_auth_info_resolved(
     }
 }
 
+} // namespace Fred::Backend::PublicRequest::Process
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend
 } // namespace Fred

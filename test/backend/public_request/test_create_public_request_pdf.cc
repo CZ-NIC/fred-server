@@ -16,11 +16,14 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/backend/public_request/public_request.hh"
-
+#include "src/backend/public_request/confirmed_by.hh"
+#include "src/backend/public_request/exceptions.hh"
+#include "src/backend/public_request/create_block_unblock_request.hh"
+#include "src/backend/public_request/create_public_request_pdf.hh"
+#include "src/backend/public_request/lock_request_type.hh"
+#include "src/libfred/documents.hh"
 #include "src/libfred/public_request/create_public_request.hh"
 #include "src/libfred/registrable_object/contact/info_contact_data.hh"
-#include "src/libfred/documents.hh"
 
 #include "test/setup/fixtures_utils.hh"
 #include "test/setup/fixtures.hh"
@@ -40,8 +43,7 @@ class create_pdf_fixture : public Test::instantiate_db_template
 {
 public:
     create_pdf_fixture()
-        : contact(Test::contact::make(ctx)),
-          pr("public-request-test")
+        : contact(Test::contact::make(ctx))
     {
         ctx.commit_transaction();
     }
@@ -49,7 +51,6 @@ private:
     LibFred::OperationContextCreator ctx;
 public:
     LibFred::InfoContactData contact;
-    Fred::Backend::PublicRequest::PublicRequestImpl pr;
 };
 
 class FakeGenerator : public LibFred::Document::Generator
@@ -122,17 +123,17 @@ public:
 BOOST_FIXTURE_TEST_CASE(create_pdf, create_pdf_fixture)
 {
     LibFred::OperationContextCreator ctx;
-    unsigned long long block_transfer_post = pr.create_block_unblock_request(
+    unsigned long long block_transfer_post = Fred::Backend::PublicRequest::create_block_unblock_request(
             Fred::Backend::PublicRequest::ObjectType::contact,
             contact.handle,
             Optional<unsigned long long>(),
-            Fred::Backend::PublicRequest::PublicRequestImpl::ConfirmedBy::letter,
-            Fred::Backend::PublicRequest::PublicRequestImpl::LockRequestType::block_transfer);
+            Fred::Backend::PublicRequest::ConfirmedBy::letter,
+            Fred::Backend::PublicRequest::LockRequestType::block_transfer);
     ctx.commit_transaction();
     std::shared_ptr<::LibFred::Document::Manager> manager(new FakeManager);
-    const std::string buffer_value = pr.create_public_request_pdf(
+    const std::string buffer_value = Fred::Backend::PublicRequest::create_public_request_pdf(
             block_transfer_post,
-            Fred::Backend::PublicRequest::PublicRequestImpl::Language::en,
+            Fred::Backend::PublicRequest::Language::en,
             manager).data;
     BOOST_TEST_MESSAGE(buffer_value);
 }
@@ -142,9 +143,9 @@ BOOST_FIXTURE_TEST_CASE(no_public_request, create_pdf_fixture)
     LibFred::OperationContextCreator ctx;
     std::shared_ptr<::LibFred::Document::Manager> manager(new FakeManager);
     BOOST_CHECK_THROW(
-            pr.create_public_request_pdf(
+            Fred::Backend::PublicRequest::create_public_request_pdf(
                 123,
-                Fred::Backend::PublicRequest::PublicRequestImpl::Language::en,
+                Fred::Backend::PublicRequest::Language::en,
                 manager),
             Fred::Backend::PublicRequest::ObjectNotFound);
 }
@@ -152,17 +153,17 @@ BOOST_FIXTURE_TEST_CASE(no_public_request, create_pdf_fixture)
 BOOST_FIXTURE_TEST_CASE(not_a_post_type, create_pdf_fixture)
 {
     LibFred::OperationContextCreator ctx;
-    unsigned long long block_transfer_email = pr.create_block_unblock_request(
+    unsigned long long block_transfer_email = Fred::Backend::PublicRequest::create_block_unblock_request(
             Fred::Backend::PublicRequest::ObjectType::contact,
             contact.handle,
             Optional<unsigned long long>(),
-            Fred::Backend::PublicRequest::PublicRequestImpl::ConfirmedBy::email,
-            Fred::Backend::PublicRequest::PublicRequestImpl::LockRequestType::block_transfer);
+            Fred::Backend::PublicRequest::ConfirmedBy::email,
+            Fred::Backend::PublicRequest::LockRequestType::block_transfer);
     std::shared_ptr<::LibFred::Document::Manager> manager(new FakeManager);
     BOOST_CHECK_THROW(
-            pr.create_public_request_pdf(
+            Fred::Backend::PublicRequest::create_public_request_pdf(
                 block_transfer_email,
-                Fred::Backend::PublicRequest::PublicRequestImpl::Language::en,
+                Fred::Backend::PublicRequest::Language::en,
                 manager),
             Fred::Backend::PublicRequest::InvalidPublicRequestType);
 }

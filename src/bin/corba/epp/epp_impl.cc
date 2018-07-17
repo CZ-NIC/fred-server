@@ -162,7 +162,6 @@
 #include "src/backend/epp/domain/authinfo_domain_localized.hh"
 #include "src/backend/epp/keyset/authinfo_keyset_localized.hh"
 #include "src/backend/epp/nsset/authinfo_nsset_localized.hh"
-#include "src/backend/public_request/public_request.hh"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/local_time_adjustor.hpp>
