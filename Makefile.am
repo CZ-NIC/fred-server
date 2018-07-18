@@ -789,8 +789,6 @@ src_libfred_libfred_a_SOURCES = \
 		src/libfred/model_zone_ns.hh \
 		src/libfred/model_zone_soa.cc \
 		src/libfred/model_zone_soa.hh \
-		src/libfred/model_registrar_group_map.hh \
-		src/libfred/model_registrar_group_map.cc \
 		src/libfred/registrable_object/domain.cc \
 		src/libfred/registrable_object/domain.hh \
 		src/libfred/registrable_object/contact.cc \
@@ -1040,6 +1038,16 @@ src_libfred_libfred_a_SOURCES = \
 		src/libfred/registrar/group/cancel_registrar_group.cc \
 		src/libfred/registrar/group/get_registrar_groups.hh \
 		src/libfred/registrar/group/get_registrar_groups.cc \
+		src/libfred/registrar/group/membership/exceptions.hh \
+		src/libfred/registrar/group/membership/registrar_group_membership_types.hh \
+		src/libfred/registrar/group/membership/create_registrar_group_membership.hh \
+		src/libfred/registrar/group/membership/create_registrar_group_membership.cc \
+		src/libfred/registrar/group/membership/end_registrar_group_membership.hh \
+		src/libfred/registrar/group/membership/end_registrar_group_membership.cc \
+		src/libfred/registrar/group/membership/info_group_membership_by_group.hh\
+		src/libfred/registrar/group/membership/info_group_membership_by_group.cc \
+		src/libfred/registrar/group/membership/info_group_membership_by_registrar.hh \
+		src/libfred/registrar/group/membership/info_group_membership_by_registrar.cc \
 		src/libfred/registrar/certification/exceptions.hh \
 		src/libfred/registrar/certification/registrar_certification_type.hh \
 		src/libfred/registrar/certification/create_registrar_certification.hh \
@@ -3542,6 +3550,10 @@ test_test_libfred_SOURCES = \
 		test/libfred/registrar/group/test_update.cc \
 		test/libfred/registrar/group/test_cancel.cc \
 		test/libfred/registrar/group/test_get.cc \
+		test/libfred/registrar/group/membership/test_create.cc \
+		test/libfred/registrar/group/membership/test_end.cc \
+		test/libfred/registrar/group/membership/test_info_by_group.cc \
+		test/libfred/registrar/group/membership/test_info_by_registrar.cc \
 		test/libfred/contact/test_delete_contact.cc \
 		test/libfred/contact/test_create_contact.cc \
 		test/libfred/contact/test_info_contact.cc \

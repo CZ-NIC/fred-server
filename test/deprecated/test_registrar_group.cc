@@ -270,20 +270,11 @@ public:
             ::LibFred::Registrar::Manager::AutoPtr regman(
                     ::LibFred::Registrar::Manager::create(nodb));
             ///create membership of registrar in group
-            ::LibFred::TID m_id = regman->createRegistrarGroupMembership(
+            regman->createRegistrarGroupMembership(
                     1
                     , gid3
                     , Database::Date(Database::NOW)
                     , Database::Date(Database::POS_INF));
-
-            regman->updateRegistrarGroupMembership(
-                    m_id
-                    , 1
-                    , gid3
-                    , Database::Date(Database::NOW)
-                    , Database::Date(Database::NOW) );
-
-
         }
         catch(const std::exception& ex)
         {
