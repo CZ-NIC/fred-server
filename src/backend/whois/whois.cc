@@ -545,7 +545,7 @@ NameServer Server_impl::get_nameserver_by_fqdn(const std::string& fqdn)
         }
         else
         {
-            if (LibFred::CheckDomain(no_root_dot_fqdn).is_invalid_syntax(ctx))
+            if (!LibFred::Domain::is_rfc1123_compliant_host_name(no_root_dot_fqdn))
             {
                 throw InvalidHandle();
             }
