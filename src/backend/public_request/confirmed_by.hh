@@ -23,14 +23,11 @@ namespace Fred {
 namespace Backend {
 namespace PublicRequest {
 
-struct ConfirmedBy
+enum struct ConfirmedBy
 {
-    enum Enum
-    {
-        email,
-        letter,
-        government
-    };
+    email,
+    letter,
+    government
 };
 
 } // namespace Fred::Backend::PublicRequest

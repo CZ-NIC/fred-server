@@ -20,6 +20,7 @@
 
 #include "src/backend/public_request/confirmed_by.hh"
 #include "src/backend/public_request/exceptions.hh"
+#include "src/backend/public_request/get_id_of_registered_object.hh"
 #include "src/backend/public_request/lock_request_type.hh"
 #include "src/backend/public_request/type/get_iface_of.hh"
 #include "src/backend/public_request/type/public_request_authinfo.hh"
@@ -61,10 +62,10 @@ private:
 } // namespace Fred::Backend::PublicRequest::{anonymous}
 
 unsigned long long create_authinfo_request_non_registry_email(
-        ObjectType::Enum object_type,
+        ObjectType object_type,
         const std::string& object_handle,
         const Optional<unsigned long long>& log_request_id,
-        ConfirmedBy::Enum confirmation_method,
+        ConfirmedBy confirmation_method,
         const std::string& specified_email)
 {
     LOGGING_CONTEXT(log_ctx);

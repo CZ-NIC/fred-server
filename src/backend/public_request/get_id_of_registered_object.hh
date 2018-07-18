@@ -16,10 +16,13 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/backend/public_request/object_type.hh"
+#ifndef GET_ID_OF_REGISTERED_OBJECT_HH_04A7BCB82CDC47FCAE74FF62B5B6D8B4
+#define GET_ID_OF_REGISTERED_OBJECT_HH_04A7BCB82CDC47FCAE74FF62B5B6D8B4
 
-#include "src/libfred/object/get_id_of_registered.hh"
-#include "src/libfred/object/object_type.hh"
+#include "src/backend/public_request/object_type.hh"
+#include "src/libfred/opcontext.hh"
+
+#include <string>
 
 namespace Fred {
 namespace Backend {
@@ -27,23 +30,11 @@ namespace PublicRequest {
 
 unsigned long long get_id_of_registered_object(
         LibFred::OperationContext& ctx,
-        ObjectType::Enum object_type,
-        const std::string& handle)
-{
-    switch (object_type)
-    {
-        case ObjectType::contact:
-            return LibFred::get_id_of_registered<LibFred::Object_Type::contact>(ctx, handle);
-        case ObjectType::nsset:
-            return LibFred::get_id_of_registered<LibFred::Object_Type::nsset>(ctx, handle);
-        case ObjectType::domain:
-            return LibFred::get_id_of_registered<LibFred::Object_Type::domain>(ctx, handle);
-        case ObjectType::keyset:
-            return LibFred::get_id_of_registered<LibFred::Object_Type::keyset>(ctx, handle);
-    }
-    throw std::logic_error("unexpected PublicRequestImpl::ObjectType::Enum value");
-}
+        ObjectType object_type,
+        const std::string& handle);
 
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend
 } // namespace Fred
+
+#endif

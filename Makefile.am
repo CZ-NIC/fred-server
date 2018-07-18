@@ -318,6 +318,7 @@ noinst_HEADERS = \
 		src/backend/public_request/exceptions.hh \
 		src/backend/public_request/language.hh \
 		src/backend/public_request/get_default_document_manager.hh \
+		src/backend/public_request/get_id_of_registered_object.hh \
 		src/backend/public_request/lock_request_type.hh \
 		src/backend/public_request/object_type.hh \
 		src/backend/public_request/process/authinfo.hh \
@@ -1211,8 +1212,9 @@ src_libfred_public_request_libpublic_request_a_SOURCES = \
 		src/backend/public_request/language.hh \
 		src/backend/public_request/get_default_document_manager.cc \
 		src/backend/public_request/get_default_document_manager.hh \
+		src/backend/public_request/get_id_of_registered_object.cc \
+		src/backend/public_request/get_id_of_registered_object.hh \
 		src/backend/public_request/lock_request_type.hh \
-		src/backend/public_request/object_type.cc \
 		src/backend/public_request/object_type.hh \
 		src/backend/public_request/process/authinfo.cc \
 		src/backend/public_request/process/authinfo.hh \

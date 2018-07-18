@@ -212,35 +212,35 @@ const LibFred::PublicRequestTypeIface& get_iface_of<UnblockTransfer<ConfirmedBy:
     return singleton;
 }
 
-template<template<ConfirmedBy::Enum> typename T>
-const LibFred::PublicRequestTypeIface& get_iface_of(ConfirmedBy::Enum confirmation_method)
+template<template<ConfirmedBy> class T>
+const LibFred::PublicRequestTypeIface& get_iface_of(ConfirmedBy confirmation_method)
 {
     switch (confirmation_method)
     {
-        case ConfirmedBy::Enum::email:
+        case ConfirmedBy::email:
         {
-            return get_iface_of<T<ConfirmedBy::Enum::email>>();
+            return get_iface_of<T<ConfirmedBy::email>>();
         }
-        case ConfirmedBy::Enum::letter:
+        case ConfirmedBy::letter:
         {
-            return get_iface_of<T<ConfirmedBy::Enum::letter>>();
+            return get_iface_of<T<ConfirmedBy::letter>>();
         }
-        case ConfirmedBy::Enum::government:
+        case ConfirmedBy::government:
         {
-            return get_iface_of<T<ConfirmedBy::Enum::government>>();
+            return get_iface_of<T<ConfirmedBy::government>>();
         }
     }
     throw std::runtime_error("unexpected confirmation method");
 }
 
 template const LibFred::PublicRequestTypeIface&
-get_iface_of<BlockChanges>(ConfirmedBy::Enum confirmation_method);
+get_iface_of<BlockChanges>(ConfirmedBy confirmation_method);
 template const LibFred::PublicRequestTypeIface&
-get_iface_of<BlockTransfer>(ConfirmedBy::Enum confirmation_method);
+get_iface_of<BlockTransfer>(ConfirmedBy confirmation_method);
 template const LibFred::PublicRequestTypeIface&
-get_iface_of<UnblockChanges>(ConfirmedBy::Enum confirmation_method);
+get_iface_of<UnblockChanges>(ConfirmedBy confirmation_method);
 template const LibFred::PublicRequestTypeIface&
-get_iface_of<UnblockTransfer>(ConfirmedBy::Enum confirmation_method);
+get_iface_of<UnblockTransfer>(ConfirmedBy confirmation_method);
 
 } // namespace Fred::Backend::PublicRequest::Type
 } // namespace Fred::Backend::PublicRequest

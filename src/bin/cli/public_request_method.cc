@@ -70,7 +70,8 @@ void PublicRequestProcedure::exec()
     std::set<std::string> request_types_filter;
     {
         std::set<std::string> request_types_filter_default =
-            get_request_type_filter<PublicRequestType::AuthinfoAuto,
+            get_request_type_filter<PublicRequestType::AuthinfoAutoRif,
+                                    PublicRequestType::AuthinfoAuto,
                                     PublicRequestType::AuthinfoEmail,
                                     PublicRequestType::AuthinfoPost,
                                     PublicRequestType::AuthinfoGovernment,

@@ -20,6 +20,7 @@
 
 #include "src/backend/public_request/exceptions.hh"
 #include "src/backend/public_request/object_type.hh"
+#include "src/backend/public_request/get_id_of_registered_object.hh"
 #include "src/backend/public_request/type/get_iface_of.hh"
 #include "src/backend/public_request/type/public_request_authinfo.hh"
 #include "src/libfred/object/get_id_of_registered.hh"
@@ -58,7 +59,7 @@ private:
 
 unsigned long long create_authinfo_request_registry_email(
         LibFred::OperationContext& _ctx,
-        Fred::Backend::PublicRequest::ObjectType::Enum _object_type,
+        Fred::Backend::PublicRequest::ObjectType _object_type,
         const std::string& _object_handle,
         const unsigned long long _registrar_id,
         const Optional<unsigned long long>& _log_request_id)
@@ -75,10 +76,14 @@ unsigned long long create_authinfo_request_registry_email(
         }
         const auto public_request_id = LibFred::CreatePublicRequest()
                 .set_registrar_id(LibFred::RegistrarId(_registrar_id))
-                .exec(locked_object, Fred::Backend::PublicRequest::Type::get_iface_of<Fred::Backend::PublicRequest::Type::AuthinfoAutoRif>(), _log_request_id);
+                .exec(locked_object,
+                      Fred::Backend::PublicRequest::Type::get_iface_of<Fred::Backend::PublicRequest::Type::AuthinfoAutoRif>(),
+                      _log_request_id);
         LibFred::UpdatePublicRequest()
             .set_status(LibFred::PublicRequest::Status::resolved)
-            .exec(locked_object, Fred::Backend::PublicRequest::Type::get_iface_of<Fred::Backend::PublicRequest::Type::AuthinfoAutoRif>(), _log_request_id);
+            .exec(locked_object,
+                  Fred::Backend::PublicRequest::Type::get_iface_of<Fred::Backend::PublicRequest::Type::AuthinfoAutoRif>(),
+                  _log_request_id);
 
         return public_request_id;
     }

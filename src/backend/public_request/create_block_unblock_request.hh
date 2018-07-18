@@ -32,10 +32,10 @@ namespace Backend {
 namespace PublicRequest {
 
 unsigned long long create_block_unblock_request(
-        ObjectType::Enum object_type,
+        ObjectType object_type,
         const std::string& object_handle,
         const Optional<unsigned long long>& log_request_id,
-        ConfirmedBy::Enum confirmation_method,
+        ConfirmedBy confirmation_method,
         LockRequestType::Enum lock_request_type);
 
 } // namespace Fred::Backend::PublicRequest

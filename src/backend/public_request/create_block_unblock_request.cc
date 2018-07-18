@@ -19,6 +19,7 @@
 #include "src/backend/public_request/create_block_unblock_request.hh"
 
 #include "src/backend/public_request/exceptions.hh"
+#include "src/backend/public_request/get_id_of_registered_object.hh"
 #include "src/backend/public_request/type/get_iface_of.hh"
 #include "src/backend/public_request/type/public_request_block_unblock.hh"
 #include "src/libfred/object/get_id_of_registered.hh"
@@ -58,10 +59,10 @@ private:
 } // namespace Fred::Backend::PublicRequest::{anonymous}
 
 unsigned long long create_block_unblock_request(
-        ObjectType::Enum object_type,
+        ObjectType object_type,
         const std::string& object_handle,
         const Optional<unsigned long long>& log_request_id,
-        ConfirmedBy::Enum confirmation_method,
+        ConfirmedBy confirmation_method,
         LockRequestType::Enum lock_request_type)
 {
     LOGGING_CONTEXT(log_ctx);

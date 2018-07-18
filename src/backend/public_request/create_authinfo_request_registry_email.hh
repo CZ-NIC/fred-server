@@ -30,7 +30,7 @@ namespace Backend {
 namespace PublicRequest {
 
 unsigned long long create_authinfo_request_registry_email(
-        ObjectType::Enum object_type,
+        ObjectType object_type,
         const std::string& object_handle,
         const Optional<unsigned long long>& log_request_id);
 

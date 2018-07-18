@@ -68,7 +68,8 @@ unsigned long long send_authinfo(
         throw std::runtime_error("too many objects for given id");
     }
     const std::string handle = static_cast<std::string>(db_result[0]["handle"]);
-    const LibFred::Object_Type::Enum object_type = Conversion::Enums::from_db_handle<LibFred::Object_Type>(static_cast<std::string>(db_result[0]["object_type"]));
+    const LibFred::Object_Type::Enum object_type =
+            Conversion::Enums::from_db_handle<LibFred::Object_Type>(static_cast<std::string>(db_result[0]["object_type"]));
 
     LibFred::Mailer::Parameters email_template_params;
     {
@@ -93,7 +94,7 @@ unsigned long long send_authinfo(
     std::string object_type_handle;
     switch (object_type)
     {
-        case ObjectType::contact:
+        case LibFred::Object_Type::contact:
             // clang-format off
             sql = "SELECT o.authinfopw,TRIM(c.email) "
                   "FROM object o "
@@ -107,7 +108,7 @@ unsigned long long send_authinfo(
             object_type_handle = Conversion::Enums::to_db_handle(LibFred::Object_Type::contact);
             email_template_params.insert(LibFred::Mailer::Parameters::value_type("type", "1"));
             break;
-        case ObjectType::nsset:
+        case LibFred::Object_Type::nsset:
             // clang-format off
             sql = "SELECT o.authinfopw,TRIM(c.email) "
                   "FROM object o "
@@ -123,7 +124,7 @@ unsigned long long send_authinfo(
             object_type_handle = Conversion::Enums::to_db_handle(LibFred::Object_Type::nsset);
             email_template_params.insert(LibFred::Mailer::Parameters::value_type("type", "2"));
             break;
-        case ObjectType::domain:
+        case LibFred::Object_Type::domain:
             // clang-format off
             sql = "SELECT o.authinfopw,TRIM(c.email) "
                   "FROM object o "
@@ -150,7 +151,7 @@ unsigned long long send_authinfo(
             object_type_handle = Conversion::Enums::to_db_handle(LibFred::Object_Type::domain);
             email_template_params.insert(LibFred::Mailer::Parameters::value_type("type", "3"));
             break;
-        case ObjectType::keyset:
+        case LibFred::Object_Type::keyset:
             // clang-format off
             sql = "SELECT o.authinfopw,TRIM(c.email) "
                   "FROM object o "

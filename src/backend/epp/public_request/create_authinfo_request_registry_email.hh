@@ -30,7 +30,7 @@ namespace PublicRequest {
 
 unsigned long long create_authinfo_request_registry_email(
         LibFred::OperationContext& _ctx,
-        Fred::Backend::PublicRequest::ObjectType::Enum _object_type,
+        Fred::Backend::PublicRequest::ObjectType _object_type,
         const std::string& _object_handle,
         unsigned long long _registrar_id,
         const Optional<unsigned long long>& _log_request_id);

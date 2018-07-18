@@ -60,7 +60,7 @@ private:
 unsigned long long create_personal_info_request_non_registry_email(
         const std::string& contact_handle,
         const Optional<unsigned long long>& log_request_id,
-        ConfirmedBy::Enum confirmation_method,
+        ConfirmedBy confirmation_method,
         const std::string& specified_email)
 {
     LOGGING_CONTEXT(log_ctx);

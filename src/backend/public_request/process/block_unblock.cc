@@ -49,107 +49,102 @@ namespace {
 
 template <LockRequestType::Enum _lock_request_type>
 void subprocess(
-        const LibFred::LockedPublicRequestForUpdate& _locked_request,
-        const unsigned long long object_id,
-        const LibFred::ObjectStatesInfo& object_states);
+        LibFred::OperationContext& _ctx,
+        const unsigned long long _object_id,
+        const LibFred::ObjectStatesInfo& _object_states);
 
 template <>
 void subprocess<LockRequestType::block_transfer>(
-        const LibFred::LockedPublicRequestForUpdate& _locked_request,
-        const unsigned long long object_id,
-        const LibFred::ObjectStatesInfo& object_states)
+        LibFred::OperationContext& _ctx,
+        const unsigned long long _object_id,
+        const LibFred::ObjectStatesInfo& _object_states)
 {
-    if (object_states.presents(LibFred::Object_State::server_transfer_prohibited))
+    if (_object_states.presents(LibFred::Object_State::server_transfer_prohibited))
     {
         throw ObjectAlreadyBlocked();
     }
 
-    if (object_states.presents(LibFred::Object_State::server_update_prohibited))
+    if (_object_states.presents(LibFred::Object_State::server_update_prohibited))
     {
         throw HasDifferentBlock(); // different from request impl src/backend/public_request/public_request.cc
     }
 
-    auto& ctx = _locked_request.get_ctx();
     LibFred::StatusList status_list;
     status_list.insert(Conversion::Enums::to_db_handle(LibFred::Object_State::server_transfer_prohibited));
-    LibFred::CreateObjectStateRequestId(object_id, status_list).exec(ctx);
-    LibFred::PerformObjectStateRequest(object_id).exec(ctx);
+    LibFred::CreateObjectStateRequestId(_object_id, status_list).exec(_ctx);
+    LibFred::PerformObjectStateRequest(_object_id).exec(_ctx);
 }
 
 template <>
 void subprocess<LockRequestType::block_transfer_and_update>(
-        const LibFred::LockedPublicRequestForUpdate& _locked_request,
-        const unsigned long long object_id,
-        const LibFred::ObjectStatesInfo& object_states)
+        LibFred::OperationContext& _ctx,
+        const unsigned long long _object_id,
+        const LibFred::ObjectStatesInfo& _object_states)
 {
-    auto& ctx = _locked_request.get_ctx();
-
-    if (object_states.presents(LibFred::Object_State::server_transfer_prohibited) &&
-        object_states.presents(LibFred::Object_State::server_update_prohibited))
+    if (_object_states.presents(LibFred::Object_State::server_transfer_prohibited) &&
+        _object_states.presents(LibFred::Object_State::server_update_prohibited))
     {
         throw ObjectAlreadyBlocked();
     }
 
     // different from request impl src/backend/public_request/public_request.cc
-    if (object_states.presents(LibFred::Object_State::server_update_prohibited) &&
-       !object_states.presents(LibFred::Object_State::server_transfer_prohibited))
+    if (_object_states.presents(LibFred::Object_State::server_update_prohibited) &&
+       !_object_states.presents(LibFred::Object_State::server_transfer_prohibited))
     {
-        ctx.get_log().warning(
-                boost::format("Request %1% inconsistent states: server_update_prohibited without server_transfer_prohibited") %
-                _locked_request.get_id());
+        _ctx.get_log().warning(
+                boost::format("Request to block_transfer_and_update: object with id %1% has inconsistent states: "
+                              "server_update_prohibited without server_transfer_prohibited") %
+                _object_id);
     }
 
     LibFred::StatusList status_list;
     status_list.insert(Conversion::Enums::to_db_handle(LibFred::Object_State::server_transfer_prohibited));
     status_list.insert(Conversion::Enums::to_db_handle(LibFred::Object_State::server_update_prohibited));
-    LibFred::CreateObjectStateRequestId(object_id, status_list).exec(ctx);
-    LibFred::PerformObjectStateRequest(object_id).exec(ctx);
+    LibFred::CreateObjectStateRequestId(_object_id, status_list).exec(_ctx);
+    LibFred::PerformObjectStateRequest(_object_id).exec(_ctx);
 }
 
 template <>
 void subprocess<LockRequestType::unblock_transfer>(
-        const LibFred::LockedPublicRequestForUpdate& _locked_request,
-        const unsigned long long object_id,
-        const LibFred::ObjectStatesInfo& object_states)
+        LibFred::OperationContext& _ctx,
+        const unsigned long long _object_id,
+        const LibFred::ObjectStatesInfo& _object_states)
 {
-    if (object_states.presents(LibFred::Object_State::server_update_prohibited))
+    if (_object_states.presents(LibFred::Object_State::server_update_prohibited))
     {
         throw HasDifferentBlock();
     }
 
-    if (!object_states.presents(LibFred::Object_State::server_transfer_prohibited))
+    if (!_object_states.presents(LibFred::Object_State::server_transfer_prohibited))
     {
         throw ObjectNotBlocked();
     }
 
-    auto& ctx = _locked_request.get_ctx();
     LibFred::StatusList status_list;
     status_list.insert(Conversion::Enums::to_db_handle(LibFred::Object_State::server_transfer_prohibited));
-    LibFred::CancelObjectStateRequestId(object_id, status_list).exec(ctx);
-    LibFred::PerformObjectStateRequest(object_id).exec(ctx);
+    LibFred::CancelObjectStateRequestId(_object_id, status_list).exec(_ctx);
+    LibFred::PerformObjectStateRequest(_object_id).exec(_ctx);
 }
 
 template <>
 void subprocess<LockRequestType::unblock_transfer_and_update>(
-        const LibFred::LockedPublicRequestForUpdate& _locked_request,
-        const unsigned long long object_id,
-        const LibFred::ObjectStatesInfo& object_states)
+        LibFred::OperationContext& _ctx,
+        const unsigned long long _object_id,
+        const LibFred::ObjectStatesInfo& _object_states)
 {
-    if (object_states.absents(LibFred::Object_State::server_update_prohibited))
+    if (_object_states.absents(LibFred::Object_State::server_update_prohibited))
     {
-        if (object_states.presents(LibFred::Object_State::server_transfer_prohibited))
+        if (_object_states.presents(LibFred::Object_State::server_transfer_prohibited))
         {
             throw HasDifferentBlock();
         }
         throw ObjectNotBlocked();
     }
 
-    auto& ctx = _locked_request.get_ctx();
     LibFred::StatusList status_list;
     status_list.insert(Conversion::Enums::to_db_handle(LibFred::Object_State::server_transfer_prohibited));
     status_list.insert(Conversion::Enums::to_db_handle(LibFred::Object_State::server_update_prohibited));
-    LibFred::CancelObjectStateRequestId(object_id, status_list).exec(ctx);
-    LibFred::PerformObjectStateRequest(object_id).exec(ctx);
+    LibFred::CancelObjectStateRequestId(_object_id, status_list).exec(_ctx);
 }
 
 template <LockRequestType::Enum _lock_request_type>
@@ -160,15 +155,17 @@ void process(const LibFred::LockedPublicRequestForUpdate& _locked_request)
     const auto object_id = request_info.get_object_id().get_value(); // oops
 
     LibFred::LockObjectStateRequestLock(object_id).exec(ctx);
-    const LibFred::ObjectStatesInfo object_states(LibFred::GetObjectStates(object_id).exec(ctx));
+    const LibFred::ObjectStatesInfo _object_states(LibFred::GetObjectStates(object_id).exec(ctx));
 
-    if (object_states.presents(LibFred::Object_State::mojeid_contact) ||
-        object_states.presents(LibFred::Object_State::server_blocked))
+    if (_object_states.presents(LibFred::Object_State::mojeid_contact) ||
+        _object_states.presents(LibFred::Object_State::server_blocked))
     {
         throw OperationProhibited();
     }
 
-    subprocess<_lock_request_type>(_locked_request, object_id, object_states);
+    subprocess<_lock_request_type>(ctx, object_id, _object_states);
+
+    LibFred::PerformObjectStateRequest(object_id).exec(ctx);
 }
 
 } // namespace Fred::Backend::PublicRequest::Process::{anonymous}

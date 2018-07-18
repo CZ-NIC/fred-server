@@ -27,13 +27,13 @@ namespace Backend {
 namespace PublicRequest {
 namespace Type {
 
-template<ConfirmedBy::Enum> struct BlockChanges;
-template<ConfirmedBy::Enum> struct BlockTransfer;
-template<ConfirmedBy::Enum> struct UnblockChanges;
-template<ConfirmedBy::Enum> struct UnblockTransfer;
+template<ConfirmedBy> struct BlockChanges;
+template<ConfirmedBy> struct BlockTransfer;
+template<ConfirmedBy> struct UnblockChanges;
+template<ConfirmedBy> struct UnblockTransfer;
 
-template<template<ConfirmedBy::Enum> typename T>
-const LibFred::PublicRequestTypeIface& get_iface_of(ConfirmedBy::Enum confirmation_method);
+template<template<ConfirmedBy> class T>
+const LibFred::PublicRequestTypeIface& get_iface_of(ConfirmedBy confirmation_method);
 
 } // namespace Fred::Backend::PublicRequest::Type
 } // namespace Fred::Backend::PublicRequest
