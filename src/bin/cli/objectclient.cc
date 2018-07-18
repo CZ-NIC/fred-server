@@ -145,7 +145,7 @@ ObjectClient::DeleteObjectsResult
 ObjectClient::deleteObjects(const std::string& _of_given_types)
 {
     LOGGER("tracer").trace("ObjectClient::deleteObjects");
-    const auto object_types = construct_set_of_object_types_from_string(_of_given_types);
+    const auto object_types = construct_set_of_object_types_from_cli_options(_of_given_types);
     const boost::optional<unsigned> max_number_of_selected_candidates =
             delete_objects_params.object_delete_limit.is_value_set() &&
             (0 < delete_objects_params.object_delete_limit.get_value())
