@@ -51,6 +51,8 @@
 #include "src/libfred/registrable_object/contact/transfer_contact.hh"
 #include "src/libfred/registrable_object/contact/undisclose_address.hh"
 #include "src/libfred/registrable_object/contact/update_contact.hh"
+#include "src/libfred/registrar/info_registrar.hh"
+#include "src/libfred/registrar/check_registrar.hh"
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/handle_corbanameservice_args.hh"
 #include "src/util/cfg/handle_mojeid_args.hh"
@@ -61,6 +63,8 @@
 #include "src/util/xmlgen.hh"
 
 #include <boost/algorithm/string/case_conv.hpp>
+#include <boost/format.hpp>
+#include <boost/format/free_funcs.hpp>
 #include <boost/mpl/contains.hpp>
 #include <boost/mpl/copy_if.hpp>
 #include <boost/mpl/list.hpp>
@@ -74,6 +78,47 @@
 namespace Fred {
 namespace Backend {
 namespace MojeId {
+
+namespace {
+
+unsigned long long get_registrar_id(const std::string& _registrar_handle)
+{
+    LibFred::OperationContextCreator ctx;
+
+    try
+    {
+        return LibFred::InfoRegistrarByHandle(_registrar_handle)
+                .exec(ctx)
+                .info_registrar_data.id;
+    }
+    catch (const LibFred::InfoRegistrarByHandle::Exception& e)
+    {
+        if (e.is_set_unknown_registrar_handle())
+        {
+            throw std::runtime_error(boost::str(boost::format(
+                    "registrar with handle \"%1%\" not found in database") % _registrar_handle));
+        }
+        throw;
+    }
+}
+
+} // namespace Fred::Backend::MojeId::{anonymous}
+
+ConfiguredRegistrar::ConfiguredRegistrar(const std::string& _handle)
+    : handle_(_handle),
+      id_(get_registrar_id(_handle))
+{
+}
+
+std::string ConfiguredRegistrar::handle() const
+{
+    return handle_;
+}
+
+unsigned long long ConfiguredRegistrar::id() const
+{
+    return id_;
+}
 
 namespace {
 
@@ -105,39 +150,26 @@ private:
 
 #define LOGGING_CONTEXT(CTX_VAR, IMPL_OBJ) LogContext CTX_VAR((IMPL_OBJ), create_ctx_function_name(__FUNCTION__))
 
-std::string get_mojeid_registrar_handle()
+ConfiguredRegistrar get_mojeid_registrar()
 {
-    const std::string handle =
+    const std::string mojeid_registrar_handle =
             CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIdArgs>()->registrar_handle;
-    if (!handle.empty())
+    if (mojeid_registrar_handle.empty())
     {
-        return handle;
+        throw std::runtime_error("missing configuration for dedicated registrar");
     }
-    throw std::runtime_error("missing configuration for dedicated registrar");
+    return ConfiguredRegistrar(mojeid_registrar_handle);
 }
 
-std::string get_system_registrar_handle()
+ConfiguredRegistrar get_system_registrar()
 {
-    const std::string handle =
+    const std::string system_registrar_handle =
             CfgArgs::instance()->get_handler_ptr_by_type<HandleRegistryArgs>()->system_registrar;
-    if (!handle.empty())
+    if (system_registrar_handle.empty())
     {
-        return handle;
+        throw std::runtime_error("missing configuration for system registrar");
     }
-    throw std::runtime_error("missing configuration for system registrar");
-}
-
-::size_t get_mojeid_registrar_id(const std::string& registrar_handle)
-{
-    LibFred::OperationContextCreator ctx;
-    Database::Result dbres = ctx.get_conn().exec_params(
-            "SELECT id FROM registrar WHERE handle=$1::TEXT", Database::query_param_list(registrar_handle));
-    if (0 < dbres.size())
-    {
-        ctx.commit_transaction();
-        return static_cast< ::size_t>(dbres[0][0]);
-    }
-    throw std::runtime_error("missing dedicated registrar");
+    return ConfiguredRegistrar(system_registrar_handle);
 }
 
 void set_create_contact_arguments(
@@ -743,9 +775,8 @@ typedef prepare_transaction_storage::object_type::data_not_found prepare_transac
 
 MojeIdImpl::MojeIdImpl(const std::string& _server_name)
     : server_name_(_server_name),
-      mojeid_registrar_handle_(get_mojeid_registrar_handle()),
-      system_registrar_handle_(get_system_registrar_handle()),
-      mojeid_registrar_id_(get_mojeid_registrar_id(mojeid_registrar_handle_))
+      mojeid_registrar_(get_mojeid_registrar()),
+      system_registrar_(get_system_registrar())
 {
     LogContext log_ctx(*this, "init");
 }
@@ -839,7 +870,7 @@ MojeIdImpl::ContactId MojeIdImpl::create_contact_prepare(
             }
         }
 
-        LibFred::CreateContact op_create_contact(_contact.username, mojeid_registrar_handle_);
+        LibFred::CreateContact op_create_contact(_contact.username, mojeid_registrar_.handle());
         set_create_contact_arguments(_contact, op_create_contact);
         if (0 < _log_request_id)
         {
@@ -847,13 +878,13 @@ MojeIdImpl::ContactId MojeIdImpl::create_contact_prepare(
         }
         const LibFred::CreateContact::Result new_contact = op_create_contact.exec(ctx);
         LibFred::CreatePublicRequestAuth op_create_pub_req;
-        op_create_pub_req.set_registrar_id(mojeid_registrar_id_);
+        op_create_pub_req.set_registrar_id(mojeid_registrar_.id());
         LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_contact(ctx, new_contact.create_object_result.object_id);
         {
             const LibFred::CreatePublicRequestAuth::Result result = op_create_pub_req.exec(
                     locked_contact, Fred::Backend::MojeId::PublicRequest::ContactConditionalIdentification().iface(), get_optional_log_request_id(_log_request_id));
             _ident = result.identification;
-            notify(ctx, Notification::created, mojeid_registrar_id_, new_contact.create_object_result.history_id, _log_request_id);
+            notify(ctx, Notification::created, mojeid_registrar_.id(), new_contact.create_object_result.history_id, _log_request_id);
         }
         prepare_transaction_storage()->store(_trans_id, new_contact.create_object_result.object_id);
         ctx.commit_transaction();
@@ -941,7 +972,7 @@ void MojeIdImpl::transfer_contact_prepare(
                     _trans_id,
                     contact,
                     locked_contact,
-                    mojeid_registrar_id_,
+                    mojeid_registrar_.id(),
                     _log_request_id);
         }
         else if (states.presents(LibFred::Object_State::conditionally_identified_contact) &&
@@ -953,7 +984,7 @@ void MojeIdImpl::transfer_contact_prepare(
                     _trans_id,
                     contact,
                     locked_contact,
-                    mojeid_registrar_id_,
+                    mojeid_registrar_.id(),
                     _log_request_id);
         }
         else if (states.presents(LibFred::Object_State::conditionally_identified_contact) &&
@@ -965,7 +996,7 @@ void MojeIdImpl::transfer_contact_prepare(
                     _trans_id,
                     contact,
                     locked_contact,
-                    mojeid_registrar_id_,
+                    mojeid_registrar_.id(),
                     _log_request_id);
         }
 
@@ -1195,7 +1226,7 @@ void MojeIdImpl::update_contact_prepare(
                     server_conf_ptr->letter_limit_interval);
             LibFred::CreatePublicRequestAuth create_public_request_op;
             create_public_request_op.set_reason("data changed");
-            create_public_request_op.set_registrar_id(mojeid_registrar_id_);
+            create_public_request_op.set_registrar_id(mojeid_registrar_.id());
             create_public_request_op.exec(
                     locked_contact,
                     reidentification_needed ? Fred::Backend::MojeId::PublicRequest::ContactReidentification().iface()
@@ -1238,7 +1269,7 @@ void MojeIdImpl::update_contact_prepare(
         {
             LibFred::CancelObjectStateRequestId(new_data.id, to_cancel).exec(ctx);
         }
-        LibFred::UpdateContactById update_contact_op(new_data.id, mojeid_registrar_handle_);
+        LibFred::UpdateContactById update_contact_op(new_data.id, mojeid_registrar_.handle());
         set_update_contact_op(data_changes, update_contact_op);
         const bool is_identified = states.presents(LibFred::Object_State::identified_contact) && !drop_identification;
         const bool is_validated = states.presents(LibFred::Object_State::validated_contact) && !drop_validation;
@@ -1254,7 +1285,7 @@ void MojeIdImpl::update_contact_prepare(
         }
         const unsigned long long history_id = update_contact_op.exec(ctx);
 
-        notify(ctx, Notification::updated, mojeid_registrar_id_, history_id, _log_request_id);
+        notify(ctx, Notification::updated, mojeid_registrar_.id(), history_id, _log_request_id);
 
         if (object_states_changed)
         {
@@ -1412,21 +1443,21 @@ MojeIdImplData::InfoContact MojeIdImpl::update_transfer_contact_prepare(
                     MojeIdImplInternal::raise(result_of_check);
                 }
             }
-            if (current_data.sponsoring_registrar_handle != mojeid_registrar_handle_)
+            if (current_data.sponsoring_registrar_handle != mojeid_registrar_.handle())
             {
                 LibFred::TransferContact transfer_contact_op(current_data.id,
-                        mojeid_registrar_handle_,
+                        mojeid_registrar_.handle(),
                         current_data.authinfopw,
                         0 < _log_request_id ? _log_request_id
                                             : Nullable<MojeIdImpl::LogRequestId>());
                 //transfer contact to 'REG-MOJEID' sponsoring registrar
                 const unsigned long long history_id = transfer_contact_op.exec(ctx);
-                notify(ctx, Notification::transferred, mojeid_registrar_id_, history_id, _log_request_id);
+                notify(ctx, Notification::transferred, mojeid_registrar_.id(), history_id, _log_request_id);
                 LibFred::Poll::CreatePollMessage<LibFred::Poll::MessageType::transfer_contact>()
                         .exec(ctx, history_id);
             }
             //perform changes
-            LibFred::UpdateContactById update_contact_op(new_data.id, mojeid_registrar_handle_);
+            LibFred::UpdateContactById update_contact_op(new_data.id, mojeid_registrar_.handle());
             set_update_contact_op(LibFred::diff_contact_data(current_data, new_data), update_contact_op);
             if (0 < _log_request_id)
             {
@@ -1441,7 +1472,7 @@ MojeIdImplData::InfoContact MojeIdImpl::update_transfer_contact_prepare(
         {
             op_create_pub_req.set_email_to_answer(current_data.notifyemail.get_value());
         }
-        op_create_pub_req.set_registrar_id(mojeid_registrar_id_);
+        op_create_pub_req.set_registrar_id(mojeid_registrar_.id());
         const LibFred::CreatePublicRequestAuth::Result result =
                 op_create_pub_req.exec(
                         locked_contact,
@@ -1451,7 +1482,7 @@ MojeIdImplData::InfoContact MojeIdImpl::update_transfer_contact_prepare(
                                            : Fred::Backend::MojeId::PublicRequest::PrevalidatedUnidentifiedContactTransfer().iface(),
                         get_optional_log_request_id(_log_request_id));
 
-        notify(ctx, Notification::updated, mojeid_registrar_id_, history_id, _log_request_id);
+        notify(ctx, Notification::updated, mojeid_registrar_.id(), history_id, _log_request_id);
         //second phase commit will change contact states
         prepare_transaction_storage()->store(_trans_id, current_data.id);
 
@@ -1790,7 +1821,7 @@ MojeIdImpl::ContactId MojeIdImpl::process_registration_request(
                 const bool address_can_be_undisclosed = info_contact_data.organization.get_value_or("").empty();
                 if (address_is_disclosed && address_can_be_undisclosed)
                 {
-                    LibFred::Contact::undisclose_address(ctx, contact_id, system_registrar_handle_); // #21767
+                    LibFred::Contact::undisclose_address(ctx, contact_id, system_registrar_.handle()); // #21767
                 }
             }
 
@@ -1802,16 +1833,16 @@ MojeIdImpl::ContactId MojeIdImpl::process_registration_request(
                     MojeIdImplInternal::raise(check_result);
                 }
             }
-            if (contact.sponsoring_registrar_handle != mojeid_registrar_handle_)
+            if (contact.sponsoring_registrar_handle != mojeid_registrar_.handle())
             {
                 LibFred::TransferContact transfer_contact_op(contact.id,
-                        mojeid_registrar_handle_,
+                        mojeid_registrar_.handle(),
                         contact.authinfopw,
                         0 < _log_request_id ? _log_request_id
                                             : Nullable<MojeIdImpl::LogRequestId>());
                 //transfer contact to 'REG-MOJEID' sponsoring registrar
                 const unsigned long long history_id = transfer_contact_op.exec(ctx);
-                notify(ctx, Notification::transferred, mojeid_registrar_id_, history_id, _log_request_id);
+                notify(ctx, Notification::transferred, mojeid_registrar_.id(), history_id, _log_request_id);
                 LibFred::Poll::CreatePollMessage<LibFred::Poll::MessageType::transfer_contact>()
                         .exec(ctx, history_id);
             }
@@ -1832,7 +1863,7 @@ MojeIdImpl::ContactId MojeIdImpl::process_registration_request(
                             .absents(LibFred::Object_State::identified_contact))
             {
                 LibFred::CreatePublicRequestAuth op_create_pub_req;
-                op_create_pub_req.set_registrar_id(mojeid_registrar_id_);
+                op_create_pub_req.set_registrar_id(mojeid_registrar_.id());
                 LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_contact(ctx, contact_id);
                 const LibFred::CreatePublicRequestAuth::Result result = op_create_pub_req.exec(
                         locked_contact, Fred::Backend::MojeId::PublicRequest::ContactIdentification().iface(), get_optional_log_request_id(_log_request_id));
@@ -1990,7 +2021,7 @@ void MojeIdImpl::process_identification_request(
         const bool address_can_be_undisclosed = info_contact_data.organization.get_value_or("").empty();
         if (address_is_disclosed && address_can_be_undisclosed)
         {
-            LibFred::Contact::undisclose_address(ctx, _contact_id, system_registrar_handle_); // #21767
+            LibFred::Contact::undisclose_address(ctx, _contact_id, system_registrar_.handle()); // #21767
         }
         answer(locked_request,
                 reidentification ? Fred::Backend::MojeId::PublicRequest::ContactReidentification().iface()
@@ -2309,7 +2340,7 @@ void MojeIdImpl::create_validation_request(
                 MojeIdImplInternal::raise(check_create_validation_request);
             }
         }
-        LibFred::CreatePublicRequest().set_registrar_id(mojeid_registrar_id_).exec(
+        LibFred::CreatePublicRequest().set_registrar_id(mojeid_registrar_.id()).exec(
                 locked_contact,
                 Fred::Backend::MojeId::PublicRequest::ContactValidation().iface(),
                 get_optional_log_request_id(_log_request_id));
@@ -2386,12 +2417,12 @@ void MojeIdImpl::validate_contact(
             }
         }
         const LibFred::PublicRequestId public_request_id =
-                LibFred::CreatePublicRequest().set_registrar_id(mojeid_registrar_id_).exec(
+                LibFred::CreatePublicRequest().set_registrar_id(mojeid_registrar_.id()).exec(
                         locked_contact,
                         Fred::Backend::MojeId::PublicRequest::ContactValidation().iface(),
                         get_optional_log_request_id(_log_request_id));
         const LibFred::PublicRequestLockGuardById locked_request(ctx, public_request_id);
-        LibFred::UpdatePublicRequest().set_registrar_id(mojeid_registrar_id_).set_status(
+        LibFred::UpdatePublicRequest().set_registrar_id(mojeid_registrar_.id()).set_status(
                 LibFred::PublicRequest::Status::resolved).set_reason("MojeId validate_contact function has been called").exec(locked_request,
                 Fred::Backend::MojeId::PublicRequest::ContactValidation().iface(),
                 get_optional_log_request_id(_log_request_id));
@@ -2403,7 +2434,7 @@ void MojeIdImpl::validate_contact(
         const bool address_can_be_undisclosed = contact_data.organization.get_value_or("").empty();
         if (address_is_disclosed && address_can_be_undisclosed)
         {
-            LibFred::Contact::undisclose_address(ctx, _contact_id, system_registrar_handle_); // #21767
+            LibFred::Contact::undisclose_address(ctx, _contact_id, system_registrar_.handle()); // #21767
         }
         ctx.commit_transaction();
         return;
@@ -2491,7 +2522,7 @@ void MojeIdImpl::get_contacts_state_changes(
     try
     {
         LibFred::OperationContextCreator ctx;
-        Database::query_param_list params(mojeid_registrar_handle_); //$1::TEXT
+        Database::query_param_list params(mojeid_registrar_.handle()); //$1::TEXT
         params(_last_hours); //$2::TEXT
         params(Conversion::Enums::to_db_handle(LibFred::Object_State::conditionally_identified_contact)); //$3::TEXT
         params(Conversion::Enums::to_db_handle(LibFred::Object_State::identified_contact)); //$4::TEXT
@@ -2579,7 +2610,7 @@ void MojeIdImpl::get_contact_state(
     try
     {
         LibFred::OperationContextCreator ctx;
-        Database::query_param_list params(mojeid_registrar_handle_); //$1::TEXT
+        Database::query_param_list params(mojeid_registrar_.handle()); //$1::TEXT
         params(_contact_id); //$2::BIGINT
         params(Conversion::Enums::to_db_handle(LibFred::Object_State::mojeid_contact)); //$3::TEXT
         params(Conversion::Enums::to_db_handle(LibFred::Object_State::conditionally_identified_contact)); //$4::TEXT
@@ -2714,7 +2745,7 @@ void MojeIdImpl::cancel_account_prepare(
         LibFred::CancelObjectStateRequestId(_contact_id, to_cancel).exec(ctx);
 
         {
-            LibFred::UpdateContactById update_contact_op(_contact_id, mojeid_registrar_handle_);
+            LibFred::UpdateContactById update_contact_op(_contact_id, mojeid_registrar_.handle());
             update_contact_op.unset_domain_expiration_warning_letter_enabled()
                     .reset_address<LibFred::ContactAddressType::MAILING>()
                     .reset_address<LibFred::ContactAddressType::BILLING>()
@@ -2731,7 +2762,7 @@ void MojeIdImpl::cancel_account_prepare(
         LibFred::UpdatePublicRequest()
                 .set_status(LibFred::PublicRequest::Status::invalidated)
                 .set_reason("cancel_account_prepare call")
-                .set_registrar_id(ctx, mojeid_registrar_handle_)
+                .set_registrar_id(ctx, mojeid_registrar_.handle())
                 .exec(locked_contact,
                       Fred::Backend::MojeId::PublicRequest::ContactValidation(),
                       get_optional_log_request_id(_log_request_id));
@@ -2799,7 +2830,7 @@ void MojeIdImpl::send_new_pin3(
                 LibFred::PublicRequestLockGuardById locked_request(ctx, request_id);
                 update_public_request_op.set_status(LibFred::PublicRequest::Status::invalidated);
                 update_public_request_op.set_reason("new pin3 generated");
-                update_public_request_op.set_registrar_id(ctx, mojeid_registrar_handle_);
+                update_public_request_op.set_registrar_id(ctx, mojeid_registrar_.handle());
                 update_public_request_op.exec(locked_request, type.iface(), get_optional_log_request_id(_log_request_id));
                 has_identification_request = true;
             }
@@ -2824,7 +2855,7 @@ void MojeIdImpl::send_new_pin3(
                 LibFred::PublicRequestLockGuardById locked_request(ctx, request_id);
                 update_public_request_op.set_status(LibFred::PublicRequest::Status::invalidated);
                 update_public_request_op.set_reason("new pin3 generated");
-                update_public_request_op.set_registrar_id(ctx, mojeid_registrar_handle_);
+                update_public_request_op.set_registrar_id(ctx, mojeid_registrar_.handle());
                 update_public_request_op.exec(locked_request, type.iface(), get_optional_log_request_id(_log_request_id));
                 has_reidentification_request = true;
             }
@@ -2849,7 +2880,7 @@ void MojeIdImpl::send_new_pin3(
                 server_conf_ptr->letter_limit_interval);
 
         LibFred::CreatePublicRequestAuth create_public_request_op;
-        create_public_request_op.set_registrar_id(mojeid_registrar_id_);
+        create_public_request_op.set_registrar_id(mojeid_registrar_.id());
         create_public_request_op.set_reason("send_new_pin3 call");
         const LibFred::CreatePublicRequestAuth::Result result =
                 create_public_request_op.exec(
