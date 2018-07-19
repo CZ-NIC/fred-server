@@ -124,8 +124,7 @@ struct RegistrationValidationResult
 {
     RegistrationValidationResult()
         : username(ValidationResult::UNKNOWN),
-          first_name(ValidationResult::UNKNOWN),
-          last_name(ValidationResult::UNKNOWN),
+          name(ValidationResult::UNKNOWN),
           birth_date(ValidationResult::UNKNOWN),
           vat_id_num(ValidationResult::UNKNOWN),
           email(ValidationResult::UNKNOWN),
@@ -135,8 +134,7 @@ struct RegistrationValidationResult
     {
     }
     ValidationResult::Value username;
-    ValidationResult::Value first_name;
-    ValidationResult::Value last_name;
+    ValidationResult::Value name;
     ValidationResult::Value birth_date;
     ValidationResult::Value vat_id_num;
     ValidationResult::Value email;
@@ -154,8 +152,7 @@ struct RegistrationValidationResult
 struct UpdateContactPrepareValidationResult
 {
     UpdateContactPrepareValidationResult()
-        : first_name(ValidationResult::UNKNOWN),
-          last_name(ValidationResult::UNKNOWN),
+        : name(ValidationResult::UNKNOWN),
           birth_date(ValidationResult::UNKNOWN),
           email(ValidationResult::UNKNOWN),
           notify_email(ValidationResult::UNKNOWN),
@@ -163,8 +160,7 @@ struct UpdateContactPrepareValidationResult
           fax(ValidationResult::UNKNOWN)
     {
     }
-    ValidationResult::Value first_name;
-    ValidationResult::Value last_name;
+    ValidationResult::Value name;
     ValidationResult::Value birth_date;
     ValidationResult::Value email;
     ValidationResult::Value notify_email;
@@ -181,8 +177,7 @@ struct UpdateContactPrepareValidationResult
 struct CreateValidationRequestValidationResult
 {
     CreateValidationRequestValidationResult()
-        : first_name(ValidationResult::UNKNOWN),
-          last_name(ValidationResult::UNKNOWN),
+        : name(ValidationResult::UNKNOWN),
           email(ValidationResult::UNKNOWN),
           phone(ValidationResult::UNKNOWN),
           notify_email(ValidationResult::UNKNOWN),
@@ -191,8 +186,7 @@ struct CreateValidationRequestValidationResult
           vat_id_num(ValidationResult::UNKNOWN)
     {
     }
-    ValidationResult::Value first_name;
-    ValidationResult::Value last_name;
+    ValidationResult::Value name;
     MandatoryAddressValidationResult permanent;
     ValidationResult::Value email;
     ValidationResult::Value phone;
@@ -231,8 +225,7 @@ struct Birthdate
 struct CreateContact
 {
     std::string username;
-    std::string first_name;
-    std::string last_name;
+    std::string name;
     Nullable<std::string> organization;
     Nullable<std::string> vat_reg_num;
     Nullable<Birthdate> birth_date;
@@ -254,8 +247,7 @@ struct CreateContact
 
 struct UpdateContact
 {
-    std::string first_name;
-    std::string last_name;
+    std::string name;
     Nullable<std::string> organization;
     Nullable<std::string> vat_reg_num;
     Nullable<Birthdate> birth_date;
@@ -278,8 +270,7 @@ struct UpdateContact
 struct InfoContact
 {
     ContactId id;
-    std::string first_name;
-    std::string last_name;
+    std::string name;
     Nullable<std::string> organization;
     Nullable<std::string> vat_reg_num;
     Nullable<Birthdate> birth_date;
@@ -301,8 +292,7 @@ struct InfoContact
 
 struct InfoContactPublishFlags
 {
-    bool first_name;
-    bool last_name;
+    bool name;
     bool organization;
     bool vat_reg_num;
     bool birth_date;
@@ -324,7 +314,7 @@ struct InfoContactPublishFlags
 
 struct UpdateTransferContact
 {
-    std::string full_name;
+    std::string name;
     Nullable<std::string> organization;
     Nullable<std::string> vat_reg_num;
     Nullable<Birthdate> birth_date;

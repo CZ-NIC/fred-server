@@ -16,16 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <limits>
-#include <fstream>
-#include <ios>
-#include <iterator>
-#include <iomanip>
-#include <sstream>
-#include <utility>
-#include <boost/filesystem.hpp>
-#include <boost/format.hpp>
-
 #include "config.h"
 #include "src/libfred/opcontext.hh"
 #include "src/bin/cli/read_config_file.hh"
@@ -34,6 +24,8 @@
 #include "src/util/subprocess.hh"
 #include "src/util/printable.hh"
 #include "src/util/random_data_generator.hh"
+#include "src/util/cfg/config_handler_decl.hh"
+
 #include "test/setup/fixtures.hh"
 
 #include "src/util/corba_conversion.hh"
@@ -44,14 +36,23 @@
 #include "src/bin/corba/mojeid/mojeid_corba_conversion.hh"
 #include "src/bin/corba/util/corba_conversions_buffer.hh"
 
+#include "src/bin/corba/Buffer.hh"
+#include "src/backend/buffer.hh"
+
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN
 
-#include "src/util/cfg/config_handler_decl.hh"
 #include <boost/test/unit_test.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/format.hpp>
 
-#include "src/bin/corba/Buffer.hh"
-#include "src/backend/buffer.hh"
+#include <limits>
+#include <fstream>
+#include <ios>
+#include <iterator>
+#include <iomanip>
+#include <sstream>
+#include <utility>
 
 namespace Test {
 namespace CorbaConversion {
@@ -485,8 +486,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_registration_validation_error)
 
     Fred::Backend::MojeIdImplData::RegistrationValidationResult reg_val_err_impl;
     reg_val_err_impl.username     = Fred::Backend::MojeIdImplData::ValidationResult::INVALID;
-    reg_val_err_impl.first_name   = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
-    reg_val_err_impl.last_name    = Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED;
+    reg_val_err_impl.name         = Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED;
     reg_val_err_impl.birth_date   = Fred::Backend::MojeIdImplData::ValidationResult::INVALID;
     reg_val_err_impl.vat_id_num   = Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED;
     reg_val_err_impl.email        = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
@@ -506,8 +506,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_registration_validation_error)
     CorbaConversion::wrap_RegistrationValidationResult(reg_val_err_impl, res);
 
     BOOST_CHECK(res.username     == Registry::MojeID::INVALID);
-    BOOST_CHECK(res.first_name   == Registry::MojeID::NOT_AVAILABLE);
-    BOOST_CHECK(res.last_name    == Registry::MojeID::REQUIRED);
+    BOOST_CHECK(res.name         == Registry::MojeID::REQUIRED);
     BOOST_CHECK(res.birth_date   == Registry::MojeID::INVALID);
     BOOST_CHECK(res.vat_id_num   == Registry::MojeID::REQUIRED);
     BOOST_CHECK(res.email        == Registry::MojeID::NOT_AVAILABLE);
@@ -587,8 +586,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_update_contact_prepare_validation_error)
     shipping3_addr_err_impl.country     = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
 
     Fred::Backend::MojeIdImplData::UpdateContactPrepareValidationResult upd_val_err_impl;
-    upd_val_err_impl.first_name   = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
-    upd_val_err_impl.last_name    = Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED;
+    upd_val_err_impl.name         = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
     upd_val_err_impl.birth_date   = Fred::Backend::MojeIdImplData::ValidationResult::INVALID;
     upd_val_err_impl.email        = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
     upd_val_err_impl.notify_email = Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED;
@@ -606,8 +604,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_update_contact_prepare_validation_error)
     Registry::MojeID::Server::UPDATE_CONTACT_PREPARE_VALIDATION_ERROR res;
     CorbaConversion::wrap_UpdateContactPrepareValidationResult(upd_val_err_impl,res);
 
-    BOOST_CHECK(res.first_name   == Registry::MojeID::NOT_AVAILABLE);
-    BOOST_CHECK(res.last_name    == Registry::MojeID::REQUIRED);
+    BOOST_CHECK(res.name         == Registry::MojeID::NOT_AVAILABLE);
     BOOST_CHECK(res.birth_date   == Registry::MojeID::INVALID);
     BOOST_CHECK(res.email        == Registry::MojeID::NOT_AVAILABLE);
     BOOST_CHECK(res.notify_email == Registry::MojeID::REQUIRED);
@@ -657,8 +654,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_create_validation_request_validation_error)
 
     Fred::Backend::MojeIdImplData::CreateValidationRequestValidationResult crr_val_err_impl;
 
-    crr_val_err_impl.first_name   = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
-    crr_val_err_impl.last_name    = Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED;
+    crr_val_err_impl.name         = Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED;
     crr_val_err_impl.email        = Fred::Backend::MojeIdImplData::ValidationResult::NOT_AVAILABLE;
     crr_val_err_impl.notify_email = Fred::Backend::MojeIdImplData::ValidationResult::REQUIRED;
     crr_val_err_impl.phone        = Fred::Backend::MojeIdImplData::ValidationResult::INVALID;
@@ -671,8 +667,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_create_validation_request_validation_error)
     Registry::MojeID::Server::CREATE_VALIDATION_REQUEST_VALIDATION_ERROR res;
     CorbaConversion::wrap_CreateValidationRequestValidationResult(crr_val_err_impl,res);
 
-    BOOST_CHECK(res.first_name   == Registry::MojeID::NOT_AVAILABLE);
-    BOOST_CHECK(res.last_name    == Registry::MojeID::REQUIRED);
+    BOOST_CHECK(res.name         == Registry::MojeID::REQUIRED);
     BOOST_CHECK(res.email        == Registry::MojeID::NOT_AVAILABLE);
     BOOST_CHECK(res.notify_email == Registry::MojeID::REQUIRED);
     BOOST_CHECK(res.phone        == Registry::MojeID::INVALID);
@@ -705,8 +700,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_create_contact)
     Registry::MojeID::CreateContact cc;
 
     cc.username = CorbaConversion::wrap_string("username")._retn();
-    cc.first_name = CorbaConversion::wrap_string("first_name")._retn();
-    cc.last_name = CorbaConversion::wrap_string("last_name")._retn();
+    cc.name = CorbaConversion::wrap_string("first_name last_name")._retn();
     cc.organization = CorbaConversion::wrap_Nullable_string("org")._retn();
     cc.vat_reg_num = CorbaConversion::wrap_Nullable_string("vat_reg_num")._retn();
     cc.birth_date = CorbaConversion::Util::wrap_Nullable_boost_gregorian_date_to_NullableIsoDate(boost::gregorian::date(2015,12,10))._retn();
@@ -791,8 +785,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_create_contact)
     CorbaConversion::unwrap_CreateContact(cc, cc_impl);
 
     BOOST_CHECK(cc_impl.username == "username");
-    BOOST_CHECK(cc_impl.first_name == "first_name");
-    BOOST_CHECK(cc_impl.last_name == "last_name");
+    BOOST_CHECK_EQUAL(cc_impl.name, "first_name last_name");
     BOOST_CHECK(cc_impl.organization.get_value() == "org");
     BOOST_CHECK(cc_impl.vat_reg_num.get_value() == "vat_reg_num");
     BOOST_CHECK(boost::gregorian::from_simple_string(cc_impl.birth_date.get_value().value) == boost::gregorian::date(2015,12,10));
@@ -1262,8 +1255,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_update_contact)
 {
     Registry::MojeID::UpdateContact uc;
 
-    uc.first_name = CorbaConversion::wrap_string("first_name")._retn();
-    uc.last_name = CorbaConversion::wrap_string("last_name")._retn();
+    uc.name = CorbaConversion::wrap_string("first_name last_name")._retn();
     uc.organization = CorbaConversion::wrap_Nullable_string("org")._retn();
     uc.vat_reg_num = CorbaConversion::wrap_Nullable_string("vat_reg_num")._retn();
     uc.birth_date = CorbaConversion::Util::wrap_Nullable_boost_gregorian_date_to_NullableIsoDate(boost::gregorian::date(2015,12,10))._retn();
@@ -1347,8 +1339,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_update_contact)
     Fred::Backend::MojeIdImplData::UpdateContact uc_impl;
     CorbaConversion::unwrap_UpdateContact(uc, uc_impl);
 
-    BOOST_CHECK(uc_impl.first_name == std::string("first_name"));
-    BOOST_CHECK(uc_impl.last_name == std::string("last_name"));
+    BOOST_CHECK_EQUAL(uc_impl.name, "first_name last_name");
     BOOST_CHECK(uc_impl.organization.get_value() == "org");
     BOOST_CHECK(uc_impl.vat_reg_num.get_value() == "vat_reg_num");
     BOOST_CHECK(boost::gregorian::from_simple_string(uc_impl.birth_date.get_value().value) == boost::gregorian::date(2015,12,10));
@@ -1478,8 +1469,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_info_contact)
     Fred::Backend::MojeIdImplData::InfoContact impl_ic;
 
     impl_ic.id = 5;
-    impl_ic.first_name = "first_name";
-    impl_ic.last_name ="last_name";
+    impl_ic.name = "first_name last_name";
     impl_ic.organization = "org";
     impl_ic.vat_reg_num = "vat_reg_num";
     {
@@ -1573,8 +1563,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_info_contact)
     BOOST_REQUIRE(idl_ic_ptr.operator->() != NULL);
 
     BOOST_CHECK(idl_ic_ptr->id == 5);
-    BOOST_CHECK(idl_ic_ptr->first_name.in()                 == impl_ic.first_name);
-    BOOST_CHECK(idl_ic_ptr->last_name.in()                  == impl_ic.last_name);
+    BOOST_CHECK(idl_ic_ptr->name.in()                       == impl_ic.name);
     BOOST_CHECK(idl_ic_ptr->organization->_value()          == impl_ic.organization.get_value());
     BOOST_CHECK(idl_ic_ptr->vat_reg_num->_value()           == impl_ic.vat_reg_num.get_value());
     BOOST_CHECK(idl_ic_ptr->birth_date->_value().value.in() == impl_ic.birth_date.get_value().value);

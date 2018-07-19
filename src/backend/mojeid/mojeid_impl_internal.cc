@@ -154,13 +154,18 @@ void set_validity_availability_result(
 template <class CHECK_CLASS, class EXCEPTION_CLASS>
 void set_contact_name_result(const CHECK_CLASS& result, EXCEPTION_CLASS& e)
 {
-    e.first_name = result.Fred::Backend::check_contact_name::first_name_absent
-                           ? MojeIdImplData::ValidationResult::REQUIRED
-                           : MojeIdImplData::ValidationResult::OK;
-
-    e.last_name = result.Fred::Backend::check_contact_name::last_name_absent
-                          ? MojeIdImplData::ValidationResult::REQUIRED
-                          : MojeIdImplData::ValidationResult::OK;
+    if (result.Fred::Backend::check_contact_name::first_name_absent)
+    {
+        e.name = MojeIdImplData::ValidationResult::REQUIRED;
+    }
+    else if (result.Fred::Backend::check_contact_name::last_name_absent)
+    {
+        e.name = MojeIdImplData::ValidationResult::INVALID;
+    }
+    else
+    {
+        e.name = MojeIdImplData::ValidationResult::OK;
+    }
 }
 
 void set_validity_result(bool valid, MojeIdImplData::ValidationResult::Value& result)
