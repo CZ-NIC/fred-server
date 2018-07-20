@@ -30,6 +30,7 @@ docker:server:fedora:
     - master
     - triggers
     - schedules
+    - web
 
 docker:server:centos:
   <<: *image
@@ -40,6 +41,7 @@ docker:server:centos:
     - master
     - triggers
     - schedules
+    - web
 
 .ubuntu_16_04: &ubuntu_16_04
   image: "$CI_REGISTRY/fred/server/ubuntu:16.04"
@@ -93,6 +95,7 @@ build:fedora:amd64:
     - master
     - triggers
     - schedules
+    - web
 
 build:centos:amd64:
   <<: *centos_7
@@ -101,3 +104,4 @@ build:centos:amd64:
     - master
     - triggers
     - schedules
+    - web
