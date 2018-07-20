@@ -970,6 +970,18 @@ src_libfred_libfred_a_SOURCES = \
 		src/libfred/registrable_object/domain/delete_domain.cc \
 		src/libfred/registrable_object/domain/domain_name.hh \
 		src/libfred/registrable_object/domain/domain_name.cc \
+		src/libfred/zone/create_zone.hh \
+		src/libfred/zone/create_zone.cc \
+		src/libfred/zone/exceptions.hh \
+		src/libfred/zone/exceptions.cc \
+		src/libfred/zone/info_zone_data.hh \
+		src/libfred/zone/info_zone_data.cc \
+		src/libfred/zone/info_zone.hh \
+		src/libfred/zone/info_zone.cc \
+		src/libfred/zone/update_zone.hh \
+		src/libfred/zone/update_zone.cc \
+		src/libfred/zone/util.hh \
+		src/libfred/zone/util.cc \
 		src/libfred/zone/zone.hh \
 		src/libfred/zone/zone.cc \
 		src/libfred/registrable_object/contact/verification/create_check.hh \
@@ -3679,6 +3691,11 @@ test_test_libfred_SOURCES = \
 		test/libfred/registrar/certification/test_get_registrar_certifications.cc \
 		test/libfred/test_opexception.cc \
 		test/libfred/test_check_handle.cc \
+		test/libfred/zone/test_create_zone.cc \
+		test/libfred/zone/test_info_zone.cc \
+		test/libfred/zone/test_update_zone.cc \
+		test/libfred/zone/util.cc \
+		test/libfred/zone/util.hh \
 		test/util/test_param_query.cc \
 		test/setup/fixtures_utils.hh \
 		test/setup/fixtures_utils.cc \
