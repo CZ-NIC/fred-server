@@ -984,6 +984,14 @@ src_libfred_libfred_a_SOURCES = \
 		src/libfred/zone/util.cc \
 		src/libfred/zone/zone.hh \
 		src/libfred/zone/zone.cc \
+		src/libfred/zone_soa/create_zone_soa.hh \
+		src/libfred/zone_soa/create_zone_soa.cc \
+		src/libfred/zone_soa/exceptions.hh \
+		src/libfred/zone_soa/info_zone_soa.hh \
+		src/libfred/zone_soa/info_zone_soa.cc \
+		src/libfred/zone_soa/info_zone_soa_data.hh \
+		src/libfred/zone_soa/update_zone_soa.hh \
+		src/libfred/zone_soa/update_zone_soa.cc \
 		src/libfred/registrable_object/contact/verification/create_check.hh \
 		src/libfred/registrable_object/contact/verification/create_check.cc \
 		src/libfred/registrable_object/contact/verification/update_check.hh \
@@ -3696,6 +3704,11 @@ test_test_libfred_SOURCES = \
 		test/libfred/zone/test_update_zone.cc \
 		test/libfred/zone/util.cc \
 		test/libfred/zone/util.hh \
+		test/libfred/zone_soa/test_create_zone_soa.cc \
+		test/libfred/zone_soa/test_info_zone_soa.cc \
+		test/libfred/zone_soa/test_update_zone_soa.cc \
+		test/libfred/zone_soa/util.hh \
+		test/libfred/zone_soa/util.cc \
 		test/util/test_param_query.cc \
 		test/setup/fixtures_utils.hh \
 		test/setup/fixtures_utils.cc \
