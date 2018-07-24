@@ -226,6 +226,8 @@ noinst_HEADERS = \
 		src/bin/corba/util/corba_conversions_string.hh \
 		src/bin/corba/util/corba_conversions_isodate.hh \
 		src/bin/corba/util/corba_conversions_isodatetime.hh \
+		src/bin/corba/util/corba_conversions_nullableisodate.hh \
+		src/bin/corba/util/corba_conversions_nullableisodatetime.hh \
 		src/bin/corba/automatic_keyset_management/corba_conversions.cc \
 		src/bin/corba/automatic_keyset_management/corba_conversions.hh \
 		src/util/is_equal_optional_nullable.hh \
@@ -328,7 +330,8 @@ noinst_HEADERS = \
 		src/backend/public_request/process/authinfo.hh \
 		src/backend/public_request/process/block_unblock.hh \
 		src/backend/public_request/process/personal_info.hh \
-		test/backend/epp/nsset/fixture.hh
+		test/backend/epp/nsset/fixture.hh \
+		src/bin/corba/accounting/impl/corba_conversions.hh
 
 noinst_LIBRARIES = \
 		src/util/libutil.a \
@@ -387,7 +390,7 @@ noinst_LIBRARIES = \
 		src/backend/admin/contact/verification/libadmin_contact_verification.a \
 		src/backend/admin/notification/libadmin_notification.a \
 		src/backend/admin/domain/libadmin_create_expired_domain.a \
-		src/epp/impl/registraracl/libauthentic_registrar.a \
+		src/backend/epp/impl/registraracl/libauthentic_registrar.a \
 		src/bin/corba/libcorbaaccounting.a
 
 
@@ -706,7 +709,9 @@ src_bin_corba_util_libcorbautil_a_SOURCES = \
 		src/bin/corba/util/corba_conversions_money.cc \
 		src/bin/corba/util/corba_conversions_string.cc \
 		src/bin/corba/util/corba_conversions_isodate.cc \
-		src/bin/corba/util/corba_conversions_isodatetime.cc
+		src/bin/corba/util/corba_conversions_isodatetime.cc \
+		src/bin/corba/util/corba_conversions_nullableisodate.cc \
+		src/bin/corba/util/corba_conversions_nullableisodatetime.cc
 #
 # src/bin/corba/util/libcorbautil.a
 
@@ -1200,13 +1205,13 @@ src_util_libpassword_storage_a_SOURCES = \
 # util/libpassword_storage.a
 
 
-# src/epp/impl/registraracl/libauthentic_registrar.a
+# src/backend/epp/impl/registraracl/libauthentic_registrar.a
 #
-src_epp_impl_registraracl_libauthentic_registrar_a_SOURCES = \
+src_backend_epp_impl_registraracl_libauthentic_registrar_a_SOURCES = \
 		src/backend/epp/impl/registraracl/authentic_registrar.cc \
 		src/backend/epp/impl/registraracl/authentic_registrar.hh
 #
-# src/epp/impl/registraracl/libauthentic_registrar.a
+# src/backend/epp/impl/registraracl/libauthentic_registrar.a
 
 
 # src/libfred/public_request/libpublic_request.a
@@ -1701,6 +1706,9 @@ nodist_src_bin_corba_libcorbaaccounting_a_SOURCES = \
 		src/bin/corba/IsoDateSK.cc \
 		src/bin/corba/IsoDateDynSK.cc \
 		src/bin/corba/IsoDate.hh \
+		src/bin/corba/IsoDateTimeSK.cc \
+		src/bin/corba/IsoDateTimeDynSK.cc \
+		src/bin/corba/IsoDateTime.hh \
 		src/bin/corba/AccountingSK.cc \
 		src/bin/corba/AccountingDynSK.cc \
 		src/bin/corba/Accounting.hh
@@ -1741,7 +1749,7 @@ src/bin/corba/IsoDateSK.cc: $(IDLDIR)/IsoDate.idl
 src/bin/corba/NullableIsoDateSK.cc: $(IDLDIR)/NullableIsoDate.idl $(IDLDIR)/IsoDate.idl
 src/bin/corba/IsoDateTimeSK.cc: $(IDLDIR)/IsoDateTime.idl
 src/bin/corba/NullableIsoDateTimeSK.cc: $(IDLDIR)/NullableIsoDateTime.idl $(IDLDIR)/IsoDateTime.idl
-src/bin/corba/AccountingSK.cc: $(IDLDIR)/Accounting.idl
+src/bin/corba/AccountingSK.cc: $(IDLDIR)/Accounting.idl $(IDLDIR)/IsoDateTime.idl $(IDLDIR)/IsoDate.idl
 
 src/bin/corba/%.cc:
 		-echo "Trying to compile $@ ... should be specified in \"idl build\" section (*.idl) or list it in noinst_LIBRARIES (*.a) or noinst_HEADERS (*.hh)"
@@ -2192,7 +2200,7 @@ src_bin_corba_fred_rifd_SOURCES = \
 
 src_bin_corba_fred_rifd_LDADD = \
 		src/bin/corba/epp/libepp_impl.a \
-		src/epp/impl/registraracl/libauthentic_registrar.a \
+		src/backend/epp/impl/registraracl/libauthentic_registrar.a \
 		src/backend/admin/contact/verification/libadmin_contact_verification.a \
 		src/bin/corba/libcorbaepp.a \
 		src/bin/corba/libcorbatechcheck.a \
@@ -2342,7 +2350,7 @@ src_bin_corba_fred_adifd_LDADD = \
 		src/libfred/messages/libmessages.a \
 		src/libfred/banking/libbanking.a \
 		src/libfred/libfred.a \
-		src/epp/impl/registraracl/libauthentic_registrar.a \
+		src/backend/epp/impl/registraracl/libauthentic_registrar.a \
 		src/util/libpassword_storage.a \
 		src/deprecated/model/libmodel.a \
 		src/util/db/libdb.a \
@@ -2410,14 +2418,13 @@ src_bin_corba_fred_pifd_LDADD = \
 		src/bin/corba/libcorbanullableisodatetime.a \
 		src/libfred/contact_verification/libcontact_verification.a \
 		src/bin/corba/libcorbacontactverification.a \
-		src/bin/corba/libcorbabuffer.a \
 		src/bin/corba/libcorbapublicrequest.a \
 		src/libfred/requests/librequests.a \
 		src/libfred/banking/libbanking.a \
 		src/libfred/messages/libmessages.a \
 		src/libfred/public_request/libpublic_request.a \
 		src/libfred/libfred.a \
-		src/epp/impl/registraracl/libauthentic_registrar.a \
+		src/backend/epp/impl/registraracl/libauthentic_registrar.a \
 		src/util/libpassword_storage.a \
 		src/deprecated/model/libmodel.a \
 		src/util/db/libdb.a \
@@ -2753,10 +2760,6 @@ src_bin_corba_record_statement_fred_rsifd_LDADD = \
 		src/bin/corba/libcorba.a \
 		src/bin/corba/libmailer.a \
 		src/bin/corba/libcorbadatatypes.a \
-		src/bin/corba/libcorbabuffer.a \
-		src/bin/corba/libcorbaisodate.a \
-		src/bin/corba/libcorbaisodatetime.a \
-		src/bin/corba/libcorbanullableisodate.a \
 		src/bin/corba/libcorbarecordstatement.a \
 		$(LIBIDN_LIBS) \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
@@ -2773,18 +2776,20 @@ src_bin_corba_record_statement_fred_rsifd_LDADD = \
 # src/bin/corba/accounting/fred-accifd
 #
 src_bin_corba_accounting_fred_accifd_SOURCES = \
-		src/backend/credit.cc \
-		src/backend/credit.hh \
 		src/backend/accounting/accounting.cc \
 		src/backend/accounting/accounting.hh \
 		src/backend/accounting/exceptions.cc \
 		src/backend/accounting/exceptions.hh \
 		src/backend/accounting/payment_data.hh \
 		src/backend/accounting/registrar.hh \
-		src/bin/corba/nameservice.cc \
+		src/backend/credit.cc \
+		src/backend/credit.hh \
 		src/bin/corba/accounting/accounting_i.cc \
 		src/bin/corba/accounting/accounting_i.hh \
-		src/bin/corba/accounting/fred-accifd.cc
+		src/bin/corba/accounting/fred-accifd.cc \
+		src/bin/corba/accounting/impl/corba_conversions.cc \
+		src/bin/corba/accounting/impl/corba_conversions.hh \
+		src/bin/corba/nameservice.cc
 
 src_bin_corba_accounting_fred_accifd_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
@@ -2805,7 +2810,6 @@ src_bin_corba_accounting_fred_accifd_LDADD = \
 		src/util/db/libdb.a \
 		-lmpdec -lm -lrt \
 		src/bin/corba/libcorba.a \
-		src/bin/corba/libcorbaisodate.a \
 		src/bin/corba/libcorbaaccounting.a \
 		$(LIBCRYPTO_LIBS) \
 		$(LIBIDN_LIBS) \
@@ -2925,7 +2929,7 @@ src_bin_cli_fred_admin_LDFLAGS = \
 src_bin_cli_fred_admin_LDADD = \
 		src/backend/admin/contact/verification/libadmin_contact_verification.a \
 		src/libfred/libfred.a \
-		src/epp/impl/registraracl/libauthentic_registrar.a \
+		src/backend/epp/impl/registraracl/libauthentic_registrar.a \
 		src/util/libpassword_storage.a \
 		src/deprecated/model/libmodel.a \
 		src/libfred/banking/libbanking.a \
@@ -3388,7 +3392,7 @@ test_backend_test_epp_LDADD = \
 		src/libfred/libfred.a \
 		src/util/tz/libtimezones.a \
 		src/util/libpassword_storage.a \
-		src/epp/impl/registraracl/libauthentic_registrar.a \
+		src/backend/epp/impl/registraracl/libauthentic_registrar.a \
 		src/util/types/libtypes.a \
 		src/util/db/libdb.a \
 		src/util/log/liblog.a \
@@ -3567,7 +3571,7 @@ test_test_server_LDADD = \
 		src/backend/admin/domain/libadmin_create_expired_domain.a \
 		src/libfred/libfred.a \
 		src/util/libpassword_storage.a \
-		src/epp/impl/registraracl/libauthentic_registrar.a \
+		src/backend/epp/impl/registraracl/libauthentic_registrar.a \
 		src/libfred/messages/libmessages.a \
 		src/deprecated/model/libmodel.a \
 		src/util/tz/libtimezones.a \
@@ -3701,7 +3705,7 @@ test_test_blocking_LDADD = \
 		src/bin/corba/whois/libwhois_impl.a \
 		src/libfred/public_request/libpublic_request.a \
 		src/libfred/libfred.a \
-		src/epp/impl/registraracl/libauthentic_registrar.a \
+		src/backend/epp/impl/registraracl/libauthentic_registrar.a \
 		src/util/libpassword_storage.a \
 		src/libfred/messages/libmessages.a \
 		src/deprecated/model/libmodel.a \

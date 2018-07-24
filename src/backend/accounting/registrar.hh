@@ -41,6 +41,8 @@ struct Registrar
     std::string handle;
     std::string name;
     std::string organization;
+    std::string cin;
+    std::string tin;
     std::string url;
     std::string phone;
     std::string fax;

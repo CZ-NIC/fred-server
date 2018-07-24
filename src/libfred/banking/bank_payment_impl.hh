@@ -334,9 +334,9 @@ PaymentImplPtr payment_from_params(
         const std::string& _variable_symbol,
         const std::string& _specific_symbol,
         const Money& _price,
-        const boost::posix_time::ptime& _date,
+        const boost::gregorian::date& _date,
         const std::string& _memo,
-        const std::string& _creation_time);
+        const boost::posix_time::ptime& _creation_time);
 
 
 EnumList getBankAccounts();

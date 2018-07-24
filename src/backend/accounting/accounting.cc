@@ -230,8 +230,8 @@ Fred::Backend::Accounting::Registrar get_registrar_by_payment(
     Database::Result dbres = _ctx.get_conn().exec_params(
             // clang-format off
             "SELECT id, "
-                   "ico, "
-                   "dic, "
+                   "ico, " //
+                   "dic, " //
                    "varsymb, "
                    "vat, "
                    "handle, " //
@@ -266,6 +266,8 @@ Fred::Backend::Accounting::Registrar get_registrar_by_payment(
     registrar.handle = static_cast<std::string>(dbres[0]["handle"]);
     registrar.name = static_cast<std::string>(dbres[0]["name"]);
     registrar.organization = static_cast<std::string>(dbres[0]["organization"]);
+    registrar.cin = static_cast<std::string>(dbres[0]["ico"]);
+    registrar.tin = static_cast<std::string>(dbres[0]["dic"]);
     registrar.url = static_cast<std::string>(dbres[0]["url"]);
     registrar.phone = static_cast<std::string>(dbres[0]["telephone"]);
     registrar.fax = static_cast<std::string>(dbres[0]["fax"]);
@@ -287,8 +289,8 @@ Fred::Backend::Accounting::Registrar get_registrar_by_handle(
     Database::Result dbres = _ctx.get_conn().exec_params(
             // clang-format off
             "SELECT id, "
-                   "ico, "
-                   "dic, "
+                   "ico, " //
+                   "dic, " //
                    "varsymb, "
                    "vat, "
                    "handle, " //
@@ -323,6 +325,8 @@ Fred::Backend::Accounting::Registrar get_registrar_by_handle(
     registrar.handle = static_cast<std::string>(dbres[0]["handle"]);
     registrar.name = static_cast<std::string>(dbres[0]["name"]);
     registrar.organization = static_cast<std::string>(dbres[0]["organization"]);
+    registrar.cin = static_cast<std::string>(dbres[0]["ico"]);
+    registrar.tin = static_cast<std::string>(dbres[0]["dic"]);
     registrar.url = static_cast<std::string>(dbres[0]["url"]);
     registrar.phone = static_cast<std::string>(dbres[0]["telephone"]);
     registrar.fax = static_cast<std::string>(dbres[0]["fax"]);

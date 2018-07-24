@@ -26,93 +26,20 @@
 #include "src/bin/corba/accounting/accounting_i.hh"
 
 #include "src/backend/accounting/accounting.hh"
-#include "src/backend/accounting/accounting.hh"
 #include "src/backend/accounting/payment_data.hh"
+#include "src/backend/accounting/registrar.hh"
 #include "src/backend/credit.hh"
-#include "src/bin/corba/util/corba_conversions_money.hh"
 #include "src/bin/corba/Accounting.hh"
-#include "src/bin/corba/Registry.hh"
-#include "src/bin/corba/util/corba_conversions_buffer.hh"
-#include "src/bin/corba/util/corba_conversions_nullable_types.hh"
+#include "src/bin/corba/accounting/impl/corba_conversions.hh"
 #include "src/bin/corba/util/corba_conversions_string.hh"
-#include "src/util/types/money.hh"
+
+#include <boost/date_time/gregorian/greg_date.hpp>
 
 #include <stdexcept>
 #include <string>
 
 namespace CorbaConversion {
 namespace Accounting {
-
-namespace {
-
-Fred::Backend::Accounting::PaymentData
-unwrap_Registry_Accounting_PaymentData(
-        const Registry::Accounting::PaymentData& _payment_data)
-{
-    Fred::Backend::Accounting::PaymentData payment_data;
-    payment_data.bank_payment = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.bank_payment);
-    payment_data.uuid = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.uuid);
-    payment_data.account_number = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.account_number);
-    payment_data.counter_account_number = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.counter_account_number);
-    payment_data.counter_account_name = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.counter_account_name);
-    payment_data.constant_symbol = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.constant_symbol);
-    payment_data.variable_symbol = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.variable_symbol);
-    payment_data.specific_symbol = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.specific_symbol);
-    //payment_data.price = unwrap_Money // TODO
-    //payment_data.boost::posix_time::ptime date = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.boos);
-    payment_data.memo = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.memo);
-    payment_data.creation_time = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.creation_time);
-    return payment_data;
-}
-
-Fred::Backend::Credit
-unwrap_Fred_Backend_Credit_from_Registry_Accounting_Credit(
-       Registry::Accounting::Credit _credit)
-{
-    return Fred::Backend::Credit(LibFred::Corba::unwrap_string_from_const_char_ptr(_credit.value)); // FIXME
-}
-
-
-Registry::Accounting::PlaceAddress
-wrap_Registry_Accounting_PlaceAddress(
-        const Fred::Backend::Accounting::PlaceAddress& _place_address)
-{
-    Registry::Accounting::PlaceAddress place_address;
-    place_address.street1 = LibFred::Corba::wrap_string_to_corba_string(_place_address.street1);
-    place_address.street2 = LibFred::Corba::wrap_string_to_corba_string(_place_address.street2);
-    place_address.street3 = LibFred::Corba::wrap_string_to_corba_string(_place_address.street3);
-    place_address.city = LibFred::Corba::wrap_string_to_corba_string(_place_address.city);
-    place_address.stateorprovince = LibFred::Corba::wrap_string_to_corba_string(_place_address.stateorprovince);
-    place_address.postalcode = LibFred::Corba::wrap_string_to_corba_string(_place_address.postalcode);
-    place_address.country_code = LibFred::Corba::wrap_string_to_corba_string(_place_address.country_code);
-    return place_address;
-}
-
-Registry::Accounting::Registrar
-wrap_Registry_Accounting_Registrar(
-        const Fred::Backend::Accounting::Registrar& _registrar)
-{
-    Registry::Accounting::Registrar registrar;
-    registrar.handle = LibFred::Corba::wrap_string_to_corba_string(_registrar.handle);
-    registrar.name = LibFred::Corba::wrap_string_to_corba_string(_registrar.name);
-    registrar.organization = LibFred::Corba::wrap_string_to_corba_string(_registrar.organization);
-    registrar.url = LibFred::Corba::wrap_string_to_corba_string(_registrar.url);
-    registrar.phone = LibFred::Corba::wrap_string_to_corba_string(_registrar.phone);
-    registrar.fax = LibFred::Corba::wrap_string_to_corba_string(_registrar.fax);
-    registrar.address = wrap_Registry_Accounting_PlaceAddress(_registrar.address);
-    return registrar;
-}
-
-Registry::Accounting::Credit_var
-wrap_Fred_Backend_Credit_to_Registry_Accounting_Credit(
-        const Fred::Backend::Credit& _credit)
-{
-    Registry::Accounting::Credit_var credit;
-    // FIXME
-    return credit;
-}
-
-} // namespace CorbaConversion::Accounting::{anonymous}
 
 AccountingImpl::AccountingImpl(
         const std::string& _server_name)
@@ -132,7 +59,7 @@ void AccountingImpl::increase_zone_credit_of_registrar(
                 LibFred::Corba::unwrap_string_from_const_char_ptr(_transaction_ident),
                 LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar_handle),
                 LibFred::Corba::unwrap_string_from_const_char_ptr(_zone),
-                unwrap_Fred_Backend_Credit_from_Registry_Accounting_Credit(_credit_amount_to_add));
+                Impl::unwrap_Registry_Accounting_Credit(_credit_amount_to_add));
     }
     catch (const Fred::Backend::Accounting::CreditAlreadyProcessed&)
     {
@@ -168,7 +95,7 @@ void AccountingImpl::decrease_zone_credit_of_registrar(
                 LibFred::Corba::unwrap_string_from_const_char_ptr(_transaction_ident),
                 LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar_handle),
                 LibFred::Corba::unwrap_string_from_const_char_ptr(_zone),
-                unwrap_Fred_Backend_Credit_from_Registry_Accounting_Credit(_credit_amount_to_substract));
+                Impl::unwrap_Registry_Accounting_Credit(_credit_amount_to_substract));
     }
     catch (const Fred::Backend::Accounting::CreditAlreadyProcessed&)
     {
@@ -201,12 +128,12 @@ Registry::Accounting::Registrar* AccountingImpl::get_registrar_by_payment(
         std::string zone;
         Fred::Backend::Accounting::Registrar registrar =
                 Fred::Backend::Accounting::get_registrar_by_payment(
-                        unwrap_Registry_Accounting_PaymentData(_payment_data),
+                        Impl::unwrap_Registry_Accounting_PaymentData(_payment_data),
                         zone);
 
         Registry::Accounting::Registrar_var return_value =
                 new Registry::Accounting::Registrar(
-                        wrap_Registry_Accounting_Registrar(registrar));
+                        Impl::wrap_Backend_Accounting_Registrar_to_Registry_Accounting_Registrar(registrar));
 
         // no exception shall be thrown from here onwards
 
@@ -234,12 +161,12 @@ Registry::Accounting::Registrar* AccountingImpl::get_registrar_by_handle_and_pay
         Fred::Backend::Accounting::Registrar registrar =
                 Fred::Backend::Accounting::get_registrar_by_handle_and_payment(
                         LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar_handle),
-                        unwrap_Registry_Accounting_PaymentData(_payment_data),
+                        Impl::unwrap_Registry_Accounting_PaymentData(_payment_data),
                         zone);
 
         Registry::Accounting::Registrar_var return_value =
                 new Registry::Accounting::Registrar(
-                        wrap_Registry_Accounting_Registrar(registrar));
+                        Impl::wrap_Backend_Accounting_Registrar_to_Registry_Accounting_Registrar(registrar));
 
         // no exception shall be thrown from here onwards
 
@@ -264,11 +191,11 @@ void AccountingImpl::import_payment(
     {
         Fred::Backend::Credit credit(0);
         Fred::Backend::Accounting::import_payment(
-                unwrap_Registry_Accounting_PaymentData(_payment_data),
+                Impl::unwrap_Registry_Accounting_PaymentData(_payment_data),
                 credit);
 
         Registry::Accounting::Credit_var remaining_credit = new Registry::Accounting::Credit;
-        remaining_credit = wrap_Fred_Backend_Credit_to_Registry_Accounting_Credit(credit);
+        Impl::wrap_Fred_Backend_Credit_to_Registry_Accounting_Credit(credit, remaining_credit.inout());
         _remaining_credit = remaining_credit._retn();
     }
     catch (const Fred::Backend::Accounting::RegistrarNotFound&)

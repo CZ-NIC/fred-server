@@ -20,8 +20,6 @@
 #define CORBA_CONVERSIONS_ISODATE_HH_2BF5BCD875144165A64AD4C1BBC18508
 
 #include "src/bin/corba/IsoDate.hh"
-#include "src/bin/corba/NullableIsoDate.hh"
-#include "src/util/db/nullable.hh"
 
 #include <boost/date_time/gregorian/gregorian_types.hpp>
 
@@ -37,15 +35,6 @@ unwrap_IsoDate_to_boost_gregorian_date(
         const Registry::IsoDate src,
         boost::gregorian::date& dst);
 
-Nullable<boost::gregorian::date>
-unwrap_NullableIsoDate_to_Nullable_boost_gregorian_date(
-        const Registry::NullableIsoDate* src_ptr);
-
-void
-unwrap_NullableIsoDate_to_Nullable_boost_gregorian_date(
-        const Registry::NullableIsoDate* src_ptr,
-        Nullable<boost::gregorian::date>& dst);
-
 Registry::IsoDate
 wrap_boost_gregorian_date_to_IsoDate(
         const boost::gregorian::date& src);
@@ -54,10 +43,6 @@ void
 wrap_boost_gregorian_date_to_IsoDate(
         const boost::gregorian::date& src,
         Registry::IsoDate& dst);
-
-Registry::NullableIsoDate_var
-wrap_Nullable_boost_gregorian_date_to_NullableIsoDate(
-        const Nullable<boost::gregorian::date>& src);
 
 } // namespace CorbaConversion::Util
 } // namespace CorbaConversion

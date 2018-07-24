@@ -23,6 +23,7 @@
 
 #include "src/util/types/money.hh"
 
+#include <boost/date_time/gregorian/greg_date.hpp>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 
 namespace Fred {
@@ -40,9 +41,9 @@ struct PaymentData
     std::string variable_symbol;
     std::string specific_symbol;
     Money price;
-    boost::posix_time::ptime date;
+    boost::gregorian::date date;
     std::string memo;
-    std::string creation_time;
+    boost::posix_time::ptime creation_time;
 };
 
 } // namespace Fred::Backend::Accounting

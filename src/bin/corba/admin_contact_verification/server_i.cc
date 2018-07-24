@@ -34,6 +34,7 @@
 #include "src/backend/admin/contact/verification/run_all_enqueued_checks.hh"
 #include "src/backend/admin/contact/verification/update_tests.hh"
 #include "src/bin/corba/util/corba_conversions_isodatetime.hh"
+#include "src/bin/corba/util/corba_conversions_nullableisodatetime.hh"
 #include "src/bin/corba/util/corba_conversions_nullable_types.hh"
 #include "src/bin/corba/util/corba_conversions_string.hh"
 #include "src/libfred/registrable_object/contact/check_contact.hh"

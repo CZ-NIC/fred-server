@@ -33,6 +33,7 @@
 #include "src/bin/corba/corba_conversion_test.hh"
 #include "src/bin/corba/util/corba_conversions_isodate.hh"
 #include "src/bin/corba/util/corba_conversions_isodatetime.hh"
+#include "src/bin/corba/util/corba_conversions_nullableisodate.hh"
 #include "src/bin/corba/mojeid/mojeid_corba_conversion.hh"
 #include "src/bin/corba/util/corba_conversions_buffer.hh"
 

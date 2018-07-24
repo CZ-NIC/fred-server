@@ -4,6 +4,7 @@
 #include "src/bin/corba/util/corba_conversions_string.hh"
 #include "src/bin/corba/util/corba_conversions_isodate.hh"
 #include "src/bin/corba/util/corba_conversions_isodatetime.hh"
+#include "src/bin/corba/util/corba_conversions_nullableisodatetime.hh"
 #include "src/bin/corba/util/corba_conversions_nullable_types.hh"
 
 #include <omniORB4/CORBA.h>

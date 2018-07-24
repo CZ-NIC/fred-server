@@ -9,7 +9,8 @@
 #include "src/libfred/db_settings.hh"
 #include "src/util/types/money.hh"
 
-#include <boost/date_time/posix_time/ptime.hpp>
+#include <boost/date_time/posix_time/posix_time_types.hpp>
+#include <boost/date_time/gregorian/gregorian_types.hpp>
 
 namespace LibFred {
 namespace Banking {
@@ -46,9 +47,9 @@ public:
             const std::string& _variable_symbol,
             const std::string& _specific_symbol,
             const Money& _price,
-            const boost::posix_time::ptime _date,
+            const boost::gregorian::date _date,
             const std::string& _memo,
-            const std::string& _creation_time)
+            const boost::posix_time::ptime& _creation_time)
                 = 0;
 
     virtual bool pairPaymentWithStatement(

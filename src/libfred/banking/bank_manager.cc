@@ -15,6 +15,9 @@
 #include "src/util/types/money.hh"
 
 #include <boost/algorithm/string.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+
 #include <utility>
 
 
@@ -522,9 +525,9 @@ public:
             const std::string& _variable_symbol,
             const std::string& _specific_symbol,
             const Money& _price,
-            const boost::posix_time::ptime _date,
+            const boost::gregorian::date _date,
             const std::string& _memo,
-            const std::string& _creation_time)
+            const boost::posix_time::ptime& _creation_time)
     {
         TRACE("[CALL] LibFred::Banking::Manager::importPayment(...)");
         Logging::Context ctx("bank payment import");

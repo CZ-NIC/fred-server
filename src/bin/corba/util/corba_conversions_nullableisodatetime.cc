@@ -16,30 +16,31 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CORBA_CONVERSIONS_ISODATETIME_HH_6C81DCD1D79F45E2AC3190723E2F6DE3
-#define CORBA_CONVERSIONS_ISODATETIME_HH_6C81DCD1D79F45E2AC3190723E2F6DE3
+#include "src/bin/corba/util/corba_conversions_nullableisodatetime.hh"
 
-#include "src/bin/corba/IsoDateTime.hh"
+#include "src/bin/corba/util/corba_conversions_isodatetime.hh"
+#include "src/bin/corba/NullableIsoDateTime.hh"
+#include "src/bin/corba/util/corba_conversions_string.hh"
+#include "src/util/db/nullable.hh"
 
-#include <boost/date_time/posix_time/posix_time_types.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+
 
 namespace CorbaConversion {
 namespace Util {
 
-boost::posix_time::ptime
-unwrap_IsoDateTime_to_boost_posix_time_ptime(
-        const Registry::IsoDateTime src);
+Registry::NullableIsoDateTime_var
+wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(
+        const Nullable<boost::posix_time::ptime>& src)
+{
+    if (src.isnull()) {
+        return Registry::NullableIsoDateTime_var();
+    }
 
-Registry::IsoDateTime
-wrap_boost_posix_time_ptime_to_IsoDateTime(
-        const boost::posix_time::ptime& src);
-
-void
-wrap_boost_posix_time_ptime_to_IsoDateTime(
-        const boost::posix_time::ptime& src,
-        Registry::IsoDateTime& dst);
+    Registry::NullableIsoDateTime_var result(new Registry::NullableIsoDateTime());
+    wrap_boost_posix_time_ptime_to_IsoDateTime(src.get_value(), result.in()->_value());
+    return result._retn();
+}
 
 } // namespace CorbaConversion::Util
 } // namespace CorbaConversion
-
-#endif

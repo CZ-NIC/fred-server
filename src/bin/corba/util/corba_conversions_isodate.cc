@@ -19,7 +19,6 @@
 #include "src/bin/corba/util/corba_conversions_isodate.hh"
 
 #include "src/bin/corba/IsoDate.hh"
-#include "src/bin/corba/NullableIsoDate.hh"
 #include "src/bin/corba/util/corba_conversions_string.hh"
 #include "src/util/db/nullable.hh"
 
@@ -41,25 +40,6 @@ unwrap_IsoDate_to_boost_gregorian_date(
         boost::gregorian::date& dst)
 {
     dst = unwrap_IsoDate_to_boost_gregorian_date(src);
-}
-
-Nullable<boost::gregorian::date>
-unwrap_NullableIsoDate_to_Nullable_boost_gregorian_date(
-        const Registry::NullableIsoDate* src_ptr)
-{
-    if (src_ptr == nullptr)
-    {
-        return Nullable<boost::gregorian::date>();
-    }
-    return unwrap_IsoDate_to_boost_gregorian_date(src_ptr->_boxed_in());
-}
-
-void
-unwrap_NullableIsoDate_to_Nullable_boost_gregorian_date(
-        const Registry::NullableIsoDate* src_ptr,
-        Nullable<boost::gregorian::date>& dst)
-{
-    dst = unwrap_NullableIsoDate_to_Nullable_boost_gregorian_date(src_ptr);
 }
 
 Registry::IsoDate
@@ -85,18 +65,6 @@ wrap_boost_gregorian_date_to_IsoDate(
     }
 
     dst = wrap_boost_gregorian_date_to_IsoDate(src);
-}
-
-Registry::NullableIsoDate_var
-wrap_Nullable_boost_gregorian_date_to_NullableIsoDate(
-        const Nullable<boost::gregorian::date>& src)
-{
-    if (src.isnull()) {
-        return Registry::NullableIsoDate_var();
-    }
-    Registry::NullableIsoDate_var result(new Registry::NullableIsoDate());
-    wrap_boost_gregorian_date_to_IsoDate(src.get_value(), result.in()->_value());
-    return result._retn();
 }
 
 } // namespace CorbaConversion::Util
