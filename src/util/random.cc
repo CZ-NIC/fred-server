@@ -7,6 +7,8 @@
 #include <vector>
 #include <time.h>
 #include <sys/time.h>
+#include <unistd.h>
+#include <sys/syscall.h>
 
 
 namespace Random {
@@ -16,14 +18,14 @@ unsigned long msseed()
 {
     struct timeval tv;
     gettimeofday(&tv, NULL);
-    return tv.tv_usec + tv.tv_sec;
+    return (static_cast<unsigned long>(tv.tv_sec) + tv.tv_usec) ^ syscall(SYS_gettid);
 }
 
-boost::mt19937 rng(msseed());
 
 
 int integer(const int &_min, const int &_max)
 {
+    thread_local boost::mt19937 rng(msseed());
     boost::uniform_int<> range(_min, _max);
     boost::variate_generator<boost::mt19937&, boost::uniform_int<> > gen(rng, range);
     return gen();
