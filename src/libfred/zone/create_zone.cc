@@ -49,7 +49,7 @@ unsigned long long CreateZone::exec(OperationContext& _ctx) const
     const int default_val_period_months_enum = 6;
     const int validation_period_in_months =
             enum_zone
-                    ? enum_validation_period_in_months_.value_or(default_val_period_months_enum)
+                    ? enum_validation_period_in_months_.get_value_or(default_val_period_months_enum)
                     : dummy_val_period_months_nonenum;
     try
     {
