@@ -11,12 +11,11 @@ namespace PublicRequest {
 FACTORY_MODULE_INIT_DECL(authinfo)
 
 
-extern const Type PRT_AUTHINFO_AUTO_RIF;
-extern const Type PRT_AUTHINFO_AUTO_PIF;
-extern const Type PRT_AUTHINFO_EMAIL_PIF;
-extern const Type PRT_AUTHINFO_POST_PIF;
-extern const Type PRT_AUTHINFO_GOVERNMENT_PIF;
-
+static const Type PRT_AUTHINFO_AUTO_RIF = "authinfo_auto_rif";
+static const Type PRT_AUTHINFO_AUTO_PIF = "authinfo_auto_pif";
+static const Type PRT_AUTHINFO_EMAIL_PIF = "authinfo_email_pif";
+static const Type PRT_AUTHINFO_POST_PIF = "authinfo_post_pif";
+static const Type PRT_AUTHINFO_GOVERNMENT_PIF = "authinfo_government_pif";
 
 } // namespace LibFred::PublicRequest
 } // namespace LibFred
