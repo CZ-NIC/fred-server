@@ -31,7 +31,12 @@
 #include "src/libfred/registry.hh"
 #include "src/util/db/query_param.hh"
 
+#include <boost/range/adaptor/map.hpp>
+#include <boost/range/algorithm/copy.hpp>
+
+#include <algorithm>
 #include <functional>
+#include <iterator>
 #include <unordered_map>
 #include <utility>
 
@@ -50,16 +55,6 @@ std::unordered_map<std::string, const LibFred::PublicRequestTypeIface& (*)()> ge
     return type_to_iface;
 }
 
-template <typename ...T>
-std::set<std::string> get_request_type_filter()
-{
-    std::set<std::string> request_types_filter =
-        {
-            Fred::Backend::PublicRequest::Type::get_iface_of<T>().get_public_request_type()...
-        };
-    return request_types_filter;
-}
-
 } // namespace Admin::{anonymous}
 
 void PublicRequestProcedure::exec()
@@ -67,30 +62,39 @@ void PublicRequestProcedure::exec()
     namespace PublicRequestType = Fred::Backend::PublicRequest::Type;
     namespace PublicRequest = Fred::Backend::PublicRequest;
 
+    const std::unordered_map<std::string, const LibFred::PublicRequestTypeIface& (*)()> type_authinfo_to_iface =
+        get_type_to_iface_mapping<PublicRequestType::AuthinfoAutoRif,
+                                  PublicRequestType::AuthinfoAuto,
+                                  PublicRequestType::AuthinfoEmail,
+                                  PublicRequestType::AuthinfoPost,
+                                  PublicRequestType::AuthinfoGovernment>();
+    const std::unordered_map<std::string, const LibFred::PublicRequestTypeIface& (*)()> type_personal_info_to_iface =
+        get_type_to_iface_mapping<PublicRequestType::PersonalInfoAuto,
+                                  PublicRequestType::PersonalInfoEmail,
+                                  PublicRequestType::PersonalInfoPost,
+                                  PublicRequestType::PersonalInfoGovernment>();
+    const std::unordered_map<std::string, const LibFred::PublicRequestTypeIface& (*)()> type_block_unblock_to_iface =
+        get_type_to_iface_mapping<PublicRequestType::BlockTransfer<PublicRequest::ConfirmedBy::email>,
+                                  PublicRequestType::BlockTransfer<PublicRequest::ConfirmedBy::letter>,
+                                  PublicRequestType::BlockTransfer<PublicRequest::ConfirmedBy::government>,
+                                  PublicRequestType::BlockChanges<PublicRequest::ConfirmedBy::email>,
+                                  PublicRequestType::BlockChanges<PublicRequest::ConfirmedBy::letter>,
+                                  PublicRequestType::BlockChanges<PublicRequest::ConfirmedBy::government>,
+                                  PublicRequestType::UnblockTransfer<PublicRequest::ConfirmedBy::email>,
+                                  PublicRequestType::UnblockTransfer<PublicRequest::ConfirmedBy::letter>,
+                                  PublicRequestType::UnblockTransfer<PublicRequest::ConfirmedBy::government>,
+                                  PublicRequestType::UnblockChanges<PublicRequest::ConfirmedBy::email>,
+                                  PublicRequestType::UnblockChanges<PublicRequest::ConfirmedBy::letter>,
+                                  PublicRequestType::UnblockChanges<PublicRequest::ConfirmedBy::government>>();
+
+
     std::set<std::string> request_types_filter;
     {
-        std::set<std::string> request_types_filter_default =
-            get_request_type_filter<PublicRequestType::AuthinfoAutoRif,
-                                    PublicRequestType::AuthinfoAuto,
-                                    PublicRequestType::AuthinfoEmail,
-                                    PublicRequestType::AuthinfoPost,
-                                    PublicRequestType::AuthinfoGovernment,
-                                    PublicRequestType::PersonalInfoAuto,
-                                    PublicRequestType::PersonalInfoEmail,
-                                    PublicRequestType::PersonalInfoPost,
-                                    PublicRequestType::PersonalInfoGovernment,
-                                    PublicRequestType::BlockTransfer<PublicRequest::ConfirmedBy::email>,
-                                    PublicRequestType::BlockTransfer<PublicRequest::ConfirmedBy::letter>,
-                                    PublicRequestType::BlockTransfer<PublicRequest::ConfirmedBy::government>,
-                                    PublicRequestType::BlockChanges<PublicRequest::ConfirmedBy::email>,
-                                    PublicRequestType::BlockChanges<PublicRequest::ConfirmedBy::letter>,
-                                    PublicRequestType::BlockChanges<PublicRequest::ConfirmedBy::government>,
-                                    PublicRequestType::UnblockTransfer<PublicRequest::ConfirmedBy::email>,
-                                    PublicRequestType::UnblockTransfer<PublicRequest::ConfirmedBy::letter>,
-                                    PublicRequestType::UnblockTransfer<PublicRequest::ConfirmedBy::government>,
-                                    PublicRequestType::UnblockChanges<PublicRequest::ConfirmedBy::email>,
-                                    PublicRequestType::UnblockChanges<PublicRequest::ConfirmedBy::letter>,
-                                    PublicRequestType::UnblockChanges<PublicRequest::ConfirmedBy::government>>();
+        std::set<std::string> request_types_filter_default;
+        boost::copy(type_authinfo_to_iface | boost::adaptors::map_keys, std::inserter(request_types_filter_default, request_types_filter_default.end()));
+        boost::copy(type_personal_info_to_iface | boost::adaptors::map_keys, std::inserter(request_types_filter_default, request_types_filter_default.end()));
+        boost::copy(type_block_unblock_to_iface | boost::adaptors::map_keys, std::inserter(request_types_filter_default, request_types_filter_default.end()));
+
         for (const auto& argument: args_.types)
         {
             const auto itr = request_types_filter_default.find(argument);
@@ -140,30 +144,6 @@ void PublicRequestProcedure::exec()
                                            query_param_list);
     }
 
-    const std::unordered_map<std::string, const LibFred::PublicRequestTypeIface& (*)()> type_authinfo_to_iface =
-        get_type_to_iface_mapping<PublicRequestType::AuthinfoAutoRif,
-                                  PublicRequestType::AuthinfoAuto,
-                                  PublicRequestType::AuthinfoEmail,
-                                  PublicRequestType::AuthinfoPost,
-                                  PublicRequestType::AuthinfoGovernment>();
-    const std::unordered_map<std::string, const LibFred::PublicRequestTypeIface& (*)()> type_personal_info_to_iface =
-        get_type_to_iface_mapping<PublicRequestType::PersonalInfoAuto,
-                                  PublicRequestType::PersonalInfoEmail,
-                                  PublicRequestType::PersonalInfoPost,
-                                  PublicRequestType::PersonalInfoGovernment>();
-    const std::unordered_map<std::string, const LibFred::PublicRequestTypeIface& (*)()> type_block_unblock_to_iface =
-        get_type_to_iface_mapping<PublicRequestType::BlockTransfer<PublicRequest::ConfirmedBy::email>,
-                                  PublicRequestType::BlockTransfer<PublicRequest::ConfirmedBy::letter>,
-                                  PublicRequestType::BlockTransfer<PublicRequest::ConfirmedBy::government>,
-                                  PublicRequestType::BlockChanges<PublicRequest::ConfirmedBy::email>,
-                                  PublicRequestType::BlockChanges<PublicRequest::ConfirmedBy::letter>,
-                                  PublicRequestType::BlockChanges<PublicRequest::ConfirmedBy::government>,
-                                  PublicRequestType::UnblockTransfer<PublicRequest::ConfirmedBy::email>,
-                                  PublicRequestType::UnblockTransfer<PublicRequest::ConfirmedBy::letter>,
-                                  PublicRequestType::UnblockTransfer<PublicRequest::ConfirmedBy::government>,
-                                  PublicRequestType::UnblockChanges<PublicRequest::ConfirmedBy::email>,
-                                  PublicRequestType::UnblockChanges<PublicRequest::ConfirmedBy::letter>,
-                                  PublicRequestType::UnblockChanges<PublicRequest::ConfirmedBy::government>>();
     for (std::size_t i = 0; i < dbres.size(); ++i)
     {
         const auto request_id = static_cast<unsigned long long>(dbres[i][0]);
