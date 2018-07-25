@@ -189,7 +189,7 @@ void AccountingImpl::import_payment(
 {
     try
     {
-        Fred::Backend::Credit credit(0);
+        Fred::Backend::Credit credit("0");
         Fred::Backend::Accounting::import_payment(
                 Impl::unwrap_Registry_Accounting_PaymentData(_payment_data),
                 credit);

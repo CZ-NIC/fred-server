@@ -27,11 +27,20 @@
 namespace CorbaConversion {
 namespace Util {
 
+Tz::LocalTimestamp
+unwrap_IsoDateTime_to_Tz_LocalTimestamp(
+        const Registry::IsoDateTime src)
+{
+    return Tz::LocalTimestamp::from_rfc3339_formated_string(
+            LibFred::Corba::unwrap_string_from_const_char_ptr(src.value.in()));
+}
+
 boost::posix_time::ptime
 unwrap_IsoDateTime_to_boost_posix_time_ptime(
         const Registry::IsoDateTime src)
 {
-    return boost::posix_time::from_iso_extended_string(src.value.in());
+    return Tz::LocalTimestamp::from_rfc3339_formated_string(
+            LibFred::Corba::unwrap_string_from_const_char_ptr(src.value.in())).get_local_time();
 }
 
 Registry::IsoDateTime

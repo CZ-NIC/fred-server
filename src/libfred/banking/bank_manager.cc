@@ -100,7 +100,7 @@ private:
 
     }
 
-    void processPayment(PaymentImpl *_payment,
+    Money processPayment(PaymentImpl *_payment,
                         unsigned long long _registrar_id = 0)
     {
         Logging::Context ctx("payment processing");
@@ -113,7 +113,7 @@ private:
                         "saved");
             }
             _payment->reload();
-            if (_payment->getPrice() <= Money("0")) return;
+            if (_payment->getPrice() <= Money("0")) return Money("0");
 
             Database::Connection conn = Database::Manager::acquire();
             Database::Transaction transaction(conn);
@@ -129,7 +129,7 @@ private:
                             % _payment->getStatus()
                             % _payment->getCode()
                             % _payment->getType());
-                return;
+                return Money("0");
             }
 
             DBSharedPtr nodb;
@@ -143,7 +143,7 @@ private:
                     LOGGER(PACKAGE).warning(boost::format(
                                 "couldn't find suitable registrar for payment id=%1% "
                                 "=> processing canceled") % _payment->getId());
-                    return;
+                    return Money("0");
                 }
             }
 
@@ -209,7 +209,7 @@ private:
                             % _registrar_id
                             % zone_id
                             % _payment->getId());
-                    return;
+                    return Money("0");
                 }
 
                 // amount larger than registrar debt
@@ -224,6 +224,7 @@ private:
                 }
             }
 
+            Money remaining_credit = Money("0");
 
             // create advance invoice for rest amount after paying possible debt (account invoice)
             if (payment_price_rest > Money("0"))
@@ -247,6 +248,8 @@ private:
 
                 pay_invoice(_registrar_id , zone_id, _payment->getId()
                         , out_credit, advance_invoice_id);
+
+                remaining_credit = out_credit;
             }
             //set_payment_as_processed
             _payment->setType(2);
@@ -256,6 +259,8 @@ private:
                         ) % _registrar_id );
 
             transaction.commit();
+
+            return remaining_credit;
         }
         catch (std::exception &ex) {
             throw std::runtime_error(str(boost::format(
@@ -515,10 +520,11 @@ public:
         }
     }
 
-    void importPayment(
+    Money importPayment(
             const std::string& _bank_payment,
             const std::string& _uuid,
             const std::string& _account_number,
+            const std::string& _bank_code,
             const std::string& _counter_account_number,
             const std::string& _counter_account_name,
             const std::string& _constant_symbol,
@@ -532,16 +538,13 @@ public:
         TRACE("[CALL] LibFred::Banking::Manager::importPayment(...)");
         Logging::Context ctx("bank payment import");
 
-        const std::string account_number = _account_number; // TODO
-        const std::string _bank_code = _account_number; // TODO
-
         try {
             Database::Connection conn = Database::Manager::acquire();
             Database::Transaction tx(conn);
 
             LOGGER(PACKAGE).debug("saving transaction for single payment");
 
-            StatementImplPtr statement(statement_from_params(_account_number));
+            StatementImplPtr statement(statement_from_params(_account_number, _bank_code));
 
             statement->setId(0);
             LOGGER(PACKAGE).info("no statement -- importing only payments");
@@ -552,6 +555,7 @@ public:
                     _bank_payment,
                     _uuid,
                     _account_number,
+                    _bank_code,
                     _counter_account_number,
                     _counter_account_name,
                     _constant_symbol,
@@ -566,6 +570,8 @@ public:
             if (sid != 0) {
                 payment->setStatementId(sid);
             }
+
+            Money remaining_credit = Money("0");
 
             Database::ID conflict_pid(0);
             if ((conflict_pid = payment->getConflictId()) == 0) {
@@ -582,7 +588,7 @@ public:
                         % payment->getAccountId());
 
                 /* payment processing */
-                processPayment(payment.get());
+                remaining_credit = processPayment(payment.get());
             }
             else {
                 /* load conflict payment */
@@ -611,7 +617,7 @@ public:
                                     % cpayment->getId()
                                     % cpayment->getAccountEvid());
                     /* lets do another payment */
-                    return;
+                    return remaining_credit;
                 }
                 /* compare changable attributes for futher processing */
                 else if (payment->getStatus() != cpayment->getStatus()) {
@@ -682,6 +688,8 @@ public:
             */
 
             tx.commit();
+
+            return remaining_credit;
         }
         catch (std::exception &ex) {
             throw std::runtime_error(str(boost::format(

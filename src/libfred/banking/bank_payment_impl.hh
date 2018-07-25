@@ -328,6 +328,7 @@ PaymentImplPtr payment_from_params(
         const std::string& _bank_payment,
         const std::string& _uuid,
         const std::string& _account_number,
+        const std::string& _bank_code,
         const std::string& _counter_account_number,
         const std::string& _counter_account_name,
         const std::string& _constant_symbol,

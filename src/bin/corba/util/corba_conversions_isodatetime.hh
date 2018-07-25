@@ -20,11 +20,16 @@
 #define CORBA_CONVERSIONS_ISODATETIME_HH_6C81DCD1D79F45E2AC3190723E2F6DE3
 
 #include "src/bin/corba/IsoDateTime.hh"
+#include "src/util/tz/local_timestamp.hh"
 
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 
 namespace CorbaConversion {
 namespace Util {
+
+Tz::LocalTimestamp
+unwrap_IsoDateTime_to_Tz_LocalTimestamp(
+        const Registry::IsoDateTime src);
 
 boost::posix_time::ptime
 unwrap_IsoDateTime_to_boost_posix_time_ptime(

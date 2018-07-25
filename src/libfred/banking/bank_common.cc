@@ -424,6 +424,7 @@ PaymentImplPtr payment_from_params(
         const std::string& _bank_payment,
         const std::string& _uuid,
         const std::string& _account_number,
+        const std::string& _bank_code,
         const std::string& _counter_account_number,
         const std::string& _counter_account_name,
         const std::string& _constant_symbol,
@@ -438,11 +439,8 @@ PaymentImplPtr payment_from_params(
 
     PaymentImplPtr payment(new PaymentImpl());
 
-    const std::string& account_number = _account_number; // FIXME
-    const std::string& account_bank_code = _account_number; // FIXME
-    const std::string& date = ""; // FIXME
-    payment->setAccountNumber(account_number);
-    payment->setBankCode(account_bank_code);
+    payment->setAccountNumber(_account_number);
+    payment->setBankCode(_bank_code);
     payment->setPrice(_price);
 
     if (!_constant_symbol.empty()) {
@@ -457,9 +455,9 @@ PaymentImplPtr payment_from_params(
     if (!_memo.empty()) {
         payment->setAccountMemo(_memo);
     }
-    if (!date.empty()) {
-        payment->setAccountDate(date);
-    }
+    //if (!_date.is_special()) {
+        payment->setAccountDate(_date);
+    //}
     //if (!_creation_time.empty()) {
         payment->setCrTime(_creation_time);
     //}
@@ -467,21 +465,10 @@ PaymentImplPtr payment_from_params(
         payment->setAccountName(_counter_account_name);
     }
 
-    // TODO
-    /*
-    if (!_node.getChild(ITEM_TYPE).isEmpty()) {
-        int value = atoi(_node.getChild(ITEM_TYPE).getValue().c_str());
-        payment->setType(value);
-    }
-    if (!_node.getChild(ITEM_CODE).isEmpty()) {
-        int value = atoi(_node.getChild(ITEM_CODE).getValue().c_str());
-        payment->setCode(value);
-    }
-    if (!_node.getChild(ITEM_STATUS).isEmpty()) {
-        int value = atoi(_node.getChild(ITEM_STATUS).getValue().c_str());
-        payment->setStatus(value);
-    }
-    */
+    // TODO FIXME
+    payment->setType(1); // transfer type (1-not decided (not processed), 2-from/to registrar, 3-from/to bank, 4-between our own accounts, 5-related to academia, 6-other transfers
+    payment->setCode(1); // operation code (1-debet item, 2-credit item, 4-cancel debet, 5-cancel credit)
+    payment->setStatus(1); // payment status (1-Realized (only this should be further processed), 2-Partially realized, 3-Not realized, 4-Suspended, 5-Ended, 6-Waiting for clearing )
 
     return payment;
 }

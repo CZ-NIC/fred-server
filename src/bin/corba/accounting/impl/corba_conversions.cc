@@ -34,7 +34,7 @@ Money
 unwrap_Registry_Accounting_Money(
        Registry::Accounting::Money _money)
 {
-    return Money(LibFred::Corba::unwrap_string_from_const_char_ptr(_money.value));
+    return Money(LibFred::Corba::unwrap_string_from_const_char_ptr(_money.value.in()));
 }
 
 Fred::Backend::Accounting::PaymentData
@@ -42,17 +42,17 @@ unwrap_Registry_Accounting_PaymentData(
         const Registry::Accounting::PaymentData& _payment_data)
 {
     Fred::Backend::Accounting::PaymentData payment_data;
-    payment_data.bank_payment = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.bank_payment);
-    payment_data.uuid = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.uuid);
-    payment_data.account_number = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.account_number);
-    payment_data.counter_account_number = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.counter_account_number);
-    payment_data.counter_account_name = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.counter_account_name);
-    payment_data.constant_symbol = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.constant_symbol);
-    payment_data.variable_symbol = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.variable_symbol);
-    payment_data.specific_symbol = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.specific_symbol);
+    payment_data.bank_payment = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.bank_payment.in());
+    payment_data.uuid = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.uuid.in());
+    payment_data.account_number = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.account_number.in());
+    payment_data.counter_account_number = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.counter_account_number.in());
+    payment_data.counter_account_name = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.counter_account_name.in());
+    payment_data.constant_symbol = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.constant_symbol.in());
+    payment_data.variable_symbol = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.variable_symbol.in());
+    payment_data.specific_symbol = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.specific_symbol.in());
     payment_data.price = unwrap_Registry_Accounting_Money(_payment_data.price);
     payment_data.date = CorbaConversion::Util::unwrap_IsoDate_to_boost_gregorian_date(_payment_data.date);
-    payment_data.memo = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.memo);
+    payment_data.memo = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.memo.in());
     payment_data.creation_time = CorbaConversion::Util::unwrap_IsoDateTime_to_boost_posix_time_ptime(_payment_data.creation_time);
     return payment_data;
 }
@@ -61,7 +61,7 @@ Fred::Backend::Credit
 unwrap_Registry_Accounting_Credit(
        Registry::Accounting::Credit _credit)
 {
-    return Fred::Backend::Credit(LibFred::Corba::unwrap_string_from_const_char_ptr(_credit.value)); // FIXME
+    return Fred::Backend::Credit(LibFred::Corba::unwrap_string_from_const_char_ptr(_credit.value.in()));
 }
 
 Registry::Accounting::PlaceAddress

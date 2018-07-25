@@ -2429,6 +2429,7 @@ src_bin_corba_fred_pifd_LDADD = \
 		src/deprecated/model/libmodel.a \
 		src/util/db/libdb.a \
 		src/util/types/libtypes.a \
+		src/util/tz/libtimezones.a \
 		src/deprecated/util/liboldutils.a \
 		src/util/log/liblog.a \
 		src/util/libutil.a \
@@ -2575,6 +2576,7 @@ src_bin_corba_mojeid_fred_mifd_LDADD = \
 		src/bin/corba/libcorbanullableisodatetime.a \
 		src/bin/corba/util/libcorbautil.a \
 		src/bin/corba/libcorba.a \
+		src/util/tz/libtimezones.a \
 		-lmpdec -lm -lrt \
 		$(LIBIDN_LIBS) \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
@@ -2635,6 +2637,7 @@ src_bin_corba_domain_browser_fred_dbifd_LDADD = \
 		src/util/libutil.a \
 		src/util/log/liblog.a \
 		src/util/db/libdb.a \
+		src/util/tz/libtimezones.a \
 		-lmpdec -lm -lrt \
 		$(LIBIDN_LIBS) \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
@@ -2706,6 +2709,7 @@ src_bin_corba_automatic_keyset_management_fred_akmd_LDADD = \
 		src/util/libutil.a \
 		src/util/log/liblog.a \
 		src/util/db/libdb.a \
+		src/util/tz/libtimezones.a \
 		-lmpdec -lm -lrt \
 		$(LIBIDN_LIBS) \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
@@ -2780,6 +2784,10 @@ src_bin_corba_accounting_fred_accifd_SOURCES = \
 		src/backend/accounting/accounting.hh \
 		src/backend/accounting/exceptions.cc \
 		src/backend/accounting/exceptions.hh \
+		src/backend/accounting/impl/accounting.cc \
+		src/backend/accounting/impl/accounting.hh \
+		src/backend/accounting/impl/exceptions.cc \
+		src/backend/accounting/impl/exceptions.hh \
 		src/backend/accounting/payment_data.hh \
 		src/backend/accounting/registrar.hh \
 		src/backend/credit.cc \
@@ -2808,6 +2816,7 @@ src_bin_corba_accounting_fred_accifd_LDADD = \
 		src/util/types/libtypes.a \
 		src/util/log/liblog.a \
 		src/util/db/libdb.a \
+		src/util/tz/libtimezones.a \
 		-lmpdec -lm -lrt \
 		src/bin/corba/libcorba.a \
 		src/bin/corba/libcorbaaccounting.a \
@@ -3117,6 +3126,7 @@ tools_contact_migration_mojeid_contact_ssn_fix_LDADD = \
 		src/bin/corba/util/libcorbautil.a \
 		src/bin/corba/libcorbaisodatetime.a \
 		src/bin/corba/libcorbanullableisodate.a \
+		src/util/tz/libtimezones.a \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_THREAD_LIB) \
 		$(LIBIDN_LIBS) \
