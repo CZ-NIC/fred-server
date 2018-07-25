@@ -140,17 +140,19 @@ void PublicRequestProcedure::exec()
                                            query_param_list);
     }
 
-    const std::unordered_map<std::string, const LibFred::PublicRequestTypeIface& (*)()> type_to_iface =
+    const std::unordered_map<std::string, const LibFred::PublicRequestTypeIface& (*)()> type_authinfo_to_iface =
         get_type_to_iface_mapping<PublicRequestType::AuthinfoAutoRif,
                                   PublicRequestType::AuthinfoAuto,
                                   PublicRequestType::AuthinfoEmail,
                                   PublicRequestType::AuthinfoPost,
-                                  PublicRequestType::AuthinfoGovernment,
-                                  PublicRequestType::PersonalInfoAuto,
+                                  PublicRequestType::AuthinfoGovernment>();
+    const std::unordered_map<std::string, const LibFred::PublicRequestTypeIface& (*)()> type_personal_info_to_iface =
+        get_type_to_iface_mapping<PublicRequestType::PersonalInfoAuto,
                                   PublicRequestType::PersonalInfoEmail,
                                   PublicRequestType::PersonalInfoPost,
-                                  PublicRequestType::PersonalInfoGovernment,
-                                  PublicRequestType::BlockTransfer<PublicRequest::ConfirmedBy::email>,
+                                  PublicRequestType::PersonalInfoGovernment>();
+    const std::unordered_map<std::string, const LibFred::PublicRequestTypeIface& (*)()> type_block_unblock_to_iface =
+        get_type_to_iface_mapping<PublicRequestType::BlockTransfer<PublicRequest::ConfirmedBy::email>,
                                   PublicRequestType::BlockTransfer<PublicRequest::ConfirmedBy::letter>,
                                   PublicRequestType::BlockTransfer<PublicRequest::ConfirmedBy::government>,
                                   PublicRequestType::BlockChanges<PublicRequest::ConfirmedBy::email>,
@@ -173,44 +175,32 @@ void PublicRequestProcedure::exec()
             namespace Fbpr = Fred::Backend::PublicRequest;
             if (request_status == LibFred::PublicRequest::Status::resolved)
             {
-                if (request_type == Fbpr::Type::get_iface_of<Fbpr::Type::PersonalInfoAuto>().get_public_request_type() ||
-                    request_type == Fbpr::Type::get_iface_of<Fbpr::Type::PersonalInfoEmail>().get_public_request_type() ||
-                    request_type == Fbpr::Type::get_iface_of<Fbpr::Type::PersonalInfoPost>().get_public_request_type() ||
-                    request_type == Fbpr::Type::get_iface_of<Fbpr::Type::PersonalInfoGovernment>().get_public_request_type())
+                const auto iface_personal_info_itr = type_personal_info_to_iface.find(request_type);
+                if (iface_personal_info_itr != type_personal_info_to_iface.end())
                 {
                     Fbpr::Process::process_public_request_personal_info_resolved(
                             request_id,
-                            type_to_iface.at(request_type)(),
+                            iface_personal_info_itr->second(),
                             mailer_manager_,
                             file_manager_client_);
+                    continue;
                 }
-                else if (request_type == Fbpr::Type::get_iface_of<Fbpr::Type::AuthinfoAutoRif>().get_public_request_type() ||
-                         request_type == Fbpr::Type::get_iface_of<Fbpr::Type::AuthinfoAuto>().get_public_request_type() ||
-                         request_type == Fbpr::Type::get_iface_of<Fbpr::Type::AuthinfoEmail>().get_public_request_type() ||
-                         request_type == Fbpr::Type::get_iface_of<Fbpr::Type::AuthinfoPost>().get_public_request_type() ||
-                         request_type == Fbpr::Type::get_iface_of<Fbpr::Type::AuthinfoGovernment>().get_public_request_type())
+                const auto iface_authinfo_itr = type_authinfo_to_iface.find(request_type);
+                if (iface_authinfo_itr != type_authinfo_to_iface.end())
                 {
                     Fbpr::Process::process_public_request_authinfo_resolved(
                             request_id,
-                            type_to_iface.at(request_type)(),
+                            iface_authinfo_itr->second(),
                             mailer_manager_);
+                    continue;
                 }
-                else if (request_type == Fbpr::Type::get_iface_of<Fbpr::Type::BlockTransfer<Fbpr::ConfirmedBy::email>>().get_public_request_type() ||
-                         request_type == Fbpr::Type::get_iface_of<Fbpr::Type::BlockTransfer<Fbpr::ConfirmedBy::letter>>().get_public_request_type() ||
-                         request_type == Fbpr::Type::get_iface_of<Fbpr::Type::BlockTransfer<Fbpr::ConfirmedBy::government>>().get_public_request_type() ||
-                         request_type == Fbpr::Type::get_iface_of<Fbpr::Type::BlockChanges<Fbpr::ConfirmedBy::email>>().get_public_request_type() ||
-                         request_type == Fbpr::Type::get_iface_of<Fbpr::Type::BlockChanges<Fbpr::ConfirmedBy::letter>>().get_public_request_type() ||
-                         request_type == Fbpr::Type::get_iface_of<Fbpr::Type::BlockChanges<Fbpr::ConfirmedBy::government>>().get_public_request_type() ||
-                         request_type == Fbpr::Type::get_iface_of<Fbpr::Type::UnblockTransfer<Fbpr::ConfirmedBy::email>>().get_public_request_type() ||
-                         request_type == Fbpr::Type::get_iface_of<Fbpr::Type::UnblockTransfer<Fbpr::ConfirmedBy::letter>>().get_public_request_type() ||
-                         request_type == Fbpr::Type::get_iface_of<Fbpr::Type::UnblockTransfer<Fbpr::ConfirmedBy::government>>().get_public_request_type() ||
-                         request_type == Fbpr::Type::get_iface_of<Fbpr::Type::UnblockChanges<Fbpr::ConfirmedBy::email>>().get_public_request_type() ||
-                         request_type == Fbpr::Type::get_iface_of<Fbpr::Type::UnblockChanges<Fbpr::ConfirmedBy::letter>>().get_public_request_type() ||
-                         request_type == Fbpr::Type::get_iface_of<Fbpr::Type::UnblockChanges<Fbpr::ConfirmedBy::government>>().get_public_request_type())
+                const auto iface_block_unblock_itr = type_block_unblock_to_iface.find(request_type);
+                if (iface_block_unblock_itr != type_block_unblock_to_iface.end())
                 {
                     Fbpr::Process::process_public_request_block_unblock_resolved(
                             request_id,
-                            type_to_iface.at(request_type)());
+                            iface_block_unblock_itr->second());
+                    continue;
                 }
             }
         }
