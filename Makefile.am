@@ -856,17 +856,17 @@ src_libfred_libfred_a_SOURCES = \
 		src/libfred/invoicing/invoice.hh \
 		src/libfred/zone.cc \
 		src/libfred/zone.hh \
-		src/libfred/zone_ns/create_zone_ns.cc \
-		src/libfred/zone_ns/create_zone_ns.hh \
-		src/libfred/zone_ns/exceptions.cc \
-		src/libfred/zone_ns/exceptions.hh \
-		src/libfred/zone_ns/info_zone_ns_data.hh \
-		src/libfred/zone_ns/info_zone_ns.cc \
-		src/libfred/zone_ns/info_zone_ns.hh \
-		src/libfred/zone_ns/update_zone_ns.cc \
-		src/libfred/zone_ns/update_zone_ns.hh \
-		src/libfred/zone_ns/util.cc \
-		src/libfred/zone_ns/util.hh \
+		src/libfred/zone/zone_ns/create_zone_ns.cc \
+		src/libfred/zone/zone_ns/create_zone_ns.hh \
+		src/libfred/zone/zone_ns/exceptions.cc \
+		src/libfred/zone/zone_ns/exceptions.hh \
+		src/libfred/zone/zone_ns/info_zone_ns_data.hh \
+		src/libfred/zone/zone_ns/info_zone_ns.cc \
+		src/libfred/zone/zone_ns/info_zone_ns.hh \
+		src/libfred/zone/zone_ns/update_zone_ns.cc \
+		src/libfred/zone/zone_ns/update_zone_ns.hh \
+		src/libfred/zone/zone_ns/util.cc \
+		src/libfred/zone/zone_ns/util.hh \
 		src/libfred/blacklist.cc \
 		src/libfred/blacklist.hh \
 		src/libfred/documents.cc \
@@ -1046,14 +1046,14 @@ src_libfred_libfred_a_SOURCES = \
 		src/libfred/zone/util.cc \
 		src/libfred/zone/zone.hh \
 		src/libfred/zone/zone.cc \
-		src/libfred/zone_soa/create_zone_soa.hh \
-		src/libfred/zone_soa/create_zone_soa.cc \
-		src/libfred/zone_soa/exceptions.hh \
-		src/libfred/zone_soa/info_zone_soa.hh \
-		src/libfred/zone_soa/info_zone_soa.cc \
-		src/libfred/zone_soa/info_zone_soa_data.hh \
-		src/libfred/zone_soa/update_zone_soa.hh \
-		src/libfred/zone_soa/update_zone_soa.cc \
+		src/libfred/zone/zone_soa/create_zone_soa.hh \
+		src/libfred/zone/zone_soa/create_zone_soa.cc \
+		src/libfred/zone/zone_soa/exceptions.hh \
+		src/libfred/zone/zone_soa/info_zone_soa.hh \
+		src/libfred/zone/zone_soa/info_zone_soa.cc \
+		src/libfred/zone/zone_soa/info_zone_soa_data.hh \
+		src/libfred/zone/zone_soa/update_zone_soa.hh \
+		src/libfred/zone/zone_soa/update_zone_soa.cc \
 		src/libfred/registrable_object/contact/verification/create_check.hh \
 		src/libfred/registrable_object/contact/verification/create_check.cc \
 		src/libfred/registrable_object/contact/verification/update_check.hh \
@@ -3876,16 +3876,16 @@ test_test_libfred_SOURCES = \
 		test/libfred/zone/test_update_zone.cc \
 		test/libfred/zone/util.cc \
 		test/libfred/zone/util.hh \
-		test/libfred/zone_soa/test_create_zone_soa.cc \
-		test/libfred/zone_soa/test_info_zone_soa.cc \
-		test/libfred/zone_soa/test_update_zone_soa.cc \
-		test/libfred/zone_soa/util.hh \
-		test/libfred/zone_soa/util.cc \
-		test/libfred/zone_ns/util.cc \
-		test/libfred/zone_ns/util.hh \
-		test/libfred/zone_ns/test_create_zone_ns.cc \
-		test/libfred/zone_ns/test_info_zone_ns.cc \
-		test/libfred/zone_ns/test_update_zone_ns.cc \
+		test/libfred/zone/zone_soa/test_create_zone_soa.cc \
+		test/libfred/zone/zone_soa/test_info_zone_soa.cc \
+		test/libfred/zone/zone_soa/test_update_zone_soa.cc \
+		test/libfred/zone/zone_soa/util.hh \
+		test/libfred/zone/zone_soa/util.cc \
+		test/libfred/zone/zone_ns/util.cc \
+		test/libfred/zone/zone_ns/util.hh \
+		test/libfred/zone/zone_ns/test_create_zone_ns.cc \
+		test/libfred/zone/zone_ns/test_info_zone_ns.cc \
+		test/libfred/zone/zone_ns/test_update_zone_ns.cc \
 		test/util/test_param_query.cc \
 		test/setup/fixtures_utils.hh \
 		test/setup/fixtures_utils.cc \
