@@ -38,6 +38,7 @@
 #include <functional>
 #include <iterator>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 
 namespace Admin {
@@ -55,6 +56,20 @@ std::unordered_map<std::string, const LibFred::PublicRequestTypeIface& (*)()> ge
     return type_to_iface;
 }
 
+template <typename MK, typename MV, typename SK>
+std::unordered_set<SK> insert_keys_from_umap_into_uset(const std::unordered_map<MK, MV>& m, std::unordered_set<SK>& s)
+{
+    for (const auto& key_value : m)
+    {
+        const bool took_place = s.insert(key_value.first).second;
+        if (!took_place)
+        {
+            throw std::runtime_error("duplicate value detected");
+        }
+    }
+    return s;
+}
+
 } // namespace Admin::{anonymous}
 
 void PublicRequestProcedure::exec()
@@ -68,11 +83,13 @@ void PublicRequestProcedure::exec()
                                   PublicRequestType::AuthinfoEmail,
                                   PublicRequestType::AuthinfoPost,
                                   PublicRequestType::AuthinfoGovernment>();
+
     const std::unordered_map<std::string, const LibFred::PublicRequestTypeIface& (*)()> type_personal_info_to_iface =
         get_type_to_iface_mapping<PublicRequestType::PersonalInfoAuto,
                                   PublicRequestType::PersonalInfoEmail,
                                   PublicRequestType::PersonalInfoPost,
                                   PublicRequestType::PersonalInfoGovernment>();
+
     const std::unordered_map<std::string, const LibFred::PublicRequestTypeIface& (*)()> type_block_unblock_to_iface =
         get_type_to_iface_mapping<PublicRequestType::BlockTransfer<PublicRequest::ConfirmedBy::email>,
                                   PublicRequestType::BlockTransfer<PublicRequest::ConfirmedBy::letter>,
@@ -87,13 +104,12 @@ void PublicRequestProcedure::exec()
                                   PublicRequestType::UnblockChanges<PublicRequest::ConfirmedBy::letter>,
                                   PublicRequestType::UnblockChanges<PublicRequest::ConfirmedBy::government>>();
 
-
-    std::set<std::string> request_types_filter;
+    std::unordered_set<std::string> request_types_filter;
     {
-        std::set<std::string> request_types_filter_default;
-        boost::copy(type_authinfo_to_iface | boost::adaptors::map_keys, std::inserter(request_types_filter_default, request_types_filter_default.end()));
-        boost::copy(type_personal_info_to_iface | boost::adaptors::map_keys, std::inserter(request_types_filter_default, request_types_filter_default.end()));
-        boost::copy(type_block_unblock_to_iface | boost::adaptors::map_keys, std::inserter(request_types_filter_default, request_types_filter_default.end()));
+        std::unordered_set<std::string> request_types_filter_default;
+        insert_keys_from_umap_into_uset(type_authinfo_to_iface, request_types_filter_default);
+        insert_keys_from_umap_into_uset(type_personal_info_to_iface, request_types_filter_default);
+        insert_keys_from_umap_into_uset(type_block_unblock_to_iface, request_types_filter_default);
 
         for (const auto& argument: args_.types)
         {
