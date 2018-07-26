@@ -544,12 +544,12 @@ public:
 
             LOGGER(PACKAGE).debug("saving transaction for single payment");
 
+            // TODO check duplicity (_uuid)
+
             StatementImplPtr statement(statement_from_params(_account_number, _bank_code));
-
             statement->setId(0);
-            LOGGER(PACKAGE).info("no statement -- importing only payments");
 
-            const unsigned long long sid = statement->getId();
+            LOGGER(PACKAGE).info("no statement -- importing only payments");
 
             PaymentImplPtr payment(payment_from_params(
                     _bank_payment,
@@ -567,136 +567,31 @@ public:
                     _creation_time));
 
             payment->setAccountId(statement->getAccountId());
-            if (sid != 0) {
-                payment->setStatementId(sid);
-            }
 
-            Money remaining_credit = Money("0");
+            payment->save();
+            LOGGER(PACKAGE).info(boost::format(
+                    "payment imported (id=%1% account=%2%/%3% "
+                    "evid=%4% price=%5% account_date=%6%) account_id=%7%")
+                    % payment->getId()
+                    % payment->getAccountNumber()
+                    % payment->getBankCode()
+                    % payment->getAccountEvid()
+                    % payment->getPrice()
+                    % payment->getAccountDate()
+                    % payment->getAccountId());
 
-            Database::ID conflict_pid(0);
-            if ((conflict_pid = payment->getConflictId()) == 0) {
-                payment->save();
-                LOGGER(PACKAGE).info(boost::format(
-                        "payment imported (id=%1% account=%2%/%3% "
-                        "evid=%4% price=%5% account_date=%6%) account_id=%7%")
-                        % payment->getId()
-                        % payment->getAccountNumber()
-                        % payment->getBankCode()
-                        % payment->getAccountEvid()
-                        % payment->getPrice()
-                        % payment->getAccountDate()
-                        % payment->getAccountId());
-
-                /* payment processing */
-                remaining_credit = processPayment(payment.get());
-            }
-            else {
-                /* load conflict payment */
-                PaymentImplPtr cpayment(new PaymentImpl());
-                cpayment->setId(conflict_pid);
-                cpayment->reload();
-                /* compare major attributes which should never change */
-                if (payment->getAccountNumber() != cpayment->getAccountNumber()
-                        || payment->getBankCode() != cpayment->getBankCode()
-                        || payment->getCode() != cpayment->getCode()
-                        || payment->getKonstSym() != cpayment->getKonstSym()
-                        || payment->getVarSymb() != cpayment->getVarSymb()
-                        || payment->getSpecSymb() != cpayment->getSpecSymb()
-                        || payment->getAccountMemo() != cpayment->getAccountMemo()) {
-
-                    LOGGER(PACKAGE).debug(boost::format("imported payment: %1%")
-                                                        % payment->toString());
-                    LOGGER(PACKAGE).debug(boost::format("conflict payment: %1%")
-                                                        % cpayment->toString());
-
-                    LOGGER(PACKAGE).error(boost::format(
-                                    "oops! found conflict payment with "
-                                    "INCONSISTENT DATA (id=%1% account_evid=%2%) "
-                                    "-- please make manual checking"
-                                    "; skipping payment")
-                                    % cpayment->getId()
-                                    % cpayment->getAccountEvid());
-                    /* lets do another payment */
-                    return remaining_credit;
-                }
-                /* compare changable attributes for futher processing */
-                else if (payment->getStatus() != cpayment->getStatus()) {
-                    LOGGER(PACKAGE).info(boost::format(
-                            "already imported payment -- status changed "
-                            "%1% => %2% (price %3% => %4%; account_date %5% => %6%)")
-                            % cpayment->getStatus()
-                            % payment->getStatus()
-                            % cpayment->getPrice()
-                            % payment->getPrice()
-                            % cpayment->getAccountDate()
-                            % payment->getAccountDate());
-
-                    cpayment->setStatus(payment->getStatus());
-                    cpayment->setAccountDate(payment->getAccountDate());
-                    cpayment->setPrice(payment->getPrice());
-                    cpayment->save();
-                    processPayment(cpayment.get());
-                }
-
-                /* there we should have already imported payment */
-                LOGGER(PACKAGE).info(boost::format(
-                        "conflict payment found "
-                        "(id=%1% account=%2%/%3% evid=%4%)")
-                        % cpayment->getId()
-                        % cpayment->getAccountNumber()
-                        % cpayment->getBankCode()
-                        % cpayment->getAccountEvid());
-
-                if (payment->getStatementId() != cpayment->getStatementId()
-                        && cpayment->getStatementId() == 0) {
-
-                    /*
-                    if (statement_valid && !statement_conflict) {
-                        LOGGER(PACKAGE).info(boost::format(
-                                    "conflict payment should be paired with imported "
-                                    "statement (payment=%1% statement=%2%)")
-                                    % cpayment->getId()
-                                    % statement->getId());
-                        _pairPaymentWithStatement(cpayment->getId(), statement->getId());
-                    }
-                    */
-               }
-               else {
-                   LOGGER(PACKAGE).info(boost::format(
-                               "conflict payment is already paired with this "
-                               "statement (payment=%1% statement=%2%)")
-                               % cpayment->getId()
-                               % statement->getId());
-               }
-            }
-
-            /* upload file via file manager and update statement */
-            /*
-            if (file_manager_ && statement_valid && !statement_conflict) {
-                // get mime type
-                // magic_t magic = magic_open(MAGIC_MIME);
-                // magic_load(magic, 0);
-                // std::string magic_str = magic_file(magic, _file_path.c_str());
-                // std::string mime_type = magic_string_to_mime_type(magic_str);
-
-                unsigned long long id = file_manager_->upload(_file_path, _file_mime, 4);
-                statement->setFileId(id);
-                statement->save();
-                LOGGER(PACKAGE).info(boost::format(
-                            "statement file (id=%1%) succesfully uploaded") % id);
-            }
-            */
+            const Money remaining_credit = processPayment(payment.get());
 
             tx.commit();
 
             return remaining_credit;
         }
-        catch (std::exception &ex) {
+        catch (const std::exception& e) {
             throw std::runtime_error(str(boost::format(
-                            "bank xml import: %1%") % ex.what()));
+                            "bank import payment: %1%") % e.what()));
         }
         catch (...) {
-            throw std::runtime_error("bank xml import: an error occured");
+            throw std::runtime_error("bank import payment: an error occured");
         }
     }
 
