@@ -21,6 +21,7 @@
 
 #include "src/libfred/public_request/public_request_type_iface.hh"
 #include "src/libfred/object/object_states_info.hh"
+#include "src/backend/public_request/object_type.hh"
 #include "src/backend/public_request/public_request.hh"
 
 #include <string>
@@ -31,17 +32,10 @@ namespace Backend {
 namespace PublicRequest {
 namespace Type {
 
+struct AuthinfoAutoRif;
 struct AuthinfoAuto;
 struct AuthinfoEmail;
 struct AuthinfoPost;
-
-unsigned long long send_authinfo(
-        unsigned long long public_request_id,
-        const std::string& handle,
-        PublicRequestImpl::ObjectType::Enum object_type,
-        std::shared_ptr<LibFred::Mailer::Manager> manager);
-
-void check_authinfo_request_permission(const LibFred::ObjectStatesInfo& states);
 
 } // namespace Fred::Backend::PublicRequest::Type
 } // namespace Fred::Backend::PublicRequest

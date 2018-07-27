@@ -1,4 +1,4 @@
-#include "src/libfred/public_request/public_request_personalinfo_impl.hh"
+#include "src/libfred/public_request/public_request_personal_info_impl.hh"
 #include "src/libfred/public_request/public_request_impl.hh"
 #include "src/libfred/public_request/public_request_on_status_action.hh"
 
@@ -7,7 +7,7 @@
 namespace LibFred {
 namespace PublicRequest {
 
-FACTORY_MODULE_INIT_DEFI(personalinfo)
+FACTORY_MODULE_INIT_DEFI(personal_info)
 
 
 const Type PRT_PERSONALINFO_AUTO_PIF = "personalinfo_auto_pif";

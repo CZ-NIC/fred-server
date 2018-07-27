@@ -1,5 +1,7 @@
 #include "src/bin/corba/public_request/server_i.hh"
 #include "src/backend/buffer.hh"
+#include "src/backend/public_request/exceptions.hh"
+#include "src/backend/public_request/object_type.hh"
 #include "src/backend/public_request/public_request.hh"
 #include "src/bin/corba/util/corba_conversions_buffer.hh"
 #include "src/bin/corba/util/corba_conversions_string.hh"
@@ -17,18 +19,18 @@ namespace PublicRequest {
 
 namespace {
 
-Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::Enum unwrap_objecttype_pr_to_objecttype(Registry::PublicRequest::ObjectType_PR::Type object_type)
+Fred::Backend::PublicRequest::ObjectType::Enum unwrap_objecttype_pr_to_objecttype(Registry::PublicRequest::ObjectType_PR::Type object_type)
 {
     switch (object_type)
     {
         case Registry::PublicRequest::ObjectType_PR::contact:
-            return Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::contact;
+            return Fred::Backend::PublicRequest::ObjectType::contact;
         case Registry::PublicRequest::ObjectType_PR::nsset:
-            return Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::nsset;
+            return Fred::Backend::PublicRequest::ObjectType::nsset;
         case Registry::PublicRequest::ObjectType_PR::domain:
-            return Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::domain;
+            return Fred::Backend::PublicRequest::ObjectType::domain;
         case Registry::PublicRequest::ObjectType_PR::keyset:
-            return Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::keyset;
+            return Fred::Backend::PublicRequest::ObjectType::keyset;
     }
     throw std::invalid_argument("value doesn't exist in Registry::PublicRequest::ObjectType_PR");
 }
@@ -65,23 +67,22 @@ Server_i::~Server_i()
         const unsigned long long public_request_id = pimpl_->create_authinfo_request_registry_email(
                 unwrap_objecttype_pr_to_objecttype(object_type),
                 LibFred::Corba::unwrap_string_from_const_char_ptr(object_handle),
-                unwrap_nullableulonglong_to_optional_unsigned_long_long(log_request_id),
-                Fred::Backend::PublicRequest::PublicRequestImpl::get_default_mailer_manager());
+                unwrap_nullableulonglong_to_optional_unsigned_long_long(log_request_id));
         ::CORBA::ULongLong result;
         CorbaConversion::wrap_int(public_request_id, result);
         return result;
     }
-    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::NoContactEmail& e)
+    catch (const Fred::Backend::PublicRequest::NoContactEmail& e)
     {
         LOGGER(PACKAGE).info(e.what());
         throw Registry::PublicRequest::INVALID_EMAIL();
     }
-    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::ObjectNotFound& e)
+    catch (const Fred::Backend::PublicRequest::ObjectNotFound& e)
     {
         LOGGER(PACKAGE).info(e.what());
         throw Registry::PublicRequest::OBJECT_NOT_FOUND();
     }
-    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::ObjectTransferProhibited& e)
+    catch (const Fred::Backend::PublicRequest::ObjectTransferProhibited& e)
     {
         LOGGER(PACKAGE).info(e.what());
         throw Registry::PublicRequest::OBJECT_TRANSFER_PROHIBITED();
@@ -133,17 +134,17 @@ CORBA::ULongLong Server_i::create_authinfo_request_non_registry_email(
         CorbaConversion::wrap_int(public_request_id, result);
         return result;
     }
-    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::ObjectNotFound& e)
+    catch (const Fred::Backend::PublicRequest::ObjectNotFound& e)
     {
         LOGGER(PACKAGE).info(e.what());
         throw Registry::PublicRequest::OBJECT_NOT_FOUND();
     }
-    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::ObjectTransferProhibited& e)
+    catch (const Fred::Backend::PublicRequest::ObjectTransferProhibited& e)
     {
         LOGGER(PACKAGE).info(e.what());
         throw Registry::PublicRequest::OBJECT_TRANSFER_PROHIBITED();
     }
-    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::InvalidContactEmail& e)
+    catch (const Fred::Backend::PublicRequest::InvalidContactEmail& e)
     {
         LOGGER(PACKAGE).info(e.what());
         throw Registry::PublicRequest::INVALID_EMAIL();
@@ -199,32 +200,32 @@ CORBA::ULongLong Server_i::create_block_unblock_request(
         CorbaConversion::wrap_int(public_request_id, result);
         return result;
     }
-    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::ObjectNotFound& e)
+    catch (const Fred::Backend::PublicRequest::ObjectNotFound& e)
     {
         LOGGER(PACKAGE).info(e.what());
         throw Registry::PublicRequest::OBJECT_NOT_FOUND();
     }
-    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::InvalidContactEmail& e)
+    catch (const Fred::Backend::PublicRequest::InvalidContactEmail& e)
     {
         LOGGER(PACKAGE).info(e.what());
         throw Registry::PublicRequest::INVALID_EMAIL();
     }
-    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::HasDifferentBlock& e)
+    catch (const Fred::Backend::PublicRequest::HasDifferentBlock& e)
     {
         LOGGER(PACKAGE).info(e.what());
         throw Registry::PublicRequest::HAS_DIFFERENT_BLOCK();
     }
-    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::ObjectAlreadyBlocked& e)
+    catch (const Fred::Backend::PublicRequest::ObjectAlreadyBlocked& e)
     {
         LOGGER(PACKAGE).info(e.what());
         throw Registry::PublicRequest::OBJECT_ALREADY_BLOCKED();
     }
-    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::ObjectNotBlocked& e)
+    catch (const Fred::Backend::PublicRequest::ObjectNotBlocked& e)
     {
         LOGGER(PACKAGE).info(e.what());
         throw Registry::PublicRequest::OBJECT_NOT_BLOCKED();
     }
-    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::OperationProhibited& e)
+    catch (const Fred::Backend::PublicRequest::OperationProhibited& e)
     {
         LOGGER(PACKAGE).info(e.what());
         throw Registry::PublicRequest::OPERATION_PROHIBITED();
@@ -249,18 +250,17 @@ CORBA::ULongLong Server_i::create_personal_info_request_registry_email(
     {
         const unsigned long long public_request_id = pimpl_->create_personal_info_request_registry_email(
                 LibFred::Corba::unwrap_string_from_const_char_ptr(contact_handle),
-                unwrap_nullableulonglong_to_optional_unsigned_long_long(log_request_id),
-                Fred::Backend::PublicRequest::PublicRequestImpl::get_default_mailer_manager());
+                unwrap_nullableulonglong_to_optional_unsigned_long_long(log_request_id));
         ::CORBA::ULongLong result;
         CorbaConversion::wrap_int(public_request_id, result);
         return result;
     }
-    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::NoContactEmail& e)
+    catch (const Fred::Backend::PublicRequest::NoContactEmail& e)
     {
         LOGGER(PACKAGE).info(e.what());
         throw Registry::PublicRequest::INVALID_EMAIL();
     }
-    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::ObjectNotFound& e)
+    catch (const Fred::Backend::PublicRequest::ObjectNotFound& e)
     {
         LOGGER(PACKAGE).info(e.what());
         throw Registry::PublicRequest::OBJECT_NOT_FOUND();
@@ -295,12 +295,12 @@ CORBA::ULongLong Server_i::create_personal_info_request_non_registry_email(
         CorbaConversion::wrap_int(public_request_id, result);
         return result;
     }
-    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::InvalidContactEmail& e)
+    catch (const Fred::Backend::PublicRequest::InvalidContactEmail& e)
     {
         LOGGER(PACKAGE).info(e.what());
         throw Registry::PublicRequest::INVALID_EMAIL();
     }
-    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::ObjectNotFound& e)
+    catch (const Fred::Backend::PublicRequest::ObjectNotFound& e)
     {
         LOGGER(PACKAGE).info(e.what());
         throw Registry::PublicRequest::OBJECT_NOT_FOUND();
@@ -346,12 +346,12 @@ Registry::Buffer* Server_i::create_public_request_pdf(CORBA::ULongLong public_re
         Registry::Buffer_var result = CorbaConversion::Util::wrap_Buffer(pdf_content);
         return result._retn();
     }
-    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::ObjectNotFound& e)
+    catch (const Fred::Backend::PublicRequest::ObjectNotFound& e)
     {
         LOGGER(PACKAGE).info(e.what());
         throw Registry::PublicRequest::OBJECT_NOT_FOUND();
     }
-    catch (const Fred::Backend::PublicRequest::PublicRequestImpl::InvalidPublicRequestType& e)
+    catch (const Fred::Backend::PublicRequest::InvalidPublicRequestType& e)
     {
         LOGGER(PACKAGE).info(e.what());
         throw Registry::PublicRequest::INVALID_PUBLIC_REQUEST_TYPE();

@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GET_IFACE_OF_HH_972243A2C8E74C318556B97643052155
-#define GET_IFACE_OF_HH_972243A2C8E74C318556B97643052155
+#ifndef PUBLIC_REQUEST_PERSONAL_INFO_HH_6A9E148ADE9D445C891AC330DC1E7634
+#define PUBLIC_REQUEST_PERSONAL_INFO_HH_6A9E148ADE9D445C891AC330DC1E7634
 
 #include "src/libfred/public_request/public_request_type_iface.hh"
 
@@ -26,8 +26,9 @@ namespace Backend {
 namespace PublicRequest {
 namespace Type {
 
-template <typename T>
-const LibFred::PublicRequestTypeIface& get_iface_of();
+struct PersonalInfoAuto;
+struct PersonalInfoEmail;
+struct PersonalInfoPost;
 
 } // namespace Fred::Backend::PublicRequest::Type
 } // namespace Fred::Backend::PublicRequest

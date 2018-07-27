@@ -16,22 +16,23 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GET_IFACE_OF_HH_972243A2C8E74C318556B97643052155
-#define GET_IFACE_OF_HH_972243A2C8E74C318556B97643052155
+#ifndef AUTHINFO_KEYSET_LOCALIZED_HH_2D313922ED104F2994DD14C4311C954C
+#define AUTHINFO_KEYSET_LOCALIZED_HH_2D313922ED104F2994DD14C4311C954C
 
-#include "src/libfred/public_request/public_request_type_iface.hh"
+#include "src/backend/epp/epp_response_success_localized.hh"
+#include "src/backend/epp/session_data.hh"
 
-namespace Fred {
-namespace Backend {
-namespace PublicRequest {
-namespace Type {
+#include <string>
 
-template <typename T>
-const LibFred::PublicRequestTypeIface& get_iface_of();
+namespace Epp {
+namespace Keyset {
 
-} // namespace Fred::Backend::PublicRequest::Type
-} // namespace Fred::Backend::PublicRequest
-} // namespace Fred::Backend
-} // namespace Fred
+EppResponseSuccessLocalized authinfo_keyset_localized(
+        const std::string& _keyset_handle,
+        const SessionData& _session_data);
+
+
+} // namespace Epp::Keyset
+} // namespace Epp
 
 #endif

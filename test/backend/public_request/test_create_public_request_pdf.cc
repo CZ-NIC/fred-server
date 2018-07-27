@@ -123,7 +123,7 @@ BOOST_FIXTURE_TEST_CASE(create_pdf, create_pdf_fixture)
 {
     LibFred::OperationContextCreator ctx;
     unsigned long long block_transfer_post = pr.create_block_unblock_request(
-            Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::contact,
+            Fred::Backend::PublicRequest::ObjectType::contact,
             contact.handle,
             Optional<unsigned long long>(),
             Fred::Backend::PublicRequest::PublicRequestImpl::ConfirmedBy::letter,
@@ -146,14 +146,14 @@ BOOST_FIXTURE_TEST_CASE(no_public_request, create_pdf_fixture)
                 123,
                 Fred::Backend::PublicRequest::PublicRequestImpl::Language::en,
                 manager),
-            Fred::Backend::PublicRequest::PublicRequestImpl::ObjectNotFound);
+            Fred::Backend::PublicRequest::ObjectNotFound);
 }
 
 BOOST_FIXTURE_TEST_CASE(not_a_post_type, create_pdf_fixture)
 {
     LibFred::OperationContextCreator ctx;
     unsigned long long block_transfer_email = pr.create_block_unblock_request(
-            Fred::Backend::PublicRequest::PublicRequestImpl::ObjectType::contact,
+            Fred::Backend::PublicRequest::ObjectType::contact,
             contact.handle,
             Optional<unsigned long long>(),
             Fred::Backend::PublicRequest::PublicRequestImpl::ConfirmedBy::email,
@@ -164,7 +164,7 @@ BOOST_FIXTURE_TEST_CASE(not_a_post_type, create_pdf_fixture)
                 block_transfer_email,
                 Fred::Backend::PublicRequest::PublicRequestImpl::Language::en,
                 manager),
-            Fred::Backend::PublicRequest::PublicRequestImpl::InvalidPublicRequestType);
+            Fred::Backend::PublicRequest::InvalidPublicRequestType);
 }
 
 BOOST_AUTO_TEST_SUITE_END()//TestPublicRequest/CreatePdf

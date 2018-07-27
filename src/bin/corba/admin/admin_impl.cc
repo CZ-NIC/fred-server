@@ -42,7 +42,7 @@
 #include "src/libfred/banking/bank_payment.hh"
 #include "src/libfred/public_request/public_request_authinfo_impl.hh"
 #include "src/libfred/public_request/public_request_block_impl.hh"
-#include "src/libfred/public_request/public_request_personalinfo_impl.hh"
+#include "src/libfred/public_request/public_request_personal_info_impl.hh"
 #include "src/libfred/public_request/create_public_request.hh"
 #include "src/libfred/registrable_object/contact/undisclose_address.hh"
 #include "src/libfred/registrar/info_registrar.hh"

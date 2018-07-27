@@ -16,20 +16,33 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GET_IFACE_OF_HH_972243A2C8E74C318556B97643052155
-#define GET_IFACE_OF_HH_972243A2C8E74C318556B97643052155
+#ifndef OBJECT_TYPE_HH_A5A290117166457FA6053D0159EDE046
+#define OBJECT_TYPE_HH_A5A290117166457FA6053D0159EDE046
 
-#include "src/libfred/public_request/public_request_type_iface.hh"
+#include "src/libfred/opcontext.hh"
+
+#include <string>
 
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
-namespace Type {
 
-template <typename T>
-const LibFred::PublicRequestTypeIface& get_iface_of();
+struct ObjectType
+{
+    enum Enum
+    {
+        contact,
+        nsset,
+        domain,
+        keyset
+    };
+};
 
-} // namespace Fred::Backend::PublicRequest::Type
+unsigned long long get_id_of_registered_object(
+        LibFred::OperationContext& ctx,
+        ObjectType::Enum object_type,
+        const std::string& handle);
+
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend
 } // namespace Fred

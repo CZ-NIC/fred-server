@@ -16,20 +16,24 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GET_IFACE_OF_HH_972243A2C8E74C318556B97643052155
-#define GET_IFACE_OF_HH_972243A2C8E74C318556B97643052155
+#ifndef PROCESS_PUBLIC_REQUEST_AUTHINFO_HH_1575FD486B504859B8F4B6100BABD237
+#define PROCESS_PUBLIC_REQUEST_AUTHINFO_HH_1575FD486B504859B8F4B6100BABD237
 
+#include "src/libfred/mailer.hh"
+#include "src/bin/corba/mailer_manager.hh"
+#include "src/bin/corba/file_manager_client.hh"
+#include "src/libfred/file_transferer.hh"
 #include "src/libfred/public_request/public_request_type_iface.hh"
 
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
-namespace Type {
 
-template <typename T>
-const LibFred::PublicRequestTypeIface& get_iface_of();
+void process_public_request_auth_info_resolved(
+        unsigned long long _public_request_id,
+        const LibFred::PublicRequestTypeIface& _public_request_type,
+        std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager);
 
-} // namespace Fred::Backend::PublicRequest::Type
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend
 } // namespace Fred

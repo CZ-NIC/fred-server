@@ -158,6 +158,12 @@
 #include "src/backend/epp/nsset/transfer_nsset_config_data.hh"
 #include "src/backend/epp/nsset/update_nsset_config_data.hh"
 
+#include "src/backend/epp/contact/authinfo_contact_localized.hh"
+#include "src/backend/epp/domain/authinfo_domain_localized.hh"
+#include "src/backend/epp/keyset/authinfo_keyset_localized.hh"
+#include "src/backend/epp/nsset/authinfo_nsset_localized.hh"
+#include "src/backend/public_request/public_request.hh"
+
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/local_time_adjustor.hpp>
 #include <boost/date_time/c_local_time_adjustor.hpp>
@@ -414,26 +420,6 @@ private:
   std::unique_ptr<Database::Transaction> tx_;
 };
 
-/// replace GetContactID
-static long int getIdOfContact(
-DBSharedPtr db, const char *handle, bool restricted_handles
-    , bool lock_epp_commands, bool lock = false)
-{
-  if (lock && !lock_epp_commands) lock = false;
-  std::unique_ptr<LibFred::Contact::Manager>
-      cman(LibFred::Contact::Manager::create(db, restricted_handles) );
-  LibFred::Contact::Manager::CheckAvailType caType;
-  long int ret = -1;
-  try {
-    LibFred::NameIdPair nameId;
-    caType = cman->checkAvail(handle,nameId, lock);
-    ret = nameId.id;
-    if (caType == LibFred::Contact::Manager::CA_INVALID_HANDLE)
-    ret = -1;
-  } catch (...) {}
-  return ret;
-}
-
 /// replace GetNssetID
 static long int getIdOfNsset(
 DBSharedPtr db, const char *handle, bool restricted_handles
@@ -454,27 +440,6 @@ DBSharedPtr db, const char *handle, bool restricted_handles
     ret = -1;
   } catch (...) {}
   return ret;
-}
-
-/// replace GetKeysetID
-static long int
-getIdOfKeyset(DBSharedPtr db, const char *handle, bool restricted_handles
-    , bool lock_epp_commands, bool lock = false)
-{
-    if (lock && !lock_epp_commands)
-        lock = false;
-    std::unique_ptr<LibFred::Keyset::Manager> man(
-            LibFred::Keyset::Manager::create(db, restricted_handles));
-    LibFred::Keyset::Manager::CheckAvailType caType;
-    long int ret = -1;
-    try {
-        LibFred::NameIdPair nameId;
-        caType = man->checkAvail(handle, nameId, lock);
-        ret = nameId.id;
-        if (caType == LibFred::Keyset::Manager::CA_INVALID_HANDLE)
-            ret = -1;
-    } catch (...) {}
-    return ret;
 }
 
 //
@@ -532,16 +497,17 @@ ccReg_EPP_i::ccReg_EPP_i(
   Logging::Context ctx("rifd");
 
   // factory_check - required keys are in factory
-  FactoryHaveSupersetOfKeysChecker<LibFred::PublicRequest::Factory>
-  ::KeyVector required_keys = boost::assign::list_of
-   (LibFred::PublicRequest::PRT_AUTHINFO_AUTO_RIF);
+  // XXX
+  // FactoryHaveSupersetOfKeysChecker<LibFred::PublicRequest::Factory>
+  // ::KeyVector required_keys = boost::assign::list_of
+  //  (LibFred::PublicRequest::PRT_AUTHINFO_AUTO_RIF);
 
-  FactoryHaveSupersetOfKeysChecker<LibFred::PublicRequest::Factory>
-      (required_keys).check();
+  // FactoryHaveSupersetOfKeysChecker<LibFred::PublicRequest::Factory>
+  //     (required_keys).check();
 
-  // factory_check - factory keys are in database
-  FactoryHaveSubsetOfKeysChecker<LibFred::PublicRequest::Factory>
-      (LibFred::PublicRequest::get_enum_public_request_type()).check();
+  // // factory_check - factory keys are in database
+  // FactoryHaveSubsetOfKeysChecker<LibFred::PublicRequest::Factory>
+  //     (LibFred::PublicRequest::get_enum_public_request_type()).check();
 
   // objects are shared between threads!!!
   // init at the beginning and do not change
@@ -3424,188 +3390,160 @@ ccReg::Response* ccReg_EPP_i::nssetTest(
   return ret._retn();
 }
 
-// function for send authinfo
-ccReg::Response *
-ccReg_EPP_i::ObjectSendAuthInfo(
-        short act, const char * table, const char *fname, const char *name,
-        const ccReg::EppParams &params)
-{
-    int id = 0;
-    std::string FQDN(name);
-    boost::to_lower(FQDN);
-    short int code = 0;
-
-    EPPAction action(this, params.loginID, act, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
-
-    // Database::Manager db(new Database::ConnectionFactory(database));
-    // std::auto_ptr<Database::Connection> conn;
-    // try { conn.reset(db.getConnection()); } catch (...) {}
-
-    LOG( NOTICE_LOG , "ObjectSendAuthInfo type %d  object [%s]  clientID -> %llu clTRID [%s] " , act , name , params.loginID , static_cast<const char*>(params.clTRID) );
-
-    std::unique_ptr<LibFred::Zone::Manager> zm( LibFred::Zone::Manager::create() );
-    std::vector<std::string> dev_null;
-
-    switch (act) {
-        case EPP_ContactSendAuthInfo:
-            if ( (id = getIdOfContact(action.getDB(), name
-                    , restricted_handles_, lock_epp_commands_) ) < 0) {
-                LOG(WARNING_LOG, "bad format of contact [%s]", name);
-                code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                        ccReg::contact_handle, 1,
-                        REASON_MSG_BAD_FORMAT_CONTACT_HANDLE);
-            } else if (id == 0)
-                code=COMMAND_OBJECT_NOT_EXIST;
-            break;
-        case EPP_NssetSendAuthInfo:
-            if ( (id = getIdOfNsset(action.getDB(), name, restricted_handles_
-                    , lock_epp_commands_) ) < 0) {
-                LOG(WARNING_LOG, "bad format of nsset [%s]", name);
-                code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                        ccReg::nsset_handle, 1,
-                        REASON_MSG_BAD_FORMAT_NSSET_HANDLE);
-            } else if (id == 0)
-                code=COMMAND_OBJECT_NOT_EXIST;
-            break;
-        case EPP_DomainSendAuthInfo:
-            {
-                const Database::Result db_result = Database::Manager::acquire().exec_params(
-                        "SELECT id FROM object_registry ore "
-                        "WHERE ore.type = get_object_type_id('domain'::text) "
-                          "AND ore.name = $1::text "
-                          "AND ore.erdate IS NULL",
-                        Database::query_param_list(FQDN));
-
-                if (db_result.size() == 1) {
-                    try {
-                        id = boost::numeric_cast<int>(static_cast<unsigned long long>(db_result[0][0]));
-                    }
-                    catch (...) {
-                        LOG(WARNING_LOG, "domain [%s] id to int cast failed", name);
-                        ServerInternalError("ObjectSendAuthInfo");
-                    }
-                }
-                else if (db_result.size() < 1) {
-                    LOG(WARNING_LOG, "domain [%s] NOT_EXIST", name);
-                    code = COMMAND_OBJECT_NOT_EXIST;
-                }
-                else { // db_result.size() > 1
-                    ServerInternalError("ObjectSendAuthInfo");
-                }
-            }
-
-            break;
-        case EPP_KeysetSendAuthInfo:
-            if ((id = getIdOfKeyset(action.getDB(), name, restricted_handles_
-                        , lock_epp_commands_)) < 0) {
-                LOG(WARNING_LOG, "bad format of keyset [%s]", name);
-                code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                        ccReg::keyset_handle, 1,
-                        REASON_MSG_BAD_FORMAT_KEYSET_HANDLE);
-            } else if (id == 0)
-                code = COMMAND_OBJECT_NOT_EXIST;
-            break;
-    }
-    if (code == 0) {
-        std::unique_ptr<LibFred::Document::Manager> doc_manager(
-                LibFred::Document::Manager::create(
-                    docgen_path_,
-                    docgen_template_path_,
-                    fileclient_path_,
-                    ns->getHostName()
-                    )
-                );
-        std::unique_ptr<LibFred::PublicRequest::Manager> request_manager(
-                LibFred::PublicRequest::Manager::create(
-                    regMan->getDomainManager(),
-                    regMan->getContactManager(),
-                    regMan->getNssetManager(),
-                    regMan->getKeysetManager(),
-                    mm,
-                    doc_manager.get(),
-                    regMan->getMessageManager()
-                    )
-                );
-        try {
-            LOG(
-                    NOTICE_LOG , "createRequest objectID %d" ,
-                    id
-               );
-            std::unique_ptr<LibFred::PublicRequest::PublicRequest> new_request(request_manager->createRequest(
-                        LibFred::PublicRequest::PRT_AUTHINFO_AUTO_RIF));
-
-            new_request->setRequestId(params.requestID);
-            new_request->setRegistrarId(GetRegistrarID(params.loginID));
-            new_request->addObject(LibFred::PublicRequest::OID(id));
-            if (!new_request->check()) {
-                LOG(WARNING_LOG, "authinfo request for %s is prohibited",name);
-                code = COMMAND_STATUS_PROHIBITS_OPERATION;
-            } else {
-                code=COMMAND_OK;
-                new_request->save();
-            }
-        } catch (...) {
-            LOG( WARNING_LOG, "cannot create and process request");
-            code=COMMAND_FAILED;
-        }
-    }
-
-    // EPP exception
-    if (code > COMMAND_EXCEPTION) {
-        action.failed(code);
-    }
-
-    if (code == 0) {
-        action.failedInternal("ObjectSendAuthInfo");
-    }
-
-    return action.getRet()._retn();
-}
-
 ccReg::Response* ccReg_EPP_i::domainSendAuthInfo(
-  const char* fqdn, const ccReg::EppParams &params)
+        const char* _fqdn,
+        const ccReg::EppParams& _epp_params)
 {
-  Logging::Context::clear();
-  Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-  ConnectionReleaser releaser;
+    const Epp::RequestParams epp_request_params = LibFred::Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
-  return ObjectSendAuthInfo( EPP_DomainSendAuthInfo , "DOMAIN" , "fqdn" , fqdn , params);
+    try {
+        const Epp::RegistrarSessionData registrar_session_data =
+                Epp::get_registrar_session_data(
+                        epp_sessions_,
+                        epp_request_params.session_id);
+
+        const Epp::SessionData session_data(
+                registrar_session_data.registrar_id,
+                registrar_session_data.language,
+                server_transaction_handle,
+                epp_request_params.log_request_id);
+
+        const Epp::EppResponseSuccessLocalized epp_response_success_localized =
+                Epp::Domain::authinfo_domain_localized(
+                        LibFred::Corba::unwrap_string(_fqdn),
+                        session_data);
+
+        ccReg::Response_var return_value =
+                new ccReg::Response(
+                        LibFred::Corba::wrap_Epp_EppResponseSuccessLocalized(
+                                epp_response_success_localized,
+                                server_transaction_handle));
+
+        // no exception shall be thrown from here onwards
+
+        return return_value._retn();
+    }
+    catch (const Epp::EppResponseFailureLocalized& e) {
+        throw LibFred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
+    }
 }
+
 ccReg::Response* ccReg_EPP_i::contactSendAuthInfo(
-  const char* handle, const ccReg::EppParams &params)
+        const char* _handle,
+        const ccReg::EppParams& _epp_params)
 {
-  Logging::Context::clear();
-  Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-  ConnectionReleaser releaser;
+    const Epp::RequestParams epp_request_params = LibFred::Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
-  return ObjectSendAuthInfo( EPP_ContactSendAuthInfo , "CONTACT" , "handle" , handle , params);
+    try {
+        const Epp::RegistrarSessionData registrar_session_data =
+                Epp::get_registrar_session_data(
+                        epp_sessions_,
+                        epp_request_params.session_id);
+
+        const Epp::SessionData session_data(
+                registrar_session_data.registrar_id,
+                registrar_session_data.language,
+                server_transaction_handle,
+                epp_request_params.log_request_id);
+
+        const Epp::EppResponseSuccessLocalized epp_response_success_localized =
+                Epp::Contact::authinfo_contact_localized(
+                        LibFred::Corba::unwrap_string(_handle),
+                        session_data);
+
+        ccReg::Response_var return_value =
+                new ccReg::Response(
+                        LibFred::Corba::wrap_Epp_EppResponseSuccessLocalized(
+                                epp_response_success_localized,
+                                server_transaction_handle));
+
+        // no exception shall be thrown from here onwards
+
+        return return_value._retn();
+    }
+    catch (const Epp::EppResponseFailureLocalized& e) {
+        throw LibFred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
+    }
 }
+
 ccReg::Response* ccReg_EPP_i::nssetSendAuthInfo(
-  const char* handle, const ccReg::EppParams &params)
+        const char* _handle,
+        const ccReg::EppParams& _epp_params)
 {
-  Logging::Context::clear();
-  Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-  ConnectionReleaser releaser;
+    const Epp::RequestParams epp_request_params = LibFred::Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
-  return ObjectSendAuthInfo( EPP_NssetSendAuthInfo , "NSSET" , "handle" , handle , params);
+    try {
+        const Epp::RegistrarSessionData registrar_session_data =
+                Epp::get_registrar_session_data(
+                        epp_sessions_,
+                        epp_request_params.session_id);
+
+        const Epp::SessionData session_data(
+                registrar_session_data.registrar_id,
+                registrar_session_data.language,
+                server_transaction_handle,
+                epp_request_params.log_request_id);
+
+        const Epp::EppResponseSuccessLocalized epp_response_success_localized =
+                Epp::Nsset::authinfo_nsset_localized(
+                        LibFred::Corba::unwrap_string(_handle),
+                        session_data);
+
+        ccReg::Response_var return_value =
+                new ccReg::Response(
+                        LibFred::Corba::wrap_Epp_EppResponseSuccessLocalized(
+                                epp_response_success_localized,
+                                server_transaction_handle));
+
+        // no exception shall be thrown from here onwards
+
+        return return_value._retn();
+    }
+    catch (const Epp::EppResponseFailureLocalized& e) {
+        throw LibFred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
+    }
 }
 
-ccReg::Response *
-ccReg_EPP_i::keysetSendAuthInfo(
-        const char *handle,
-        const ccReg::EppParams &params)
+ccReg::Response* ccReg_EPP_i::keysetSendAuthInfo(
+        const char* _handle,
+        const ccReg::EppParams& _epp_params)
 {
-  Logging::Context::clear();
-  Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-  ConnectionReleaser releaser;
+    const Epp::RequestParams epp_request_params = LibFred::Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
-    return ObjectSendAuthInfo(
-            EPP_KeysetSendAuthInfo, "KEYSET",
-            "handle", handle, params);
+    try {
+        const Epp::RegistrarSessionData registrar_session_data =
+                Epp::get_registrar_session_data(
+                        epp_sessions_,
+                        epp_request_params.session_id);
+
+        const Epp::SessionData session_data(
+                registrar_session_data.registrar_id,
+                registrar_session_data.language,
+                server_transaction_handle,
+                epp_request_params.log_request_id);
+
+        const Epp::EppResponseSuccessLocalized epp_response_success_localized =
+                Epp::Keyset::authinfo_keyset_localized(
+                        LibFred::Corba::unwrap_string(_handle),
+                        session_data);
+
+        ccReg::Response_var return_value =
+                new ccReg::Response(
+                        LibFred::Corba::wrap_Epp_EppResponseSuccessLocalized(
+                                epp_response_success_localized,
+                                server_transaction_handle));
+
+        // no exception shall be thrown from here onwards
+
+        return return_value._retn();
+    }
+    catch (const Epp::EppResponseFailureLocalized& e) {
+        throw LibFred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
+    }
 }
 
 ccReg::Response* ccReg_EPP_i::info(

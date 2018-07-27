@@ -1,4 +1,4 @@
-#include "src/backend/public_request/process_public_requests.hh"
+#include "src/backend/public_request/process_public_request_personal_info.hh"
 #include "src/libfred/public_request/public_request_on_status_action.hh"
 #include "src/libfred/registrable_object/contact/info_contact.hh"
 #include "src/libfred/registrar/info_registrar.hh"
@@ -43,7 +43,7 @@ std::string pretty_print_address(const T& _address)
     return address.str();
 }
 
-unsigned long long send_personalinfo(
+unsigned long long send_personal_info(
         unsigned long long _public_request_id,
         LibFred::OperationContext& _ctx,
         std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager,
@@ -77,7 +77,7 @@ unsigned long long send_personalinfo(
     {
         if (ex.is_set_unknown_contact_handle())
         {
-            throw PublicRequestImpl::NoContactEmail();
+            throw NoContactEmail();
         }
         throw;
     }
@@ -140,7 +140,7 @@ unsigned long long send_personalinfo(
             LibFred::Mailer::Parameters::value_type("fax", info_contact_data.fax.get_value_or_default()));
     if (info_contact_data.email.isnull())
     {
-        throw PublicRequestImpl::NoContactEmail();
+        throw NoContactEmail();
     }
     email_template_params.insert(
             LibFred::Mailer::Parameters::value_type("email", info_contact_data.email.get_value()));
@@ -303,7 +303,7 @@ void process_public_request_personal_info_resolved(
     {
         LibFred::OperationContextCreator ctx;
         const LibFred::PublicRequestLockGuardById locked_request(ctx, _public_request_id);
-        const unsigned long long email_id = send_personalinfo(_public_request_id, ctx, _mailer_manager, _file_manager_client);
+        const unsigned long long email_id = send_personal_info(_public_request_id, ctx, _mailer_manager, _file_manager_client);
         try
         {
             LibFred::UpdatePublicRequest()

@@ -303,6 +303,7 @@ noinst_HEADERS = \
 		src/backend/epp/nsset/dns_host_input.hh \
 		src/backend/epp/nsset/nsset_handle_state_to_check_result.hh \
 		src/backend/epp/nsset/impl/limits.hh \
+		src/backend/public_request/process_public_request_authinfo.hh \
 		test/backend/epp/nsset/fixture.hh
 
 noinst_LIBRARIES = \
@@ -1171,31 +1172,56 @@ src_epp_impl_registraracl_libauthentic_registrar_a_SOURCES = \
 # src/libfred/public_request/libpublic_request.a
 #
 src_libfred_public_request_libpublic_request_a_SOURCES = \
+		src/backend/buffer.cc \
+		src/backend/buffer.hh \
+		src/backend/public_request/exceptions.cc \
+		src/backend/public_request/exceptions.hh \
+		src/backend/public_request/object_type.cc \
+		src/backend/public_request/object_type.hh \
+		src/backend/public_request/process_public_request_authinfo.cc \
+		src/backend/public_request/process_public_request_authinfo.hh \
+		src/backend/public_request/process_public_request_personal_info.cc \
+		src/backend/public_request/process_public_request_personal_info.hh \
+		src/backend/public_request/public_request.cc \
+		src/backend/public_request/public_request.hh \
+		src/backend/public_request/public_requests.cc \
+		src/backend/public_request/public_requests.hh \
+		src/backend/public_request/send_email.cc \
+		src/backend/public_request/type/get_iface_of.hh \
+		src/backend/public_request/type/impl/implemented_by.hh \
+		src/backend/public_request/type/impl/public_request_authinfo.cc \
+		src/backend/public_request/type/impl/public_request_blockunblock.cc \
+		src/backend/public_request/type/impl/public_request_personal_info.cc \
+		src/backend/public_request/type/public_request_authinfo.hh \
+		src/backend/public_request/type/public_request_blockunblock.hh \
+		src/backend/public_request/type/public_request_personal_info.hh \
+		src/libfred/public_request/create_public_request.cc \
+		src/libfred/public_request/create_public_request.hh \
+		src/libfred/public_request/create_public_request_auth.cc \
+		src/libfred/public_request/create_public_request_auth.hh \
+		src/libfred/public_request/exceptions.hh \
+		src/libfred/public_request/get_opened_public_request.cc \
+		src/libfred/public_request/info_public_request.cc \
+		src/libfred/public_request/info_public_request_auth.cc \
+		src/libfred/public_request/object_type.hh \
 		src/libfred/public_request/public_request.cc \
 		src/libfred/public_request/public_request.hh \
-		src/libfred/public_request/public_request_impl.cc \
-		src/libfred/public_request/public_request_impl.hh \
-		src/libfred/public_request/public_request_type_iface.hh \
 		src/libfred/public_request/public_request_auth_type_iface.hh \
 		src/libfred/public_request/public_request_authinfo_impl.cc \
 		src/libfred/public_request/public_request_authinfo_impl.hh \
 		src/libfred/public_request/public_request_block_impl.cc \
 		src/libfred/public_request/public_request_block_impl.hh \
-		src/libfred/public_request/public_request_personalinfo_impl.cc \
-		src/libfred/public_request/public_request_personalinfo_impl.hh \
-		src/libfred/public_request/create_public_request.cc \
-		src/libfred/public_request/create_public_request.hh \
-		src/libfred/public_request/create_public_request_auth.cc \
-		src/libfred/public_request/create_public_request_auth.hh \
+		src/libfred/public_request/public_request_impl.cc \
+		src/libfred/public_request/public_request_impl.hh \
 		src/libfred/public_request/public_request_lock_guard.cc \
 		src/libfred/public_request/public_request_lock_guard.hh \
 		src/libfred/public_request/public_request_object_lock_guard.cc \
 		src/libfred/public_request/public_request_object_lock_guard.hh \
+		src/libfred/public_request/public_request_personal_info_impl.cc \
+		src/libfred/public_request/public_request_personal_info_impl.hh \
+		src/libfred/public_request/public_request_type_iface.hh \
 		src/libfred/public_request/update_public_request.cc \
-		src/libfred/public_request/update_public_request.hh \
-		src/libfred/public_request/info_public_request.cc \
-		src/libfred/public_request/info_public_request_auth.cc \
-		src/libfred/public_request/get_opened_public_request.cc
+		src/libfred/public_request/update_public_request.hh
 #
 # src/libfred/public_request/libpublic_request.a
 
@@ -2039,7 +2065,25 @@ src_bin_corba_epp_libepp_impl_a_SOURCES = \
 		src/backend/epp/nsset/impl/nsset.hh \
 		src/backend/epp/nsset/impl/nsset_output.cc \
 		src/backend/epp/nsset/impl/nsset_output.hh \
-		src/backend/epp/nsset/status_value.hh
+		src/backend/epp/nsset/status_value.hh \
+		src/backend/epp/contact/authinfo_contact.cc \
+		src/backend/epp/contact/authinfo_contact.hh \
+		src/backend/epp/contact/authinfo_contact_localized.cc \
+		src/backend/epp/contact/authinfo_contact_localized.hh \
+		src/backend/epp/domain/authinfo_domain.cc \
+		src/backend/epp/domain/authinfo_domain.hh \
+		src/backend/epp/domain/authinfo_domain_localized.cc \
+		src/backend/epp/domain/authinfo_domain_localized.hh \
+		src/backend/epp/nsset/authinfo_nsset.cc \
+		src/backend/epp/nsset/authinfo_nsset.hh \
+		src/backend/epp/nsset/authinfo_nsset_localized.cc \
+		src/backend/epp/nsset/authinfo_nsset_localized.hh \
+		src/backend/epp/keyset/authinfo_keyset.cc \
+		src/backend/epp/keyset/authinfo_keyset.hh \
+		src/backend/epp/keyset/authinfo_keyset_localized.cc \
+		src/backend/epp/keyset/authinfo_keyset_localized.hh \
+		src/backend/buffer.cc \
+		src/backend/buffer.hh
 #
 # src/bin/corba/epp/libepp_impl.a
 
@@ -2249,18 +2293,6 @@ src_bin_corba_fred_pifd_SOURCES = \
 		src/backend/contact_verification/public_request_contact_verification_wrapper.hh \
 		src/backend/buffer.cc \
 		src/backend/buffer.hh \
-		src/backend/public_request/public_request.cc \
-		src/backend/public_request/public_request.hh \
-		src/backend/public_request/type/get_iface_of.hh \
-		src/backend/public_request/type/impl/public_request_authinfo.cc \
-		src/backend/public_request/type/public_request_authinfo.hh \
-		src/backend/public_request/type/impl/public_request_blockunblock.cc \
-		src/backend/public_request/type/public_request_blockunblock.hh \
-		src/backend/public_request/type/impl/public_request_personalinfo.cc \
-		src/backend/public_request/type/public_request_personalinfo.hh \
-		src/backend/public_request/type/impl/implemented_by.hh \
-		src/backend/public_request/send_email.cc \
-		src/backend/public_request/send_email.hh \
 		src/bin/corba/public_request/server_i.cc \
 		src/bin/corba/public_request/server_i.hh \
 		src/bin/corba/util/corba_conversions_buffer.cc \
@@ -2744,23 +2776,9 @@ src_bin_cli_fred_admin_SOURCES = \
 		src/backend/admin/notification/notification.cc \
 		src/backend/admin/domain/create_expired_domain.hh \
 		src/backend/admin/domain/create_expired_domain.cc \
-		src/backend/public_request/send_email.cc \
-		src/backend/public_request/send_email.hh \
-		src/backend/public_request/process_public_requests.cc \
-		src/backend/public_request/process_public_requests.hh \
 		src/backend/buffer.cc \
 		src/backend/buffer.hh \
-		src/backend/public_request/public_request.cc \
-		src/backend/public_request/type/get_iface_of.hh \
-		src/backend/public_request/type/impl/public_request_authinfo.cc \
-		src/backend/public_request/type/public_request_authinfo.hh \
-		src/backend/public_request/type/impl/public_request_blockunblock.cc \
-		src/backend/public_request/type/public_request_blockunblock.hh \
-		src/backend/public_request/type/impl/public_request_personalinfo.cc \
-		src/backend/public_request/type/public_request_personalinfo.hh \
-		src/backend/public_request/type/impl/implemented_by.hh \
 		src/bin/cli/public_request_params.hh \
-		src/libfred/public_request/public_request_on_status_action.hh \
 		src/bin/cli/public_request_impl.hh \
 		src/util/csv/csv.hh
 
@@ -3458,18 +3476,8 @@ test_test_server_LDADD = \
 # test/backend/test_public_request
 #
 test_backend_test_public_request_SOURCES = \
-		test/backend/public_request/main.cc \
 		src/backend/buffer.cc \
-		src/backend/public_request/public_request.cc \
-		src/backend/public_request/type/get_iface_of.hh \
-		src/backend/public_request/type/impl/public_request_authinfo.cc \
-		src/backend/public_request/type/public_request_authinfo.hh \
-		src/backend/public_request/type/impl/public_request_blockunblock.cc \
-		src/backend/public_request/type/public_request_blockunblock.hh \
-		src/backend/public_request/type/impl/public_request_personalinfo.cc \
-		src/backend/public_request/type/public_request_personalinfo.hh \
-		src/backend/public_request/type/impl/implemented_by.hh \
-		src/backend/public_request/send_email.cc \
+		test/backend/public_request/main.cc \
 		test/backend/public_request/test_registry_email.cc \
 		test/backend/public_request/test_non_registry_email.cc \
 		test/backend/public_request/test_create_block_unblock_request.cc \

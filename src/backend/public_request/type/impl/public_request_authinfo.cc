@@ -21,7 +21,6 @@
 #include "src/libfred/public_request/public_request_status.hh"
 #include "src/libfred/public_request/public_request_on_status_action.hh"
 #include "src/backend/public_request/type/impl/implemented_by.hh"
-#include "src/backend/public_request/send_email.hh"
 
 namespace Fred {
 namespace Backend {
@@ -46,14 +45,22 @@ struct AuthinfoImplementation
     {
         return LibFred::PublicRequestTypeIface::PublicRequestTypes();
     }
+
     template <typename T>
     LibFred::PublicRequest::OnStatusAction::Enum get_on_status_action(LibFred::PublicRequest::Status::Enum _status) const
     {
+        if (_status == LibFred::PublicRequest::Status::resolved)
+        {
+            return LibFred::PublicRequest::OnStatusAction::scheduled;
+        }
         return LibFred::PublicRequest::OnStatusAction::processed;
     }
 };
 
 typedef Fred::Backend::PublicRequest::Type::Impl::ImplementedBy<AuthinfoImplementation> AuthinfoPublicRequest;
+
+extern const char authinfo_auto_rif[] = "authinfo_auto_rif";
+typedef AuthinfoPublicRequest::Named<authinfo_auto_rif> AuthinfoAutoRif;
 
 extern const char authinfo_auto_pif[] = "authinfo_auto_pif";
 typedef AuthinfoPublicRequest::Named<authinfo_auto_pif> AuthinfoAuto;
@@ -66,6 +73,13 @@ typedef AuthinfoPublicRequest::Named<authinfo_post_pif> AuthinfoPost;
 
 } // namespace Fred::Backend::PublicRequest::Type::Impl::{anonymous}
 } // namespace Fred::Backend::PublicRequest::Type::Impl
+
+template<>
+const LibFred::PublicRequestTypeIface& get_iface_of<AuthinfoAutoRif>()
+{
+    static const Impl::AuthinfoAutoRif singleton;
+    return singleton;
+}
 
 template<>
 const LibFred::PublicRequestTypeIface& get_iface_of<AuthinfoAuto>()
@@ -86,135 +100,6 @@ const LibFred::PublicRequestTypeIface& get_iface_of<AuthinfoPost>()
 {
     static const Impl::AuthinfoPost singleton;
     return singleton;
-}
-unsigned long long send_authinfo(
-        unsigned long long public_request_id,
-        const std::string& handle,
-        PublicRequestImpl::ObjectType::Enum object_type,
-        std::shared_ptr<LibFred::Mailer::Manager> manager)
-{
-    LibFred::OperationContextCreator ctx;
-    LibFred::Mailer::Parameters email_template_params;
-    {
-        const Database::Result dbres = ctx.get_conn().exec_params(
-                "SELECT (create_time AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Prague')::DATE FROM public_request "
-                "WHERE id=$1::BIGINT",
-                Database::query_param_list(public_request_id));
-        if (dbres.size() < 1)
-        {
-            throw NoPublicRequest();
-        }
-        if (1 < dbres.size())
-        {
-            throw std::runtime_error("too many public requests for given id");
-        }
-        email_template_params.insert(LibFred::Mailer::Parameters::value_type("reqid", boost::lexical_cast<std::string>(public_request_id)));
-        email_template_params.insert(LibFred::Mailer::Parameters::value_type("reqdate", static_cast<std::string>(dbres[0][0])));
-        email_template_params.insert(LibFred::Mailer::Parameters::value_type("handle", handle));
-    }
-
-    std::string sql;
-    std::string object_type_handle;
-    switch (object_type)
-    {
-        case PublicRequestImpl::ObjectType::contact:
-            // clang-format off
-            sql = "SELECT o.authinfopw,TRIM(c.email) "
-                  "FROM object o "
-                  "JOIN object_registry obr ON obr.id=o.id "
-                  "JOIN contact c ON c.id=o.id "
-                  "WHERE obr.name=UPPER($1::TEXT) AND "
-                        "obr.type=get_object_type_id($2::TEXT) AND "
-                        "obr.erdate IS NULL AND "
-                        "COALESCE(TRIM(c.email),'')<>''";
-            // clang-format on
-            object_type_handle = Conversion::Enums::to_db_handle(LibFred::Object_Type::contact);
-            email_template_params.insert(LibFred::Mailer::Parameters::value_type("type", "1"));
-            break;
-        case PublicRequestImpl::ObjectType::nsset:
-            // clang-format off
-            sql = "SELECT o.authinfopw,TRIM(c.email) "
-                  "FROM object o "
-                  "JOIN object_registry obr ON obr.id=o.id "
-                  "JOIN nsset n ON n.id=o.id "
-                  "JOIN nsset_contact_map ncm ON ncm.nssetid=n.id "
-                  "JOIN contact c ON c.id=ncm.contactid "
-                  "WHERE obr.name=UPPER($1::TEXT) AND "
-                        "obr.type=get_object_type_id($2::TEXT) AND "
-                        "obr.erdate IS NULL AND "
-                        "COALESCE(TRIM(c.email),'')<>''";
-            // clang-format on
-            object_type_handle = Conversion::Enums::to_db_handle(LibFred::Object_Type::nsset);
-            email_template_params.insert(LibFred::Mailer::Parameters::value_type("type", "2"));
-            break;
-        case PublicRequestImpl::ObjectType::domain:
-            // clang-format off
-            sql = "SELECT o.authinfopw,TRIM(c.email) "
-                  "FROM object o "
-                  "JOIN object_registry obr ON obr.id=o.id "
-                  "JOIN domain d ON d.id=o.id "
-                  "JOIN contact c ON c.id=d.registrant "
-                  "WHERE obr.name=LOWER($1::TEXT) AND "
-                        "obr.type=get_object_type_id($2::TEXT) AND "
-                        "obr.erdate IS NULL AND "
-                        "COALESCE(TRIM(c.email),'')<>'' "
-              "UNION "
-                  "SELECT o.authinfopw,TRIM(c.email) "
-                  "FROM object o "
-                  "JOIN object_registry obr ON obr.id=o.id "
-                  "JOIN domain d ON d.id=o.id "
-                  "JOIN domain_contact_map dcm ON dcm.domainid=d.id "
-                  "JOIN contact c ON c.id=dcm.contactid AND c.id!=d.registrant "
-                  "WHERE obr.name=LOWER($1::TEXT) AND "
-                        "obr.type=get_object_type_id($2::TEXT) AND "
-                        "obr.erdate IS NULL AND "
-                        "COALESCE(TRIM(c.email),'')<>'' AND "
-                        "dcm.role=1";
-            // clang-format on
-            object_type_handle = Conversion::Enums::to_db_handle(LibFred::Object_Type::domain);
-            email_template_params.insert(LibFred::Mailer::Parameters::value_type("type", "3"));
-            break;
-        case PublicRequestImpl::ObjectType::keyset:
-            // clang-format off
-            sql = "SELECT o.authinfopw,TRIM(c.email) "
-                  "FROM object o "
-                  "JOIN object_registry obr ON obr.id=o.id "
-                  "JOIN keyset k ON k.id=o.id "
-                  "JOIN keyset_contact_map kcm ON kcm.keysetid=k.id "
-                  "JOIN contact c ON c.id=kcm.contactid "
-                  "WHERE obr.name=UPPER($1::TEXT) AND "
-                        "obr.type=get_object_type_id($2::TEXT) AND "
-                        "obr.erdate IS NULL AND "
-                        "COALESCE(TRIM(c.email),'')<>''";
-            // clang-format on
-            object_type_handle = Conversion::Enums::to_db_handle(LibFred::Object_Type::keyset);
-            email_template_params.insert(LibFred::Mailer::Parameters::value_type("type", "4"));
-            break;
-    }
-    const Database::Result dbres = ctx.get_conn().exec_params(
-            sql,
-            Database::query_param_list(handle)(object_type_handle));
-    if (dbres.size() < 1)
-    {
-        throw PublicRequestImpl::NoContactEmail();
-    }
-
-    email_template_params.insert(LibFred::Mailer::Parameters::value_type("authinfo", static_cast<std::string>(dbres[0][0])));
-    std::set<std::string> recipients;
-    for (unsigned idx = 0; idx < dbres.size(); ++idx)
-    {
-        recipients.insert(static_cast<std::string>(dbres[idx][1]));
-    }
-    const EmailData data(recipients, "sendauthinfo_pif", email_template_params, std::vector<unsigned long long>());
-    return send_joined_addresses_email(manager, data);
-}
-
-void check_authinfo_request_permission(const LibFred::ObjectStatesInfo& states)
-{
-    if (states.presents(LibFred::Object_State::server_transfer_prohibited))
-    {
-        throw PublicRequestImpl::ObjectTransferProhibited();
-    }
 }
 
 } // namespace Fred::Backend::PublicRequest::Type

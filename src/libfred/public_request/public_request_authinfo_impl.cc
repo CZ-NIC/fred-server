@@ -1,12 +1,9 @@
-#include "src/libfred/public_request/public_request_impl.hh"
 #include "src/libfred/public_request/public_request_authinfo_impl.hh"
-#include "src/libfred/object_states.hh"
-#include "src/util/types/stringify.hh"
-#include "src/util/factory.hh"
 
+#include "src/libfred/public_request/public_request_impl.hh"
+#include "src/libfred/public_request/public_request_on_status_action.hh"
 
-//#define SERVER_TRANSFER_PROHIBITED 3
-//#define SERVER_UPDATE_PROHIBITED 4
+#include <string>
 
 namespace LibFred {
 namespace PublicRequest {
@@ -14,134 +11,88 @@ namespace PublicRequest {
 FACTORY_MODULE_INIT_DEFI(authinfo)
 
 
+const Type PRT_AUTHINFO_AUTO_RIF = "authinfo_auto_rif";
+const Type PRT_AUTHINFO_AUTO_PIF = "authinfo_auto_pif";
+const Type PRT_AUTHINFO_EMAIL_PIF = "authinfo_email_pif";
+const Type PRT_AUTHINFO_POST_PIF = "authinfo_post_pif";
 
-class AuthInfoRequestImpl : public PublicRequestImpl {
-public:
-  /// check if object exists & no serverTransferProhibited
-  virtual bool check() const {
-    bool res = true;
-    for (unsigned i=0; res && i<getObjectSize(); i++)
-    {
-        res = !object_has_state(getObject(i).id
-            , LibFred::ObjectState::SERVER_TRANSFER_PROHIBITED);
-    }
-    return res;
-  }
-  virtual void processAction(bool _check) {
-    if (_check && !check()) throw REQUEST_BLOCKED();
-  }
-  std::string getAuthInfo() const {
-    // just one object is supported
-    if (!getObjectSize() || getObjectSize() > 1) return "";
-    Database::SelectQuery sql;
-    sql.buffer() << "SELECT o.AuthInfoPw "
-                 << "FROM object o "
-                 << "WHERE o.id=" << getObject(0).id;
-    Database::Connection conn = Database::Manager::acquire();
-    Database::Result res = conn.exec(sql);
-    if (!res.size()) {
-      return "";
-    }
-    return (*res.begin())[0];
-  }
-  /// fill mail template with common param for authinfo requeste templates
-  virtual void fillTemplateParams(Mailer::Parameters& params) const {
-    std::ostringstream buf;
-    buf << getRegistrarName() << " (" << getRegistrarUrl() << ")";
-    params["registrar"] = buf.str();
-    params["reqdate"] = stringify(getCreateTime().date());
-    params["reqid"] = stringify(getId());
-    if (getObjectSize()) {
-      params["type"] = stringify(getObject(0).type);
-      params["handle"] = getObject(0).handle;
-    }
-    params["authinfo"] = getAuthInfo();
-  }
-};
-
-class AuthInfoRequestEPPImpl
-        : public AuthInfoRequestImpl,
-          public Util::FactoryAutoRegister<PublicRequest, AuthInfoRequestEPPImpl>
+class AuthInfoRequestImpl
+        : public PublicRequestImpl
 {
 public:
-  virtual std::string getTemplateName() const {
-    return "sendauthinfo_epp";
-  }
-  /// after creating, this type of request is processed
-  virtual void postCreate() {
-    // cannot call process(), object need to be loaded completly
-    man_->processRequest(getId(),false,false, this->getRequestId());
-  }
+    bool check() const
+    {
+        return true;
+    }
 
-  static std::string registration_name()
-  {
-      return PRT_AUTHINFO_AUTO_RIF;
-  }
+    std::string getTemplateName() const
+    {
+        return std::string();
+    }
+
+    void fillTemplateParams(LibFred::Mailer::Parameters&) const
+    {
+    }
+
+    TID sendEmail() const
+    {
+        return 0;
+    }
+
+    void save()
+    {
+        if (this->getId() == 0)
+        {
+            throw std::runtime_error("insert new request disabled");
+        }
+        PublicRequestImpl::save();
+        Database::Connection conn = Database::Manager::acquire();
+        conn.exec_params(
+            "UPDATE public_request SET on_status_action = $1::enum_on_status_action_type"
+            " WHERE id = $2::bigint",
+            Database::query_param_list
+                (Conversion::Enums::to_db_handle(OnStatusAction::scheduled))
+                (this->getId())
+        );
+    }
 };
+
 
 class AuthInfoRequestPIFAutoImpl
         : public AuthInfoRequestImpl,
           public Util::FactoryAutoRegister<PublicRequest, AuthInfoRequestPIFAutoImpl>
 {
 public:
-  virtual std::string getTemplateName() const {
-    return "sendauthinfo_pif";
-  }
-  /// after creating, this type of request is processed
-  virtual void postCreate() {
-    // cannot call process(), object need to be loaded completly
-    man_->processRequest(getId(),false,false,this->getRequestId());
-  }
-
-  static std::string registration_name()
-  {
-      return PRT_AUTHINFO_AUTO_PIF;
-  }
+    static std::string registration_name()
+    {
+        return PRT_AUTHINFO_AUTO_PIF;
+    }
 };
+
 
 class AuthInfoRequestPIFEmailImpl
         : public AuthInfoRequestImpl,
           public Util::FactoryAutoRegister<PublicRequest, AuthInfoRequestPIFEmailImpl>
 {
 public:
-  virtual std::string getTemplateName() const {
-    return "sendauthinfo_pif";
-  }
-  /// answer is sent to requested email
-  std::string getEmails() const {
-    return getEmailToAnswer();
-  }
-
-  static std::string registration_name()
-  {
-      return PRT_AUTHINFO_EMAIL_PIF;
-  }
+    static std::string registration_name()
+    {
+        return PRT_AUTHINFO_EMAIL_PIF;
+    }
 };
+
 
 class AuthInfoRequestPIFPostImpl
         : public AuthInfoRequestImpl,
           public Util::FactoryAutoRegister<PublicRequest, AuthInfoRequestPIFPostImpl>
 {
 public:
-  virtual std::string getTemplateName() const {
-    return "sendauthinfo_pif";
-  }
-  /// answer is sent to requested email
-  std::string getEmails() const {
-    return getEmailToAnswer();
-  }
-  /// return proper type for PDF letter template
-  virtual unsigned getPDFType() const {
-    return 1;
-  }
-
-  static std::string registration_name()
-  {
-      return PRT_AUTHINFO_POST_PIF;
-  }
+    static std::string registration_name()
+    {
+        return PRT_AUTHINFO_POST_PIF;
+    }
 };
 
 
-}
-}
-
+} // namespace LibFred::PublicRequest
+} // namespace LibFred

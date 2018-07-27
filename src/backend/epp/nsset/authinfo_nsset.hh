@@ -16,22 +16,24 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GET_IFACE_OF_HH_972243A2C8E74C318556B97643052155
-#define GET_IFACE_OF_HH_972243A2C8E74C318556B97643052155
+#ifndef AUTHINFO_NSSET_HH_B4AAB152A95346139EE47913CD22228C
+#define AUTHINFO_NSSET_HH_B4AAB152A95346139EE47913CD22228C
 
-#include "src/libfred/public_request/public_request_type_iface.hh"
+#include "src/backend/epp/session_data.hh"
+#include "src/libfred/opcontext.hh"
 
-namespace Fred {
-namespace Backend {
-namespace PublicRequest {
-namespace Type {
+#include <string>
 
-template <typename T>
-const LibFred::PublicRequestTypeIface& get_iface_of();
+namespace Epp {
+namespace Nsset {
 
-} // namespace Fred::Backend::PublicRequest::Type
-} // namespace Fred::Backend::PublicRequest
-} // namespace Fred::Backend
-} // namespace Fred
+void authinfo_nsset(
+        LibFred::OperationContext& _ctx,
+        const std::string& _nsset_handle,
+        const SessionData& _session_data);
+
+
+} // namespace Epp::Nsset
+} // namespace Epp
 
 #endif

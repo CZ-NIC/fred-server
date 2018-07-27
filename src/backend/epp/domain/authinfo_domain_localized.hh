@@ -16,23 +16,23 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PUBLIC_REQUEST_PERSONALINFO_HH_6A9E148ADE9D445C891AC330DC1E7634
-#define PUBLIC_REQUEST_PERSONALINFO_HH_6A9E148ADE9D445C891AC330DC1E7634
+#ifndef AUTHINFO_DOMAIN_LOCALIZED_HH_3C61552E46284C548154E4331CE41B67
+#define AUTHINFO_DOMAIN_LOCALIZED_HH_3C61552E46284C548154E4331CE41B67
 
-#include "src/libfred/public_request/public_request_type_iface.hh"
+#include "src/backend/epp/epp_response_success_localized.hh"
+#include "src/backend/epp/session_data.hh"
 
-namespace Fred {
-namespace Backend {
-namespace PublicRequest {
-namespace Type {
+#include <string>
 
-struct PersonalinfoAuto;
-struct PersonalinfoEmail;
-struct PersonalinfoPost;
+namespace Epp {
+namespace Domain {
 
-} // namespace Fred::Backend::PublicRequest::Type
-} // namespace Fred::Backend::PublicRequest
-} // namespace Fred::Backend
-} // namespace Fred
+EppResponseSuccessLocalized authinfo_domain_localized(
+        const std::string& _fqdn,
+        const SessionData& _session_data);
+
+
+} // namespace Epp::Domain
+} // namespace Epp
 
 #endif
