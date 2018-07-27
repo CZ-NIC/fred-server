@@ -16,19 +16,23 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PROCESS_PUBLIC_REQUEST_BLOCK_UNBLOCK_HH_FC176C0453EF424088B10AC225C96498
-#define PROCESS_PUBLIC_REQUEST_BLOCK_UNBLOCK_HH_FC176C0453EF424088B10AC225C96498
+#ifndef CREATE_AUTHINFO_REQUEST_REGISTRY_EMAIL_HH_DB0CFB1D8D664CE2881B078AED8FBE6F
+#define CREATE_AUTHINFO_REQUEST_REGISTRY_EMAIL_HH_DB0CFB1D8D664CE2881B078AED8FBE6F
 
-#include "src/libfred/mailer.hh"
-#include "src/libfred/public_request/public_request_type_iface.hh"
+#include "src/backend/public_request/object_type.hh"
+#include "src/libfred/opcontext.hh"
+#include "src/util/optional_value.hh"
+
+#include <string>
 
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
 
-void process_public_request_block_unblock_resolved(
-        unsigned long long _public_request_id,
-        const LibFred::PublicRequestTypeIface& _public_request_type);
+unsigned long long create_authinfo_request_registry_email(
+        ObjectType object_type,
+        const std::string& object_handle,
+        const Optional<unsigned long long>& log_request_id);
 
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend

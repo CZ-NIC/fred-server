@@ -22,7 +22,6 @@
 #include "src/libfred/public_request/public_request_type_iface.hh"
 #include "src/libfred/object/object_states_info.hh"
 #include "src/backend/public_request/object_type.hh"
-#include "src/backend/public_request/public_request.hh"
 
 #include <string>
 #include <memory>
@@ -36,6 +35,7 @@ struct AuthinfoAutoRif;
 struct AuthinfoAuto;
 struct AuthinfoEmail;
 struct AuthinfoPost;
+struct AuthinfoGovernment;
 
 } // namespace Fred::Backend::PublicRequest::Type
 } // namespace Fred::Backend::PublicRequest

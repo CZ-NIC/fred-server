@@ -16,7 +16,10 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "src/backend/public_request/confirmed_by.hh"
+#include "src/backend/public_request/type/public_request_authinfo.hh"
 #include "src/backend/public_request/type/public_request_block_unblock.hh"
+#include "src/backend/public_request/type/public_request_personal_info.hh"
 #include "src/backend/public_request/type/get_iface_of.hh"
 #include "src/libfred/public_request/public_request_status.hh"
 #include "src/libfred/public_request/public_request_on_status_action.hh"
@@ -31,15 +34,19 @@ namespace {
 
 extern const char block_changes_email_pif[] = "block_changes_email_pif";
 extern const char block_changes_post_pif[] = "block_changes_post_pif";
+extern const char block_changes_government_pif[] = "block_changes_government_pif";
 
 extern const char block_transfer_email_pif[] = "block_transfer_email_pif";
 extern const char block_transfer_post_pif[] = "block_transfer_post_pif";
+extern const char block_transfer_government_pif[] = "block_transfer_government_pif";
 
 extern const char unblock_changes_email_pif[] = "unblock_changes_email_pif";
 extern const char unblock_changes_post_pif[] = "unblock_changes_post_pif";
+extern const char unblock_changes_government_pif[] = "unblock_changes_government_pif";
 
 extern const char unblock_transfer_email_pif[] = "unblock_transfer_email_pif";
 extern const char unblock_transfer_post_pif[] = "unblock_transfer_post_pif";
+extern const char unblock_transfer_government_pif[] = "unblock_transfer_government_pif";
 
 LibFred::PublicRequestTypeIface::PublicRequestTypes get_block_unblock_public_request_types_to_cancel_on_create();
 
@@ -71,12 +78,14 @@ struct Block
     {
         typedef PublicRequest::Named<block_changes_email_pif> ByEmail;
         typedef PublicRequest::Named<block_changes_post_pif> ByPost;
+        typedef PublicRequest::Named<block_changes_government_pif> ByGovernment;
     };
 
     struct Transfer
     {
         typedef PublicRequest::Named<block_transfer_email_pif> ByEmail;
         typedef PublicRequest::Named<block_transfer_post_pif> ByPost;
+        typedef PublicRequest::Named<block_transfer_government_pif> ByGovernment;
     };
 };
 
@@ -87,12 +96,14 @@ struct Unblock
     {
         typedef PublicRequest::Named<unblock_changes_email_pif> ByEmail;
         typedef PublicRequest::Named<unblock_changes_post_pif> ByPost;
+        typedef PublicRequest::Named<unblock_changes_government_pif> ByGovernment;
     };
 
     struct Transfer
     {
         typedef PublicRequest::Named<unblock_transfer_email_pif> ByEmail;
         typedef PublicRequest::Named<unblock_transfer_post_pif> ByPost;
+        typedef PublicRequest::Named<unblock_transfer_government_pif> ByGovernment;
     };
 };
 
@@ -101,12 +112,16 @@ LibFred::PublicRequestTypeIface::PublicRequestTypes get_block_unblock_public_req
     LibFred::PublicRequestTypeIface::PublicRequestTypes res;
     res.insert(LibFred::PublicRequestTypeIface::IfacePtr(new Block::Changes::ByEmail));
     res.insert(LibFred::PublicRequestTypeIface::IfacePtr(new Block::Changes::ByPost));
+    res.insert(LibFred::PublicRequestTypeIface::IfacePtr(new Block::Changes::ByGovernment));
     res.insert(LibFred::PublicRequestTypeIface::IfacePtr(new Block::Transfer::ByEmail));
     res.insert(LibFred::PublicRequestTypeIface::IfacePtr(new Block::Transfer::ByPost));
+    res.insert(LibFred::PublicRequestTypeIface::IfacePtr(new Block::Transfer::ByGovernment));
     res.insert(LibFred::PublicRequestTypeIface::IfacePtr(new Unblock::Changes::ByEmail));
     res.insert(LibFred::PublicRequestTypeIface::IfacePtr(new Unblock::Changes::ByPost));
+    res.insert(LibFred::PublicRequestTypeIface::IfacePtr(new Unblock::Changes::ByGovernment));
     res.insert(LibFred::PublicRequestTypeIface::IfacePtr(new Unblock::Transfer::ByEmail));
     res.insert(LibFred::PublicRequestTypeIface::IfacePtr(new Unblock::Transfer::ByPost));
+    res.insert(LibFred::PublicRequestTypeIface::IfacePtr(new Unblock::Transfer::ByGovernment));
     return res;
 }
 
@@ -114,86 +129,118 @@ LibFred::PublicRequestTypeIface::PublicRequestTypes get_block_unblock_public_req
 } // namespace Fred::Backend::PublicRequest::Type::Impl
 
 template<>
-const LibFred::PublicRequestTypeIface& get_iface_of<BlockChanges<PublicRequestImpl::ConfirmedBy::email>>()
+const LibFred::PublicRequestTypeIface& get_iface_of<BlockChanges<ConfirmedBy::email>>()
 {
     static const Impl::Block::Changes::ByEmail singleton;
     return singleton;
 }
 
 template<>
-const LibFred::PublicRequestTypeIface& get_iface_of<BlockChanges<PublicRequestImpl::ConfirmedBy::letter>>()
+const LibFred::PublicRequestTypeIface& get_iface_of<BlockChanges<ConfirmedBy::letter>>()
 {
     static const Impl::Block::Changes::ByPost singleton;
     return singleton;
 }
 
 template<>
-const LibFred::PublicRequestTypeIface& get_iface_of<BlockTransfer<PublicRequestImpl::ConfirmedBy::email>>()
+const LibFred::PublicRequestTypeIface& get_iface_of<BlockChanges<ConfirmedBy::government>>()
+{
+    static const Impl::Block::Changes::ByGovernment singleton;
+    return singleton;
+}
+
+template<>
+const LibFred::PublicRequestTypeIface& get_iface_of<BlockTransfer<ConfirmedBy::email>>()
 {
     static const Impl::Block::Transfer::ByEmail singleton;
     return singleton;
 }
 
 template<>
-const LibFred::PublicRequestTypeIface& get_iface_of<BlockTransfer<PublicRequestImpl::ConfirmedBy::letter>>()
+const LibFred::PublicRequestTypeIface& get_iface_of<BlockTransfer<ConfirmedBy::letter>>()
 {
     static const Impl::Block::Transfer::ByPost singleton;
     return singleton;
 }
 
 template<>
-const LibFred::PublicRequestTypeIface& get_iface_of<UnblockChanges<PublicRequestImpl::ConfirmedBy::email>>()
+const LibFred::PublicRequestTypeIface& get_iface_of<BlockTransfer<ConfirmedBy::government>>()
+{
+    static const Impl::Block::Transfer::ByGovernment singleton;
+    return singleton;
+}
+
+template<>
+const LibFred::PublicRequestTypeIface& get_iface_of<UnblockChanges<ConfirmedBy::email>>()
 {
     static const Impl::Unblock::Changes::ByEmail singleton;
     return singleton;
 }
 
 template<>
-const LibFred::PublicRequestTypeIface& get_iface_of<UnblockChanges<PublicRequestImpl::ConfirmedBy::letter>>()
+const LibFred::PublicRequestTypeIface& get_iface_of<UnblockChanges<ConfirmedBy::letter>>()
 {
     static const Impl::Unblock::Changes::ByPost singleton;
     return singleton;
 }
 
 template<>
-const LibFred::PublicRequestTypeIface& get_iface_of<UnblockTransfer<PublicRequestImpl::ConfirmedBy::email>>()
+const LibFred::PublicRequestTypeIface& get_iface_of<UnblockChanges<ConfirmedBy::government>>()
+{
+    static const Impl::Unblock::Changes::ByGovernment singleton;
+    return singleton;
+}
+
+template<>
+const LibFred::PublicRequestTypeIface& get_iface_of<UnblockTransfer<ConfirmedBy::email>>()
 {
     static const Impl::Unblock::Transfer::ByEmail singleton;
     return singleton;
 }
 
 template<>
-const LibFred::PublicRequestTypeIface& get_iface_of<UnblockTransfer<PublicRequestImpl::ConfirmedBy::letter>>()
+const LibFred::PublicRequestTypeIface& get_iface_of<UnblockTransfer<ConfirmedBy::letter>>()
 {
     static const Impl::Unblock::Transfer::ByPost singleton;
     return singleton;
 }
 
-template<template<PublicRequestImpl::ConfirmedBy::Enum> typename T>
-const LibFred::PublicRequestTypeIface& get_iface_of(PublicRequestImpl::ConfirmedBy::Enum confirmation_method)
+template<>
+const LibFred::PublicRequestTypeIface& get_iface_of<UnblockTransfer<ConfirmedBy::government>>()
+{
+    static const Impl::Unblock::Transfer::ByGovernment singleton;
+    return singleton;
+}
+
+template<template<ConfirmedBy> class T>
+const LibFred::PublicRequestTypeIface& get_iface_of(ConfirmedBy confirmation_method)
 {
     switch (confirmation_method)
     {
-        case PublicRequestImpl::ConfirmedBy::Enum::email:
+        case ConfirmedBy::email:
         {
-            return get_iface_of<T<PublicRequestImpl::ConfirmedBy::Enum::email>>();
+            return get_iface_of<T<ConfirmedBy::email>>();
         }
-        case PublicRequestImpl::ConfirmedBy::Enum::letter:
+        case ConfirmedBy::letter:
         {
-            return get_iface_of<T<PublicRequestImpl::ConfirmedBy::Enum::letter>>();
+            return get_iface_of<T<ConfirmedBy::letter>>();
+        }
+        case ConfirmedBy::government:
+        {
+            return get_iface_of<T<ConfirmedBy::government>>();
         }
     }
     throw std::runtime_error("unexpected confirmation method");
 }
 
 template const LibFred::PublicRequestTypeIface&
-get_iface_of<BlockChanges>(PublicRequestImpl::ConfirmedBy::Enum confirmation_method);
+get_iface_of<BlockChanges>(ConfirmedBy confirmation_method);
 template const LibFred::PublicRequestTypeIface&
-get_iface_of<BlockTransfer>(PublicRequestImpl::ConfirmedBy::Enum confirmation_method);
+get_iface_of<BlockTransfer>(ConfirmedBy confirmation_method);
 template const LibFred::PublicRequestTypeIface&
-get_iface_of<UnblockChanges>(PublicRequestImpl::ConfirmedBy::Enum confirmation_method);
+get_iface_of<UnblockChanges>(ConfirmedBy confirmation_method);
 template const LibFred::PublicRequestTypeIface&
-get_iface_of<UnblockTransfer>(PublicRequestImpl::ConfirmedBy::Enum confirmation_method);
+get_iface_of<UnblockTransfer>(ConfirmedBy confirmation_method);
 
 } // namespace Fred::Backend::PublicRequest::Type
 } // namespace Fred::Backend::PublicRequest

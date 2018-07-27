@@ -1,8 +1,17 @@
 #include "src/bin/corba/public_request/server_i.hh"
 #include "src/backend/buffer.hh"
+#include "src/backend/public_request/create_authinfo_request_non_registry_email.hh"
+#include "src/backend/public_request/create_authinfo_request_registry_email.hh"
+#include "src/backend/public_request/create_block_unblock_request.hh"
+#include "src/backend/public_request/create_personal_info_request_non_registry_email.hh"
+#include "src/backend/public_request/create_personal_info_request_registry_email.hh"
+#include "src/backend/public_request/create_public_request_pdf.hh"
 #include "src/backend/public_request/exceptions.hh"
+#include "src/backend/public_request/confirmed_by.hh"
+#include "src/backend/public_request/get_default_document_manager.hh"
+#include "src/backend/public_request/language.hh"
+#include "src/backend/public_request/lock_request_type.hh"
 #include "src/backend/public_request/object_type.hh"
-#include "src/backend/public_request/public_request.hh"
 #include "src/bin/corba/util/corba_conversions_buffer.hh"
 #include "src/bin/corba/util/corba_conversions_string.hh"
 #include "src/libfred/documents.hh"
@@ -19,7 +28,8 @@ namespace PublicRequest {
 
 namespace {
 
-Fred::Backend::PublicRequest::ObjectType::Enum unwrap_objecttype_pr_to_objecttype(Registry::PublicRequest::ObjectType_PR::Type object_type)
+Fred::Backend::PublicRequest::ObjectType unwrap_objecttype_pr_to_objecttype(
+        Registry::PublicRequest::ObjectType_PR::Type object_type)
 {
     switch (object_type)
     {
@@ -35,7 +45,8 @@ Fred::Backend::PublicRequest::ObjectType::Enum unwrap_objecttype_pr_to_objecttyp
     throw std::invalid_argument("value doesn't exist in Registry::PublicRequest::ObjectType_PR");
 }
 
-Optional<unsigned long long> unwrap_nullableulonglong_to_optional_unsigned_long_long(Registry::NullableULongLong* src_ptr)
+Optional<unsigned long long> unwrap_nullableulonglong_to_optional_unsigned_long_long(
+        Registry::NullableULongLong* src_ptr)
 {
     if (src_ptr == NULL)
     {
@@ -49,7 +60,6 @@ Optional<unsigned long long> unwrap_nullableulonglong_to_optional_unsigned_long_
 } // namespace CorbaConversion::PublicRequest::{anonymous}
 
 Server_i::Server_i(const std::string& _server_name)
-    : pimpl_(new Fred::Backend::PublicRequest::PublicRequestImpl(_server_name))
 {
 }
 
@@ -64,10 +74,11 @@ Server_i::~Server_i()
 {
     try
     {
-        const unsigned long long public_request_id = pimpl_->create_authinfo_request_registry_email(
-                unwrap_objecttype_pr_to_objecttype(object_type),
-                LibFred::Corba::unwrap_string_from_const_char_ptr(object_handle),
-                unwrap_nullableulonglong_to_optional_unsigned_long_long(log_request_id));
+        const unsigned long long public_request_id =
+                Fred::Backend::PublicRequest::create_authinfo_request_registry_email(
+                        unwrap_objecttype_pr_to_objecttype(object_type),
+                        LibFred::Corba::unwrap_string_from_const_char_ptr(object_handle),
+                        unwrap_nullableulonglong_to_optional_unsigned_long_long(log_request_id));
         ::CORBA::ULongLong result;
         CorbaConversion::wrap_int(public_request_id, result);
         return result;
@@ -101,14 +112,17 @@ Server_i::~Server_i()
 
 namespace {
 
-Fred::Backend::PublicRequest::PublicRequestImpl::ConfirmedBy::Enum unwrap_confirmedby_to_confirmedby(Registry::PublicRequest::ConfirmedBy::Type confirmation_method)
+Fred::Backend::PublicRequest::ConfirmedBy unwrap_confirmedby_to_confirmedby(
+        Registry::PublicRequest::ConfirmedBy::Type confirmation_method)
 {
     switch (confirmation_method)
     {
         case Registry::PublicRequest::ConfirmedBy::signed_email:
-            return Fred::Backend::PublicRequest::PublicRequestImpl::ConfirmedBy::email;
+            return Fred::Backend::PublicRequest::ConfirmedBy::email;
         case Registry::PublicRequest::ConfirmedBy::notarized_letter:
-            return Fred::Backend::PublicRequest::PublicRequestImpl::ConfirmedBy::letter;
+            return Fred::Backend::PublicRequest::ConfirmedBy::letter;
+        case Registry::PublicRequest::ConfirmedBy::government:
+            return Fred::Backend::PublicRequest::ConfirmedBy::government;
     }
     throw std::invalid_argument("value doesn't exist in Registry::PublicRequest::ConfirmedBy");
 }
@@ -124,12 +138,13 @@ CORBA::ULongLong Server_i::create_authinfo_request_non_registry_email(
 {
     try
     {
-        const unsigned long long public_request_id = pimpl_->create_authinfo_request_non_registry_email(
-                unwrap_objecttype_pr_to_objecttype(object_type),
-                LibFred::Corba::unwrap_string_from_const_char_ptr(object_handle),
-                unwrap_nullableulonglong_to_optional_unsigned_long_long(log_request_id),
-                unwrap_confirmedby_to_confirmedby(confirmation_method),
-                LibFred::Corba::unwrap_string_from_const_char_ptr(specified_email));
+        const unsigned long long public_request_id =
+                Fred::Backend::PublicRequest::create_authinfo_request_non_registry_email(
+                        unwrap_objecttype_pr_to_objecttype(object_type),
+                        LibFred::Corba::unwrap_string_from_const_char_ptr(object_handle),
+                        unwrap_nullableulonglong_to_optional_unsigned_long_long(log_request_id),
+                        unwrap_confirmedby_to_confirmedby(confirmation_method),
+                        LibFred::Corba::unwrap_string_from_const_char_ptr(specified_email));
         CORBA::ULongLong result;
         CorbaConversion::wrap_int(public_request_id, result);
         return result;
@@ -163,18 +178,19 @@ CORBA::ULongLong Server_i::create_authinfo_request_non_registry_email(
 
 namespace {
 
-Fred::Backend::PublicRequest::PublicRequestImpl::LockRequestType::Enum unwrap_lockrequesttype_to_lockrequesttype(Registry::PublicRequest::LockRequestType::Type lock_request_type)
+Fred::Backend::PublicRequest::LockRequestType::Enum unwrap_lockrequesttype_to_lockrequesttype(
+        Registry::PublicRequest::LockRequestType::Type lock_request_type)
 {
     switch (lock_request_type)
     {
         case Registry::PublicRequest::LockRequestType::block_transfer:
-            return Fred::Backend::PublicRequest::PublicRequestImpl::LockRequestType::block_transfer;
+            return Fred::Backend::PublicRequest::LockRequestType::block_transfer;
         case Registry::PublicRequest::LockRequestType::block_transfer_and_update:
-            return Fred::Backend::PublicRequest::PublicRequestImpl::LockRequestType::block_transfer_and_update;
+            return Fred::Backend::PublicRequest::LockRequestType::block_transfer_and_update;
         case Registry::PublicRequest::LockRequestType::unblock_transfer:
-            return Fred::Backend::PublicRequest::PublicRequestImpl::LockRequestType::unblock_transfer;
+            return Fred::Backend::PublicRequest::LockRequestType::unblock_transfer;
         case Registry::PublicRequest::LockRequestType::unblock_transfer_and_update:
-            return Fred::Backend::PublicRequest::PublicRequestImpl::LockRequestType::unblock_transfer_and_update;
+            return Fred::Backend::PublicRequest::LockRequestType::unblock_transfer_and_update;
     }
     throw std::invalid_argument("value doesn't exist in Registry::PublicRequest::LockRequestType");
 }
@@ -190,12 +206,13 @@ CORBA::ULongLong Server_i::create_block_unblock_request(
 {
     try
     {
-        const unsigned long long public_request_id = pimpl_->create_block_unblock_request(
-                unwrap_objecttype_pr_to_objecttype(object_type),
-                LibFred::Corba::unwrap_string_from_const_char_ptr(object_handle),
-                unwrap_nullableulonglong_to_optional_unsigned_long_long(log_request_id),
-                unwrap_confirmedby_to_confirmedby(confirmation_method),
-                unwrap_lockrequesttype_to_lockrequesttype(lock_request_type));
+        const unsigned long long public_request_id =
+                Fred::Backend::PublicRequest::create_block_unblock_request(
+                        unwrap_objecttype_pr_to_objecttype(object_type),
+                        LibFred::Corba::unwrap_string_from_const_char_ptr(object_handle),
+                        unwrap_nullableulonglong_to_optional_unsigned_long_long(log_request_id),
+                        unwrap_confirmedby_to_confirmedby(confirmation_method),
+                        unwrap_lockrequesttype_to_lockrequesttype(lock_request_type));
         CORBA::ULongLong result;
         CorbaConversion::wrap_int(public_request_id, result);
         return result;
@@ -248,9 +265,10 @@ CORBA::ULongLong Server_i::create_personal_info_request_registry_email(
 {
     try
     {
-        const unsigned long long public_request_id = pimpl_->create_personal_info_request_registry_email(
-                LibFred::Corba::unwrap_string_from_const_char_ptr(contact_handle),
-                unwrap_nullableulonglong_to_optional_unsigned_long_long(log_request_id));
+        const unsigned long long public_request_id =
+                Fred::Backend::PublicRequest::create_personal_info_request_registry_email(
+                        LibFred::Corba::unwrap_string_from_const_char_ptr(contact_handle),
+                        unwrap_nullableulonglong_to_optional_unsigned_long_long(log_request_id));
         ::CORBA::ULongLong result;
         CorbaConversion::wrap_int(public_request_id, result);
         return result;
@@ -286,11 +304,12 @@ CORBA::ULongLong Server_i::create_personal_info_request_non_registry_email(
 {
     try
     {
-        const unsigned long long public_request_id = pimpl_->create_personal_info_request_non_registry_email(
-                LibFred::Corba::unwrap_string_from_const_char_ptr(contact_handle),
-                unwrap_nullableulonglong_to_optional_unsigned_long_long(log_request_id),
-                unwrap_confirmedby_to_confirmedby(confirmation_method),
-                LibFred::Corba::unwrap_string_from_const_char_ptr(specified_email));
+        const unsigned long long public_request_id =
+                Fred::Backend::PublicRequest::create_personal_info_request_non_registry_email(
+                        LibFred::Corba::unwrap_string_from_const_char_ptr(contact_handle),
+                        unwrap_nullableulonglong_to_optional_unsigned_long_long(log_request_id),
+                        unwrap_confirmedby_to_confirmedby(confirmation_method),
+                        LibFred::Corba::unwrap_string_from_const_char_ptr(specified_email));
         CORBA::ULongLong result;
         CorbaConversion::wrap_int(public_request_id, result);
         return result;
@@ -320,29 +339,32 @@ CORBA::ULongLong Server_i::create_personal_info_request_non_registry_email(
 
 namespace {
 
-Fred::Backend::PublicRequest::PublicRequestImpl::Language::Enum unwrap_language_to_language(Registry::PublicRequest::Language::Type lang)
+Fred::Backend::PublicRequest::Language::Enum unwrap_language_to_language(
+        Registry::PublicRequest::Language::Type lang)
 {
     switch (lang)
     {
         case Registry::PublicRequest::Language::cs:
-            return Fred::Backend::PublicRequest::PublicRequestImpl::Language::cs;
+            return Fred::Backend::PublicRequest::Language::cs;
         case Registry::PublicRequest::Language::en:
-            return Fred::Backend::PublicRequest::PublicRequestImpl::Language::en;
+            return Fred::Backend::PublicRequest::Language::en;
     }
     throw std::invalid_argument("language code not found");
 }
 
 } // namespace CorbaConversion::PublicRequest::{anonymous}
 
-Registry::Buffer* Server_i::create_public_request_pdf(CORBA::ULongLong public_request_id, Registry::PublicRequest::Language::Type lang)
+Registry::Buffer* Server_i::create_public_request_pdf(
+        CORBA::ULongLong public_request_id,
+        Registry::PublicRequest::Language::Type lang)
 {
     try
     {
         const Fred::Backend::Buffer pdf_content =
-                pimpl_->create_public_request_pdf(
+                Fred::Backend::PublicRequest::create_public_request_pdf(
                         public_request_id,
                         unwrap_language_to_language(lang),
-                        Fred::Backend::PublicRequest::PublicRequestImpl::get_default_document_manager());
+                        Fred::Backend::PublicRequest::get_default_document_manager());
         Registry::Buffer_var result = CorbaConversion::Util::wrap_Buffer(pdf_content);
         return result._retn();
     }

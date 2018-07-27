@@ -20,20 +20,20 @@
 #define PUBLIC_REQUEST_BLOCKUNBLOCK_HH_53EF83ABD342468AB0B386243FC06F33
 
 #include "src/libfred/public_request/public_request_type_iface.hh"
-#include "src/backend/public_request/public_request.hh"
+#include "src/backend/public_request/confirmed_by.hh"
 
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
 namespace Type {
 
-template<PublicRequestImpl::ConfirmedBy::Enum> struct BlockChanges;
-template<PublicRequestImpl::ConfirmedBy::Enum> struct BlockTransfer;
-template<PublicRequestImpl::ConfirmedBy::Enum> struct UnblockChanges;
-template<PublicRequestImpl::ConfirmedBy::Enum> struct UnblockTransfer;
+template<ConfirmedBy> struct BlockChanges;
+template<ConfirmedBy> struct BlockTransfer;
+template<ConfirmedBy> struct UnblockChanges;
+template<ConfirmedBy> struct UnblockTransfer;
 
-template<template<PublicRequestImpl::ConfirmedBy::Enum> typename T>
-const LibFred::PublicRequestTypeIface& get_iface_of(PublicRequestImpl::ConfirmedBy::Enum confirmation_method);
+template<template<ConfirmedBy> class T>
+const LibFred::PublicRequestTypeIface& get_iface_of(ConfirmedBy confirmation_method);
 
 } // namespace Fred::Backend::PublicRequest::Type
 } // namespace Fred::Backend::PublicRequest

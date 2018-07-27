@@ -21,9 +21,9 @@
 #include "src/backend/epp/epp_response_failure.hh"
 #include "src/backend/epp/epp_result_code.hh"
 #include "src/backend/epp/epp_result_failure.hh"
+#include "src/backend/epp/public_request/create_authinfo_request_registry_email.hh"
 #include "src/backend/public_request/exceptions.hh"
 #include "src/backend/public_request/object_type.hh"
-#include "src/backend/public_request/public_requests.hh"
 #include "src/libfred/opcontext.hh"
 
 #include <string>
@@ -38,7 +38,7 @@ void authinfo_keyset(
 {
     try
     {
-        create_authinfo_request_registry_email_rif(
+        Epp::PublicRequest::create_authinfo_request_registry_email(
                 _ctx,
                 Fred::Backend::PublicRequest::ObjectType::keyset,
                 _keyset_handle,

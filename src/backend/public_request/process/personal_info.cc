@@ -1,15 +1,16 @@
-#include "src/backend/public_request/process_public_request_personal_info.hh"
+#include "src/backend/public_request/process/personal_info.hh"
+
+#include "src/backend/public_request/exceptions.hh"
+#include "src/backend/public_request/util/send_joined_address_email.hh"
+#include "src/bin/corba/mailer_manager.hh"
+#include "src/libfred/opcontext.hh"
+#include "src/libfred/public_request/info_public_request.hh"
+#include "src/libfred/public_request/public_request_lock_guard.hh"
 #include "src/libfred/public_request/public_request_on_status_action.hh"
+#include "src/libfred/public_request/update_public_request.hh"
 #include "src/libfred/registrable_object/contact/info_contact.hh"
 #include "src/libfred/registrar/info_registrar.hh"
-#include "src/backend/public_request/send_email.hh"
-#include "src/bin/corba/mailer_manager.hh"
 #include "src/util/corba_wrapper_decl.hh"
-#include "src/libfred/public_request/public_request_lock_guard.hh"
-#include "src/libfred/public_request/info_public_request.hh"
-#include "src/libfred/public_request/update_public_request.hh"
-#include "src/backend/public_request/public_request.hh"
-#include "src/libfred/opcontext.hh"
 #include "src/util/csv/csv.hh"
 
 #include <array>
@@ -17,6 +18,7 @@
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
+namespace Process {
 
 namespace {
 
@@ -51,14 +53,14 @@ unsigned long long send_personal_info(
     auto& ctx = _locked_request.get_ctx();
     const auto public_request_id = _locked_request.get_id();
     const LibFred::PublicRequestInfo request_info = LibFred::InfoPublicRequest().exec(ctx, _locked_request);
-    const auto object_id = request_info.get_object_id().get_value(); // oops
+    const auto contact_id = request_info.get_object_id().get_value(); // oops
 
     LibFred::Mailer::Parameters email_template_params;
 
     const Database::Result dbres = ctx.get_conn().exec_params(
             "SELECT (create_time AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Prague')::DATE FROM public_request "
             "WHERE id=$1::BIGINT",
-            Database::query_param_list(_public_request_id));
+            Database::query_param_list(public_request_id));
     if (dbres.size() < 1)
     {
         throw NoPublicRequest();
@@ -288,11 +290,11 @@ unsigned long long send_personal_info(
     }
 
     const std::set<std::string> recipients = { email_to_answer.empty() ? info_contact_data.email.get_value() : email_to_answer };
-    const EmailData data(recipients, "sendpersonalinfo_pif", email_template_params, attachments);
+    const Util::EmailData data(recipients, "sendpersonalinfo_pif", email_template_params, attachments);
     return send_joined_addresses_email(_mailer_manager, data);
 }
 
-} // namespace Fred::Backend::PublicRequest::{anonymous}
+} // namespace Fred::Backend::PublicRequest::Process::{anonymous}
 
 void process_public_request_personal_info_resolved(
         unsigned long long _public_request_id,
@@ -304,7 +306,7 @@ void process_public_request_personal_info_resolved(
     {
         LibFred::OperationContextCreator ctx;
         const LibFred::PublicRequestLockGuardById locked_request(ctx, _public_request_id);
-        const unsigned long long email_id = send_personal_info(_public_request_id, ctx, _mailer_manager, _file_manager_client);
+        const unsigned long long email_id = send_personal_info(locked_request, _mailer_manager, _file_manager_client);
         try
         {
             LibFred::UpdatePublicRequest()
@@ -341,6 +343,7 @@ void process_public_request_personal_info_resolved(
     }
 }
 
+} // namespace Fred::Backend::PublicRequest::Process
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend
 } // namespace Fred

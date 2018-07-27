@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SEND_EMAIL_HH_AE7242E0D3EE4527ADDE0B27DE242FE7
-#define SEND_EMAIL_HH_AE7242E0D3EE4527ADDE0B27DE242FE7
+#ifndef SEND_JOINED_ADDRESS_EMAIL_HH_AE7242E0D3EE4527ADDE0B27DE242FE7
+#define SEND_JOINED_ADDRESS_EMAIL_HH_AE7242E0D3EE4527ADDE0B27DE242FE7
 
 #include "src/libfred/mailer.hh"
 
@@ -29,6 +29,7 @@
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
+namespace Util {
 
 struct FailedToSendMailToRecipient : std::exception
 {
@@ -61,6 +62,7 @@ unsigned long long send_joined_addresses_email(
         std::shared_ptr<LibFred::Mailer::Manager> mailer,
         const EmailData& data);
 
+} // namespace Fred::Backend::PublicRequest::Util
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend
 } // namespace Fred

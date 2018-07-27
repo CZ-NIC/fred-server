@@ -11,15 +11,6 @@ namespace PublicRequest {
 FACTORY_MODULE_INIT_DEFI(block)
 
 
-const Type PRT_BLOCK_TRANSFER_EMAIL_PIF = "block_transfer_email_pif";
-const Type PRT_BLOCK_CHANGES_EMAIL_PIF = "block_changes_email_pif";
-const Type PRT_UNBLOCK_TRANSFER_EMAIL_PIF = "unblock_transfer_email_pif";
-const Type PRT_UNBLOCK_CHANGES_EMAIL_PIF = "unblock_changes_email_pif";
-const Type PRT_BLOCK_TRANSFER_POST_PIF = "block_transfer_post_pif";
-const Type PRT_BLOCK_CHANGES_POST_PIF = "block_changes_post_pif";
-const Type PRT_UNBLOCK_TRANSFER_POST_PIF = "unblock_transfer_post_pif";
-const Type PRT_UNBLOCK_CHANGES_POST_PIF = "unblock_changes_post_pif";
-
 class BlockUnblockRequestImpl
         : public PublicRequestImpl
 {
@@ -147,6 +138,50 @@ public:
   static std::string registration_name()
   {
       return PRT_UNBLOCK_CHANGES_POST_PIF;
+  }
+};
+
+class BlockTransferRequestPIFGovernmentImpl
+        : public BlockUnblockRequestImpl,
+          public Util::FactoryAutoRegister<PublicRequest, BlockTransferRequestPIFGovernmentImpl>
+{
+public:
+  static std::string registration_name()
+  {
+      return PRT_BLOCK_TRANSFER_GOVERNMENT_PIF;
+  }
+};
+
+class BlockUpdateRequestPIFGovernmentImpl
+        : public BlockUnblockRequestImpl,
+          public Util::FactoryAutoRegister<PublicRequest, BlockUpdateRequestPIFGovernmentImpl>
+{
+public:
+  static std::string registration_name()
+  {
+      return PRT_BLOCK_CHANGES_GOVERNMENT_PIF;
+  }
+};
+
+class UnBlockTransferRequestPIFGovernmentImpl
+        : public BlockUnblockRequestImpl,
+          public Util::FactoryAutoRegister<PublicRequest, UnBlockTransferRequestPIFGovernmentImpl>
+{
+public:
+  static std::string registration_name()
+  {
+      return PRT_UNBLOCK_TRANSFER_GOVERNMENT_PIF;
+  }
+};
+
+class UnBlockUpdateRequestPIFGovernmentImpl
+        : public BlockUnblockRequestImpl,
+          public Util::FactoryAutoRegister<PublicRequest, UnBlockUpdateRequestPIFGovernmentImpl>
+{
+public:
+  static std::string registration_name()
+  {
+      return PRT_UNBLOCK_CHANGES_GOVERNMENT_PIF;
   }
 };
 

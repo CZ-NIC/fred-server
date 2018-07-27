@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PROCESS_PUBLIC_REQUEST_PERSONAL_INFO_HH_9CC977C4F3F344748AB821941D44B2F7
-#define PROCESS_PUBLIC_REQUEST_PERSONAL_INFO_HH_9CC977C4F3F344748AB821941D44B2F7
+#ifndef AUTHINFO_HH_1575FD486B504859B8F4B6100BABD237
+#define AUTHINFO_HH_1575FD486B504859B8F4B6100BABD237
 
 #include "src/libfred/mailer.hh"
 #include "src/bin/corba/mailer_manager.hh"
@@ -28,13 +28,14 @@
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
+namespace Process {
 
-void process_public_request_personal_info_resolved(
+void process_public_request_authinfo_resolved(
         unsigned long long _public_request_id,
         const LibFred::PublicRequestTypeIface& _public_request_type,
-        std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager,
-        std::shared_ptr<LibFred::File::Transferer> _file_manager_client);
+        std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager);
 
+} // namespace Fred::Backend::PublicRequest::Process
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend
 } // namespace Fred

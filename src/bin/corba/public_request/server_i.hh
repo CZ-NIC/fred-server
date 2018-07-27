@@ -24,7 +24,7 @@
 #ifndef SERVER_I_HH_4C0DD51687BF47B19E2078C31BF6AA93
 #define SERVER_I_HH_4C0DD51687BF47B19E2078C31BF6AA93
 
-#include "src/backend/public_request/public_request.hh"
+#include "src/backend/public_request/exceptions.hh"
 #include "src/bin/corba/Buffer.hh"
 #include "src/bin/corba/PublicRequest.hh"
 
@@ -85,8 +85,6 @@ public:
     Registry::Buffer* create_public_request_pdf(CORBA::ULongLong public_request_id, Registry::PublicRequest::Language::Type lang);
 
 private:
-    const std::unique_ptr<Fred::Backend::PublicRequest::PublicRequestImpl> pimpl_;
-
     Server_i(const Server_i&); // no body
     Server_i& operator=(const Server_i&); // no body
 };

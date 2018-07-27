@@ -16,22 +16,19 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PUBLIC_REQUEST_PERSONAL_INFO_HH_6A9E148ADE9D445C891AC330DC1E7634
-#define PUBLIC_REQUEST_PERSONAL_INFO_HH_6A9E148ADE9D445C891AC330DC1E7634
+#ifndef GET_DEFAULT_DOCUMENT_MANAGER_HH_2CA35F58124F4C64AF71A45D2CAEA4FA
+#define GET_DEFAULT_DOCUMENT_MANAGER_HH_2CA35F58124F4C64AF71A45D2CAEA4FA
 
-#include "src/libfred/public_request/public_request_type_iface.hh"
+#include "src/libfred/documents.hh"
+
+#include <memory>
 
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
-namespace Type {
 
-struct PersonalInfoAuto;
-struct PersonalInfoEmail;
-struct PersonalInfoPost;
-struct PersonalInfoGovernment;
+std::shared_ptr<LibFred::Document::Manager> get_default_document_manager();
 
-} // namespace Fred::Backend::PublicRequest::Type
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend
 } // namespace Fred

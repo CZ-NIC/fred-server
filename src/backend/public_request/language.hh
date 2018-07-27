@@ -16,22 +16,22 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PUBLIC_REQUEST_PERSONAL_INFO_HH_6A9E148ADE9D445C891AC330DC1E7634
-#define PUBLIC_REQUEST_PERSONAL_INFO_HH_6A9E148ADE9D445C891AC330DC1E7634
-
-#include "src/libfred/public_request/public_request_type_iface.hh"
+#ifndef LANGUAGE_HH_E9B7B0D0B407483DBB61B47F8D434154
+#define LANGUAGE_HH_E9B7B0D0B407483DBB61B47F8D434154
 
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
-namespace Type {
 
-struct PersonalInfoAuto;
-struct PersonalInfoEmail;
-struct PersonalInfoPost;
-struct PersonalInfoGovernment;
+struct Language
+{
+    enum Enum
+    {
+        en,
+        cs
+    };
+};
 
-} // namespace Fred::Backend::PublicRequest::Type
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend
 } // namespace Fred

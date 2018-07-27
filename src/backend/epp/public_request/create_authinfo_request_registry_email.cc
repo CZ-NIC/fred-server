@@ -16,9 +16,11 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "src/backend/epp/public_request/create_authinfo_request_registry_email.hh"
+
 #include "src/backend/public_request/exceptions.hh"
 #include "src/backend/public_request/object_type.hh"
-#include "src/backend/public_request/public_requests.hh"
+#include "src/backend/public_request/get_id_of_registered_object.hh"
 #include "src/backend/public_request/type/get_iface_of.hh"
 #include "src/backend/public_request/type/public_request_authinfo.hh"
 #include "src/libfred/object/get_id_of_registered.hh"
@@ -29,12 +31,7 @@
 #include "src/util/log/context.hh"
 #include "src/util/optional_value.hh"
 
-#include <boost/optional.hpp>
-
-#include <algorithm>
-
-namespace Fred {
-namespace Backend {
+namespace Epp {
 namespace PublicRequest {
 
 namespace {
@@ -58,11 +55,11 @@ private:
 
 #define LOGGING_CONTEXT(CTX_VAR) LogContext CTX_VAR(create_ctx_function_name(__FUNCTION__))
 
-} // namespace Admin::{anonymous}
+} // namespace Epp::PublicRequest::{anonymous}
 
-unsigned long long create_authinfo_request_registry_email_rif(
+unsigned long long create_authinfo_request_registry_email(
         LibFred::OperationContext& _ctx,
-        ObjectType::Enum _object_type,
+        Fred::Backend::PublicRequest::ObjectType _object_type,
         const std::string& _object_handle,
         const unsigned long long _registrar_id,
         const Optional<unsigned long long>& _log_request_id)
@@ -70,36 +67,40 @@ unsigned long long create_authinfo_request_registry_email_rif(
     LOGGING_CONTEXT(log_ctx);
     try
     {
-        const auto object_id = get_id_of_registered_object(_ctx, _object_type, _object_handle);
+        const auto object_id = Fred::Backend::PublicRequest::get_id_of_registered_object(_ctx, _object_type, _object_handle);
         const LibFred::ObjectStatesInfo states(LibFred::GetObjectStates(object_id).exec(_ctx));
         LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_object(_ctx, object_id);
-        if (!is_authinfo_request_possible(states))
+        if (states.presents(LibFred::Object_State::server_transfer_prohibited))
         {
-            throw ObjectTransferProhibited();
+            throw Fred::Backend::PublicRequest::ObjectTransferProhibited();
         }
         const auto public_request_id = LibFred::CreatePublicRequest()
                 .set_registrar_id(LibFred::RegistrarId(_registrar_id))
-                .exec(locked_object, Type::get_iface_of<Type::AuthinfoAutoRif>(), _log_request_id);
+                .exec(locked_object,
+                      Fred::Backend::PublicRequest::Type::get_iface_of<Fred::Backend::PublicRequest::Type::AuthinfoAutoRif>(),
+                      _log_request_id);
         LibFred::UpdatePublicRequest()
             .set_status(LibFred::PublicRequest::Status::resolved)
-            .exec(locked_object, Type::get_iface_of<Type::AuthinfoAutoRif>(), _log_request_id);
+            .exec(locked_object,
+                  Fred::Backend::PublicRequest::Type::get_iface_of<Fred::Backend::PublicRequest::Type::AuthinfoAutoRif>(),
+                  _log_request_id);
 
         return public_request_id;
     }
-    catch (const NoPublicRequest& e)
+    catch (const Fred::Backend::PublicRequest::NoPublicRequest& e)
     {
         LOGGER(PACKAGE).info(e.what());
-        throw ObjectNotFound();
+        throw Fred::Backend::PublicRequest::ObjectNotFound();
     }
-    catch (const NoContactEmail& e)
+    catch (const Fred::Backend::PublicRequest::NoContactEmail& e)
     {
         LOGGER(PACKAGE).info(e.what());
-        throw NoContactEmail();
+        throw Fred::Backend::PublicRequest::NoContactEmail();
     }
     catch (const LibFred::UnknownObject& e)
     {
         LOGGER(PACKAGE).info(e.what());
-        throw ObjectNotFound();
+        throw Fred::Backend::PublicRequest::ObjectNotFound();
     }
     catch (const std::exception& e)
     {
@@ -113,6 +114,5 @@ unsigned long long create_authinfo_request_registry_email_rif(
     }
 }
 
-} // namespace Fred::Backend::PublicRequest
-} // namespace Fred::Backend
-} // namespace Fred
+} // namespace Epp::PublicRequest
+} // namespace Epp

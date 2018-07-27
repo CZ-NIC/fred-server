@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PUBLIC_REQUESTS_HH_E22CB50FF8D84815ACE87616441DA7BA
-#define PUBLIC_REQUESTS_HH_E22CB50FF8D84815ACE87616441DA7BA
+#ifndef CREATE_AUTHINFO_REQUEST_REGISTRY_EMAIL_HH_E22CB50FF8D84815ACE87616441DA7BA
+#define CREATE_AUTHINFO_REQUEST_REGISTRY_EMAIL_HH_E22CB50FF8D84815ACE87616441DA7BA
 
 #include "src/backend/public_request/object_type.hh"
 #include "src/libfred/opcontext.hh"
@@ -25,19 +25,17 @@
 
 #include <string>
 
-namespace Fred {
-namespace Backend {
+namespace Epp {
 namespace PublicRequest {
 
-unsigned long long create_authinfo_request_registry_email_rif(
+unsigned long long create_authinfo_request_registry_email(
         LibFred::OperationContext& _ctx,
-        ObjectType::Enum _object_type,
+        Fred::Backend::PublicRequest::ObjectType _object_type,
         const std::string& _object_handle,
         unsigned long long _registrar_id,
         const Optional<unsigned long long>& _log_request_id);
 
-} // namespace Fred::Backend::PublicRequest
-} // namespace Fred::Backend
-} // namespace Fred
+} // namespace Epp::PublicRequest
+} // namespace Epp
 
 #endif

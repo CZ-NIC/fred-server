@@ -16,23 +16,20 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/backend/public_request/public_request.hh"
-
+#include "src/backend/public_request/create_authinfo_request_registry_email.hh"
+#include "src/backend/public_request/exceptions.hh"
+#include "src/libfred/mailer.hh"
 #include "src/libfred/object/object_type.hh"
-#include "src/libfred/registrar/info_registrar_data.hh"
+#include "src/libfred/public_request/update_public_request.hh"
 #include "src/libfred/registrable_object/contact/info_contact_data.hh"
-#include "src/libfred/registrable_object/nsset/info_nsset_data.hh"
 #include "src/libfred/registrable_object/domain/info_domain_data.hh"
 #include "src/libfred/registrable_object/keyset/info_keyset_data.hh"
-#include "src/libfred/mailer.hh"
-#include "src/util/corba_wrapper_decl.hh"
+#include "src/libfred/registrable_object/nsset/info_nsset_data.hh"
+#include "src/libfred/registrar/info_registrar_data.hh"
 #include "src/util/cfg/config_handler_decl.hh"
-#include "src/libfred/public_request/update_public_request.hh"
-
 #include "src/util/cfg/faked_args.hh"
+#include "src/util/corba_wrapper_decl.hh"
 #include "src/util/util.hh"
-
-#include "src/util/cfg/config_handler_decl.hh"
 
 #include "test/setup/fixtures_utils.hh"
 #include "test/setup/fixtures.hh"
@@ -100,20 +97,19 @@ struct registry_email_fixture : Test::instantiate_db_template
                 ctx);
         ctx.commit_transaction();
 
-        Fred::Backend::PublicRequest::PublicRequestImpl pr("public-request-test");
-        contact_id = pr.create_authinfo_request_registry_email(
+        contact_id = Fred::Backend::PublicRequest::create_authinfo_request_registry_email(
                 Fred::Backend::PublicRequest::ObjectType::contact,
                 contact.handle,
                 Optional<unsigned long long>());
-        nsset_id = pr.create_authinfo_request_registry_email(
+        nsset_id = Fred::Backend::PublicRequest::create_authinfo_request_registry_email(
                 Fred::Backend::PublicRequest::ObjectType::nsset,
                 nsset.handle,
                 Optional<unsigned long long>());
-        domain_id = pr.create_authinfo_request_registry_email(
+        domain_id = Fred::Backend::PublicRequest::create_authinfo_request_registry_email(
                 Fred::Backend::PublicRequest::ObjectType::domain,
                 domain.fqdn,
                 Optional<unsigned long long>());
-        keyset_id = pr.create_authinfo_request_registry_email(
+        keyset_id = Fred::Backend::PublicRequest::create_authinfo_request_registry_email(
                 Fred::Backend::PublicRequest::ObjectType::keyset,
                 keyset.handle,
                 Optional<unsigned long long>());
@@ -146,7 +142,7 @@ BOOST_FIXTURE_TEST_CASE(no_entity_email, Test::instantiate_db_template)
 
     try
     {
-        Fred::Backend::PublicRequest::PublicRequestImpl("public-request-test").create_authinfo_request_registry_email(
+        Fred::Backend::PublicRequest::create_authinfo_request_registry_email(
                 Fred::Backend::PublicRequest::ObjectType::contact,
                 contact.handle,
                 Optional<unsigned long long>());
@@ -156,7 +152,7 @@ BOOST_FIXTURE_TEST_CASE(no_entity_email, Test::instantiate_db_template)
 
     try
     {
-        Fred::Backend::PublicRequest::PublicRequestImpl("public-request-test").create_authinfo_request_registry_email(
+        Fred::Backend::PublicRequest::create_authinfo_request_registry_email(
                 Fred::Backend::PublicRequest::ObjectType::nsset,
                 nsset.handle,
                 Optional<unsigned long long>());
@@ -166,7 +162,7 @@ BOOST_FIXTURE_TEST_CASE(no_entity_email, Test::instantiate_db_template)
 
     try
     {
-        Fred::Backend::PublicRequest::PublicRequestImpl("public-request-test").create_authinfo_request_registry_email(
+        Fred::Backend::PublicRequest::create_authinfo_request_registry_email(
                 Fred::Backend::PublicRequest::ObjectType::domain,
                 domain.fqdn,
                 Optional<unsigned long long>());
@@ -176,7 +172,7 @@ BOOST_FIXTURE_TEST_CASE(no_entity_email, Test::instantiate_db_template)
 
     try
     {
-        Fred::Backend::PublicRequest::PublicRequestImpl("public-request-test").create_authinfo_request_registry_email(
+        Fred::Backend::PublicRequest::create_authinfo_request_registry_email(
                 Fred::Backend::PublicRequest::ObjectType::keyset,
                 keyset.handle,
                 Optional<unsigned long long>());
@@ -188,7 +184,7 @@ BOOST_FIXTURE_TEST_CASE(no_entity_email, Test::instantiate_db_template)
 BOOST_FIXTURE_TEST_CASE(no_object, Test::instantiate_db_template)
 {
     BOOST_CHECK_THROW(
-            Fred::Backend::PublicRequest::PublicRequestImpl("public-request-test").create_authinfo_request_registry_email(
+            Fred::Backend::PublicRequest::create_authinfo_request_registry_email(
                 Fred::Backend::PublicRequest::ObjectType::contact,
                 "test handle",
                 Optional<unsigned long long>()),

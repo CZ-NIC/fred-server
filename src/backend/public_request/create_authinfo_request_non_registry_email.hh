@@ -16,23 +16,26 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PROCESS_PUBLIC_REQUEST_AUTHINFO_HH_1575FD486B504859B8F4B6100BABD237
-#define PROCESS_PUBLIC_REQUEST_AUTHINFO_HH_1575FD486B504859B8F4B6100BABD237
+#ifndef CREATE_AUTHINFO_REQUEST_NON_REGISTRY_EMAIL_HH_67BB79B643874178B5A64F030C86791C
+#define CREATE_AUTHINFO_REQUEST_NON_REGISTRY_EMAIL_HH_67BB79B643874178B5A64F030C86791C
 
-#include "src/libfred/mailer.hh"
-#include "src/bin/corba/mailer_manager.hh"
-#include "src/bin/corba/file_manager_client.hh"
-#include "src/libfred/file_transferer.hh"
-#include "src/libfred/public_request/public_request_type_iface.hh"
+#include "src/backend/public_request/confirmed_by.hh"
+#include "src/backend/public_request/object_type.hh"
+#include "src/libfred/opcontext.hh"
+#include "src/util/optional_value.hh"
+
+#include <string>
 
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
 
-void process_public_request_auth_info_resolved(
-        unsigned long long _public_request_id,
-        const LibFred::PublicRequestTypeIface& _public_request_type,
-        std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager);
+unsigned long long create_authinfo_request_non_registry_email(
+        ObjectType object_type,
+        const std::string& object_handle,
+        const Optional<unsigned long long>& log_request_id,
+        ConfirmedBy confirmation_method,
+        const std::string& specified_email);
 
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend

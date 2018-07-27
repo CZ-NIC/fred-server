@@ -1,4 +1,4 @@
-#include "src/backend/public_request/send_email.hh"
+#include "src/backend/public_request/util/send_joined_address_email.hh"
 
 #include <boost/algorithm/string/trim.hpp>
 
@@ -7,6 +7,7 @@
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
+namespace Util {
 
 unsigned long long send_joined_addresses_email(
         std::shared_ptr<LibFred::Mailer::Manager> mailer,
@@ -35,6 +36,7 @@ unsigned long long send_joined_addresses_email(
     }
 }
 
+} // namespace Fred::Backend::PublicRequest::Util
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend
 } // namespace Fred

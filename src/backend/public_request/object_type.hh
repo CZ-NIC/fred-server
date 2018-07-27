@@ -19,29 +19,17 @@
 #ifndef OBJECT_TYPE_HH_A5A290117166457FA6053D0159EDE046
 #define OBJECT_TYPE_HH_A5A290117166457FA6053D0159EDE046
 
-#include "src/libfred/opcontext.hh"
-
-#include <string>
-
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
 
-struct ObjectType
+enum struct ObjectType
 {
-    enum Enum
-    {
-        contact,
-        nsset,
-        domain,
-        keyset
-    };
+    contact,
+    nsset,
+    domain,
+    keyset
 };
-
-unsigned long long get_id_of_registered_object(
-        LibFred::OperationContext& ctx,
-        ObjectType::Enum object_type,
-        const std::string& handle);
 
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend

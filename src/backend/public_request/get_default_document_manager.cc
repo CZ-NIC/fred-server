@@ -16,24 +16,27 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PUBLIC_REQUEST_PERSONAL_INFO_HH_6A9E148ADE9D445C891AC330DC1E7634
-#define PUBLIC_REQUEST_PERSONAL_INFO_HH_6A9E148ADE9D445C891AC330DC1E7634
+#include "src/backend/public_request/get_default_document_manager.hh"
 
-#include "src/libfred/public_request/public_request_type_iface.hh"
+#include "src/util/cfg/config_handler_decl.hh"
+#include "src/util/cfg/handle_registry_args.hh"
+#include "src/util/corba_wrapper_decl.hh"
 
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
-namespace Type {
 
-struct PersonalInfoAuto;
-struct PersonalInfoEmail;
-struct PersonalInfoPost;
-struct PersonalInfoGovernment;
+std::shared_ptr<LibFred::Document::Manager> get_default_document_manager()
+{
+    const HandleRegistryArgs* const args = CfgArgs::instance()->get_handler_ptr_by_type<HandleRegistryArgs>();
+    return std::shared_ptr<LibFred::Document::Manager>(
+            LibFred::Document::Manager::create(
+                    args->docgen_path,
+                    args->docgen_template_path,
+                    args->fileclient_path,
+                    CorbaContainer::get_instance()->getNS()->getHostName()));
+}
 
-} // namespace Fred::Backend::PublicRequest::Type
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend
 } // namespace Fred
-
-#endif

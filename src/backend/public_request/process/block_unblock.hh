@@ -16,22 +16,22 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PUBLIC_REQUEST_PERSONAL_INFO_HH_6A9E148ADE9D445C891AC330DC1E7634
-#define PUBLIC_REQUEST_PERSONAL_INFO_HH_6A9E148ADE9D445C891AC330DC1E7634
+#ifndef BLOCK_UNBLOCK_HH_FC176C0453EF424088B10AC225C96498
+#define BLOCK_UNBLOCK_HH_FC176C0453EF424088B10AC225C96498
 
+#include "src/libfred/mailer.hh"
 #include "src/libfred/public_request/public_request_type_iface.hh"
 
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
-namespace Type {
+namespace Process {
 
-struct PersonalInfoAuto;
-struct PersonalInfoEmail;
-struct PersonalInfoPost;
-struct PersonalInfoGovernment;
+void process_public_request_block_unblock_resolved(
+        unsigned long long _public_request_id,
+        const LibFred::PublicRequestTypeIface& _public_request_type);
 
-} // namespace Fred::Backend::PublicRequest::Type
+} // namespace Fred::Backend::PublicRequest::Process
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend
 } // namespace Fred

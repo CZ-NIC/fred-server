@@ -16,22 +16,27 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PUBLIC_REQUEST_PERSONAL_INFO_HH_6A9E148ADE9D445C891AC330DC1E7634
-#define PUBLIC_REQUEST_PERSONAL_INFO_HH_6A9E148ADE9D445C891AC330DC1E7634
+#ifndef CREATE_PUBLIC_REQUEST_PDF_HH_3F9408F88CAC4028980B1973D4BE1E9A
+#define CREATE_PUBLIC_REQUEST_PDF_HH_3F9408F88CAC4028980B1973D4BE1E9A
 
-#include "src/libfred/public_request/public_request_type_iface.hh"
+#include "src/backend/buffer.hh"
+#include "src/backend/public_request/language.hh"
+#include "src/backend/public_request/object_type.hh"
+#include "src/libfred/documents.hh"
+#include "src/libfred/opcontext.hh"
+#include "src/util/optional_value.hh"
+
+#include <string>
 
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
-namespace Type {
 
-struct PersonalInfoAuto;
-struct PersonalInfoEmail;
-struct PersonalInfoPost;
-struct PersonalInfoGovernment;
+Fred::Backend::Buffer create_public_request_pdf(
+        unsigned long long public_request_id,
+        Language::Enum lang,
+        std::shared_ptr<LibFred::Document::Manager> manager);
 
-} // namespace Fred::Backend::PublicRequest::Type
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend
 } // namespace Fred

@@ -16,22 +16,28 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PUBLIC_REQUEST_PERSONAL_INFO_HH_6A9E148ADE9D445C891AC330DC1E7634
-#define PUBLIC_REQUEST_PERSONAL_INFO_HH_6A9E148ADE9D445C891AC330DC1E7634
+#ifndef CREATE_BLOCK_UNBLOCK_REQUEST_HH_CC4EA6F18641409F805F9886E79739E1
+#define CREATE_BLOCK_UNBLOCK_REQUEST_HH_CC4EA6F18641409F805F9886E79739E1
 
-#include "src/libfred/public_request/public_request_type_iface.hh"
+#include "src/backend/public_request/confirmed_by.hh"
+#include "src/backend/public_request/lock_request_type.hh"
+#include "src/backend/public_request/object_type.hh"
+#include "src/libfred/opcontext.hh"
+#include "src/util/optional_value.hh"
+
+#include <string>
 
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
-namespace Type {
 
-struct PersonalInfoAuto;
-struct PersonalInfoEmail;
-struct PersonalInfoPost;
-struct PersonalInfoGovernment;
+unsigned long long create_block_unblock_request(
+        ObjectType object_type,
+        const std::string& object_handle,
+        const Optional<unsigned long long>& log_request_id,
+        ConfirmedBy confirmation_method,
+        LockRequestType::Enum lock_request_type);
 
-} // namespace Fred::Backend::PublicRequest::Type
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend
 } // namespace Fred

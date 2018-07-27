@@ -16,22 +16,23 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PUBLIC_REQUEST_PERSONAL_INFO_HH_6A9E148ADE9D445C891AC330DC1E7634
-#define PUBLIC_REQUEST_PERSONAL_INFO_HH_6A9E148ADE9D445C891AC330DC1E7634
+#ifndef CREATE_PERSONAL_INFO_REQUEST_REGISTRY_EMAIL_HH_C2C4E21E8D3841E895A1A20E286A659E
+#define CREATE_PERSONAL_INFO_REQUEST_REGISTRY_EMAIL_HH_C2C4E21E8D3841E895A1A20E286A659E
 
-#include "src/libfred/public_request/public_request_type_iface.hh"
+#include "src/backend/public_request/object_type.hh"
+#include "src/libfred/opcontext.hh"
+#include "src/util/optional_value.hh"
+
+#include <string>
 
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
-namespace Type {
 
-struct PersonalInfoAuto;
-struct PersonalInfoEmail;
-struct PersonalInfoPost;
-struct PersonalInfoGovernment;
+unsigned long long create_personal_info_request_registry_email(
+        const std::string& contact_handle,
+        const Optional<unsigned long long>& log_request_id);
 
-} // namespace Fred::Backend::PublicRequest::Type
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend
 } // namespace Fred
