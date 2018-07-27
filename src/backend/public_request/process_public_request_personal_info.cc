@@ -44,17 +44,18 @@ std::string pretty_print_address(const T& _address)
 }
 
 unsigned long long send_personal_info(
-        unsigned long long _public_request_id,
-        LibFred::OperationContext& _ctx,
+        const LibFred::LockedPublicRequestForUpdate& _locked_request,
         std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager,
         std::shared_ptr<LibFred::File::Transferer> _file_manager_client)
 {
-    LibFred::PublicRequestLockGuardById locked_request(_ctx, _public_request_id);
-    const LibFred::PublicRequestInfo request_info = LibFred::InfoPublicRequest().exec(_ctx, locked_request);
-    const auto contact_id = request_info.get_object_id().get_value(); // oops
+    auto& ctx = _locked_request.get_ctx();
+    const auto public_request_id = _locked_request.get_id();
+    const LibFred::PublicRequestInfo request_info = LibFred::InfoPublicRequest().exec(ctx, _locked_request);
+    const auto object_id = request_info.get_object_id().get_value(); // oops
+
     LibFred::Mailer::Parameters email_template_params;
 
-    const Database::Result dbres = _ctx.get_conn().exec_params(
+    const Database::Result dbres = ctx.get_conn().exec_params(
             "SELECT (create_time AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Prague')::DATE FROM public_request "
             "WHERE id=$1::BIGINT",
             Database::query_param_list(_public_request_id));
@@ -71,7 +72,7 @@ unsigned long long send_personal_info(
     LibFred::InfoContactData info_contact_data;
     try
     {
-        info_contact_data = LibFred::InfoContactById(contact_id).exec(_ctx).info_contact_data;
+        info_contact_data = LibFred::InfoContactById(contact_id).exec(ctx).info_contact_data;
     }
     catch (const LibFred::InfoContactByHandle::Exception& ex)
     {
@@ -151,7 +152,7 @@ unsigned long long send_personal_info(
     try
     {
         info_registrar_data = LibFred::InfoRegistrarByHandle(info_contact_data.sponsoring_registrar_handle)
-            .exec(_ctx).info_registrar_data;
+            .exec(ctx).info_registrar_data;
         email_template_params.insert(
                 LibFred::Mailer::Parameters::value_type("registrar_name", info_registrar_data.name.get_value_or_default()));
         email_template_params.insert(

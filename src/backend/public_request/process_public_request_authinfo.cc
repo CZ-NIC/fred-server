@@ -30,8 +30,6 @@
 #include "src/libfred/registrar/info_registrar.hh"
 #include "src/util/corba_wrapper_decl.hh"
 
-#include <array>
-
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
@@ -43,6 +41,7 @@ unsigned long long send_authinfo(
         std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager)
 {
     auto& ctx = _locked_request.get_ctx();
+    const auto public_request_id = _locked_request.get_id();
     const LibFred::PublicRequestInfo request_info = LibFred::InfoPublicRequest().exec(ctx, _locked_request);
     const auto object_id = request_info.get_object_id().get_value(); // oops
     // clang-format off
@@ -73,7 +72,7 @@ unsigned long long send_authinfo(
         const Database::Result dbres = ctx.get_conn().exec_params(
                 "SELECT (create_time AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Prague')::DATE FROM public_request "
                 "WHERE id=$1::BIGINT",
-                Database::query_param_list(_public_request_id));
+                Database::query_param_list(public_request_id));
         if (dbres.size() < 1)
         {
             throw NoPublicRequest();
@@ -82,7 +81,7 @@ unsigned long long send_authinfo(
         {
             throw std::runtime_error("too many public requests for given id");
         }
-        email_template_params.insert(LibFred::Mailer::Parameters::value_type("reqid", boost::lexical_cast<std::string>(_public_request_id)));
+        email_template_params.insert(LibFred::Mailer::Parameters::value_type("reqid", boost::lexical_cast<std::string>(public_request_id)));
         email_template_params.insert(LibFred::Mailer::Parameters::value_type("reqdate", static_cast<std::string>(dbres[0][0])));
         email_template_params.insert(LibFred::Mailer::Parameters::value_type("handle", handle));
     }
@@ -165,7 +164,7 @@ unsigned long long send_authinfo(
             email_template_params.insert(LibFred::Mailer::Parameters::value_type("type", "4"));
             break;
     }
-    const Database::Result dbres = _ctx.get_conn().exec_params(
+    const Database::Result dbres = ctx.get_conn().exec_params(
             sql,
             Database::query_param_list(handle)(object_type_handle));
     if (dbres.size() < 1)

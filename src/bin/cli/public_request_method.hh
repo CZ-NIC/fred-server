@@ -41,17 +41,17 @@ public:
             const ProcessPublicRequestsArgs& _args,
             std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager,
             std::shared_ptr<LibFred::File::Transferer> _file_manager_client)
-        : args(_args),
-          mailer_manager(std::move(_mailer_manager)),
-          file_manager_client(std::move(_file_manager_client))
+        : args_(_args),
+          mailer_manager_(std::move(_mailer_manager)),
+          file_manager_client_(std::move(_file_manager_client))
         {
         }
 
     void exec();
 private:
-    ProcessPublicRequestsArgs args;
-    std::shared_ptr<LibFred::Mailer::Manager> mailer_manager;
-    std::shared_ptr<LibFred::File::Transferer> file_manager_client;
+    ProcessPublicRequestsArgs args_;
+    std::shared_ptr<LibFred::Mailer::Manager> mailer_manager_;
+    std::shared_ptr<LibFred::File::Transferer> file_manager_client_;
 };
 
 } // namespace Admin;

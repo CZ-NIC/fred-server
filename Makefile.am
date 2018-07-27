@@ -1180,6 +1180,8 @@ src_libfred_public_request_libpublic_request_a_SOURCES = \
 		src/backend/public_request/object_type.hh \
 		src/backend/public_request/process_public_request_authinfo.cc \
 		src/backend/public_request/process_public_request_authinfo.hh \
+		src/backend/public_request/process_public_request_block_unblock.cc \
+		src/backend/public_request/process_public_request_block_unblock.hh \
 		src/backend/public_request/process_public_request_personal_info.cc \
 		src/backend/public_request/process_public_request_personal_info.hh \
 		src/backend/public_request/public_request.cc \
@@ -1190,10 +1192,10 @@ src_libfred_public_request_libpublic_request_a_SOURCES = \
 		src/backend/public_request/type/get_iface_of.hh \
 		src/backend/public_request/type/impl/implemented_by.hh \
 		src/backend/public_request/type/impl/public_request_authinfo.cc \
-		src/backend/public_request/type/impl/public_request_blockunblock.cc \
+		src/backend/public_request/type/impl/public_request_block_unblock.cc \
 		src/backend/public_request/type/impl/public_request_personal_info.cc \
 		src/backend/public_request/type/public_request_authinfo.hh \
-		src/backend/public_request/type/public_request_blockunblock.hh \
+		src/backend/public_request/type/public_request_block_unblock.hh \
 		src/backend/public_request/type/public_request_personal_info.hh \
 		src/libfred/public_request/create_public_request.cc \
 		src/libfred/public_request/create_public_request.hh \
