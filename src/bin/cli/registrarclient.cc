@@ -16,9 +16,9 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "src/backend/admin/zone/zone.hh"
 #include "src/bin/cli/commonclient.hh"
 #include "src/bin/cli/registrarclient.hh"
-
 #include "src/bin/corba/file_manager_client.hh"
 #include "src/util/types/money.hh"
 
@@ -134,8 +134,6 @@ RegistrarClient::list()
 void
 RegistrarClient::zone_add()
 {
-    LibFred::Zone::Manager::ZoneManagerPtr zoneMan
-        = LibFred::Zone::Manager::create();
     std::string fqdn = zone_add_params_.zone_fqdn;//REGISTRAR_ZONE_FQDN_NAME
     int exPeriodMin = 12;
     int exPeriodMax = 120;
@@ -174,20 +172,14 @@ RegistrarClient::zone_add()
     if (zone_add_params_.ns_fqdn.is_value_set()) {
         nsFqdn = zone_add_params_.ns_fqdn.get_value();
     };//REGISTRAR_NS_FQDN_NAME
-    try {
-        zoneMan->addZone(fqdn, exPeriodMin, exPeriodMax, ttl, hostmaster,
-                refresh, updateRetr, expiry, minimum, nsFqdn);
-    } catch (LibFred::ALREADY_EXISTS) {
-        std::cerr << "Zone '" << fqdn << "' already exists" << std::endl;
-    }
+    Admin::Zone::add_zone(fqdn, exPeriodMin, exPeriodMax,
+            ttl, hostmaster, refresh, updateRetr, expiry, minimum, nsFqdn);
     return;
 }
 
 void
 RegistrarClient::zone_ns_add()
 {
-    LibFred::Zone::Manager::ZoneManagerPtr zoneMan
-        = LibFred::Zone::Manager::create();
     std::string zone = zone_ns_add_params_.zone_fqdn;//REGISTRAR_ZONE_FQDN_NAME
     std::string fqdn = zone_ns_add_params_.ns_fqdn;//REGISTRAR_NS_FQDN_NAME
     std::string addr;
@@ -196,11 +188,7 @@ RegistrarClient::zone_ns_add()
     } else {
         addr = "";
     }
-    try {
-        zoneMan->addZoneNs(zone, fqdn, addr);
-    } catch (...) {
-        std::cerr << "An error has occured" << std::endl;
-    }
+    Admin::Zone::add_zone_ns(zone, fqdn, addr);
 }
 
 void

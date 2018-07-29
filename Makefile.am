@@ -399,6 +399,7 @@ noinst_LIBRARIES = \
 		src/backend/admin/contact/verification/libadmin_contact_verification.a \
 		src/backend/admin/notification/libadmin_notification.a \
 		src/backend/admin/domain/libadmin_create_expired_domain.a \
+		src/backend/admin/zone/libadmin_zone.a \
 		src/backend/epp/impl/registraracl/libauthentic_registrar.a \
 		src/bin/corba/libcorbaaccounting.a
 
@@ -1434,6 +1435,14 @@ src_backend_admin_domain_libadmin_create_expired_domain_a_SOURCES = \
 		src/backend/admin/domain/create_expired_domain.cc
 #
 # src/admin/domain/libadmin_create_expired_domain.a
+
+# src/admin/zone/libadmin_zone.a
+#
+src_backend_admin_zone_libadmin_zone_a_SOURCES = \
+		src/backend/admin/zone/zone.hh \
+		src/backend/admin/zone/zone.cc
+#
+# src/admin/zone/libadmin_zone.a
 
 
 BUILT_SOURCES = \
@@ -2923,6 +2932,8 @@ src_bin_cli_fred_admin_SOURCES = \
 		src/backend/admin/notification/notification.cc \
 		src/backend/admin/domain/create_expired_domain.hh \
 		src/backend/admin/domain/create_expired_domain.cc \
+		src/backend/admin/zone/zone.hh \
+		src/backend/admin/zone/zone.cc \
 		src/backend/buffer.cc \
 		src/backend/buffer.hh \
 		src/bin/cli/public_request_params.hh \
