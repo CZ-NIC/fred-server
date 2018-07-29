@@ -39,6 +39,11 @@ struct NoZoneData : std::exception
     const char* what() const noexcept override;
 };
 
+struct DuplicateZone : std::exception
+{
+    const char* what() const noexcept override;
+};
+
 struct CreateZoneException : std::exception
 {
     const char* what() const noexcept override;
