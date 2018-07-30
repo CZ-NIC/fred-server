@@ -1231,6 +1231,7 @@ src_libfred_public_request_libpublic_request_a_SOURCES = \
 		src/backend/public_request/type/public_request_block_unblock.hh \
 		src/backend/public_request/type/public_request_personal_info.hh \
 		src/backend/public_request/util/send_joined_address_email.cc \
+		src/backend/public_request/util/send_joined_address_email.hh \
 		src/libfred/public_request/create_public_request.cc \
 		src/libfred/public_request/create_public_request.hh \
 		src/libfred/public_request/create_public_request_auth.cc \
