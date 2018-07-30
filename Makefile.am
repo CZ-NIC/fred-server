@@ -835,12 +835,6 @@ src_libfred_libfred_a_SOURCES = \
 		src/libfred/model_registrar_acl.hh \
 		src/libfred/model_registrar.cc \
 		src/libfred/model_registrar.hh \
-		src/libfred/model_zone.cc \
-		src/libfred/model_zone.hh \
-		src/libfred/model_zone_ns.cc \
-		src/libfred/model_zone_ns.hh \
-		src/libfred/model_zone_soa.cc \
-		src/libfred/model_zone_soa.hh \
 		src/libfred/registrable_object/domain.cc \
 		src/libfred/registrable_object/domain.hh \
 		src/libfred/registrable_object/contact.cc \
