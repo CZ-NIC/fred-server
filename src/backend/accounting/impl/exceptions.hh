@@ -26,12 +26,22 @@ namespace Backend {
 namespace Accounting {
 namespace Impl {
 
-struct InvalidAccountNumberWithBankCode : std::exception
+struct RegistrarNotFound : std::exception
 {
     const char* what() const noexcept override;
 };
 
 struct ZoneNotFound : std::exception
+{
+    const char* what() const noexcept override;
+};
+
+struct InvalidAccountNumberWithBankCode : std::exception
+{
+    const char* what() const noexcept override;
+};
+
+struct InvalidCreditValue : std::exception
 {
     const char* what() const noexcept override;
 };

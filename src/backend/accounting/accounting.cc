@@ -18,6 +18,7 @@
 
 #include "src/backend/accounting/accounting.hh"
 
+#include "src/backend/accounting/exceptions.hh"
 #include "src/backend/accounting/impl/accounting.hh"
 #include "src/backend/accounting/impl/exceptions.hh"
 #include "src/util/log/context.hh"
@@ -72,20 +73,20 @@ void increase_zone_credit_of_registrar(
 
         ctx.commit_transaction();
     }
-    catch (const InvalidZone& e)
+    catch (const Impl::RegistrarNotFound& e)
     {
         LOGGER(PACKAGE).info(e.what());
-        throw;
+        throw RegistrarNotFound();
     }
-    catch (const RegistrarNotFound& e)
+    catch (const Impl::ZoneNotFound& e)
     {
         LOGGER(PACKAGE).info(e.what());
-        throw;
+        throw InvalidZone();
     }
-    catch (const InvalidCreditValue& e)
+    catch (const Impl::InvalidCreditValue& e)
     {
         LOGGER(PACKAGE).info(e.what());
-        throw;
+        throw InvalidCreditValue();
     }
     catch (const std::exception& e)
     {
@@ -94,7 +95,7 @@ void increase_zone_credit_of_registrar(
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("Unknown error");
+        LOGGER(PACKAGE).error("unknown error");
         throw;
     }
 }
@@ -120,20 +121,20 @@ void decrease_zone_credit_of_registrar(
 
         ctx.commit_transaction();
     }
-    catch (const InvalidZone& e)
+    catch (const Impl::RegistrarNotFound& e)
     {
         LOGGER(PACKAGE).info(e.what());
-        throw;
+        throw RegistrarNotFound();
     }
-    catch (const RegistrarNotFound& e)
+    catch (const Impl::ZoneNotFound& e)
     {
         LOGGER(PACKAGE).info(e.what());
-        throw;
+        throw InvalidZone();
     }
-    catch (const InvalidCreditValue& e)
+    catch (const Impl::InvalidCreditValue& e)
     {
         LOGGER(PACKAGE).info(e.what());
-        throw;
+        throw InvalidCreditValue();
     }
     catch (const std::exception& e)
     {
@@ -142,7 +143,7 @@ void decrease_zone_credit_of_registrar(
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("Unknown error");
+        LOGGER(PACKAGE).error("unknown error");
         throw;
     }
 }
@@ -164,20 +165,20 @@ Fred::Backend::Accounting::Registrar get_registrar_by_payment(
                 ctx,
                 _payment_data);
     }
-    catch (const Impl::ZoneNotFound& e)
+    catch (const Impl::RegistrarNotFound& e)
     {
         LOGGER(PACKAGE).info(e.what());
         throw RegistrarNotFound();
+    }
+    catch (const Impl::ZoneNotFound& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw InvalidPaymentData();
     }
     catch (const Impl::InvalidAccountNumberWithBankCode& e)
     {
         LOGGER(PACKAGE).info(e.what());
-        throw RegistrarNotFound();
-    }
-    catch (const RegistrarNotFound& e)
-    {
-        LOGGER(PACKAGE).info(e.what());
-        throw;
+        throw InvalidPaymentData();
     }
     catch (const std::exception& e)
     {
@@ -186,7 +187,7 @@ Fred::Backend::Accounting::Registrar get_registrar_by_payment(
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("Unknown error");
+        LOGGER(PACKAGE).error("unknown error");
         throw;
     }
 }
@@ -209,15 +210,20 @@ Fred::Backend::Accounting::Registrar get_registrar_by_handle_and_payment(
                 ctx,
                 _registrar_handle);
     }
-    catch (const Impl::ZoneNotFound& e)
+    catch (const Impl::RegistrarNotFound& e)
     {
         LOGGER(PACKAGE).info(e.what());
         throw RegistrarNotFound();
     }
+    catch (const Impl::ZoneNotFound& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw InvalidPaymentData();
+    }
     catch (const Impl::InvalidAccountNumberWithBankCode& e)
     {
         LOGGER(PACKAGE).info(e.what());
-        throw RegistrarNotFound();
+        throw InvalidPaymentData();
     }
     catch (const std::exception& e)
     {
@@ -226,7 +232,7 @@ Fred::Backend::Accounting::Registrar get_registrar_by_handle_and_payment(
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("Unknown error");
+        LOGGER(PACKAGE).error("unknown error");
         throw;
     }
 }
@@ -243,6 +249,16 @@ void import_payment(
                 _payment_data,
                 _credit);
     }
+    catch (const Impl::RegistrarNotFound& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw RegistrarNotFound();
+    }
+    catch (const Impl::InvalidAccountNumberWithBankCode& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw InvalidPaymentData();
+    }
     catch (const std::exception& e)
     {
         LOGGER(PACKAGE).error(e.what());
@@ -250,7 +266,7 @@ void import_payment(
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("Unknown error");
+        LOGGER(PACKAGE).error("unknown error");
         throw;
     }
 }
@@ -269,6 +285,16 @@ void import_payment_by_registrar_handle(
                 _registrar_handle,
                 _credit);
     }
+    catch (const Impl::RegistrarNotFound& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw RegistrarNotFound();
+    }
+    catch (const Impl::InvalidAccountNumberWithBankCode& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw InvalidPaymentData();
+    }
     catch (const std::exception& e)
     {
         LOGGER(PACKAGE).error(e.what());
@@ -276,7 +302,7 @@ void import_payment_by_registrar_handle(
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("Unknown error");
+        LOGGER(PACKAGE).error("unknown error");
         throw;
     }
 }

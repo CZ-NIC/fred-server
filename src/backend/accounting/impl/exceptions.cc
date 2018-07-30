@@ -23,14 +23,24 @@ namespace Backend {
 namespace Accounting {
 namespace Impl {
 
-const char* InvalidAccountNumberWithBankCode::what() const noexcept
+const char* RegistrarNotFound::what() const noexcept
 {
-    return "invalid account_number / bank_code";
+    return "registrar not found";
 }
 
 const char* ZoneNotFound::what() const noexcept
 {
     return "zone not found";
+}
+
+const char* InvalidAccountNumberWithBankCode::what() const noexcept
+{
+    return "invalid account_number / bank_code";
+}
+
+const char* InvalidCreditValue::what() const noexcept
+{
+    return "invalid credit value";
 }
 
 } // namespace Fred::Backend::Accounting::Impl

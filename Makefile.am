@@ -1290,6 +1290,8 @@ src_libfred_public_request_libpublic_request_a_SOURCES = \
 # src/libfred/banking/libbanking.a
 #
 src_libfred_banking_libbanking_a_SOURCES = \
+		src/libfred/banking/exceptions.cc \
+		src/libfred/banking/exceptions.hh \
 		src/libfred/banking/model_bank_statement.cc \
 		src/libfred/banking/model_bank_statement.hh \
 		src/libfred/banking/model_bank_payment.cc \

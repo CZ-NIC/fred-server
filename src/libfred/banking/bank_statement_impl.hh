@@ -3,6 +3,7 @@
 
 #include "src/libfred/banking/bank_common.hh"
 #include "src/libfred/banking/bank_statement.hh"
+#include "src/libfred/banking/exceptions.hh"
 #include "src/libfred/banking/model_bank_statement.hh"
 #include "src/libfred/banking/bank_payment_impl.hh"
 #include "src/libfred/common_impl_new.hh"
@@ -298,13 +299,10 @@ StatementImplPtr statement_from_params(
     TRACE("[CALL] LibFred::Banking::statement_from_params(...)");
 
     if (_account_number.empty() || _account_bank_code.empty()) {
-        throw std::runtime_error("not valid account number");
-    }
-
-    if (_account_number.empty() || _account_bank_code.empty()) {
-        throw std::runtime_error(str(boost::format("could not get valid "
-                    "account_number and account_bank_code (%1%/%2%)")
-                    % _account_number % _account_bank_code));
+        LOGGER(PACKAGE).error(boost::str(boost::format(
+                "invalid account_number and account_bank_code (%1%/%2%)")
+                % _account_number % _account_bank_code));
+        throw InvalidAccountData();
     }
 
     Database::Query query;
@@ -315,9 +313,10 @@ StatementImplPtr statement_from_params(
     Database::Connection conn = Database::Manager::acquire();
     Database::Result result = conn.exec(query);
     if (result.size() == 0) {
-        throw std::runtime_error(str(boost::format("not valid record found "
-                    "in database for account=%1% bankcode=%2%")
-                    % _account_number % _account_bank_code));
+        LOGGER(PACKAGE).error(boost::str(boost::format(
+                "not valid record found in database for account=%1% bankcode=%2%")
+                % _account_number % _account_bank_code));
+        throw RegistrarNotFound();
     }
     unsigned long long account_id = result[0][0];
 

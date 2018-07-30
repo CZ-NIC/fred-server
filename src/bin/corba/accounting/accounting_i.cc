@@ -208,7 +208,7 @@ void AccountingImpl::import_payment(
     }
     catch (const Fred::Backend::Accounting::RegistrarNotFound&)
     {
-        throw Registry::Accounting::REGISTRAR_NOT_FOUND();
+        throw Registry::Accounting::INVALID_PAYMENT_DATA();
     }
     catch (const Fred::Backend::Accounting::InvalidPaymentData&)
     {
@@ -239,7 +239,7 @@ void AccountingImpl::import_payment_by_registrar_handle(
     }
     catch (const Fred::Backend::Accounting::RegistrarNotFound&)
     {
-        throw Registry::Accounting::REGISTRAR_NOT_FOUND();
+        throw Registry::Accounting::INVALID_PAYMENT_DATA();
     }
     catch (const Fred::Backend::Accounting::InvalidPaymentData&)
     {

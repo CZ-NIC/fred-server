@@ -8,6 +8,7 @@
 #include "src/libfred/banking/bank_statement_list_impl.hh"
 #include "src/libfred/banking/bank_common.hh"
 #include "src/libfred/banking/bank_manager.hh"
+#include "src/libfred/banking/exceptions.hh"
 #include "src/libfred/credit.hh"
 #include "src/libfred/invoicing/invoice.hh"
 #include "src/libfred/registrar.hh"
@@ -129,7 +130,7 @@ private:
                             % _payment->getStatus()
                             % _payment->getCode()
                             % _payment->getType());
-                return Money("0");
+                throw std::runtime_error("cound not process payment");
             }
 
             DBSharedPtr nodb;
@@ -143,7 +144,7 @@ private:
                     LOGGER(PACKAGE).warning(boost::format(
                                 "couldn't find suitable registrar for payment id=%1% "
                                 "=> processing canceled") % _payment->getId());
-                    return Money("0");
+                    throw RegistrarNotFound();
                 }
             }
 
@@ -209,7 +210,7 @@ private:
                             % _registrar_id
                             % zone_id
                             % _payment->getId());
-                    return Money("0");
+                    throw std::runtime_error("could not process payment");
                 }
 
                 // amount larger than registrar debt
@@ -220,6 +221,7 @@ private:
                             % _registrar_id
                             % zone_id
                             % _payment->getId());
+                    throw std::runtime_error("could not process payment");
 
                 }
             }
@@ -263,8 +265,9 @@ private:
             return remaining_credit;
         }
         catch (std::exception &ex) {
-            throw std::runtime_error(str(boost::format(
+            LOGGER(PACKAGE).info(boost::str(boost::format(
                             "processing payment failed: %1%") % ex.what()));
+            throw;
         }
     }
 
@@ -583,12 +586,22 @@ public:
             const Money remaining_credit =
                 _registrar_handle != boost::none
                     ? pairPaymentWithRegistrar(payment->getId(), *_registrar_handle)
-                          // note: \ also calls processPeyment
+                      // note: pairPaymentWithRegistrar also calls processPeyment
                     : processPayment(payment.get());
 
             tx.commit();
 
             return remaining_credit;
+        }
+        catch (const LibFred::Banking::RegistrarNotFound& e) {
+            LOGGER(PACKAGE).info(boost::str(boost::format(
+                            "bank import payment: %1%") % e.what()));
+            throw;
+        }
+        catch (const LibFred::Banking::InvalidAccountData& e) {
+            LOGGER(PACKAGE).info(boost::str(boost::format(
+                            "bank import payment: %1%") % e.what()));
+            throw;
         }
         catch (const std::exception& e) {
             throw std::runtime_error(str(boost::format(
@@ -744,7 +757,7 @@ public:
                     LOGGER(PACKAGE).error(boost::format(
                     "Registrar with handle '%1%' not found in database.") %
                             registrarHandle);
-                    throw std::runtime_error("registrar not found");
+                    throw RegistrarNotFound();
             }
             registrarId = res[0][0];
 

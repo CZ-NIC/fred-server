@@ -16,23 +16,33 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/bin/corba/util/corba_conversions_money.hh"
+#ifndef EXCEPTIONS_HH_4FEE22F55E4E454A8197ED9FB055BFF6
+#define EXCEPTIONS_HH_4FEE22F55E4E454A8197ED9FB055BFF6
 
-#include "src/bin/corba/util/corba_conversions_string.hh"
-#include "src/util/types/money.hh"
+#include <exception>
 
-namespace CorbaConversion {
-namespace Util {
+namespace LibFred {
+namespace Banking {
 
-Money unwrap_money_from_const_char_ptr(const char* in)
+/**
+ * Internal server error.
+ * Unexpected failure, requires maintenance.
+ */
+struct RegistrarNotFound : std::exception
 {
-    return Money(LibFred::Corba::unwrap_string_from_const_char_ptr(in));
-}
+    /**
+     * Returns failure description.
+     * @return string with the general cause of the current error.
+     */
+    const char* what() const noexcept;
+};
 
-CORBA::String_var wrap_Money_to_corba_string(const Money& in)
+struct InvalidAccountData : std::exception
 {
-    return CORBA::string_dup(in.get_string().c_str());
-}
+    const char* what() const noexcept;
+};
 
-} // namespace CorbaConversion::Util
-} // namespace CorbaConversion
+} // namespace LibFred::Banking
+} // namespace LibFred
+
+#endif

@@ -16,23 +16,20 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/bin/corba/util/corba_conversions_money.hh"
+#include "src/libfred/banking/exceptions.hh"
 
-#include "src/bin/corba/util/corba_conversions_string.hh"
-#include "src/util/types/money.hh"
+namespace LibFred {
+namespace Banking {
 
-namespace CorbaConversion {
-namespace Util {
-
-Money unwrap_money_from_const_char_ptr(const char* in)
+const char* RegistrarNotFound::what() const noexcept
 {
-    return Money(LibFred::Corba::unwrap_string_from_const_char_ptr(in));
+    return "registrar not found";
 }
 
-CORBA::String_var wrap_Money_to_corba_string(const Money& in)
+const char* InvalidAccountData::what() const noexcept
 {
-    return CORBA::string_dup(in.get_string().c_str());
+    return "invalid account number or bank code";
 }
 
-} // namespace CorbaConversion::Util
-} // namespace CorbaConversion
+} // namespace LibFred::Banking
+} // namespace LibFred

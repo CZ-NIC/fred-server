@@ -22,11 +22,11 @@
 #include "src/backend/accounting/impl/exceptions.hh"
 #include "src/backend/accounting/payment_data.hh"
 #include "src/backend/accounting/registrar.hh"
-#include "src/backend/buffer.hh"
 #include "src/backend/credit.hh"
+#include "src/libfred/banking/bank_manager.hh"
+#include "src/libfred/banking/exceptions.hh"
 #include "src/libfred/object/object_type.hh"
 #include "src/libfred/object_state/get_object_states.hh"
-#include "src/libfred/banking/bank_manager.hh"
 #include "src/libfred/opcontext.hh"
 #include "src/libfred/registrable_object/contact/info_contact.hh"
 #include "src/libfred/registrable_object/domain/info_domain.hh"
@@ -147,7 +147,7 @@ void change_zone_credit_of_registrar(
         throw;
     }
     catch (const LibFred::Zone::NonExistentZone& e) {
-        throw InvalidZone();
+        throw ZoneNotFound();
     }
 }
 
@@ -344,24 +344,33 @@ void import_payment(
     const BankAccount counter_account = BankAccount::from_account_nubmer_with_bank_code(_payment_data.counter_account_number);
     const auto no_registrar_handle = boost::none;
 
-    LibFred::Banking::ManagerPtr banking_manager(LibFred::Banking::Manager::create());
-    _remaining_credit.value =
-            banking_manager->importPayment(
-                    _payment_data.uuid,
-                    _payment_data.bank_payment_ident,
-                    bank_account.account_number,
-                    bank_account.bank_code,
-                    counter_account.account_number,
-                    counter_account.bank_code,
-                    _payment_data.counter_account_name,
-                    _payment_data.constant_symbol,
-                    _payment_data.variable_symbol,
-                    _payment_data.specific_symbol,
-                    _payment_data.price,
-                    _payment_data.date,
-                    _payment_data.memo,
-                    _payment_data.creation_time,
-                    no_registrar_handle);
+    try {
+        LibFred::Banking::ManagerPtr banking_manager(LibFred::Banking::Manager::create());
+        _remaining_credit.value =
+                banking_manager->importPayment(
+                        _payment_data.uuid,
+                        _payment_data.bank_payment_ident,
+                        bank_account.account_number,
+                        bank_account.bank_code,
+                        counter_account.account_number,
+                        counter_account.bank_code,
+                        _payment_data.counter_account_name,
+                        _payment_data.constant_symbol,
+                        _payment_data.variable_symbol,
+                        _payment_data.specific_symbol,
+                        _payment_data.price,
+                        _payment_data.date,
+                        _payment_data.memo,
+                        _payment_data.creation_time,
+                        no_registrar_handle);
+    }
+    catch (const LibFred::Banking::RegistrarNotFound&) {
+        throw RegistrarNotFound();
+    }
+    catch (const LibFred::Banking::InvalidAccountData&) {
+        throw InvalidAccountNumberWithBankCode();
+    }
+
 }
 
 void import_payment_by_registrar_handle(
@@ -372,24 +381,32 @@ void import_payment_by_registrar_handle(
     const BankAccount bank_account = BankAccount::from_account_nubmer_with_bank_code(_payment_data.account_number);
     const BankAccount counter_account = BankAccount::from_account_nubmer_with_bank_code(_payment_data.counter_account_number);
 
-    LibFred::Banking::ManagerPtr banking_manager(LibFred::Banking::Manager::create());
-    _remaining_credit.value =
-            banking_manager->importPayment(
-                    _payment_data.uuid,
-                    _payment_data.bank_payment_ident,
-                    bank_account.account_number,
-                    bank_account.bank_code,
-                    counter_account.account_number,
-                    counter_account.bank_code,
-                    _payment_data.counter_account_name,
-                    _payment_data.constant_symbol,
-                    _payment_data.variable_symbol,
-                    _payment_data.specific_symbol,
-                    _payment_data.price,
-                    _payment_data.date,
-                    _payment_data.memo,
-                    _payment_data.creation_time,
-                    _registrar_handle);
+    try {
+        LibFred::Banking::ManagerPtr banking_manager(LibFred::Banking::Manager::create());
+        _remaining_credit.value =
+                banking_manager->importPayment(
+                        _payment_data.uuid,
+                        _payment_data.bank_payment_ident,
+                        bank_account.account_number,
+                        bank_account.bank_code,
+                        counter_account.account_number,
+                        counter_account.bank_code,
+                        _payment_data.counter_account_name,
+                        _payment_data.constant_symbol,
+                        _payment_data.variable_symbol,
+                        _payment_data.specific_symbol,
+                        _payment_data.price,
+                        _payment_data.date,
+                        _payment_data.memo,
+                        _payment_data.creation_time,
+                        _registrar_handle);
+    }
+    catch (const LibFred::Banking::RegistrarNotFound&) {
+        throw RegistrarNotFound();
+    }
+    catch (const LibFred::Banking::InvalidAccountData&) {
+        throw InvalidAccountNumberWithBankCode();
+    }
 }
 
 
