@@ -174,7 +174,6 @@ RegistrarClient::zone_add()
     };//REGISTRAR_NS_FQDN_NAME
     Admin::Zone::add_zone(fqdn, exPeriodMin, exPeriodMax,
             ttl, hostmaster, refresh, updateRetr, expiry, minimum, nsFqdn);
-    return;
 }
 
 void

@@ -164,8 +164,6 @@ namespace LibFred
       virtual void deleteZoneNs(unsigned idx) = 0;
       /// Clear ZoneNs list
       virtual void clearZoneNsList() = 0;
-      /// Save changes to database
-      virtual void save() = 0;
       /// Check if zone is applicable for given domain
       virtual bool isDomainApplicable(const std::string& domain) const =0;
 
@@ -249,23 +247,6 @@ namespace LibFred
               int minimum=7200,
               const std::string &ns_fqdn="localhost")
         = 0;
-      /// add only zone record
-      virtual void addOnlyZoneRecord(
-              const std::string& fqdn,
-              int ex_period_min=12,
-              int ex_period_max=120)
-        = 0;
-      /// add only zone_soa record identified by fqdn
-      virtual void addOnlyZoneSoaRecordByFqdn(
-              const std::string& fqdn,
-              int ttl=18000,
-              const std::string &hostmaster="hostmaster@localhost",
-              int refresh=10600,
-              int update_retr=3600,
-              int expiry=1209600,
-              int minimum=7200,
-              const std::string &ns_fqdn="localhost")
-      = 0;
       /// update zone and zone_soa record identified by fqdn
       virtual void updateZoneByFqdn(
               const std::string& fqdn,

@@ -21,7 +21,6 @@
 #include "src/bin/cli/invoiceclient.hh"
 #include "src/libfred/credit.hh"
 #include "src/libfred/invoicing/invoice.hh"
-#include "src/libfred/model_zone.hh"
 #include "src/util/types/money.hh"
 namespace Admin {
 

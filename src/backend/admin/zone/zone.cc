@@ -74,12 +74,12 @@ void add_zone_ns(
     }
     else
     {
-        std::vector<std::string> addrs;
-        boost::split(addrs, _nameserver_ip_addresses, boost::is_any_of(","));
+        std::vector<std::string> splitted_addresses;
+        boost::split(splitted_addresses, _nameserver_ip_addresses, boost::is_any_of(","));
 
         std::vector<boost::asio::ip::address> ip_addrs;
-        for_each(addrs.begin(),
-                addrs.end(),
+        for_each(splitted_addresses.begin(),
+                splitted_addresses.end(),
                 [&ip_addrs](const std::string& s) { ip_addrs.push_back(boost::asio::ip::address::from_string(s)); });
 
         LibFred::Zone::CreateZoneNs(_zone_fqdn)
@@ -87,7 +87,6 @@ void add_zone_ns(
                 .set_nameserver_ip_addresses(ip_addrs)
                 .exec(ctx);
     }
-
     ctx.commit_transaction();
 }
 
