@@ -53,28 +53,21 @@ struct RegistrarNotFound : std::exception
 
 struct InvalidZone : std::exception
 {
-    /**
-     * Returns failure description.
-     * @return string with the general cause of the current error.
-     */
     const char* what() const noexcept;
 };
 
 struct InvalidCreditValue : std::exception
 {
-    /**
-     * Returns failure description.
-     * @return string with the general cause of the current error.
-     */
+    const char* what() const noexcept;
+};
+
+struct InvalidPaymentData : std::exception
+{
     const char* what() const noexcept;
 };
 
 struct CreditAlreadyProcessed : std::exception
 {
-    /**
-     * Returns failure description.
-     * @return string with the general cause of the current error.
-     */
     const char* what() const noexcept;
 };
 

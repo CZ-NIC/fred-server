@@ -517,8 +517,14 @@ InvoiceClient::create_invoice()
 
     Database::ID paymentId = create_params.payment_id.get_value();
     if (create_params.registrar_handle.is_value_set()) {
-        bank_manager->pairPaymentWithRegistrar(paymentId,
-                create_params.registrar_handle.get_value());
+        try {
+            bank_manager->pairPaymentWithRegistrar(paymentId,
+                    create_params.registrar_handle.get_value());
+        }
+        catch (const std::runtime_error& e)
+        {
+            std::cerr << e.what() << std::endl;
+        }
     } else {
         std::cerr << "You have to specify  ``--registrar_handle''" << std::endl;
     }

@@ -255,6 +255,32 @@ void import_payment(
     }
 }
 
+void import_payment_by_registrar_handle(
+        const PaymentData& _payment_data,
+        const std::string& _registrar_handle,
+        Credit& _credit)
+{
+    LOGGING_CONTEXT(log_ctx);
+    LOGGER(PACKAGE).info(__FUNCTION__);
+    try
+    {
+        return Impl::import_payment_by_registrar_handle(
+                _payment_data,
+                _registrar_handle,
+                _credit);
+    }
+    catch (const std::exception& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw;
+    }
+    catch (...)
+    {
+        LOGGER(PACKAGE).error("Unknown error");
+        throw;
+    }
+}
+
 } // namespace Fred::Backend::Accounting
 } // namespace Fred::Backend
 } // namespace Fred

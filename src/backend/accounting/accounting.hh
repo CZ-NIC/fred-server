@@ -57,6 +57,11 @@ void import_payment(
         const PaymentData& _payment_data,
         Credit& _credit);
 
+void import_payment_by_registrar_handle(
+        const PaymentData& _payment_data,
+        const std::string& _registrar_handle,
+        Credit& _credit);
+
 } // namespace Fred::Backend::Accounting
 } // namespace Fred::Backend
 } // namespace Fred

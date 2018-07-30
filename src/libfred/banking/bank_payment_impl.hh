@@ -325,11 +325,9 @@ COMPARE_CLASS_IMPL_NEW(PaymentImpl, DestAccount)
 PaymentImplPtr parse_xml_payment_part(const XMLnode &_node);
 
 PaymentImplPtr payment_from_params(
-        const std::string& _bank_payment,
-        const std::string& _uuid,
-        const std::string& _account_number,
-        const std::string& _bank_code,
+        const std::string& _bank_payment_ident,
         const std::string& _counter_account_number,
+        const std::string& _counter_account_bank_code,
         const std::string& _counter_account_name,
         const std::string& _constant_symbol,
         const std::string& _variable_symbol,

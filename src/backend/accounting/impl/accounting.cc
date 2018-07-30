@@ -45,6 +45,7 @@
 #include <boost/format.hpp>
 #include <boost/format/free_funcs.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/none.hpp>
 
 #include <algorithm>
 #include <cstring>
@@ -340,15 +341,18 @@ void import_payment(
 {
 
     const BankAccount bank_account = BankAccount::from_account_nubmer_with_bank_code(_payment_data.account_number);
+    const BankAccount counter_account = BankAccount::from_account_nubmer_with_bank_code(_payment_data.counter_account_number);
+    const auto no_registrar_handle = boost::none;
 
     LibFred::Banking::ManagerPtr banking_manager(LibFred::Banking::Manager::create());
     _remaining_credit.value =
             banking_manager->importPayment(
-                    _payment_data.bank_payment,
                     _payment_data.uuid,
+                    _payment_data.bank_payment_ident,
                     bank_account.account_number,
                     bank_account.bank_code,
-                    _payment_data.counter_account_number,
+                    counter_account.account_number,
+                    counter_account.bank_code,
                     _payment_data.counter_account_name,
                     _payment_data.constant_symbol,
                     _payment_data.variable_symbol,
@@ -356,8 +360,38 @@ void import_payment(
                     _payment_data.price,
                     _payment_data.date,
                     _payment_data.memo,
-                    _payment_data.creation_time);
+                    _payment_data.creation_time,
+                    no_registrar_handle);
 }
+
+void import_payment_by_registrar_handle(
+        const PaymentData& _payment_data,
+        const std::string& _registrar_handle,
+        Credit& _remaining_credit)
+{
+    const BankAccount bank_account = BankAccount::from_account_nubmer_with_bank_code(_payment_data.account_number);
+    const BankAccount counter_account = BankAccount::from_account_nubmer_with_bank_code(_payment_data.counter_account_number);
+
+    LibFred::Banking::ManagerPtr banking_manager(LibFred::Banking::Manager::create());
+    _remaining_credit.value =
+            banking_manager->importPayment(
+                    _payment_data.uuid,
+                    _payment_data.bank_payment_ident,
+                    bank_account.account_number,
+                    bank_account.bank_code,
+                    counter_account.account_number,
+                    counter_account.bank_code,
+                    _payment_data.counter_account_name,
+                    _payment_data.constant_symbol,
+                    _payment_data.variable_symbol,
+                    _payment_data.specific_symbol,
+                    _payment_data.price,
+                    _payment_data.date,
+                    _payment_data.memo,
+                    _payment_data.creation_time,
+                    _registrar_handle);
+}
+
 
 } // namespace Fred::Backend::Accounting::Impl
 } // namespace Fred::Backend::Accounting

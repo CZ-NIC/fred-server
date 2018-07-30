@@ -42,6 +42,11 @@ const char* InvalidCreditValue::what() const noexcept
     return "invalid credit value";
 }
 
+const char* InvalidPaymentData::what() const noexcept
+{
+    return "invalid payment data";
+}
+
 const char* CreditAlreadyProcessed::what() const noexcept
 {
     return "credit already processed";

@@ -521,11 +521,12 @@ public:
     }
 
     Money importPayment(
-            const std::string& _bank_payment,
             const std::string& _uuid,
+            const std::string& _bank_payment_ident,
             const std::string& _account_number,
-            const std::string& _bank_code,
+            const std::string& _account_bank_code,
             const std::string& _counter_account_number,
+            const std::string& _counter_account_bank_code,
             const std::string& _counter_account_name,
             const std::string& _constant_symbol,
             const std::string& _variable_symbol,
@@ -533,7 +534,8 @@ public:
             const Money& _price,
             const boost::gregorian::date _date,
             const std::string& _memo,
-            const boost::posix_time::ptime& _creation_time)
+            const boost::posix_time::ptime& _creation_time,
+            const boost::optional<std::string>& _registrar_handle)
     {
         TRACE("[CALL] LibFred::Banking::Manager::importPayment(...)");
         Logging::Context ctx("bank payment import");
@@ -546,17 +548,15 @@ public:
 
             // TODO check duplicity (_uuid)
 
-            StatementImplPtr statement(statement_from_params(_account_number, _bank_code));
+            StatementImplPtr statement(statement_from_params(_account_number, _account_bank_code));
             statement->setId(0);
 
             LOGGER(PACKAGE).info("no statement -- importing only payments");
 
             PaymentImplPtr payment(payment_from_params(
-                    _bank_payment,
-                    _uuid,
-                    _account_number,
-                    _bank_code,
+                    _bank_payment_ident,
                     _counter_account_number,
+                    _counter_account_bank_code,
                     _counter_account_name,
                     _constant_symbol,
                     _variable_symbol,
@@ -580,7 +580,11 @@ public:
                     % payment->getAccountDate()
                     % payment->getAccountId());
 
-            const Money remaining_credit = processPayment(payment.get());
+            const Money remaining_credit =
+                _registrar_handle != boost::none
+                    ? pairPaymentWithRegistrar(payment->getId(), *_registrar_handle)
+                          // note: \ also calls processPeyment
+                    : processPayment(payment.get());
 
             tx.commit();
 
@@ -718,7 +722,7 @@ public:
         }
     }
 
-    virtual bool pairPaymentWithRegistrar(
+    virtual Money pairPaymentWithRegistrar(
                 const Database::ID &paymentId,
                 const std::string &_registrarHandle) {
 
@@ -733,27 +737,28 @@ public:
             << Database::Value(registrarHandle);
         Database::Connection conn = Database::Manager::acquire();
         Database::ID registrarId;
+        Money remaining_credit = Money("0");
         try {
             Database::Result res = conn.exec(query);
             if(res.size() == 0) {
                     LOGGER(PACKAGE).error(boost::format(
                     "Registrar with handle '%1%' not found in database.") %
                             registrarHandle);
-                    return false;
+                    throw std::runtime_error("registrar not found");
             }
             registrarId = res[0][0];
 
             PaymentImpl pi;
             pi.setId(paymentId);
             pi.reload();
-            processPayment(&pi, registrarId);
+            remaining_credit = processPayment(&pi, registrarId);
 
         } catch (std::exception &e) {
             LOGGER(PACKAGE).error(boost::format("An error has occured: %1% ") % e.what());
-            return false;
+            throw;
         }
 
-        return true;
+        return remaining_credit;
     }
 
     virtual void setPaymentType(

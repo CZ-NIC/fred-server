@@ -1736,7 +1736,11 @@ BOOST_AUTO_TEST_CASE(registrar_outzone_no_debt)
 
     ::LibFred::Banking::ManagerPtr bmanager(::LibFred::Banking::Manager::create(0));
     // process payment
-    bmanager->pairPaymentWithRegistrar(pay_id, registrar->getHandle());
+    try {
+        bmanager->pairPaymentWithRegistrar(pay_id, registrar->getHandle());
+    }
+    catch (const std::runtime_error&) {
+    }
 
     Database::Connection conn = Database::Manager::acquire();
     Database::Result res = conn.exec_params("SELECT type FROM bank_payment WHERE id = $1",
@@ -1801,7 +1805,11 @@ BOOST_AUTO_TEST_CASE(registrar_outzone_exactly)
        , todate, boost::posix_time::ptime(todate));
 
     ::LibFred::Banking::ManagerPtr bmanager(::LibFred::Banking::Manager::create(0));
-    bmanager->pairPaymentWithRegistrar(pay_id, registrar->getHandle());
+    try {
+        bmanager->pairPaymentWithRegistrar(pay_id, registrar->getHandle());
+    }
+    catch (const std::runtime_error&) {
+    }
 
     //check that the payment was processed and registrar has not debt left
     Database::Connection conn = Database::Manager::acquire();
@@ -1877,7 +1885,11 @@ BOOST_AUTO_TEST_CASE(registrar_outzone_too_much)
         , todate, boost::posix_time::ptime(todate));
 
     ::LibFred::Banking::ManagerPtr bmanager(::LibFred::Banking::Manager::create(0));
-    bmanager->pairPaymentWithRegistrar(pay_id, registrar->getHandle());
+    try {
+        bmanager->pairPaymentWithRegistrar(pay_id, registrar->getHandle());
+    }
+    catch (const std::runtime_error&) {
+    }
 
     // make sure that the payment was processed and registrar has some credit left (even when out of zone)
     Database::Connection conn = Database::Manager::acquire();

@@ -421,11 +421,9 @@ PaymentImplPtr parse_xml_payment_part(const XMLnode &_node)
 }
 
 PaymentImplPtr payment_from_params(
-        const std::string& _bank_payment,
-        const std::string& _uuid,
-        const std::string& _account_number,
-        const std::string& _bank_code,
+        const std::string& _bank_payment_ident,
         const std::string& _counter_account_number,
+        const std::string& _counter_account_bank_code,
         const std::string& _counter_account_name,
         const std::string& _constant_symbol,
         const std::string& _variable_symbol,
@@ -439,9 +437,11 @@ PaymentImplPtr payment_from_params(
 
     PaymentImplPtr payment(new PaymentImpl());
 
-    payment->setAccountNumber(_account_number);
-    payment->setBankCode(_bank_code);
-    payment->setPrice(_price);
+    payment->setAccountNumber(_counter_account_number);
+    payment->setBankCode(_counter_account_bank_code);
+    if (!_counter_account_name.empty()) {
+        payment->setAccountName(_counter_account_name);
+    }
 
     if (!_constant_symbol.empty()) {
         payment->setKonstSym(_constant_symbol);
@@ -452,6 +452,9 @@ PaymentImplPtr payment_from_params(
     if (!_specific_symbol.empty()) {
         payment->setSpecSymb(_specific_symbol);
     }
+
+    payment->setPrice(_price);
+
     if (!_memo.empty()) {
         payment->setAccountMemo(_memo);
     }
@@ -461,9 +464,6 @@ PaymentImplPtr payment_from_params(
     //if (!_creation_time.empty()) {
         payment->setCrTime(_creation_time);
     //}
-    if (!_counter_account_name.empty()) {
-        payment->setAccountName(_counter_account_name);
-    }
 
     // TODO FIXME
     payment->setType(1); // transfer type (1-not decided (not processed), 2-from/to registrar, 3-from/to bank, 4-between our own accounts, 5-related to academia, 6-other transfers

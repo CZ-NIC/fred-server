@@ -11,6 +11,7 @@
 
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <boost/date_time/gregorian/gregorian_types.hpp>
+#include <boost/optional.hpp>
 
 namespace LibFred {
 namespace Banking {
@@ -38,11 +39,12 @@ public:
                 = 0;
 
     virtual Money importPayment(
-            const std::string& _bank_payment,
             const std::string& _uuid,
+            const std::string& _bank_payment_ident,
             const std::string& _account_number,
-            const std::string& _bank_code,
+            const std::string& _account_bank_code,
             const std::string& _counter_account_number,
+            const std::string& _counter_account_bank_code,
             const std::string& _counter_account_name,
             const std::string& _constant_symbol,
             const std::string& _variable_symbol,
@@ -50,7 +52,8 @@ public:
             const Money& _price,
             const boost::gregorian::date _date,
             const std::string& _memo,
-            const boost::posix_time::ptime& _creation_time)
+            const boost::posix_time::ptime& _creation_time,
+            const boost::optional<std::string>& _registrar_handle)
                 = 0;
 
     virtual bool pairPaymentWithStatement(
@@ -58,7 +61,7 @@ public:
             const Database::ID &statement,
             bool force = false) = 0;
 
-    virtual bool pairPaymentWithRegistrar(
+    virtual Money pairPaymentWithRegistrar(
             const Database::ID &paymentId,
             const std::string &registrarHandle) = 0;
 

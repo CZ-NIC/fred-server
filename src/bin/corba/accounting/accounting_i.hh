@@ -76,6 +76,11 @@ public:
             const Registry::Accounting::PaymentData& _payment_data,
             Registry::Accounting::Credit_out _remaining_credit) final override;
 
+    void import_payment_by_registrar_handle(
+            const Registry::Accounting::PaymentData& _payment_data,
+            const char* _registrar_handle,
+            Registry::Accounting::Credit_out _remaining_credit) final override;
+
 private:
     // Make sure all instances are built on the heap by making the destructor non-public
     ~AccountingImpl() final override = default;

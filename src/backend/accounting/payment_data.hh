@@ -32,7 +32,7 @@ namespace Accounting {
 
 struct PaymentData
 {
-    std::string bank_payment;
+    std::string bank_payment_ident;
     std::string uuid;
     std::string account_number;
     std::string counter_account_number;

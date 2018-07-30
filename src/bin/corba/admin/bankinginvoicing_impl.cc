@@ -68,7 +68,15 @@ bool ccReg_BankingInvoicing_i::pairPaymentRegistrarHandle(
     File::ManagerPtr file_manager(File::Manager::create(&fm_client));
 
     Banking::ManagerPtr bank_manager(Banking::Manager::create(file_manager.get()));
-    return bank_manager->pairPaymentWithRegistrar(paymentId, registrarHandle);
+    try
+    {
+        bank_manager->pairPaymentWithRegistrar(paymentId, registrarHandle);
+    }
+    catch (...)
+    {
+        return false;
+    }
+    return true;
 }
 
 bool ccReg_BankingInvoicing_i::setPaymentType(
