@@ -26,19 +26,18 @@
 #include <functional>
 #include <iostream>
 #include <memory>
-#include <memory>
 #include <sstream>
 #include <vector>
 
 #include "src/libfred/opcontext.hh"
 #include "src/libfred/types.hh"
-#include "src/libfred/zone.hh"
 #include "src/libfred/zone/create_zone.hh"
+#include "src/libfred/zone.hh"
 #include "src/libfred/zone/update_zone.hh"
-#include "src/libfred/zone/zone_soa/create_zone_soa.hh"
-#include "src/libfred/zone/zone_soa/update_zone_soa.hh"
 #include "src/libfred/zone/zone_ns/create_zone_ns.hh"
 #include "src/libfred/zone/zone_ns/update_zone_ns.hh"
+#include "src/libfred/zone/zone_soa/create_zone_soa.hh"
+#include "src/libfred/zone/zone_soa/update_zone_soa.hh"
 #include "src/util/log/context.hh"
 #include "src/util/log/logger.hh"
 #include "src/util/types/money.hh"
@@ -1013,7 +1012,7 @@ namespace LibFred
           }//catch (...)
       }//checkTLD
 
-      virtual void addZone(
+      void addZone(
               const std::string& _fqdn,
               int _ex_period_min,
               int _ex_period_max,
@@ -1023,7 +1022,7 @@ namespace LibFred
               int _update_retr,
               int _expiry,
               int _minimum,
-              const std::string& _ns_fqdn)
+              const std::string& _ns_fqdn) final override
       {
         try
         {
@@ -1050,139 +1049,15 @@ namespace LibFred
         }
       }
 
-      /// update zone and zone_soa record identified by fqdn
-      virtual void updateZoneByFqdn(
-              const std::string& fqdn,
-              int ex_period_min,
-              int ex_period_max,
-              int ttl,
-              const std::string &hostmaster,
-              int refresh,
-              int update_retr,
-              int expiry,
-              int minimum,
-              const std::string &ns_fqdn)
-      {
-        try
-        {
-        	Database::Connection conn = Database::Manager::acquire();
-
-        	std::stringstream sql_zone;
-			sql_zone << "SELECT id FROM zone WHERE fqdn='" << conn.escape(fqdn) << "'";
-			Database::Result res_zone = conn.exec(sql_zone.str());
-			if (res_zone.size() < 1)
-				throw NOT_FOUND();//zone not found
-			const TID id = res_zone[0][0];
-
-        	std::stringstream sql_zone_soa;
-			sql_zone_soa << "SELECT COUNT(*) FROM zone_soa WHERE zone = " << id ;
-			Database::Result res_zone_soa = conn.exec(sql_zone_soa.str());
-			if (res_zone_soa.size() < 1)
-				throw NOT_FOUND();//zone not found
-
-			updateZoneById
-			(
-				id,
-				fqdn,
-				ex_period_min,
-				ex_period_max,
-				ttl,
-				hostmaster,
-				refresh,
-				update_retr,
-				expiry,
-				minimum,
-				ns_fqdn
-			);
-
-        }//try
-        catch (...)
-        {
-            LOGGER(PACKAGE).error("updateZoneByFqdn: an error has occured");
-            throw SQL_ERROR();
-        }//catch (...)
-      }//updateZoneByFqdn
-
-      /// update zone and zone_soa record identified by id
-      virtual void updateZoneById(
-              const unsigned long long _id,
-              const std::string& _fqdn,
-              int _ex_period_min,
-              int _ex_period_max,
-              int _ttl,
-              const std::string& _hostmaster,
-              int _refresh,
-              int _update_retr,
-              int _expiry,
-              int _minimum,
-              const std::string& _ns_fqdn)
-      {
-        try
-        {
-            OperationContextCreator ctx;
-
-            UpdateZone update_zone = UpdateZone(_fqdn);
-            if (_ex_period_min != 0)
-            {
-                update_zone.set_expiration_period_min_in_months(_ex_period_min);
-            }
-            if (_ex_period_max != 0)
-            {
-                update_zone.set_expiration_period_max_in_months(_ex_period_max);
-            }
-            update_zone.exec(ctx);
-
-            UpdateZoneSoa update_zone_soa = UpdateZoneSoa(_fqdn);
-            if (_ttl != 0)
-            {
-                update_zone_soa.set_ttl(_ttl);
-            }
-            if (!_hostmaster.empty())
-            {
-                update_zone_soa.set_hostmaster(_hostmaster);
-            }
-            if (_refresh != 0)
-            {
-                update_zone_soa.set_refresh(_refresh);
-            }
-            if (_update_retr != 0)
-            {
-                update_zone_soa.set_update_retr(_update_retr);
-            }
-            if (_expiry != 0)
-            {
-                update_zone_soa.set_expiry(_expiry);
-            }
-            if (_minimum != 0)
-            {
-                update_zone_soa.set_minimum(_minimum);
-            }
-            if (!_ns_fqdn.empty())
-            {
-                update_zone_soa.set_ns_fqdn(_ns_fqdn);
-            }
-            update_zone_soa.exec(ctx);
-
-            ctx.commit_transaction();
-        }
-        catch (...)
-        {
-            LOGGER(PACKAGE).error("updateZoneById: an error has occured");
-            throw SQL_ERROR();
-        }
-      }
-
-
-      virtual void addZoneNs(
+      void addZoneNs(
               const std::string& _zone_fqdn,
               const std::string& _nameserver_fqdn,
-              const std::string& _nameserver_ip_addresses)
+              const std::string& _nameserver_ip_addresses) final override
       {
           try
           {
               OperationContextCreator ctx;
-              CreateZoneNs create_zone = CreateZoneNs(_zone_fqdn)
-                        .set_nameserver_fqdn(_nameserver_fqdn);
+
               if (!_nameserver_ip_addresses.empty())
               {
                   std::vector<std::string> addrs;
@@ -1191,11 +1066,21 @@ namespace LibFred
                   std::vector<boost::asio::ip::address> ip_addrs;
                   for_each(addrs.begin(),
                           addrs.end(),
-                          [&ip_addrs](const std::string& s) { ip_addrs.push_back(boost::asio::ip::address::from_string(s)); });
+                          [&ip_addrs](const std::string& s)
+                                { ip_addrs.push_back(boost::asio::ip::address::from_string(s)); });
 
-                  create_zone.set_nameserver_ip_addresses(ip_addrs);
+                  CreateZoneNs(_zone_fqdn)
+                          .set_nameserver_fqdn(_nameserver_fqdn)
+                          .set_nameserver_ip_addresses(ip_addrs)
+                          .exec(ctx);
               }
-              create_zone.exec(ctx);
+              else
+              {
+                  CreateZoneNs(_zone_fqdn)
+                          .set_nameserver_fqdn(_nameserver_fqdn)
+                          .exec(ctx);
+              }
+              ctx.commit_transaction();
           }
           catch (...)
           {
@@ -1203,47 +1088,6 @@ namespace LibFred
               throw;
           }
       }
-
-      virtual void updateZoneNsById(
-              const unsigned long long _id,
-              const std::string& _zone_fqdn,
-              const std::string& _nameserver_fqdn,
-              const std::string& _nameserver_ip_addresses)
-      {
-          try
-          {
-              OperationContextCreator ctx;
-
-              UpdateZoneNs update_zone = UpdateZoneNs(_id);
-              if (!_zone_fqdn.empty())
-              {
-                      update_zone.set_zone_fqdn(_zone_fqdn);
-              }
-              if (!_nameserver_fqdn.empty())
-              {
-                      update_zone.set_nameserver_fqdn(_nameserver_fqdn);
-              }
-              if (!_nameserver_ip_addresses.empty())
-              {
-                  std::vector<std::string> addrs;
-                  boost::split(addrs, _nameserver_ip_addresses, boost::is_any_of(","));
-
-                  std::vector<boost::asio::ip::address> ip_addrs;
-                  for_each(addrs.begin(),
-                          addrs.end(),
-                          [&ip_addrs](const std::string& s) { ip_addrs.push_back(boost::asio::ip::address::from_string(s)); });
-
-                  update_zone.set_nameserver_ip_addresses(ip_addrs);
-              }
-              update_zone.exec(ctx);
-        }
-        catch (...)
-        {
-            LOGGER(PACKAGE).error("updateZoneNsById: an error has occured");
-            throw;
-        }
-    }
-
 
     virtual void addPrice(
             int zone_id,

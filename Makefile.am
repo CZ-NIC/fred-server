@@ -1808,8 +1808,6 @@ src_bin_corba_admin_libadmin_impl_a_SOURCES = \
 		src/bin/corba/admin/usertype_conv.hh \
 		src/bin/corba/admin/common.cc \
 		src/bin/corba/admin/common.hh \
-		src/bin/corba/admin/zone_impl.cc \
-		src/bin/corba/admin/zone_impl.hh \
 		src/bin/corba/admin/bankinginvoicing_impl.cc \
 		src/bin/corba/admin/bankinginvoicing_impl.hh
 #
