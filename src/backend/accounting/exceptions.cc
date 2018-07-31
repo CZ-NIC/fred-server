@@ -52,6 +52,11 @@ const char* CreditAlreadyProcessed::what() const noexcept
     return "credit already processed";
 }
 
+const char* PaymentAlreadyProcessed::what() const noexcept
+{
+    return "payment already processed";
+}
+
 } // namespace Fred::Backend::Accounting
 } // namespace Fred::Backend
 } // namespace Fred

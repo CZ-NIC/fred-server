@@ -99,6 +99,10 @@ public:
     {
         return ModelBankPayment::getCrTime();
     }
+    const std::string &getUuid() const
+    {
+        return ModelBankPayment::getUuid();
+    }
     const std::string &getDestAccount() const
     {
         return dest_account;
@@ -175,6 +179,10 @@ public:
     void setCrTime(const Database::DateTime &crTime)
     {
         ModelBankPayment::setCrTime(crTime);
+    }
+    void setUuid(const std::string &uuid)
+    {
+        ModelBankPayment::setUuid(uuid);
     }
     void setDestAccount(const std::string &destAccount)
     {
@@ -325,6 +333,7 @@ COMPARE_CLASS_IMPL_NEW(PaymentImpl, DestAccount)
 PaymentImplPtr parse_xml_payment_part(const XMLnode &_node);
 
 PaymentImplPtr payment_from_params(
+        const std::string& _uuid,
         const std::string& _bank_payment_ident,
         const std::string& _counter_account_number,
         const std::string& _counter_account_bank_code,

@@ -33,7 +33,7 @@ const char* ZoneNotFound::what() const noexcept
     return "zone not found";
 }
 
-const char* InvalidAccountNumberWithBankCode::what() const noexcept
+const char* InvalidAccountData::what() const noexcept
 {
     return "invalid account_number / bank_code";
 }
@@ -41,6 +41,11 @@ const char* InvalidAccountNumberWithBankCode::what() const noexcept
 const char* InvalidCreditValue::what() const noexcept
 {
     return "invalid credit value";
+}
+
+const char* PaymentAlreadyProcessed::what() const noexcept
+{
+    return "payment already processed";
 }
 
 } // namespace Fred::Backend::Accounting::Impl

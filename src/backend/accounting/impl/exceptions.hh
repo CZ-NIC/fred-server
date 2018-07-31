@@ -36,12 +36,17 @@ struct ZoneNotFound : std::exception
     const char* what() const noexcept override;
 };
 
-struct InvalidAccountNumberWithBankCode : std::exception
+struct InvalidAccountData : std::exception
 {
     const char* what() const noexcept override;
 };
 
 struct InvalidCreditValue : std::exception
+{
+    const char* what() const noexcept override;
+};
+
+struct PaymentAlreadyProcessed : std::exception
 {
     const char* what() const noexcept override;
 };

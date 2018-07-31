@@ -42,6 +42,11 @@ struct InvalidAccountData : std::exception
     const char* what() const noexcept;
 };
 
+struct PaymentAlreadyProcessed : std::exception
+{
+    const char* what() const noexcept;
+};
+
 } // namespace LibFred::Banking
 } // namespace LibFred
 

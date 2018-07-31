@@ -42,9 +42,9 @@ unwrap_Registry_Accounting_PaymentData(
         const Registry::Accounting::PaymentData& _payment_data)
 {
     Fred::Backend::Accounting::PaymentData payment_data;
-    payment_data.bank_payment_ident = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.bank_payment_ident.in());
     payment_data.uuid = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.uuid.in());
     payment_data.account_number = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.account_number.in());
+    payment_data.bank_payment_ident = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.bank_payment_ident.in());
     payment_data.counter_account_number = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.counter_account_number.in());
     payment_data.counter_account_name = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.counter_account_name.in());
     payment_data.constant_symbol = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.constant_symbol.in());

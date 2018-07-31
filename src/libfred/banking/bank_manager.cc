@@ -25,6 +25,65 @@
 namespace LibFred {
 namespace Banking {
 
+namespace {
+
+PaymentImplPtr save_payment(
+    Database::Connection& _conn,
+    const std::string& _uuid,
+    const std::string& _account_number,
+    const std::string& _account_bank_code,
+    const std::string& _bank_payment_ident,
+    const std::string& _counter_account_number,
+    const std::string& _counter_account_bank_code,
+    const std::string& _counter_account_name,
+    const std::string& _constant_symbol,
+    const std::string& _variable_symbol,
+    const std::string& _specific_symbol,
+    const Money& _price,
+    const boost::gregorian::date& _date,
+    const std::string& _memo,
+    const boost::posix_time::ptime& _creation_time)
+{
+    LOGGER(PACKAGE).info("no statement -- importing only payment");
+
+    PaymentImplPtr payment(
+            payment_from_params(
+                    _uuid,
+                    _bank_payment_ident,
+                    _counter_account_number,
+                    _counter_account_bank_code,
+                    _counter_account_name,
+                    _constant_symbol,
+                    _variable_symbol,
+                    _specific_symbol,
+                    _price,
+                    _date,
+                    _memo,
+                    _creation_time));
+
+    payment->setAccountId(
+            statement_from_params(
+                    _account_number,
+                    _account_bank_code)->getAccountId());
+
+    payment->save();
+
+    LOGGER(PACKAGE).info(boost::format(
+            "payment imported (id=%1% account=%2%/%3% "
+            "evid=%4% price=%5% account_date=%6%) account_id=%7%")
+            % payment->getId()
+            % payment->getAccountNumber()
+            % payment->getBankCode()
+            % payment->getAccountEvid()
+            % payment->getPrice()
+            % payment->getAccountDate()
+            % payment->getAccountId());
+
+    return payment;
+}
+
+} // namespace LibFred::Banking::{anonymous}
+
 
 class ManagerImpl : virtual public Manager
 {
@@ -525,9 +584,9 @@ public:
 
     Money importPayment(
             const std::string& _uuid,
-            const std::string& _bank_payment_ident,
             const std::string& _account_number,
             const std::string& _account_bank_code,
+            const std::string& _bank_payment_ident,
             const std::string& _counter_account_number,
             const std::string& _counter_account_bank_code,
             const std::string& _counter_account_name,
@@ -549,39 +608,31 @@ public:
 
             LOGGER(PACKAGE).debug("saving transaction for single payment");
 
-            // TODO check duplicity (_uuid)
+            Database::Query query;
+            query.buffer() << "SELECT id FROM bank_payment WHERE "
+                           << "uuid = " << Database::Value(_uuid)
+                           << "AND type = 2";
+            Database::Result result = conn.exec(query);
+            if (result.size() != 0) {
+                throw PaymentAlreadyProcessed();
+            }
 
-            StatementImplPtr statement(statement_from_params(_account_number, _account_bank_code));
-            statement->setId(0);
-
-            LOGGER(PACKAGE).info("no statement -- importing only payments");
-
-            PaymentImplPtr payment(payment_from_params(
-                    _bank_payment_ident,
-                    _counter_account_number,
-                    _counter_account_bank_code,
-                    _counter_account_name,
-                    _constant_symbol,
-                    _variable_symbol,
-                    _specific_symbol,
-                    _price,
-                    _date,
-                    _memo,
-                    _creation_time));
-
-            payment->setAccountId(statement->getAccountId());
-
-            payment->save();
-            LOGGER(PACKAGE).info(boost::format(
-                    "payment imported (id=%1% account=%2%/%3% "
-                    "evid=%4% price=%5% account_date=%6%) account_id=%7%")
-                    % payment->getId()
-                    % payment->getAccountNumber()
-                    % payment->getBankCode()
-                    % payment->getAccountEvid()
-                    % payment->getPrice()
-                    % payment->getAccountDate()
-                    % payment->getAccountId());
+            PaymentImplPtr payment = save_payment(
+                        conn,
+                        _uuid,
+                        _account_number,
+                        _account_bank_code,
+                        _bank_payment_ident,
+                        _counter_account_number,
+                        _counter_account_bank_code,
+                        _counter_account_name,
+                        _constant_symbol,
+                        _variable_symbol,
+                        _specific_symbol,
+                        _price,
+                        _date,
+                        _memo,
+                        _creation_time);
 
             const Money remaining_credit =
                 _registrar_handle != boost::none
@@ -599,6 +650,11 @@ public:
             throw;
         }
         catch (const LibFred::Banking::InvalidAccountData& e) {
+            LOGGER(PACKAGE).info(boost::str(boost::format(
+                            "bank import payment: %1%") % e.what()));
+            throw;
+        }
+        catch (const LibFred::Banking::PaymentAlreadyProcessed& e) {
             LOGGER(PACKAGE).info(boost::str(boost::format(
                             "bank import payment: %1%") % e.what()));
             throw;

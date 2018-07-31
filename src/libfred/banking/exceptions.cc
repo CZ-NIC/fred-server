@@ -31,5 +31,10 @@ const char* InvalidAccountData::what() const noexcept
     return "invalid account number or bank code";
 }
 
+const char* PaymentAlreadyProcessed::what() const noexcept
+{
+    return "payment already processed";
+}
+
 } // namespace LibFred::Banking
 } // namespace LibFred

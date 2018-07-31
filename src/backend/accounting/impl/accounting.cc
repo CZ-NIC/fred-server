@@ -71,7 +71,7 @@ struct BankAccount
                 boost::is_any_of("/"));
         if (parts.size() != 2)
         {
-            throw InvalidAccountNumberWithBankCode();
+            throw InvalidAccountData();
         }
         return BankAccount(parts.at(0), parts.at(1));
     }
@@ -349,9 +349,9 @@ void import_payment(
         _remaining_credit.value =
                 banking_manager->importPayment(
                         _payment_data.uuid,
-                        _payment_data.bank_payment_ident,
                         bank_account.account_number,
                         bank_account.bank_code,
+                        _payment_data.bank_payment_ident,
                         counter_account.account_number,
                         counter_account.bank_code,
                         _payment_data.counter_account_name,
@@ -368,7 +368,10 @@ void import_payment(
         throw RegistrarNotFound();
     }
     catch (const LibFred::Banking::InvalidAccountData&) {
-        throw InvalidAccountNumberWithBankCode();
+        throw InvalidAccountData();
+    }
+    catch (const LibFred::Banking::PaymentAlreadyProcessed&) {
+        throw PaymentAlreadyProcessed();
     }
 
 }
@@ -405,7 +408,10 @@ void import_payment_by_registrar_handle(
         throw RegistrarNotFound();
     }
     catch (const LibFred::Banking::InvalidAccountData&) {
-        throw InvalidAccountNumberWithBankCode();
+        throw InvalidAccountData();
+    }
+    catch (const LibFred::Banking::PaymentAlreadyProcessed&) {
+        throw PaymentAlreadyProcessed();
     }
 }
 

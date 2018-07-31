@@ -79,6 +79,10 @@ public:
     {
         return m_crTime.get();
     }
+    const std::string &getUuid() const
+    {
+        return m_uuid.get();
+    }
     void setId(const unsigned long long &id)
     {
         m_id = id;
@@ -150,6 +154,11 @@ public:
         m_crTime = crTime;
     }
 
+    void setUuid(const std::string &uuid)
+    {
+        m_uuid = uuid;
+    }
+
     friend class Model::Base;
 
     void insert()
@@ -211,6 +220,7 @@ protected:
     Field::Field<unsigned long long> m_invoiceId;
     Field::Field<std::string> m_accountName;
     Field::Field<Database::DateTime> m_crTime;
+    Field::Field<std::string> m_uuid;
 
 public:
     static Model::Field::PrimaryKey<ModelBankPayment, unsigned long long> id;
@@ -231,6 +241,7 @@ public:
     static Model::Field::Basic<ModelBankPayment, unsigned long long> invoiceId;
     static Model::Field::Basic<ModelBankPayment, std::string> accountName;
     static Model::Field::Basic<ModelBankPayment, Database::DateTime> crTime;
+    static Model::Field::Basic<ModelBankPayment, std::string> uuid;
 
 private:
     static std::string table_name;  /** < model table name */

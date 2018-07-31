@@ -175,7 +175,7 @@ Fred::Backend::Accounting::Registrar get_registrar_by_payment(
         LOGGER(PACKAGE).info(e.what());
         throw InvalidPaymentData();
     }
-    catch (const Impl::InvalidAccountNumberWithBankCode& e)
+    catch (const Impl::InvalidAccountData& e)
     {
         LOGGER(PACKAGE).info(e.what());
         throw InvalidPaymentData();
@@ -220,7 +220,7 @@ Fred::Backend::Accounting::Registrar get_registrar_by_handle_and_payment(
         LOGGER(PACKAGE).info(e.what());
         throw InvalidPaymentData();
     }
-    catch (const Impl::InvalidAccountNumberWithBankCode& e)
+    catch (const Impl::InvalidAccountData& e)
     {
         LOGGER(PACKAGE).info(e.what());
         throw InvalidPaymentData();
@@ -254,10 +254,15 @@ void import_payment(
         LOGGER(PACKAGE).info(e.what());
         throw RegistrarNotFound();
     }
-    catch (const Impl::InvalidAccountNumberWithBankCode& e)
+    catch (const Impl::InvalidAccountData& e)
     {
         LOGGER(PACKAGE).info(e.what());
         throw InvalidPaymentData();
+    }
+    catch (const Impl::PaymentAlreadyProcessed& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw PaymentAlreadyProcessed();
     }
     catch (const std::exception& e)
     {
@@ -290,10 +295,15 @@ void import_payment_by_registrar_handle(
         LOGGER(PACKAGE).info(e.what());
         throw RegistrarNotFound();
     }
-    catch (const Impl::InvalidAccountNumberWithBankCode& e)
+    catch (const Impl::InvalidAccountData& e)
     {
         LOGGER(PACKAGE).info(e.what());
         throw InvalidPaymentData();
+    }
+    catch (const Impl::PaymentAlreadyProcessed& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw PaymentAlreadyProcessed();
     }
     catch (const std::exception& e)
     {

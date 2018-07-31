@@ -421,6 +421,7 @@ PaymentImplPtr parse_xml_payment_part(const XMLnode &_node)
 }
 
 PaymentImplPtr payment_from_params(
+        const std::string& _uuid,
         const std::string& _bank_payment_ident,
         const std::string& _counter_account_number,
         const std::string& _counter_account_bank_code,
@@ -464,6 +465,7 @@ PaymentImplPtr payment_from_params(
     //if (!_creation_time.empty()) {
         payment->setCrTime(_creation_time);
     //}
+    payment->setUuid(_uuid);
 
     // TODO FIXME
     payment->setType(1); // transfer type (1-not decided (not processed), 2-from/to registrar, 3-from/to bank, 4-between our own accounts, 5-related to academia, 6-other transfers

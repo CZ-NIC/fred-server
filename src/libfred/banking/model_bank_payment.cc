@@ -49,6 +49,7 @@ DEFINE_BASIC_FIELD(ModelBankPayment, Database::Date, accountDate, m_accountDate,
 DEFINE_BASIC_FIELD(ModelBankPayment, std::string, accountMemo, m_accountMemo, table_name, "account_memo", )
 DEFINE_BASIC_FIELD(ModelBankPayment, std::string, accountName, m_accountName, table_name, "account_name", )
 DEFINE_BASIC_FIELD(ModelBankPayment, Database::DateTime, crTime, m_crTime, table_name, "crtime", .setDefault())
+DEFINE_BASIC_FIELD(ModelBankPayment, std::string, uuid, m_uuid, table_name, "uuid", .setUnique().setNotNull())
 
 ModelBankPayment::field_list ModelBankPayment::fields = list_of<ModelBankPayment::field_list::value_type>
     (&ModelBankPayment::id)
@@ -68,5 +69,6 @@ ModelBankPayment::field_list ModelBankPayment::fields = list_of<ModelBankPayment
     (&ModelBankPayment::accountMemo)
     (&ModelBankPayment::accountName)
     (&ModelBankPayment::crTime)
+    (&ModelBankPayment::uuid)
 ;
 
