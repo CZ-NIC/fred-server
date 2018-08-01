@@ -27,12 +27,11 @@ namespace Banking {
 
 namespace {
 
-PaymentImplPtr save_payment(
+PaymentImplPtr make_processable_payment(
     Database::Connection& _conn,
     const std::string& _uuid,
-    const std::string& _account_number,
-    const std::string& _account_bank_code,
-    const std::string& _bank_payment_ident,
+    const unsigned long long _account_id,
+    const std::string& _account_payment_ident,
     const std::string& _counter_account_number,
     const std::string& _counter_account_bank_code,
     const std::string& _counter_account_name,
@@ -47,9 +46,10 @@ PaymentImplPtr save_payment(
     LOGGER(PACKAGE).info("no statement -- importing only payment");
 
     PaymentImplPtr payment(
-            payment_from_params(
+            make_importable_payment(
                     _uuid,
-                    _bank_payment_ident,
+                    _account_id,
+                    _account_payment_ident,
                     _counter_account_number,
                     _counter_account_bank_code,
                     _counter_account_name,
@@ -61,16 +61,10 @@ PaymentImplPtr save_payment(
                     _memo,
                     _creation_time));
 
-    payment->setAccountId(
-            statement_from_params(
-                    _account_number,
-                    _account_bank_code)->getAccountId());
-
-    payment->save();
+    payment->save(); // import payment
 
     LOGGER(PACKAGE).info(boost::format(
-            "payment imported (id=%1% account=%2%/%3% "
-            "evid=%4% price=%5% account_date=%6%) account_id=%7%")
+            "payment imported (id=%1% account=%2%/%3% evid=%4% price=%5% account_date=%6%) account_id=%7%")
             % payment->getId()
             % payment->getAccountNumber()
             % payment->getBankCode()
@@ -586,7 +580,7 @@ public:
             const std::string& _uuid,
             const std::string& _account_number,
             const std::string& _account_bank_code,
-            const std::string& _bank_payment_ident,
+            const std::string& _account_payment_ident,
             const std::string& _counter_account_number,
             const std::string& _counter_account_bank_code,
             const std::string& _counter_account_name,
@@ -608,21 +602,27 @@ public:
 
             LOGGER(PACKAGE).debug("saving transaction for single payment");
 
+            const unsigned long long account_id = statement_from_params(_account_number, _account_bank_code)->getAccountId();
+
             Database::Query query;
-            query.buffer() << "SELECT id FROM bank_payment WHERE "
-                           << "uuid = " << Database::Value(_uuid)
-                           << "AND type = 2";
+            // clang-format off
+            query.buffer() << "SELECT id "
+                                "FROM bank_payment "
+                               "WHERE (uuid = " << Database::Value(_uuid) << " "
+                                  "OR (account_id = " << Database::Value(account_id) << " "
+                                      "AND account_evid = " << Database::Value(_account_payment_ident) << ")) "
+                                 "AND type = 2";
+            // clang-format on
             Database::Result result = conn.exec(query);
             if (result.size() != 0) {
                 throw PaymentAlreadyProcessed();
             }
 
-            PaymentImplPtr payment = save_payment(
+            PaymentImplPtr processable_payment = make_processable_payment(
                         conn,
                         _uuid,
-                        _account_number,
-                        _account_bank_code,
-                        _bank_payment_ident,
+                        account_id,
+                        _account_payment_ident,
                         _counter_account_number,
                         _counter_account_bank_code,
                         _counter_account_name,
@@ -636,9 +636,9 @@ public:
 
             const Money remaining_credit =
                 _registrar_handle != boost::none
-                    ? pairPaymentWithRegistrar(payment->getId(), *_registrar_handle)
+                    ? pairPaymentWithRegistrar(processable_payment->getId(), *_registrar_handle)
                       // note: pairPaymentWithRegistrar also calls processPeyment
-                    : processPayment(payment.get());
+                    : processPayment(processable_payment.get());
 
             tx.commit();
 

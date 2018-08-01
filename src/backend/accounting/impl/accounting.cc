@@ -351,7 +351,7 @@ void import_payment(
                         _payment_data.uuid,
                         bank_account.account_number,
                         bank_account.bank_code,
-                        _payment_data.bank_payment_ident,
+                        _payment_data.account_payment_ident,
                         counter_account.account_number,
                         counter_account.bank_code,
                         _payment_data.counter_account_name,
@@ -389,7 +389,7 @@ void import_payment_by_registrar_handle(
         _remaining_credit.value =
                 banking_manager->importPayment(
                         _payment_data.uuid,
-                        _payment_data.bank_payment_ident,
+                        _payment_data.account_payment_ident,
                         bank_account.account_number,
                         bank_account.bank_code,
                         counter_account.account_number,
