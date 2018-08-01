@@ -1300,8 +1300,6 @@ src_libfred_banking_libbanking_a_SOURCES = \
 		src/libfred/banking/bank_common.hh \
 		src/libfred/banking/bank_payment.hh \
 		src/libfred/banking/bank_payment_impl.hh \
-		src/libfred/banking/bank_payment_list.hh \
-		src/libfred/banking/bank_payment_list_impl.hh \
 		src/libfred/banking/bank_manager.cc \
 		src/libfred/banking/bank_manager.hh \
 		src/libfred/banking/bank_exporter.cc \
@@ -1801,8 +1799,6 @@ src_bin_corba_admin_libadmin_impl_a_SOURCES = \
 		src/bin/corba/admin/pagetable_logger.hh \
 		src/bin/corba/admin/pagetable_logsession.cc \
 		src/bin/corba/admin/pagetable_logsession.hh \
-		src/bin/corba/admin/pagetable_bank_payments.cc \
-		src/bin/corba/admin/pagetable_bank_payments.hh \
 		src/bin/corba/admin/pagetable_bank_statements.cc \
 		src/bin/corba/admin/pagetable_bank_statements.hh \
 		src/bin/corba/admin/pagetable_zones.cc \

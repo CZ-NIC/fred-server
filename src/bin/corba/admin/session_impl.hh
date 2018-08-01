@@ -37,7 +37,6 @@
 #include "src/bin/corba/admin/pagetable_publicrequests.hh"
 #include "src/bin/corba/admin/pagetable_mails.hh"
 #include "src/bin/corba/admin/pagetable_invoices.hh"
-#include "src/bin/corba/admin/pagetable_bank_payments.hh"
 //#include "pagetable_bank_statements.h"
 #include "src/bin/corba/admin/pagetable_filters.hh"
 #include "src/bin/corba/admin/pagetable_files.hh"
@@ -92,7 +91,6 @@ private:
   ccReg_PublicRequests_i* m_publicrequests;
   ccReg_Mails_i* m_mails;
   ccReg_Invoices_i* m_invoices;
-  ccReg_Payments_i* m_payments;
   // ccReg_Statement_i* m_statements;
   ccReg_Filters_i* m_filters;
   ccReg_User_i* m_user;

@@ -197,17 +197,17 @@ struct CreateInvoicePrefixesArgs
  */
 struct InvoiceCreateArgs
 {
-    optional_id payment_id;
+    optional_string payment_uuid;
     optional_string registrar_handle;
 
     InvoiceCreateArgs()
     {}//ctor
 
     InvoiceCreateArgs(
-        const optional_id& _payment_id
+        const optional_string& _payment_uuid
         , const optional_string& _registrar_handle
         )
-    : payment_id(_payment_id)
+    : payment_uuid(_payment_uuid)
     , registrar_handle(_registrar_handle)
     {}
 };//struct InvoiceCreateArgs

@@ -27,10 +27,6 @@ public:
     {
     }
 
-    const unsigned long long &getId() const
-    {
-        return ModelBankPayment::getId();
-    }
     const unsigned long long &getStatementId() const
     {
         return ModelBankPayment::getStatementId();
@@ -108,10 +104,6 @@ public:
         return dest_account;
     }
 
-    void setId(const unsigned long long &id)
-    {
-        ModelBankPayment::setId(id);
-    }
     void setStatementId(const unsigned long long &statementId)
     {
         ModelBankPayment::setStatementId(statementId);
@@ -208,109 +200,19 @@ public:
 
     void save()
     {
-        try {
-            if (getId() == 0) {
-                ModelBankPayment::insert();
-            }
-            else {
-                ModelBankPayment::update();
-            }
-        }
-        catch (std::exception &ex) {
-            LOGGER(PACKAGE).error(
-                    boost::format("Payment save: %1%") % ex.what());
-            throw SQL_ERROR();
-        }
-        catch (...) {
-            LOGGER(PACKAGE).error("Payment save: unknown exception");
-            throw SQL_ERROR();
-        }
+        LOGGER(PACKAGE).error("Payment save: obsolete");
+        throw SQL_ERROR();
     }
 
     void reload()
     {
-        try {
-            ModelBankPayment::reload();
-            Database::Connection conn = Database::Manager::acquire();
-            Database::Result dest_account_result
-                = conn.exec_params("select account_name || ' ' || account_number || '/' || bank_code"
-                " from bank_account where id = $1::integer "
-                ,Database::query_param_list(ModelBankPayment::getAccountId()));
-
-            if(dest_account_result.size() == 1)
-            {
-                dest_account = std::string(dest_account_result[0][0]);
-            }
-            else
-            {
-                throw std::runtime_error(
-                        "PaymentImpl::reload unable to get account");
-            }
-        }
-        catch (Database::NoDataFound &ex) {
-            throw NOT_FOUND();
-        }
-        catch (...) {
-            throw SQL_ERROR();
-        }
+        LOGGER(PACKAGE).error("Payment reload: obsolete");
+        throw SQL_ERROR();
     }
-
-    Database::ID getConflictId()
-    {
-        if (getAccountDate().is_special() || getAccountId() == 0)
-            return Database::ID(0);
-
-        std::stringstream where_crtime("crtime", std::ios::out | std::ios::app);
-        if (!getCrTime().is_special()) {
-            where_crtime << " = " << Database::Value(getCrTime());
-        }
-        else {
-            where_crtime << " IS NULL";
-        }
-
-        Database::Query query;
-        query.buffer()
-            << "SELECT id FROM bank_payment "
-            << "WHERE account_id = " << Database::Value(getAccountId())
-            << " AND account_evid = " << Database::Value(getAccountEvid());
-
-        Database::Connection conn = Database::Manager::acquire();
-        Database::Result result = conn.exec(query);
-        if (result.size() == 0) {
-            /* not found */
-            return Database::ID(0);
-        }
-        else if (result.size() == 1) {
-            /* found one */
-            return result[0][0];
-        }
-        else {
-            /* found multiple - should not happended */
-            throw std::runtime_error(str(boost::format(
-                        "ooops! found multiple conflict payments for "
-                        "payment: %1%") % toString()));
-        }
-    }
-
-    bool is_eligible_to_process() const
-    {
-        Database::Connection conn = Database::Manager::acquire();
-        Database::Result have_zone_result = conn.exec_params
-            ("SELECT zone IS NOT NULL FROM bank_account  WHERE id =$1::bigint"
-            , Database::query_param_list(getAccountId()));
-
-        bool bank_account_have_zone = false;
-        if (have_zone_result.size() == 1 ) bank_account_have_zone = have_zone_result[0][0];
-
-        return bank_account_have_zone && (getStatus() == 1)
-                && (getCode() == 1) && (getType() == 1);
-    }
-
 };
 
 typedef std::unique_ptr<PaymentImpl> PaymentImplPtr;
 
-COMPARE_CLASS_IMPL_NEW(PaymentImpl, Id);
 COMPARE_CLASS_IMPL_NEW(PaymentImpl, StatementId);
 COMPARE_CLASS_IMPL_NEW(PaymentImpl, AccountNumber);
 COMPARE_CLASS_IMPL_NEW(PaymentImpl, BankCode);

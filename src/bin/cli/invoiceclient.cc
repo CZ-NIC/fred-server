@@ -515,10 +515,10 @@ InvoiceClient::create_invoice()
     // bank manager
     LibFred::Banking::ManagerPtr bank_manager(LibFred::Banking::Manager::create(file_manager.get()));
 
-    Database::ID paymentId = create_params.payment_id.get_value();
+    std::string payment_uuid = create_params.payment_uuid.get_value();
     if (create_params.registrar_handle.is_value_set()) {
         try {
-            bank_manager->pairPaymentWithRegistrar(paymentId,
+            bank_manager->pairPaymentWithRegistrar(payment_uuid,
                     create_params.registrar_handle.get_value());
         }
         catch (const std::runtime_error& e)

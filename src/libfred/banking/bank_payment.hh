@@ -38,7 +38,6 @@ public:
     {
     }
 
-    virtual const unsigned long long &getId() const = 0;
     virtual const unsigned long long &getStatementId() const = 0;
     virtual const unsigned long long &getAccountId() const = 0;
     virtual const std::string &getAccountNumber() const = 0;
@@ -57,7 +56,6 @@ public:
     virtual const std::string &getAccountName() const = 0;
     virtual const Database::DateTime &getCrTime() const = 0;
     virtual const std::string &getDestAccount() const = 0;
-    virtual void setId(const unsigned long long &id) = 0;
     virtual void setStatementId(const unsigned long long &statementId) = 0;
     virtual void setAccountId(const unsigned long long &accountId) = 0;
     virtual void setAccountNumber(const std::string &accountNumber) = 0;

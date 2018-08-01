@@ -2,7 +2,6 @@
 #define BANK_MANAGER_HH_5C8C2E1D0B944AA19ED43A94CE1AE7FC
 
 #include "src/libfred/banking/bank_payment.hh"
-#include "src/libfred/banking/bank_payment_list.hh"
 #include "src/libfred/banking/bank_statement.hh"
 #include "src/libfred/banking/bank_statement_list.hh"
 #include "src/libfred/file.hh"
@@ -20,7 +19,6 @@ namespace Banking {
 class Manager {
 public:
     virtual StatementList *createStatementList() const = 0;
-    virtual PaymentList *createPaymentList() const = 0;
     static Manager *create(File::Manager *_file_manager);
     static Manager *create();
 
@@ -61,13 +59,9 @@ public:
             const Database::ID &statement,
             bool force = false) = 0;
 
-    virtual Money pairPaymentWithRegistrar(
-            const Database::ID &paymentId,
+    virtual unsigned long long pairPaymentWithRegistrar(
+            const std::string& _payment_uuid,
             const std::string &registrarHandle) = 0;
-
-    virtual void setPaymentType(
-            const Database::ID &payment,
-            const int &type) = 0;
 
 }; // class Manager
 

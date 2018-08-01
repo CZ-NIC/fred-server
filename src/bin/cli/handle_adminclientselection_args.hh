@@ -908,7 +908,7 @@ public:
         cfg_opts->add_options()
             ("create_invoice", "create invoice for payment")
             ("payment_id", boost::program_options
-                ::value<Checked::id>()->notifier(save_optional_id(params.payment_id))
+                ::value<Checked::string>()->notifier(save_optional_string(params.payment_uuid))
                 , "payment id")
             ("registrar_handle", boost::program_options
                 ::value<Checked::string>()->notifier(save_optional_string(params.registrar_handle))
