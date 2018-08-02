@@ -740,10 +740,6 @@ src_deprecated_model_libmodel_a_SOURCES = \
 		src/deprecated/model/object_registry_filter.hh \
 		src/deprecated/model/object_filter.cc \
 		src/deprecated/model/object_filter.hh \
-		src/deprecated/model/bank_statement_filter.cc \
-		src/deprecated/model/bank_statement_filter.hh \
-		src/deprecated/model/bank_payment_filter.cc \
-		src/deprecated/model/bank_payment_filter.hh \
 		src/deprecated/model/domain_filter.cc \
 		src/deprecated/model/domain_filter.hh \
 		src/deprecated/model/contact_filter.cc \
@@ -1292,22 +1288,13 @@ src_libfred_public_request_libpublic_request_a_SOURCES = \
 src_libfred_banking_libbanking_a_SOURCES = \
 		src/libfred/banking/exceptions.cc \
 		src/libfred/banking/exceptions.hh \
-		src/libfred/banking/model_bank_statement.cc \
-		src/libfred/banking/model_bank_statement.hh \
-		src/libfred/banking/model_bank_payment.cc \
-		src/libfred/banking/model_bank_payment.hh \
 		src/libfred/banking/bank_common.cc \
 		src/libfred/banking/bank_common.hh \
 		src/libfred/banking/bank_payment.hh \
-		src/libfred/banking/bank_payment_impl.hh \
 		src/libfred/banking/bank_manager.cc \
 		src/libfred/banking/bank_manager.hh \
-		src/libfred/banking/bank_exporter.cc \
-		src/libfred/banking/bank_exporter.hh \
-		src/libfred/banking/bank_statement.hh \
-		src/libfred/banking/bank_statement_impl.hh \
-		src/libfred/banking/bank_statement_list.hh \
-		src/libfred/banking/bank_statement_list_impl.hh
+		src/libfred/banking/get_bank_accounts.cc \
+		src/libfred/banking/get_bank_accounts.hh
 #
 # src/libfred/banking/libbanking.a
 
@@ -1799,8 +1786,6 @@ src_bin_corba_admin_libadmin_impl_a_SOURCES = \
 		src/bin/corba/admin/pagetable_logger.hh \
 		src/bin/corba/admin/pagetable_logsession.cc \
 		src/bin/corba/admin/pagetable_logsession.hh \
-		src/bin/corba/admin/pagetable_bank_statements.cc \
-		src/bin/corba/admin/pagetable_bank_statements.hh \
 		src/bin/corba/admin/pagetable_zones.cc \
 		src/bin/corba/admin/pagetable_zones.hh \
 		src/bin/corba/admin/pagetable_messages.cc \

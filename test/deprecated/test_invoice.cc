@@ -67,9 +67,6 @@
 #include "src/util/cfg/config_handler_decl.hh"
 #include <boost/test/unit_test.hpp>
 
-#include "src/libfred/banking/bank_payment_impl.hh"
-
-
 BOOST_AUTO_TEST_SUITE(TestInvoice)
 
 using namespace ::LibFred::Invoicing;
@@ -119,12 +116,6 @@ unsigned getAccountNumber(unsigned zone_id, const std::string &bank_code, const 
     );
 
     return res[0][0];
-}
-
-void setAccountIdToPayment(::LibFred::Banking::PaymentImpl &payment)
-{
-    unsigned account_id = getAccountNumber(get_zone_cz_id(), payment.getBankCode(), payment.getAccountNumber());
-    payment.setAccountId(account_id);
 }
 
 BOOST_AUTO_TEST_CASE( getCreditByZone_noregistrar_nozone)

@@ -1,9 +1,6 @@
 #ifndef BANK_MANAGER_HH_5C8C2E1D0B944AA19ED43A94CE1AE7FC
 #define BANK_MANAGER_HH_5C8C2E1D0B944AA19ED43A94CE1AE7FC
 
-#include "src/libfred/banking/bank_payment.hh"
-#include "src/libfred/banking/bank_statement.hh"
-#include "src/libfred/banking/bank_statement_list.hh"
 #include "src/libfred/file.hh"
 #include "src/libfred/db_settings.hh"
 #include "src/util/types/money.hh"
@@ -18,7 +15,6 @@ namespace Banking {
 
 class Manager {
 public:
-    virtual StatementList *createStatementList() const = 0;
     static Manager *create(File::Manager *_file_manager);
     static Manager *create();
 
@@ -27,13 +23,6 @@ public:
             const std::string &_bank_code,
             const std::string &_zone,
             const std::string &_account_name) //throw (std::runtime_error)
-                = 0;
-
-    virtual void importStatementXml(
-            std::istream &_in,
-            const std::string &_file_path,
-            const std::string &_file_mime,
-            const bool &_generate_invoices = false) //throw (std::runtime_error)
                 = 0;
 
     virtual Money importPayment(
@@ -53,15 +42,6 @@ public:
             const boost::posix_time::ptime& _creation_time,
             const boost::optional<std::string>& _registrar_handle)
                 = 0;
-
-    virtual bool pairPaymentWithStatement(
-            const Database::ID &payment,
-            const Database::ID &statement,
-            bool force = false) = 0;
-
-    virtual unsigned long long pairPaymentWithRegistrar(
-            const std::string& _payment_uuid,
-            const std::string &registrarHandle) = 0;
 
 }; // class Manager
 

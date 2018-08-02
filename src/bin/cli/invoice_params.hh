@@ -192,27 +192,6 @@ struct CreateInvoicePrefixesArgs
 };//struct CreateInvoicePrefixesArgs
 
 /**
- * \class InvoiceCreateArgs
- * \brief admin client invoice_create params
- */
-struct InvoiceCreateArgs
-{
-    optional_string payment_uuid;
-    optional_string registrar_handle;
-
-    InvoiceCreateArgs()
-    {}//ctor
-
-    InvoiceCreateArgs(
-        const optional_string& _payment_uuid
-        , const optional_string& _registrar_handle
-        )
-    : payment_uuid(_payment_uuid)
-    , registrar_handle(_registrar_handle)
-    {}
-};//struct InvoiceCreateArgs
-
-/**
  * \class AddInvoiceNumberPrefixArgs
  * \brief admin client add_invoice_number_prefix params
  */

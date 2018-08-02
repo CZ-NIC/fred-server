@@ -26,75 +26,52 @@
 namespace LibFred {
 namespace Banking {
 
-/**
- * \class Payment
- * \brief Interface for bank payment object
- *
- */
-class Payment : virtual public LibFred::CommonObjectNew
+struct PaymentData
 {
-public:
-    virtual ~Payment()
+    PaymentData(
+            const std::string& _uuid,
+            const unsigned long long _account_id,
+            const std::string& _account_payment_ident,
+            const std::string& _counter_account_number,
+            const std::string& _counter_account_bank_code,
+            const std::string& _counter_account_name,
+            const std::string& _constant_symbol,
+            const std::string& _variable_symbol,
+            const std::string& _specific_symbol,
+            const Money& _price,
+            const boost::gregorian::date& _date,
+            const std::string& _memo,
+            const boost::posix_time::ptime& _creation_time)
+        : uuid(_uuid),
+          account_id(_account_id),
+          account_payment_ident(_account_payment_ident),
+          counter_account_number(_counter_account_number),
+          counter_account_bank_code(_counter_account_bank_code),
+          counter_account_name(_counter_account_name),
+          constant_symbol(_constant_symbol),
+          variable_symbol(_variable_symbol),
+          specific_symbol(_specific_symbol),
+          price(_price),
+          date(_date),
+          memo(_memo),
+          creation_time(_creation_time)
     {
     }
 
-    virtual const unsigned long long &getStatementId() const = 0;
-    virtual const unsigned long long &getAccountId() const = 0;
-    virtual const std::string &getAccountNumber() const = 0;
-    virtual const std::string &getBankCode() const = 0;
-    virtual const int &getCode() const = 0;
-    virtual const int &getType() const = 0;
-    virtual const int &getStatus() const = 0;
-    virtual const std::string &getKonstSym() const = 0;
-    virtual const std::string &getVarSymb() const = 0;
-    virtual const std::string &getSpecSymb() const = 0;
-    virtual Money getPrice() const = 0;
-    virtual const std::string &getAccountEvid() const = 0;
-    virtual const Database::Date &getAccountDate() const = 0;
-    virtual const std::string &getAccountMemo() const = 0;
-    virtual const unsigned long long &getAdvanceInvoiceId() const = 0;
-    virtual const std::string &getAccountName() const = 0;
-    virtual const Database::DateTime &getCrTime() const = 0;
-    virtual const std::string &getDestAccount() const = 0;
-    virtual void setStatementId(const unsigned long long &statementId) = 0;
-    virtual void setAccountId(const unsigned long long &accountId) = 0;
-    virtual void setAccountNumber(const std::string &accountNumber) = 0;
-    virtual void setBankCode(const std::string &bankCodeId) = 0;
-    virtual void setCode(const int &code) = 0;
-    virtual void setType(const int &type) = 0;
-    virtual void setStatus(const int &status) = 0;
-    virtual void setKonstSym(const std::string &konstSym) = 0;
-    virtual void setVarSymb(const std::string &varSymb) = 0;
-    virtual void setSpecSymb(const std::string &specSymb) = 0;
-    virtual void setPrice(const Money &price) = 0;
-    virtual void setAccountEvid(const std::string &accountEvid) = 0;
-    virtual void setAccountDate(const Database::Date &accountDate) = 0;
-    virtual void setAccountMemo(const std::string &accountMemo) = 0;
-    virtual void setAdvanceInvoiceId(const unsigned long long &invoiceId) = 0;
-    virtual void setAccountName(const std::string &accountName) = 0;
-    virtual void setCrTime(const Database::DateTime &crTime) = 0;
-    virtual void setDestAccount(const std::string &destAccount) = 0;
-
-    virtual unsigned long long getInvoicePrefix() const = 0;
-    virtual void setInvoicePrefix(const unsigned long long &_iprefix) = 0;
-
-    virtual std::string toString() const = 0;
-    virtual void save() = 0;
-    virtual void reload() = 0;
-};//class Payment
-
-// smart pointer
-typedef std::unique_ptr<Payment> PaymentPtr;
-
-struct EnumListItem
-{
-  unsigned long long id;
-  std::string name;
+    std::string uuid;
+    unsigned long long account_id;
+    std::string account_payment_ident;
+    std::string counter_account_number;
+    std::string counter_account_bank_code;
+    std::string counter_account_name;
+    std::string constant_symbol;
+    std::string variable_symbol;
+    std::string specific_symbol;
+    Money price;
+    Database::Date date;
+    std::string memo;
+    Database::DateTime creation_time;
 };
-typedef std::vector<EnumListItem> EnumList;
-
-//status names
-EnumList getBankAccounts();
 
 } // namespace Banking
 } // namespace LibFred

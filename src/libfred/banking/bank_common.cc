@@ -1,7 +1,6 @@
 #include "src/libfred/banking/bank_common.hh"
 
 #include "src/libfred/banking/bank_payment.hh"
-#include "src/libfred/banking/bank_payment_impl.hh"
 #include "src/libfred/db_settings.hh"
 #include "src/util/types/stringify.hh"
 #include "src/util/types/money.hh"
@@ -306,73 +305,5 @@ XMLparser::getRootNode() const
     return m_rootNode;
 }
 
-EnumList getBankAccounts()
-{
-    Database::Connection conn = Database::Manager::acquire();
-    Database::Result res = conn.exec("SELECT  id, "
-            " account_name || ' ' || account_number || '/' || bank_code "
-            " FROM bank_account "
-            " ORDER BY id");
-    EnumList el;
-    for(unsigned i=0;i<res.size();i++)
-    {
-        EnumListItem eli;
-        eli.id = res[i][0];
-        eli.name = std::string(res[i][1]);
-        el.push_back(eli);
-    }
-    return el;
-}//getBankAccounts
-
-PaymentImplPtr make_importable_payment(
-        const std::string& _uuid,
-        const unsigned long long _account_id,
-        const std::string& _account_payment_ident,
-        const std::string& _counter_account_number,
-        const std::string& _counter_account_bank_code,
-        const std::string& _counter_account_name,
-        const std::string& _constant_symbol,
-        const std::string& _variable_symbol,
-        const std::string& _specific_symbol,
-        const Money& _price,
-        const boost::gregorian::date& _date,
-        const std::string& _memo,
-        const boost::posix_time::ptime& _creation_time)
-{
-    TRACE("[CALL] LibFred::Banking::make_importable_payment(...)");
-
-    PaymentImplPtr payment(new PaymentImpl());
-
-    payment->setUuid(_uuid);
-    payment->setAccountId(_account_id);
-    payment->setAccountEvid(_account_payment_ident);
-    payment->setAccountNumber(_counter_account_number);
-    payment->setBankCode(_counter_account_bank_code);
-    if (!_counter_account_name.empty()) {
-        payment->setAccountName(_counter_account_name);
-    }
-    if (!_constant_symbol.empty()) {
-        payment->setKonstSym(_constant_symbol);
-    }
-    if (!_variable_symbol.empty()) {
-        payment->setVarSymb(_variable_symbol);
-    }
-    if (!_specific_symbol.empty()) {
-        payment->setSpecSymb(_specific_symbol);
-    }
-    payment->setPrice(_price);
-    payment->setAccountDate(_date);
-    if (!_memo.empty()) {
-        payment->setAccountMemo(_memo);
-    }
-    payment->setCrTime(_creation_time);
-    payment->setType(1); // transfer type (1-not decided (not processed), 2-from/to registrar, 3-from/to bank, 4-between our own accounts, 5-related to academia, 6-other transfers
-    payment->setCode(1); // operation code (1-debet item, 2-credit item, 4-cancel debet, 5-cancel credit)
-    payment->setStatus(1); // payment status (1-Realized (only this should be further processed), 2-Partially realized, 3-Not realized, 4-Suspended, 5-Ended, 6-Waiting for clearing )
-
-    return payment;
-}
-
-
-} // namespace Banking
+} // namespace LibFred::Banking
 } // namespace LibFred

@@ -885,47 +885,6 @@ public:
 
 
 /**
- * \class HandleAdminClientInvoiceCreateArgsGrp
- * \brief admin client create_invoice options handler
- */
-class HandleAdminClientInvoiceCreateArgsGrp : public HandleCommandGrpArgs
-{
-public:
-
-    InvoiceCreateArgs params;
-
-    CommandDescription get_command_option()
-    {
-        return CommandDescription("create_invoice");
-    }
-
-    std::shared_ptr<boost::program_options::options_description>
-    get_options_description()
-    {
-        std::shared_ptr<boost::program_options::options_description> cfg_opts(
-                new boost::program_options::options_description(
-                        std::string("create_invoice options")));
-        cfg_opts->add_options()
-            ("create_invoice", "create invoice for payment")
-            ("payment_id", boost::program_options
-                ::value<Checked::string>()->notifier(save_optional_string(params.payment_uuid))
-                , "payment id")
-            ("registrar_handle", boost::program_options
-                ::value<Checked::string>()->notifier(save_optional_string(params.registrar_handle))
-                , "registrar handle")
-            ;
-        return cfg_opts;
-    }//get_options_description
-    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
-            , std::size_t option_group_index)
-    {
-        boost::program_options::variables_map vm;
-        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
-        return option_group_index;
-    }//handle
-};//class HandleAdminClientInvoiceCreateArgsGrp
-
-/**
  * \class HandleAdminClientBankPaymentListArgsGrp
  * \brief admin client bank_payment_list options handler
  */

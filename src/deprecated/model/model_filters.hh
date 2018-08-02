@@ -1,7 +1,6 @@
 #ifndef MODEL_FILTERS_HH_63DE0AB8486C4BF1A907A02B4753559F
 #define MODEL_FILTERS_HH_63DE0AB8486C4BF1A907A02B4753559F
 
-#include "src/deprecated/model/bank_payment_filter.hh"
 #include "src/deprecated/model/object_registry_filter.hh"
 #include "src/deprecated/model/object_filter.hh"
 #include "src/deprecated/model/domain_filter.hh"

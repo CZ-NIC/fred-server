@@ -56,7 +56,6 @@ private:
     InvoiceCreditArgs credit_params;
     InvoiceBillingArgs billing_params;
     InvoicePrefixArgs prefix_params;
-    InvoiceCreateArgs create_params;
 
     Database::ID getRegistrarId(std::string handle);
 
@@ -93,7 +92,6 @@ public:
             , const InvoiceCreditArgs& _credit_params
             , const InvoiceBillingArgs& _billing_params
             , const InvoicePrefixArgs& _prefix_params
-            , const InvoiceCreateArgs& _create_params
             )
     : BaseClient(connstring, nsAddr)
     , nameservice_context(_nameservice_context)
@@ -113,7 +111,6 @@ public:
     , credit_params(_credit_params)
     , billing_params(_billing_params)
     , prefix_params(_prefix_params)
-    , create_params(_create_params)
     {
         Database::Connection conn = Database::Manager::acquire();
         m_db.reset(new DB(conn));

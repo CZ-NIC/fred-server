@@ -3,10 +3,9 @@
 #include <algorithm>
 // #include <magic.h>
 
-#include "src/libfred/banking/bank_statement_impl.hh"
-#include "src/libfred/banking/bank_statement_list_impl.hh"
 #include "src/libfred/banking/bank_common.hh"
 #include "src/libfred/banking/bank_manager.hh"
+#include "src/libfred/banking/bank_payment.hh"
 #include "src/libfred/banking/exceptions.hh"
 #include "src/libfred/credit.hh"
 #include "src/libfred/invoicing/invoice.hh"
@@ -19,45 +18,93 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <utility>
+#include <boost/optional.hpp>
 
 
 namespace LibFred {
 namespace Banking {
+
+namespace {
+
+unsigned long long get_registrar_id_by_handle(
+        const std::string& _registrar_handle)
+{
+    std::string registrar_handle = boost::trim_copy(_registrar_handle);
+
+    Database::Query query;
+    query.buffer()
+        << "SELECT id FROM registrar WHERE handle = "
+        << Database::Value(registrar_handle);
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Result res = conn.exec(query);
+    if (res.size() == 0) {
+            LOGGER(PACKAGE).error(boost::str(boost::format(
+                    "Registrar with handle '%1%' not found in database.") % registrar_handle));
+            throw RegistrarNotFound();
+    }
+    const unsigned long long registrar_id = static_cast<unsigned long long>(res[0][0]);
+    return registrar_id;
+}
+
+unsigned long long get_registrar_id_by_payment(
+        const PaymentData& _payment)
+{
+    Database::Query query;
+    query.buffer() << "SELECT id FROM registrar WHERE varsymb = "
+                   << Database::Value(_payment.variable_symbol)
+                   << " OR (length(trim(regex)) > 0 AND "
+                   << Database::Value(_payment.memo)
+                   << " ~* trim(regex))";
+
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Result result = conn.exec(query);
+    if (result.size() != 1) {
+        LOGGER(PACKAGE).warning(boost::format(
+                    "couldn't find suitable registrar for payment id=%1% "
+                    "=> processing canceled") % _payment.uuid);
+        throw RegistrarNotFound();
+    }
+    const unsigned long long registrar_id = static_cast<unsigned long long>(result[0][0]);
+    return registrar_id;
+}
+
+unsigned long long get_account_id_by_account_number_and_bank_code(
+        const std::string& _account_number,
+        const std::string& _account_bank_code)
+{
+    if (_account_number.empty() || _account_bank_code.empty()) {
+        LOGGER(PACKAGE).error(boost::str(boost::format(
+                "invalid account_number and account_bank_code (%1%/%2%)")
+                % _account_number % _account_bank_code));
+        throw InvalidAccountData();
+    }
+
+    Database::Query query;
+    query.buffer() << "SELECT id FROM bank_account WHERE "
+                   << "trim(leading '0' from account_number) = "
+                   << "trim(leading '0' from " << Database::Value(_account_number) << ") "
+                   << "AND bank_code = " << Database::Value(_account_bank_code);
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Result result = conn.exec(query);
+    if (result.size() == 0) {
+        LOGGER(PACKAGE).error(boost::str(boost::format(
+                "not valid record found in database for account=%1% bankcode=%2%")
+                % _account_number % _account_bank_code));
+        throw InvalidAccountData();
+    }
+    const unsigned long long account_id = static_cast<unsigned long long>(result[0][0]);
+    return account_id;
+}
+
+
+
+} // LibFred::Banking::{anonymous}
 
 class ManagerImpl : virtual public Manager
 {
 private:
     File::Manager *file_manager_;
 
-
-    /**
-     *  core method for pairing payment and statement - no error checking
-     *  just statement update
-     */
-    void _pairPaymentWithStatement(const Database::ID &payment,
-                                   const Database::ID &statement)
-    {
-        if (payment == 0) {
-            throw std::runtime_error("payment id not valid");
-        }
-
-        Database::Query uquery;
-        uquery.buffer() << "UPDATE bank_payment SET statement_id = ";
-        if (statement == 0) {
-            uquery.buffer() << "NULL";
-        }
-        else {
-            uquery.buffer() << Database::Value(statement);
-        }
-        uquery.buffer() << " WHERE id = " << Database::Value(payment);
-
-        Database::Connection conn = Database::Manager::acquire();
-        Database::Result uresult = conn.exec(uquery);
-
-        LOGGER(PACKAGE).info(
-                boost::format("pair payment id=%1% with statement id=%2%: "
-                              "success!") % payment % statement);
-    }
 
     unsigned long long getZoneByAccountId(const unsigned long long &_account_id) {
         Database::Query query;
@@ -99,33 +146,21 @@ private:
 
     }
 
-    Money processPayment(PaymentImpl *_payment,
-                        unsigned long long _registrar_id = 0)
+    Money processPayment(PaymentData& _payment,
+                         unsigned long long _registrar_id)
     {
         Logging::Context ctx("payment processing");
         try
         {
-            if (_payment->getPrice() <= Money("0")) return Money("0");
+            if (_payment.price <= Money("0")) return Money("0");
 
             Database::Connection conn = Database::Manager::acquire();
             Database::Transaction transaction(conn);
 
             DBSharedPtr nodb;
-            /* automatic pair payment with registrar */
             LibFred::Registrar::Manager::AutoPtr rmanager(LibFred::Registrar::Manager::create(nodb));
-            if (_registrar_id == 0) {
-                _registrar_id = rmanager->getRegistrarByPayment(_payment->getVarSymb(),
-                                                                _payment->getAccountMemo());
-                /* did we find suitable registrar? */
-                if (_registrar_id == 0) {
-                    LOGGER(PACKAGE).warning(boost::format(
-                                "couldn't find suitable registrar for payment id=%1% "
-                                "=> processing canceled") % _payment->getUuid());
-                    throw RegistrarNotFound();
-                }
-            }
 
-            unsigned long long zone_id = getZoneByAccountId(_payment->getAccountId());
+            unsigned long long zone_id = getZoneByAccountId(_payment.account_id);
 
 
             std::unique_ptr<LibFred::Invoicing::Manager>
@@ -137,7 +172,7 @@ private:
                 = invoice_manager->find_unpaid_account_invoices(
                      _registrar_id, zone_id);
 
-            Money payment_price_rest = _payment->getPrice();
+            Money payment_price_rest = _payment.price;
 
             //for unpaid_account_invoices
             for(unsigned i = 0 ; i < uai_vect.size(); ++i)
@@ -162,7 +197,7 @@ private:
                         Money balance_change //is partial_price without vat
                             = invoice_manager->lower_account_invoice_balance_by_paid_amount(
                                 partial_price, uaci_vat , unpaid_account_invoice_id);
-                        pay_invoice(_registrar_id , zone_id, _payment->getUuid()
+                        pay_invoice(_registrar_id , zone_id, _payment.uuid
                             , balance_change, unpaid_account_invoice_id);
                     }
                     else
@@ -170,7 +205,7 @@ private:
                         Money balance_change //is rest of invoice balance without vat
                             = invoice_manager->zero_account_invoice_balance(
                                 unpaid_account_invoice_id);
-                        pay_invoice(_registrar_id , zone_id, _payment->getUuid()
+                        pay_invoice(_registrar_id , zone_id, _payment.uuid
                             , balance_change, unpaid_account_invoice_id);
                     }
                 }
@@ -186,7 +221,7 @@ private:
                             " => processing canceled (payment id=%3%)")
                             % _registrar_id
                             % zone_id
-                            % _payment->getUuid());
+                            % _payment.uuid);
                     throw std::runtime_error("could not process payment");
                 }
 
@@ -197,7 +232,7 @@ private:
                             " sent amount larger than debt (payment id=%3%) it will have to be resolved manually")
                             % _registrar_id
                             % zone_id
-                            % _payment->getUuid());
+                            % _payment.uuid);
                     throw std::runtime_error("could not process payment");
 
                 }
@@ -213,7 +248,6 @@ private:
                 boost::posix_time::ptime local_current_timestamp
                     = boost::posix_time::microsec_clock::local_time();
 
-
                 boost::gregorian::date tax_date = local_current_timestamp.date();
 
 
@@ -225,7 +259,7 @@ private:
                         , payment_price_rest
                         , local_current_timestamp, out_credit);
 
-                pay_invoice(_registrar_id , zone_id, _payment->getUuid()
+                pay_invoice(_registrar_id , zone_id, _payment.uuid
                         , out_credit, advance_invoice_id);
 
                 remaining_credit = out_credit;
@@ -256,22 +290,6 @@ public:
     {
     }
 
-    StatementList* createStatementList() const
-    {
-        return new StatementListImpl();
-    }
-
-    void importStatementXml(std::istream &_in,
-                            const std::string &_file_path,
-                            const std::string &_file_mime,
-                            const bool &_generate_invoices = false)
-         //throw (std::runtime_error)
-    {
-        TRACE("[CALL] LibFred::Banking::Manager::importStatementXml(...)");
-        Logging::Context ctx("bank xml import");
-        throw std::runtime_error("bank xml import: obsolete");
-    }
-
     Money importPayment(
             const std::string& _uuid,
             const std::string& _account_number,
@@ -298,8 +316,6 @@ public:
 
             LOGGER(PACKAGE).debug("saving transaction for single payment");
 
-            const unsigned long long account_id = statement_from_params(_account_number, _account_bank_code)->getAccountId();
-
             Database::Query query;
             // clang-format off
             query.buffer() << "SELECT 1 "
@@ -311,10 +327,10 @@ public:
                 throw PaymentAlreadyProcessed();
             }
 
-            PaymentImplPtr processable_payment =
-                    make_importable_payment(
+            PaymentData payment =
+                    PaymentData(
                             _uuid,
-                            account_id,
+                            get_account_id_by_account_number_and_bank_code(_account_number, _account_bank_code),
                             _account_payment_ident,
                             _counter_account_number,
                             _counter_account_bank_code,
@@ -329,20 +345,20 @@ public:
 
             LOGGER(PACKAGE).info(boost::format(
                     "payment imported (id=%1% account=%2%/%3% evid=%4% price=%5% account_date=%6%) account_id=%7%")
-                    % processable_payment->getUuid()
-                    % processable_payment->getAccountNumber()
-                    % processable_payment->getBankCode()
-                    % processable_payment->getAccountEvid()
-                    % processable_payment->getPrice()
-                    % processable_payment->getAccountDate()
-                    % processable_payment->getAccountId());
+                    % payment.uuid
+                    % payment.counter_account_number
+                    % payment.counter_account_bank_code
+                    % payment.account_payment_ident
+                    % payment.price
+                    % payment.date
+                    % payment.account_id);
 
             const unsigned long long registrar_id =
                     _registrar_handle != boost::none
-                    ? pairPaymentWithRegistrar(_uuid, *_registrar_handle)
-                    : 0;
+                            ? get_registrar_id_by_handle(*_registrar_handle)
+                            : get_registrar_id_by_payment(payment);
 
-            const Money remaining_credit = processPayment(processable_payment.get(), registrar_id);
+            const Money remaining_credit = processPayment(payment, registrar_id);
 
             tx.commit();
 
@@ -430,101 +446,6 @@ public:
         }
     }
 
-    bool pairPaymentWithStatement(const Database::ID &payment,
-                                  const Database::ID &statement,
-                                  bool force = false)
-    {
-        TRACE("[CALL] LibFred::Banking::Manager::pairPaymentWithStatement(...)");
-        if (payment == 0) {
-            throw std::runtime_error("payment id not valid");
-        }
-
-        Database::Connection conn = Database::Manager::acquire();
-        try {
-            Database::Query pquery;
-            pquery.buffer() << "SELECT id, statement_id FROM bank_payment WHERE id = "
-                            << Database::Value(payment);
-
-            Database::Result presult = conn.exec(pquery);
-            if (presult.size() == 0) {
-                throw std::runtime_error("payment doesn't exist");
-            }
-
-            if (statement > 0) {
-                Database::Query squery;
-                squery.buffer() << "SELECT id FROM bank_statement WHERE id = "
-                                << Database::Value(statement);
-
-                Database::Result sresult = conn.exec(squery);
-                if (sresult.size() == 0) {
-                    throw std::runtime_error("statement doesn't exist");
-                }
-            }
-
-            unsigned long long payment_sid = presult[0][1];
-            if (payment_sid > 0) {
-                if (force) {
-                    LOGGER(PACKAGE).info(
-                            boost::format("Pair payment id=%1% with statement id=%2%: "
-                                          "payment is listed on statement id=%3% (FORCING)")
-                                           % payment % statement % payment_sid);
-                }
-                else {
-                    throw std::runtime_error(str(boost::format(
-                                    "payment is listed on statement id=%3% "
-                                    "(try run with `force' parameter)")
-                                    % payment % statement % payment_sid));
-                }
-            }
-
-            /* update payment */
-            _pairPaymentWithStatement(payment, statement);
-            return true;
-        }
-        catch (std::exception &ex) {
-            LOGGER(PACKAGE).error(
-                    boost::format("Cannot pair payment id=%1% with statement id=%2%: %3%")
-                                  % payment % statement % ex.what());
-            return false;
-         }
-        catch (...) {
-            LOGGER(PACKAGE).error(
-                    boost::format("Cannot pair payment id=%1% with statement id=%2%: "
-                                  "exception caught") % payment % statement);
-            return false;
-        }
-    }
-
-    virtual unsigned long long pairPaymentWithRegistrar(
-                const std::string& _payment_uuid,
-                const std::string &_registrarHandle) {
-
-        TRACE("[CALL] LibFred::Invoicing::Manager::manualCreateInvoice(Database::ID, std::string)");
-
-        //trim spaces
-        std::string registrarHandle = boost::trim_copy(_registrarHandle);
-
-        Database::Query query;
-        query.buffer()
-            << "SELECT id FROM registrar WHERE handle="
-            << Database::Value(registrarHandle);
-        Database::Connection conn = Database::Manager::acquire();
-        try {
-            Database::Result res = conn.exec(query);
-            if(res.size() == 0) {
-                    LOGGER(PACKAGE).error(boost::format(
-                    "Registrar with handle '%1%' not found in database.") %
-                            registrarHandle);
-                    throw RegistrarNotFound();
-            }
-            const unsigned long long registrarId = static_cast<unsigned long long>(res[0][0]);
-            return registrarId;
-
-        } catch (std::exception &e) {
-            LOGGER(PACKAGE).error(boost::format("An error has occured: %1% ") % e.what());
-            throw;
-        }
-    }
 };
 
 Manager* Manager::create(File::Manager *_file_manager)

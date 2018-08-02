@@ -44,8 +44,6 @@ InvoiceClient::runMethod()
         billing();
     } else if (invoice_add_prefix) {
         add_invoice_prefix();
-    } else if (invoice_create) {
-        create_invoice();
     }
 }
 
@@ -501,32 +499,6 @@ InvoiceClient::add_invoice_prefix()
     } else if (prefix_params.zone_fqdn.is_value_set()) {
         std::string zoneName = prefix_params.zone_fqdn.get_value();
         invMan->insertInvoicePrefix(zoneName, type, year, prefix);
-    }
-}
-
-void
-InvoiceClient::create_invoice()
-{
-    // init file manager
-    CorbaClient corba_client(0, 0, m_nsAddr, nameservice_context);
-    FileManagerClient fm_client(corba_client.getNS());
-    LibFred::File::ManagerPtr file_manager(LibFred::File::Manager::create(&fm_client));
-
-    // bank manager
-    LibFred::Banking::ManagerPtr bank_manager(LibFred::Banking::Manager::create(file_manager.get()));
-
-    std::string payment_uuid = create_params.payment_uuid.get_value();
-    if (create_params.registrar_handle.is_value_set()) {
-        try {
-            bank_manager->pairPaymentWithRegistrar(payment_uuid,
-                    create_params.registrar_handle.get_value());
-        }
-        catch (const std::runtime_error& e)
-        {
-            std::cerr << e.what() << std::endl;
-        }
-    } else {
-        std::cerr << "You have to specify  ``--registrar_handle''" << std::endl;
     }
 }
 

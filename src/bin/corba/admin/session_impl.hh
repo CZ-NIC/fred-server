@@ -153,8 +153,6 @@ private:
   Registry::Mailing::Detail* createMailDetail(LibFred::Mail::Mail *_mail);
   Registry::Invoicing::Detail* createInvoiceDetail(LibFred::Invoicing::Invoice *_invoice);
   Registry::Zone::Detail* createZoneDetail(LibFred::Zone::Zone* _registrar);
-  Registry::Banking::BankItem::Detail *createPaymentDetail(LibFred::Banking::Payment *_payment);
-  //Registry::Banking::BankHead::Detail *createStatementDetail(LibFred::Banking::Statement *_statement);
   Registry::Message::Detail* createMessageDetail(LibFred::Messages::MessagePtr _message);
 
 public:
@@ -189,8 +187,6 @@ public:
 
   void setHistory(CORBA::Boolean _flag);
 };
-
-void fillPaymentDetail(Registry::Banking::BankItem::Detail &d, const LibFred::Banking::Payment *_payment);
 
 class CompareSessionsByLastActivity {
 public:

@@ -52,8 +52,6 @@ public:
   // ccReg::Filters::RequestType_ptr addE(Database::Filters::Value<Database::Filters::RequestType> *f);
   ccReg::Filters::ServiceType_ptr addE(Database::Filters::ServiceType *f);
   ccReg::Filters::RequestType_ptr addE(Database::Filters::RequestType *f);
-  ccReg::Filters::StatementItem_ptr addE(Database::Filters::BankPayment *f);
-  ccReg::Filters::StatementHead_ptr addE(Database::Filters::BankStatement *f);
 
 
   ccReg::Filters::ZoneSoa_ptr addE(Database::Filters::ZoneSoa *f);

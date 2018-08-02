@@ -674,11 +674,6 @@ Registry::Zone::Detail* ccReg_Session_i::getZoneDetail(ccReg::TID _id) {
   }
 }
 
-Registry::Banking::BankItem::Detail *ccReg_Session_i::createPaymentDetail(LibFred::Banking::Payment *_payment) {
-        Registry::Banking::BankItem::Detail *detail = new Registry::Banking::BankItem::Detail();
-    return detail;
-}
-
 Registry::Domain::Detail* ccReg_Session_i::createHistoryDomainDetail(LibFred::Domain::List* _list) {
   TRACE("[CALL] ccReg_Session_i::createHistoryDomainDetail()");
   Registry::Domain::Detail *detail = new Registry::Domain::Detail();
