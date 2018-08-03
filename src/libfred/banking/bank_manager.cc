@@ -5,20 +5,20 @@
 
 #include "src/libfred/banking/bank_common.hh"
 #include "src/libfred/banking/bank_manager.hh"
-#include "src/libfred/banking/bank_payment.hh"
 #include "src/libfred/banking/exceptions.hh"
+#include "src/libfred/banking/payment_data.hh"
 #include "src/libfred/credit.hh"
 #include "src/libfred/invoicing/invoice.hh"
 #include "src/libfred/registrar.hh"
-#include "src/util/types/stringify.hh"
 #include "src/util/types/money.hh"
+#include "src/util/types/stringify.hh"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/optional.hpp>
 
 #include <utility>
-#include <boost/optional.hpp>
 
 
 namespace LibFred {
@@ -152,7 +152,10 @@ private:
         Logging::Context ctx("payment processing");
         try
         {
-            if (_payment.price <= Money("0")) return Money("0");
+            if (_payment.price <= Money("0"))
+            {
+                throw std::runtime_error("could not process payment, price not > 0");
+            }
 
             Database::Connection conn = Database::Manager::acquire();
             Database::Transaction transaction(conn);

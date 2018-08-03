@@ -1,9 +1,9 @@
 #include "src/libfred/banking/bank_common.hh"
 
-#include "src/libfred/banking/bank_payment.hh"
+#include "src/libfred/banking/payment_data.hh"
 #include "src/libfred/db_settings.hh"
-#include "src/util/types/stringify.hh"
 #include "src/util/types/money.hh"
+#include "src/util/types/stringify.hh"
 
 #include <boost/date_time/posix_time/ptime.hpp>
 

@@ -46,7 +46,7 @@ AccountingImpl::AccountingImpl(
     : server_name_(_server_name)
 {
 }
-
+/*
 void AccountingImpl::increase_zone_credit_of_registrar(
         const char* _transaction_ident,
         const char* _registrar_handle,
@@ -87,7 +87,7 @@ void AccountingImpl::decrease_zone_credit_of_registrar(
         const char* _transaction_ident,
         const char* _registrar_handle,
         const char* _zone,
-        const Registry::Accounting::Credit& _credit_amount_to_substract)
+        const Registry::Accounting::Credit& _credit_amount_to_subtract)
 {
     try
     {
@@ -95,7 +95,7 @@ void AccountingImpl::decrease_zone_credit_of_registrar(
                 LibFred::Corba::unwrap_string_from_const_char_ptr(_transaction_ident),
                 LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar_handle),
                 LibFred::Corba::unwrap_string_from_const_char_ptr(_zone),
-                Impl::unwrap_Registry_Accounting_Credit(_credit_amount_to_substract));
+                Impl::unwrap_Registry_Accounting_Credit(_credit_amount_to_subtract));
     }
     catch (const Fred::Backend::Accounting::CreditAlreadyProcessed&)
     {
@@ -118,7 +118,7 @@ void AccountingImpl::decrease_zone_credit_of_registrar(
         throw Registry::Accounting::INTERNAL_SERVER_ERROR();
     }
 }
-
+*/
 Registry::Accounting::Registrar* AccountingImpl::get_registrar_by_payment(
         const Registry::Accounting::PaymentData& _payment_data,
         CORBA::String_out _zone)

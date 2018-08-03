@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef BANK_PAYMENT_HH_EEA105A1639F43E79CEFCF87DCBC8AA1
-#define BANK_PAYMENT_HH_EEA105A1639F43E79CEFCF87DCBC8AA1
+#ifndef PAYMENT_DATA_HH_EEA105A1639F43E79CEFCF87DCBC8AA1
+#define PAYMENT_DATA_HH_EEA105A1639F43E79CEFCF87DCBC8AA1
 
 #include "src/libfred/exceptions.hh"
 #include "src/libfred/common_new.hh"

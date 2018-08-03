@@ -29,16 +29,6 @@
 
 #include <string>
 
-namespace Fred {
-namespace Backend {
-namespace Accounting {
-
-class AccountingImpl; // PIMPL class
-
-} // namespace Fred::Backend::Accounting
-} // namespace Fred::Backend
-} // namespace Fred
-
 namespace CorbaConversion {
 namespace Accounting {
 
@@ -51,6 +41,7 @@ public:
 
     // methods corresponding to defined IDL attributes and operations
 
+    /*
     void increase_zone_credit_of_registrar(
             const char* _transaction_ident,
             const char* _registrar_handle,
@@ -61,7 +52,8 @@ public:
             const char* _transaction_ident,
             const char* _registrar_handle,
             const char* _zone,
-            const Registry::Accounting::Credit& _credit_amount_to_substract) final override;
+            const Registry::Accounting::Credit& _credit_amount_to_subtract) final override;
+    */
 
     Registry::Accounting::Registrar* get_registrar_by_payment(
             const Registry::Accounting::PaymentData& _payment_data,

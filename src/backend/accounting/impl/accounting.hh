@@ -42,7 +42,7 @@ void decrease_zone_credit_of_registrar(
         const std::string& _transaction_ident,
         const std::string& _registrar_handle,
         const std::string& _zone,
-        const Credit& _credit_amount_to_substract);
+        const Credit& _credit_amount_to_subtract);
 
 Fred::Backend::Accounting::Registrar get_registrar_by_payment(
         LibFred::OperationContext& _ctx,

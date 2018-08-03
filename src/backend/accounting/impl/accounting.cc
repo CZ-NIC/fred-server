@@ -172,15 +172,15 @@ void decrease_zone_credit_of_registrar(
         const std::string& _transaction_ident,
         const std::string& _registrar_handle,
         const std::string& _zone,
-        const Credit& _credit_amount_to_substract)
+        const Credit& _credit_amount_to_subtract)
 {
-    if (_credit_amount_to_substract.value.is_special() ||
-        _credit_amount_to_substract.value.is_negative())
+    if (_credit_amount_to_subtract.value.is_special() ||
+        _credit_amount_to_subtract.value.is_negative())
     {
         throw InvalidCreditValue();
     }
     change_zone_credit_of_registrar(
-            _ctx, _transaction_ident, _registrar_handle, _zone, _credit_amount_to_substract);
+            _ctx, _transaction_ident, _registrar_handle, _zone, _credit_amount_to_subtract);
 }
 
 Fred::Backend::Accounting::Registrar get_registrar_by_payment(
@@ -370,6 +370,9 @@ void import_payment(
     catch (const LibFred::Banking::InvalidAccountData&) {
         throw InvalidAccountData();
     }
+    catch (const LibFred::Banking::InvalidPriceValue&) {
+        throw InvalidPaymentData();
+    }
     catch (const LibFred::Banking::PaymentAlreadyProcessed&) {
         throw PaymentAlreadyProcessed();
     }
@@ -409,6 +412,9 @@ void import_payment_by_registrar_handle(
     }
     catch (const LibFred::Banking::InvalidAccountData&) {
         throw InvalidAccountData();
+    }
+    catch (const LibFred::Banking::InvalidPriceValue&) {
+        throw InvalidPaymentData();
     }
     catch (const LibFred::Banking::PaymentAlreadyProcessed&) {
         throw PaymentAlreadyProcessed();

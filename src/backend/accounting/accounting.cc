@@ -104,7 +104,7 @@ void decrease_zone_credit_of_registrar(
         const std::string& _transaction_ident,
         const std::string& _registrar_handle,
         const std::string& _zone,
-        const Credit& _credit_amount_to_substract)
+        const Credit& _credit_amount_to_subtract)
 {
     LOGGING_CONTEXT(log_ctx);
     LOGGER(PACKAGE).info(__FUNCTION__);
@@ -117,7 +117,7 @@ void decrease_zone_credit_of_registrar(
                 _transaction_ident,
                 _registrar_handle,
                 _zone,
-                _credit_amount_to_substract);
+                _credit_amount_to_subtract);
 
         ctx.commit_transaction();
     }
@@ -259,6 +259,11 @@ void import_payment(
         LOGGER(PACKAGE).info(e.what());
         throw InvalidPaymentData();
     }
+    catch (const Impl::InvalidPaymentData& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw InvalidPaymentData();
+    }
     catch (const Impl::PaymentAlreadyProcessed& e)
     {
         LOGGER(PACKAGE).info(e.what());
@@ -296,6 +301,11 @@ void import_payment_by_registrar_handle(
         throw RegistrarNotFound();
     }
     catch (const Impl::InvalidAccountData& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw InvalidPaymentData();
+    }
+    catch (const Impl::InvalidPaymentData& e)
     {
         LOGGER(PACKAGE).info(e.what());
         throw InvalidPaymentData();
