@@ -7,25 +7,45 @@
 #include <vector>
 #include <time.h>
 #include <sys/time.h>
-#include <unistd.h>
-#include <sys/syscall.h>
+#include <atomic>
 
 
 namespace Random {
 
-
-unsigned long msseed()
+namespace
 {
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    return (static_cast<unsigned long>(tv.tv_sec) + tv.tv_usec) ^ syscall(SYS_gettid);
+
+class RandomSequenceNumber
+{
+public:
+    RandomSequenceNumber()
+    {
+        struct timeval tv;
+        gettimeofday(&tv, NULL);
+        id_.store(1000 * 1000 * static_cast<unsigned long>(tv.tv_sec) + tv.tv_usec);
+    }
+
+    unsigned long next()
+    {
+        return static_cast<unsigned long>(++id_);
+    }
+
+private:
+    std::atomic<unsigned long> id_;
+};
+
+RandomSequenceNumber& get_random_sequence_number()
+{
+    static RandomSequenceNumber global_seed;
+    return global_seed;
 }
 
+} // namespace Random::{anonymous}
 
 
 int integer(const int &_min, const int &_max)
 {
-    thread_local boost::mt19937 rng(msseed());
+    thread_local boost::mt19937 rng(get_random_sequence_number().next());
     boost::uniform_int<> range(_min, _max);
     boost::variate_generator<boost::mt19937&, boost::uniform_int<> > gen(rng, range);
     return gen();
