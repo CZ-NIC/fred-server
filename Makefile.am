@@ -3148,6 +3148,7 @@ SERVER_TESTS = \
 		test/backend/test-admin-contact-automerge \
 		test/backend/test-admin-notification \
 		test/backend/test-admin-domain \
+		test/backend/test-admin-zone \
 		test/backend/test-epp \
 		test/backend/test-whois \
 		test/backend/test-public-request \
@@ -3346,6 +3347,47 @@ test_backend_test_admin_domain_LDADD = \
 		$(LIBIDN_LIBS)
 #
 # test/backend/test-admin-domain
+
+# test/backend/test-admin-zone
+#
+test_backend_test_admin_zone_SOURCES = \
+		test/backend/admin/zone/fixtures.hh \
+		test/backend/admin/zone/main.cc \
+		test/backend/admin/zone/test_add_zone.cc \
+		test/backend/admin/zone/test_add_zone_ns.cc \
+		test/setup/fixtures.hh \
+		test/setup/fixtures.cc \
+		test/setup/fixtures_utils.hh \
+		test/setup/fixtures_utils.cc
+
+test_backend_test_admin_zone_LDFLAGS = \
+		$(POSTGRESQL_LDFLAGS) \
+		$(BOOST_LDFLAGS) \
+		$(AM_LDFLAGS)
+
+test_backend_test_admin_zone_LDADD = \
+		src/backend/admin/zone/libadmin_zone.a \
+		src/bin/corba/libcorba.a \
+		src/bin/corba/libcorbafilters.a \
+		src/bin/corba/libcorbadatatypes.a \
+		src/libfred/libfred.a \
+		src/util/log/liblog.a \
+		src/util/db/libdb.a \
+		src/util/libutil.a \
+		src/util/types/libtypes.a \
+		src/util/tz/libtimezones.a \
+		$(BOOST_PROGRAM_OPTIONS_LIB) \
+		$(BOOST_DATE_TIME_LIB) \
+		$(BOOST_REGEX_LIB) \
+		$(BOOST_RANDOM_LIB) \
+		$(OMNIORB4_LIBS) \
+		$(BOOST_THREAD_LIB) \
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB) \
+		$(BOOST_UNIT_TEST_FRAMEWORK_LIB) \
+		$(LIBIDN_LIBS)
+#
+# test/backend/test-admin-zone
 
 # test/backend/test-epp
 #
