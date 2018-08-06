@@ -31,6 +31,7 @@
 #include "src/backend/credit.hh"
 #include "src/bin/corba/Accounting.hh"
 #include "src/bin/corba/accounting/impl/corba_conversions.hh"
+#include "src/bin/corba/accounting/impl/exceptions.hh"
 #include "src/bin/corba/util/corba_conversions_string.hh"
 
 #include <boost/date_time/gregorian/greg_date.hpp>
@@ -140,6 +141,10 @@ Registry::Accounting::Registrar* AccountingImpl::get_registrar_by_payment(
         _zone = LibFred::Corba::wrap_string_to_corba_string(zone)._retn();
         return return_value._retn();
     }
+    catch (const Impl::InvalidPaymentData&)
+    {
+        throw Registry::Accounting::INVALID_PAYMENT_DATA();
+    }
     catch (const Fred::Backend::Accounting::RegistrarNotFound&)
     {
         throw Registry::Accounting::REGISTRAR_NOT_FOUND();
@@ -177,6 +182,10 @@ Registry::Accounting::Registrar* AccountingImpl::get_registrar_by_handle_and_pay
         _zone = LibFred::Corba::wrap_string_to_corba_string(zone)._retn();
         return return_value._retn();
     }
+    catch (const Impl::InvalidPaymentData&)
+    {
+        throw Registry::Accounting::INVALID_PAYMENT_DATA();
+    }
     catch (const Fred::Backend::Accounting::RegistrarNotFound&)
     {
         throw Registry::Accounting::REGISTRAR_NOT_FOUND();
@@ -205,6 +214,10 @@ void AccountingImpl::import_payment(
         Registry::Accounting::Credit_var remaining_credit = new Registry::Accounting::Credit;
         Impl::wrap_Fred_Backend_Credit_to_Registry_Accounting_Credit(credit, remaining_credit.inout());
         _remaining_credit = remaining_credit._retn();
+    }
+    catch (const Impl::InvalidPaymentData&)
+    {
+        throw Registry::Accounting::INVALID_PAYMENT_DATA();
     }
     catch (const Fred::Backend::Accounting::RegistrarNotFound&)
     {
@@ -240,6 +253,10 @@ void AccountingImpl::import_payment_by_registrar_handle(
         Registry::Accounting::Credit_var remaining_credit = new Registry::Accounting::Credit;
         Impl::wrap_Fred_Backend_Credit_to_Registry_Accounting_Credit(credit, remaining_credit.inout());
         _remaining_credit = remaining_credit._retn();
+    }
+    catch (const Impl::InvalidPaymentData&)
+    {
+        throw Registry::Accounting::INVALID_PAYMENT_DATA();
     }
     catch (const Fred::Backend::Accounting::RegistrarNotFound&)
     {

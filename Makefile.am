@@ -332,6 +332,7 @@ noinst_HEADERS = \
 		src/backend/public_request/process/personal_info.hh \
 		test/backend/epp/nsset/fixture.hh \
 		src/bin/corba/accounting/impl/corba_conversions.hh
+		src/bin/corba/accounting/impl/exceptions.hh
 
 noinst_LIBRARIES = \
 		src/util/libutil.a \
@@ -2780,6 +2781,8 @@ src_bin_corba_accounting_fred_accifd_SOURCES = \
 		src/bin/corba/accounting/fred-accifd.cc \
 		src/bin/corba/accounting/impl/corba_conversions.cc \
 		src/bin/corba/accounting/impl/corba_conversions.hh \
+		src/bin/corba/accounting/impl/exceptions.cc \
+		src/bin/corba/accounting/impl/exceptions.hh \
 		src/bin/corba/nameservice.cc
 
 src_bin_corba_accounting_fred_accifd_LDFLAGS = \
