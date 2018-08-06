@@ -2924,8 +2924,6 @@ src_bin_cli_fred_admin_SOURCES = \
 		src/backend/admin/notification/notification.cc \
 		src/backend/admin/domain/create_expired_domain.hh \
 		src/backend/admin/domain/create_expired_domain.cc \
-		src/backend/admin/zone/zone.hh \
-		src/backend/admin/zone/zone.cc \
 		src/backend/buffer.cc \
 		src/backend/buffer.hh \
 		src/bin/cli/public_request_params.hh \
@@ -2939,6 +2937,7 @@ src_bin_cli_fred_admin_LDFLAGS = \
 
 src_bin_cli_fred_admin_LDADD = \
 		src/backend/admin/contact/verification/libadmin_contact_verification.a \
+		src/backend/admin/zone/libadmin_zone.a \
 		src/libfred/libfred.a \
 		src/backend/epp/impl/registraracl/libauthentic_registrar.a \
 		src/util/libpassword_storage.a \
