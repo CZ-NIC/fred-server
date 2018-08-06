@@ -32,15 +32,15 @@ namespace Zone {
 
 void add_zone(
         const std::string& _fqdn,
-        int _expiration_period_min = 12,
-        int _expiration_period_max = 120,
-        int _ttl = 18000,
-        const std::string& _hostmaster = "hostmaster@localhost",
-        int _refresh = 10600,
-        int _update_retr = 3600,
-        int _expiry = 1209600,
-        int _minimum = 7200,
-        const std::string& _ns_fqdn = "localhost")
+        int _expiration_period_min,
+        int _expiration_period_max,
+        int _ttl,
+        const std::string& _hostmaster,
+        int _refresh,
+        int _update_retr,
+        int _expiry,
+        int _minimum,
+        const std::string& _ns_fqdn)
 {
     LibFred::OperationContextCreator ctx;
 
@@ -55,14 +55,13 @@ void add_zone(
             .set_minimum(_minimum)
             .set_ns_fqdn(_ns_fqdn)
             .exec(ctx);
-
     ctx.commit_transaction();
 }
 
 void add_zone_ns(
         const std::string& _zone_fqdn,
-        const std::string& _nameserver_fqdn = "localhost",
-        const std::string& _nameserver_ip_addresses = "")
+        const std::string& _nameserver_fqdn,
+        const std::string& _nameserver_ip_addresses)
 {
     LibFred::OperationContextCreator ctx;
 
