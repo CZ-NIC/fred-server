@@ -16,53 +16,46 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CONTACT_DATA_HH_2ADE4FD677064F6994115E79385BB28D
+#ifndef CONTACT_DATA_HH_2ADE4FD677064F6994115E79385BB28D//date "+%s.%N"|md5sum|tr "[a-f]" "[A-F]"
 #define CONTACT_DATA_HH_2ADE4FD677064F6994115E79385BB28D
 
-#include "src/backend/epp/contact/contact_disclose.hh"
+#include "src/backend/epp/contact/hideable.hh"
+#include "src/backend/epp/contact/street_traits.hh"
 #include "src/backend/epp/contact/contact_ident.hh"
 
 #include <boost/optional.hpp>
 
 #include <string>
-#include <vector>
 
 namespace Epp {
 namespace Contact {
 
 struct ContactData
 {
+    ContactData();
     struct Address
     {
-        boost::optional<std::string> street1;
-        boost::optional<std::string> street2;
-        boost::optional<std::string> street3;
+        StreetTraits::Rows<boost::optional<std::string>> street;
         boost::optional<std::string> city;
         boost::optional<std::string> state_or_province;
         boost::optional<std::string> postal_code;
         boost::optional<std::string> country_code;
     };
-    boost::optional<std::string> name;
-    boost::optional<std::string> organization;
-    std::vector<std::string> streets;
-    boost::optional<std::string> city;
-    boost::optional<std::string> state_or_province;
-    boost::optional<std::string> postal_code;
-    boost::optional<std::string> country_code;
+    HideableOptional<std::string> name;
+    HideableOptional<std::string> organization;
+    HideableOptional<Address> address;
     boost::optional<Address> mailing_address;
-    boost::optional<std::string> telephone;
-    boost::optional<std::string> fax;
-    boost::optional<std::string> email;
-    boost::optional<std::string> notify_email;
-    boost::optional<std::string> vat;
-    boost::optional<ContactIdent> ident;
+    HideableOptional<std::string> telephone;
+    HideableOptional<std::string> fax;
+    HideableOptional<std::string> email;
+    HideableOptional<std::string> notify_email;
+    HideableOptional<std::string> vat;
+    HideableOptional<ContactIdent> ident;
     boost::optional<std::string> authinfopw;
-    boost::optional<ContactDisclose> disclose;
+    ContactData get_trimmed_copy()const;
 };
 
-ContactData trim(const ContactData& src);
+}//namespace Epp::Contact
+}//namespace Epp
 
-} // namespace Epp::Contact
-} // namespace Epp
-
-#endif
+#endif//CONTACT_DATA_HH_2ADE4FD677064F6994115E79385BB28D

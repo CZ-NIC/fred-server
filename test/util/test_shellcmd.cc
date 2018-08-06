@@ -71,11 +71,10 @@ static bool check_std_exception(std::exception const & ex)
     return (ex_msg.length() != 0);
 }
 #if 1 //enables single-threaded tests
-BOOST_AUTO_TEST_CASE( test_shellcmd_wrapper )
+BOOST_AUTO_TEST_CASE(test_shellcmd_wrapper)
 {
     for(int i = 0; i < 100; ++i)
     {
-
         SubProcessOutput sub_output1 = ShellCmd(
             "cat | tr u -","/bin/bash",10).execute("a u a u");
         BOOST_CHECK(sub_output1.stderr.empty());
@@ -89,14 +88,14 @@ BOOST_AUTO_TEST_CASE( test_shellcmd_wrapper )
             << " sub_output3.stderr: " << sub_output3.stderr << std::endl;
     */
         BOOST_CHECK(sub_output3.stderr.empty());
-        BOOST_CHECK(sub_output3.stdout.compare("kuk\n") == 0);
-
+        BOOST_CHECK_EQUAL(sub_output3.stdout, "kuk\n");
     }
 }
 
-BOOST_AUTO_TEST_CASE( test_exec_wrapper )
+BOOST_AUTO_TEST_CASE(test_exec_wrapper)
 {
-    for (int i = 0; i < 100; ++i) {
+    for (int i = 0; i < 100; ++i)
+    {
         const SubProcessOutput sub_output1 = Cmd::Data("a u a u").into("tr")("u")("-").run_with_path(10);
         BOOST_CHECK(sub_output1.succeeded());
         BOOST_CHECK(sub_output1.stderr.empty());
@@ -110,170 +109,151 @@ BOOST_AUTO_TEST_CASE( test_exec_wrapper )
                      .into("grep")("-v")("juk").run_with_path(10);
         BOOST_CHECK(sub_output2.succeeded());
         BOOST_CHECK(sub_output2.stderr.empty());
-        BOOST_CHECK(sub_output2.stdout == "kuk\n");
+        BOOST_CHECK_EQUAL(sub_output2.stdout, "kuk\n");
     }
 }
 
-BOOST_AUTO_TEST_CASE( test_shellcmd_wrapper1 )
+BOOST_AUTO_TEST_CASE(test_shellcmd_wrapper1)
 {
-
     {
         SubProcessOutput sub_output1 = ShellCmd(
             "cat | tr u -","/bin/bash",10).execute("a u a u");
         BOOST_CHECK(sub_output1.stderr.empty());
-        BOOST_CHECK(sub_output1.stdout.compare("a - a -") == 0);
+        BOOST_CHECK_EQUAL(sub_output1.stdout, "a - a -");
         //BOOST_TEST_MESSAGE(sub_output1.stdout);
     }
 
-    SubProcessOutput sub_output1 = ShellCmd(
-        "echo kuk","/bin/bash",10).execute();
+    SubProcessOutput sub_output1 = ShellCmd("echo kuk","/bin/bash", 10).execute();
 /*
     std::cout << "test_shellcmd_wrapper sub_output1.stdout: " << sub_output1.stdout
         << " sub_output1.stderr: " << sub_output1.stderr << std::endl;
 */
     BOOST_CHECK(sub_output1.stderr.empty());
-    BOOST_CHECK(sub_output1.stdout.compare("kuk\n") == 0);
+    BOOST_CHECK_EQUAL(sub_output1.stdout, "kuk\n");
 
 
-    SubProcessOutput sub_output2 = ShellCmd(
-        "head", "/bin/bash",10).execute("kuk");
+    SubProcessOutput sub_output2 = ShellCmd("head", "/bin/bash", 10).execute("kuk");
 /*
     std::cout << "test_shellcmd_wrapper sub_output2.stdout: " << sub_output2.stdout
         << " sub_output2.stderr: " << sub_output2.stderr << std::endl;
 */
     BOOST_CHECK(sub_output2.stderr.empty());
-    BOOST_CHECK(sub_output2.stdout.compare("kuk") == 0);
+    BOOST_CHECK_EQUAL(sub_output2.stdout, "kuk");
 
     {
         SubProcessOutput sub_output;
-        try
-        {
-            sub_output = ShellCmd(
-                    "head", "/bin/bash",10).execute("kuk");
-        }
-        catch(const std::exception& ex)
-        {
-            std::cout << "std::exception: " << ex.what() << std::endl;
-        }
+        sub_output = ShellCmd("head", "/bin/bash", 10).execute("kuk");
 /*
         std::cout << "test_shellcmd_wrapper sub_output.stdout: " << sub_output.stdout
             << " sub_output.stderr: " << sub_output.stderr << std::endl;
 */
         BOOST_CHECK(sub_output.stderr.empty());
-        BOOST_CHECK(sub_output.stdout.compare("kuk") == 0);
+        BOOST_CHECK_EQUAL(sub_output.stdout, "kuk");
     }
 
     //checks from notify_registered_letters_manual_send_impl
     //if rm is there
     {
-      SubProcessOutput sub_output = ShellCmd("rm --version", 10).execute();
-      BOOST_CHECK(sub_output.stderr.empty());
+        SubProcessOutput sub_output = ShellCmd("rm --version", 10).execute();
+        BOOST_CHECK(sub_output.stderr.empty());
     }
     //if gs is there
     {
-      SubProcessOutput sub_output = ShellCmd("gs --version", 10).execute();
-      BOOST_CHECK(sub_output.stderr.empty());
+        SubProcessOutput sub_output = ShellCmd("gs --version", 10).execute();
+        BOOST_CHECK(sub_output.stderr.empty());
     }
     //if base64 is there
     {
-      SubProcessOutput sub_output = ShellCmd("base64 --version", 10).execute();
-      BOOST_CHECK(sub_output.stderr.empty());
+        SubProcessOutput sub_output = ShellCmd("base64 --version", 10).execute();
+        BOOST_CHECK(sub_output.stderr.empty());
     }
     //if sendmail is there
     {
-      SubProcessOutput sub_output = ShellCmd("ls /usr/sbin/sendmail", 10).execute();
-      BOOST_CHECK(sub_output.stderr.empty());
+        SubProcessOutput sub_output = ShellCmd("ls /usr/sbin/sendmail", 10).execute();
+        BOOST_CHECK(sub_output.stderr.empty());
     }
 
 }
 
-BOOST_AUTO_TEST_CASE( test_exec_wrapper1 )
+BOOST_AUTO_TEST_CASE(test_exec_wrapper1)
 {
-
     {
         const SubProcessOutput sub_output = Cmd::Data("a u a u").into("tr")("u")("-").run_with_path(10);
         BOOST_CHECK(sub_output.succeeded());
         BOOST_CHECK(sub_output.stderr.empty());
-        BOOST_CHECK(sub_output.stdout == "a - a -");
+        BOOST_CHECK_EQUAL(sub_output.stdout, "a - a -");
     }
 
     const SubProcessOutput sub_output1 = Cmd::Executable("echo")("kuk").run_with_path(10);
     BOOST_CHECK(sub_output1.succeeded());
     BOOST_CHECK(sub_output1.stderr.empty());
-    BOOST_CHECK(sub_output1.stdout == "kuk\n");
+    BOOST_CHECK_EQUAL(sub_output1.stdout, "kuk\n");
 
     const SubProcessOutput sub_output2 = Cmd::Data("kuk").into("head").run_with_path(10);
     BOOST_CHECK(sub_output2.succeeded());
     BOOST_CHECK(sub_output2.stderr.empty());
-    BOOST_CHECK(sub_output2.stdout == "kuk");
+    BOOST_CHECK_EQUAL(sub_output2.stdout, "kuk");
 
     {
         SubProcessOutput sub_output;
-        try {
-            sub_output = Cmd::Data("kuk").into("head").run_with_path(10);
-        }
-        catch(const std::exception &ex) {
-            std::cout << "std::exception: " << ex.what() << std::endl;
-        }
+        sub_output = Cmd::Data("kuk").into("head").run_with_path(10);
 
         BOOST_CHECK(sub_output.succeeded());
         BOOST_CHECK(sub_output.stderr.empty());
-        BOOST_CHECK(sub_output.stdout == "kuk");
+        BOOST_CHECK_EQUAL(sub_output.stdout, "kuk");
     }
 
     //checks from notify_registered_letters_manual_send_impl
     //if rm is there
     {
-      BOOST_CHECK(Cmd::Executable("which")("rm").run_with_path(10).succeeded());
+        BOOST_CHECK(Cmd::Executable("which")("rm").run_with_path(10).succeeded());
     }
     //if gs is there
     {
-      BOOST_CHECK(Cmd::Executable("which")("gs").run_with_path(10).succeeded());
+        BOOST_CHECK(Cmd::Executable("which")("gs").run_with_path(10).succeeded());
     }
     //if base64 is there
     {
-      BOOST_CHECK(Cmd::Executable("which")("base64").run_with_path(10).succeeded());
+        BOOST_CHECK(Cmd::Executable("which")("base64").run_with_path(10).succeeded());
     }
     //if sendmail is there
     {
-      BOOST_CHECK(Cmd::Executable("test")("-x")("/usr/sbin/sendmail").run_with_path(10).succeeded());
+        BOOST_CHECK(Cmd::Executable("test")("-x")("/usr/sbin/sendmail").run_with_path(10).succeeded());
     }
 
 }
 
-BOOST_AUTO_TEST_CASE( test_shellcmd_wrapper_stdout )
+BOOST_AUTO_TEST_CASE(test_shellcmd_wrapper_stdout)
 {
-    std::size_t slen =  16777216;//1073741824;//536870912;//268435456;//134217728; //67108864;//33554432;//16777216;
-    SubProcessOutput sub_output1 = ShellCmd(
-        "cat | tr u -","/bin/bash",10).execute(std::string(slen,'u'));
+    const std::size_t slen = 16777216;//1073741824;//536870912;//268435456;//134217728; //67108864;//33554432;//16777216;
+    SubProcessOutput sub_output1 = ShellCmd("cat | tr u -", "/bin/bash", 10).execute(std::string(slen, 'u'));
     BOOST_CHECK(sub_output1.stderr.empty());
-    BOOST_CHECK(sub_output1.stdout.compare(std::string(slen,'-')) == 0);
+    BOOST_CHECK_EQUAL(sub_output1.stdout, std::string(slen, '-'));
     //std::cout << "sub_output1.stdout.length(): " << sub_output1.stdout.length() << " slen: " << slen << std::endl;
-    BOOST_CHECK(sub_output1.stdout.length() == slen);
+    BOOST_CHECK_EQUAL(sub_output1.stdout.length(), slen);
 }
 
-BOOST_AUTO_TEST_CASE( test_exec_wrapper_stdout )
+BOOST_AUTO_TEST_CASE(test_exec_wrapper_stdout)
 {
     const std::size_t slen = 16777216;
     const SubProcessOutput sub_output1 = Cmd::Data(std::string(slen, 'u'))
         .into("tr")("u")("-").run_with_path(10);
     BOOST_CHECK(sub_output1.succeeded());
     BOOST_CHECK(sub_output1.stderr.empty());
-    BOOST_CHECK(sub_output1.stdout == std::string(slen,'-'));
-    BOOST_CHECK(sub_output1.stdout.length() == slen);
+    BOOST_CHECK_EQUAL(sub_output1.stdout, std::string(slen, '-'));
+    BOOST_CHECK_EQUAL(sub_output1.stdout.length(), slen);
 }
 
-BOOST_AUTO_TEST_CASE( test_shellcmd_wrapper_stderr )
+BOOST_AUTO_TEST_CASE(test_shellcmd_wrapper_stderr)
 {
-    std::size_t slen =  16777216;//2147483648;//1073741824;//536870912;//268435456;//134217728; //67108864;//33554432;//16777216;
-    SubProcessOutput sub_output1 = ShellCmd(
-        "cat | tr u - 1>&2","/bin/bash",10).execute(std::string(slen,'u'));
+    const std::size_t slen = 16777216;//2147483648;//1073741824;//536870912;//268435456;//134217728; //67108864;//33554432;//16777216;
+    const SubProcessOutput sub_output1 = ShellCmd("cat | tr u - 1>&2", "/bin/bash", 10).execute(std::string(slen, 'u'));
     BOOST_CHECK(sub_output1.stdout.empty());
-    BOOST_CHECK(sub_output1.stderr.compare(std::string(slen,'-')) == 0);
-    BOOST_CHECK(sub_output1.stderr.length() == slen);
+    BOOST_CHECK_EQUAL(sub_output1.stderr, std::string(slen, '-'));
+    BOOST_CHECK_EQUAL(sub_output1.stderr.length(), slen);
 }
 
-BOOST_AUTO_TEST_CASE( test_shellcmd_wrapper_timeout )
+BOOST_AUTO_TEST_CASE(test_shellcmd_wrapper_timeout)
 {
     static const std::size_t slen = 16;
     static const unsigned timeout_one_second = 1;
@@ -290,13 +270,14 @@ BOOST_AUTO_TEST_CASE( test_shellcmd_wrapper_timeout )
         check_std_exception);
 }
 
-BOOST_AUTO_TEST_CASE( test_exec_wrapper_timeout )
+BOOST_AUTO_TEST_CASE(test_exec_wrapper_timeout)
 {
     static const unsigned timeout_one_second = 1;
     BOOST_CHECK_EXCEPTION(Cmd::Executable("sleep")("20").run_with_path(timeout_one_second),
         std::exception, check_std_exception);
 }
 #endif
+
 //shell cmd threaded test
 struct TestParams
 {
@@ -305,11 +286,12 @@ struct TestParams
     { }
 };
 
-struct ResultTest : TestParams {
+struct ResultTest : TestParams
+{
     unsigned long long result;
     ResultTest()
-    : TestParams()//this shall get called anyway
-    , result(0)
+        : TestParams(),//this shall get called anyway
+          result(0)
     { }
 };
 
@@ -358,10 +340,10 @@ void result_check(const ResultTest &res)
 BOOST_AUTO_TEST_CASE( test_shellcmd_wrapper_threads )
 {
     TestParams params;
-    params.test_param = 9999 ;
+    params.test_param = 9999;
 
 // test
-    threadedTest< TestThreadedWorker> (params, &result_check);
+    threadedTest<TestThreadedWorker>(params, &result_check);
 }
 
 
@@ -373,8 +355,8 @@ struct sync_barriers
 {
     boost::barrier barrier;
 
-    sync_barriers(std::size_t thread_number)
-        : barrier(thread_number)
+    sync_barriers(std::size_t number_of_threads)
+        : barrier(number_of_threads)
     {}
 };
 
@@ -384,13 +366,13 @@ struct ThreadResult
     unsigned ret;//return code
     std::string desc;//some closer description
     ThreadResult()
-    : number(0)
-      , ret(std::numeric_limits<unsigned>::max())
-      , desc("empty result")
-      {}
+        : number(0),
+          ret(std::numeric_limits<unsigned>::max()),
+          desc("empty result")
+    {}
 };
 
-typedef concurrent_queue<ThreadResult > ThreadResultQueue;
+typedef concurrent_queue<ThreadResult> ThreadResultQueue;
 
 namespace {
 
@@ -416,24 +398,23 @@ private:
 
 ::pthread_mutex_t BoostTestMessageGuard::mutex_ = PTHREAD_MUTEX_INITIALIZER;
 
-}
+}//namespace {anonymous}
 
 //thread functor
 class SimpleTestThreadWorker
 {
 public:
-
     SimpleTestThreadWorker(
             unsigned thread_number,
             unsigned sleep_time,
             sync_barriers* sb_ptr,
-            ThreadResultQueue *result_queue_ptr = NULL,
+            ThreadResultQueue *result_queue_ptr = nullptr,
             unsigned seed = 0)
-    :   number_(thread_number),
-        sleep_time_(sleep_time),
-        sb_ptr_(sb_ptr),
-        rdg_(seed),
-        rsq_ptr (result_queue_ptr)
+        : number_(thread_number),
+          sleep_time_(sleep_time),
+          sb_ptr_(sb_ptr),
+          rdg_(seed),
+          rsq_ptr_(result_queue_ptr)
     {}
 
     void operator()()
@@ -441,7 +422,8 @@ public:
         ThreadResult res;
         res.number = number_;
         res.ret = 0;
-        res.desc = std::string("ok");
+        res.desc = "ok";
+        int number_of_entered_barriers = 0;
 
         try
         {
@@ -452,8 +434,11 @@ public:
                 std::cout << out.str() << std::flush;
             }
 #endif
-            if(sb_ptr_)
+            if (sb_ptr_ != nullptr)
+            {
                 sb_ptr_->barrier.wait();//wait for other synced threads
+                ++number_of_entered_barriers;
+            }
 #if 0
             {
                 std::ostringstream out;
@@ -470,17 +455,17 @@ public:
                 static const Cmd::Executable::Seconds timeout = 10;
                 sub_output = ShellCmd("echo kuk | grep kuk | grep -v juk | grep kuk | grep -v juk", timeout).execute();
 
-                if(!sub_output.stderr.empty())
+                if (!sub_output.stderr.empty())
                 {
                     res.ret = 1;
-                    res.desc = std::string("stderr: ") + sub_output.stderr;
+                    res.desc = "stderr: " + sub_output.stderr;
                     break;
                 }
 
-                if(sub_output.stdout.compare("kuk\n") != 0)
+                if (sub_output.stdout != "kuk\n")
                 {
                     res.ret = 2;
-                    res.desc = std::string("expected kuk in stdout and got : ") + sub_output.stdout;
+                    res.desc = "expected kuk in stdout and got: " + sub_output.stdout;
                     break;
                 }
 
@@ -494,14 +479,14 @@ public:
                 if (!sub_output.succeeded() || !sub_output.stderr.empty())
                 {
                     res.ret = 1;
-                    res.desc = std::string("stderr: ") + sub_output.stderr;
+                    res.desc = "stderr: " + sub_output.stderr;
                     break;
                 }
 
-                if(sub_output.stdout != "kuk\n")
+                if (sub_output.stdout != "kuk\n")
                 {
                     res.ret = 2;
-                    res.desc = std::string("expected kuk in stdout and got : ") + sub_output.stdout;
+                    res.desc = "expected kuk in stdout and got: " + sub_output.stdout;
                     break;
                 }
 #if 0
@@ -520,24 +505,32 @@ public:
             }
 
         }
-        catch (const std::exception& ex)
+        catch (const std::exception& e)
         {
             const BoostTestMessageGuard guard;
-            BOOST_TEST_MESSAGE("exception 1 in operator() thread number: " << number_ << " reason: " << ex.what());
+            BOOST_TEST_MESSAGE("exception 1 in operator() thread number: " << number_ << " reason: " << e.what());
             res.ret = 134217728;
-            res.desc = std::string(ex.what());
+            res.desc = e.what();
         }
         catch (...)
         {
             const BoostTestMessageGuard guard;
             BOOST_TEST_MESSAGE("exception 2 in operator() thread number: " << number_);
             res.ret = 268435456;
-            res.desc = std::string("unknown exception");
+            res.desc = "unknown exception";
         }
 
-        if (rsq_ptr != NULL)
+        if (sb_ptr_ != nullptr)
         {
-            rsq_ptr->push(res);
+            while (number_of_entered_barriers < 1)
+            {
+                sb_ptr_->barrier.wait();//wait for other synced threads
+                ++number_of_entered_barriers;
+            }
+        }
+        if (rsq_ptr_ != nullptr)
+        {
+            rsq_ptr_->guarded_access().push(res);
         }
 #if 0
         {
@@ -554,8 +547,8 @@ private:
     unsigned    sleep_time_;//[s]
     sync_barriers* sb_ptr_;
     RandomDataGenerator rdg_;
-    ThreadResultQueue* rsq_ptr; //result queue non-owning pointer
-};//class SimpleTestThreadWorker
+    ThreadResultQueue* rsq_ptr_; //result queue non-owning pointer
+};
 
 
 BOOST_AUTO_TEST_CASE( test_shellcmd_threaded )
@@ -563,7 +556,7 @@ BOOST_AUTO_TEST_CASE( test_shellcmd_threaded )
     HandleThreadGroupArgs* thread_args_ptr=CfgArgs::instance()->
                    get_handler_ptr_by_type<HandleThreadGroupArgs>();
 
-    const std::size_t number_of_threads = thread_args_ptr->thread_number;
+    const std::size_t number_of_threads = thread_args_ptr->number_of_threads;
     ThreadResultQueue result_queue;
 
     //vector of thread functors
@@ -584,15 +577,11 @@ BOOST_AUTO_TEST_CASE( test_shellcmd_threaded )
 
     threads.join_all();
 
-    BOOST_TEST_MESSAGE("threads end result_queue.size(): " << result_queue.size());
+    BOOST_TEST_MESSAGE("threads end result_queue.size(): " << result_queue.unguarded_access().size());
 
-    for (unsigned idx = 0; idx < number_of_threads; ++idx)
+    while (!result_queue.unguarded_access().empty())
     {
-        ThreadResult thread_result;
-        if (!result_queue.try_pop(thread_result))
-        {
-            continue;
-        }
+        const auto thread_result = result_queue.unguarded_access().pop();
 
         if (thread_result.ret != 0)
         {

@@ -21,7 +21,7 @@
 
 #include "src/backend/epp/session_data.hh"
 #include "src/backend/epp/contact/contact_change.hh"
-#include "src/backend/epp/contact/update_contact_localized.hh"
+#include "src/backend/epp/contact/update_contact_config_data.hh"
 #include "src/libfred/opcontext.hh"
 
 #include <string>
@@ -30,7 +30,7 @@ namespace Epp {
 namespace Contact {
 
 /**
- * If successful (no exception thrown) state requests of conact are performed.
+ * If successful (no exception thrown) state requests of contact are performed.
  * In case of exception behaviour is undefined and transaction should be rolled back.
  *
  * @returns new contact history id

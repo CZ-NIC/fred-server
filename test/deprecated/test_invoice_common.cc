@@ -50,38 +50,36 @@ std::unique_ptr<ccReg_EPP_i> create_epp_backend_object()
     init_corba_container();
 
     //conf pointers
-    HandleDatabaseArgs* db_args_ptr = CfgArgs::instance()
-        ->get_handler_ptr_by_type<HandleDatabaseArgs>();
-    HandleRegistryArgs* registry_args_ptr = CfgArgs::instance()
-        ->get_handler_ptr_by_type<HandleRegistryArgs>();
-    HandleRifdArgs* rifd_args_ptr = CfgArgs::instance()
-        ->get_handler_ptr_by_type<HandleRifdArgs>();
+    HandleDatabaseArgs* const db_args_ptr = CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>();
+    HandleRegistryArgs* const registry_args_ptr = CfgArgs::instance()->get_handler_ptr_by_type<HandleRegistryArgs>();
+    HandleRifdArgs* const rifd_args_ptr = CfgArgs::instance()->get_handler_ptr_by_type<HandleRifdArgs>();
 
     // TODO this will be leaked
-    MailerManager * mailMan(new MailerManager(CorbaContainer::get_instance()->getNS()));
+    MailerManager* const mailMan(new MailerManager(CorbaContainer::get_instance()->getNS()));
 
-    std::unique_ptr<ccReg_EPP_i> ret_epp ( new ccReg_EPP_i(
-                db_args_ptr->get_conn_info()
-                , mailMan, CorbaContainer::get_instance()->getNS()
-                , registry_args_ptr->restricted_handles
-                , registry_args_ptr->disable_epp_notifier
-                , registry_args_ptr->lock_epp_commands
-                , registry_args_ptr->nsset_level
-                , registry_args_ptr->nsset_min_hosts
-                , registry_args_ptr->nsset_max_hosts
-                , registry_args_ptr->docgen_path
-                , registry_args_ptr->docgen_template_path
-                , registry_args_ptr->fileclient_path
-                , registry_args_ptr->disable_epp_notifier_cltrid_prefix
-                , rifd_args_ptr->rifd_session_max
-                , rifd_args_ptr->rifd_session_timeout
-                , rifd_args_ptr->rifd_session_registrar_max
-                , rifd_args_ptr->rifd_epp_update_domain_keyset_clear
-                , rifd_args_ptr->rifd_epp_operations_charging
-                , rifd_args_ptr->epp_update_contact_enqueue_check
-        ));
+    auto ret_epp = std::make_unique<ccReg_EPP_i>(
+            db_args_ptr->get_conn_info(),
+            mailMan,
+            CorbaContainer::get_instance()->getNS(),
+            registry_args_ptr->restricted_handles,
+            registry_args_ptr->disable_epp_notifier,
+            registry_args_ptr->lock_epp_commands,
+            registry_args_ptr->nsset_level,
+            registry_args_ptr->nsset_min_hosts,
+            registry_args_ptr->nsset_max_hosts,
+            registry_args_ptr->docgen_path,
+            registry_args_ptr->docgen_template_path,
+            registry_args_ptr->fileclient_path,
+            registry_args_ptr->disable_epp_notifier_cltrid_prefix,
+            rifd_args_ptr->rifd_session_max,
+            rifd_args_ptr->rifd_session_timeout,
+            rifd_args_ptr->rifd_session_registrar_max,
+            rifd_args_ptr->rifd_epp_update_domain_keyset_clear,
+            rifd_args_ptr->rifd_epp_operations_charging,
+            rifd_args_ptr->epp_update_contact_enqueue_check,
+            rifd_args_ptr->rifd_check);
 
-    EPP_backend_init( ret_epp.get(), rifd_args_ptr);
+    EPP_backend_init(ret_epp.get(), rifd_args_ptr);
 
     return ret_epp;
 }
@@ -99,7 +97,7 @@ CORBA::Long epp_backend_login(ccReg_EPP_i *epp, std::string registrar_handle)
     ccReg::Response *r = epp->ClientLogin(
         registrar_handle.c_str(),passwd_var.c_str(),new_passwd_var.c_str(),cltrid_var.c_str(),xml_var.c_str(),clientId, 0,
         cert_var.c_str(),ccReg::EN);
-    
+
     if (r->code != 1000 || !clientId) {
         boost::format msg = boost::format("Error code: %1% - %2% ") % r->code % r->msg;
         std::cerr << msg.str() << std::endl;

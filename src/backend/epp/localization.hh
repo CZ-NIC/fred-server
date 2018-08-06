@@ -57,34 +57,20 @@ std::string get_epp_result_description_localized(
     const Database::Result res = _ctx.get_conn().exec_params(
             "SELECT " + column_name + " "
             "FROM enum_error "
-            "WHERE id=$1::integer",
+            "WHERE id=$1::INTEGER",
             Database::query_param_list(EppResultCode::to_description_db_id(_epp_result_code)));
 
-    if (res.size() < 1) {
+    if (res.size() < 1)
+    {
         throw MissingLocalizedDescription();
     }
 
-    if (1 < res.size()) {
+    if (1 < res.size())
+    {
         throw std::runtime_error("0 or 1 row expected");
     }
 
     return static_cast<std::string>(res[0][0]);
-}
-
-namespace {
-
-inline std::string get_success_state_localized_description(SessionLang::Enum _lang)
-{
-    switch (_lang)
-    {
-        case SessionLang::en:
-            return "Object is without restrictions";
-        case SessionLang::cs:
-            return "Objekt je bez omezení";
-    }
-    return std::string();
-}
-
 }
 
 template <typename T>
@@ -94,31 +80,44 @@ ObjectStatesLocalized<T> localize_object_states(
         SessionLang::Enum _lang)
 {
     ObjectStatesLocalized<T> status_values_localized;
-    for (typename std::set<typename T::Enum>::const_iterator status_value = _status_values.begin();
-            status_value != _status_values.end();
-            ++status_value)
+    for (const auto status_value : _status_values)
     {
-        const Database::Result res = _ctx.get_conn().exec_params(
+        const auto dbres = _ctx.get_conn().exec_params(
             "SELECT eosd.description "
             "FROM enum_object_states_desc eosd "
-                "JOIN enum_object_states eos ON eosd.state_id = eos.id "
-                    "AND eos.external = TRUE "
-            "WHERE eos.name = $1::text "
-            "AND UPPER(eosd.lang) = UPPER($2::text)",
-            Database::query_param_list(Conversion::Enums::to_db_handle(Conversion::Enums::to_fred_object_state(*status_value)))
+            "JOIN enum_object_states eos ON eosd.state_id = eos.id AND eos.external "
+            "WHERE eos.name = $1::TEXT AND "
+                  "UPPER(eosd.lang) = UPPER($2::TEXT)",
+            Database::query_param_list(Conversion::Enums::to_db_handle(Conversion::Enums::to_fred_object_state(status_value)))
             (SessionLang::to_db_handle(_lang)));
 
-        if (res.size() < 1) {
+        if (dbres.size() < 1)
+        {
             throw MissingLocalizedDescription();
         }
 
-        if (res.size() > 1) {
+        if (1 < dbres.size())
+        {
             throw std::runtime_error("0 or 1 row expected");
         }
 
-        status_values_localized.descriptions[*status_value] = static_cast<std::string>(res[0][0]);
+        status_values_localized.descriptions[status_value] = static_cast<std::string>(dbres[0][0]);
     }
-    status_values_localized.success_state_localized_description = get_success_state_localized_description(_lang);
+    struct Get
+    {
+        static std::string success_state_localized_description(SessionLang::Enum lang)
+        {
+            switch (lang)
+            {
+                case SessionLang::en:
+                    return "Object is without restrictions";
+                case SessionLang::cs:
+                    return "Objekt je bez omezení";
+            }
+            return success_state_localized_description(SessionLang::en);
+        }
+    };
+    status_values_localized.success_state_localized_description = Get::success_state_localized_description(_lang);
 
     return status_values_localized;
 }
@@ -130,17 +129,17 @@ ObjectStatesLocalized<T> localize_object_states(
 std::string convert_values_to_pg_array(const std::set<unsigned>& _input);
 
 template <typename T>
-std::set<unsigned> convert_reasons_to_reasons_descriptions_db_ids(const std::map<std::string, Nullable<typename T::Enum> >& _reasons) {
+std::set<unsigned> convert_reasons_to_reasons_descriptions_db_ids(
+        const std::map<std::string, Nullable<typename T::Enum>>& _reasons)
+{
     std::set<unsigned> reasons_descriptions_db_ids;
-    for (typename std::map<std::string, Nullable<typename T::Enum> >::const_iterator result_ptr = _reasons.begin();
-         result_ptr != _reasons.end();
-         ++result_ptr)
+    for (const auto& reason_enum : _reasons)
     {
-        if (!result_ptr->second.isnull()) {
-            reasons_descriptions_db_ids.insert(to_description_db_id(T::to_reason(result_ptr->second.get_value())));
+        if (!reason_enum.second.isnull())
+        {
+            reasons_descriptions_db_ids.insert(to_description_db_id(T::to_reason(reason_enum.second.get_value())));
         }
     }
-
     return reasons_descriptions_db_ids;
 }
 
@@ -161,34 +160,31 @@ std::map<typename T::Enum, std::string> get_reasons_descriptions_localized(
         const SessionLang::Enum _lang)
 {
     std::map<typename T::Enum, std::string> reasons_descriptions_localized;
-    if (!_reasons_ids.empty()) {
+    if (!_reasons_ids.empty())
+    {
         const std::string reason_description_column_name = get_reason_description_localized_column_name(_lang);
         const Database::Result db_result = _ctx.get_conn().exec_params(
-                "SELECT "
-                    "id AS reason_id, " +
-                    reason_description_column_name + " AS reason_description_localized "
+                "SELECT id," + reason_description_column_name + " "
                 "FROM enum_reason "
-                "WHERE id = ANY( $1::integer[] ) ",
-                Database::query_param_list(
-                    convert_values_to_pg_array(_reasons_ids)
-                ));
+                "WHERE id=ANY($1::INTEGER[])",
+                Database::query_param_list(convert_values_to_pg_array(_reasons_ids)));
 
-        if (db_result.size() < _reasons_ids.size()) {
+        if (db_result.size() < _reasons_ids.size())
+        {
             throw MissingLocalizedDescription();
         }
 
-        for (::size_t i = 0; i < db_result.size(); ++i) {
-
+        for (std::size_t idx = 0; idx < db_result.size(); ++idx)
+        {
             const typename T::Enum reason =
                     T::from_reason(
                             from_description_db_id<Reason>(
-                                    static_cast<unsigned>(db_result[i]["reason_id"])));
+                                    static_cast<unsigned>(db_result[idx][0])));
 
             const std::string reason_description_localized =
-                    static_cast<std::string>(db_result[i]["reason_description_localized"]);
+                    static_cast<std::string>(db_result[idx][1]);
 
             reasons_descriptions_localized[reason] = reason_description_localized;
-
         }
     }
     return reasons_descriptions_localized;
@@ -219,30 +215,20 @@ std::map<std::string, O<T> > localize_check_results(
                     convert_reasons_to_reasons_descriptions_db_ids<F>(_check_results),
                     _lang);
 
-    // for each check result
     std::map<std::string, O<T> > localized_results;
-    for (typename std::map<std::string, Nullable<typename F::Enum> >::const_iterator check_result = _check_results.begin();
-         check_result != _check_results.end();
-         ++check_result)
+    for (const auto& handle_reason : _check_results)
     {
-        // keep handle
-        const std::string handle = check_result->first;
+        const auto handle = handle_reason.first;
+        const auto reason = handle_reason.second;
 
-        // but reason
-        Nullable<typename F::Enum>
-        const reason = check_result->second;
-
-        // ...decorate with reason_description_localized
+        // reason decorate with reason_description_localized
         const O<T> reason_description_localized =
                 reason.isnull()
                         ? O<T>()
-                        : O<T>(T(
-                                  reason.get_value(),
-                                  reasons_descriptions_localized.at(reason.get_value())));
-
+                        : O<T>(T(reason.get_value(),
+                                 reasons_descriptions_localized.at(reason.get_value())));
         localized_results.insert(std::make_pair(handle, reason_description_localized));
     }
-
     return localized_results;
 }
 

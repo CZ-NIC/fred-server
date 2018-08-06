@@ -51,4 +51,24 @@ EppResultFailureLocalized::EppResultFailureLocalized(
     }
 }
 
-} // namespace Epp
+const char* EppResultFailureLocalized::c_str()const noexcept
+{
+    return epp_result_description_.c_str();
+}
+
+EppResultCode::Failure EppResultFailureLocalized::epp_result_code()const
+{
+    return epp_result_.epp_result_code();
+}
+
+std::string EppResultFailureLocalized::epp_result_description()const
+{
+    return epp_result_description_;
+}
+
+const boost::optional<std::set<EppExtendedErrorLocalized>>& EppResultFailureLocalized::extended_errors()const
+{
+    return extended_errors_;
+}
+
+}//namespace Epp

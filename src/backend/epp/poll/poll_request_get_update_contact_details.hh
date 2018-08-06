@@ -28,8 +28,8 @@ namespace Poll {
 
 struct PollRequestUpdateContactOutputData
 {
-    Epp::Contact::InfoContactOutputData old_data;
-    Epp::Contact::InfoContactOutputData new_data;
+    Contact::InfoContactOutputData old_data;
+    Contact::InfoContactOutputData new_data;
 };
 
 PollRequestUpdateContactOutputData poll_request_get_update_contact_details(

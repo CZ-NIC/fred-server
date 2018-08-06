@@ -48,7 +48,7 @@ using namespace ::LibFred::Logger;
 namespace TestLogd {
 
 //args processing config for custom main
-// TODO this should be taken from the database 
+// TODO this should be taken from the database
 enum LogServiceType { LC_NO_SERVICE = -1, LC_UNIX_WHOIS=0, LC_WEB_WHOIS, LC_PUBLIC_REQUEST, LC_EPP, LC_WEBADMIN, LC_INTRANET, LC_MAX_SERVICE };
 
 const int MONTHS_COUNT  = 2;
@@ -115,7 +115,7 @@ BOOST_FIXTURE_TEST_SUITE(TestLogd, MyFixture)
 
 
 class TestImplLog {
-	// TODO this should follow the common ways with create(...) 
+	// TODO this should follow the common ways with create(...)
         std::unique_ptr<::LibFred::Logger::ManagerImpl> logd;
         std::unique_ptr<::LibFred::Logger::RequestPropertyNameCache> pcache;
 
@@ -154,7 +154,7 @@ public:
 
         unsigned long long ret = logd->i_getRequestCount(from, to, service, user);
 
-      // TODO proper test   
+      // TODO proper test
         return ret;
     }
 
@@ -200,7 +200,7 @@ boost::format get_table_postfix_for_now(ServiceType service_num, bool monitoring
 
 }
 
-// TODO - rewrite - use strings from database 
+// TODO - rewrite - use strings from database
 boost::format get_table_postfix(int year, int month, ServiceType service_num, bool monitoring)
 {
 	int shortyear = (year - 2000) % 100;
@@ -463,7 +463,7 @@ bool TestImplLog::closeRequest(const Database::ID id, const char *content, const
 	}
 
 	check_db_properties_subset(id, props, true);
-        // TODO 
+        // TODO
     check_obj_references_subset(id, refs);
 
 	return result;
@@ -614,7 +614,7 @@ void TestImplLog::check_obj_references(ID rec_id, const ::LibFred::Logger::Objec
                 BOOST_CHECK( res[i] ==  refs[i] );
         }
         */
-        
+
 }
 
 static int global_call_count = 0;
@@ -778,7 +778,7 @@ BOOST_AUTO_TEST_CASE( partitions )
 		for(int i=1;i<MONTHS_COUNT;i++) {
 			std::string date = create_date_str(2009, i);
 			try {
-                                Database::ID request_id;                                
+                                Database::ID request_id;
 
                                 boost::format fmt = boost::format("%1% 9:%2%:00") % date % i;
 
@@ -929,7 +929,7 @@ BOOST_AUTO_TEST_CASE( property_name_too_long )
         id = test.createRequest("100.100.100.100", LC_EPP, "AAA", *props);
     } catch (...) {
         exception = true;
-    } 
+    }
     BOOST_CHECK(exception);
 
     /*
@@ -1024,7 +1024,7 @@ BOOST_AUTO_TEST_CASE( invalid_ip)
     try {
         test.createRequest("ABC", LC_PUBLIC_REQUEST, "AA");
     } catch (...) {
-        exception = true; 
+        exception = true;
     }
     BOOST_CHECK(exception);
 
@@ -1286,31 +1286,37 @@ struct ThreadResult {
 
 typedef concurrent_queue<ThreadResult> ThreadResultQueue;
 
-class TestPropsThreadWorker {
-
+class TestPropsThreadWorker
+{
 public:
-    TestPropsThreadWorker(unsigned n, boost::barrier* sb,
-            std::size_t thread_group_divisor, TestImplLog *tb,
+    TestPropsThreadWorker(
+            unsigned n,
+            boost::barrier* sb,
+            std::size_t thread_group_divisor,
+            TestImplLog *tb,
             const std::string &property_name,
-            ThreadResultQueue* rq = 0) :
-    number(n),
-    sb_ptr(sb),
-    divisor(thread_group_divisor),
-    result_queue(rq),
-    backend(tb),
-    propname(property_name) {};
+            ThreadResultQueue* rq = 0)
+    : number(n),
+      sb_ptr(sb),
+      divisor(thread_group_divisor),
+      result_queue(rq),
+      backend(tb),
+      propname(property_name)
+    { }
 
-    void operator()() {
-
+    void operator()()
+    {
         ThreadResult res;
         res.number = number;
         res.result = 0;
 
-        if(number % divisor)//if synchronized thread
+        if (number % divisor)//if synchronized thread
         {
             //std::cout << "waiting: " << number_ << std::endl;
-            if(sb_ptr)
-            sb_ptr->wait();//wait for other synced threads
+            if (sb_ptr != nullptr)
+            {
+                sb_ptr->wait();//wait for other synced threads
+            }
         }
         else
         {//non-synchronized thread
@@ -1318,17 +1324,23 @@ public:
         }
 
         res.result = run();
-        result_queue->push(res);
+        result_queue->guarded_access().push(res);
     }
 
-    ID run() {
+    ID run()
+    {
         // TODO make sure this name is really unique
-        try {
+        try
+        {
             return backend->find_property_name(propname);
-        } catch(std::exception &e) {
+        }
+        catch (const std::exception &e)
+        {
             THREAD_BOOST_ERROR(e.what());
             return 0;
-        } catch(...) {
+        }
+        catch (...)
+        {
             THREAD_BOOST_ERROR("Unknown exception caught");
             return 0;
         }
@@ -1341,19 +1353,17 @@ private:
     ThreadResultQueue *result_queue;
     TestImplLog *backend;
     std::string propname;
-
 };
 
-BOOST_AUTO_TEST_CASE (threaded_property_add_test)
+BOOST_AUTO_TEST_CASE(threaded_property_add_test)
 {
+    const HandleThreadGroupArgs* const thread_args_ptr =
+            CfgArgs::instance()->get_handler_ptr_by_type<HandleThreadGroupArgs>();
 
-    HandleThreadGroupArgs* thread_args_ptr=CfgArgs::instance()->
-    get_handler_ptr_by_type<HandleThreadGroupArgs>();
-
-    std::size_t const thread_number = thread_args_ptr->thread_number;
-    std::size_t const thread_group_divisor = thread_args_ptr->thread_group_divisor;
-    // int(thread_number - (thread_number % thread_group_divisor ? 1 : 0)
-    // - thread_number / thread_group_divisor) is number of synced threads
+    const std::size_t number_of_threads = thread_args_ptr->number_of_threads;
+    const std::size_t thread_group_divisor = thread_args_ptr->thread_group_divisor;
+    // int(number_of_threads - (number_of_threads % thread_group_divisor ? 1 : 0)
+    // - number_of_threads / thread_group_divisor) is number of synced threads
 
     TestImplLog test_backend(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
 
@@ -1364,92 +1374,94 @@ BOOST_AUTO_TEST_CASE (threaded_property_add_test)
     boost::format check_query = boost::format("select id from request_property_name where name='%1%'")
             % unique_property_name;
 
-    Result res = conn.exec(check_query.str());
-    if(res.size() > 0) {
+    const Result res = conn.exec(check_query.str());
+    if (res.size() > 0)
+    {
         BOOST_FAIL(boost::format("Property %1% already present in the database, cannot perform the test") % unique_property_name);
     }
-
-
 
     ThreadResultQueue result_queue;
 
     //vector of thread functors
     std::vector<TestPropsThreadWorker> tw_vector;
-    tw_vector.reserve(thread_number);
+    tw_vector.reserve(number_of_threads);
 
-    BOOST_TEST_MESSAGE( "thread barriers:: "
-            << (thread_number - (thread_number % thread_group_divisor ? 1 : 0)
-                    - thread_number/thread_group_divisor)
-    );
+    BOOST_TEST_MESSAGE("thread barriers:: "
+            << (number_of_threads - (number_of_threads % thread_group_divisor ? 1 : 0)
+                    - number_of_threads/thread_group_divisor));
 
     //synchronization barriers instance
-    boost::barrier sb(thread_number - (thread_number % thread_group_divisor ? 1 : 0)
-            - thread_number/thread_group_divisor);
+    boost::barrier sb(number_of_threads - (number_of_threads % thread_group_divisor ? 1 : 0)
+            - number_of_threads/thread_group_divisor);
 
     //thread container
     boost::thread_group threads;
-    for (unsigned i = 0; i < thread_number; ++i)
+    for (unsigned i = 0; i < number_of_threads; ++i)
     {
-        tw_vector.push_back(TestPropsThreadWorker(i,&sb, thread_group_divisor,
-                &test_backend, unique_property_name, &result_queue));
-        try {
+        tw_vector.push_back(TestPropsThreadWorker(
+                i,
+                &sb,
+                thread_group_divisor,
+                &test_backend,
+                unique_property_name,
+                &result_queue));
+        try
+        {
             threads.create_thread(tw_vector.at(i));
-        } catch(std::exception &e) {
+        }
+        catch (const std::exception &e)
+        {
             BOOST_FAIL(e.what());
         }
     }
 
     threads.join_all();
 
-    BOOST_TEST_MESSAGE( "threads end result_queue.size(): " << result_queue.size() );
+    BOOST_TEST_MESSAGE("threads end result_queue.size(): " << result_queue.unguarded_access().size());
 
+    bool first_result = true;
     ThreadResult result1;
-    if(!result_queue.try_pop(result1)) {
-        BOOST_FAIL(" Result not found.");
-    }
+    ID correct;
 
-    ID correct = result1.result;
-
-    for(unsigned i = 1; i < thread_number; ++i)
+    while (!result_queue.unguarded_access().empty())
     {
-        ThreadResult thread_result;
-        if(!result_queue.try_pop(thread_result)) {
-            continue;
+        const auto thread_result = result_queue.unguarded_access().pop();
+        if (first_result)
+        {
+            result1 = thread_result;
+            correct = result1.result;
+            first_result = false;
         }
-
-        if(thread_result.result != correct) {
+        else if (thread_result.result != correct)
+        {
             BOOST_TEST_MESSAGE(
                        " thread number: " << thread_result.number
                     << " return code: " << thread_result.result);
             BOOST_FAIL(" Incorrect property ID returned");
         }
-
-    }//for i
-
+    }
+    if (first_result)
+    {
+        BOOST_FAIL("Result not found.");
+    }
 }
 
-
-
-
-
-
-
-BOOST_AUTO_TEST_CASE( get_request_count_users_compare )
+BOOST_AUTO_TEST_CASE(get_request_count_users_compare)
 {
     TestImplLog test (CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
 
-    boost::posix_time::ptime begin (time_from_string("2011-01-01 00:00:00"));
-    boost::posix_time::ptime end   (time_from_string("2011-06-30 00:00:00"));
+    boost::posix_time::ptime begin(time_from_string("2011-01-01 00:00:00"));
+    boost::posix_time::ptime end(time_from_string("2011-06-30 00:00:00"));
 
     std::unique_ptr<RequestCountInfo> info_ptr = test.getRequestCountUsers(begin, end, "EPP");
 
-    for (RequestCountInfo::iterator it = info_ptr->begin(); it != info_ptr->end(); it++) {
+    for (RequestCountInfo::iterator it = info_ptr->begin(); it != info_ptr->end(); ++it)
+    {
         unsigned long long check_count = test.getRequestCount(begin, end, "EPP", it->first);
 
         BOOST_REQUIRE_MESSAGE(check_count == it->second,
                 "Count got from getRequestCount and getRequestCountUsers matches");
     }
-
 }
 
 BOOST_AUTO_TEST_CASE( get_request_count_wrong_date )

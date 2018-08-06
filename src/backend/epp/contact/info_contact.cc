@@ -16,7 +16,6 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/backend/epp/impl/disclose_policy.hh"
 #include "src/backend/epp/contact/info_contact.hh"
 
 #include "src/backend/admin/contact/verification/contact_states/enum.hh"
@@ -32,7 +31,6 @@
 #include "src/libfred/object_state/get_object_states.hh"
 #include "src/libfred/registrar.hh"
 #include "src/libfred/registrar/info_registrar.hh"
-#include "src/util/db/nullable.hh"
 
 #include <boost/foreach.hpp>
 
@@ -77,12 +75,12 @@ InfoContactOutputData info_contact(
 
         return info_contact_output_data;
     }
-    catch (const LibFred::InfoContactByHandle::Exception& e) {
-
-        if (e.is_set_unknown_contact_handle()) {
+    catch (const LibFred::InfoContactByHandle::Exception& e)
+    {
+        if (e.is_set_unknown_contact_handle())
+        {
             throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
         }
-
         // in the improbable case that exception is incorrectly set
         throw;
     }

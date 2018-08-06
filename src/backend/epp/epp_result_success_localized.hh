@@ -32,34 +32,22 @@ namespace Epp {
 
 class EppResultSuccessLocalized
 {
-
 public:
-
     EppResultSuccessLocalized(
             LibFred::OperationContext& _ctx,
             const EppResultSuccess& _epp_result,
             SessionLang::Enum _session_lang);
 
-    virtual const char* c_str() const noexcept {
-        return epp_result_description_.c_str();
-    }
+    const char* c_str()const noexcept;
 
-    EppResultCode::Success epp_result_code() const {
-        return epp_result_.epp_result_code();
-    }
+    EppResultCode::Success epp_result_code()const;
 
-    std::string epp_result_description() const {
-        return epp_result_description_;
-    }
-
+    std::string epp_result_description()const;
 private:
-
     EppResultSuccess epp_result_;
-
     std::string epp_result_description_;
-
 };
 
-} // namespace Epp
+}//namespace Epp
 
 #endif

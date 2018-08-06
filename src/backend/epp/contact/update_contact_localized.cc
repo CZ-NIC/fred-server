@@ -61,14 +61,9 @@ EppResponseSuccessLocalized update_contact_localized(
 
     try
     {
-        if (_data.disclose.is_initialized())
-        {
-            _data.disclose->check_validity();
-        }
-
         LibFred::OperationContextCreator ctx;
 
-        const unsigned long long contact_new_history_id =
+        const auto contact_new_history_id =
                 update_contact(
                         ctx,
                         _contact_handle,
@@ -76,14 +71,13 @@ EppResponseSuccessLocalized update_contact_localized(
                         _update_contact_config_data,
                         _session_data);
 
-
         update_contact_post_hooks(
                 ctx,
                 _contact_handle,
                 _session_data.logd_request_id,
-                _update_contact_config_data.epp_update_contact_enqueue_check);
+                _update_contact_config_data.are_epp_update_contact_checks_enqueued());
 
-        const EppResponseSuccessLocalized epp_response_success_localized =
+        const auto epp_response_success_localized =
                 EppResponseSuccessLocalized(
                         ctx,
                         EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
@@ -98,7 +92,6 @@ EppResponseSuccessLocalized update_contact_localized(
                 _notification_data);
 
         return epp_response_success_localized;
-
     }
     catch (const EppResponseFailure& e)
     {
@@ -128,7 +121,6 @@ EppResponseSuccessLocalized update_contact_localized(
                 _session_data.lang);
     }
 }
-
 
 } // namespace Epp::Contact
 } // namespace Epp

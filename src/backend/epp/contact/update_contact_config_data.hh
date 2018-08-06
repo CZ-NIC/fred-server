@@ -19,27 +19,30 @@
 #ifndef UPDATE_CONTACT_CONFIG_DATA_HH_560A4052E8EB4FEF9DBD656BAC6C346B
 #define UPDATE_CONTACT_CONFIG_DATA_HH_560A4052E8EB4FEF9DBD656BAC6C346B
 
+#include "src/backend/epp/contact/update_operation_check.hh"
+
+#include <memory>
+
 namespace Epp {
 namespace Contact {
 
-struct UpdateContactConfigData
+class UpdateContactConfigData
 {
-    const bool rifd_epp_operations_charging;
-    const bool epp_update_contact_enqueue_check;
-
-
+public:
     UpdateContactConfigData(
-            const bool _rifd_epp_operations_charging,
-            const bool _epp_update_contact_enqueue_check)
-        : rifd_epp_operations_charging(_rifd_epp_operations_charging),
-          epp_update_contact_enqueue_check(_epp_update_contact_enqueue_check)
-    {
-    }
-
-
+            bool _rifd_epp_operations_charging,
+            bool _epp_update_contact_enqueue_check,
+            const std::shared_ptr<UpdateOperationCheck>& _operation_check);
+    bool are_rifd_epp_operations_charged()const;
+    bool are_epp_update_contact_checks_enqueued()const;
+    const UpdateOperationCheck& get_operation_check()const;
+private:
+    bool rifd_epp_operations_charging_;
+    bool epp_update_contact_enqueue_check_;
+    std::shared_ptr<UpdateOperationCheck> operation_check_;
 };
 
-} // namespace Epp::Contact
-} // namespace Epp
+}//namespace Epp::Contact
+}//namespace Epp
 
 #endif

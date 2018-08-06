@@ -16,18 +16,18 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef INFO_CONTACT_HH_FDF0BE2833874CB0A8E8CD911C1D2572
+#ifndef INFO_CONTACT_HH_FDF0BE2833874CB0A8E8CD911C1D2572//date "+%s.%N"|md5sum|tr "[a-f]" "[A-F]"
 #define INFO_CONTACT_HH_FDF0BE2833874CB0A8E8CD911C1D2572
 
 #include "src/backend/epp/contact/contact_data.hh"
-#include "src/backend/epp/contact/contact_disclose.hh"
+#include "src/backend/epp/contact/contact_ident.hh"
+#include "src/backend/epp/contact/hideable.hh"
 #include "src/backend/epp/contact/info_contact_config_data.hh"
 #include "src/backend/epp/contact/status_value.hh"
 #include "src/backend/epp/session_data.hh"
 #include "src/backend/epp/session_lang.hh"
 #include "src/libfred/registrable_object/contact/info_contact_data.hh"
 #include "src/libfred/opcontext.hh"
-#include "src/util/db/nullable.hh"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/optional.hpp>
@@ -42,34 +42,26 @@ namespace Contact {
 struct InfoContactOutputData
 {
     InfoContactOutputData() = default;
-    explicit InfoContactOutputData(const boost::optional<ContactDisclose>& _disclose);
     std::string handle;
     std::string roid;
     std::string sponsoring_registrar_handle;
     std::string creating_registrar_handle;
-    Nullable<std::string> last_update_registrar_handle;
+    boost::optional<std::string> last_update_registrar_handle;
     std::set<StatusValue::Enum> states;
     boost::posix_time::ptime crdate;
-    Nullable<boost::posix_time::ptime> last_update;
-    Nullable<boost::posix_time::ptime> last_transfer;
-    Nullable<std::string> name;
-    Nullable<std::string> organization;
-    Nullable<std::string> street1;
-    Nullable<std::string> street2;
-    Nullable<std::string> street3;
-    Nullable<std::string> city;
-    Nullable<std::string> state_or_province;
-    Nullable<std::string> postal_code;
-    Nullable<std::string> country_code;
+    boost::optional<boost::posix_time::ptime> last_update;
+    boost::optional<boost::posix_time::ptime> last_transfer;
+    HideableOptional<std::string> name;
+    HideableOptional<std::string> organization;
+    HideableOptional<ContactData::Address> address;
     boost::optional<ContactData::Address> mailing_address;
-    Nullable<std::string> telephone;
-    Nullable<std::string> fax;
-    Nullable<std::string> email;
-    Nullable<std::string> notify_email;
-    Nullable<std::string> VAT;
-    boost::optional<LibFred::PersonalIdUnion> personal_id;
+    HideableOptional<std::string> telephone;
+    HideableOptional<std::string> fax;
+    HideableOptional<std::string> email;
+    HideableOptional<std::string> notify_email;
+    HideableOptional<std::string> VAT;
+    HideableOptional<ContactIdent> personal_id;
     boost::optional<std::string> authinfopw;
-    boost::optional<ContactDisclose> disclose;
 };
 
 /**
@@ -82,7 +74,7 @@ InfoContactOutputData info_contact(
         const InfoContactConfigData& _info_contact_config_data,
         const SessionData& _session_data);
 
-} // namespace Epp::Contact
-} // namespace Epp
+}//namespace Epp::Contact
+}//namespace Epp
 
-#endif
+#endif//INFO_CONTACT_HH_FDF0BE2833874CB0A8E8CD911C1D2572

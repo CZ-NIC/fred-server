@@ -29,9 +29,9 @@ namespace Epp {
 namespace Contact {
 
 InfoContactOutputData get_info_contact_output(
-    const LibFred::InfoContactData& _data,
-    const std::vector<LibFred::ObjectStateData>& _object_state_data,
-    bool _info_is_for_sponsoring_registrar);
+        const LibFred::InfoContactData& _data,
+        const std::vector<LibFred::ObjectStateData>& _object_state_data,
+        bool _include_authinfo);
 
 } // namespace Epp::Contact
 } // namespace Epp

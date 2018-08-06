@@ -9,7 +9,7 @@
 using namespace ::LibFred::Logger;
 
 
-void add_sequence(SessionCache &sc, unsigned count) 
+void add_sequence(SessionCache &sc, unsigned count)
 {
     for (unsigned i=1; i<=count; i++) {
         std::shared_ptr<ModelSession> session(new ModelSession);
@@ -35,7 +35,7 @@ void verify_items_sequence(SessionCache &sc, unsigned count)
             std::shared_ptr<ModelSession> s = sc.get(i);
         } catch(CACHE_MISS) {
             THREAD_BOOST_ERROR("Cache miss occured when not allowed");
-        } 
+        }
     }
 }
 
@@ -58,7 +58,7 @@ void verify_items_miss_sequence(SessionCache &sc, unsigned count)
         } catch(CACHE_MISS) {
             exception = true;
         }
-        
+
         if(!exception) {
             THREAD_BOOST_ERROR("Item present but it should not be");
         }
@@ -361,7 +361,6 @@ BOOST_AUTO_TEST_CASE( test_garbage_all )
     verify_items_miss_sequence(sc, 1001);
     // this one should be still present
     BOOST_CHECK(verify_item(sc, 1002));
-
 }
 
 BOOST_AUTO_TEST_CASE( test_garbage_some )
@@ -392,16 +391,14 @@ BOOST_AUTO_TEST_CASE( test_garbage_some )
 
     // all items should be garbaged now
     verify_items_miss_sequence(sc, 224);
-
 }
 
-BOOST_AUTO_TEST_CASE( cache_threaded_test )
+BOOST_AUTO_TEST_CASE(cache_threaded_test)
 {
-
-    unsigned thread_number = 300;
-    unsigned thread_group_divisor = 30;
-    boost::barrier sb(thread_number - (thread_number % thread_group_divisor ? 1 : 0)
-              - thread_number/thread_group_divisor);
+    const unsigned number_of_threads = 300;
+    const unsigned thread_group_divisor = 30;
+    boost::barrier sb(number_of_threads - (number_of_threads % thread_group_divisor ? 1 : 0) -
+                      (number_of_threads / thread_group_divisor));
 
     const unsigned ttl = 5;
     SessionCache scache(5, ttl);
@@ -409,11 +406,14 @@ BOOST_AUTO_TEST_CASE( cache_threaded_test )
 
     //thread container
     boost::thread_group threads;
-    for (unsigned i = 0; i < thread_number; ++i)
+    for (unsigned i = 0; i < number_of_threads; ++i)
     {
-        try {
+        try
+        {
             threads.create_thread(WorkerSimple(i,sb, thread_group_divisor, scache, max_id, seconds(ttl)));
-        } catch(std::exception &e) {
+        }
+        catch (const std::exception &e)
+        {
             THREAD_BOOST_ERROR(e.what());
         }
     }
@@ -421,15 +421,14 @@ BOOST_AUTO_TEST_CASE( cache_threaded_test )
     threads.join_all();
 }
 
-
-BOOST_AUTO_TEST_CASE( cache_ultimate_threaded_test )
+BOOST_AUTO_TEST_CASE(cache_ultimate_threaded_test)
 {
 
-    const unsigned thread_number = 300;
+    const unsigned number_of_threads = 300;
     const unsigned cache_capacity = 250;
     unsigned thread_group_divisor = 30;
-    boost::barrier sb(thread_number - (thread_number % thread_group_divisor ? 1 : 0)
-              - thread_number/thread_group_divisor);
+    boost::barrier sb(number_of_threads - (number_of_threads % thread_group_divisor ? 1 : 0) -
+                      (number_of_threads / thread_group_divisor));
 
     const unsigned ttl = 5;
     SessionCache scache(cache_capacity, ttl);
@@ -441,29 +440,32 @@ BOOST_AUTO_TEST_CASE( cache_ultimate_threaded_test )
 
     //thread container
     boost::thread_group threads;
-    for (unsigned i = 0; i < thread_number; ++i)
+    for (unsigned i = 0; i < number_of_threads; ++i)
     {
-        try {
+        try
+        {
             threads.create_thread(WorkerComplete(
-                    i,sb, thread_group_divisor, scache, max_id, seconds(ttl), id_seq, refused_count, prot_added));
-        } catch(std::exception &e) {
+                    i,
+                    sb,
+                    thread_group_divisor,
+                    scache,
+                    max_id,
+                    seconds(ttl),
+                    id_seq,
+                    refused_count,
+                    prot_added));
+        }
+        catch (const std::exception &e)
+        {
             THREAD_BOOST_ERROR(e.what());
         }
     }
 
     threads.join_all();
-    BOOST_TEST_MESSAGE( boost::format("refused_count: %1%") % static_cast<unsigned>(refused_count));
+    BOOST_TEST_MESSAGE(boost::format("refused_count: %1%") % static_cast<unsigned>(refused_count));
 
     // there is always 1 element above the limit
-    BOOST_CHECK(1 + refused_count + cache_capacity <= thread_number);
+    BOOST_CHECK(1 + refused_count + cache_capacity <= number_of_threads);
 }
-
-
-/*
-BOOST_AUTO_TEST_CASE( test_garbage2 )
-
-BOOST_AUTO_TEST_CASE( advanced_garbage )
-*/
-    
 
 BOOST_AUTO_TEST_SUITE_END();

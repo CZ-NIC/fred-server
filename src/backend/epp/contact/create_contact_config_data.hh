@@ -19,21 +19,24 @@
 #ifndef CREATE_CONTACT_CONFIG_DATA_HH_DFE73286069847C7803E1DABB05D9CA0
 #define CREATE_CONTACT_CONFIG_DATA_HH_DFE73286069847C7803E1DABB05D9CA0
 
+#include "src/backend/epp/contact/create_operation_check.hh"
+
+#include <memory>
+
 namespace Epp {
 namespace Contact {
 
-struct CreateContactConfigData
+class CreateContactConfigData
 {
-    const bool rifd_epp_operations_charging;
-
-
+public:
     CreateContactConfigData(
-            const bool _rifd_epp_operations_charging)
-        : rifd_epp_operations_charging(_rifd_epp_operations_charging)
-    {
-    }
-
-
+            bool _rifd_epp_operations_charging,
+            const std::shared_ptr<CreateOperationCheck>& _operation_check);
+    bool are_rifd_epp_operations_charged()const;
+    const CreateOperationCheck& get_operation_check()const;
+private:
+    bool rifd_epp_operations_charging_;
+    std::shared_ptr<CreateOperationCheck> operation_check_;
 };
 
 } // namespace Epp::Contact

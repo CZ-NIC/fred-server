@@ -125,9 +125,7 @@ wrap_Epp_Domain_CheckDomainLocalizedResponse(
     return result;
 }
 
-
 namespace {
-
 
 void
 wrap_Epp_Domain_EnumValidationExtension_to_ccReg_ExtensionList(
@@ -139,15 +137,13 @@ wrap_Epp_Domain_EnumValidationExtension_to_ccReg_ExtensionList(
         ccReg::ENUMValidationExtension_var enumVal = new ccReg::ENUMValidationExtension();
         enumVal->valExDate = LibFred::Corba::wrap_string_to_corba_string(
                 boost::gregorian::to_iso_extended_string(_src.get_value().get_valexdate()));
-        enumVal->publish = _src.get_value().get_publish() ? ccReg::DISCL_DISPLAY : ccReg::DISCL_HIDE;
+        enumVal->publish = _src.get_value().get_publish();
         _dst.length(1);
         _dst[0] <<= enumVal._retn();
     }
 }
 
-
-} // namespace LibFred::Corba::{anonymous}
-
+}//namespace LibFred::Corba::{anonymous}
 
 void
 wrap_Epp_Domain_InfoDomainLocalizedOutputData(
@@ -226,7 +222,7 @@ unwrap_ccreg_admincontacts_to_vector_string(const ccReg::AdminContact& in)
     ret.reserve(in.length());
     for (unsigned long long i = 0; i < in.length(); ++i)
     {
-        if (in[i] == 0)
+        if (in[i] == nullptr)
         {
             throw std::runtime_error("null char ptr");
         }
@@ -237,12 +233,12 @@ unwrap_ccreg_admincontacts_to_vector_string(const ccReg::AdminContact& in)
 }
 
 
-boost::optional< ::Epp::Domain::EnumValidationExtension>
+boost::optional<::Epp::Domain::EnumValidationExtension>
 unwrap_enum_validation_extension_list(const ccReg::ExtensionList& ext)
 {
     if (ext.length() == 0)
     {
-        return boost::optional< ::Epp::Domain::EnumValidationExtension>();
+        return boost::optional<::Epp::Domain::EnumValidationExtension>();
     }
 
     if (ext.length() > 1)
@@ -250,7 +246,7 @@ unwrap_enum_validation_extension_list(const ccReg::ExtensionList& ext)
         throw std::runtime_error("ext too long");
     }
 
-    const ccReg::ENUMValidationExtension* enum_ext = 0;
+    const ccReg::ENUMValidationExtension* enum_ext = nullptr;
 
     const bool is_ENUMValidationExtension = (ext[0] >>= enum_ext);
 
@@ -271,8 +267,7 @@ unwrap_enum_validation_extension_list(const ccReg::ExtensionList& ext)
         // conversion errors ignored here, implementation must later handle `not-a-date-time` value correctly
     }
 
-    return ::Epp::Domain::EnumValidationExtension(valexdate,
-        enum_ext->publish == ccReg::DISCL_DISPLAY);
+    return ::Epp::Domain::EnumValidationExtension(valexdate, enum_ext->publish);
 }
 
 

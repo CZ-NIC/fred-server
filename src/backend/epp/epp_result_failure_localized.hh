@@ -33,41 +33,25 @@ namespace Epp {
 
 class EppResultFailureLocalized
 {
-
 public:
-
     EppResultFailureLocalized(
             LibFred::OperationContext& _ctx,
             const EppResultFailure& _epp_result,
             SessionLang::Enum _session_lang);
 
-    virtual const char* c_str() const noexcept {
-        return epp_result_description_.c_str();
-    }
+    const char* c_str()const noexcept;
 
-    EppResultCode::Failure epp_result_code() const {
-        return epp_result_.epp_result_code();
-    }
+    EppResultCode::Failure epp_result_code()const;
 
-    std::string epp_result_description() const {
-        return epp_result_description_;
-    }
+    std::string epp_result_description()const;
 
-    const boost::optional<std::set<EppExtendedErrorLocalized> >& extended_errors() const
-    {
-        return extended_errors_;
-    }
-
+    const boost::optional<std::set<EppExtendedErrorLocalized>>& extended_errors()const;
 private:
-
     EppResultFailure epp_result_;
-
     std::string epp_result_description_;
-
     boost::optional<std::set<EppExtendedErrorLocalized> > extended_errors_;
-
 };
 
-} // namespace Epp
+}//namespace Epp
 
 #endif

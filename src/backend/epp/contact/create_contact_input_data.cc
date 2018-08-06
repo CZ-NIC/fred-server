@@ -20,68 +20,77 @@
 
 #include "src/backend/epp/contact/contact_data.hh"
 #include "src/backend/epp/contact/util.hh"
-#include "src/util/db/nullable.hh"
-#include "src/util/optional_value.hh"
 
 #include <boost/optional.hpp>
 
 #include <stdexcept>
 #include <string>
-#include <vector>
 
 namespace Epp {
 namespace Contact {
 
 namespace {
 
-std::string convert(const boost::optional<std::string>& src)
+std::string remove_optionality(const boost::optional<std::string>& src)
 {
     return !static_cast<bool>(src) ? std::string() : *src;
 }
 
+Hideable<std::string> remove_optionality(const HideableOptional<std::string>& src)
+{
+    return src.make_with_the_same_privacy(remove_optionality(*src));
+}
+
 boost::optional<CreateContactInputData::Address>
-convert(const boost::optional<ContactData::Address>& src)
+convert_to_address(const boost::optional<ContactData::Address>&);
+
+Hideable<CreateContactInputData::Address>
+remove_optionality(const HideableOptional<ContactData::Address>& src)
+{
+    const auto dst = convert_to_address(*src);
+    if (static_cast<bool>(dst))
+    {
+        return src.make_with_the_same_privacy(*dst);
+    }
+    return src.make_with_the_same_privacy(CreateContactInputData::Address());
+}
+
+boost::optional<CreateContactInputData::Address>
+convert_to_address(const boost::optional<ContactData::Address>& src)
 {
     if (!static_cast<bool>(src))
     {
         return boost::none;
     }
     CreateContactInputData::Address dst;
-    dst.street1 = convert(src->street1);
-    dst.street2 = convert(src->street2);
-    dst.street3 = convert(src->street3);
-    dst.city = convert(src->city);
-    dst.state_or_province = convert(src->state_or_province);
-    dst.postal_code = convert(src->postal_code);
-    dst.country_code = convert(src->country_code);
+    static_assert(std::tuple_size<decltype(src->street)>::value == std::tuple_size<decltype(dst.street)>::value,
+                  "both streets must have the same size");
+    for (std::size_t idx = 0; idx < src->street.size(); ++idx)
+    {
+        dst.street[idx] = remove_optionality(src->street[idx]);
+    }
+    dst.city = remove_optionality(src->city);
+    dst.state_or_province = remove_optionality(src->state_or_province);
+    dst.postal_code = remove_optionality(src->postal_code);
+    dst.country_code = remove_optionality(src->country_code);
     return dst;
 }
 
-} // namespace Epp::Contact::{anonymous}
+}//namespace Epp::Contact::{anonymous}
 
 CreateContactInputData::CreateContactInputData(const ContactData& src)
-    : name(convert(trim(src.name))),
-      organization(convert(trim(src.organization))),
-      streets(trim(src.streets)),
-      city(convert(trim(src.city))),
-      state_or_province(convert(trim(src.state_or_province))),
-      postal_code(convert(trim(src.postal_code))),
-      country_code(convert(trim(src.country_code))),
-      mailing_address(convert(trim(src.mailing_address))),
-      telephone(convert(trim(src.telephone))),
-      fax(convert(trim(src.fax))),
-      email(convert(trim(src.email))),
-      notify_email(convert(trim(src.notify_email))),
-      vat(convert(trim(src.vat))),
-      ident(trim(src.ident)),
-      authinfopw(src.authinfopw),
-      disclose(src.disclose)
-{
-    if (static_cast<bool>(disclose))
-    {
-        disclose->check_validity();
-    }
-}
+    : name(remove_optionality(trim(src.name))),
+      organization(remove_optionality(trim(src.organization))),
+      address(remove_optionality(trim(src.address))),
+      mailing_address(convert_to_address(trim(src.mailing_address))),
+      telephone(remove_optionality(trim(src.telephone))),
+      fax(remove_optionality(trim(src.fax))),
+      email(remove_optionality(trim(src.email))),
+      notify_email(remove_optionality(trim(src.notify_email))),
+      vat(remove_optionality(trim(src.vat))),
+      ident(src.ident),
+      authinfopw(src.authinfopw)
+{ }
 
-} // namespace Epp::Contact
-} // namespace Epp
+}//namespace Epp::Contact
+}//namespace Epp

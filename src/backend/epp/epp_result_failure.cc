@@ -20,7 +20,60 @@
 
 namespace Epp {
 
-bool operator < (const EppResultFailure& _lhs, const EppResultFailure& _rhs)
+EppResultFailure::EppResultFailure(EppResultCode::Failure _epp_result_code)
+    : epp_result_code_(_epp_result_code)
+{ }
+
+EppResultFailure& EppResultFailure::add_unspecified_error()
+{
+    if (!static_cast<bool>(extended_errors_))
+    {
+        extended_errors_ = std::set<EppExtendedError>();
+    }
+    return *this;
+}
+
+EppResultFailure& EppResultFailure::add_extended_error(const EppExtendedError& _error)
+{
+    if (!static_cast<bool>(extended_errors_))
+    {
+        extended_errors_ = std::set<EppExtendedError>();
+    }
+    extended_errors_->insert(_error);
+    return *this;
+}
+
+EppResultFailure& EppResultFailure::add_extended_errors(const std::set<EppExtendedError>& _errors)
+{
+    if (!static_cast<bool>(extended_errors_))
+    {
+        extended_errors_ = std::set<EppExtendedError>();
+    }
+    extended_errors_->insert(_errors.begin(), _errors.end());
+    return *this;
+}
+
+const boost::optional<std::set<EppExtendedError>>& EppResultFailure::extended_errors()const
+{
+    return extended_errors_;
+}
+
+bool EppResultFailure::empty()const
+{
+    return !static_cast<bool>(extended_errors_);
+}
+
+const char* EppResultFailure::c_str()const noexcept
+{
+    return EppResultCode::c_str(epp_result_code_);
+}
+
+EppResultCode::Failure EppResultFailure::epp_result_code()const
+{
+    return epp_result_code_;
+}
+
+bool operator<(const EppResultFailure& _lhs, const EppResultFailure& _rhs)
 {
     return static_cast<int>(_lhs.epp_result_code()) < static_cast<int>(_rhs.epp_result_code());
 }
@@ -68,7 +121,8 @@ std::set<EppExtendedError> extended_errors_with_param_reason(
         const Reason::Enum _reason)
 {
     std::set<EppExtendedError> extended_errors_with_param_reason;
-    if (_epp_result_failure.extended_errors()) {
+    if (_epp_result_failure.extended_errors())
+    {
         for (std::set<EppExtendedError>::const_iterator epp_extended_error = _epp_result_failure.extended_errors()->begin();
              epp_extended_error != _epp_result_failure.extended_errors()->end();
              ++epp_extended_error)
@@ -81,5 +135,4 @@ std::set<EppExtendedError> extended_errors_with_param_reason(
     return extended_errors_with_param_reason;
 }
 
-} // namespace Epp
-
+}//namespace Epp

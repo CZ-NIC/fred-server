@@ -42,46 +42,57 @@ namespace Poll {
 
 namespace {
 
-boost::optional<Contact::ContactIdent> personal_id_to_contact_type(boost::optional<LibFred::PersonalIdUnion> _personal_id)
+Contact::InfoContactLocalizedOutputData::Address to_localized_address(
+        const boost::optional<Contact::ContactData::Address>& src)
 {
-    boost::optional<Contact::ContactIdent> contact_ident;
-    if (_personal_id.is_initialized())
+    Contact::InfoContactLocalizedOutputData::Address dst;
+    if (static_cast<bool>(src))
     {
-        if (_personal_id->get_type() == LibFred::PersonalIdUnion::get_OP("").get_type())
-        {
-            contact_ident = Contact::ContactIdentValueOf<Contact::ContactIdentType::Op>(_personal_id->get());
-        }
-        else if (_personal_id->get_type() == LibFred::PersonalIdUnion::get_PASS("").get_type())
-        {
-            contact_ident = Contact::ContactIdentValueOf<Contact::ContactIdentType::Pass>(_personal_id->get());
-        }
-        else if (_personal_id->get_type() == LibFred::PersonalIdUnion::get_ICO("").get_type())
-        {
-            contact_ident = Contact::ContactIdentValueOf<Contact::ContactIdentType::Ico>(_personal_id->get());
-        }
-        else if (_personal_id->get_type() == LibFred::PersonalIdUnion::get_MPSV("").get_type())
-        {
-            contact_ident = Contact::ContactIdentValueOf<Contact::ContactIdentType::Mpsv>(_personal_id->get());
-        }
-        else if (_personal_id->get_type() == LibFred::PersonalIdUnion::get_BIRTHDAY("").get_type())
-        {
-            contact_ident = Contact::ContactIdentValueOf<Contact::ContactIdentType::Birthday>(_personal_id->get());
-        }
-        else
-        {
-            throw std::runtime_error("Invalid ident type.");
-        }
+        dst.street = src->street;
+        dst.city = src->city;
+        dst.state_or_province = src->state_or_province;
+        dst.postal_code = src->postal_code;
+        dst.country_code = src->country_code;
     }
-    return contact_ident;
+    return dst;
 }
 
-} // namespace Poll::Epp::{anonymous}
+Contact::InfoContactLocalizedOutputData localize(
+        LibFred::OperationContext& ctx,
+        const Contact::InfoContactOutputData& src,
+        const SessionData& session_data)
+{
+    return Contact::InfoContactLocalizedOutputData(
+            src.handle,
+            src.roid,
+            src.sponsoring_registrar_handle,
+            src.creating_registrar_handle,
+            src.last_update_registrar_handle,
+            localize_object_states<Contact::StatusValue>(ctx, src.states, session_data.lang),
+            src.crdate,
+            src.last_update,
+            src.last_transfer,
+            src.name,
+            src.organization,
+            src.address.make_with_the_same_privacy(to_localized_address(*src.address)),
+            src.mailing_address,
+            src.telephone,
+            src.fax,
+            src.email,
+            src.notify_email,
+            src.VAT,
+            src.personal_id,
+            src.authinfopw);
+}
+
+}//namespace Epp::Poll::{anonymous}
 
 PollRequestUpdateContactLocalizedResponse poll_request_get_update_contact_details_localized(
     unsigned long long _message_id,
     const SessionData& _session_data)
 {
-    try {
+    try
+    {
         Logging::Context logging_ctx("rifd");
         Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _session_data.registrar_id));
         Logging::Context logging_ctx3(_session_data.server_transaction_handle);
@@ -92,64 +103,9 @@ PollRequestUpdateContactLocalizedResponse poll_request_get_update_contact_detail
         const PollRequestUpdateContactOutputData output_data =
             poll_request_get_update_contact_details(ctx, _message_id, _session_data.registrar_id);
 
-        const PollRequestUpdateContactLocalizedOutputData localized_output_data =
-            PollRequestUpdateContactLocalizedOutputData(
-                Epp::Contact::InfoContactLocalizedOutputData(
-                    output_data.old_data.handle,
-                    output_data.old_data.roid,
-                    output_data.old_data.sponsoring_registrar_handle,
-                    output_data.old_data.creating_registrar_handle,
-                    output_data.old_data.last_update_registrar_handle,
-                    localize_object_states<Epp::Contact::StatusValue>(ctx, output_data.old_data.states, _session_data.lang),
-                    output_data.old_data.crdate,
-                    output_data.old_data.last_update,
-                    output_data.old_data.last_transfer,
-                    output_data.old_data.name,
-                    output_data.old_data.organization,
-                    output_data.old_data.street1,
-                    output_data.old_data.street2,
-                    output_data.old_data.street3,
-                    output_data.old_data.city,
-                    output_data.old_data.state_or_province,
-                    output_data.old_data.postal_code,
-                    output_data.old_data.country_code,
-                    output_data.old_data.mailing_address,
-                    output_data.old_data.telephone,
-                    output_data.old_data.fax,
-                    output_data.old_data.email,
-                    output_data.old_data.notify_email,
-                    output_data.old_data.VAT,
-                    personal_id_to_contact_type(output_data.old_data.personal_id),
-                    output_data.old_data.authinfopw,
-                    output_data.old_data.disclose),
-                Epp::Contact::InfoContactLocalizedOutputData(
-                    output_data.new_data.handle,
-                    output_data.new_data.roid,
-                    output_data.new_data.sponsoring_registrar_handle,
-                    output_data.new_data.creating_registrar_handle,
-                    output_data.new_data.last_update_registrar_handle,
-                    localize_object_states<Epp::Contact::StatusValue>(ctx, output_data.new_data.states, _session_data.lang),
-                    output_data.new_data.crdate,
-                    output_data.new_data.last_update,
-                    output_data.new_data.last_transfer,
-                    output_data.new_data.name,
-                    output_data.new_data.organization,
-                    output_data.new_data.street1,
-                    output_data.new_data.street2,
-                    output_data.new_data.street3,
-                    output_data.new_data.city,
-                    output_data.new_data.state_or_province,
-                    output_data.new_data.postal_code,
-                    output_data.new_data.country_code,
-                    output_data.new_data.mailing_address,
-                    output_data.new_data.telephone,
-                    output_data.new_data.fax,
-                    output_data.new_data.email,
-                    output_data.new_data.notify_email,
-                    output_data.new_data.VAT,
-                    personal_id_to_contact_type(output_data.new_data.personal_id),
-                    output_data.new_data.authinfopw,
-                    output_data.new_data.disclose));
+        const auto localized_output_data = PollRequestUpdateContactLocalizedOutputData(
+                localize(ctx, output_data.old_data, _session_data),
+                localize(ctx, output_data.new_data, _session_data));
 
         return PollRequestUpdateContactLocalizedResponse(
             EppResponseSuccessLocalized(
@@ -158,7 +114,8 @@ PollRequestUpdateContactLocalizedResponse poll_request_get_update_contact_detail
                 _session_data.lang),
             localized_output_data);
     }
-    catch (const EppResponseFailure& e) {
+    catch (const EppResponseFailure& e)
+    {
         LibFred::OperationContextCreator ctx;
         ctx.get_log().info(std::string("poll_request_contact_update_details_localized: ") + e.what());
         throw EppResponseFailureLocalized(
@@ -166,7 +123,8 @@ PollRequestUpdateContactLocalizedResponse poll_request_get_update_contact_detail
             e,
             _session_data.lang);
     }
-    catch (const std::exception& e) {
+    catch (const std::exception& e)
+    {
         LibFred::OperationContextCreator ctx;
         ctx.get_log().info(std::string("poll_request_contact_update_details_localized: ") + e.what());
         throw EppResponseFailureLocalized(
@@ -174,9 +132,10 @@ PollRequestUpdateContactLocalizedResponse poll_request_get_update_contact_detail
             EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
             _session_data.lang);
     }
-    catch (...) {
+    catch (...)
+    {
         LibFred::OperationContextCreator ctx;
-        ctx.get_log().info(std::string("unexpected exception in poll_request_contact_update_details_localized function"));
+        ctx.get_log().info("unexpected exception in poll_request_contact_update_details_localized function");
         throw EppResponseFailureLocalized(
             ctx,
             EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
@@ -184,5 +143,5 @@ PollRequestUpdateContactLocalizedResponse poll_request_get_update_contact_detail
     }
 }
 
-} // namespace Epp::Poll
-} // namespace Epp
+}//namespace Epp::Poll
+}//namespace Epp

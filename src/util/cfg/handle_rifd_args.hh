@@ -1,40 +1,36 @@
-/*  
+/*
  * Copyright (C) 2010  CZ.NIC, z.s.p.o.
- * 
+ *
  * This file is part of FRED.
- * 
+ *
  * FRED is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 2 of the License.
- * 
+ *
  * FRED is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 /**
- *  @handle_rifd_args.h
+ *  @file handle_rifd_args.hh
  *  registrar interface config
  */
 
 #ifndef HANDLE_RIFD_ARGS_HH_1F2430A2C0A949A7AB56A73A8B39CC9D
 #define HANDLE_RIFD_ARGS_HH_1F2430A2C0A949A7AB56A73A8B39CC9D
 
-#include <iostream>
-#include <exception>
-#include <string>
-#include <vector>
-
-#include <boost/program_options.hpp>
-
 #include "src/util/cfg/faked_args.hh"
 #include "src/util/cfg/handle_args.hh"
 
-namespace po = boost::program_options;
+#include <boost/program_options.hpp>
+
+#include <string>
+#include <unordered_map>
 
 /**
  * \class HandleRifdArgs
@@ -43,6 +39,10 @@ namespace po = boost::program_options;
 class HandleRifdArgs : public HandleArgs
 {
 public:
+    ~HandleRifdArgs();
+    std::shared_ptr<boost::program_options::options_description> get_options_description()override;
+    void handle(int argc, char* argv[], FakedArgs &fa)override;
+
     unsigned rifd_session_max;
     unsigned rifd_session_timeout;
     unsigned rifd_session_registrar_max;
@@ -50,45 +50,28 @@ public:
     bool rifd_epp_operations_charging;
     bool epp_update_contact_enqueue_check;
 
-    std::shared_ptr<po::options_description>
-    get_options_description()
+    class Check
     {
-        std::shared_ptr<po::options_description> opts_descs(
-                new po::options_description(std::string("Registrar interface configuration")));
-        opts_descs->add_options()
-                ("rifd.session_max",
-                 po::value<unsigned>()->default_value(200),
-                 "RIFD maximum number of sessions")
-                ("rifd.session_timeout",
-                 po::value<unsigned>()->default_value(300),
-                 "RIFD session timeout")
-                ("rifd.session_registrar_max",
-                 po::value<unsigned>()->default_value(5),
-                 "RIFD maximum number active sessions per registrar")
-                ("rifd.epp_update_domain_keyset_clear",
-                 po::value<bool>()->default_value(false),
-                 "EPP command update domain will also clear keyset when changing NSSET")
-                ("rifd.epp_operations_charging",
-                 po::value<bool>()->default_value(false),
-                 "Turns on/off EPP operations credit charging")
-                ("rifd.epp_update_contact_enqueue_check",
-                 po::value<bool>()->default_value(false),
-                 "turn enqueueing of automatic check after contact check via EPP on/off");
-
-        return opts_descs;
-    }//get_options_description
-    void handle( int argc, char* argv[],  FakedArgs &fa)
-    {
-        po::variables_map vm;
-        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
-
-        rifd_session_max = vm["rifd.session_max"].as<unsigned>();
-        rifd_session_timeout = vm["rifd.session_timeout"].as<unsigned>();
-        rifd_session_registrar_max = vm["rifd.session_registrar_max"].as<unsigned>();
-        rifd_epp_update_domain_keyset_clear = vm["rifd.epp_update_domain_keyset_clear"].as<bool>();
-        rifd_epp_operations_charging = vm["rifd.epp_operations_charging"].as<bool>();
-        epp_update_contact_enqueue_check = vm["rifd.epp_update_contact_enqueue_check"].as<bool>();
-    }//handle
+    public:
+        Check() = default;
+        template <typename>
+        bool is_type_of()const;
+        struct Empty;//specialization is_type_of<Empty>
+        Check& set_name(const std::string&);
+        template <typename>
+        static void add_options_description(boost::program_options::options_description& options_description);
+        template <typename>
+        const std::string& get_value()const;
+        template <typename>
+        Check& set_values(const boost::program_options::variables_map&);
+        template <typename>
+        static Check get_default();
+        using KeyValue = std::unordered_map<std::string, std::string>;
+    private:
+        std::string name_;
+        KeyValue options_;
+    };
+    Check rifd_check;
 };
 
 #endif

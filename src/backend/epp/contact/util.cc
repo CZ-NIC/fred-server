@@ -17,18 +17,21 @@
  */
 
 #include "src/backend/epp/contact/util.hh"
+
 #include "src/backend/epp/contact/contact_ident.hh"
 #include "src/backend/epp/contact/contact_data.hh"
 #include "src/backend/epp/contact/contact_change.hh"
+#include "src/backend/epp/contact/street_traits.hh"
+
+#include "src/backend/epp/update_operation.hh"
 
 #include "src/util/db/nullable.hh"
-
-#include <string>
-#include <vector>
 
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/optional.hpp>
 #include <boost/variant.hpp>
+
+#include <string>
 
 namespace Epp {
 namespace Contact {
@@ -42,33 +45,27 @@ std::string trim(const std::string& src)
 template <>
 boost::optional<std::string> trim(const boost::optional<std::string>& src)
 {
-    return src ? boost::optional<std::string>(trim(*src))
-               : boost::optional<std::string>();
+    return src != boost::none ? boost::optional<std::string>(trim(*src))
+                              : boost::optional<std::string>();
 }
 
 template <>
-boost::optional< Nullable<std::string> > trim(const boost::optional< Nullable<std::string> >& src)
+boost::optional<Nullable<std::string>> trim(const boost::optional<Nullable<std::string>>& src)
 {
-    return src && !src->isnull() ? boost::optional< Nullable<std::string> >(trim(src->get_value()))
-                                 : src;
+    return (src != boost::none) && !src->isnull() ? boost::optional<Nullable<std::string>>(trim(src->get_value()))
+                                                  : src;
 }
 
 template <>
-boost::optional< Nullable<ContactChange::Address> > trim(const boost::optional< Nullable<ContactChange::Address> >& src)
+std::array<boost::optional<std::string>, StreetTraits::number_of_rows> trim(
+        const std::array<boost::optional<std::string>, StreetTraits::number_of_rows>& src)
 {
-    if (!src || src->isnull())
+    std::array<boost::optional<std::string>, StreetTraits::number_of_rows> dst;
+    for (std::size_t idx = 0; idx < src.size(); ++idx)
     {
-        return src;
+        dst[idx] = trim(src[idx]);
     }
-    ContactChange::Address dst;
-    dst.street1 = trim(src->get_value().street1);
-    dst.street2 = trim(src->get_value().street2);
-    dst.street3 = trim(src->get_value().street3);
-    dst.city = trim(src->get_value().city);
-    dst.state_or_province = trim(src->get_value().state_or_province);
-    dst.postal_code = trim(src->get_value().postal_code);
-    dst.country_code = trim(src->get_value().country_code);
-    return boost::optional< Nullable<ContactChange::Address> >(dst);
+    return dst;
 }
 
 template <>
@@ -79,14 +76,77 @@ boost::optional<ContactData::Address> trim(const boost::optional<ContactData::Ad
         return src;
     }
     ContactData::Address dst;
-    dst.street1 = trim(src->street1);
-    dst.street2 = trim(src->street2);
-    dst.street3 = trim(src->street3);
+    dst.street = trim(src->street);
     dst.city = trim(src->city);
     dst.state_or_province = trim(src->state_or_province);
     dst.postal_code = trim(src->postal_code);
     dst.country_code = trim(src->country_code);
     return dst;
+}
+
+template <>
+Deletable<std::string> trim(const Deletable<std::string>& src)
+{
+    if (src == UpdateOperation::Action::set_value)
+    {
+        return Deletable<std::string>(UpdateOperation::set_value(trim(*src)));
+    }
+    return src;
+}
+
+template <>
+Updateable<std::string> trim(const Updateable<std::string>& src)
+{
+    if (src == UpdateOperation::Action::set_value)
+    {
+        return Updateable<std::string>(UpdateOperation::set_value(trim(*src)));
+    }
+    return src;
+}
+
+template <typename T>
+StreetTraits::Rows<T> trim(const StreetTraits::Rows<T>& src)
+{
+    StreetTraits::Rows<T> dst;
+    for (unsigned idx = 0; idx < src.size(); ++idx)
+    {
+        dst[idx] = trim(src[idx]);
+    }
+    return dst;
+}
+
+template <>
+ContactChange::MainAddress trim(const ContactChange::MainAddress& src)
+{
+    ContactChange::MainAddress dst;
+    dst.street = trim(src.street);
+    dst.city = trim(src.city);
+    dst.state_or_province = trim(src.state_or_province);
+    dst.postal_code = trim(src.postal_code);
+    dst.country_code = trim(src.country_code);
+    return dst;
+}
+
+template <>
+ContactChange::Address trim(const ContactChange::Address& src)
+{
+    ContactChange::Address dst;
+    dst.street = trim(src.street);
+    dst.city = trim(src.city);
+    dst.state_or_province = trim(src.state_or_province);
+    dst.postal_code = trim(src.postal_code);
+    dst.country_code = trim(src.country_code);
+    return dst;
+}
+
+template <>
+Deletable<ContactChange::Address> trim(const Deletable<ContactChange::Address>& src)
+{
+    if (src == UpdateOperation::Action::set_value)
+    {
+        return Deletable<ContactChange::Address>(UpdateOperation::set_value(trim(*src)));
+    }
+    return src;
 }
 
 namespace {
@@ -100,17 +160,23 @@ struct TrimContactIdent:boost::static_visitor<ContactIdent>
     }
 };
 
-} // namespace Epp::Contact::{anonymous}
+}//namespace Epp::Contact::{anonymous}
+
+template <>
+ContactIdent trim(const ContactIdent& src)
+{
+    return boost::apply_visitor(TrimContactIdent(), src);
+}
 
 template <>
 boost::optional<ContactIdent> trim(const boost::optional<ContactIdent>& src)
 {
-    return static_cast<bool>(src) ? boost::optional<ContactIdent>(boost::apply_visitor(TrimContactIdent(), *src))
+    return static_cast<bool>(src) ? boost::optional<ContactIdent>(trim(*src))
                                   : src;
 }
 
 template <>
-boost::optional< boost::optional<ContactIdent> > trim(const boost::optional< boost::optional<ContactIdent> >& src)
+boost::optional<boost::optional<ContactIdent>> trim(const boost::optional<boost::optional<ContactIdent>>& src)
 {
     if (!static_cast<bool>(src))
     {
@@ -120,26 +186,14 @@ boost::optional< boost::optional<ContactIdent> > trim(const boost::optional< boo
 }
 
 template <>
-std::vector<std::string> trim(const std::vector<std::string>& src)
+Deletable<ContactIdent> trim(const Deletable<ContactIdent>& src)
 {
-    std::vector<std::string> result;
-    result.reserve(src.size());
-    for (typename std::vector<std::string>::const_iterator data_ptr = src.begin(); data_ptr != src.end(); ++data_ptr)
+    if (src == UpdateOperation::Action::set_value)
     {
-        result.push_back(trim(*data_ptr));
+        return Deletable<ContactIdent>(Epp::UpdateOperation::set_value(trim(*src)));
     }
-    return result;
+    return src;
 }
 
-template <>
-boost::optional<std::vector<std::string>> trim(const boost::optional<std::vector<std::string>>& src)
-{
-    if (src == boost::none)
-    {
-        return src;
-    }
-    return trim(*src);
-}
-
-} // namespace Epp::Contact
-} // namespace Epp
+}//namespace Epp::Contact
+}//namespace Epp
