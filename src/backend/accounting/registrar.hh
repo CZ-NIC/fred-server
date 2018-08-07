@@ -38,6 +38,7 @@ struct PlaceAddress
 
 struct Registrar
 {
+    unsigned long long id;
     std::string handle;
     std::string name;
     std::string organization;

@@ -20,6 +20,7 @@
 
 #include "src/bin/corba/accounting/impl/exceptions.hh"
 #include "src/bin/corba/util/corba_conversions_buffer.hh"
+#include "src/bin/corba/util/corba_conversions_int.hh"
 #include "src/bin/corba/util/corba_conversions_isodate.hh"
 #include "src/bin/corba/util/corba_conversions_isodatetime.hh"
 #include "src/bin/corba/util/corba_conversions_money.hh"
@@ -98,6 +99,7 @@ wrap_Backend_Accounting_Registrar_to_Registry_Accounting_Registrar(
 {
     try {
         Registry::Accounting::Registrar registrar;
+        LibFred::Corba::unwrap_int(_registrar.id, registrar.id);
         registrar.handle = LibFred::Corba::wrap_string_to_corba_string(_registrar.handle);
         registrar.name = LibFred::Corba::wrap_string_to_corba_string(_registrar.name);
         registrar.organization = LibFred::Corba::wrap_string_to_corba_string(_registrar.organization);

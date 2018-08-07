@@ -223,6 +223,7 @@ Fred::Backend::Accounting::Registrar get_registrar_by_payment(
     }
 
     Registrar registrar;
+    registrar.id = static_cast<unsigned long long>(dbres[0]["id"]);
     registrar.handle = static_cast<std::string>(dbres[0]["handle"]);
     registrar.name = static_cast<std::string>(dbres[0]["name"]);
     registrar.organization = static_cast<std::string>(dbres[0]["organization"]);
@@ -282,6 +283,7 @@ Fred::Backend::Accounting::Registrar get_registrar_by_handle(
     }
 
     Registrar registrar;
+    registrar.id = static_cast<unsigned long long>(dbres[0]["id"]);
     registrar.handle = static_cast<std::string>(dbres[0]["handle"]);
     registrar.name = static_cast<std::string>(dbres[0]["name"]);
     registrar.organization = static_cast<std::string>(dbres[0]["organization"]);
