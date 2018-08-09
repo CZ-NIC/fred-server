@@ -1,8 +1,9 @@
 #ifndef BANK_MANAGER_HH_5C8C2E1D0B944AA19ED43A94CE1AE7FC
 #define BANK_MANAGER_HH_5C8C2E1D0B944AA19ED43A94CE1AE7FC
 
-#include "src/libfred/file.hh"
+#include "src/libfred/banking/invoice_reference.hh"
 #include "src/libfred/db_settings.hh"
+#include "src/libfred/file.hh"
 #include "src/util/types/money.hh"
 
 #include <boost/date_time/posix_time/posix_time_types.hpp>
@@ -25,7 +26,7 @@ public:
             const std::string &_account_name) //throw (std::runtime_error)
                 = 0;
 
-    virtual Money importPayment(
+    virtual std::vector<InvoiceReference> importPayment(
             const std::string& _uuid,
             const std::string& _account_number,
             const std::string& _account_bank_code,

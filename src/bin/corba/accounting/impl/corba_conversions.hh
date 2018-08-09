@@ -19,11 +19,16 @@
 #ifndef CORBA_CONVERSIONS_HH_65490EF25C6A46EBA2460E1AF2C4C7D7
 #define CORBA_CONVERSIONS_HH_65490EF25C6A46EBA2460E1AF2C4C7D7
 
+#include "src/backend/accounting/invoice_reference.hh"
 #include "src/backend/accounting/payment_data.hh"
 #include "src/backend/accounting/registrar.hh"
 #include "src/backend/credit.hh"
 #include "src/bin/corba/Accounting.hh"
 #include "src/util/types/money.hh"
+
+#include <set>
+#include <string>
+#include <vector>
 
 namespace CorbaConversion {
 namespace Accounting {
@@ -53,6 +58,14 @@ void
 wrap_Fred_Backend_Credit_to_Registry_Accounting_Credit(
         const Fred::Backend::Credit& _src,
         Registry::Accounting::Credit& _dst);
+
+Registry::Accounting::RegistrarHandleSeq*
+wrap_set_of_string_to_Registry_Accounting_RegistrarHandleSeq(
+        const std::set<std::string>& registrar_handles);
+
+Registry::Accounting::InvoiceReferenceSeq*
+wrap_vector_of_Fred_Backend_Accounting_InvoiceReference_to_Registry_Accounting_InvoiceReferenceSeq(
+        const std::vector<Fred::Backend::Accounting::InvoiceReference>& invoice_references);
 
 } // namespace CorbaConversions::Accounting::Impl
 } // namespace CorbaConversions::Accounting

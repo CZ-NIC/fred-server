@@ -19,11 +19,15 @@
 #ifndef ACCOUNTING_HH_3CD8689C985C4099A4B543F90F67A195
 #define ACCOUNTING_HH_3CD8689C985C4099A4B543F90F67A195
 
+#include "src/backend/accounting/invoice_reference.hh"
 #include "src/backend/accounting/payment_data.hh"
 #include "src/backend/accounting/registrar.hh"
 #include "src/backend/credit.hh"
 #include "src/libfred/opcontext.hh"
 
+#include <set>
+#include <string>
+#include <vector>
 
 namespace Fred {
 namespace Backend {
@@ -56,14 +60,15 @@ std::string get_zone_by_payment(
         LibFred::OperationContext& _ctx,
         const PaymentData& _payment_data);
 
-void import_payment(
-        const PaymentData& _payment_data,
-        Credit& _remaining_credit);
+std::vector<InvoiceReference> import_payment(
+        const PaymentData& _payment_data);
 
-void import_payment_by_registrar_handle(
+std::vector<InvoiceReference> import_payment_by_registrar_handle(
         const PaymentData& _payment_data,
-        const std::string& _registrar_handle,
-        Credit& _remaining_credit);
+        const std::string& _registrar_handle);
+
+std::set<std::string> get_registrar_handles(
+        LibFred::OperationContext& _ctx);
 
 } // namespace Fred::Backend::Accounting::Impl
 } // namespace Fred::Backend::Accounting

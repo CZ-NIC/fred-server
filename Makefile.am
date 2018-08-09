@@ -2772,6 +2772,7 @@ src_bin_corba_accounting_fred_accifd_SOURCES = \
 		src/backend/accounting/impl/accounting.hh \
 		src/backend/accounting/impl/exceptions.cc \
 		src/backend/accounting/impl/exceptions.hh \
+		src/backend/accounting/invoice_reference.hh \
 		src/backend/accounting/payment_data.hh \
 		src/backend/accounting/registrar.hh \
 		src/backend/credit.cc \

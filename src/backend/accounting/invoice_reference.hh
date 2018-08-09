@@ -16,8 +16,11 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef REGISTRAR_HH_9C42489EE07E4E49B87AF2941D36710D
-#define REGISTRAR_HH_9C42489EE07E4E49B87AF2941D36710D
+#ifndef INVOICE_REFERENCE_HH_378B5644BFF0427BB8F2E198446B6802
+#define INVOICE_REFERENCE_HH_378B5644BFF0427BB8F2E198446B6802
+
+#include "src/backend/credit.hh"
+#include "src/util/types/money.hh"
 
 #include <string>
 
@@ -25,29 +28,30 @@ namespace Fred {
 namespace Backend {
 namespace Accounting {
 
-struct PlaceAddress
+enum struct InvoiceType
 {
-    std::string street1;
-    std::string street2;
-    std::string street3;
-    std::string city;
-    std::string stateorprovince;
-    std::string postalcode;
-    std::string country_code;
+    advance,
+    account
 };
 
-struct Registrar
+struct InvoiceReference
 {
+    InvoiceReference(
+            const unsigned long long _id,
+            const std::string& _number,
+            const InvoiceType& _type,
+            const Credit& _credit_change)
+        : id(_id),
+          number(_number),
+          type(_type),
+          credit_change(_credit_change)
+    {
+    }
+
     unsigned long long id;
-    std::string handle;
-    std::string name;
-    std::string organization;
-    std::string cin;
-    std::string tin;
-    std::string url;
-    std::string phone;
-    std::string fax;
-    PlaceAddress address;
+    std::string number;
+    InvoiceType type;
+    Credit credit_change;
 };
 
 } // namespace Fred::Backend::Accounting

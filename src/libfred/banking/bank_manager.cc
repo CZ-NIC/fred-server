@@ -146,12 +146,15 @@ private:
 
     }
 
-    Money processPayment(PaymentData& _payment,
-                         unsigned long long _registrar_id)
+    std::vector<InvoiceReference> processPayment(
+            PaymentData& _payment,
+            unsigned long long _registrar_id)
     {
         Logging::Context ctx("payment processing");
         try
         {
+            std::vector<InvoiceReference> invoice_references;
+
             if (_payment.price <= Money("0"))
             {
                 throw std::runtime_error("could not process payment, price not > 0");
@@ -202,6 +205,13 @@ private:
                                 partial_price, uaci_vat , unpaid_account_invoice_id);
                         pay_invoice(_registrar_id , zone_id, _payment.uuid
                             , balance_change, unpaid_account_invoice_id);
+                        const std::string unpaid_account_invoice_number = ""; // TODO
+                        invoice_references.push_back(
+                                InvoiceReference(
+                                        unpaid_account_invoice_id,
+                                        unpaid_account_invoice_number,
+                                        InvoiceType::account,
+                                        balance_change));
                     }
                     else
                     {
@@ -210,6 +220,13 @@ private:
                                 unpaid_account_invoice_id);
                         pay_invoice(_registrar_id , zone_id, _payment.uuid
                             , balance_change, unpaid_account_invoice_id);
+                        const std::string unpaid_account_invoice_number = ""; // TODO
+                        invoice_references.push_back(
+                                InvoiceReference(
+                                        unpaid_account_invoice_id,
+                                        unpaid_account_invoice_number,
+                                        InvoiceType::account,
+                                        balance_change));
                     }
                 }
 
@@ -241,8 +258,6 @@ private:
                 }
             }
 
-            Money remaining_credit = Money("0");
-
             // create advance invoice for rest amount after paying possible debt (account invoice)
             if (payment_price_rest > Money("0"))
             {
@@ -265,7 +280,13 @@ private:
                 pay_invoice(_registrar_id , zone_id, _payment.uuid
                         , out_credit, advance_invoice_id);
 
-                remaining_credit = out_credit;
+                const std::string advance_invoice_number = ""; // TODO
+                invoice_references.push_back(
+                        InvoiceReference(
+                                advance_invoice_id,
+                                advance_invoice_number,
+                                InvoiceType::advance,
+                                out_credit));
             }
             LOGGER(PACKAGE).info(boost::format(
                         "payment paired with registrar (id=%1%) "
@@ -273,7 +294,7 @@ private:
 
             transaction.commit();
 
-            return remaining_credit;
+            return invoice_references;
         }
         catch (std::exception &ex) {
             LOGGER(PACKAGE).info(boost::str(boost::format(
@@ -293,7 +314,7 @@ public:
     {
     }
 
-    Money importPayment(
+    std::vector<InvoiceReference> importPayment(
             const std::string& _uuid,
             const std::string& _account_number,
             const std::string& _account_bank_code,
@@ -361,11 +382,11 @@ public:
                             ? get_registrar_id_by_handle(*_registrar_handle)
                             : get_registrar_id_by_payment(payment);
 
-            const Money remaining_credit = processPayment(payment, registrar_id);
+            const auto invoice_references = processPayment(payment, registrar_id);
 
             tx.commit();
 
-            return remaining_credit;
+            return invoice_references;
         }
         catch (const LibFred::Banking::RegistrarNotFound& e) {
             LOGGER(PACKAGE).info(boost::str(boost::format(

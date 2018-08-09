@@ -200,20 +200,32 @@ Registry::Accounting::Registrar* AccountingImpl::get_registrar_by_handle_and_pay
     }
 }
 
-void AccountingImpl::import_payment(
+Registry::Accounting::InvoiceReferenceSeq* AccountingImpl::import_payment(
     const Registry::Accounting::PaymentData& _payment_data,
     Registry::Accounting::Credit_out _remaining_credit)
 {
     try
     {
-        Fred::Backend::Credit credit("0");
-        Fred::Backend::Accounting::import_payment(
-                Impl::unwrap_Registry_Accounting_PaymentData(_payment_data),
-                credit);
+        const auto invoice_references =
+                Fred::Backend::Accounting::import_payment(
+                        Impl::unwrap_Registry_Accounting_PaymentData(_payment_data));
 
+        return Impl::wrap_vector_of_Fred_Backend_Accounting_InvoiceReference_to_Registry_Accounting_InvoiceReferenceSeq(
+                invoice_references);
+
+        const auto credit = Fred::Backend::Credit("0");
         Registry::Accounting::Credit_var remaining_credit = new Registry::Accounting::Credit;
         Impl::wrap_Fred_Backend_Credit_to_Registry_Accounting_Credit(credit, remaining_credit.inout());
+
+        Registry::Accounting::InvoiceReferenceSeq_var result = new Registry::Accounting::InvoiceReferenceSeq();
+        //Registry::Accounting::InvoiceReferenceSeq_var result =
+        //        wrap_vector_of_Fred_Backend_InvoiceReference_to_Registry_Accounting_InvoiceReferenceSeq(
+        //        invoice_references);
+
+        // no exception shall be thrown from here onwards
+
         _remaining_credit = remaining_credit._retn();
+        return result._retn();
     }
     catch (const Impl::InvalidPaymentData&)
     {
@@ -237,22 +249,34 @@ void AccountingImpl::import_payment(
     }
 }
 
-void AccountingImpl::import_payment_by_registrar_handle(
+Registry::Accounting::InvoiceReferenceSeq* AccountingImpl::import_payment_by_registrar_handle(
     const Registry::Accounting::PaymentData& _payment_data,
     const char* _registrar_handle,
     Registry::Accounting::Credit_out _remaining_credit)
 {
     try
     {
-        Fred::Backend::Credit credit("0");
-        Fred::Backend::Accounting::import_payment_by_registrar_handle(
-                Impl::unwrap_Registry_Accounting_PaymentData(_payment_data),
-                LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar_handle),
-                credit);
+        const auto invoice_references =
+                Fred::Backend::Accounting::import_payment_by_registrar_handle(
+                        Impl::unwrap_Registry_Accounting_PaymentData(_payment_data),
+                        LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar_handle));
 
+        return Impl::wrap_vector_of_Fred_Backend_Accounting_InvoiceReference_to_Registry_Accounting_InvoiceReferenceSeq(
+                invoice_references);
+
+        const auto credit = Fred::Backend::Credit("0");
         Registry::Accounting::Credit_var remaining_credit = new Registry::Accounting::Credit;
         Impl::wrap_Fred_Backend_Credit_to_Registry_Accounting_Credit(credit, remaining_credit.inout());
+
+        Registry::Accounting::InvoiceReferenceSeq_var result = new Registry::Accounting::InvoiceReferenceSeq();
+        //Registry::Accounting::InvoiceReferenceSeq_var result =
+        //        wrap_vector_of_Fred_Backend_InvoiceReference_to_Registry_Accounting_InvoiceReferenceSeq(
+        //        invoice_references);
+
+        // no exception shall be thrown from here onwards
+
         _remaining_credit = remaining_credit._retn();
+        return result._retn();
     }
     catch (const Impl::InvalidPaymentData&)
     {
@@ -269,6 +293,21 @@ void AccountingImpl::import_payment_by_registrar_handle(
     catch (const Fred::Backend::Accounting::PaymentAlreadyProcessed&)
     {
         throw Registry::Accounting::PAYMENT_ALREADY_PROCESSED();
+    }
+    catch (...)
+    {
+        throw Registry::Accounting::INTERNAL_SERVER_ERROR();
+    }
+}
+
+Registry::Accounting::RegistrarHandleSeq* AccountingImpl::get_registrar_handles()
+{
+    try
+    {
+        const std::set<std::string> registrar_handles =
+                Fred::Backend::Accounting::get_registrar_handles();
+
+        return Impl::wrap_set_of_string_to_Registry_Accounting_RegistrarHandleSeq(registrar_handles);
     }
     catch (...)
     {

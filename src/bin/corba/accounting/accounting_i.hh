@@ -64,14 +64,16 @@ public:
             const Registry::Accounting::PaymentData& _payment_data,
             CORBA::String_out _zone) final override;
 
-    void import_payment(
+    Registry::Accounting::InvoiceReferenceSeq* import_payment(
             const Registry::Accounting::PaymentData& _payment_data,
             Registry::Accounting::Credit_out _remaining_credit) final override;
 
-    void import_payment_by_registrar_handle(
+    Registry::Accounting::InvoiceReferenceSeq* import_payment_by_registrar_handle(
             const Registry::Accounting::PaymentData& _payment_data,
             const char* _registrar_handle,
             Registry::Accounting::Credit_out _remaining_credit) final override;
+
+    Registry::Accounting::RegistrarHandleSeq* get_registrar_handles() final override;
 
 private:
     // Make sure all instances are built on the heap by making the destructor non-public

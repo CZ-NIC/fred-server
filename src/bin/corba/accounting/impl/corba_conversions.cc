@@ -125,6 +125,51 @@ wrap_Fred_Backend_Credit_to_Registry_Accounting_Credit(
     _dst.value = LibFred::Corba::wrap_string_to_corba_string(_src.value.get_string());
 }
 
+Registry::Accounting::RegistrarHandleSeq*
+wrap_set_of_string_to_Registry_Accounting_RegistrarHandleSeq(const std::set<std::string>& registrar_handles)
+{
+    const auto registrar_handle_seq = new Registry::Accounting::RegistrarHandleSeq();
+    registrar_handle_seq->length(registrar_handles.size());
+
+    CORBA::ULong i = 0;
+    for (const auto& registrar_handle : registrar_handles)
+    {
+        (*registrar_handle_seq)[i] = LibFred::Corba::wrap_string_to_corba_string(registrar_handle);
+         ++i;
+    }
+    return registrar_handle_seq;
+}
+
+namespace {
+
+Registry::Accounting::InvoiceReference
+wrap_Fred_Backend_Accounting_InvoiceReference_to_Registry_Accounting_InvoiceReference(
+        const Fred::Backend::Accounting::InvoiceReference& _invoice_reference)
+{
+    Registry::Accounting::InvoiceReference invoice_reference;
+    LibFred::Corba::int_to_int(_invoice_reference.id, invoice_reference.id);
+    invoice_reference.number = LibFred::Corba::wrap_string_to_corba_string(_invoice_reference.number);
+    return invoice_reference;
+}
+
+} // namespace CorbaConversion::Accounting::Impl::{anonymous}
+
+Registry::Accounting::InvoiceReferenceSeq*
+wrap_vector_of_Fred_Backend_Accounting_InvoiceReference_to_Registry_Accounting_InvoiceReferenceSeq(
+        const std::vector<Fred::Backend::Accounting::InvoiceReference>& invoice_references)
+{
+    const auto invoice_reference_seq = new Registry::Accounting::InvoiceReferenceSeq();
+    invoice_reference_seq->length(invoice_references.size());
+
+    CORBA::ULong i = 0;
+    for (const auto& invoice_reference : invoice_references)
+    {
+        (*invoice_reference_seq)[i] = wrap_Fred_Backend_Accounting_InvoiceReference_to_Registry_Accounting_InvoiceReference(invoice_reference);
+         ++i;
+    }
+    return invoice_reference_seq;
+}
+
 } // namespace CorbaConversion::Accounting::Impl
 } // namespace CorbaConversion::Accounting
 } // namespace CorbaConversion

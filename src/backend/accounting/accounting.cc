@@ -237,17 +237,15 @@ Fred::Backend::Accounting::Registrar get_registrar_by_handle_and_payment(
     }
 }
 
-void import_payment(
-        const PaymentData& _payment_data,
-        Credit& _credit)
+std::vector<InvoiceReference> import_payment(
+        const PaymentData& _payment_data)
 {
     LOGGING_CONTEXT(log_ctx);
     LOGGER(PACKAGE).info(__FUNCTION__);
     try
     {
         return Impl::import_payment(
-                _payment_data,
-                _credit);
+                _payment_data);
     }
     catch (const Impl::RegistrarNotFound& e)
     {
@@ -281,10 +279,9 @@ void import_payment(
     }
 }
 
-void import_payment_by_registrar_handle(
+std::vector<InvoiceReference> import_payment_by_registrar_handle(
         const PaymentData& _payment_data,
-        const std::string& _registrar_handle,
-        Credit& _credit)
+        const std::string& _registrar_handle)
 {
     LOGGING_CONTEXT(log_ctx);
     LOGGER(PACKAGE).info(__FUNCTION__);
@@ -292,8 +289,7 @@ void import_payment_by_registrar_handle(
     {
         return Impl::import_payment_by_registrar_handle(
                 _payment_data,
-                _registrar_handle,
-                _credit);
+                _registrar_handle);
     }
     catch (const Impl::RegistrarNotFound& e)
     {
@@ -314,6 +310,28 @@ void import_payment_by_registrar_handle(
     {
         LOGGER(PACKAGE).info(e.what());
         throw PaymentAlreadyProcessed();
+    }
+    catch (const std::exception& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw;
+    }
+    catch (...)
+    {
+        LOGGER(PACKAGE).error("unknown error");
+        throw;
+    }
+}
+
+std::set<std::string> get_registrar_handles()
+{
+    LOGGING_CONTEXT(log_ctx);
+    LOGGER(PACKAGE).info(__FUNCTION__);
+    try
+    {
+        LibFred::OperationContextCreator ctx;
+
+        return Impl::get_registrar_handles(ctx);
     }
     catch (const std::exception& e)
     {
