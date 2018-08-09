@@ -72,15 +72,3 @@ void HandleRifdArgs::handle(int argc, char* argv[], FakedArgs &fa)
     rifd_check.set_name(vm["rifd.check"].as<std::string>());
     rifd_check.set_values<CzNicSpecific>(vm);
 }
-
-HandleRifdArgs::Check& HandleRifdArgs::Check::set_name(const std::string& name)
-{
-    name_ = name;
-    return *this;
-}
-
-template <>
-bool HandleRifdArgs::Check::is_type_of<HandleRifdArgs::Check::Empty>()const
-{
-    return name_.empty();
-}

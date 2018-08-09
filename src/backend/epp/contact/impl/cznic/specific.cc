@@ -18,7 +18,7 @@
 
 #include "src/backend/epp/contact/impl/cznic/specific.hh"
 
-#include "src/util/cfg/handle_rifd_args.hh"
+#include "src/backend/epp/contact/config_check.hh"
 
 #include <stdexcept>
 
@@ -40,10 +40,9 @@ bool Specific::is_name_of_this_check(const std::string& check_name)
 
 }//namespace Epp::Contact::Impl::CzNic
 }//namespace Epp::Contact::Impl
-}//namespace Epp::Contact
-}//namespace Epp
 
-using CzNicSpecific = Epp::Contact::Impl::CzNic::Specific;
+
+using CzNicSpecific = Impl::CzNic::Specific;
 using po_variables_map = boost::program_options::variables_map;
 
 namespace {
@@ -167,7 +166,7 @@ const std::string& get_key()
 }
 
 template <typename T>
-void set_value(const po_variables_map& vm, HandleRifdArgs::Check::KeyValue& options)
+void set_value(const po_variables_map& vm, ConfigCheck::KeyValue& options)
 {
     const auto key_value_itr = options.find(get_key<T>());
     if (key_value_itr != options.end())
@@ -188,7 +187,7 @@ auto default_value_is_empty() { return boost::program_options::value<std::string
 }//namespace {anonymous}
 
 template <>
-void HandleRifdArgs::Check::add_options_description<CzNicSpecific>(
+void ConfigCheck::add_options_description<CzNicSpecific>(
         boost::program_options::options_description& options_description)
 {
     options_description.add_options()
@@ -249,13 +248,13 @@ void HandleRifdArgs::Check::add_options_description<CzNicSpecific>(
 }
 
 template <>
-bool HandleRifdArgs::Check::is_type_of<CzNicSpecific>()const
+bool ConfigCheck::is_type_of<CzNicSpecific>()const
 {
     return CzNicSpecific::is_name_of_this_check(name_);
 }
 
 template <typename T>
-const std::string& HandleRifdArgs::Check::get_value()const
+const std::string& ConfigCheck::get_value()const
 {
     const auto key_value_itr = options_.find(get_key<T>());
     if (key_value_itr != options_.end())
@@ -267,7 +266,7 @@ const std::string& HandleRifdArgs::Check::get_value()const
 }
 
 template <>
-HandleRifdArgs::Check& HandleRifdArgs::Check::set_values<CzNicSpecific>(const po_variables_map& vm)
+ConfigCheck& ConfigCheck::set_values<CzNicSpecific>(const po_variables_map& vm)
 {
     set_value<CzNicSpecific::CreateContact::Disclose::Name>(vm, options_);
     set_value<CzNicSpecific::CreateContact::Disclose::Organization>(vm, options_);
@@ -292,7 +291,7 @@ HandleRifdArgs::Check& HandleRifdArgs::Check::set_values<CzNicSpecific>(const po
 }
 
 template <>
-HandleRifdArgs::Check HandleRifdArgs::Check::get_default<CzNicSpecific>()
+ConfigCheck ConfigCheck::get_default<CzNicSpecific>()
 {
     Check check;
     check.set_name(CzNicSpecific::get_check_name());
@@ -319,55 +318,58 @@ HandleRifdArgs::Check HandleRifdArgs::Check::get_default<CzNicSpecific>()
 }
 
 template const std::string&
-HandleRifdArgs::Check::get_value<CzNicSpecific::CreateContact::Disclose::Name>()const;
+ConfigCheck::get_value<CzNicSpecific::CreateContact::Disclose::Name>()const;
 
 template const std::string&
-HandleRifdArgs::Check::get_value<CzNicSpecific::CreateContact::Disclose::Organization>()const;
+ConfigCheck::get_value<CzNicSpecific::CreateContact::Disclose::Organization>()const;
 
 template const std::string&
-HandleRifdArgs::Check::get_value<CzNicSpecific::CreateContact::Disclose::Address>()const;
+ConfigCheck::get_value<CzNicSpecific::CreateContact::Disclose::Address>()const;
 
 template const std::string&
-HandleRifdArgs::Check::get_value<CzNicSpecific::CreateContact::Disclose::Telephone>()const;
+ConfigCheck::get_value<CzNicSpecific::CreateContact::Disclose::Telephone>()const;
 
 template const std::string&
-HandleRifdArgs::Check::get_value<CzNicSpecific::CreateContact::Disclose::Fax>()const;
+ConfigCheck::get_value<CzNicSpecific::CreateContact::Disclose::Fax>()const;
 
 template const std::string&
-HandleRifdArgs::Check::get_value<CzNicSpecific::CreateContact::Disclose::Email>()const;
+ConfigCheck::get_value<CzNicSpecific::CreateContact::Disclose::Email>()const;
 
 template const std::string&
-HandleRifdArgs::Check::get_value<CzNicSpecific::CreateContact::Disclose::Vat>()const;
+ConfigCheck::get_value<CzNicSpecific::CreateContact::Disclose::Vat>()const;
 
 template const std::string&
-HandleRifdArgs::Check::get_value<CzNicSpecific::CreateContact::Disclose::Ident>()const;
+ConfigCheck::get_value<CzNicSpecific::CreateContact::Disclose::Ident>()const;
 
 template const std::string&
-HandleRifdArgs::Check::get_value<CzNicSpecific::CreateContact::Disclose::NotifyEmail>()const;
+ConfigCheck::get_value<CzNicSpecific::CreateContact::Disclose::NotifyEmail>()const;
 
 template const std::string&
-HandleRifdArgs::Check::get_value<CzNicSpecific::UpdateContact::Disclose::Name>()const;
+ConfigCheck::get_value<CzNicSpecific::UpdateContact::Disclose::Name>()const;
 
 template const std::string&
-HandleRifdArgs::Check::get_value<CzNicSpecific::UpdateContact::Disclose::Organization>()const;
+ConfigCheck::get_value<CzNicSpecific::UpdateContact::Disclose::Organization>()const;
 
 template const std::string&
-HandleRifdArgs::Check::get_value<CzNicSpecific::UpdateContact::Disclose::Address>()const;
+ConfigCheck::get_value<CzNicSpecific::UpdateContact::Disclose::Address>()const;
 
 template const std::string&
-HandleRifdArgs::Check::get_value<CzNicSpecific::UpdateContact::Disclose::Telephone>()const;
+ConfigCheck::get_value<CzNicSpecific::UpdateContact::Disclose::Telephone>()const;
 
 template const std::string&
-HandleRifdArgs::Check::get_value<CzNicSpecific::UpdateContact::Disclose::Fax>()const;
+ConfigCheck::get_value<CzNicSpecific::UpdateContact::Disclose::Fax>()const;
 
 template const std::string&
-HandleRifdArgs::Check::get_value<CzNicSpecific::UpdateContact::Disclose::Email>()const;
+ConfigCheck::get_value<CzNicSpecific::UpdateContact::Disclose::Email>()const;
 
 template const std::string&
-HandleRifdArgs::Check::get_value<CzNicSpecific::UpdateContact::Disclose::Vat>()const;
+ConfigCheck::get_value<CzNicSpecific::UpdateContact::Disclose::Vat>()const;
 
 template const std::string&
-HandleRifdArgs::Check::get_value<CzNicSpecific::UpdateContact::Disclose::Ident>()const;
+ConfigCheck::get_value<CzNicSpecific::UpdateContact::Disclose::Ident>()const;
 
 template const std::string&
-HandleRifdArgs::Check::get_value<CzNicSpecific::UpdateContact::Disclose::NotifyEmail>()const;
+ConfigCheck::get_value<CzNicSpecific::UpdateContact::Disclose::NotifyEmail>()const;
+
+}//namespace Epp::Contact
+}//namespace Epp

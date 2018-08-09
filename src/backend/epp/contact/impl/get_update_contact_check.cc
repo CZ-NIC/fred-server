@@ -29,7 +29,7 @@ namespace Impl {
 namespace {
 
 template <typename T>
-CzNic::UpdateContactCheck::Operation from_option_to_operation(const HandleRifdArgs::Check& check)
+CzNic::UpdateContactCheck::Operation from_option_to_operation(const ConfigCheck& check)
 {
     const auto option_value = check.get_value<T>();
     if (option_value == "show")
@@ -49,7 +49,7 @@ CzNic::UpdateContactCheck::Operation from_option_to_operation(const HandleRifdAr
 
 }//namespace Epp::Contact::Impl::{anonymous}
 
-std::shared_ptr<Epp::Contact::UpdateOperationCheck> get_update_contact_check(const HandleRifdArgs::Check& check)
+std::shared_ptr<Epp::Contact::UpdateOperationCheck> get_update_contact_check(const ConfigCheck& check)
 {
     if (check.is_type_of<CzNic::Specific>())
     {
@@ -64,7 +64,7 @@ std::shared_ptr<Epp::Contact::UpdateOperationCheck> get_update_contact_check(con
                 from_option_to_operation<CzNic::Specific::UpdateContact::Disclose::Ident>(check),
                 from_option_to_operation<CzNic::Specific::UpdateContact::Disclose::NotifyEmail>(check));
     }
-    if (check.is_type_of<HandleRifdArgs::Check::Empty>())
+    if (check.is_type_of<ConfigCheck::Empty>())
     {
         class DummyUpdateContactCheck final : public Epp::Contact::UpdateOperationCheck
         {

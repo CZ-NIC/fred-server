@@ -16,23 +16,22 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GET_UPDATE_CONTACT_CHECK_HH_5A28C15EE725DB000D21BC9CB3A1542E//date "+%s.%N"|md5sum|tr "[a-f]" "[A-F]"
-#define GET_UPDATE_CONTACT_CHECK_HH_5A28C15EE725DB000D21BC9CB3A1542E
-
-#include "src/backend/epp/contact/update_operation_check.hh"
 #include "src/backend/epp/contact/config_check.hh"
-
-#include <memory>
-#include <string>
 
 namespace Epp {
 namespace Contact {
-namespace Impl {
 
-std::shared_ptr<Epp::Contact::UpdateOperationCheck> get_update_contact_check(const ConfigCheck& check);
+ConfigCheck& ConfigCheck::set_name(const std::string& name)
+{
+    name_ = name;
+    return *this;
+}
 
-}//namespace Epp::Contact::Impl
+template <>
+bool ConfigCheck::is_type_of<ConfigCheck::Empty>()const
+{
+    return name_.empty();
+}
+
 }//namespace Epp::Contact
 }//namespace Epp
-
-#endif//GET_UPDATE_CONTACT_CHECK_HH_5A28C15EE725DB000D21BC9CB3A1542E

@@ -20,7 +20,7 @@
 #define GET_CREATE_CONTACT_CHECK_HH_DD99A7E34F2E2A4E57B0B1035DCA8A41
 
 #include "src/backend/epp/contact/create_operation_check.hh"
-#include "src/util/cfg/handle_rifd_args.hh"
+#include "src/backend/epp/contact/config_check.hh"
 
 #include <memory>
 #include <string>
@@ -29,7 +29,7 @@ namespace Epp {
 namespace Contact {
 namespace Impl {
 
-std::shared_ptr<Epp::Contact::CreateOperationCheck> get_create_contact_check(const HandleRifdArgs::Check& check);
+std::shared_ptr<Epp::Contact::CreateOperationCheck> get_create_contact_check(const ConfigCheck& check);
 
 }//namespace Epp::Contact::Impl
 }//namespace Epp::Contact

@@ -571,6 +571,8 @@ src_util_tz_libtimezones_a_SOURCES = \
 src_util_cfg_libhandle_rifd_args_a_SOURCES = \
 		src/util/cfg/handle_rifd_args.cc \
 		src/util/cfg/handle_rifd_args.hh \
+		src/backend/epp/contact/config_check.cc \
+		src/backend/epp/contact/config_check.hh \
 		src/backend/epp/contact/impl/cznic/specific.cc \
 		src/backend/epp/contact/impl/cznic/specific.hh
 #

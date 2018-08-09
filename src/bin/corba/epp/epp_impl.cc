@@ -465,7 +465,7 @@ ccReg_EPP_i::ccReg_EPP_i(
     bool rifd_epp_update_domain_keyset_clear,
     bool rifd_epp_operations_charging,
     bool epp_update_contact_enqueue_check,
-    const HandleRifdArgs::Check& rifd_check)
+    const Epp::Contact::ConfigCheck& rifd_check)
 
     : database(_db),
       mm(_mm),

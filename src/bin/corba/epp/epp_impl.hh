@@ -16,7 +16,7 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/util/cfg/handle_rifd_args.hh"
+#include "src/backend/epp/contact/config_check.hh"
 #include "src/backend/epp/contact/create_operation_check.hh"
 #include "src/backend/epp/contact/update_operation_check.hh"
 
@@ -122,7 +122,7 @@ public:
               bool rifd_epp_update_domain_keyset_clear,
               bool rifd_epp_operations_charging,
               bool epp_update_contact_enqueue_check,
-              const HandleRifdArgs::Check& rifd_check);
+              const Epp::Contact::ConfigCheck& rifd_check);
   virtual ~ccReg_EPP_i();
 
   const std::string& get_disable_epp_notifier_cltrid_prefix() const

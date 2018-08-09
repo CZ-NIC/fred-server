@@ -27,10 +27,9 @@
 #include "src/util/cfg/faked_args.hh"
 #include "src/util/cfg/handle_args.hh"
 
-#include <boost/program_options.hpp>
+#include "src/backend/epp/contact/config_check.hh"
 
-#include <string>
-#include <unordered_map>
+#include <boost/program_options.hpp>
 
 /**
  * \class HandleRifdArgs
@@ -50,28 +49,7 @@ public:
     bool rifd_epp_operations_charging;
     bool epp_update_contact_enqueue_check;
 
-    class Check
-    {
-    public:
-        Check() = default;
-        template <typename>
-        bool is_type_of()const;
-        struct Empty;//specialization is_type_of<Empty>
-        Check& set_name(const std::string&);
-        template <typename>
-        static void add_options_description(boost::program_options::options_description& options_description);
-        template <typename>
-        const std::string& get_value()const;
-        template <typename>
-        Check& set_values(const boost::program_options::variables_map&);
-        template <typename>
-        static Check get_default();
-        using KeyValue = std::unordered_map<std::string, std::string>;
-    private:
-        std::string name_;
-        KeyValue options_;
-    };
-    Check rifd_check;
+    Epp::Contact::ConfigCheck rifd_check;
 };
 
 #endif

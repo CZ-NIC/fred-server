@@ -69,7 +69,7 @@ struct DefaultCreateContactConfigData : ::Epp::Contact::CreateContactConfigData
         : CreateContactConfigData(
                 false,
                 ::Epp::Contact::Impl::get_create_contact_check(
-                        HandleRifdArgs::Check::get_default<::Epp::Contact::Impl::CzNic::Specific>()))
+                        ::Epp::Contact::ConfigCheck:get_default<::Epp::Contact::Impl::CzNic::Specific>()))
     {
     }
 };
@@ -81,7 +81,7 @@ struct DefaultUpdateContactConfigData : ::Epp::Contact::UpdateContactConfigData
                 false,
                 false,
                 ::Epp::Contact::Impl::get_update_contact_check(
-                        HandleRifdArgs::Check::get_default<::Epp::Contact::Impl::CzNic::Specific>()))
+                        ::Epp::Contact::ConfigCheck::get_default<::Epp::Contact::Impl::CzNic::Specific>()))
     {
     }
 };
