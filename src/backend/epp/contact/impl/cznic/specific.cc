@@ -181,70 +181,70 @@ void set_value(const po_variables_map& vm, HandleRifdArgs::Check::KeyValue& opti
     options.emplace(get_key<T>(), vm[get_key<T>()].template as<std::string>());
 }
 
+auto default_value_is_to_show() { return boost::program_options::value<std::string>()->default_value("show"); }
+auto default_value_is_to_hide() { return boost::program_options::value<std::string>()->default_value("hide"); }
+auto default_value_is_empty() { return boost::program_options::value<std::string>()->default_value(std::string()); }
+
 }//namespace {anonymous}
 
 template <>
 void HandleRifdArgs::Check::add_options_description<CzNicSpecific>(
         boost::program_options::options_description& options_description)
 {
-    const auto default_value_is_to_show = boost::program_options::value<std::string>()->default_value("show");
-    const auto default_value_is_to_hide = boost::program_options::value<std::string>()->default_value("hide");
-    const auto default_value_is_empty = boost::program_options::value<std::string>()->default_value(std::string());
-
     options_description.add_options()
             (get_key_str<CzNicSpecific::CreateContact::Disclose::Name>(),
-             default_value_is_to_show,
+             default_value_is_to_show(),
              "default value of disclose name flag not shown in epp xml schemas for a create_contact operation")
             (get_key_str<CzNicSpecific::CreateContact::Disclose::Organization>(),
-             default_value_is_to_show,
+             default_value_is_to_show(),
              "default value of disclose organization flag not shown in epp xml schemas for a create_contact operation")
             (get_key_str<CzNicSpecific::CreateContact::Disclose::Address>(),
-             default_value_is_to_show,
+             default_value_is_to_show(),
              "default value of disclose address flag not shown in epp xml schemas for a create_contact operation")
             (get_key_str<CzNicSpecific::CreateContact::Disclose::Telephone>(),
-             default_value_is_to_hide,
+             default_value_is_to_hide(),
              "default value of disclose telephone flag not shown in epp xml schemas for a create_contact operation")
             (get_key_str<CzNicSpecific::CreateContact::Disclose::Fax>(),
-             default_value_is_to_hide,
+             default_value_is_to_hide(),
              "default value of disclose fax flag not shown in epp xml schemas for a create_contact operation")
             (get_key_str<CzNicSpecific::CreateContact::Disclose::Email>(),
-             default_value_is_to_hide,
+             default_value_is_to_hide(),
              "default value of disclose email flag not shown in epp xml schemas for a create_contact operation")
             (get_key_str<CzNicSpecific::CreateContact::Disclose::Vat>(),
-             default_value_is_to_hide,
+             default_value_is_to_hide(),
              "default value of disclose vat flag not shown in epp xml schemas for a create_contact operation")
             (get_key_str<CzNicSpecific::CreateContact::Disclose::Ident>(),
-             default_value_is_to_hide,
+             default_value_is_to_hide(),
              "default value of disclose ident flag not shown in epp xml schemas for a create_contact operation")
             (get_key_str<CzNicSpecific::CreateContact::Disclose::NotifyEmail>(),
-             default_value_is_to_hide,
+             default_value_is_to_hide(),
              "default value of disclose notifyemail flag not shown in epp xml schemas for a create_contact operation")
             (get_key_str<CzNicSpecific::UpdateContact::Disclose::Name>(),
-             default_value_is_empty,
+             default_value_is_empty(),
              "default value of disclose name flag not shown in epp xml schemas for a update_contact operation")
             (get_key_str<CzNicSpecific::UpdateContact::Disclose::Organization>(),
-             default_value_is_empty,
+             default_value_is_empty(),
              "default value of disclose organization flag not shown in epp xml schemas for a update_contact operation")
             (get_key_str<CzNicSpecific::UpdateContact::Disclose::Address>(),
-             default_value_is_empty,
+             default_value_is_empty(),
              "default value of disclose address flag not shown in epp xml schemas for a update_contact operation")
             (get_key_str<CzNicSpecific::UpdateContact::Disclose::Telephone>(),
-             default_value_is_empty,
+             default_value_is_empty(),
              "default value of disclose telephone flag not shown in epp xml schemas for a update_contact operation")
             (get_key_str<CzNicSpecific::UpdateContact::Disclose::Fax>(),
-             default_value_is_empty,
+             default_value_is_empty(),
              "default value of disclose fax flag not shown in epp xml schemas for a update_contact operation")
             (get_key_str<CzNicSpecific::UpdateContact::Disclose::Email>(),
-             default_value_is_empty,
+             default_value_is_empty(),
              "default value of disclose email flag not shown in epp xml schemas for a update_contact operation")
             (get_key_str<CzNicSpecific::UpdateContact::Disclose::Vat>(),
-             default_value_is_empty,
+             default_value_is_empty(),
              "default value of disclose vat flag not shown in epp xml schemas for a update_contact operation")
             (get_key_str<CzNicSpecific::UpdateContact::Disclose::Ident>(),
-             default_value_is_empty,
+             default_value_is_empty(),
              "default value of disclose ident flag not shown in epp xml schemas for a update_contact operation")
             (get_key_str<CzNicSpecific::UpdateContact::Disclose::NotifyEmail>(),
-             default_value_is_empty,
+             default_value_is_empty(),
              "default value of disclose notifyemail flag not shown in epp xml schemas for a update_contact operation");
 }
 

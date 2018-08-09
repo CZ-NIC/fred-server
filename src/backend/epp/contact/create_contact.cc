@@ -104,7 +104,6 @@ CreateContactResult create_contact(
         const CreateContactConfigData& create_contact_config_data,
         const SessionData& session_data)
 {
-    ctx.get_log().info("create_contact() entered");
     if (!is_session_registrar_valid(session_data))
     {
         throw EppResponseFailure(EppResultFailure(
@@ -121,7 +120,6 @@ CreateContactResult create_contact(
                                                 Reason::bad_format_contact_handle)));
     }
 
-    ctx.get_log().info("create_contact() handle is valid");
     {
         const LibFred::ContactHandleState::Registrability::Enum contact_registrability =
             LibFred::Contact::get_handle_registrability(ctx, contact_handle);
@@ -169,7 +167,6 @@ CreateContactResult create_contact(
 
     try
     {
-        ctx.get_log().info("create_contact() convert place address");
         LibFred::Contact::PlaceAddress place;
         place.street1 = contact_data.address->street[0];
         place.street2 = to_optional(contact_data.address->street[1]);
@@ -178,7 +175,6 @@ CreateContactResult create_contact(
         place.stateorprovince = to_optional(contact_data.address->state_or_province);
         place.postalcode = contact_data.address->postal_code;
         place.country = contact_data.address->country_code;
-        ctx.get_log().info("create_contact() place address converted");
 
         const auto ident = get_optional_personal_id_union(*contact_data.ident);
         Optional<LibFred::ContactAddressList> addresses;
@@ -222,15 +218,12 @@ CreateContactResult create_contact(
             hideable_to_discloseflag(contact_data.notify_email),
             Optional<Nullable<bool>>(),
             session_data.logd_request_id);
-        ctx.get_log().info("create_contact() operation check");
         create_contact_config_data.get_operation_check()(
                 ctx,
                 contact_data,
                 session_data,
                 create_contact_op);
-        ctx.get_log().info("create_contact() create exec call");
         const LibFred::CreateContact::Result create_data = create_contact_op.exec(ctx, "UTC");
-        ctx.get_log().info("create_contact() create exec done");
 
         return CreateContactResult(
             create_data.create_object_result.object_id,

@@ -76,14 +76,12 @@ InfoContactLocalizedResponse info_contact_localized(
     try
     {
         LibFred::OperationContextCreator ctx;
-        ctx.get_log().info("info_contact_localized() entered");
         const InfoContactOutputData src_data =
                 info_contact(
                         ctx,
                         _contact_handle,
                         _info_contact_config_data,
                         _session_data);
-        ctx.get_log().info("info_contact() successfully done");
 
         InfoContactLocalizedOutputData dst_data;
         dst_data.handle = src_data.handle;
@@ -119,7 +117,6 @@ InfoContactLocalizedResponse info_contact_localized(
                         EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
                         _session_data.lang),
                 dst_data);
-        ctx.get_log().info("info_contact_localized() finished");
         return response;
     }
     catch (const EppResponseFailure& e)

@@ -19,9 +19,6 @@
 #include "src/util/cfg/handle_rifd_args.hh"
 #include "src/backend/epp/contact/impl/cznic/specific.hh"
 
-#include <iostream>
-#include <exception>
-
 using CzNicSpecific = Epp::Contact::Impl::CzNic::Specific;
 
 HandleRifdArgs::~HandleRifdArgs()
