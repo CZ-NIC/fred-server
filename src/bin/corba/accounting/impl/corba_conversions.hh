@@ -22,6 +22,7 @@
 #include "src/backend/accounting/invoice_reference.hh"
 #include "src/backend/accounting/payment_data.hh"
 #include "src/backend/accounting/registrar.hh"
+#include "src/backend/accounting/registrar_reference.hh"
 #include "src/backend/credit.hh"
 #include "src/bin/corba/Accounting.hh"
 #include "src/util/types/money.hh"
@@ -59,13 +60,13 @@ wrap_Fred_Backend_Credit_to_Registry_Accounting_Credit(
         const Fred::Backend::Credit& _src,
         Registry::Accounting::Credit& _dst);
 
-Registry::Accounting::RegistrarHandleSeq*
-wrap_set_of_string_to_Registry_Accounting_RegistrarHandleSeq(
-        const std::set<std::string>& registrar_handles);
+Registry::Accounting::RegistrarReferenceSeq*
+wrap_vector_of_Fred_Backend_Accounting_RegistrarReference_to_Registry_Accounting_RegistrarReferenceSeq(
+        const std::vector<Fred::Backend::Accounting::RegistrarReference>& _registrar_references);
 
 Registry::Accounting::InvoiceReferenceSeq*
 wrap_vector_of_Fred_Backend_Accounting_InvoiceReference_to_Registry_Accounting_InvoiceReferenceSeq(
-        const std::vector<Fred::Backend::Accounting::InvoiceReference>& invoice_references);
+        const std::vector<Fred::Backend::Accounting::InvoiceReference>& _invoice_references);
 
 } // namespace CorbaConversions::Accounting::Impl
 } // namespace CorbaConversions::Accounting

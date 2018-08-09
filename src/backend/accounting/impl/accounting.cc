@@ -22,6 +22,7 @@
 #include "src/backend/accounting/impl/exceptions.hh"
 #include "src/backend/accounting/payment_data.hh"
 #include "src/backend/accounting/registrar.hh"
+#include "src/backend/accounting/registrar_reference.hh"
 #include "src/backend/credit.hh"
 #include "src/libfred/banking/bank_manager.hh"
 #include "src/libfred/banking/exceptions.hh"
@@ -190,24 +191,21 @@ Fred::Backend::Accounting::Registrar get_registrar_by_payment(
     Database::Result dbres = _ctx.get_conn().exec_params(
             // clang-format off
             "SELECT id, "
-                   "ico, " //
-                   "dic, " //
-                   "varsymb, "
-                   "vat, "
-                   "handle, " //
-                   "name, " //
-                   "organization, " //
-                   "street1, " //
-                   "street2, " //
-                   "street3, " //
-                   "city, " //
-                   "stateorprovince, " //
-                   "postalcode, " //
-                   "country, " //
-                   "telephone, " //
-                   "fax, " //
-                   "email, "
-                   "url " //
+                   "ico, "
+                   "dic, "
+                   "handle, "
+                   "name, "
+                   "organization, "
+                   "street1, "
+                   "street2, "
+                   "street3, "
+                   "city, "
+                   "stateorprovince, "
+                   "postalcode, "
+                   "country, "
+                   "telephone, "
+                   "fax, "
+                   "url "
               "FROM registrar "
              "WHERE registrar.varsymb=$1::text",
             // clang-format on
@@ -250,24 +248,21 @@ Fred::Backend::Accounting::Registrar get_registrar_by_handle(
     Database::Result dbres = _ctx.get_conn().exec_params(
             // clang-format off
             "SELECT id, "
-                   "ico, " //
-                   "dic, " //
-                   "varsymb, "
-                   "vat, "
-                   "handle, " //
-                   "name, " //
-                   "organization, " //
-                   "street1, " //
-                   "street2, " //
-                   "street3, " //
-                   "city, " //
-                   "stateorprovince, " //
-                   "postalcode, " //
-                   "country, " //
-                   "telephone, " //
-                   "fax, " //
-                   "email, "
-                   "url " //
+                   "ico, "
+                   "dic, "
+                   "handle, "
+                   "name, "
+                   "organization, "
+                   "street1, "
+                   "street2, "
+                   "street3, "
+                   "city, "
+                   "stateorprovince, "
+                   "postalcode, "
+                   "country, "
+                   "telephone, "
+                   "fax, "
+                   "url "
               "FROM registrar "
              "WHERE registrar.handle=$1::text",
             // clang-format on
@@ -279,7 +274,7 @@ Fred::Backend::Accounting::Registrar get_registrar_by_handle(
     }
     if (dbres.size() > 1)
     {
-        throw std::runtime_error("too many registrars for given varsymb");
+        throw std::runtime_error("too many registrars for given handle");
     }
 
     Registrar registrar;
@@ -467,19 +462,23 @@ std::vector<InvoiceReference> import_payment_by_registrar_handle(
     }
 }
 
-std::set<std::string> get_registrar_handles(
+std::vector<RegistrarReference> get_registrar_references(
         LibFred::OperationContext& _ctx)
 {
-    std::set<std::string> registrar_handles;
+    std::vector<RegistrarReference> registrar_references;
     Database::Result dbresult =
             _ctx.get_conn().exec(
-                    "SELECT handle FROM registrar "
-                     "ORDER BY handle");
+                    "SELECT handle, name FROM registrar "
+                     "ORDER BY name");
+    registrar_references.reserve(dbresult.size());
     for (std::size_t row_index = 0; row_index < dbresult.size(); ++row_index)
     {
-        registrar_handles.insert(static_cast<std::string>(dbresult[row_index]["handle"]));
+        registrar_references.emplace_back(
+                RegistrarReference(
+                        static_cast<std::string>(dbresult[row_index]["handle"]),
+                        static_cast<std::string>(dbresult[row_index]["name"])));
     }
-    return registrar_handles;
+    return registrar_references;
 }
 
 } // namespace Fred::Backend::Accounting::Impl

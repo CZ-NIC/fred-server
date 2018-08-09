@@ -73,7 +73,7 @@ public:
             const char* _registrar_handle,
             Registry::Accounting::Credit_out _remaining_credit) final override;
 
-    Registry::Accounting::RegistrarHandleSeq* get_registrar_handles() final override;
+    Registry::Accounting::RegistrarReferenceSeq* get_registrar_references() final override;
 
 private:
     // Make sure all instances are built on the heap by making the destructor non-public

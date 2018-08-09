@@ -323,7 +323,7 @@ std::vector<InvoiceReference> import_payment_by_registrar_handle(
     }
 }
 
-std::set<std::string> get_registrar_handles()
+std::vector<RegistrarReference> get_registrar_references()
 {
     LOGGING_CONTEXT(log_ctx);
     LOGGER(PACKAGE).info(__FUNCTION__);
@@ -331,7 +331,7 @@ std::set<std::string> get_registrar_handles()
     {
         LibFred::OperationContextCreator ctx;
 
-        return Impl::get_registrar_handles(ctx);
+        return Impl::get_registrar_references(ctx);
     }
     catch (const std::exception& e)
     {

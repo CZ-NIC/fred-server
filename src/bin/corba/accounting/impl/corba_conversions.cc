@@ -125,22 +125,51 @@ wrap_Fred_Backend_Credit_to_Registry_Accounting_Credit(
     _dst.value = LibFred::Corba::wrap_string_to_corba_string(_src.value.get_string());
 }
 
-Registry::Accounting::RegistrarHandleSeq*
-wrap_set_of_string_to_Registry_Accounting_RegistrarHandleSeq(const std::set<std::string>& registrar_handles)
+namespace {
+
+Registry::Accounting::RegistrarReference
+wrap_Fred_Backend_Accounting_RegistrarReference_to_Registry_Accounting_RegistrarReference(
+        const Fred::Backend::Accounting::RegistrarReference& _registrar_reference)
 {
-    const auto registrar_handle_seq = new Registry::Accounting::RegistrarHandleSeq();
-    registrar_handle_seq->length(registrar_handles.size());
+    Registry::Accounting::RegistrarReference registrar_reference;
+    registrar_reference.handle = LibFred::Corba::wrap_string_to_corba_string(_registrar_reference.handle);
+    registrar_reference.name = LibFred::Corba::wrap_string_to_corba_string(_registrar_reference.name);
+    return registrar_reference;
+}
+
+} // namespace CorbaConversion::Accounting::Impl::{anonymous}
+
+Registry::Accounting::RegistrarReferenceSeq*
+wrap_vector_of_Fred_Backend_Accounting_RegistrarReference_to_Registry_Accounting_RegistrarReferenceSeq(
+        const std::vector<Fred::Backend::Accounting::RegistrarReference>& _registrar_references)
+{
+    const auto registrar_reference_seq = new Registry::Accounting::RegistrarReferenceSeq();
+    registrar_reference_seq->length(_registrar_references.size());
 
     CORBA::ULong i = 0;
-    for (const auto& registrar_handle : registrar_handles)
+    for (const auto& registrar_reference : _registrar_references)
     {
-        (*registrar_handle_seq)[i] = LibFred::Corba::wrap_string_to_corba_string(registrar_handle);
+        (*registrar_reference_seq)[i] =
+                wrap_Fred_Backend_Accounting_RegistrarReference_to_Registry_Accounting_RegistrarReference(
+                        registrar_reference);
          ++i;
     }
-    return registrar_handle_seq;
+    return registrar_reference_seq;
 }
 
 namespace {
+
+Registry::Accounting::InvoiceType::Type
+ wrap_Fred_Backend_Accounting_InvoiceType_to_Registry_Accounting_InvoiceType_Type(
+        const Fred::Backend::Accounting::InvoiceType& _invoice_type)
+{
+        switch (_invoice_type)
+        {
+            case Fred::Backend::Accounting::InvoiceType::advance: return Registry::Accounting::InvoiceType::advance;
+            case Fred::Backend::Accounting::InvoiceType::account: return Registry::Accounting::InvoiceType::account;
+        }
+        throw std::logic_error("unexpected Fred::Backend::Accounting::InvoiceType");
+}
 
 Registry::Accounting::InvoiceReference
 wrap_Fred_Backend_Accounting_InvoiceReference_to_Registry_Accounting_InvoiceReference(
@@ -149,6 +178,7 @@ wrap_Fred_Backend_Accounting_InvoiceReference_to_Registry_Accounting_InvoiceRefe
     Registry::Accounting::InvoiceReference invoice_reference;
     LibFred::Corba::int_to_int(_invoice_reference.id, invoice_reference.id);
     invoice_reference.number = LibFred::Corba::wrap_string_to_corba_string(_invoice_reference.number);
+    invoice_reference.type = wrap_Fred_Backend_Accounting_InvoiceType_to_Registry_Accounting_InvoiceType_Type(_invoice_reference.type);
     return invoice_reference;
 }
 
@@ -164,7 +194,9 @@ wrap_vector_of_Fred_Backend_Accounting_InvoiceReference_to_Registry_Accounting_I
     CORBA::ULong i = 0;
     for (const auto& invoice_reference : invoice_references)
     {
-        (*invoice_reference_seq)[i] = wrap_Fred_Backend_Accounting_InvoiceReference_to_Registry_Accounting_InvoiceReference(invoice_reference);
+        (*invoice_reference_seq)[i] =
+                wrap_Fred_Backend_Accounting_InvoiceReference_to_Registry_Accounting_InvoiceReference(
+                        invoice_reference);
          ++i;
     }
     return invoice_reference_seq;

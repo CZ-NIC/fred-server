@@ -42,7 +42,7 @@ unsigned long long get_registrar_id_by_handle(
                     "Registrar with handle '%1%' not found in database.") % registrar_handle));
             throw RegistrarNotFound();
     }
-    const unsigned long long registrar_id = static_cast<unsigned long long>(res[0][0]);
+    const auto registrar_id = static_cast<unsigned long long>(res[0][0]);
     return registrar_id;
 }
 
@@ -64,7 +64,7 @@ unsigned long long get_registrar_id_by_payment(
                     "=> processing canceled") % _payment.uuid);
         throw RegistrarNotFound();
     }
-    const unsigned long long registrar_id = static_cast<unsigned long long>(result[0][0]);
+    const auto registrar_id = static_cast<unsigned long long>(result[0][0]);
     return registrar_id;
 }
 
@@ -92,11 +92,27 @@ unsigned long long get_account_id_by_account_number_and_bank_code(
                 % _account_number % _account_bank_code));
         throw InvalidAccountData();
     }
-    const unsigned long long account_id = static_cast<unsigned long long>(result[0][0]);
+    const auto account_id = static_cast<unsigned long long>(result[0][0]);
     return account_id;
 }
 
-
+std::string get_invoice_number_by_id(
+        unsigned long long _invoice_id)
+{
+    Database::Query query;
+    query.buffer()
+        << "SELECT prefix FROM invoice WHERE id = "
+        << Database::Value(_invoice_id);
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Result res = conn.exec(query);
+    if (res.size() == 0) {
+            LOGGER(PACKAGE).error(boost::str(boost::format(
+                    "Invoice with id '%1%' not found in database.") % _invoice_id));
+            throw std::runtime_error("invoice not found");
+    }
+    const auto invoice_number = static_cast<std::string>(res[0][0]);
+    return invoice_number;
+}
 
 } // LibFred::Banking::{anonymous}
 
@@ -205,11 +221,10 @@ private:
                                 partial_price, uaci_vat , unpaid_account_invoice_id);
                         pay_invoice(_registrar_id , zone_id, _payment.uuid
                             , balance_change, unpaid_account_invoice_id);
-                        const std::string unpaid_account_invoice_number = ""; // TODO
                         invoice_references.push_back(
                                 InvoiceReference(
                                         unpaid_account_invoice_id,
-                                        unpaid_account_invoice_number,
+                                        get_invoice_number_by_id(unpaid_account_invoice_id),
                                         InvoiceType::account,
                                         balance_change));
                     }
@@ -220,11 +235,10 @@ private:
                                 unpaid_account_invoice_id);
                         pay_invoice(_registrar_id , zone_id, _payment.uuid
                             , balance_change, unpaid_account_invoice_id);
-                        const std::string unpaid_account_invoice_number = ""; // TODO
                         invoice_references.push_back(
                                 InvoiceReference(
                                         unpaid_account_invoice_id,
-                                        unpaid_account_invoice_number,
+                                        get_invoice_number_by_id(unpaid_account_invoice_id),
                                         InvoiceType::account,
                                         balance_change));
                     }
@@ -280,11 +294,10 @@ private:
                 pay_invoice(_registrar_id , zone_id, _payment.uuid
                         , out_credit, advance_invoice_id);
 
-                const std::string advance_invoice_number = ""; // TODO
                 invoice_references.push_back(
                         InvoiceReference(
                                 advance_invoice_id,
-                                advance_invoice_number,
+                                get_invoice_number_by_id(advance_invoice_id),
                                 InvoiceType::advance,
                                 out_credit));
             }

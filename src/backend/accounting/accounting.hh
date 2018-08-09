@@ -24,9 +24,9 @@
 #include "src/backend/accounting/invoice_reference.hh"
 #include "src/backend/accounting/payment_data.hh"
 #include "src/backend/accounting/registrar.hh"
+#include "src/backend/accounting/registrar_reference.hh"
 #include "src/libfred/opcontext.hh"
 
-#include <set>
 #include <string>
 #include <vector>
 
@@ -62,7 +62,7 @@ std::vector<InvoiceReference> import_payment_by_registrar_handle(
         const PaymentData& _payment_data,
         const std::string& _registrar_handle);
 
-std::set<std::string> get_registrar_handles();
+std::vector<RegistrarReference> get_registrar_references();
 
 } // namespace Fred::Backend::Accounting
 } // namespace Fred::Backend
