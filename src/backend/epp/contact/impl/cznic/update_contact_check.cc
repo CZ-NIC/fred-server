@@ -89,7 +89,7 @@ struct ExceptionDiscloseflagRulesViolation:
         Epp::Contact::UpdateOperationCheck::DiscloseflagRulesViolation,
         std::runtime_error
 {
-    ExceptionDiscloseflagRulesViolation():std::runtime_error("discloseflag rules violation") { }
+    ExceptionDiscloseflagRulesViolation() : std::runtime_error("discloseflag rules violation") { }
 };
 
 bool is_change_operation(const Deletable<std::string>& op)

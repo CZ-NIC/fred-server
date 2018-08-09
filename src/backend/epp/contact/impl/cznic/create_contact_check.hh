@@ -26,7 +26,7 @@ namespace Contact {
 namespace Impl {
 namespace CzNic {
 
-class CreateContactCheck final:public Epp::Contact::CreateOperationCheck
+class CreateContactCheck final : public Epp::Contact::CreateOperationCheck
 {
 public:
     enum class Data

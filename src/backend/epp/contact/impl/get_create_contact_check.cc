@@ -66,7 +66,7 @@ std::shared_ptr<Epp::Contact::CreateOperationCheck> get_create_contact_check(con
     }
     if (check.is_type_of<HandleRifdArgs::Check::Empty>())
     {
-        class DummyCreateContactCheck final:public Epp::Contact::CreateOperationCheck
+        class DummyCreateContactCheck final : public Epp::Contact::CreateOperationCheck
         {
         public:
             DummyCreateContactCheck() = default;

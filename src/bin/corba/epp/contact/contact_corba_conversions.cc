@@ -497,7 +497,7 @@ struct Ident
     CORBA::String_var value;
 };
 
-struct GetIdentFromContactIdent:boost::static_visitor<Ident>
+struct GetIdentFromContactIdent : boost::static_visitor<Ident>
 {
     Ident operator()(const Epp::Contact::ContactIdentValueOf<Epp::Contact::ContactIdentType::Op>& src)const
     {
@@ -650,7 +650,7 @@ void wrap_InfoContactLocalizedOutputData(
     class Value
     {
     public:
-        explicit Value(const boost::optional<std::string>& _src):src_(_src) { }
+        explicit Value(const boost::optional<std::string>& _src) : src_(_src) { }
         bool does_present()const
         {
             return static_cast<bool>(src_) && !src_->empty();

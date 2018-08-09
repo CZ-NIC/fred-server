@@ -61,7 +61,7 @@ public:
         On(const On&) = default;
         On& operator=(const On&) = default;
     private:
-        explicit On(const Base& value):value_(value) { }
+        explicit On(const Base& value) : value_(value) { }
         Base value_;
         friend class TypeOf;
     };

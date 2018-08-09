@@ -86,10 +86,10 @@ private:
     { }
     struct ControlledPrivacyValue
     {
-        ControlledPrivacyValue(const Type& value,
-                               const boost::optional<PrivacyPolicy>& publishability)
-            : value(value),
-              publishability(publishability)
+        ControlledPrivacyValue(const Type& _value,
+                               const boost::optional<PrivacyPolicy>& _publishability)
+            : value(_value),
+              publishability(_publishability)
         { }
         Type value;
         boost::optional<PrivacyPolicy> publishability;

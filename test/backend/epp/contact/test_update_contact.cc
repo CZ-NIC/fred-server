@@ -261,7 +261,7 @@ bool get_new_discloseflag(const ::Epp::Updateable<::Epp::Contact::ContactChange:
     throw std::runtime_error("unexpected operation");
 }
 
-struct GetPersonalIdUnionFromContactIdent:boost::static_visitor<::LibFred::PersonalIdUnion>
+struct GetPersonalIdUnionFromContactIdent : boost::static_visitor<::LibFred::PersonalIdUnion>
 {
     ::LibFred::PersonalIdUnion operator()(const ::Epp::Contact::ContactIdentValueOf<::Epp::Contact::ContactIdentType::Op>& src)const
     {

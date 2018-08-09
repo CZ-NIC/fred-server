@@ -66,7 +66,7 @@ std::shared_ptr<Epp::Contact::UpdateOperationCheck> get_update_contact_check(con
     }
     if (check.is_type_of<HandleRifdArgs::Check::Empty>())
     {
-        class DummyUpdateContactCheck final:public Epp::Contact::UpdateOperationCheck
+        class DummyUpdateContactCheck final : public Epp::Contact::UpdateOperationCheck
         {
         public:
             DummyUpdateContactCheck() = default;

@@ -24,7 +24,7 @@ namespace Impl {
 
 namespace {
 
-struct GetPersonalIdUnionFromContactIdent:boost::static_visitor<LibFred::PersonalIdUnion>
+struct GetPersonalIdUnionFromContactIdent : boost::static_visitor<LibFred::PersonalIdUnion>
 {
     LibFred::PersonalIdUnion operator()(const ContactIdentValueOf<ContactIdentType::Op>& src) const
     {

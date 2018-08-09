@@ -85,7 +85,7 @@ struct ExceptionDiscloseflagRulesViolation:
         Epp::Contact::CreateOperationCheck::DiscloseflagRulesViolation,
         std::runtime_error
 {
-    ExceptionDiscloseflagRulesViolation():std::runtime_error("discloseflag rules violation") { }
+    ExceptionDiscloseflagRulesViolation() : std::runtime_error("discloseflag rules violation") { }
 };
 
 template <>

@@ -172,9 +172,9 @@ void set_value(const po_variables_map& vm, HandleRifdArgs::Check::KeyValue& opti
     const auto key_value_itr = options.find(get_key<T>());
     if (key_value_itr != options.end())
     {
-        struct KeyIsOccupied:std::runtime_error
+        struct KeyIsOccupied : std::runtime_error
         {
-            KeyIsOccupied():std::runtime_error("Key is occupied") { }
+            KeyIsOccupied() : std::runtime_error("Key is occupied") { }
         };
         throw KeyIsOccupied();
     }

@@ -42,7 +42,7 @@ struct OnValueOf
         AnyOf() = default;
         AnyOf(const AnyOf&) = default;
         template <typename U>
-        AnyOf(const U& src):operation_(src) { }
+        AnyOf(const U& src) : operation_(src) { }
         AnyOf& operator=(const AnyOf&) = default;
         template <typename U>
         AnyOf& operator=(const U& src) { operation_ = src; return *this; }
@@ -74,7 +74,7 @@ struct OnValueOf
                                               TypeOf<o>...>;
         OneOfSupported operation_;
         template <typename I>
-        struct Is:boost::static_visitor<bool>
+        struct Is : boost::static_visitor<bool>
         {
             bool operator()(const I&)const
             {
@@ -87,14 +87,14 @@ struct OnValueOf
             }
             bool operator()(const NotSpecified&)const
             {
-                struct OperationNotSpecifiedException:std::runtime_error, NotSpecified
+                struct OperationNotSpecifiedException : std::runtime_error, NotSpecified
                 {
-                    OperationNotSpecifiedException():std::runtime_error("operation not specified") { }
+                    OperationNotSpecifiedException() : std::runtime_error("operation not specified") { }
                 };
                 throw OperationNotSpecifiedException();
             }
         };
-        struct GetValue:boost::static_visitor<Type>
+        struct GetValue : boost::static_visitor<Type>
         {
             Type operator()(const TypeOf<Action::set_value>::On<Type>& operation)const
             {
@@ -103,7 +103,7 @@ struct OnValueOf
             template <Action op, typename>
             struct NotSetValueException;
             template <typename X>
-            struct NotSetValueException<Action::delete_value, X>:TypeOf<Action::delete_value>, std::runtime_error
+            struct NotSetValueException<Action::delete_value, X> : TypeOf<Action::delete_value>, std::runtime_error
             {
                 NotSetValueException()
                     : TypeOf<Action::delete_value>(TypeOf<Action::delete_value>::make()),
@@ -111,7 +111,7 @@ struct OnValueOf
                 { }
             };
             template <typename X>
-            struct NotSetValueException<Action::no_operation, X>:TypeOf<Action::no_operation>, std::runtime_error
+            struct NotSetValueException<Action::no_operation, X> : TypeOf<Action::no_operation>, std::runtime_error
             {
                 NotSetValueException()
                     : TypeOf<Action::no_operation>(TypeOf<Action::no_operation>::make()),
@@ -125,9 +125,9 @@ struct OnValueOf
             }
             Type operator()(const NotSpecified&)const
             {
-                struct OperationNotSpecifiedException:std::runtime_error, NotSpecified
+                struct OperationNotSpecifiedException : std::runtime_error, NotSpecified
                 {
-                    OperationNotSpecifiedException():std::runtime_error("operation not specified") { }
+                    OperationNotSpecifiedException() : std::runtime_error("operation not specified") { }
                 };
                 throw OperationNotSpecifiedException();
             }

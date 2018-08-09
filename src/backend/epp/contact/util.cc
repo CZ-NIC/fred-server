@@ -151,7 +151,7 @@ Deletable<ContactChange::Address> trim(const Deletable<ContactChange::Address>& 
 
 namespace {
 
-struct TrimContactIdent:boost::static_visitor<ContactIdent>
+struct TrimContactIdent : boost::static_visitor<ContactIdent>
 {
     template <typename T>
     ContactIdent operator()(const ContactIdentValueOf<T>& src)const

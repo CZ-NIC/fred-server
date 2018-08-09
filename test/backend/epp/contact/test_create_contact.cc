@@ -55,7 +55,7 @@ bool is_public(const ::Epp::Contact::Hideable<T>& hideable)
     throw std::runtime_error("no publishability specified");
 }
 
-struct GetPersonalIdUnionFromContactIdent:boost::static_visitor<::LibFred::PersonalIdUnion>
+struct GetPersonalIdUnionFromContactIdent : boost::static_visitor<::LibFred::PersonalIdUnion>
 {
     ::LibFred::PersonalIdUnion operator()(const ::Epp::Contact::ContactIdentValueOf<::Epp::Contact::ContactIdentType::Op>& src)const
     {
