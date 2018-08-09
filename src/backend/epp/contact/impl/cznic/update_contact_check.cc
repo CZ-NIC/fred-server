@@ -206,19 +206,9 @@ bool is_fake_change_operation(
         const LibFred::Contact::PlaceAddress& old_address)
 {
     static_assert(std::tuple_size<std::remove_reference_t<decltype(street)>>::value == 3, "must be exactly 3 streets");
-    if (!is_fake_change_operation(street[0], old_address.street1))
-    {
-        return false;
-    }
-    if (!is_fake_change_operation(street[1], old_address.street2))
-    {
-        return false;
-    }
-    if (!is_fake_change_operation(street[2], old_address.street3))
-    {
-        return false;
-    }
-    return true;
+    return is_fake_change_operation(street[0], old_address.street1) &&
+           is_fake_change_operation(street[1], old_address.street2) &&
+           is_fake_change_operation(street[2], old_address.street3);
 }
 
 bool is_fake_change_operation(
@@ -235,45 +225,16 @@ bool is_fake_change_operation(
                 return false;
             }
         }
-        if (!is_fake_change_operation(change.city, old_value))
-        {
-            return false;
-        }
-        if (!is_fake_change_operation(change.state_or_province, old_value))
-        {
-            return false;
-        }
-        if (!is_fake_change_operation(change.postal_code, old_value))
-        {
-            return false;
-        }
-        if (!is_fake_change_operation(change.country_code, old_value))
-        {
-            return false;
-        }
-        return true;
+        return is_fake_change_operation(change.city, old_value) &&
+               is_fake_change_operation(change.state_or_province, old_value) &&
+               is_fake_change_operation(change.postal_code, old_value) &&
+               is_fake_change_operation(change.country_code, old_value);
     }
-    if (!is_fake_change_operation(change.street, old_address.get_value()))
-    {
-        return false;
-    }
-    if (!is_fake_change_operation(change.city, old_address.get_value().city))
-    {
-        return false;
-    }
-    if (!is_fake_change_operation(change.state_or_province, old_address.get_value().stateorprovince))
-    {
-        return false;
-    }
-    if (!is_fake_change_operation(change.postal_code, old_address.get_value().postalcode))
-    {
-        return false;
-    }
-    if (!is_fake_change_operation(change.country_code, old_address.get_value().country))
-    {
-        return false;
-    }
-    return true;
+    return is_fake_change_operation(change.street, old_address.get_value()) &&
+           is_fake_change_operation(change.city, old_address.get_value().city) &&
+           is_fake_change_operation(change.state_or_province, old_address.get_value().stateorprovince) &&
+           is_fake_change_operation(change.postal_code, old_address.get_value().postalcode) &&
+           is_fake_change_operation(change.country_code, old_address.get_value().country);
 }
 
 bool is_sufficient_authenticity_level_to_private_address(
