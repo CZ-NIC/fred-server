@@ -77,7 +77,7 @@ void add_zone_ns(
         boost::split(splitted_addresses, _nameserver_ip_addresses, boost::is_any_of(","));
 
         std::vector<boost::asio::ip::address> ip_addrs;
-        for_each(splitted_addresses.begin(),
+        std::for_each(splitted_addresses.begin(),
                 splitted_addresses.end(),
                 [&ip_addrs](const std::string& s) { ip_addrs.push_back(boost::asio::ip::address::from_string(s)); });
 

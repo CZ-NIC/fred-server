@@ -35,7 +35,7 @@ std::string ip_addresses_to_string(
     }
     if (_ip_addresses.size() > 1)
     {
-        for_each(_ip_addresses.begin() + 1,
+        std::for_each(_ip_addresses.begin() + 1,
                 _ip_addresses.end(),
                 [&ns_addrs](const boost::asio::ip::address& _ip) { ns_addrs << "," << _ip; });
     }

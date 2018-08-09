@@ -38,7 +38,7 @@ std::vector<boost::asio::ip::address> get_ip_addresses(const std::string& _ip_ad
         std::vector<std::string> splitted_addresses;
         boost::split(splitted_addresses, addresses_without_braces, boost::is_any_of(","));
 
-        for_each(splitted_addresses.begin(),
+        std::for_each(splitted_addresses.begin(),
                 splitted_addresses.end(),
                 [&ip_addrs](const std::string& s){ip_addrs.push_back(boost::asio::ip::address::from_string(s));});
     }
