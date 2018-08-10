@@ -152,7 +152,7 @@ wrap_vector_of_Fred_Backend_Accounting_RegistrarReference_to_Registry_Accounting
         (*registrar_reference_seq)[i] =
                 wrap_Fred_Backend_Accounting_RegistrarReference_to_Registry_Accounting_RegistrarReference(
                         registrar_reference);
-         ++i;
+        ++i;
     }
     return registrar_reference_seq;
 }
@@ -163,10 +163,12 @@ Registry::Accounting::InvoiceType::Type
  wrap_Fred_Backend_Accounting_InvoiceType_to_Registry_Accounting_InvoiceType_Type(
         const Fred::Backend::Accounting::InvoiceType& _invoice_type)
 {
-        switch (_invoice_type)
-        {
-            case Fred::Backend::Accounting::InvoiceType::advance: return Registry::Accounting::InvoiceType::advance;
-            case Fred::Backend::Accounting::InvoiceType::account: return Registry::Accounting::InvoiceType::account;
+    switch (_invoice_type)
+    {
+        case Fred::Backend::Accounting::InvoiceType::advance:
+            return Registry::Accounting::InvoiceType::advance;
+        case Fred::Backend::Accounting::InvoiceType::account:
+            return Registry::Accounting::InvoiceType::account;
         }
         throw std::logic_error("unexpected Fred::Backend::Accounting::InvoiceType");
 }
@@ -185,19 +187,28 @@ wrap_Fred_Backend_Accounting_InvoiceReference_to_Registry_Accounting_InvoiceRefe
 } // namespace CorbaConversion::Accounting::Impl::{anonymous}
 
 Registry::Accounting::InvoiceReferenceSeq*
-wrap_vector_of_Fred_Backend_Accounting_InvoiceReference_to_Registry_Accounting_InvoiceReferenceSeq(
-        const std::vector<Fred::Backend::Accounting::InvoiceReference>& invoice_references)
+wrap_Fred_Backend_Accounting_PaymentInvoices_to_Registry_Accounting_InvoiceReferenceSeq(
+        const Fred::Backend::Accounting::PaymentInvoices& _payment_invoices)
 {
     const auto invoice_reference_seq = new Registry::Accounting::InvoiceReferenceSeq();
-    invoice_reference_seq->length(invoice_references.size());
+    invoice_reference_seq->length(
+            (_payment_invoices.advance_invoice != boost::none ? 1 : 0) +
+            _payment_invoices.account_invoices.size());
 
     CORBA::ULong i = 0;
-    for (const auto& invoice_reference : invoice_references)
+    if (_payment_invoices.advance_invoice != boost::none)
     {
         (*invoice_reference_seq)[i] =
                 wrap_Fred_Backend_Accounting_InvoiceReference_to_Registry_Accounting_InvoiceReference(
-                        invoice_reference);
-         ++i;
+                        *_payment_invoices.advance_invoice);
+        ++i;
+    }
+    for (const auto& account_invoice : _payment_invoices.account_invoices)
+    {
+        (*invoice_reference_seq)[i] =
+                wrap_Fred_Backend_Accounting_InvoiceReference_to_Registry_Accounting_InvoiceReference(
+                        account_invoice);
+        ++i;
     }
     return invoice_reference_seq;
 }

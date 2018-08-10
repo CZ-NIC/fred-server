@@ -162,14 +162,14 @@ private:
 
     }
 
-    std::vector<InvoiceReference> processPayment(
+    PaymentInvoices processPayment(
             PaymentData& _payment,
             unsigned long long _registrar_id)
     {
         Logging::Context ctx("payment processing");
         try
         {
-            std::vector<InvoiceReference> invoice_references;
+            PaymentInvoices payment_invoices;
 
             if (_payment.price <= Money("0"))
             {
@@ -221,7 +221,7 @@ private:
                                 partial_price, uaci_vat , unpaid_account_invoice_id);
                         pay_invoice(_registrar_id , zone_id, _payment.uuid
                             , balance_change, unpaid_account_invoice_id);
-                        invoice_references.push_back(
+                        payment_invoices.account_invoices.push_back(
                                 InvoiceReference(
                                         unpaid_account_invoice_id,
                                         get_invoice_number_by_id(unpaid_account_invoice_id),
@@ -235,7 +235,7 @@ private:
                                 unpaid_account_invoice_id);
                         pay_invoice(_registrar_id , zone_id, _payment.uuid
                             , balance_change, unpaid_account_invoice_id);
-                        invoice_references.push_back(
+                        payment_invoices.account_invoices.push_back(
                                 InvoiceReference(
                                         unpaid_account_invoice_id,
                                         get_invoice_number_by_id(unpaid_account_invoice_id),
@@ -294,12 +294,12 @@ private:
                 pay_invoice(_registrar_id , zone_id, _payment.uuid
                         , out_credit, advance_invoice_id);
 
-                invoice_references.push_back(
+                payment_invoices.advance_invoice =
                         InvoiceReference(
                                 advance_invoice_id,
                                 get_invoice_number_by_id(advance_invoice_id),
                                 InvoiceType::advance,
-                                out_credit));
+                                out_credit);
             }
             LOGGER(PACKAGE).info(boost::format(
                         "payment paired with registrar (id=%1%) "
@@ -307,7 +307,7 @@ private:
 
             transaction.commit();
 
-            return invoice_references;
+            return payment_invoices;
         }
         catch (std::exception &ex) {
             LOGGER(PACKAGE).info(boost::str(boost::format(
@@ -327,7 +327,7 @@ public:
     {
     }
 
-    std::vector<InvoiceReference> importPayment(
+    PaymentInvoices importPayment(
             const std::string& _uuid,
             const std::string& _account_number,
             const std::string& _account_bank_code,

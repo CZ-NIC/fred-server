@@ -1295,7 +1295,9 @@ src_libfred_banking_libbanking_a_SOURCES = \
 		src/libfred/banking/bank_manager.cc \
 		src/libfred/banking/bank_manager.hh \
 		src/libfred/banking/get_bank_accounts.cc \
-		src/libfred/banking/get_bank_accounts.hh
+		src/libfred/banking/get_bank_accounts.hh \
+		src/libfred/banking/payment_data.hh \
+		src/libfred/banking/payment_invoices.hh
 #
 # src/libfred/banking/libbanking.a
 
@@ -2774,6 +2776,7 @@ src_bin_corba_accounting_fred_accifd_SOURCES = \
 		src/backend/accounting/impl/exceptions.hh \
 		src/backend/accounting/invoice_reference.hh \
 		src/backend/accounting/payment_data.hh \
+		src/backend/accounting/payment_invoices.hh \
 		src/backend/accounting/registrar.hh \
 		src/backend/accounting/registrar_reference.hh \
 		src/backend/credit.cc \

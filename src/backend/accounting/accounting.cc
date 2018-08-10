@@ -237,7 +237,7 @@ Fred::Backend::Accounting::Registrar get_registrar_by_handle_and_payment(
     }
 }
 
-std::vector<InvoiceReference> import_payment(
+PaymentInvoices import_payment(
         const PaymentData& _payment_data)
 {
     LOGGING_CONTEXT(log_ctx);
@@ -279,7 +279,7 @@ std::vector<InvoiceReference> import_payment(
     }
 }
 
-std::vector<InvoiceReference> import_payment_by_registrar_handle(
+PaymentInvoices import_payment_by_registrar_handle(
         const PaymentData& _payment_data,
         const std::string& _registrar_handle)
 {

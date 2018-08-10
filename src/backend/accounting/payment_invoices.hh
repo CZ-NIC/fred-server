@@ -16,34 +16,23 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PAYMENT_DATA_HH_AAD16DFCDC514E7FAFAC28DE9BDD7E87
-#define PAYMENT_DATA_HH_AAD16DFCDC514E7FAFAC28DE9BDD7E87
+#ifndef PAYMENT_INVOICES_HH_89FFB324E8CF4B3AAAFFC01BAFCAA8AE
+#define PAYMENT_INVOICES_HH_89FFB324E8CF4B3AAAFFC01BAFCAA8AE
 
-#include "src/util/types/money.hh"
+#include "src/backend/accounting/invoice_reference.hh"
 
-#include <boost/date_time/gregorian/greg_date.hpp>
-#include <boost/date_time/posix_time/posix_time_types.hpp>
+#include <boost/optional/optional_io.hpp>
 
-#include <string>
+#include <vector>
 
 namespace Fred {
 namespace Backend {
 namespace Accounting {
 
-struct PaymentData
+struct PaymentInvoices
 {
-    std::string uuid;
-    std::string account_number;
-    std::string account_payment_ident;
-    std::string counter_account_number;
-    std::string counter_account_name;
-    std::string constant_symbol;
-    std::string variable_symbol;
-    std::string specific_symbol;
-    Money price;
-    boost::gregorian::date date;
-    std::string memo;
-    boost::posix_time::ptime creation_time;
+    boost::optional<InvoiceReference> advance_invoice;
+    std::vector<InvoiceReference> account_invoices;
 };
 
 } // namespace Fred::Backend::Accounting

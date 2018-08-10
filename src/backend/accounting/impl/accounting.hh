@@ -21,6 +21,7 @@
 
 #include "src/backend/accounting/invoice_reference.hh"
 #include "src/backend/accounting/payment_data.hh"
+#include "src/backend/accounting/payment_invoices.hh"
 #include "src/backend/accounting/registrar.hh"
 #include "src/backend/accounting/registrar_reference.hh"
 #include "src/backend/credit.hh"
@@ -60,10 +61,10 @@ std::string get_zone_by_payment(
         LibFred::OperationContext& _ctx,
         const PaymentData& _payment_data);
 
-std::vector<InvoiceReference> import_payment(
+PaymentInvoices import_payment(
         const PaymentData& _payment_data);
 
-std::vector<InvoiceReference> import_payment_by_registrar_handle(
+PaymentInvoices import_payment_by_registrar_handle(
         const PaymentData& _payment_data,
         const std::string& _registrar_handle);
 

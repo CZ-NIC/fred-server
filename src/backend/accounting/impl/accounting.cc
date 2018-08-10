@@ -21,10 +21,12 @@
 #include "src/backend/accounting/exceptions.hh"
 #include "src/backend/accounting/impl/exceptions.hh"
 #include "src/backend/accounting/payment_data.hh"
+#include "src/backend/accounting/payment_invoices.hh"
 #include "src/backend/accounting/registrar.hh"
 #include "src/backend/accounting/registrar_reference.hh"
 #include "src/backend/credit.hh"
 #include "src/libfred/banking/bank_manager.hh"
+#include "src/libfred/banking/payment_invoices.hh"
 #include "src/libfred/banking/exceptions.hh"
 #include "src/libfred/object/object_type.hh"
 #include "src/libfred/object_state/get_object_states.hh"
@@ -107,8 +109,10 @@ void change_zone_credit_of_registrar(
 
         Database::Result registrar_credit_id_result =
                 _ctx.get_conn().exec_params(
+                        // clang-format off
                         "SELECT id FROM registrar_credit "
-                        " WHERE registrar_id = $1::bigint AND zone_id = $2::bigint",
+                         "WHERE registrar_id = $1::bigint AND zone_id = $2::bigint",
+                        // clang-format on
                         Database::query_param_list
                                (registrar_id)
                                (zone_id));
@@ -125,14 +129,16 @@ void change_zone_credit_of_registrar(
         }
 
         Database::Result registrar_credit_transaction_id_result =
-               _ctx.get_conn().exec_params(
-                       "INSERT INTO registrar_credit_transaction "
-                       " (id, balance_change, registrar_credit_id) "
-                       " VALUES (DEFAULT, $1::numeric, $2::bigint) "
-                       " RETURNING id",
-                       Database::query_param_list
-                               (_credit_amount_to_add.value)
-                               (registrar_credit_id));
+                _ctx.get_conn().exec_params(
+                        // clang-format off
+                        "INSERT INTO registrar_credit_transaction "
+                        "(id, balance_change, registrar_credit_id) "
+                        "VALUES (DEFAULT, $1::numeric, $2::bigint) "
+                        "RETURNING id",
+                        // clang-format on
+                        Database::query_param_list
+                                (_credit_amount_to_add.value)
+                                (registrar_credit_id));
 
         if (registrar_credit_transaction_id_result.size() != 1)
         {
@@ -315,8 +321,9 @@ std::string get_zone_by_payment(
              "WHERE bank_account.account_number = $1::text "
                "AND bank_account.bank_code = $2::text",
             // clang-format on
-            Database::query_param_list(bank_account.account_number)
-                                      (bank_account.bank_code));
+            Database::query_param_list
+                    (bank_account.account_number)
+                    (bank_account.bank_code.get_value_or("")));
 
     if (dbres.size() < 1)
     {
@@ -345,35 +352,41 @@ InvoiceType convert_LibFred_Banking_InvoiceType_to_Fred_Backend_Accounting_Invoi
         throw std::logic_error("unexpected LibFred::Banking::InvoiceType");
 }
 
-struct Convert_LibFred_Baking_InvoiceReference_to_Fred_Backend_Accounting_InvoiceReference
-    : public std::unary_function<LibFred::Banking::InvoiceReference, InvoiceReference>
+InvoiceReference convert_LibFred_Baking_InvoiceReference_to_Fred_Backend_Accounting_InvoiceReference(
+        const LibFred::Banking::InvoiceReference& _invoice_reference)
 {
-    InvoiceReference operator()(const LibFred::Banking::InvoiceReference& _invoice_reference) const
-    {
-        return InvoiceReference(
-                _invoice_reference.id,
-                _invoice_reference.number,
-                convert_LibFred_Banking_InvoiceType_to_Fred_Backend_Accounting_InvoiceType(_invoice_reference.type),
-                Credit(_invoice_reference.credit_change.get_string()));
-    }
-};
+    return InvoiceReference(
+            _invoice_reference.id,
+            _invoice_reference.number,
+            convert_LibFred_Banking_InvoiceType_to_Fred_Backend_Accounting_InvoiceType(_invoice_reference.type),
+            Credit(_invoice_reference.credit_change.get_string()));
+}
 
-std::vector<InvoiceReference> convert_vector_of_LibFred_Baking_InvoiceReference_to_vector_of_Fred_Backend_Accounting_InvoiceReference(
-        const std::vector<LibFred::Banking::InvoiceReference>& _invoice_references)
+PaymentInvoices convert_vector_of_LibFred_Baking_InvoiceReference_to_Fred_Backend_Accounting_PaymentInvoices(
+        const LibFred::Banking::PaymentInvoices& _payment_invoices)
 {
-        std::vector<InvoiceReference> result;
-        result.reserve(_invoice_references.size());
-        std::transform(
-                _invoice_references.begin(),
-                _invoice_references.end(),
-                std::back_inserter(result),
-                Convert_LibFred_Baking_InvoiceReference_to_Fred_Backend_Accounting_InvoiceReference());
-        return result;
+        PaymentInvoices payment_invoices;
+        if (_payment_invoices.advance_invoice != boost::none)
+        {
+            payment_invoices.advance_invoice =
+                    convert_LibFred_Baking_InvoiceReference_to_Fred_Backend_Accounting_InvoiceReference(
+                            *_payment_invoices.advance_invoice);
+        }
+        if (_payment_invoices.account_invoices.size())
+        {
+            payment_invoices.account_invoices.reserve(_payment_invoices.account_invoices.size());
+            std::transform(
+                    _payment_invoices.account_invoices.begin(),
+                    _payment_invoices.account_invoices.end(),
+                    std::back_inserter(payment_invoices.account_invoices),
+                    convert_LibFred_Baking_InvoiceReference_to_Fred_Backend_Accounting_InvoiceReference);
+        }
+        return payment_invoices;
 }
 
 } // namespace Fred::Backend::Accounting::Impl::{anonymous}
 
-std::vector<InvoiceReference> import_payment(
+PaymentInvoices import_payment(
         const PaymentData& _payment_data)
 {
 
@@ -383,7 +396,7 @@ std::vector<InvoiceReference> import_payment(
 
     try {
         LibFred::Banking::ManagerPtr banking_manager(LibFred::Banking::Manager::create());
-        const auto invoice_references =
+        const auto payment_invoices =
                 banking_manager->importPayment(
                         _payment_data.uuid,
                         bank_account.account_number,
@@ -401,8 +414,8 @@ std::vector<InvoiceReference> import_payment(
                         _payment_data.creation_time,
                         no_registrar_handle);
 
-        return convert_vector_of_LibFred_Baking_InvoiceReference_to_vector_of_Fred_Backend_Accounting_InvoiceReference(
-                invoice_references);
+        return convert_vector_of_LibFred_Baking_InvoiceReference_to_Fred_Backend_Accounting_PaymentInvoices(
+                payment_invoices);
     }
     catch (const LibFred::Banking::RegistrarNotFound&) {
         throw RegistrarNotFound();
@@ -418,7 +431,7 @@ std::vector<InvoiceReference> import_payment(
     }
 }
 
-std::vector<InvoiceReference> import_payment_by_registrar_handle(
+PaymentInvoices import_payment_by_registrar_handle(
         const PaymentData& _payment_data,
         const std::string& _registrar_handle)
 {
@@ -427,7 +440,7 @@ std::vector<InvoiceReference> import_payment_by_registrar_handle(
 
     try {
         LibFred::Banking::ManagerPtr banking_manager(LibFred::Banking::Manager::create());
-        const auto invoice_references =
+        const auto payment_invoices =
                 banking_manager->importPayment(
                         _payment_data.uuid,
                         _payment_data.account_payment_ident,
@@ -445,8 +458,8 @@ std::vector<InvoiceReference> import_payment_by_registrar_handle(
                         _payment_data.creation_time,
                         _registrar_handle);
 
-        return convert_vector_of_LibFred_Baking_InvoiceReference_to_vector_of_Fred_Backend_Accounting_InvoiceReference(
-                invoice_references);
+        return convert_vector_of_LibFred_Baking_InvoiceReference_to_Fred_Backend_Accounting_PaymentInvoices(
+                payment_invoices);
     }
     catch (const LibFred::Banking::RegistrarNotFound&) {
         throw RegistrarNotFound();
@@ -468,8 +481,10 @@ std::vector<RegistrarReference> get_registrar_references(
     std::vector<RegistrarReference> registrar_references;
     Database::Result dbresult =
             _ctx.get_conn().exec(
+                    // clang-format off
                     "SELECT handle, name FROM registrar "
                      "ORDER BY name");
+                    // clang-format on
     registrar_references.reserve(dbresult.size());
     for (std::size_t row_index = 0; row_index < dbresult.size(); ++row_index)
     {

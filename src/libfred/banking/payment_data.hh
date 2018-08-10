@@ -23,6 +23,8 @@
 #include "src/libfred/common_new.hh"
 #include "src/util/types/money.hh"
 
+#include <string>
+
 namespace LibFred {
 namespace Banking {
 
@@ -76,5 +78,4 @@ struct PaymentData
 } // namespace Banking
 } // namespace LibFred
 
-#endif /*BANK_PAYMENT_H_*/
-
+#endif

@@ -200,40 +200,26 @@ Registry::Accounting::Registrar* AccountingImpl::get_registrar_by_handle_and_pay
     }
 }
 
-namespace {
-
-Fred::Backend::Credit get_credit_of_advance_invoice_in_invoice_references(
-        std::vector<Fred::Backend::Accounting::InvoiceReference> _invoice_references)
-{
-    for (const auto& invoice_reference : _invoice_references)
-    {
-        if (invoice_reference.type == Fred::Backend::Accounting::InvoiceType::advance)
-        {
-            return invoice_reference.credit_change;
-        }
-    }
-    return Fred::Backend::Credit("0");
-}
-
-} // namespace CorbaConversion::Accounting::{anonymous}
-
 Registry::Accounting::InvoiceReferenceSeq* AccountingImpl::import_payment(
     const Registry::Accounting::PaymentData& _payment_data,
     Registry::Accounting::Credit_out _remaining_credit)
 {
     try
     {
-        const std::vector<Fred::Backend::Accounting::InvoiceReference> invoice_references =
+        const Fred::Backend::Accounting::PaymentInvoices payment_invoices =
                 Fred::Backend::Accounting::import_payment(
                         Impl::unwrap_Registry_Accounting_PaymentData(_payment_data));
 
-        const auto credit = get_credit_of_advance_invoice_in_invoice_references(invoice_references);
+        const auto credit =
+                payment_invoices.advance_invoice != boost::none
+                ? (*payment_invoices.advance_invoice).credit_change
+                : Fred::Backend::Credit("0");
         Registry::Accounting::Credit_var remaining_credit = new Registry::Accounting::Credit();
         Impl::wrap_Fred_Backend_Credit_to_Registry_Accounting_Credit(credit, remaining_credit.inout());
 
         Registry::Accounting::InvoiceReferenceSeq_var result =
-                Impl::wrap_vector_of_Fred_Backend_Accounting_InvoiceReference_to_Registry_Accounting_InvoiceReferenceSeq(
-                        invoice_references);
+                Impl::wrap_Fred_Backend_Accounting_PaymentInvoices_to_Registry_Accounting_InvoiceReferenceSeq(
+                        payment_invoices);
 
         // no exception shall be thrown from here onwards
 
@@ -269,19 +255,21 @@ Registry::Accounting::InvoiceReferenceSeq* AccountingImpl::import_payment_by_reg
 {
     try
     {
-        const std::vector<Fred::Backend::Accounting::InvoiceReference> invoice_references =
+        const Fred::Backend::Accounting::PaymentInvoices payment_invoices =
                 Fred::Backend::Accounting::import_payment_by_registrar_handle(
                         Impl::unwrap_Registry_Accounting_PaymentData(_payment_data),
                         LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar_handle));
 
-
-        const auto credit = get_credit_of_advance_invoice_in_invoice_references(invoice_references);
+        const auto credit =
+                payment_invoices.advance_invoice != boost::none
+                ? (*payment_invoices.advance_invoice).credit_change
+                : Fred::Backend::Credit("0");
         Registry::Accounting::Credit_var remaining_credit = new Registry::Accounting::Credit();
         Impl::wrap_Fred_Backend_Credit_to_Registry_Accounting_Credit(credit, remaining_credit.inout());
 
         Registry::Accounting::InvoiceReferenceSeq_var result =
-                Impl::wrap_vector_of_Fred_Backend_Accounting_InvoiceReference_to_Registry_Accounting_InvoiceReferenceSeq(
-                        invoice_references);
+                Impl::wrap_Fred_Backend_Accounting_PaymentInvoices_to_Registry_Accounting_InvoiceReferenceSeq(
+                        payment_invoices);
 
         // no exception shall be thrown from here onwards
 
