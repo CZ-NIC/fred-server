@@ -20,26 +20,31 @@
 
 #include "src/libfred/db_settings.hh"
 
+#include <utility>
+
 namespace LibFred {
 namespace Banking {
 
 EnumList getBankAccounts()
 {
     Database::Connection conn = Database::Manager::acquire();
-    Database::Result res = conn.exec("SELECT  id, "
-            " account_name || ' ' || account_number || '/' || bank_code "
-            " FROM bank_account "
-            " ORDER BY id");
+    Database::Result dbresult =
+            // clang-format off
+            conn.exec("SELECT id, "
+                             "account_name || ' ' || account_number || '/' || bank_code "
+                        "FROM bank_account "
+                       "ORDER BY id");
+            // clang-format on
     EnumList el;
-    for(unsigned i=0;i<res.size();i++)
+    for (std::size_t row_index = 0; row_index < dbresult.size(); ++row_index)
     {
         EnumListItem eli;
-        eli.id = res[i][0];
-        eli.name = std::string(res[i][1]);
-        el.push_back(eli);
+        eli.id = dbresult[row_index][0];
+        eli.name = static_cast<std::string>(dbresult[row_index][1]);
+        el.push_back(std::move(eli));
     }
     return el;
-}//getBankAccounts
+}
 
 } // namespace LibFred::Banking
 } // namespace LibFred

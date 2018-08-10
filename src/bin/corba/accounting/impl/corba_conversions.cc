@@ -161,16 +161,17 @@ namespace {
 
 Registry::Accounting::InvoiceType::Type
  wrap_Fred_Backend_Accounting_InvoiceType_to_Registry_Accounting_InvoiceType_Type(
-        const Fred::Backend::Accounting::InvoiceType& _invoice_type)
+        const Fred::Backend::Accounting::InvoiceType _invoice_type)
 {
     switch (_invoice_type)
     {
         case Fred::Backend::Accounting::InvoiceType::advance:
             return Registry::Accounting::InvoiceType::advance;
+
         case Fred::Backend::Accounting::InvoiceType::account:
             return Registry::Accounting::InvoiceType::account;
-        }
-        throw std::logic_error("unexpected Fred::Backend::Accounting::InvoiceType");
+    }
+    throw std::logic_error("unexpected Fred::Backend::Accounting::InvoiceType");
 }
 
 Registry::Accounting::InvoiceReference

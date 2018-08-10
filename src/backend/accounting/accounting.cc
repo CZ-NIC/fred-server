@@ -39,7 +39,7 @@ std::string create_ctx_function_name(const char* fnc)
 class LogContext
 {
 public:
-    LogContext(const std::string& _op_name)
+    explicit LogContext(const std::string& _op_name)
         : ctx_operation_(_op_name)
     {
     }
@@ -59,7 +59,6 @@ void increase_zone_credit_of_registrar(
         const Credit& _credit_amount_to_add)
 {
     LOGGING_CONTEXT(log_ctx);
-    LOGGER(PACKAGE).info(__FUNCTION__);
     try
     {
         LibFred::OperationContextCreator ctx;
@@ -107,7 +106,6 @@ void decrease_zone_credit_of_registrar(
         const Credit& _credit_amount_to_subtract)
 {
     LOGGING_CONTEXT(log_ctx);
-    LOGGER(PACKAGE).info(__FUNCTION__);
     try
     {
         LibFred::OperationContextCreator ctx;
@@ -153,7 +151,6 @@ Fred::Backend::Accounting::Registrar get_registrar_by_payment(
         std::string& _zone)
 {
     LOGGING_CONTEXT(log_ctx);
-    LOGGER(PACKAGE).info(__FUNCTION__);
     try
     {
         LibFred::OperationContextCreator ctx;
@@ -198,7 +195,6 @@ Fred::Backend::Accounting::Registrar get_registrar_by_handle_and_payment(
         std::string& _zone)
 {
     LOGGING_CONTEXT(log_ctx);
-    LOGGER(PACKAGE).info(__FUNCTION__);
     try
     {
         LibFred::OperationContextCreator ctx;
@@ -241,7 +237,6 @@ PaymentInvoices import_payment(
         const PaymentData& _payment_data)
 {
     LOGGING_CONTEXT(log_ctx);
-    LOGGER(PACKAGE).info(__FUNCTION__);
     try
     {
         return Impl::import_payment(
@@ -284,7 +279,6 @@ PaymentInvoices import_payment_by_registrar_handle(
         const std::string& _registrar_handle)
 {
     LOGGING_CONTEXT(log_ctx);
-    LOGGER(PACKAGE).info(__FUNCTION__);
     try
     {
         return Impl::import_payment_by_registrar_handle(
@@ -326,7 +320,6 @@ PaymentInvoices import_payment_by_registrar_handle(
 std::vector<RegistrarReference> get_registrar_references()
 {
     LOGGING_CONTEXT(log_ctx);
-    LOGGER(PACKAGE).info(__FUNCTION__);
     try
     {
         LibFred::OperationContextCreator ctx;

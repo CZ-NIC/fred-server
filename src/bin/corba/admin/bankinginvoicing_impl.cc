@@ -12,22 +12,22 @@
 
 bool
 ccReg_BankingInvoicing_i::pairPaymentRegistrarId(
-        CORBA::ULongLong paymentId,
-        CORBA::ULongLong registrarId)
+        CORBA::ULongLong,
+        CORBA::ULongLong)
 {
     return false;
 }
 
 bool ccReg_BankingInvoicing_i::pairPaymentRegistrarHandle(
-        CORBA::ULongLong paymentId,
-        const char *registrarHandle)
+        CORBA::ULongLong,
+        const char*)
 {
     return false;
 }
 
 bool ccReg_BankingInvoicing_i::setPaymentType(
-        CORBA::ULongLong payment_id,
-        CORBA::Short payment_type)
+        CORBA::ULongLong,
+        CORBA::Short)
 {
     return false;
 }

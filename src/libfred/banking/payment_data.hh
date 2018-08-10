@@ -43,7 +43,7 @@ struct PaymentData
             const Money& _price,
             const boost::gregorian::date& _date,
             const std::string& _memo,
-            const boost::posix_time::ptime& _creation_time)
+            const boost::posix_time::ptime _creation_time)
         : uuid(_uuid),
           account_id(_account_id),
           account_payment_ident(_account_payment_ident),

@@ -35,7 +35,7 @@ struct InternalServerError : std::exception
      * Returns failure description.
      * @return string with the general cause of the current error.
      */
-    const char* what() const noexcept;
+    const char* what() const noexcept override;
 };
 
 /**
@@ -48,32 +48,32 @@ struct RegistrarNotFound : std::exception
      * Returns failure description.
      * @return string with the general cause of the current error.
      */
-    const char* what() const noexcept;
+    const char* what() const noexcept override;
 };
 
 struct InvalidZone : std::exception
 {
-    const char* what() const noexcept;
+    const char* what() const noexcept override;
 };
 
 struct InvalidCreditValue : std::exception
 {
-    const char* what() const noexcept;
+    const char* what() const noexcept override;
 };
 
 struct InvalidPaymentData : std::exception
 {
-    const char* what() const noexcept;
+    const char* what() const noexcept override;
 };
 
 struct CreditAlreadyProcessed : std::exception
 {
-    const char* what() const noexcept;
+    const char* what() const noexcept override;
 };
 
 struct PaymentAlreadyProcessed : std::exception
 {
-    const char* what() const noexcept;
+    const char* what() const noexcept override;
 };
 
 } // namespace Fred::Backend::Accounting

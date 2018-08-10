@@ -41,7 +41,7 @@ public:
             const Money& _price,
             const boost::gregorian::date _date,
             const std::string& _memo,
-            const boost::posix_time::ptime& _creation_time,
+            const boost::posix_time::ptime _creation_time,
             const boost::optional<std::string>& _registrar_handle)
                 = 0;
 

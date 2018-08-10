@@ -82,14 +82,14 @@ struct BankAccount
     const std::string account_number;
     const std::string bank_code;
 
-    private:
-        BankAccount(
-                const std::string& _account_number,
-                const std::string& _bank_code)
-            : account_number(_account_number),
-              bank_code(_bank_code)
-        {
-        }
+private:
+    BankAccount(
+            const std::string& _account_number,
+            const std::string& _bank_code)
+        : account_number(_account_number),
+          bank_code(_bank_code)
+    {
+    }
 };
 
 void change_zone_credit_of_registrar(
@@ -107,7 +107,7 @@ void change_zone_credit_of_registrar(
         const auto zone_id = LibFred::Zone::get_zone_id(
                 LibFred::Zone::InfoZone(_zone).exec(_ctx));
 
-        Database::Result registrar_credit_id_result =
+        const Database::Result registrar_credit_id_result =
                 _ctx.get_conn().exec_params(
                         // clang-format off
                         "SELECT id FROM registrar_credit "
@@ -128,7 +128,7 @@ void change_zone_credit_of_registrar(
             throw InvalidCreditValue();
         }
 
-        Database::Result registrar_credit_transaction_id_result =
+        const Database::Result registrar_credit_transaction_id_result =
                 _ctx.get_conn().exec_params(
                         // clang-format off
                         "INSERT INTO registrar_credit_transaction "
@@ -145,15 +145,16 @@ void change_zone_credit_of_registrar(
             throw std::runtime_error("add_credit_to_invoice: registrar_credit_transaction not found");
         }
 
-        // unsigned long long registrar_credit_transaction_id = registrar_credit_transaction_id_result[0][0];
     }
-    catch (const LibFred::InfoRegistrarByHandle::Exception& e) {
+    catch (const LibFred::InfoRegistrarByHandle::Exception& e)
+    {
         if (e.is_set_unknown_registrar_handle()) {
             throw RegistrarNotFound();
         }
         throw;
     }
-    catch (const LibFred::Zone::NonExistentZone& e) {
+    catch (const LibFred::Zone::NonExistentZone& e)
+    {
         throw ZoneNotFound();
     }
 }
@@ -171,7 +172,11 @@ void increase_zone_credit_of_registrar(
         throw InvalidCreditValue();
     }
     change_zone_credit_of_registrar(
-            _ctx, _transaction_ident, _registrar_handle, _zone, _credit_amount_to_add);
+            _ctx,
+            _transaction_ident,
+            _registrar_handle,
+            _zone,
+            _credit_amount_to_add);
 }
 
 void decrease_zone_credit_of_registrar(
@@ -194,7 +199,7 @@ Fred::Backend::Accounting::Registrar get_registrar_by_payment(
         LibFred::OperationContext& _ctx,
         const PaymentData& _payment_data)
 {
-    Database::Result dbres = _ctx.get_conn().exec_params(
+    const Database::Result dbres = _ctx.get_conn().exec_params(
             // clang-format off
             "SELECT id, "
                    "ico, "
@@ -251,7 +256,7 @@ Fred::Backend::Accounting::Registrar get_registrar_by_handle(
         LibFred::OperationContext& _ctx,
         const std::string& _handle)
 {
-    Database::Result dbres = _ctx.get_conn().exec_params(
+    const Database::Result dbres = _ctx.get_conn().exec_params(
             // clang-format off
             "SELECT id, "
                    "ico, "
@@ -312,9 +317,9 @@ std::string get_zone_by_payment(
     LOGGER(PACKAGE).info(_payment_data.account_number);
     const BankAccount bank_account = BankAccount::from_account_nubmer_with_bank_code(_payment_data.account_number);
 
-    Database::Result dbres = _ctx.get_conn().exec_params(
+    const Database::Result dbres = _ctx.get_conn().exec_params(
             // clang-format off
-            "SELECT fqdn "
+            "SELECT zone.fqdn "
               "FROM zone "
               "JOIN bank_account "
                 "ON zone.id = bank_account.zone "
@@ -342,7 +347,7 @@ std::string get_zone_by_payment(
 namespace {
 
 InvoiceType convert_LibFred_Banking_InvoiceType_to_Fred_Backend_Accounting_InvoiceType(
-        const LibFred::Banking::InvoiceType& _invoice_type)
+        const LibFred::Banking::InvoiceType _invoice_type)
 {
         switch (_invoice_type)
         {
@@ -417,16 +422,20 @@ PaymentInvoices import_payment(
         return convert_vector_of_LibFred_Baking_InvoiceReference_to_Fred_Backend_Accounting_PaymentInvoices(
                 payment_invoices);
     }
-    catch (const LibFred::Banking::RegistrarNotFound&) {
+    catch (const LibFred::Banking::RegistrarNotFound&)
+    {
         throw RegistrarNotFound();
     }
-    catch (const LibFred::Banking::InvalidAccountData&) {
+    catch (const LibFred::Banking::InvalidAccountData&)
+    {
         throw InvalidAccountData();
     }
-    catch (const LibFred::Banking::InvalidPriceValue&) {
+    catch (const LibFred::Banking::InvalidPriceValue&)
+    {
         throw InvalidPaymentData();
     }
-    catch (const LibFred::Banking::PaymentAlreadyProcessed&) {
+    catch (const LibFred::Banking::PaymentAlreadyProcessed&)
+    {
         throw PaymentAlreadyProcessed();
     }
 }
@@ -461,16 +470,20 @@ PaymentInvoices import_payment_by_registrar_handle(
         return convert_vector_of_LibFred_Baking_InvoiceReference_to_Fred_Backend_Accounting_PaymentInvoices(
                 payment_invoices);
     }
-    catch (const LibFred::Banking::RegistrarNotFound&) {
+    catch (const LibFred::Banking::RegistrarNotFound&)
+    {
         throw RegistrarNotFound();
     }
-    catch (const LibFred::Banking::InvalidAccountData&) {
+    catch (const LibFred::Banking::InvalidAccountData&)
+    {
         throw InvalidAccountData();
     }
-    catch (const LibFred::Banking::InvalidPriceValue&) {
+    catch (const LibFred::Banking::InvalidPriceValue&)
+    {
         throw InvalidPaymentData();
     }
-    catch (const LibFred::Banking::PaymentAlreadyProcessed&) {
+    catch (const LibFred::Banking::PaymentAlreadyProcessed&)
+    {
         throw PaymentAlreadyProcessed();
     }
 }
@@ -479,7 +492,7 @@ std::vector<RegistrarReference> get_registrar_references(
         LibFred::OperationContext& _ctx)
 {
     std::vector<RegistrarReference> registrar_references;
-    Database::Result dbresult =
+    const Database::Result dbresult =
             _ctx.get_conn().exec(
                     // clang-format off
                     "SELECT handle, name FROM registrar "
@@ -489,9 +502,8 @@ std::vector<RegistrarReference> get_registrar_references(
     for (std::size_t row_index = 0; row_index < dbresult.size(); ++row_index)
     {
         registrar_references.emplace_back(
-                RegistrarReference(
                         static_cast<std::string>(dbresult[row_index]["handle"]),
-                        static_cast<std::string>(dbresult[row_index]["name"])));
+                        static_cast<std::string>(dbresult[row_index]["name"]));
     }
     return registrar_references;
 }

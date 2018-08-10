@@ -39,7 +39,7 @@ struct InvoiceReference
     InvoiceReference(
             const unsigned long long _id,
             const std::string& _number,
-            const InvoiceType& _type,
+            const InvoiceType _type,
             const Credit& _credit_change)
         : id(_id),
           number(_number),

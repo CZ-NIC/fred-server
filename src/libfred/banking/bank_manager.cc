@@ -1,7 +1,6 @@
 #include <string>
 #include <iostream>
 #include <algorithm>
-// #include <magic.h>
 
 #include "src/libfred/banking/bank_common.hh"
 #include "src/libfred/banking/bank_manager.hh"
@@ -29,14 +28,14 @@ namespace {
 unsigned long long get_registrar_id_by_handle(
         const std::string& _registrar_handle)
 {
-    std::string registrar_handle = boost::trim_copy(_registrar_handle);
+    const std::string registrar_handle = boost::trim_copy(_registrar_handle);
 
     Database::Query query;
     query.buffer()
         << "SELECT id FROM registrar WHERE handle = "
         << Database::Value(registrar_handle);
     Database::Connection conn = Database::Manager::acquire();
-    Database::Result res = conn.exec(query);
+    const Database::Result res = conn.exec(query);
     if (res.size() == 0) {
             LOGGER(PACKAGE).error(boost::str(boost::format(
                     "Registrar with handle '%1%' not found in database.") % registrar_handle));
@@ -57,7 +56,7 @@ unsigned long long get_registrar_id_by_payment(
                    << " ~* trim(regex))";
 
     Database::Connection conn = Database::Manager::acquire();
-    Database::Result result = conn.exec(query);
+    const Database::Result result = conn.exec(query);
     if (result.size() != 1) {
         LOGGER(PACKAGE).warning(boost::format(
                     "couldn't find suitable registrar for payment id=%1% "
@@ -85,7 +84,7 @@ unsigned long long get_account_id_by_account_number_and_bank_code(
                    << "trim(leading '0' from " << Database::Value(_account_number) << ") "
                    << "AND bank_code = " << Database::Value(_account_bank_code);
     Database::Connection conn = Database::Manager::acquire();
-    Database::Result result = conn.exec(query);
+    const Database::Result result = conn.exec(query);
     if (result.size() == 0) {
         LOGGER(PACKAGE).error(boost::str(boost::format(
                 "not valid record found in database for account=%1% bankcode=%2%")
@@ -104,7 +103,7 @@ std::string get_invoice_number_by_id(
         << "SELECT prefix FROM invoice WHERE id = "
         << Database::Value(_invoice_id);
     Database::Connection conn = Database::Manager::acquire();
-    Database::Result res = conn.exec(query);
+    const Database::Result res = conn.exec(query);
     if (res.size() == 0) {
             LOGGER(PACKAGE).error(boost::str(boost::format(
                     "Invoice with id '%1%' not found in database.") % _invoice_id));
@@ -128,7 +127,7 @@ private:
                        << "id = " << Database::Value(_account_id);
 
         Database::Connection conn = Database::Manager::acquire();
-        Database::Result result = conn.exec(query);
+        const Database::Result result = conn.exec(query);
 
         if (result.size() != 0) {
             return static_cast<unsigned long long>(result[0][0]);
@@ -318,8 +317,8 @@ private:
 
 
 public:
-    ManagerImpl(File::Manager *_file_manager)
-              : file_manager_(_file_manager)
+    explicit ManagerImpl(File::Manager* _file_manager)
+        : file_manager_(_file_manager)
     {
     }
 
@@ -341,7 +340,7 @@ public:
             const Money& _price,
             const boost::gregorian::date _date,
             const std::string& _memo,
-            const boost::posix_time::ptime& _creation_time,
+            const boost::posix_time::ptime _creation_time,
             const boost::optional<std::string>& _registrar_handle)
     {
         TRACE("[CALL] LibFred::Banking::Manager::importPayment(...)");
@@ -351,7 +350,7 @@ public:
             Database::Connection conn = Database::Manager::acquire();
             Database::Transaction tx(conn);
 
-            LOGGER(PACKAGE).debug("saving transaction for single payment");
+            LOGGER(PACKAGE).debug("saving transaction for a single payment");
 
             Database::Query query;
             // clang-format off
@@ -359,7 +358,7 @@ public:
                                 "FROM bank_payment_registrar_credit_transaction_map "
                                "WHERE bank_payment_uuid = " << Database::Value(_uuid);
             // clang-format on
-            Database::Result result = conn.exec(query);
+            const Database::Result result = conn.exec(query);
             if (result.size() != 0) {
                 throw PaymentAlreadyProcessed();
             }
@@ -441,7 +440,7 @@ public:
                 Database::Query query;
                 query.buffer() << "SELECT id FROM zone WHERE fqdn=" << Database::Value(_zone);
 
-                Database::Result result = conn.exec(query);
+                const Database::Result result = conn.exec(query);
                 if (result.size() == 0) {
                     throw std::runtime_error(str(boost::format(
                                         "zone '%1%' not found")
@@ -455,7 +454,7 @@ public:
                 query.buffer() << "SELECT id FROM bank_account WHERE "
                                << "account_number = " << Database::Value(_account_number)
                                << "AND bank_code = " << Database::Value(_bank_code);
-                Database::Result result = conn.exec(query);
+                const Database::Result result = conn.exec(query);
                 if (result.size() != 0) {
                     throw std::runtime_error(str(boost::format(
                                     "account '%1%/%2%' already exists")

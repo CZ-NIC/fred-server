@@ -25,19 +25,20 @@
 #include "src/libfred/banking/bank_manager.hh"
 #include "src/libfred/documents.hh"
 
-#include <boost/utility.hpp>
-
 #include <string>
 
 namespace CorbaConversion {
 namespace Accounting {
 
-class AccountingImpl
-        : public POA_Registry::Accounting::AccountingIntf,
-          private boost::noncopyable
+class AccountingImpl final
+        : public POA_Registry::Accounting::AccountingIntf
 {
 public:
-    AccountingImpl(const std::string& _server_name);
+    explicit AccountingImpl(const std::string& _server_name);
+
+    AccountingImpl(const AccountingImpl&) = delete;
+
+    AccountingImpl& operator=(const AccountingImpl&) = delete;
 
     // methods corresponding to defined IDL attributes and operations
 
@@ -46,38 +47,38 @@ public:
             const char* _transaction_ident,
             const char* _registrar_handle,
             const char* _zone,
-            const Registry::Accounting::Credit& _credit_amount_to_add) final override;
+            const Registry::Accounting::Credit& _credit_amount_to_add) override;
 
     void decrease_zone_credit_of_registrar(
             const char* _transaction_ident,
             const char* _registrar_handle,
             const char* _zone,
-            const Registry::Accounting::Credit& _credit_amount_to_subtract) final override;
+            const Registry::Accounting::Credit& _credit_amount_to_subtract) override;
     */
 
     Registry::Accounting::Registrar* get_registrar_by_payment(
             const Registry::Accounting::PaymentData& _payment_data,
-            CORBA::String_out _zone) final override;
+            CORBA::String_out _zone) override;
 
     Registry::Accounting::Registrar* get_registrar_by_handle_and_payment(
             const char* _registrar_handle,
             const Registry::Accounting::PaymentData& _payment_data,
-            CORBA::String_out _zone) final override;
+            CORBA::String_out _zone) override;
 
     Registry::Accounting::InvoiceReferenceSeq* import_payment(
             const Registry::Accounting::PaymentData& _payment_data,
-            Registry::Accounting::Credit_out _remaining_credit) final override;
+            Registry::Accounting::Credit_out _remaining_credit) override;
 
     Registry::Accounting::InvoiceReferenceSeq* import_payment_by_registrar_handle(
             const Registry::Accounting::PaymentData& _payment_data,
             const char* _registrar_handle,
-            Registry::Accounting::Credit_out _remaining_credit) final override;
+            Registry::Accounting::Credit_out _remaining_credit) override;
 
-    Registry::Accounting::RegistrarReferenceSeq* get_registrar_references() final override;
+    Registry::Accounting::RegistrarReferenceSeq* get_registrar_references() override;
 
 private:
     // Make sure all instances are built on the heap by making the destructor non-public
-    ~AccountingImpl() final override = default;
+    ~AccountingImpl() override = default;
 
     std::string server_name_;
 };

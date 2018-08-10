@@ -331,7 +331,7 @@ noinst_HEADERS = \
 		src/backend/public_request/process/block_unblock.hh \
 		src/backend/public_request/process/personal_info.hh \
 		test/backend/epp/nsset/fixture.hh \
-		src/bin/corba/accounting/impl/corba_conversions.hh
+		src/bin/corba/accounting/impl/corba_conversions.hh \
 		src/bin/corba/accounting/impl/exceptions.hh
 
 noinst_LIBRARIES = \

@@ -21,7 +21,7 @@
 
 #include "src/libfred/banking/invoice_reference.hh"
 
-#include <boost/optional/optional_io.hpp>
+#include <boost/optional/optional.hpp>
 
 #include <vector>
 
