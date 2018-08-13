@@ -452,9 +452,9 @@ PaymentInvoices import_payment_by_registrar_handle(
         const auto payment_invoices =
                 banking_manager->importPayment(
                         _payment_data.uuid,
-                        _payment_data.account_payment_ident,
                         bank_account.account_number,
                         bank_account.bank_code,
+                        _payment_data.account_payment_ident,
                         counter_account.account_number,
                         counter_account.bank_code,
                         _payment_data.counter_account_name,
