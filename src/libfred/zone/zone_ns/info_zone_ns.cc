@@ -25,29 +25,6 @@
 namespace LibFred {
 namespace Zone {
 
-namespace {
-
-std::vector<boost::asio::ip::address> get_ip_addresses(const std::string& _ip_addresses)
-{
-    std::vector<boost::asio::ip::address> ip_addrs;
-
-    if (_ip_addresses != "{}")
-    {
-        const std::string& addresses_without_braces = _ip_addresses.substr(1, _ip_addresses.size() - 2);
-
-        std::vector<std::string> splitted_addresses;
-        boost::split(splitted_addresses, addresses_without_braces, boost::is_any_of(","));
-
-        std::for_each(splitted_addresses.begin(),
-                splitted_addresses.end(),
-                [&ip_addrs](const std::string& s){ip_addrs.push_back(boost::asio::ip::address::from_string(s));});
-    }
-
-    return ip_addrs;
-}
-
-} // namespace LibFred::Zone::{anonymous}
-
 InfoZoneNsData InfoZoneNs::exec(OperationContext& _ctx) const
 {
     Database::Result result;
@@ -55,7 +32,10 @@ InfoZoneNsData InfoZoneNs::exec(OperationContext& _ctx) const
     {
         result = _ctx.get_conn().exec_params(
                 // clang-format off
-                "SELECT id, zone, fqdn, addrs "
+                "SELECT id, zone, fqdn, "
+                "CASE WHEN array_length(addrs, 1) IS NULL THEN NULL "
+                "ELSE unnest(addrs) "
+                "END AS addrs "
                 "FROM zone_ns "
                 "WHERE id = $1::bigint",
                 // clang-format on
@@ -70,17 +50,29 @@ InfoZoneNsData InfoZoneNs::exec(OperationContext& _ctx) const
     {
         throw NonExistentZoneNs();
     }
-    else if (result.size() > 1)
-    {
-        throw std::runtime_error("Duplicity in database");
-    }
 
     InfoZoneNsData info_zone_ns_data;
 
     info_zone_ns_data.id = static_cast<unsigned long long>(result[0]["id"]);
     info_zone_ns_data.zone_id = static_cast<unsigned long long>(result[0]["zone"]);
     info_zone_ns_data.nameserver_fqdn = static_cast<std::string>(result[0]["fqdn"]);
-    info_zone_ns_data.nameserver_ip_addresses = get_ip_addresses(static_cast<std::string>(result[0]["addrs"]));
+
+    std::vector<boost::asio::ip::address> ip_addrs;
+    if (result.size() == 1)
+    {
+        const std::string& address = static_cast<std::string>(result[0]["addrs"]);
+        if (!address.empty())
+        {
+            ip_addrs.push_back(boost::asio::ip::address::from_string(address));
+        }
+    }
+    else
+    {
+        std::for_each (result.begin(), result.end(),
+                [&ip_addrs](const auto& s){ ip_addrs.push_back(boost::asio::ip::address::from_string(s["addrs"])); });
+    }
+
+    info_zone_ns_data.nameserver_ip_addresses = ip_addrs;
 
     return info_zone_ns_data;
 }
