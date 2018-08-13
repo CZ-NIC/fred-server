@@ -44,19 +44,23 @@ unwrap_Registry_Accounting_PaymentData(
         const Registry::Accounting::PaymentData& _payment_data)
 {
     try {
+        std::string (*unwrap_string)(const char*) = LibFred::Corba::unwrap_string_from_const_char_ptr;
+
         Fred::Backend::Accounting::PaymentData payment_data;
-        payment_data.uuid = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.uuid.in());
-        payment_data.account_number = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.account_number.in());
-        payment_data.account_payment_ident = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.account_payment_ident.in());
-        payment_data.counter_account_number = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.counter_account_number.in());
-        payment_data.counter_account_name = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.counter_account_name.in());
-        payment_data.constant_symbol = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.constant_symbol.in());
-        payment_data.variable_symbol = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.variable_symbol.in());
-        payment_data.specific_symbol = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.specific_symbol.in());
+        payment_data.uuid = unwrap_string(_payment_data.uuid.in());
+        payment_data.account_number = unwrap_string(_payment_data.account_number.in());
+        payment_data.account_payment_ident = unwrap_string(_payment_data.account_payment_ident.in());
+        payment_data.counter_account_number = unwrap_string(_payment_data.counter_account_number.in());
+        payment_data.counter_account_name = unwrap_string(_payment_data.counter_account_name.in());
+        payment_data.constant_symbol = unwrap_string(_payment_data.constant_symbol.in());
+        payment_data.variable_symbol = unwrap_string(_payment_data.variable_symbol.in());
+        payment_data.specific_symbol = unwrap_string(_payment_data.specific_symbol.in());
         payment_data.price = unwrap_Registry_Accounting_Money(_payment_data.price);
         payment_data.date = CorbaConversion::Util::unwrap_IsoDate_to_boost_gregorian_date(_payment_data.date);
-        payment_data.memo = LibFred::Corba::unwrap_string_from_const_char_ptr(_payment_data.memo.in());
-        payment_data.creation_time = CorbaConversion::Util::unwrap_IsoDateTime_to_boost_posix_time_ptime(_payment_data.creation_time);
+        payment_data.memo = unwrap_string(_payment_data.memo.in());
+        payment_data.creation_time =
+                CorbaConversion::Util::unwrap_IsoDateTime_to_boost_posix_time_ptime(
+                        _payment_data.creation_time);
         return payment_data;
     }
     catch (...) // TODO

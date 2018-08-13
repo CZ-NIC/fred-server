@@ -46,6 +46,14 @@ struct InvoiceReference
     {
     }
 
+    bool operator==(const InvoiceReference& _other) const
+    {
+        return (this->id == _other.id &&
+                this->number == _other.number &&
+                this->type == _other.type &&
+                this->credit_change == _other.credit_change);
+    }
+
     unsigned long long id;
     std::string number;
     InvoiceType type;
