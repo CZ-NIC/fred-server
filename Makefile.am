@@ -332,7 +332,15 @@ noinst_HEADERS = \
 		src/backend/public_request/process/personal_info.hh \
 		test/backend/epp/nsset/fixture.hh \
 		src/bin/corba/accounting/impl/corba_conversions.hh \
-		src/bin/corba/accounting/impl/exceptions.hh
+		src/bin/corba/accounting/impl/exceptions.hh \
+		src/backend/accounting/invoice_reference.hh \
+		src/backend/accounting/payment_data.hh \
+		src/backend/accounting/payment_invoices.hh \
+		src/backend/accounting/registrar.hh \
+		src/backend/accounting/registrar_reference.hh \
+		src/libfred/banking/invoice_reference.hh \
+		src/libfred/banking/payment_data.hh \
+		src/libfred/banking/payment_invoices.hh
 
 noinst_LIBRARIES = \
 		src/util/libutil.a \
@@ -1296,6 +1304,7 @@ src_libfred_banking_libbanking_a_SOURCES = \
 		src/libfred/banking/bank_manager.hh \
 		src/libfred/banking/get_bank_accounts.cc \
 		src/libfred/banking/get_bank_accounts.hh \
+		src/libfred/banking/invoice_reference.hh \
 		src/libfred/banking/payment_data.hh \
 		src/libfred/banking/payment_invoices.hh
 #
