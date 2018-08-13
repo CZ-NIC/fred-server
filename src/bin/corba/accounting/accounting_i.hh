@@ -42,20 +42,6 @@ public:
 
     // methods corresponding to defined IDL attributes and operations
 
-    /*
-    void increase_zone_credit_of_registrar(
-            const char* _transaction_ident,
-            const char* _registrar_handle,
-            const char* _zone,
-            const Registry::Accounting::Credit& _credit_amount_to_add) override;
-
-    void decrease_zone_credit_of_registrar(
-            const char* _transaction_ident,
-            const char* _registrar_handle,
-            const char* _zone,
-            const Registry::Accounting::Credit& _credit_amount_to_subtract) override;
-    */
-
     Registry::Accounting::Registrar* get_registrar_by_payment(
             const Registry::Accounting::PaymentData& _payment_data,
             CORBA::String_out _zone) override;

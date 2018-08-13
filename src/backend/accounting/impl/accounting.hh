@@ -35,20 +35,6 @@ namespace Backend {
 namespace Accounting {
 namespace Impl {
 
-void increase_zone_credit_of_registrar(
-        LibFred::OperationContext& _ctx,
-        const std::string& _transaction_ident,
-        const std::string& _registrar_handle,
-        const std::string& _zone,
-        const Credit& _credit_amount_to_add);
-
-void decrease_zone_credit_of_registrar(
-        LibFred::OperationContext& _ctx,
-        const std::string& _transaction_ident,
-        const std::string& _registrar_handle,
-        const std::string& _zone,
-        const Credit& _credit_amount_to_subtract);
-
 Fred::Backend::Accounting::Registrar get_registrar_by_payment(
         LibFred::OperationContext& _ctx,
         const PaymentData& _payment_data);
