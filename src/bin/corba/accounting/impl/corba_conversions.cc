@@ -25,6 +25,7 @@
 #include "src/bin/corba/util/corba_conversions_isodatetime.hh"
 #include "src/bin/corba/util/corba_conversions_money.hh"
 #include "src/bin/corba/util/corba_conversions_string.hh"
+#include "src/util/log/logger.hh"
 
 #include <string>
 
@@ -63,8 +64,9 @@ unwrap_Registry_Accounting_PaymentData(
                         _payment_data.creation_time);
         return payment_data;
     }
-    catch (...) // TODO
+    catch (const std::exception& e)
     {
+        LOGGER(PACKAGE).info(e.what());
         throw InvalidPaymentData();
     }
 }
@@ -91,9 +93,10 @@ wrap_Backend_Accounting_PlaceAddress_to_Registry_Accounting_PlaceAddress(
         place_address.country_code = LibFred::Corba::wrap_string_to_corba_string(_place_address.country_code);
         return place_address;
     }
-    catch (...) // TODO
+    catch (const std::exception& e)
     {
-        throw InvalidPlaceAddress();
+        LOGGER(PACKAGE).info(e.what());
+        throw InvalidPaymentData();
     }
 }
 
@@ -115,9 +118,10 @@ wrap_Backend_Accounting_Registrar_to_Registry_Accounting_Registrar(
         registrar.address = wrap_Backend_Accounting_PlaceAddress_to_Registry_Accounting_PlaceAddress(_registrar.address);
         return registrar;
     }
-    catch (...) // TODO
+    catch (const std::exception& e)
     {
-        throw InvalidRegistrar();
+        LOGGER(PACKAGE).info(e.what());
+        throw InvalidPaymentData();
     }
 }
 

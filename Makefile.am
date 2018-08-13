@@ -1299,7 +1299,6 @@ src_libfred_banking_libbanking_a_SOURCES = \
 		src/libfred/banking/exceptions.hh \
 		src/libfred/banking/bank_common.cc \
 		src/libfred/banking/bank_common.hh \
-		src/libfred/banking/bank_payment.hh \
 		src/libfred/banking/bank_manager.cc \
 		src/libfred/banking/bank_manager.hh \
 		src/libfred/banking/get_bank_accounts.cc \
