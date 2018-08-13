@@ -69,26 +69,30 @@ unsigned long long get_registrar_id_by_payment(
 
 unsigned long long get_account_id_by_account_number_and_bank_code(
         const std::string& _account_number,
-        const std::string& _account_bank_code)
+        const boost::optional<std::string>& _account_bank_code)
 {
-    if (_account_number.empty() || _account_bank_code.empty()) {
+    if (_account_number.empty() || _account_bank_code.value_or("").empty())
+    {
         LOGGER(PACKAGE).error(boost::str(boost::format(
-                "invalid account_number and account_bank_code (%1%/%2%)")
-                % _account_number % _account_bank_code));
+                "invalid account_number/account_bank_code (%1%/%2%)")
+                % _account_number % _account_bank_code.value_or("")));
         throw InvalidAccountData();
     }
 
     Database::Query query;
     query.buffer() << "SELECT id FROM bank_account WHERE "
                    << "trim(leading '0' from account_number) = "
-                   << "trim(leading '0' from " << Database::Value(_account_number) << ") "
-                   << "AND bank_code = " << Database::Value(_account_bank_code);
+                   << "trim(leading '0' from " << Database::Value(_account_number) << ")";
+    if (_account_bank_code != boost::none)
+    {
+        query.buffer() << " AND bank_code = " << Database::Value(*_account_bank_code);
+    }
     Database::Connection conn = Database::Manager::acquire();
     const Database::Result result = conn.exec(query);
     if (result.size() == 0) {
         LOGGER(PACKAGE).error(boost::str(boost::format(
                 "not valid record found in database for account=%1% bankcode=%2%")
-                % _account_number % _account_bank_code));
+                % _account_number % _account_bank_code.value_or("")));
         throw InvalidAccountData();
     }
     const auto account_id = static_cast<unsigned long long>(result[0][0]);
@@ -329,10 +333,10 @@ public:
     PaymentInvoices importPayment(
             const std::string& _uuid,
             const std::string& _account_number,
-            const std::string& _account_bank_code,
+            const boost::optional<std::string>& _account_bank_code,
             const std::string& _account_payment_ident,
             const std::string& _counter_account_number,
-            const std::string& _counter_account_bank_code,
+            const boost::optional<std::string>& _counter_account_bank_code,
             const std::string& _counter_account_name,
             const std::string& _constant_symbol,
             const std::string& _variable_symbol,
@@ -383,7 +387,7 @@ public:
                     "payment imported (id=%1% account=%2%/%3% evid=%4% price=%5% account_date=%6%) account_id=%7%")
                     % payment.uuid
                     % payment.counter_account_number
-                    % payment.counter_account_bank_code
+                    % payment.counter_account_bank_code.value_or("")
                     % payment.account_payment_ident
                     % payment.price
                     % payment.date
@@ -420,7 +424,7 @@ public:
                             "bank import payment: %1%") % e.what()));
         }
         catch (...) {
-            throw std::runtime_error("bank import payment: an error occured");
+            throw std::runtime_error("bank import payment: an unexpected exception");
         }
     }
 

@@ -23,6 +23,8 @@
 #include "src/libfred/common_new.hh"
 #include "src/util/types/money.hh"
 
+#include <boost/optional.hpp>
+
 #include <string>
 
 namespace LibFred {
@@ -35,7 +37,7 @@ struct PaymentData
             const unsigned long long _account_id,
             const std::string& _account_payment_ident,
             const std::string& _counter_account_number,
-            const std::string& _counter_account_bank_code,
+            const boost::optional<std::string>& _counter_account_bank_code,
             const std::string& _counter_account_name,
             const std::string& _constant_symbol,
             const std::string& _variable_symbol,
@@ -64,7 +66,7 @@ struct PaymentData
     unsigned long long account_id;
     std::string account_payment_ident;
     std::string counter_account_number;
-    std::string counter_account_bank_code;
+    boost::optional<std::string> counter_account_bank_code;
     std::string counter_account_name;
     std::string constant_symbol;
     std::string variable_symbol;

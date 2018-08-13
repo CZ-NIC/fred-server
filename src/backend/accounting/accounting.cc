@@ -90,7 +90,7 @@ Fred::Backend::Accounting::Registrar get_registrar_by_payment(
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("unknown error");
+        LOGGER(PACKAGE).error("an unexpected exception");
         throw;
     }
 }
@@ -134,7 +134,7 @@ Fred::Backend::Accounting::Registrar get_registrar_by_handle_and_payment(
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("unknown error");
+        LOGGER(PACKAGE).error("an unexpected exception");
         throw;
     }
 }
@@ -175,7 +175,7 @@ PaymentInvoices import_payment(
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("unknown error");
+        LOGGER(PACKAGE).error("an unexpected exception");
         throw;
     }
 }
@@ -218,7 +218,7 @@ PaymentInvoices import_payment_by_registrar_handle(
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("unknown error");
+        LOGGER(PACKAGE).error("an unexpected exception");
         throw;
     }
 }
@@ -239,7 +239,7 @@ std::vector<RegistrarReference> get_registrar_references()
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("unknown error");
+        LOGGER(PACKAGE).error("an unexpected exception");
         throw;
     }
 }

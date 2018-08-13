@@ -57,6 +57,7 @@
 #include <string>
 #include <vector>
 
+#include <boost/optional/optional.hpp>
 
 namespace Fred {
 namespace Backend {
@@ -65,27 +66,32 @@ namespace Impl {
 
 struct BankAccount
 {
-    static BankAccount from_account_nubmer_with_bank_code(const std::string& _account_number_with_bank_code)
+    static BankAccount from_string(const std::string& _account_number_with_bank_code)
     {
         std::vector<std::string> parts;
         boost::split(
                 parts,
                 _account_number_with_bank_code,
                 boost::is_any_of("/"));
-        if (parts.size() != 2)
+        if (parts.size() == 1)
         {
-            throw InvalidAccountData();
+            const auto no_bank_code = boost::none;
+            return BankAccount(parts.at(0), no_bank_code);
         }
-        return BankAccount(parts.at(0), parts.at(1));
+        else if (parts.size() == 2)
+        {
+            return BankAccount(parts.at(0), parts.at(1));
+        }
+        throw InvalidAccountData();
     }
 
     const std::string account_number;
-    const std::string bank_code;
+    const boost::optional<std::string> bank_code;
 
 private:
     BankAccount(
             const std::string& _account_number,
-            const std::string& _bank_code)
+            const boost::optional<std::string>& _bank_code)
         : account_number(_account_number),
           bank_code(_bank_code)
     {
@@ -279,7 +285,7 @@ std::string get_zone_by_payment(
 {
 
     LOGGER(PACKAGE).info(_payment_data.account_number);
-    const BankAccount bank_account = BankAccount::from_account_nubmer_with_bank_code(_payment_data.account_number);
+    const BankAccount bank_account = BankAccount::from_string(_payment_data.account_number);
 
     const Database::Result dbres = _ctx.get_conn().exec_params(
             // clang-format off
@@ -359,8 +365,8 @@ PaymentInvoices import_payment(
         const PaymentData& _payment_data)
 {
 
-    const BankAccount bank_account = BankAccount::from_account_nubmer_with_bank_code(_payment_data.account_number);
-    const BankAccount counter_account = BankAccount::from_account_nubmer_with_bank_code(_payment_data.counter_account_number);
+    const BankAccount bank_account = BankAccount::from_string(_payment_data.account_number);
+    const BankAccount counter_account = BankAccount::from_string(_payment_data.counter_account_number);
     const auto no_registrar_handle = boost::none;
 
     try {
@@ -408,8 +414,8 @@ PaymentInvoices import_payment_by_registrar_handle(
         const PaymentData& _payment_data,
         const std::string& _registrar_handle)
 {
-    const BankAccount bank_account = BankAccount::from_account_nubmer_with_bank_code(_payment_data.account_number);
-    const BankAccount counter_account = BankAccount::from_account_nubmer_with_bank_code(_payment_data.counter_account_number);
+    const BankAccount bank_account = BankAccount::from_string(_payment_data.account_number);
+    const BankAccount counter_account = BankAccount::from_string(_payment_data.counter_account_number);
 
     try {
         LibFred::Banking::ManagerPtr banking_manager(LibFred::Banking::Manager::create());

@@ -30,10 +30,10 @@ public:
     virtual PaymentInvoices importPayment(
             const std::string& _uuid,
             const std::string& _account_number,
-            const std::string& _account_bank_code,
+            const boost::optional<std::string>& _account_bank_code,
             const std::string& _account_payment_ident,
             const std::string& _counter_account_number,
-            const std::string& _counter_account_bank_code,
+            const boost::optional<std::string>& _counter_account_bank_code,
             const std::string& _counter_account_name,
             const std::string& _constant_symbol,
             const std::string& _variable_symbol,
