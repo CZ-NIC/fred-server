@@ -1,17 +1,17 @@
-/*  
+/*
  * Copyright (C) 2010  CZ.NIC, z.s.p.o.
- * 
+ *
  * This file is part of FRED.
- * 
+ *
  * FRED is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 2 of the License.
- * 
+ *
  * FRED is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -30,73 +30,103 @@
 #include <boost/thread/barrier.hpp>
 #include <queue>
 
+#include <stdexcept>
+
 /**
  * \class concurrent_queue
  * \brief Template queue class with internal locking
  */
 
-template<typename Data>
+template <typename T>
 class concurrent_queue
 {
-private:
-    std::queue<Data> the_queue;
-    mutable boost::mutex the_mutex;
-
-#if ( BOOST_VERSION > 103401 )
-    boost::condition_variable
-#else
-    boost::condition
-#endif
-        the_condition_variable;
 public:
-    void push(Data const& data)
+    using Type = T;
+    class UnguardedAccess
     {
-        boost::mutex::scoped_lock lock(the_mutex);
+    public:
+        UnguardedAccess() = delete;
+        void push(const Type& data)
+        {
+            queue_.push(data);
+        }
+        auto size()const
+        {
+            return queue_.size();
+        }
+        bool empty()const
+        {
+            return queue_.empty();
+        }
+        auto pop()
+        {
+            return queue_.pop();
+        }
+    private:
+        explicit UnguardedAccess(concurrent_queue& queue)
+            : queue_(queue)
+        { }
+        concurrent_queue& queue_;
+        friend class concurrent_queue;
+    };
+    class GuardedAccess
+    {
+    public:
+        GuardedAccess() = delete;
+        void push(const Type& data)
+        {
+            boost::mutex::scoped_lock guard(queue_.the_mutex);
+            queue_.push(data);
+        }
+        auto size()const
+        {
+            boost::mutex::scoped_lock guard(queue_.the_mutex);
+            return queue_.size();
+        }
+        bool empty()const
+        {
+            boost::mutex::scoped_lock guard(queue_.the_mutex);
+            return queue_.empty();
+        }
+        auto pop()
+        {
+            boost::mutex::scoped_lock guard(queue_.the_mutex);
+            return queue_.pop();
+        }
+    private:
+        explicit GuardedAccess(concurrent_queue& queue)
+            : queue_(queue)
+        { }
+        concurrent_queue& queue_;
+        friend class concurrent_queue;
+    };
+    GuardedAccess guarded_access() { return GuardedAccess(*this); }
+    UnguardedAccess unguarded_access() { return UnguardedAccess(*this); }
+private:
+    void push(const Type& data)
+    {
         the_queue.push(data);
-        lock.unlock();
-        the_condition_variable.notify_one();
     }
-
-    std::size_t size()
+    auto size()const
     {
-        boost::mutex::scoped_lock lock(the_mutex);
-        std::size_t ret = the_queue.size();
-        lock.unlock();
-        the_condition_variable.notify_one();
-        return ret;
+        return the_queue.size();
     }
-
-
-    bool empty() const
+    bool empty()const
     {
-        boost::mutex::scoped_lock lock(the_mutex);
         return the_queue.empty();
     }
-
-    bool try_pop(Data& popped_value)
+    auto pop()
     {
-        boost::mutex::scoped_lock lock(the_mutex);
-        if(the_queue.empty())
+        if (the_queue.empty())
         {
-            return false;
+            std::runtime_error("queue is empty");
         }
-
-        popped_value=the_queue.front();
+        const auto front = the_queue.front();
         the_queue.pop();
-        return true;
+        return front;
     }
-
-    void wait_and_pop(Data& popped_value)
-    {
-        boost::mutex::scoped_lock lock(the_mutex);
-        while(the_queue.empty())
-        {
-            the_condition_variable.wait(lock);
-        }
-
-        popped_value=the_queue.front();
-        the_queue.pop();
-    }
-};//concurrent_queue
+    std::queue<Type> the_queue;
+    mutable boost::mutex the_mutex;
+};
 
 #endif

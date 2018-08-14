@@ -19,71 +19,63 @@
 #ifndef CONTACT_CHANGE_HH_2C8C709868134389AD38F302E513C812
 #define CONTACT_CHANGE_HH_2C8C709868134389AD38F302E513C812
 
-#include "src/backend/epp/contact/contact_disclose.hh"
+#include "src/backend/epp/update_operation.hh"
+
 #include "src/backend/epp/contact/contact_ident.hh"
-#include "src/backend/epp/contact/util.hh"
-#include "src/util/db/nullable.hh"
+#include "src/backend/epp/contact/hideable.hh"
+#include "src/backend/epp/contact/street_traits.hh"
 
 #include <boost/optional.hpp>
 
 #include <string>
-#include <vector>
 
 namespace Epp {
 namespace Contact {
 
 struct ContactChange
 {
+    struct MainAddress
+    {
+        StreetTraits::Rows<Deletable<std::string>> street;
+        Deletable<std::string> city;
+        Deletable<std::string> state_or_province;
+        Deletable<std::string> postal_code;
+        Updateable<std::string> country_code;
+    };
     struct Address
     {
-        boost::optional<std::string> street1;
-        boost::optional<std::string> street2;
-        boost::optional<std::string> street3;
+        StreetTraits::Rows<boost::optional<std::string>> street;
         boost::optional<std::string> city;
         boost::optional<std::string> state_or_province;
         boost::optional<std::string> postal_code;
         boost::optional<std::string> country_code;
     };
-    boost::optional< Nullable<std::string> > name;
-    boost::optional< Nullable<std::string> > organization;
-    boost::optional<std::vector<std::string>> streets;
-    boost::optional< Nullable<std::string> > city;
-    boost::optional< Nullable<std::string> > state_or_province;
-    boost::optional< Nullable<std::string> > postal_code;
-    boost::optional<std::string> country_code;
-    boost::optional< Nullable<Address> > mailing_address;
-    boost::optional< Nullable<std::string> > telephone;
-    boost::optional< Nullable<std::string> > fax;
-    boost::optional< Nullable<std::string> > email;
-    boost::optional< Nullable<std::string> > notify_email;
-    boost::optional< Nullable<std::string> > vat;
-    boost::optional< boost::optional<ContactIdent> > ident;//Nullable<ContactIdent>() requires ContactIdent() which is not available
-    boost::optional< Nullable<std::string> > authinfopw;
-    boost::optional<ContactDisclose> disclose;
-    struct Value
+    struct Publishability
     {
-        enum Meaning
-        {
-            to_set,
-            to_delete,
-            not_to_touch
-        };
+        boost::optional<PrivacyPolicy> name;
+        boost::optional<PrivacyPolicy> organization;
+        boost::optional<PrivacyPolicy> address;
+        boost::optional<PrivacyPolicy> telephone;
+        boost::optional<PrivacyPolicy> fax;
+        boost::optional<PrivacyPolicy> email;
+        boost::optional<PrivacyPolicy> notify_email;
+        boost::optional<PrivacyPolicy> vat;
+        boost::optional<PrivacyPolicy> ident;
     };
-    template <Value::Meaning meaning, class T>
-    static bool does_value_mean(const boost::optional< Nullable<T> >& _value);
-    template <Value::Meaning meaning, class T>
-    static bool does_value_mean(const boost::optional< boost::optional<T> >& _value);
-    template <Value::Meaning meaning, class T>
-    static bool does_value_mean(const boost::optional<T>& _value);
-    template <class T>
-    static T get_value(const boost::optional< Nullable<T> >& _value);
-    template <class T>
-    static T get_value(const boost::optional< boost::optional<T> >& _value);
-    template <class T>
-    static T get_value(const boost::optional<T>& _value);
+    Deletable<std::string> name;
+    Deletable<std::string> organization;
+    MainAddress address;
+    Deletable<Address> mailing_address;
+    Deletable<std::string> telephone;
+    Deletable<std::string> fax;
+    Deletable<std::string> email;
+    Deletable<std::string> notify_email;
+    Deletable<std::string> vat;
+    Deletable<ContactIdent> ident;
+    Deletable<std::string> authinfopw;
+    Updateable<Publishability> disclose;
+    ContactChange get_trimmed_copy()const;
 };
-
-ContactChange trim(const ContactChange& src);
 
 } // namespace Epp::Contact
 } // namespace Epp

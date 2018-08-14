@@ -1,148 +1,165 @@
+/*
+ * Copyright (C) 2018  CZ.NIC, z.s.p.o.
+ *
+ * This file is part of FRED.
+ *
+ * FRED is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 2 of the License.
+ *
+ * FRED is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
-#include <vector>
+#ifndef TEST_COMMON_THREADED_HH_1E18B1560B43967007BA2BEA7C019EBA//date "+%s.%N"|md5sum|tr "[a-f]" "[A-F]"
+#define TEST_COMMON_THREADED_HH_1E18B1560B43967007BA2BEA7C019EBA
 
-#include <boost/thread.hpp>
-#include <boost/thread/barrier.hpp>
-#include <boost/lexical_cast.hpp>
 #include "test/setup/tests_common.hh"
 #include "src/util/concurrent_queue.hh"
 #include "src/util/cfg/handle_threadgroup_args.hh"
 
-/* 
+#include <boost/thread.hpp>
+#include <boost/thread/barrier.hpp>
+#include <boost/lexical_cast.hpp>
+
+#include <vector>
+
+/*
  * General worker for threaded test:
  *   run() method must be defined
  *  template parameters:
- *    RESULT - what the worker (run() method) returns
- *    PARAMS - parametres for the worker
+ *    R - what the worker (run() method) returns
+ *    P - parametres for the worker
  *
- *  PARAMS, result queue reference and other
+ *  P, result queue reference and other
  *  important objects are declared protected in the class
  */
-template <typename RESULT, typename PARAMS> class ThreadedTestWorker {
-
+template <typename R, typename P>
+class ThreadedTestWorker
+{
 public:
-    typedef concurrent_queue<RESULT> ThreadedTestResultQueue;
-    typedef PARAMS PARAMS_TYPE;
-    typedef RESULT RESULT_TYPE;
+    using ThreadedTestResultQueue = concurrent_queue<R>;
+    using ParamsType = P;
+    using ResultType = R;
 
-
-    ThreadedTestWorker(unsigned number
-             , boost::barrier* sb
-             , std::size_t thread_group_divisor
-             , ThreadedTestResultQueue* result_queue_ptr
-             , PARAMS p
-                    )
-
-             : number_(number)
-             , sb_(sb)
-             , tgd_(thread_group_divisor)
-             , results(result_queue_ptr)
-             , params(p)
-
+    ThreadedTestWorker(
+            unsigned number,
+            boost::barrier* sb,
+            std::size_t thread_group_divisor,
+            ThreadedTestResultQueue* result_queue_ptr,
+            P p)
+        : number_(number),
+          sb_(sb),
+          tgd_(thread_group_divisor),
+          results(result_queue_ptr),
+          params(p)
      {}
 
      void operator()()
      {
         try
         {
-            if(number_ % tgd_)//if synchronized thread
+            if (number_ % tgd_)//if synchronized thread
             {
-                if(sb_ != NULL) {
+                if (sb_ != nullptr)
+                {
                     sb_->wait();//wait for other synced threads
                 }
             }
 
-            RESULT res = run(params);
+            const R res = run(params);
 
-            if(results != NULL)  {
-                results->push(res);
+            if (results != nullptr)
+            {
+                results->guarded_access().push(res);
             }
 
-        } catch(const std::exception & ex) {
-            THREAD_BOOST_ERROR( std::string("Exception caught in worker: ") + ex.what() );
         }
-        catch(...)
+        catch (const std::exception & e)
         {
-            THREAD_BOOST_TEST_MESSAGE( std::string("Unknown exception in operator(), thread number: ") 
-		+ boost::lexical_cast<std::string>(number_) );
+            THREAD_BOOST_ERROR(std::string("Exception caught in worker: ") + e.what());
+        }
+        catch (...)
+        {
+            THREAD_BOOST_TEST_MESSAGE(std::string("Unknown exception in operator(), thread number: ") +
+                                      boost::lexical_cast<std::string>(number_));
             return;
         }
      }
-
-     virtual RESULT run(const PARAMS &p) = 0;
-
+     virtual R run(const P &p) = 0;
 protected:
     unsigned number_;
-
     boost::barrier *sb_;
     std::size_t tgd_;
-    ThreadedTestResultQueue *results;
-    PARAMS params;
+    ThreadedTestResultQueue* results;
+    P params;
 };
 
 
-template <typename WORKER>
-    unsigned threadedTest (
-            const typename WORKER::PARAMS_TYPE &params,
-            void (*checker_func)(const typename WORKER::RESULT_TYPE &p)
-            )
+template <typename W>
+unsigned threadedTest(
+        const typename W::ParamsType &params,
+        void (*checker_func)(const typename W::ResultType &p))
 {
-    typedef typename WORKER::ThreadedTestResultQueue RESULT_QUEUE;
+    using ResultQueue = typename W::ThreadedTestResultQueue;
 
-    HandleThreadGroupArgs* thread_args_ptr=CfgArgs::instance()->
-                       get_handler_ptr_by_type<HandleThreadGroupArgs>();
+    const HandleThreadGroupArgs* const thread_args_ptr =
+            CfgArgs::instance()->get_handler_ptr_by_type<HandleThreadGroupArgs>();
 
-    std::size_t const thread_number = thread_args_ptr->thread_number;
-    std::size_t const thread_group_divisor = thread_args_ptr->thread_group_divisor;
-    // int(thread_number - (thread_number % thread_group_divisor ? 1 : 0)
-    // - thread_number / thread_group_divisor) is number of synced threads
+    const std::size_t number_of_threads = thread_args_ptr->number_of_threads;
+    const std::size_t thread_group_divisor = thread_args_ptr->thread_group_divisor;
+    // int(number_of_threads - (number_of_threads % thread_group_divisor ? 1 : 0)
+    // - number_of_threads / thread_group_divisor) is number of synced threads
 
-    RESULT_QUEUE result_queue;
+    ResultQueue result_queue;
     // TODO
     // ThreadedTestResultQueue result_queue;
 
     //vector of thread functors
-    std::vector<WORKER> tw_vector;
-    tw_vector.reserve(thread_number);
+    std::vector<W> tw_vector;
+    tw_vector.reserve(number_of_threads);
 
-    unsigned barriers_number =  thread_number
-            - (thread_number % thread_group_divisor ? 1 : 0)
-            - thread_number/thread_group_divisor;
+    unsigned barriers_number = number_of_threads - ((number_of_threads % thread_group_divisor) == 0 ? 0 : 1) -
+                                               (number_of_threads / thread_group_divisor);
 
-    if(barriers_number < 1) {
+    if (barriers_number < 1)
+    {
         barriers_number = 1;
     }
 
-    BOOST_TEST_MESSAGE( std::string("thread barriers:: ")
-            + boost::lexical_cast<std::string>(barriers_number)
-            );
+    BOOST_TEST_MESSAGE("thread barriers:: " + boost::lexical_cast<std::string>(barriers_number));
 
     //synchronization barriers instance
     boost::barrier sb(barriers_number);
 
     //thread container
     boost::thread_group threads;
-    for (unsigned i = 0; i < thread_number; ++i)
+    for (unsigned i = 0; i < number_of_threads; ++i)
     {
-        tw_vector.push_back(WORKER(i,&sb
-                , thread_group_divisor, &result_queue, params));
+        tw_vector.push_back(W(
+                i,
+                &sb,
+                thread_group_divisor, &result_queue, params));
         threads.create_thread(tw_vector.at(i));
     }
 
     threads.join_all();
 
-    BOOST_TEST_MESSAGE( std::string("threads end result_queue.size(): ") 
-	+ boost::lexical_cast<std::string> (result_queue.size()) );
+    BOOST_TEST_MESSAGE("threads end result_queue.size(): " +
+                       boost::lexical_cast<std::string>(result_queue.unguarded_access().size()));
 
-    for(unsigned i = 0; i < thread_number; ++i)
+    while (!result_queue.unguarded_access().empty())
     {
-        typename WORKER::RESULT_TYPE thread_result;
-        if(!result_queue.try_pop(thread_result)) {
-            continue;
-        }
-
+        const auto thread_result = result_queue.unguarded_access().pop();
         checker_func(thread_result);
-    }//for i
+    }
 
-    return thread_number;
+    return number_of_threads;
 }
+
+#endif//TEST_COMMON_THREADED_HH_1E18B1560B43967007BA2BEA7C019EBA

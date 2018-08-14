@@ -210,8 +210,8 @@ struct sync_barriers
 {
     boost::barrier group_barrier;
 
-    sync_barriers(std::size_t thread_number)
-        : group_barrier(thread_number)
+    sync_barriers(std::size_t number_of_threads)
+        : group_barrier(number_of_threads)
     {}
 };
 
@@ -233,16 +233,19 @@ typedef concurrent_queue<ThreadResult > ThreadResultQueue;
 class TestThreadWorker
 {
 public:
-
-    TestThreadWorker(unsigned number,unsigned sleep_time
-            , sync_barriers* sb_ptr, std::size_t thread_group_divisor
-            , ThreadResultQueue* result_queue_ptr = 0, unsigned seed = 0)
-            : number_(number)
-            , sleep_time_(sleep_time)
-            , sb_ptr_(sb_ptr)
-            , rdg_(seed)
-            , tgd_(thread_group_divisor)
-            , rsq_ptr (result_queue_ptr)
+    TestThreadWorker(
+            unsigned number,
+            unsigned sleep_time,
+            sync_barriers* sb_ptr,
+            std::size_t thread_group_divisor,
+            ThreadResultQueue* result_queue_ptr = nullptr,
+            unsigned seed = 0)
+        : number_(number),
+          sleep_time_(sleep_time),
+          sb_ptr_(sb_ptr),
+          rdg_(seed),
+          tgd_(thread_group_divisor),
+          rsq_ptr(result_queue_ptr)
     {}
 
     void operator()()
@@ -250,15 +253,17 @@ public:
         ThreadResult res;
         res.number = number_;
         res.ret = 0;
-        res.desc = std::string("ok");
+        res.desc = "ok";
 
         try
         {
-            if(number_%tgd_)//if synchronized thread
+            if (number_ % tgd_)//if synchronized thread
             {
                 //std::cout << "waiting: " << number_ << std::endl;
-                if(sb_ptr_)
+                if (sb_ptr_ != nullptr)
+                {
                     sb_ptr_->group_barrier.wait();//wait for other synced threads
+                }
             }
             else
             {//non-synchronized thread
@@ -271,24 +276,31 @@ public:
                     ::LibFred::Registrar::Manager::create(nodb));
             ///create membership of registrar in group
             regman->createRegistrarGroupMembership(
-                    1
-                    , gid3
-                    , Database::Date(Database::NOW)
-                    , Database::Date(Database::POS_INF));
+                    1,
+                    gid3,
+                    Database::Date(Database::NOW),
+                    Database::Date(Database::POS_INF));
         }
-        catch(const std::exception& ex)
+        catch (const std::exception& e)
         {
-            BOOST_TEST_MESSAGE("exception 1 in operator() thread number: " << number_
-                    << " reason: " << ex.what() );
+            //BOOST_TEST_MESSAGE("exception 1 in operator() thread number: " << number_ << " reason: " << e.what());
             res.ret = 1;
-            res.desc = std::string(ex.what());
+            res.desc = e.what();
+            if (rsq_ptr != nullptr)
+            {
+                rsq_ptr->guarded_access().push(res);
+            }
             return;
         }
-        catch(...)
+        catch (...)
         {
             BOOST_TEST_MESSAGE("exception 2 in operator() thread number: " << number_ );
             res.ret = 2;
             res.desc = std::string("unknown exception");
+            if (rsq_ptr != nullptr)
+            {
+                rsq_ptr->guarded_access().push(res);
+            }
             return;
         }
 
@@ -300,85 +312,87 @@ public:
             //delete group
             regman->cancelRegistrarGroup(gid3);
         }
-        catch(const std::exception& )
+        catch (const std::exception&)
         {
             //ok
         }
-        catch(...)
+        catch (...)
         {
-            BOOST_TEST_MESSAGE("exception 7 in operator() thread number: " << number_ );
+            //BOOST_TEST_MESSAGE("exception 7 in operator() thread number: " << number_);
             res.ret = 7;
-            res.desc = std::string("unknown exception");
-            return;
+            res.desc = "unknown exception";
         }
 
-        if(rsq_ptr) rsq_ptr->push(res);
+        if (rsq_ptr != nullptr)
+        {
+            rsq_ptr->guarded_access().push(res);
+        }
         //std::cout << "end: " << number_ << std::endl;
     }
 
 private:
     //need only defaultly constructible members here
-    unsigned    number_;//thred identification
-    unsigned    sleep_time_;//[s]
+    unsigned number_;//thred identification
+    unsigned sleep_time_;//[s]
     sync_barriers* sb_ptr_;
     RandomDataGenerator rdg_;
     std::size_t tgd_;//thread group divisor
     ThreadResultQueue* rsq_ptr; //result queue non-owning pointer
 };//class TestThreadWorker
 
-BOOST_AUTO_TEST_CASE( test_group_threaded )
+BOOST_AUTO_TEST_CASE(test_group_threaded)
 {
     HandleThreadGroupArgs* thread_args_ptr=CfgArgs::instance()->
                    get_handler_ptr_by_type<HandleThreadGroupArgs>();
 
-    std::size_t const thread_number = thread_args_ptr->thread_number;
-    std::size_t const thread_group_divisor = thread_args_ptr->thread_group_divisor;
-    // int(thread_number - (thread_number % thread_group_divisor ? 1 : 0)
-    // - thread_number / thread_group_divisor) is number of synced threads
+    const std::size_t number_of_threads = thread_args_ptr->number_of_threads;
+    const std::size_t thread_group_divisor = thread_args_ptr->thread_group_divisor;
+    // int(number_of_threads - (number_of_threads % thread_group_divisor ? 1 : 0)
+    // - number_of_threads / thread_group_divisor) is number of synced threads
 
     ThreadResultQueue result_queue;
 
     //vector of thread functors
     std::vector<TestThreadWorker> tw_vector;
-    tw_vector.reserve(thread_number);
+    tw_vector.reserve(number_of_threads);
 
-    BOOST_TEST_MESSAGE( "thread barriers:: "
-            <<  (thread_number - (thread_number % thread_group_divisor ? 1 : 0)
-                    - thread_number/thread_group_divisor)
-            );
+    BOOST_TEST_MESSAGE("thread barriers:: "
+            << (number_of_threads - (number_of_threads % thread_group_divisor ? 1 : 0) -
+                    (number_of_threads / thread_group_divisor)));
 
     //synchronization barriers instance
-    sync_barriers sb(thread_number - (thread_number % thread_group_divisor ? 1 : 0)
-            - thread_number/thread_group_divisor);
+    sync_barriers sb(number_of_threads - (number_of_threads % thread_group_divisor ? 1 : 0) -
+                     (number_of_threads / thread_group_divisor));
 
     //thread container
     boost::thread_group threads;
-    for (unsigned i = 0; i < thread_number; ++i)
+    for (unsigned i = 0; i < number_of_threads; ++i)
     {
-        tw_vector.push_back(TestThreadWorker(i,3,&sb
-                , thread_group_divisor, &result_queue));
+        tw_vector.push_back(TestThreadWorker(
+                i,
+                3,
+                &sb,
+                thread_group_divisor,
+                &result_queue));
         threads.create_thread(tw_vector.at(i));
     }
 
     threads.join_all();
 
-    BOOST_TEST_MESSAGE( "threads end result_queue.size(): " << result_queue.size() );
+    BOOST_TEST_MESSAGE("threads end result_queue.size(): " << result_queue.unguarded_access().size());
 
-    for(unsigned i = 0; i < thread_number; ++i)
+    while (!result_queue.unguarded_access().empty())
     {
-        ThreadResult thread_result;
-        if(!result_queue.try_pop(thread_result)) {
-            continue;
-        }
+        const auto thread_result = result_queue.unguarded_access().pop();
 
-        if(thread_result.ret != 0)
+        if (thread_result.ret != 0)
         {
             BOOST_FAIL( thread_result.desc
                     << " thread number: " << thread_result.number
                     << " return code: " << thread_result.ret
                     << " description: " << thread_result.desc);
         }
-    }//for i
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END();

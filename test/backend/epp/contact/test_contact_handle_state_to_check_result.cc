@@ -29,64 +29,45 @@ BOOST_AUTO_TEST_SUITE(ContactHandleStateToCheckResult)
 
 BOOST_AUTO_TEST_CASE(test_conversion)
 {
-    BOOST_CHECK(
-        ::Epp::Contact::contact_handle_state_to_check_result(
-            ::LibFred::ContactHandleState::SyntaxValidity::invalid,
-            ::LibFred::ContactHandleState::Registrability::registered
-        )
-        ==
-        ::Epp::Contact::ContactHandleRegistrationObstruction::registered_handle
-    );
+    BOOST_CHECK_EQUAL(
+            ::Epp::Contact::contact_handle_state_to_check_result(
+                    ::LibFred::ContactHandleState::SyntaxValidity::invalid,
+                    ::LibFred::ContactHandleState::Registrability::registered),
+            ::Epp::Contact::ContactHandleRegistrationObstruction::registered_handle);
+
+    BOOST_CHECK_EQUAL(
+            ::Epp::Contact::contact_handle_state_to_check_result(
+                    ::LibFred::ContactHandleState::SyntaxValidity::invalid,
+                    ::LibFred::ContactHandleState::Registrability::available),
+            ::Epp::Contact::ContactHandleRegistrationObstruction::invalid_handle);
+
+    BOOST_CHECK_EQUAL(
+            ::Epp::Contact::contact_handle_state_to_check_result(
+                    ::LibFred::ContactHandleState::SyntaxValidity::invalid,
+                    ::LibFred::ContactHandleState::Registrability::in_protection_period),
+            ::Epp::Contact::ContactHandleRegistrationObstruction::protected_handle);
+
+    BOOST_CHECK_EQUAL(
+            ::Epp::Contact::contact_handle_state_to_check_result(
+                    ::LibFred::ContactHandleState::SyntaxValidity::valid,
+                    ::LibFred::ContactHandleState::Registrability::registered),
+            ::Epp::Contact::ContactHandleRegistrationObstruction::registered_handle);
 
     BOOST_CHECK(
-        ::Epp::Contact::contact_handle_state_to_check_result(
-            ::LibFred::ContactHandleState::SyntaxValidity::invalid,
-            ::LibFred::ContactHandleState::Registrability::available
-        )
-        ==
-        ::Epp::Contact::ContactHandleRegistrationObstruction::invalid_handle
-    );
+            ::Epp::Contact::contact_handle_state_to_check_result(
+                    ::LibFred::ContactHandleState::SyntaxValidity::valid,
+                    ::LibFred::ContactHandleState::Registrability::available).isnull());
 
-    BOOST_CHECK(
-        ::Epp::Contact::contact_handle_state_to_check_result(
-            ::LibFred::ContactHandleState::SyntaxValidity::invalid,
-            ::LibFred::ContactHandleState::Registrability::in_protection_period
-        )
-        ==
-        ::Epp::Contact::ContactHandleRegistrationObstruction::protected_handle
-    );
-
-    BOOST_CHECK(
-        ::Epp::Contact::contact_handle_state_to_check_result(
-            ::LibFred::ContactHandleState::SyntaxValidity::valid,
-            ::LibFred::ContactHandleState::Registrability::registered
-        )
-        ==
-        ::Epp::Contact::ContactHandleRegistrationObstruction::registered_handle
-    );
-
-    BOOST_CHECK(
-        ::Epp::Contact::contact_handle_state_to_check_result(
-            ::LibFred::ContactHandleState::SyntaxValidity::valid,
-            ::LibFred::ContactHandleState::Registrability::available
-        )
-        ==
-        Nullable< ::Epp::Contact::ContactHandleRegistrationObstruction::Enum>()
-    );
-
-    BOOST_CHECK(
-        ::Epp::Contact::contact_handle_state_to_check_result(
-            ::LibFred::ContactHandleState::SyntaxValidity::valid,
-            ::LibFred::ContactHandleState::Registrability::in_protection_period
-        )
-        ==
-        ::Epp::Contact::ContactHandleRegistrationObstruction::protected_handle
-    );
+    BOOST_CHECK_EQUAL(
+            ::Epp::Contact::contact_handle_state_to_check_result(
+                    ::LibFred::ContactHandleState::SyntaxValidity::valid,
+                    ::LibFred::ContactHandleState::Registrability::in_protection_period),
+            ::Epp::Contact::ContactHandleRegistrationObstruction::protected_handle);
 }
 
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END()//Backend/Epp/Contact/ContactHandleStateToCheckResult
+BOOST_AUTO_TEST_SUITE_END()//Backend/Epp/Contact
+BOOST_AUTO_TEST_SUITE_END()//Backend/Epp
+BOOST_AUTO_TEST_SUITE_END()//Backend
 
 } // namespace Test

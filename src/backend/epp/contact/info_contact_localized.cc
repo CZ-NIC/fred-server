@@ -40,45 +40,28 @@
 #include <boost/format/free_funcs.hpp>
 
 #include <algorithm>
-#include <set>
-#include <vector>
 
 namespace Epp {
 namespace Contact {
 
 namespace {
 
-class FilterOut
+InfoContactLocalizedOutputData::Address to_localized_address(
+        const boost::optional<ContactData::Address>& src)
 {
-public:
-    static FilterOut what(const std::vector<std::string>& _disallowed)
+    InfoContactLocalizedOutputData::Address dst;
+    if (static_cast<bool>(src))
     {
-        return FilterOut(_disallowed);
+        dst.street = src->street;
+        dst.city = src->city;
+        dst.state_or_province = src->state_or_province;
+        dst.postal_code = src->postal_code;
+        dst.country_code = src->country_code;
     }
+    return dst;
+}
 
-    std::set<std::string>& from(std::set<std::string>& _values) const
-    {
-        for (std::vector<std::string>::const_iterator disallowed_value_ptr = disallowed_.begin();
-             disallowed_value_ptr != disallowed_.end();
-            ++disallowed_value_ptr)
-        {
-            std::set<std::string>::iterator value_to_remove = _values.find(*disallowed_value_ptr);
-            const bool remove_it = value_to_remove != _values.end();
-            if (remove_it) {
-                _values.erase(value_to_remove);
-            }
-        }
-        return _values;
-    }
-
-private:
-    const std::vector<std::string> disallowed_;
-
-    explicit FilterOut(const std::vector<std::string>& _disallowed) : disallowed_(_disallowed)
-    { }
-};
-
-} // namespace Epp::Contact::{anonymous}
+}//namespace Epp::Contact::{anonymous}
 
 InfoContactLocalizedResponse info_contact_localized(
         const std::string& _contact_handle,
@@ -93,83 +76,48 @@ InfoContactLocalizedResponse info_contact_localized(
     try
     {
         LibFred::OperationContextCreator ctx;
-
-        const InfoContactOutputData info_contact_output_data =
+        const InfoContactOutputData src_data =
                 info_contact(
                         ctx,
                         _contact_handle,
                         _info_contact_config_data,
                         _session_data);
 
-        InfoContactLocalizedOutputData info_contact_localized_output_data(info_contact_output_data.disclose);
-        info_contact_localized_output_data.handle = info_contact_output_data.handle;
-        info_contact_localized_output_data.roid = info_contact_output_data.roid;
-        info_contact_localized_output_data.sponsoring_registrar_handle =
-            info_contact_output_data.sponsoring_registrar_handle;
-        info_contact_localized_output_data.creating_registrar_handle =
-            info_contact_output_data.creating_registrar_handle;
-        info_contact_localized_output_data.last_update_registrar_handle =
-            info_contact_output_data.last_update_registrar_handle;
-        info_contact_localized_output_data.localized_external_states =
-            localize_object_states<StatusValue>(ctx, info_contact_output_data.states, _session_data.lang);
-        info_contact_localized_output_data.crdate = info_contact_output_data.crdate;
-        info_contact_localized_output_data.last_update = info_contact_output_data.last_update;
-        info_contact_localized_output_data.last_transfer = info_contact_output_data.last_transfer;
-        info_contact_localized_output_data.name = info_contact_output_data.name;
-        info_contact_localized_output_data.organization = info_contact_output_data.organization;
-        info_contact_localized_output_data.street1 = info_contact_output_data.street1;
-        info_contact_localized_output_data.street2 = info_contact_output_data.street2;
-        info_contact_localized_output_data.street3 = info_contact_output_data.street3;
-        info_contact_localized_output_data.city = info_contact_output_data.city;
-        info_contact_localized_output_data.state_or_province = info_contact_output_data.state_or_province;
-        info_contact_localized_output_data.postal_code = info_contact_output_data.postal_code;
-        info_contact_localized_output_data.country_code = info_contact_output_data.country_code;
-        info_contact_localized_output_data.mailing_address = info_contact_output_data.mailing_address;
-        info_contact_localized_output_data.telephone = info_contact_output_data.telephone;
-        info_contact_localized_output_data.fax = info_contact_output_data.fax;
-        info_contact_localized_output_data.email = info_contact_output_data.email;
-        info_contact_localized_output_data.notify_email = info_contact_output_data.notify_email;
-        info_contact_localized_output_data.VAT = info_contact_output_data.VAT;
-        if (info_contact_output_data.personal_id.is_initialized())
-        {
-            if (info_contact_output_data.personal_id->get_type() == LibFred::PersonalIdUnion::get_OP("").get_type())
-            {
-                info_contact_localized_output_data.ident =
-                        ContactIdentValueOf<ContactIdentType::Op>(info_contact_output_data.personal_id->get());
-            }
-            else if (info_contact_output_data.personal_id->get_type() == LibFred::PersonalIdUnion::get_PASS("").get_type())
-            {
-                info_contact_localized_output_data.ident =
-                        ContactIdentValueOf<ContactIdentType::Pass>(info_contact_output_data.personal_id->get());
-            }
-            else if (info_contact_output_data.personal_id->get_type() == LibFred::PersonalIdUnion::get_ICO("").get_type())
-            {
-                info_contact_localized_output_data.ident =
-                        ContactIdentValueOf<ContactIdentType::Ico>(info_contact_output_data.personal_id->get());
-            }
-            else if (info_contact_output_data.personal_id->get_type() == LibFred::PersonalIdUnion::get_MPSV("").get_type())
-            {
-                info_contact_localized_output_data.ident =
-                        ContactIdentValueOf<ContactIdentType::Mpsv>(info_contact_output_data.personal_id->get());
-            }
-            else if (info_contact_output_data.personal_id->get_type() == LibFred::PersonalIdUnion::get_BIRTHDAY("").get_type())
-            {
-                info_contact_localized_output_data.ident =
-                        ContactIdentValueOf<ContactIdentType::Birthday>(info_contact_output_data.personal_id->get());
-            }
-            else
-            {
-                throw std::runtime_error("Invalid ident type.");
-            }
-        }
-        info_contact_localized_output_data.authinfopw = info_contact_output_data.authinfopw;
+        InfoContactLocalizedOutputData dst_data;
+        dst_data.handle = src_data.handle;
+        dst_data.roid = src_data.roid;
+        dst_data.sponsoring_registrar_handle =
+            src_data.sponsoring_registrar_handle;
+        dst_data.creating_registrar_handle =
+            src_data.creating_registrar_handle;
+        dst_data.last_update_registrar_handle =
+            src_data.last_update_registrar_handle;
+        dst_data.localized_external_states =
+            localize_object_states<StatusValue>(ctx, src_data.states, _session_data.lang);
+        dst_data.crdate = src_data.crdate;
+        dst_data.last_update = src_data.last_update;
+        dst_data.last_transfer = src_data.last_transfer;
+        dst_data.name = src_data.name;
+        dst_data.organization = src_data.organization;
+        dst_data.address = src_data.address.make_with_the_same_privacy(to_localized_address(*src_data.address));
 
-        return InfoContactLocalizedResponse(
+        dst_data.mailing_address = src_data.mailing_address;
+        dst_data.telephone = src_data.telephone;
+        dst_data.fax = src_data.fax;
+        dst_data.email = src_data.email;
+        dst_data.notify_email = src_data.notify_email;
+        dst_data.VAT = src_data.VAT;
+        dst_data.VAT = src_data.VAT;
+        dst_data.ident = src_data.personal_id;
+        dst_data.authinfopw = src_data.authinfopw;
+
+        const InfoContactLocalizedResponse response(
                 EppResponseSuccessLocalized(
                         ctx,
                         EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
                         _session_data.lang),
-                info_contact_localized_output_data);
+                dst_data);
+        return response;
     }
     catch (const EppResponseFailure& e)
     {
@@ -200,5 +148,5 @@ InfoContactLocalizedResponse info_contact_localized(
     }
 }
 
-} // namespace Epp::Contact
-} // namespace Epp
+}//namespace Epp::Contact
+}//namespace Epp

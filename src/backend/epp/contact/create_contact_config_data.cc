@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017  CZ.NIC, z.s.p.o.
+ * Copyright (C) 2018  CZ.NIC, z.s.p.o.
  *
  * This file is part of FRED.
  *
@@ -16,27 +16,27 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef RENEW_CONTACT_CONFIG_DATA_HH_A2581B9B1FF343C796274E63E6B4C8E8
-#define RENEW_CONTACT_CONFIG_DATA_HH_A2581B9B1FF343C796274E63E6B4C8E8
+#include "src/backend/epp/contact/create_contact_config_data.hh"
 
 namespace Epp {
 namespace Contact {
 
-struct UpdateContactConfigData
+CreateContactConfigData::CreateContactConfigData(
+        bool _rifd_epp_operations_charging,
+        const std::shared_ptr<CreateOperationCheck>& _operation_check)
+    : rifd_epp_operations_charging_(_rifd_epp_operations_charging),
+      operation_check_(_operation_check)
+{ }
+
+bool CreateContactConfigData::are_rifd_epp_operations_charged()const
 {
-    const bool rifd_epp_operations_charging;
+    return rifd_epp_operations_charging_;
+}
 
+const CreateOperationCheck& CreateContactConfigData::get_operation_check()const
+{
+    return *operation_check_;
+}
 
-    UpdateContactConfigData(
-            const bool _rifd_epp_operations_charging)
-        : rifd_epp_operations_charging(_rifd_epp_operations_charging)
-    {
-    }
-
-
-};
-
-} // namespace Epp::Contact
-} // namespace Epp
-
-#endif
+}//namespace Epp::Contact
+}//namespace Epp

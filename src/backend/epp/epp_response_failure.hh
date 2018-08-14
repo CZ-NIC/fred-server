@@ -33,7 +33,7 @@ namespace Epp {
  * of negative completion reply.
  *
  * According to STD, it may include multiple results with
- * EPP error code representing unsuccessfull result (2xxx).
+ * EPP error code representing unsuccessful result (2xxx).
  */
 class EppResponseFailure : public std::exception
 {
@@ -73,7 +73,8 @@ public:
      * As for now, we have only one epp_result, so its
      * description is used to describe this exception.
      */
-    const char* what() const noexcept {
+    const char* what()const noexcept override
+    {
         return epp_result().c_str();
     }
 

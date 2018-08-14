@@ -191,7 +191,6 @@ noinst_HEADERS = \
 		src/util/cfg/handle_administrativeblocking_args.hh \
 		src/util/cfg/handle_adifd_args.hh \
 		src/util/cfg/handle_logd_args.hh \
-		src/util/cfg/handle_rifd_args.hh \
 		src/util/cfg/command_selection_args.hh \
 		src/util/cfg/check_args.hh \
 		src/util/cfg/checked_types.hh \
@@ -333,6 +332,7 @@ noinst_LIBRARIES = \
 		src/util/types/libtypes.a \
 		src/util/db/libdb.a \
 		src/util/tz/libtimezones.a \
+		src/util/cfg/libhandle_rifd_args.a \
 		src/deprecated/util/liboldutils.a \
 		src/deprecated/model/libmodel.a \
 		src/libfred/libfred.a \
@@ -565,6 +565,18 @@ src_util_tz_libtimezones_a_SOURCES = \
 		src/util/tz/europe/timezones.hh
 #
 # util/tz/libtimezones.a
+
+# src/util/cfg/libhandle_rifd_args.a
+#
+src_util_cfg_libhandle_rifd_args_a_SOURCES = \
+		src/util/cfg/handle_rifd_args.cc \
+		src/util/cfg/handle_rifd_args.hh \
+		src/backend/epp/contact/config_check.cc \
+		src/backend/epp/contact/config_check.hh \
+		src/backend/epp/contact/impl/cznic/specific.cc \
+		src/backend/epp/contact/impl/cznic/specific.hh
+#
+# src/util/cfg/libhandle_rifd_args.a
 
 
 # util/db/test-db
@@ -1850,12 +1862,14 @@ src_bin_corba_epp_libepp_impl_a_SOURCES = \
 		src/bin/corba/util/corba_conversions_string.hh \
 		src/bin/corba/util/corba_conversions_string.cc \
 		src/bin/corba/util/corba_conversions_int.hh \
-		src/backend/epp/impl/disclose_policy.hh \
 		src/backend/epp/localization.hh \
 		src/backend/epp/localization.cc \
 		src/backend/epp/object_states_localized.hh \
 		src/backend/epp/param.hh \
 		src/backend/epp/reason.hh \
+		src/backend/epp/update_operation.hh \
+		src/backend/epp/update_operation/type_of.hh \
+		src/backend/epp/update_operation/on_value_of.hh \
 		src/backend/epp/epp_response_failure.hh \
 		src/backend/epp/epp_response_failure_localized.hh \
 		src/backend/epp/epp_response_failure_localized.cc \
@@ -1895,11 +1909,23 @@ src_bin_corba_epp_libepp_impl_a_SOURCES = \
 		src/backend/epp/contact/contact_data.hh \
 		src/backend/epp/contact/impl/contact_output.cc \
 		src/backend/epp/contact/impl/contact_output.hh \
+		src/backend/epp/contact/impl/get_personal_id_union.cc \
+		src/backend/epp/contact/impl/get_personal_id_union.hh \
+		src/backend/epp/contact/impl/cznic/create_contact_check.cc \
+		src/backend/epp/contact/impl/cznic/create_contact_check.hh \
+		src/backend/epp/contact/impl/cznic/update_contact_check.cc \
+		src/backend/epp/contact/impl/cznic/update_contact_check.hh \
+		src/backend/epp/contact/impl/get_create_contact_check.cc \
+		src/backend/epp/contact/impl/get_create_contact_check.hh \
+		src/backend/epp/contact/impl/get_update_contact_check.cc \
+		src/backend/epp/contact/impl/get_update_contact_check.hh \
 		src/backend/epp/contact/update_contact_localized.cc \
 		src/backend/epp/contact/update_contact_localized.hh \
 		src/backend/epp/contact/update_contact.cc \
 		src/backend/epp/contact/update_contact.hh \
+		src/backend/epp/contact/update_contact_config_data.cc \
 		src/backend/epp/contact/update_contact_config_data.hh \
+		src/backend/epp/contact/update_operation_check.hh \
 		src/backend/epp/contact/info_contact_localized.cc \
 		src/backend/epp/contact/info_contact_localized.hh \
 		src/backend/epp/contact/info_contact_localized_response.hh \
@@ -1925,12 +1951,15 @@ src_bin_corba_epp_libepp_impl_a_SOURCES = \
 		src/backend/epp/contact/transfer_contact_config_data.hh \
 		src/backend/epp/contact/contact_handle_registration_obstruction.hh \
 		src/backend/epp/contact/contact_handle_registration_obstruction_localized.hh \
-		src/backend/epp/contact/contact_disclose.hh \
+		src/backend/epp/contact/hideable.hh \
+		src/backend/epp/contact/street_traits.hh \
 		src/backend/epp/contact/update_contact_post_hooks.cc \
 		src/backend/epp/contact/update_contact_post_hooks.hh \
 		src/backend/epp/contact/create_contact_input_data.cc \
 		src/backend/epp/contact/create_contact_input_data.hh \
+		src/backend/epp/contact/create_contact_config_data.cc \
 		src/backend/epp/contact/create_contact_config_data.hh \
+		src/backend/epp/contact/create_operation_check.hh \
 		src/backend/epp/contact/create_contact_localized_response.hh \
 		src/backend/epp/contact/contact_ident.hh \
 		src/backend/epp/contact/status_value.hh \
@@ -2163,6 +2192,7 @@ src_bin_corba_fred_rifd_LDADD = \
 		src/util/db/libdb.a \
 		src/util/types/libtypes.a \
 		src/util/log/liblog.a \
+		src/util/cfg/libhandle_rifd_args.a \
 		src/deprecated/util/liboldutils.a \
 		src/util/libutil.a \
 		-lmpdec -lm -lrt \
@@ -3078,6 +3108,7 @@ test_backend_test_admin_contact_verification_LDADD = \
 		src/util/db/libdb.a \
 		src/util/libutil.a \
 		src/util/tz/libtimezones.a \
+		src/util/cfg/libhandle_rifd_args.a \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
@@ -3133,6 +3164,7 @@ test_backend_test_admin_contact_automerge_LDADD = \
 		src/deprecated/util/liboldutils.a \
 		src/util/libutil.a \
 		src/util/tz/libtimezones.a \
+		src/util/cfg/libhandle_rifd_args.a \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
@@ -3294,6 +3326,7 @@ test_backend_test_epp_LDADD = \
 		src/util/db/libdb.a \
 		src/util/log/liblog.a \
 		src/util/libutil.a \
+		src/util/cfg/libhandle_rifd_args.a \
 		$(LIBCRYPTO_LIBS) \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
@@ -3360,6 +3393,7 @@ test_backend_test_whois_LDADD = \
 		src/deprecated/util/liboldutils.a \
 		src/util/libutil.a \
 		src/util/tz/libtimezones.a \
+		src/util/cfg/libhandle_rifd_args.a \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
@@ -3478,6 +3512,7 @@ test_test_server_LDADD = \
 		src/libfred/banking/libbanking.a \
 		src/util/log/liblog.a \
 		src/util/libutil.a \
+		src/util/cfg/libhandle_rifd_args.a \
 		src/bin/corba/libcorbamessages.a \
 		src/bin/corba/libcorbamessages.a \
 		src/bin/corba/libcorbazone.a \
@@ -3544,6 +3579,7 @@ test_backend_test_public_request_LDADD = \
 		src/util/db/libdb.a \
 		src/util/libutil.a \
 		src/util/tz/libtimezones.a \
+		src/util/cfg/libhandle_rifd_args.a \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(OMNIORB4_LIBS) \
 		$(BOOST_REGEX_LIB) \
@@ -3611,6 +3647,7 @@ test_test_blocking_LDADD = \
 		src/libfred/banking/libbanking.a \
 		src/util/log/liblog.a \
 		src/util/libutil.a \
+		src/util/cfg/libhandle_rifd_args.a \
 		src/bin/corba/libcorbamessages.a \
 		src/bin/corba/libcorbamessages.a \
 		src/bin/corba/libcorbazone.a \
@@ -3791,6 +3828,7 @@ test_test_libfred_LDADD = \
 		src/util/log/liblog.a \
 		src/util/db/libdb.a \
 		src/util/tz/libtimezones.a \
+		src/util/cfg/libhandle_rifd_args.a \
 		-lmpdec -lm -lrt \
 		src/bin/corba/libcorba.a \
 		src/bin/corba/libmailer.a \

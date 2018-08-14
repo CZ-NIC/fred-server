@@ -19,7 +19,6 @@
 #include "src/backend/epp/domain/update_domain.hh"
 
 #include "src/backend/epp/domain/domain_enum_validation.hh"
-#include "src/backend/epp/impl/disclose_policy.hh"
 #include "src/backend/epp/epp_response_failure.hh"
 #include "src/backend/epp/epp_result_code.hh"
 #include "src/backend/epp/epp_result_failure.hh"

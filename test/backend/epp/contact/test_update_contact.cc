@@ -21,95 +21,265 @@
 #include "test/backend/epp/util.hh"
 
 #include "src/backend/epp/contact/update_contact.hh"
-#include "src/backend/epp/impl/disclose_policy.hh"
 #include "src/backend/epp/epp_response_failure.hh"
 #include "src/backend/epp/epp_result_code.hh"
 
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/assign/list_of.hpp>
 #include <boost/test/unit_test.hpp>
+
 #include <set>
 
 namespace Test {
 
 namespace {
 
-template < ::Epp::Contact::ContactDisclose::Item::Enum ITEM>
-bool updated(const ::Epp::Contact::ContactChange& _update, bool _before)
+Nullable<std::string> get_new_value(
+        const ::Epp::Deletable<std::string>& change,
+        const Nullable<std::string>& before)
 {
-    return _update.disclose.is_initialized()
-           ? _update.disclose->should_be_disclosed< ITEM >(::Epp::is_the_default_policy_to_disclose())
-           : _before;
+    if (change == ::Epp::UpdateOperation::Action::set_value)
+    {
+        return Nullable<std::string>(*change);
+    }
+    if (change == ::Epp::UpdateOperation::Action::delete_value)
+    {
+        return Nullable<std::string>();
+    }
+    if (change == ::Epp::UpdateOperation::Action::no_operation)
+    {
+        return before;
+    }
+    throw std::runtime_error("unexpected operation");
 }
 
 std::string get_new_value(
-        const boost::optional<std::string>& change,
+        const ::Epp::Deletable<std::string>& change,
         const std::string& before)
 {
-    if (::Epp::Contact::ContactChange::does_value_mean< ::Epp::Contact::ContactChange::Value::to_set >(change)) {
-        return ::Epp::Contact::ContactChange::get_value(change);
+    if (change == ::Epp::UpdateOperation::Action::set_value)
+    {
+        return *change;
     }
-    return before;
-}
-
-std::string get_new_value(
-        const boost::optional<Nullable<std::string> >& change,
-        const std::string& before)
-{
-    if (::Epp::Contact::ContactChange::does_value_mean< ::Epp::Contact::ContactChange::Value::to_set >(change)) {
-        return ::Epp::Contact::ContactChange::get_value(change);
-    }
-    if (::Epp::Contact::ContactChange::does_value_mean< ::Epp::Contact::ContactChange::Value::to_delete >(change)) {
+    if (change == ::Epp::UpdateOperation::Action::delete_value)
+    {
         return std::string();
     }
-    return before;
+    if (change == ::Epp::UpdateOperation::Action::no_operation)
+    {
+        return before;
+    }
+    throw std::runtime_error("unexpected operation");
+}
+
+std::string get_new_value(
+        const ::Epp::Updateable<std::string>& change,
+        const std::string& before)
+{
+    if (change == ::Epp::UpdateOperation::Action::set_value)
+    {
+        return *change;
+    }
+    if (change == ::Epp::UpdateOperation::Action::no_operation)
+    {
+        return before;
+    }
+    throw std::runtime_error("unexpected operation");
 }
 
 Optional<std::string> get_new_value(
-        const boost::optional<Nullable<std::string> >& change,
+        const ::Epp::Deletable<std::string>& change,
         const Optional<std::string>& before)
 {
-    if (::Epp::Contact::ContactChange::does_value_mean< ::Epp::Contact::ContactChange::Value::to_set >(change)) {
-        return ::Epp::Contact::ContactChange::get_value(change);
+    if (change == ::Epp::UpdateOperation::Action::set_value)
+    {
+        return Optional<std::string>(*change);
     }
-    if (::Epp::Contact::ContactChange::does_value_mean< ::Epp::Contact::ContactChange::Value::to_delete >(change)) {
-        return Optional< std::string >();
+    if (change == ::Epp::UpdateOperation::Action::delete_value)
+    {
+        return Optional<std::string>();
     }
-    return before;
+    if (change == ::Epp::UpdateOperation::Action::no_operation)
+    {
+        return before;
+    }
+    throw std::runtime_error("unexpected operation");
 }
 
-Nullable<std::string> get_new_value(
-        const boost::optional<Nullable<std::string> >& change,
-        const Nullable<std::string>& before)
+bool is_public(const boost::optional<::Epp::Contact::PrivacyPolicy>& publishability)
 {
-    if (::Epp::Contact::ContactChange::does_value_mean< ::Epp::Contact::ContactChange::Value::to_set >(change)) {
-        return ::Epp::Contact::ContactChange::get_value(change);
+    if (static_cast<bool>(publishability))
+    {
+        switch (*publishability)
+        {
+            case ::Epp::Contact::PrivacyPolicy::show: return true;
+            case ::Epp::Contact::PrivacyPolicy::hide: return false;
+        }
+        throw std::runtime_error("unknown PrivacyPolicy value");
     }
-    if (::Epp::Contact::ContactChange::does_value_mean< ::Epp::Contact::ContactChange::Value::to_delete >(change)) {
-        return Nullable< std::string >();
-    }
-    return before;
+    throw std::runtime_error("missing PrivacyPolicy value");
 }
 
-struct GetPersonalIdUnionFromContactIdent:boost::static_visitor<::LibFred::PersonalIdUnion>
+enum class Data
 {
-    ::LibFred::PersonalIdUnion operator()(const ::Epp::Contact::ContactIdentValueOf< ::Epp::Contact::ContactIdentType::Op >& src)const
+    name,
+    organization,
+    address,
+    telephone,
+    fax,
+    email,
+    notify_email,
+    vat,
+    ident
+};
+
+template <Data> bool is_public(const ::Epp::Contact::ContactChange::Publishability&);
+
+template <>
+bool is_public<Data::name>(const ::Epp::Contact::ContactChange::Publishability& disclose)
+{
+    return is_public(disclose.name);
+}
+
+template <>
+bool is_public<Data::organization>(const ::Epp::Contact::ContactChange::Publishability& disclose)
+{
+    return is_public(disclose.organization);
+}
+
+template <>
+bool is_public<Data::address>(const ::Epp::Contact::ContactChange::Publishability& disclose)
+{
+    return is_public(disclose.address);
+}
+
+template <>
+bool is_public<Data::telephone>(const ::Epp::Contact::ContactChange::Publishability& disclose)
+{
+    return is_public(disclose.telephone);
+}
+
+template <>
+bool is_public<Data::fax>(const ::Epp::Contact::ContactChange::Publishability& disclose)
+{
+    return is_public(disclose.fax);
+}
+
+template <>
+bool is_public<Data::email>(const ::Epp::Contact::ContactChange::Publishability& disclose)
+{
+    return is_public(disclose.email);
+}
+
+template <>
+bool is_public<Data::notify_email>(const ::Epp::Contact::ContactChange::Publishability& disclose)
+{
+    return is_public(disclose.notify_email);
+}
+
+template <>
+bool is_public<Data::vat>(const ::Epp::Contact::ContactChange::Publishability& disclose)
+{
+    return is_public(disclose.vat);
+}
+
+template <>
+bool is_public<Data::ident>(const ::Epp::Contact::ContactChange::Publishability& disclose)
+{
+    return is_public(disclose.ident);
+}
+
+
+template <Data> bool is_public(const ::LibFred::InfoContactData&);
+
+template <>
+bool is_public<Data::name>(const ::LibFred::InfoContactData& info)
+{
+    return info.disclosename;
+}
+
+template <>
+bool is_public<Data::organization>(const ::LibFred::InfoContactData& info)
+{
+    return info.discloseorganization;
+}
+
+template <>
+bool is_public<Data::address>(const ::LibFred::InfoContactData& info)
+{
+    return info.discloseaddress;
+}
+
+template <>
+bool is_public<Data::telephone>(const ::LibFred::InfoContactData& info)
+{
+    return info.disclosetelephone;
+}
+
+template <>
+bool is_public<Data::fax>(const ::LibFred::InfoContactData& info)
+{
+    return info.disclosefax;
+}
+
+template <>
+bool is_public<Data::email>(const ::LibFred::InfoContactData& info)
+{
+    return info.discloseemail;
+}
+
+template <>
+bool is_public<Data::notify_email>(const ::LibFred::InfoContactData& info)
+{
+    return info.disclosenotifyemail;
+}
+
+template <>
+bool is_public<Data::vat>(const ::LibFred::InfoContactData& info)
+{
+    return info.disclosevat;
+}
+
+template <>
+bool is_public<Data::ident>(const ::LibFred::InfoContactData& info)
+{
+    return info.discloseident;
+}
+
+template <Data item>
+bool get_new_discloseflag(const ::Epp::Updateable<::Epp::Contact::ContactChange::Publishability>& update,
+                          const ::LibFred::InfoContactData& info_before)
+{
+    if (update == ::Epp::UpdateOperation::Action::set_value)
+    {
+        return is_public<item>(*update);
+    }
+    if (update == ::Epp::UpdateOperation::Action::no_operation)
+    {
+        return is_public<item>(info_before);
+    }
+    throw std::runtime_error("unexpected operation");
+}
+
+struct GetPersonalIdUnionFromContactIdent : boost::static_visitor<::LibFred::PersonalIdUnion>
+{
+    ::LibFred::PersonalIdUnion operator()(const ::Epp::Contact::ContactIdentValueOf<::Epp::Contact::ContactIdentType::Op>& src)const
     {
         return ::LibFred::PersonalIdUnion::get_OP(src.value);
     }
-    ::LibFred::PersonalIdUnion operator()(const ::Epp::Contact::ContactIdentValueOf< ::Epp::Contact::ContactIdentType::Pass >& src)const
+    ::LibFred::PersonalIdUnion operator()(const ::Epp::Contact::ContactIdentValueOf<::Epp::Contact::ContactIdentType::Pass>& src)const
     {
         return ::LibFred::PersonalIdUnion::get_PASS(src.value);
     }
-    ::LibFred::PersonalIdUnion operator()(const ::Epp::Contact::ContactIdentValueOf< ::Epp::Contact::ContactIdentType::Ico >& src)const
+    ::LibFred::PersonalIdUnion operator()(const ::Epp::Contact::ContactIdentValueOf<::Epp::Contact::ContactIdentType::Ico>& src)const
     {
         return ::LibFred::PersonalIdUnion::get_ICO(src.value);
     }
-    ::LibFred::PersonalIdUnion operator()(const ::Epp::Contact::ContactIdentValueOf< ::Epp::Contact::ContactIdentType::Mpsv >& src)const
+    ::LibFred::PersonalIdUnion operator()(const ::Epp::Contact::ContactIdentValueOf<::Epp::Contact::ContactIdentType::Mpsv>& src)const
     {
         return ::LibFred::PersonalIdUnion::get_MPSV(src.value);
     }
-    ::LibFred::PersonalIdUnion operator()(const ::Epp::Contact::ContactIdentValueOf< ::Epp::Contact::ContactIdentType::Birthday >& src)const
+    ::LibFred::PersonalIdUnion operator()(const ::Epp::Contact::ContactIdentValueOf<::Epp::Contact::ContactIdentType::Birthday>& src)const
     {
         return ::LibFred::PersonalIdUnion::get_BIRTHDAY(src.value);
     }
@@ -121,47 +291,60 @@ LibFred::PersonalIdUnion get_ident(const ::Epp::Contact::ContactIdent& ident)
 }
 
 Nullable<std::string> get_ident_type(
-        const boost::optional< boost::optional< ::Epp::Contact::ContactIdent > >& ident,
+        const ::Epp::Deletable<::Epp::Contact::ContactIdent>& ident,
         const Nullable<std::string>& previous_value)
 {
-    if (!static_cast<bool>(ident))
+    if (ident == ::Epp::UpdateOperation::Action::no_operation)
     {
         return previous_value;
     }
-    if (!static_cast<bool>(*ident))
+    if (ident == ::Epp::UpdateOperation::Action::delete_value)
     {
         return Nullable<std::string>();
     }
-    return get_ident(**ident).get_type();
+    if (ident == ::Epp::UpdateOperation::Action::set_value)
+    {
+        return get_ident(*ident).get_type();
+    }
+    throw std::runtime_error("unexpected operation");
 }
 
 Nullable<std::string> get_ident_value(
-        const boost::optional< boost::optional< ::Epp::Contact::ContactIdent > >& ident,
+        const ::Epp::Deletable<::Epp::Contact::ContactIdent>& ident,
         const Nullable<std::string>& previous_value)
 {
-    if (!static_cast<bool>(ident))
+    if (ident == ::Epp::UpdateOperation::Action::no_operation)
     {
         return previous_value;
     }
-    if (!static_cast<bool>(*ident))
+    if (ident == ::Epp::UpdateOperation::Action::delete_value)
     {
         return Nullable<std::string>();
     }
-    return get_ident(**ident).get();
+    if (ident == ::Epp::UpdateOperation::Action::set_value)
+    {
+        return get_ident(*ident).get();
+    }
+    throw std::runtime_error("unexpected operation");
 }
 
-} // namespace Test::{anonymous}
+}//namespace Test::{anonymous}
 
 BOOST_AUTO_TEST_SUITE(Backend)
 BOOST_AUTO_TEST_SUITE(Epp)
 BOOST_AUTO_TEST_SUITE(Contact)
 BOOST_AUTO_TEST_SUITE(UpdateContact)
 
-bool update_invalid_registrar_id_exception(const ::Epp::EppResponseFailure& e) {
+namespace {
+
+bool update_invalid_registrar_id_exception(const ::Epp::EppResponseFailure& e)
+{
     BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::authentication_error_server_closing_connection);
     BOOST_CHECK(e.epp_result().empty());
     return true;
 }
+
+}//namespace Test::{anonymous}
 
 BOOST_FIXTURE_TEST_CASE(update_invalid_registrar_id, supply_ctx<HasSessionWithUnauthenticatedRegistrar>)
 {
@@ -176,11 +359,16 @@ BOOST_FIXTURE_TEST_CASE(update_invalid_registrar_id, supply_ctx<HasSessionWithUn
             update_invalid_registrar_id_exception);
 }
 
-bool update_fail_nonexistent_handle_exception(const ::Epp::EppResponseFailure& e) {
+namespace {
+
+bool update_fail_nonexistent_handle_exception(const ::Epp::EppResponseFailure& e)
+{
     BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::object_does_not_exist);
     BOOST_CHECK(e.epp_result().empty());
     return true;
 }
+
+}//namespace Test::{anonymous}
 
 BOOST_FIXTURE_TEST_CASE(update_fail_nonexistent_handle, supply_ctx<HasRegistrarWithSessionAndContact>)
 {
@@ -195,7 +383,10 @@ BOOST_FIXTURE_TEST_CASE(update_fail_nonexistent_handle, supply_ctx<HasRegistrarW
             update_fail_nonexistent_handle_exception);
 }
 
-bool update_fail_wrong_registrar_exception(const ::Epp::EppResponseFailure& e) {
+namespace {
+
+bool update_fail_wrong_registrar_exception(const ::Epp::EppResponseFailure& e)
+{
     BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::authorization_error);
     BOOST_REQUIRE(e.epp_result().extended_errors());
     BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->size(), 1);
@@ -204,6 +395,8 @@ bool update_fail_wrong_registrar_exception(const ::Epp::EppResponseFailure& e) {
     BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->reason(), ::Epp::Reason::unauthorized_registrar);
     return true;
 }
+
+}//namespace Test::{anonymous}
 
 BOOST_FIXTURE_TEST_CASE(update_fail_wrong_registrar, supply_ctx<HasRegistrarWithSessionAndContactOfDifferentRegistrar>)
 {
@@ -218,11 +411,16 @@ BOOST_FIXTURE_TEST_CASE(update_fail_wrong_registrar, supply_ctx<HasRegistrarWith
             update_fail_wrong_registrar_exception);
 }
 
-bool update_fail_prohibiting_status1_exception(const ::Epp::EppResponseFailure& e) {
+namespace {
+
+bool update_fail_prohibiting_status1_exception(const ::Epp::EppResponseFailure& e)
+{
     BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::object_status_prohibits_operation);
     BOOST_CHECK(e.epp_result().empty());
     return true;
 }
+
+}//namespace Test::{anonymous}
 
 BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status1, supply_ctx<HasRegistrarWithSession>)
 {
@@ -239,11 +437,16 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status1, supply_ctx<HasRegistrar
             update_fail_prohibiting_status1_exception);
 }
 
-bool update_fail_prohibiting_status2_exception(const ::Epp::EppResponseFailure& e) {
+namespace {
+
+bool update_fail_prohibiting_status2_exception(const ::Epp::EppResponseFailure& e)
+{
     BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::object_status_prohibits_operation);
     BOOST_CHECK(e.epp_result().empty());
     return true;
 }
+
+}//namespace Test::{anonymous}
 
 BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status2, supply_ctx<HasRegistrarWithSession>)
 {
@@ -262,11 +465,16 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status2, supply_ctx<HasRegistrar
     );
 }
 
-bool update_fail_prohibiting_status_request_exception(const ::Epp::EppResponseFailure& e) {
+namespace {
+
+bool update_fail_prohibiting_status_request_exception(const ::Epp::EppResponseFailure& e)
+{
     BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::object_status_prohibits_operation);
     BOOST_CHECK(e.epp_result().empty());
     return true;
 }
+
+}//namespace Test::{anonymous}
 
 BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status_request, supply_ctx<HasRegistrarWithSession>)
 {
@@ -286,17 +494,20 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status_request, supply_ctx<HasRe
     {
         std::set<std::string> object_states_after;
         {
-            BOOST_FOREACH (const ::LibFred::ObjectStateData& state, ::LibFred::GetObjectStates(contact_with_status_request_delete_candidate.data.id).exec(ctx))
+            const auto object_states = ::LibFred::GetObjectStates(contact_with_status_request_delete_candidate.data.id).exec(ctx);
+            for (const auto& state : object_states)
             {
                 object_states_after.insert(state.state_name);
             }
         }
-
         BOOST_CHECK(object_states_after.find(contact_with_status_request_delete_candidate.status) != object_states_after.end());
     }
 }
 
-bool update_fail_nonexistent_country_code_exception(const ::Epp::EppResponseFailure& e) {
+namespace {
+
+bool update_fail_nonexistent_country_code_exception(const ::Epp::EppResponseFailure& e)
+{
     BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::parameter_value_policy_error);
     BOOST_REQUIRE(e.epp_result().extended_errors());
     BOOST_REQUIRE(!e.epp_result().extended_errors()->empty());
@@ -304,12 +515,42 @@ bool update_fail_nonexistent_country_code_exception(const ::Epp::EppResponseFail
     return true;
 }
 
+template <typename T, typename S>
+auto make_set_value(const S& src)
+{
+    return ::Epp::UpdateOperation::set_value(T(src));
+}
+
+auto make_no_operation()
+{
+    return ::Epp::UpdateOperation::no_operation();
+}
+
+}//namespace Test::{anonymous}
+
 BOOST_FIXTURE_TEST_CASE(update_fail_nonexistent_country_code, supply_ctx<HasRegistrarWithSessionAndContact>)
 {
     DefaultUpdateContactInputData update_contact_input_data;
-    update_contact_input_data.organization = "Spol s r. o.";
-    update_contact_input_data.country_code = "X123Z"; // <- !!!
-    update_contact_input_data.disclose     = get_all_items();
+    update_contact_input_data.name = make_no_operation();
+    update_contact_input_data.organization = make_set_value<std::string>("Spol s r. o.");
+    update_contact_input_data.address.country_code = make_set_value<std::string>("X123Z");
+    update_contact_input_data.telephone = make_no_operation();
+    update_contact_input_data.fax = make_no_operation();
+    update_contact_input_data.email = make_no_operation();
+    update_contact_input_data.notify_email = make_no_operation();
+    update_contact_input_data.vat = make_no_operation();
+    update_contact_input_data.ident = make_no_operation();
+    ::Epp::Contact::ContactChange::Publishability disclose;
+    disclose.name = ::Epp::Contact::PrivacyPolicy::show;
+    disclose.organization = ::Epp::Contact::PrivacyPolicy::show;
+    disclose.address = ::Epp::Contact::PrivacyPolicy::show;
+    disclose.telephone = ::Epp::Contact::PrivacyPolicy::show;
+    disclose.fax = ::Epp::Contact::PrivacyPolicy::show;
+    disclose.email = ::Epp::Contact::PrivacyPolicy::show;
+    disclose.notify_email = ::Epp::Contact::PrivacyPolicy::show;
+    disclose.vat = ::Epp::Contact::PrivacyPolicy::show;
+    disclose.ident = ::Epp::Contact::PrivacyPolicy::show;
+    update_contact_input_data.disclose = make_set_value<::Epp::Contact::ContactChange::Publishability>(disclose);
 
     BOOST_CHECK_EXCEPTION(
             ::Epp::Contact::update_contact(
@@ -322,17 +563,39 @@ BOOST_FIXTURE_TEST_CASE(update_fail_nonexistent_country_code, supply_ctx<HasRegi
             update_fail_nonexistent_country_code_exception);
 }
 
-bool update_fail_address_cant_be_undisclosed_exception(const ::Epp::EppResponseFailure& e) {
+namespace {
+
+bool update_fail_address_cant_be_undisclosed_exception(const ::Epp::EppResponseFailure& e)
+{
     BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::object_status_prohibits_operation);
     BOOST_CHECK(e.epp_result().empty());
     return true;
 }
 
+}//namespace Test::{anonymous}
+
 BOOST_FIXTURE_TEST_CASE(update_fail_address_cant_be_undisclosed, supply_ctx<HasRegistrarWithSessionAndContact>)
 {
     DefaultUpdateContactInputData update_contact_input_data;
-    update_contact_input_data.organization = "";
-    update_contact_input_data.disclose = get_all_items(false); // address <- !!!
+    update_contact_input_data.name = make_no_operation();
+    update_contact_input_data.organization = make_set_value<std::string>("");
+    update_contact_input_data.telephone = make_no_operation();
+    update_contact_input_data.fax = make_no_operation();
+    update_contact_input_data.email = make_no_operation();
+    update_contact_input_data.notify_email = make_no_operation();
+    update_contact_input_data.vat = make_no_operation();
+    update_contact_input_data.ident = make_no_operation();
+    ::Epp::Contact::ContactChange::Publishability disclose;
+    disclose.name = ::Epp::Contact::PrivacyPolicy::show;
+    disclose.organization = ::Epp::Contact::PrivacyPolicy::show;
+    disclose.address = ::Epp::Contact::PrivacyPolicy::hide;
+    disclose.telephone = ::Epp::Contact::PrivacyPolicy::hide;
+    disclose.fax = ::Epp::Contact::PrivacyPolicy::hide;
+    disclose.email = ::Epp::Contact::PrivacyPolicy::hide;
+    disclose.notify_email = ::Epp::Contact::PrivacyPolicy::hide;
+    disclose.vat = ::Epp::Contact::PrivacyPolicy::hide;
+    disclose.ident = ::Epp::Contact::PrivacyPolicy::hide;
+    update_contact_input_data.disclose = make_set_value<::Epp::Contact::ContactChange::Publishability>(disclose);
 
     BOOST_CHECK_EXCEPTION(
             ::Epp::Contact::update_contact(
@@ -345,7 +608,9 @@ BOOST_FIXTURE_TEST_CASE(update_fail_address_cant_be_undisclosed, supply_ctx<HasR
             update_fail_address_cant_be_undisclosed_exception);
 }
 
-static void check_equal(
+namespace {
+
+void check_equal(
     const ::LibFred::InfoContactData& info_before,
     const ::Epp::Contact::ContactChange& update,
     const ::LibFred::InfoContactData& info_after)
@@ -355,46 +620,44 @@ static void check_equal(
     BOOST_CHECK_EQUAL(info_after.organization, get_new_value(update.organization, info_before.organization));
     BOOST_CHECK_EQUAL(
             info_after.place.get_value_or_default().street1,
-            (update.streets != boost::none) && (0 < update.streets->size()) ? (*update.streets)[0] : "");
+            get_new_value(update.address.street[0], info_before.place.get_value_or_default().street1));
     BOOST_CHECK_EQUAL(
-            info_after.place.get_value_or_default().street2.get_value_or_default(),
-            (update.streets != boost::none) && (1 < update.streets->size()) ? (*update.streets)[1] : "");
+            info_after.place.get_value_or_default().street2,
+            get_new_value(update.address.street[1], info_before.place.get_value_or_default().street2));
     BOOST_CHECK_EQUAL(
-            info_after.place.get_value_or_default().street3.get_value_or_default(),
-            (update.streets != boost::none) && (2 < update.streets->size()) ? (*update.streets)[2] : "");
+            info_after.place.get_value_or_default().street3,
+            get_new_value(update.address.street[2], info_before.place.get_value_or_default().street3));
     BOOST_CHECK_EQUAL(info_after.place.get_value_or_default().city,
-                      get_new_value(update.city, info_before.place.get_value_or_default().city));
+                      get_new_value(update.address.city, info_before.place.get_value_or_default().city));
     BOOST_CHECK_EQUAL(info_after.place.get_value_or_default().postalcode,
-                      get_new_value(update.postal_code, info_before.place.get_value_or_default().postalcode));
+                      get_new_value(update.address.postal_code, info_before.place.get_value_or_default().postalcode));
     BOOST_CHECK_EQUAL(info_after.place.get_value_or_default().stateorprovince,
-                      get_new_value(update.state_or_province, info_before.place.get_value_or_default().stateorprovince));
+                      get_new_value(update.address.state_or_province, info_before.place.get_value_or_default().stateorprovince));
     BOOST_CHECK_EQUAL(info_after.place.get_value_or_default().country,
-                      get_new_value(update.country_code, info_before.place.get_value_or_default().country));
-    if (::Epp::Contact::ContactChange::does_value_mean< ::Epp::Contact::ContactChange::Value::to_set >(
-            update.mailing_address))
+                      get_new_value(update.address.country_code, info_before.place.get_value_or_default().country));
+    if (update.mailing_address == ::Epp::UpdateOperation::Action::set_value)
     {
-        const ::LibFred::ContactAddressList::const_iterator addresses_itr = info_after.addresses.find(::LibFred::ContactAddressType::MAILING);
+        const auto addresses_itr = info_after.addresses.find(::LibFred::ContactAddressType::MAILING);
         const bool mailing_address_presents_after = addresses_itr != info_after.addresses.end();
         BOOST_CHECK(mailing_address_presents_after);
         if (mailing_address_presents_after)
         {
-            const ::Epp::Contact::ContactChange::Address mailing_address =
-                    ::Epp::Contact::ContactChange::get_value(update.mailing_address);
+            const auto mailing_address = *update.mailing_address;
             BOOST_CHECK(!addresses_itr->second.company_name.isset());
-            BOOST_CHECK(static_cast<bool>(mailing_address.street1));
-            if (static_cast<bool>(mailing_address.street1))
+            BOOST_CHECK(static_cast<bool>(mailing_address.street[0]));
+            if (static_cast<bool>(mailing_address.street[0]))
             {
-                BOOST_CHECK_EQUAL(*mailing_address.street1, addresses_itr->second.street1);
+                BOOST_CHECK_EQUAL(*(mailing_address.street[0]), addresses_itr->second.street1);
             }
-            BOOST_CHECK_EQUAL(static_cast<bool>(mailing_address.street2), addresses_itr->second.street2.isset());
-            if ((static_cast<bool>(mailing_address.street2)) && (addresses_itr->second.street2.isset()))
+            BOOST_CHECK_EQUAL(static_cast<bool>(mailing_address.street[1]), addresses_itr->second.street2.isset());
+            if ((static_cast<bool>(mailing_address.street[1])) && (addresses_itr->second.street2.isset()))
             {
-                BOOST_CHECK_EQUAL(*mailing_address.street2, addresses_itr->second.street2.get_value());
+                BOOST_CHECK_EQUAL(*(mailing_address.street[1]), addresses_itr->second.street2.get_value());
             }
-            BOOST_CHECK_EQUAL(static_cast<bool>(mailing_address.street3), addresses_itr->second.street3.isset());
-            if ((static_cast<bool>(mailing_address.street3)) && (addresses_itr->second.street3.isset()))
+            BOOST_CHECK_EQUAL(static_cast<bool>(mailing_address.street[2]), addresses_itr->second.street3.isset());
+            if ((static_cast<bool>(mailing_address.street[2])) && (addresses_itr->second.street3.isset()))
             {
-                BOOST_CHECK_EQUAL(*mailing_address.street3, addresses_itr->second.street3.get_value());
+                BOOST_CHECK_EQUAL(*(mailing_address.street[2]), addresses_itr->second.street3.get_value());
             }
             BOOST_CHECK(static_cast<bool>(mailing_address.city));
             if (static_cast<bool>(mailing_address.city))
@@ -418,21 +681,19 @@ static void check_equal(
             }
         }
     }
-    else if (::Epp::Contact::ContactChange::does_value_mean< ::Epp::Contact::ContactChange::Value::to_delete >(
-            update.mailing_address))
+    else if (update.mailing_address == ::Epp::UpdateOperation::Action::delete_value)
     {
-        const ::LibFred::ContactAddressList::const_iterator addresses_after_itr =
+        const auto addresses_after_itr =
                 info_after.addresses.find(::LibFred::ContactAddressType::MAILING);
         const bool mailing_address_presents_after = addresses_after_itr != info_after.addresses.end();
         BOOST_CHECK(!mailing_address_presents_after);
     }
-    else if (::Epp::Contact::ContactChange::does_value_mean< ::Epp::Contact::ContactChange::Value::not_to_touch >(
-            update.mailing_address))
+    else if (update.mailing_address == ::Epp::UpdateOperation::Action::no_operation)
     {
-        const ::LibFred::ContactAddressList::const_iterator addresses_before_itr =
+        const auto addresses_before_itr =
                 info_before.addresses.find(::LibFred::ContactAddressType::MAILING);
         const bool mailing_address_presents_before = addresses_before_itr != info_before.addresses.end();
-        const ::LibFred::ContactAddressList::const_iterator addresses_after_itr =
+        const auto addresses_after_itr =
                 info_after.addresses.find(::LibFred::ContactAddressType::MAILING);
         const bool mailing_address_presents_after = addresses_after_itr != info_after.addresses.end();
         BOOST_CHECK_EQUAL(mailing_address_presents_before, mailing_address_presents_after);
@@ -481,24 +742,29 @@ static void check_equal(
     BOOST_CHECK_EQUAL(info_after.ssntype, get_ident_type(update.ident, info_before.ssntype));
     BOOST_CHECK_EQUAL(info_after.authinfopw, get_new_value(update.authinfopw, info_before.authinfopw));
     BOOST_CHECK_EQUAL(info_after.disclosename,
-                      updated< ::Epp::Contact::ContactDisclose::Item::name         >(update, info_before.disclosename));
+                      get_new_discloseflag<Data::name>(update.disclose, info_before));
     BOOST_CHECK_EQUAL(info_after.discloseorganization,
-                      updated< ::Epp::Contact::ContactDisclose::Item::organization >(update, info_before.discloseorganization));
+                      get_new_discloseflag<Data::organization>(update.disclose, info_before));
     BOOST_CHECK_EQUAL(info_after.discloseaddress,
-                      updated< ::Epp::Contact::ContactDisclose::Item::address      >(update, info_before.discloseaddress));
+                      get_new_discloseflag<Data::address>(update.disclose, info_before));
     BOOST_CHECK_EQUAL(info_after.disclosetelephone,
-                      updated< ::Epp::Contact::ContactDisclose::Item::telephone    >(update, info_before.disclosetelephone));
+                      get_new_discloseflag<Data::telephone>(update.disclose, info_before));
     BOOST_CHECK_EQUAL(info_after.disclosefax,
-                      updated< ::Epp::Contact::ContactDisclose::Item::fax          >(update, info_before.disclosefax));
+                      get_new_discloseflag<Data::fax>(update.disclose, info_before));
     BOOST_CHECK_EQUAL(info_after.discloseemail,
-                      updated< ::Epp::Contact::ContactDisclose::Item::email        >(update, info_before.discloseemail));
+                      get_new_discloseflag<Data::email>(update.disclose, info_before));
     BOOST_CHECK_EQUAL(info_after.disclosevat,
-                      updated< ::Epp::Contact::ContactDisclose::Item::vat          >(update, info_before.disclosevat));
+                      get_new_discloseflag<Data::vat>(update.disclose, info_before));
     BOOST_CHECK_EQUAL(info_after.discloseident,
-                      updated< ::Epp::Contact::ContactDisclose::Item::ident        >(update, info_before.discloseident));
+                      get_new_discloseflag<Data::ident>(update.disclose, info_before));
     BOOST_CHECK_EQUAL(info_after.disclosenotifyemail,
-                      updated< ::Epp::Contact::ContactDisclose::Item::notify_email >(update, info_before.disclosenotifyemail));
+                      get_new_discloseflag<Data::notify_email>(update.disclose, info_before));
 }
+
+static const ::Epp::Updateable<::Epp::Contact::PrivacyPolicy> leave_privacy_unchanged =
+        ::Epp::UpdateOperation::no_operation();
+
+}//namespace Test::{anonymous}
 
 BOOST_FIXTURE_TEST_CASE(update_ok_full_data, supply_ctx<HasRegistrarWithSessionAndContact>)
 {
@@ -521,12 +787,9 @@ BOOST_FIXTURE_TEST_CASE(update_ok_streets, supply_ctx<HasRegistrarWithSessionAnd
 
     auto info_before = contact.data;
     update_contact_input_data.add_additional_data().drop_mailing_address();
-    update_contact_input_data.streets = std::vector<std::string>();
-    update_contact_input_data.streets->reserve(3);
-    update_contact_input_data.streets->push_back("street1");
-    update_contact_input_data.streets->push_back("street2");
-    update_contact_input_data.streets->push_back("street3");
-    BOOST_CHECK_EQUAL(update_contact_input_data.streets->size(), 3);
+    update_contact_input_data.address.street[0] = make_set_value<std::string>("street1");
+    update_contact_input_data.address.street[1] = make_set_value<std::string>("street2");
+    update_contact_input_data.address.street[2] = make_set_value<std::string>("street3");
     ::Epp::Contact::update_contact(
             ctx,
             info_before.handle,
@@ -537,10 +800,9 @@ BOOST_FIXTURE_TEST_CASE(update_ok_streets, supply_ctx<HasRegistrarWithSessionAnd
     check_equal(info_before, update_contact_input_data, info_after);
 
     info_before = info_after;
-    update_contact_input_data.streets->pop_back();
-    BOOST_CHECK_EQUAL(update_contact_input_data.streets->size(), 2);
-    BOOST_CHECK_EQUAL((*update_contact_input_data.streets)[0], info_before.place.get_value().street1);
-    BOOST_CHECK_EQUAL((*update_contact_input_data.streets)[1], info_before.place.get_value().street2.get_value());
+    update_contact_input_data.address.street[2] = ::Epp::UpdateOperation::delete_value();
+    BOOST_CHECK_EQUAL(*(update_contact_input_data.address.street[0]), info_before.place.get_value().street1);
+    BOOST_CHECK_EQUAL(*(update_contact_input_data.address.street[1]), info_before.place.get_value().street2);
     ::Epp::Contact::update_contact(
             ctx,
             info_before.handle,
@@ -551,9 +813,8 @@ BOOST_FIXTURE_TEST_CASE(update_ok_streets, supply_ctx<HasRegistrarWithSessionAnd
     check_equal(info_before, update_contact_input_data, info_after);
 
     info_before = info_after;
-    update_contact_input_data.streets->pop_back();
-    BOOST_CHECK_EQUAL(update_contact_input_data.streets->size(), 1);
-    BOOST_CHECK_EQUAL((*update_contact_input_data.streets)[0], info_before.place.get_value().street1);
+    update_contact_input_data.address.street[1] = ::Epp::UpdateOperation::delete_value();
+    BOOST_CHECK_EQUAL(*(update_contact_input_data.address.street[0]), info_before.place.get_value().street1);
     ::Epp::Contact::update_contact(
             ctx,
             info_before.handle,
@@ -564,8 +825,7 @@ BOOST_FIXTURE_TEST_CASE(update_ok_streets, supply_ctx<HasRegistrarWithSessionAnd
     check_equal(info_before, update_contact_input_data, info_after);
 
     info_before = info_after;
-    update_contact_input_data.streets->pop_back();
-    BOOST_CHECK_EQUAL(update_contact_input_data.streets->size(), 0);
+    update_contact_input_data.address.street[0] = ::Epp::UpdateOperation::delete_value();
     ::Epp::Contact::update_contact(
             ctx,
             info_before.handle,
@@ -611,12 +871,12 @@ BOOST_FIXTURE_TEST_CASE(update_ok_states_are_upgraded, supply_ctx<HasRegistrarWi
     {
         std::set<std::string> object_states_after;
         {
-            BOOST_FOREACH (const ::LibFred::ObjectStateData& state, ::LibFred::GetObjectStates(contact_with_status_request_server_transfer_prohibited.data.id).exec(ctx))
+            const auto object_states = ::LibFred::GetObjectStates(contact_with_status_request_server_transfer_prohibited.data.id).exec(ctx);
+            for (const auto& state : object_states)
             {
                 object_states_after.insert(state.state_name);
             }
         }
-
         BOOST_CHECK(object_states_after.find(contact_with_status_request_server_transfer_prohibited.status) != object_states_after.end());
     }
 }

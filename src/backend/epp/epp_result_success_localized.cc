@@ -35,9 +35,24 @@ EppResultSuccessLocalized::EppResultSuccessLocalized(
         LibFred::OperationContext& _ctx,
         const EppResultSuccess& _epp_result,
         const SessionLang::Enum _session_lang)
-    : epp_result_(_epp_result)
+    : epp_result_(_epp_result),
+      epp_result_description_(
+              get_epp_result_description_localized<EppResultCode::Success>(_ctx, epp_result_.epp_result_code(), _session_lang))
+{ }
+
+const char* EppResultSuccessLocalized::c_str()const noexcept
 {
-    epp_result_description_ = get_epp_result_description_localized<EppResultCode::Success>(_ctx, epp_result_.epp_result_code(), _session_lang);
+    return epp_result_description_.c_str();
+}
+
+EppResultCode::Success EppResultSuccessLocalized::epp_result_code()const
+{
+    return epp_result_.epp_result_code();
+}
+
+std::string EppResultSuccessLocalized::epp_result_description()const
+{
+    return epp_result_description_;
 }
 
 } // namespace Epp

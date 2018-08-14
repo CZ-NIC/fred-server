@@ -377,8 +377,8 @@ struct sync_barriers
 {
     boost::barrier barrier;
 
-    sync_barriers(std::size_t thread_number)
-        : barrier(thread_number)
+    sync_barriers(std::size_t number_of_threads)
+        : barrier(number_of_threads)
     {}
 };
 
@@ -388,10 +388,10 @@ struct ThreadResult
     unsigned ret;//return code
     std::string desc;//some closer description
     ThreadResult()
-    : number(0)
-      , ret(std::numeric_limits<unsigned>::max())
-      , desc("empty result")
-      {}
+        : number(0),
+          ret(std::numeric_limits<unsigned>::max()),
+          desc("empty result")
+    {}
 };
 
 typedef concurrent_queue<ThreadResult > ThreadResultQueue;
@@ -400,15 +400,17 @@ typedef concurrent_queue<ThreadResult > ThreadResultQueue;
 class SimpleTestThreadWorker
 {
 public:
-
-    SimpleTestThreadWorker(unsigned number,unsigned sleep_time
-            , sync_barriers* sb_ptr
-            , ThreadResultQueue* result_queue_ptr = 0, unsigned seed = 0)
-            : number_(number)
-            , sleep_time_(sleep_time)
-            , sb_ptr_(sb_ptr)
-            , rdg_(seed)
-            , rsq_ptr (result_queue_ptr)
+    SimpleTestThreadWorker(
+            unsigned number,
+            unsigned sleep_time,
+            sync_barriers* sb_ptr,
+            ThreadResultQueue* result_queue_ptr = nullptr,
+            unsigned seed = 0)
+        : number_(number),
+          sleep_time_(sleep_time),
+          sb_ptr_(sb_ptr),
+          rdg_(seed),
+          rsq_ptr_(result_queue_ptr)
     {}
 
     void operator()()
@@ -416,84 +418,97 @@ public:
         ThreadResult res;
         res.number = number_;
         res.ret = 0;
-        res.desc = std::string("ok");
+        res.desc = "ok";
+        int number_of_entered_barriers = 0;
 
         try
         {
             //std::cout << "waiting: " << number_ << std::endl;
-            if(sb_ptr_)
+            if (sb_ptr_ != nullptr)
+            {
                 sb_ptr_->barrier.wait();//wait for other synced threads
+                ++number_of_entered_barriers;
+            }
             //std::cout << "start: " << number_ << std::endl;
 
-            for(unsigned long long i = 0 ; i < 10000 ; ++i)
+            for (unsigned long long i = 0 ; i < 10000 ; ++i)
             {
-                if(!(Decimal("1") < Decimal("2"))) res.ret += 1;
-                if(!(Decimal("1") <= Decimal("2"))) res.ret += 2;
-                if(!(Decimal("1.1") < Decimal("1.2"))) res.ret += 4;
-                if(!(Decimal("1000") > Decimal("100"))) res.ret += 8;
-                if(!(Decimal("1000") >= Decimal("100"))) res.ret += 16;
-                if(!(Decimal("1000") >= Decimal("1000"))) res.ret += 32;
-                if(!(Decimal("1.1") == Decimal("1.1"))) res.ret += 64;
-                if(!(Decimal("1.1") != Decimal("1.2"))) res.ret += 128;
-                if(!(Decimal("1.11") > Decimal("-1.11"))) res.ret += 256;
-                if(!(((Decimal("1.111") + Decimal("1.222"))) == Decimal("2.333"))) res.ret += 512;
-                if(!(((Decimal("2.333") - Decimal("1.111"))) == Decimal("1.222"))) res.ret += 1024;
-                if(!(((Decimal("2.333") - Decimal("1.111"))) != Decimal("1.223"))) res.ret += 2048;
-                if(!(((Decimal("1.111") * Decimal("1.222"))) == Decimal("1.357642"))) res.ret += 4096;
-                if(!((Decimal("1.222") / Decimal("1.111")).round_half_up(19)
-                    .round_half_up(9) == Decimal("1.099909991"))) res.ret += 8192;
+                if (!(Decimal("1") < Decimal("2"))) res.ret += 1;
+                if (!(Decimal("1") <= Decimal("2"))) res.ret += 2;
+                if (!(Decimal("1.1") < Decimal("1.2"))) res.ret += 4;
+                if (!(Decimal("1000") > Decimal("100"))) res.ret += 8;
+                if (!(Decimal("1000") >= Decimal("100"))) res.ret += 16;
+                if (!(Decimal("1000") >= Decimal("1000"))) res.ret += 32;
+                if (!(Decimal("1.1") == Decimal("1.1"))) res.ret += 64;
+                if (!(Decimal("1.1") != Decimal("1.2"))) res.ret += 128;
+                if (!(Decimal("1.11") > Decimal("-1.11"))) res.ret += 256;
+                if (!(((Decimal("1.111") + Decimal("1.222"))) == Decimal("2.333"))) res.ret += 512;
+                if (!(((Decimal("2.333") - Decimal("1.111"))) == Decimal("1.222"))) res.ret += 1024;
+                if (!(((Decimal("2.333") - Decimal("1.111"))) != Decimal("1.223"))) res.ret += 2048;
+                if (!(((Decimal("1.111") * Decimal("1.222"))) == Decimal("1.357642"))) res.ret += 4096;
+                if (!((Decimal("1.222") / Decimal("1.111")).round_half_up(19).round_half_up(9) == Decimal("1.099909991")))
+                {
+                    res.ret += 8192;
+                }
             }
 
 
         }
-        catch(const std::exception& ex)
+        catch (const std::exception& e)
         {
-            BOOST_TEST_MESSAGE("exception 1 in operator() thread number: " << number_
-                    << " reason: " << ex.what() );
+            //BOOST_TEST_MESSAGE("exception 1 in operator() thread number: " << number_ << " reason: " << e.what());
             res.ret = 134217728;
-            res.desc = std::string(ex.what());
-            return;
+            res.desc = e.what();
         }
-        catch(...)
+        catch (...)
         {
-            BOOST_TEST_MESSAGE("exception 2 in operator() thread number: " << number_ );
+            //BOOST_TEST_MESSAGE("exception 2 in operator() thread number: " << number_);
             res.ret = 268435456;
-            res.desc = std::string("unknown exception");
-            return;
+            res.desc = "unknown exception";
         }
 
-        if(rsq_ptr) rsq_ptr->push(res);
+        if (sb_ptr_ != nullptr)
+        {
+            while (number_of_entered_barriers < 1)
+            {
+                sb_ptr_->barrier.wait();//wait for other synced threads
+                ++number_of_entered_barriers;
+            }
+        }
+        if (rsq_ptr_ != nullptr)
+        {
+            rsq_ptr_->guarded_access().push(res);
+        }
         //std::cout << "end: " << number_ << std::endl;
     }
-
 private:
     //need only defaultly constructible members here
-    unsigned    number_;//thred identification
-    unsigned    sleep_time_;//[s]
+    unsigned number_;//thred identification
+    unsigned sleep_time_;//[s]
     sync_barriers* sb_ptr_;
     RandomDataGenerator rdg_;
-    ThreadResultQueue* rsq_ptr; //result queue non-owning pointer
+    ThreadResultQueue* rsq_ptr_; //result queue non-owning pointer
 };//class SimpleTestThreadWorker
 
 
-BOOST_AUTO_TEST_CASE( simple_test_decimal_threaded )
+BOOST_AUTO_TEST_CASE(simple_test_decimal_threaded)
 {
     HandleThreadGroupArgs* thread_args_ptr=CfgArgs::instance()->
                    get_handler_ptr_by_type<HandleThreadGroupArgs>();
 
-    std::size_t const thread_number = thread_args_ptr->thread_number;
+    std::size_t const number_of_threads = thread_args_ptr->number_of_threads;
     ThreadResultQueue result_queue;
 
     //vector of thread functors
     std::vector<SimpleTestThreadWorker> tw_vector;
-    tw_vector.reserve(thread_number);
+    tw_vector.reserve(number_of_threads);
 
     //synchronization barriers instance
-    sync_barriers sb(thread_number);
+    sync_barriers sb(number_of_threads);
 
     //thread container
     boost::thread_group threads;
-    for (unsigned i = 0; i < thread_number; ++i)
+    for (unsigned i = 0; i < number_of_threads; ++i)
     {
         tw_vector.push_back(SimpleTestThreadWorker(i,3,&sb, &result_queue));
         threads.create_thread(tw_vector.at(i));
@@ -501,35 +516,20 @@ BOOST_AUTO_TEST_CASE( simple_test_decimal_threaded )
 
     threads.join_all();
 
-    BOOST_TEST_MESSAGE( "threads end result_queue.size(): " << result_queue.size() );
+    BOOST_TEST_MESSAGE("threads end result_queue.size(): " << result_queue.unguarded_access().size());
 
-    for(unsigned i = 0; i < thread_number; ++i)
+    while (!result_queue.unguarded_access().empty())
     {
-        ThreadResult thread_result;
-        if(!result_queue.try_pop(thread_result)) {
-            continue;
-        }
+        const auto thread_result = result_queue.unguarded_access().pop();
 
-        if(thread_result.ret != 0)
+        if (thread_result.ret != 0)
         {
             BOOST_FAIL( thread_result.desc
                     << " thread number: " << thread_result.number
                     << " return code: " << thread_result.ret
                     << " description: " << thread_result.desc);
         }
-    }//for i
+    }
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 BOOST_AUTO_TEST_SUITE_END();//TestDecimal

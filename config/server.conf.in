@@ -141,6 +141,43 @@ epp_update_domain_keyset_clear = true
 epp_operations_charging = @EPP_OPERATIONS_CHARGING@
 # Turn on/off contact check (semi-automatic) after data change
 epp_update_contact_enqueue_check = false
+#possible values: <empty>, cznic_specific
+#default value: <empty>
+check = cznic_specific
+
+#default values of discloseflags not shown in epp xml schemas
+#possible values: <empty> - discloseflag must present, no substitution available
+#                 show    - missing discloseflag means "to show"
+#                 hide    - missing discloseflag means "to hide"
+#default value: <empty>
+#for a create_contact operation
+[rifd::cznic_specific::create_contact]
+default_disclosename = show
+default_discloseorganization = show
+default_discloseaddress = show
+default_disclosetelephone = hide
+default_disclosefax = hide
+default_discloseemail = hide
+default_disclosevat = hide
+default_discloseident = hide
+default_disclosenotifyemail = hide
+
+#default values of discloseflags not shown in epp xml schemas
+#possible values: <empty> - missing discloseflag means "do not change"
+#                 show    - missing discloseflag means "set to show"
+#                 hide    - missing discloseflag means "set to hide"
+#default value: <empty>
+#for an update_contact operation
+[rifd::cznic_specific::update_contact]
+default_disclosename = show
+default_discloseorganization = show
+default_discloseaddress = show
+default_disclosetelephone = hide
+default_disclosefax = hide
+default_discloseemail = hide
+default_disclosevat = hide
+default_discloseident = hide
+default_disclosenotifyemail = hide
 
 ###
 ### ADIFD specific settings

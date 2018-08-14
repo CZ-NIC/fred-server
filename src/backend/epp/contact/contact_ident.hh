@@ -19,8 +19,9 @@
 #ifndef CONTACT_IDENT_HH_A5B660D28E014495A5CC02AF4B809CC9
 #define CONTACT_IDENT_HH_A5B660D28E014495A5CC02AF4B809CC9
 
-#include <string>
 #include <boost/variant.hpp>
+
+#include <string>
 
 namespace Epp {
 namespace Contact {
@@ -41,14 +42,23 @@ struct ContactIdentValueOf
     std::string value;
 };
 
-typedef boost::variant<
-        ContactIdentValueOf<ContactIdentType::Op>,
-        ContactIdentValueOf<ContactIdentType::Pass>,
-        ContactIdentValueOf<ContactIdentType::Ico>,
-        ContactIdentValueOf<ContactIdentType::Mpsv>,
-        ContactIdentValueOf<ContactIdentType::Birthday> > ContactIdent;
+template <typename ...T>
+using ContactIdentOf = boost::variant<ContactIdentValueOf<T>...>;
 
-} // namespace Epp::Contact
-} // namespace Epp
+using ContactIdent = ContactIdentOf<
+        ContactIdentType::Op,
+        ContactIdentType::Pass,
+        ContactIdentType::Ico,
+        ContactIdentType::Mpsv,
+        ContactIdentType::Birthday>;
+
+template <typename T>
+ContactIdent make_contact_ident(const std::string& src)
+{
+    return ContactIdent(ContactIdentValueOf<T>(src));
+}
+
+}//namespace Epp::Contact
+}//namespace Epp
 
 #endif

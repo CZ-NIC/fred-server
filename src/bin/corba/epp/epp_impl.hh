@@ -16,6 +16,10 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "src/backend/epp/contact/config_check.hh"
+#include "src/backend/epp/contact/create_operation_check.hh"
+#include "src/backend/epp/contact/update_operation_check.hh"
+
 #include "src/bin/corba/epp/messages.hh"
 #include "src/bin/corba/epp/epp_session.hh"
 #include "src/bin/corba/mailer_manager.hh"
@@ -34,13 +38,14 @@
 //value class to fix return of local char*
 class EppString
 {
-    std::string string_;
 public:
     // conversion
-    operator const char * () const { return string_.c_str(); }
+    operator const char* () const { return string_.c_str(); }
     //ctor
-    EppString(const char * str)
+    EppString(const char* str)
     : string_(str) {}
+private:
+    std::string string_;
 };//class EppString
 
 class EPPAction;
@@ -79,6 +84,8 @@ private:
   bool rifd_epp_update_domain_keyset_clear_;
   bool rifd_epp_operations_charging_;
   const bool epp_update_contact_enqueue_check_;
+  std::shared_ptr<Epp::Contact::CreateOperationCheck> rifd_epp_contact_create_operation_check_;
+  std::shared_ptr<Epp::Contact::UpdateOperationCheck> rifd_epp_contact_update_operation_check_;
 
   DBSharedPtr  db_disconnect_guard_;
   std::unique_ptr<LibFred::Manager> regMan;
@@ -95,24 +102,27 @@ public:
       {}
   };
   // standard constructor
-      ccReg_EPP_i(const std::string &db, MailerManager *_mm, NameService *_ns
-          , bool restricted_handles
-          , bool disable_epp_notifier
-          , bool lock_epp_commands
-          , unsigned int nsset_level
-          , unsigned int nsset_min_hosts
-          , unsigned int nsset_max_hosts
-          , const std::string& docgen_path
-          , const std::string& docgen_template_path
-          , const std::string& fileclient_path
-          , const std::string& disable_epp_notifier_cltrid_prefix
-          , unsigned rifd_session_max
-          , unsigned rifd_session_timeout
-          , unsigned rifd_session_registrar_max
-          , bool rifd_epp_update_domain_keyset_clear
-          , bool rifd_epp_operations_charging
-          , bool epp_update_contact_enqueue_check
-          );
+      ccReg_EPP_i(
+              const std::string &db,
+              MailerManager *_mm,
+              NameService *_ns,
+              bool restricted_handles,
+              bool disable_epp_notifier,
+              bool lock_epp_commands,
+              unsigned int nsset_level,
+              unsigned int nsset_min_hosts,
+              unsigned int nsset_max_hosts,
+              const std::string& docgen_path,
+              const std::string& docgen_template_path,
+              const std::string& fileclient_path,
+              const std::string& disable_epp_notifier_cltrid_prefix,
+              unsigned rifd_session_max,
+              unsigned rifd_session_timeout,
+              unsigned rifd_session_registrar_max,
+              bool rifd_epp_update_domain_keyset_clear,
+              bool rifd_epp_operations_charging,
+              bool epp_update_contact_enqueue_check,
+              const Epp::Contact::ConfigCheck& rifd_check);
   virtual ~ccReg_EPP_i();
 
   const std::string& get_disable_epp_notifier_cltrid_prefix() const
@@ -183,10 +193,6 @@ public:
   {
     return 14;
   } //  protected period for expiration validity of enum domain
-  // for disclose flags
-  bool get_DISCLOSE(bool db);
-  char update_DISCLOSE(bool d, ccReg::Disclose flag);
-  bool setvalue_DISCLOSE(bool d, ccReg::Disclose flag);
 
   // load and get message of lang from enum_error
   int LoadErrorMessages();
@@ -309,6 +315,7 @@ public:
 
     ccReg::Response* ContactInfo(
             const char* _handle,
+            const ccReg::ControlledPrivacyDataMask& _unused_disclose_flags,
             ccReg::Contact_out _contact_info,
             const ccReg::EppParams& _epp_params);
 

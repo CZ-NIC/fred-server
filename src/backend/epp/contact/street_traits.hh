@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016  CZ.NIC, z.s.p.o.
+ * Copyright (C) 2018  CZ.NIC, z.s.p.o.
  *
  * This file is part of FRED.
  *
@@ -16,14 +16,22 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DISCLOSE_POLICY_HH_FCD7D3675EA64EA09DB7E316BBD07BA5
-#define DISCLOSE_POLICY_HH_FCD7D3675EA64EA09DB7E316BBD07BA5
+#ifndef STREET_TRAITS_HH_B8DA8A66FA91C7EC22CC4E049020E8F4//date "+%s.%N"|md5sum|tr "[a-f]" "[A-F]"
+#define STREET_TRAITS_HH_B8DA8A66FA91C7EC22CC4E049020E8F4
+
+#include <array>
 
 namespace Epp {
+namespace Contact {
 
-constexpr bool is_the_default_policy_to_disclose() { return false; }
-constexpr bool is_the_default_policy_to_hide() { return !is_the_default_policy_to_disclose(); }
+struct StreetTraits
+{
+    static constexpr auto number_of_rows = 3;
+    template <typename T>
+    using Rows = std::array<T, number_of_rows>;
+};
 
-} // namespace Epp
+}//namespace Epp::Contact
+}//namespace Epp
 
-#endif
+#endif//STREET_TRAITS_HH_B8DA8A66FA91C7EC22CC4E049020E8F4

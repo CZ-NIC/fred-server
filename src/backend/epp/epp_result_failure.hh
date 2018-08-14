@@ -22,7 +22,6 @@
 #include "src/backend/epp/epp_extended_error.hh"
 #include "src/backend/epp/epp_result_code.hh"
 
-#include <boost/format.hpp>
 #include <boost/optional.hpp>
 
 #include <set>
@@ -35,61 +34,28 @@ namespace Epp {
  */
 class EppResultFailure
 {
-
 public:
-
     /** Every EppResultFailure instance must have a valid EppResultCode::Failure */
-    explicit EppResultFailure(EppResultCode::Failure _epp_result_code)
-        : epp_result_code_(_epp_result_code)
-    { }
+    explicit EppResultFailure(EppResultCode::Failure _epp_result_code);
 
-    EppResultFailure& add_extended_error(const EppExtendedError& _error)
-    {
-        if (!extended_errors_) {
-            extended_errors_ = std::set<EppExtendedError>();
-        }
-        extended_errors_->insert(_error);
-        return *this;
-    }
+    EppResultFailure& add_unspecified_error();
 
-    EppResultFailure& add_extended_errors(const std::set<EppExtendedError>& _errors)
-    {
-        if (!extended_errors_) {
-            extended_errors_ = std::set<EppExtendedError>();
-        }
-        extended_errors_->insert(_errors.begin(), _errors.end());
-        return *this;
-    }
+    EppResultFailure& add_extended_error(const EppExtendedError& _error);
 
-    const boost::optional<std::set<EppExtendedError> >& extended_errors() const
-    {
-        return extended_errors_;
-    }
+    EppResultFailure& add_extended_errors(const std::set<EppExtendedError>& _errors);
 
-    const bool empty() const
-    {
-        return !extended_errors_ || extended_errors_->empty();
-    }
+    const boost::optional<std::set<EppExtendedError>>& extended_errors()const;
 
-    virtual const char* c_str() const noexcept {
-        return EppResultCode::c_str(epp_result_code_);
-    }
+    bool empty()const;
 
-    EppResultCode::Failure epp_result_code() const {
-        return epp_result_code_;
-    }
+    const char* c_str()const noexcept;
 
-    // only intended for std::set usage - ordering definition is irrelevant
-    friend bool operator < (const EppResultFailure& lhs, const EppResultFailure& rhs);
-
-protected:
-
-    EppResultCode::Failure epp_result_code_;
-
+    EppResultCode::Failure epp_result_code()const;
 private:
-
-    boost::optional<std::set<EppExtendedError> > extended_errors_; ///< represents STD 69 response result's extValue
-
+    EppResultCode::Failure epp_result_code_;
+    boost::optional<std::set<EppExtendedError>> extended_errors_; ///< represents STD 69 response result's extValue
+    // only intended for std::set usage - ordering definition is irrelevant
+    friend bool operator<(const EppResultFailure& lhs, const EppResultFailure& rhs);
 };
 
 bool has_extended_error(

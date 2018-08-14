@@ -19,11 +19,19 @@
 #ifndef UTIL_HH_8345C51906DE4928B293893C7B1DF9B3
 #define UTIL_HH_8345C51906DE4928B293893C7B1DF9B3
 
+#include "src/backend/epp/contact/hideable.hh"
+
 namespace Epp {
 namespace Contact {
 
 template <typename T>
 T trim(const T& src);
+
+template <typename T>
+Hideable<T> trim(const Hideable<T>& src)
+{
+    return src.make_with_the_same_privacy(trim(*src));
+}
 
 } // namespace Epp::Contact
 } // namespace Epp

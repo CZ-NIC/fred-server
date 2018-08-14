@@ -72,6 +72,8 @@
 #include "src/backend/epp/contact/info_contact_localized.hh"
 #include "src/backend/epp/contact/transfer_contact_localized.hh"
 #include "src/backend/epp/contact/update_contact_localized.hh"
+#include "src/backend/epp/contact/impl/get_create_contact_check.hh"
+#include "src/backend/epp/contact/impl/get_update_contact_check.hh"
 
 #include "src/bin/corba/epp/credit/credit_corba_conversions.hh"
 #include "src/backend/epp/credit/client_credit_localized.hh"
@@ -112,7 +114,6 @@
 #include "src/backend/epp/registrar_session_data.hh"
 #include "src/backend/epp/request_params.hh"
 #include "src/backend/epp/localization.hh"
-#include "src/backend/epp/impl/disclose_policy.hh"
 
 #include "src/backend/epp/impl/registraracl/authentic_registrar.hh"
 
@@ -445,52 +446,56 @@ DBSharedPtr db, const char *handle, bool restricted_handles
 // Example implementational code for IDL interface ccReg::EPP
 //
 ccReg_EPP_i::ccReg_EPP_i(
-    const std::string &_db, MailerManager *_mm, NameService *_ns
-    , bool restricted_handles
-    , bool disable_epp_notifier
-    , bool lock_epp_commands
-    , unsigned int nsset_level
-    , unsigned int nsset_min_hosts
-    , unsigned int nsset_max_hosts
-    , const std::string& docgen_path
-    , const std::string& docgen_template_path
-    , const std::string& fileclient_path
-    , const std::string& disable_epp_notifier_cltrid_prefix
-    , unsigned rifd_session_max
-    , unsigned rifd_session_timeout
-    , unsigned rifd_session_registrar_max
-    , bool rifd_epp_update_domain_keyset_clear
-    , bool rifd_epp_operations_charging
-    , bool epp_update_contact_enqueue_check
-)
+    const std::string &_db,
+    MailerManager* _mm,
+    NameService *_ns,
+    bool restricted_handles,
+    bool disable_epp_notifier,
+    bool lock_epp_commands,
+    unsigned int nsset_level,
+    unsigned int nsset_min_hosts,
+    unsigned int nsset_max_hosts,
+    const std::string& docgen_path,
+    const std::string& docgen_template_path,
+    const std::string& fileclient_path,
+    const std::string& disable_epp_notifier_cltrid_prefix,
+    unsigned rifd_session_max,
+    unsigned rifd_session_timeout,
+    unsigned rifd_session_registrar_max,
+    bool rifd_epp_update_domain_keyset_clear,
+    bool rifd_epp_operations_charging,
+    bool epp_update_contact_enqueue_check,
+    const Epp::Contact::ConfigCheck& rifd_check)
 
     : database(_db),
-    mm(_mm),
-    dbman(),
-    ns(_ns),
+      mm(_mm),
+      dbman(),
+      ns(_ns),
 
-    restricted_handles_(restricted_handles)
-    , disable_epp_notifier_(disable_epp_notifier)
-    , lock_epp_commands_(lock_epp_commands)
-    , nsset_level_(nsset_level)
-    , nsset_min_hosts_(nsset_min_hosts)
-    , nsset_max_hosts_(nsset_max_hosts)
-    , docgen_path_(docgen_path)
-    , docgen_template_path_(docgen_template_path)
-    , fileclient_path_(fileclient_path)
-    , disable_epp_notifier_cltrid_prefix_(disable_epp_notifier_cltrid_prefix)
-    , rifd_session_max_(rifd_session_max)
-    , rifd_session_timeout_(rifd_session_timeout)
-    , rifd_session_registrar_max_(rifd_session_registrar_max)
-    , rifd_epp_update_domain_keyset_clear_(rifd_epp_update_domain_keyset_clear)
-    , rifd_epp_operations_charging_(rifd_epp_operations_charging),
-    epp_update_contact_enqueue_check_(epp_update_contact_enqueue_check),
-    db_disconnect_guard_(),
-    regMan(),
-    epp_sessions_(rifd_session_max, rifd_session_registrar_max, rifd_session_timeout),
-    ErrorMsg(),
-    ReasonMsg(),
-    max_zone()
+      restricted_handles_(restricted_handles),
+      disable_epp_notifier_(disable_epp_notifier),
+      lock_epp_commands_(lock_epp_commands),
+      nsset_level_(nsset_level),
+      nsset_min_hosts_(nsset_min_hosts),
+      nsset_max_hosts_(nsset_max_hosts),
+      docgen_path_(docgen_path),
+      docgen_template_path_(docgen_template_path),
+      fileclient_path_(fileclient_path),
+      disable_epp_notifier_cltrid_prefix_(disable_epp_notifier_cltrid_prefix),
+      rifd_session_max_(rifd_session_max),
+      rifd_session_timeout_(rifd_session_timeout),
+      rifd_session_registrar_max_(rifd_session_registrar_max),
+      rifd_epp_update_domain_keyset_clear_(rifd_epp_update_domain_keyset_clear),
+      rifd_epp_operations_charging_(rifd_epp_operations_charging),
+      epp_update_contact_enqueue_check_(epp_update_contact_enqueue_check),
+      rifd_epp_contact_create_operation_check_(Epp::Contact::Impl::get_create_contact_check(rifd_check)),
+      rifd_epp_contact_update_operation_check_(Epp::Contact::Impl::get_update_contact_check(rifd_check)),
+      db_disconnect_guard_(),
+      regMan(),
+      epp_sessions_(rifd_session_max, rifd_session_registrar_max, rifd_session_timeout),
+      ErrorMsg(),
+      ReasonMsg(),
+      max_zone()
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
@@ -725,125 +730,6 @@ char* ccReg_EPP_i::version(
   datetime = CORBA::string_dup(dateStr);
 
   return CORBA::string_dup("DSDng");
-}
-
-// Handle disclose flags at the contact based on the DefaultPolicy of the serve
-/*
- bool ccReg_EPP_i::is_null( const char *str )
- {
- // set up NULL value
- if( strcmp( str  , ccReg::SET_NULL_VALUE  ) ==  0 || str[0] == 0x8 )return true;
- else return false;
-
- }
- */
-// DISCLOSE
-/* description in english:
- info
-
- A)  if there is policy SHOW ALL (VSE ZOBRAZ), then flag is set up as DISCL_HIDE and items from database, which
- have value 'false', will have value 'true', rest 'false'. If there isn't once single item with 'true',
- flag DISCL_EMPTY returns (value of items aren't unsubstantial)
-
- B)  if there is policy HIDE ALL (VSE SKRYJ), then flag is set up as DISCL_DISPLAY and items from database, which
- have value 'true', will have value 'true', rest 'false'. If there isn't once single item with 'true',
- flag DISCL_EMPTY returns (value of items aren't unsubstantial)
-
- */
-
-// db parameter true or false from DB
-bool ccReg_EPP_i::get_DISCLOSE(
-  bool db)
-{
-  if (DefaultPolicy() ) {
-    if (db == false)
-      return true;
-    else
-      return false;
-  } else {
-    if (db == true)
-      return true;
-    else
-      return false;
-  }
-
-}
-
-/*
- 1)   if  there is DISCL_HIDE flag and default policy is SHOW ALL (VSE ZOBRAZ), then 'true'
- is saved into database for idl items with 'false' value and 'false' for udl items with 'true'
-
- 2)   if there is DISCL_DISPLAY flag and default policy is SHOW ALL (VSE ZOBRAZ), then is saved into database
- to all items 'true' value
-
- 3)   if there is DISCL_HIDE flag and default policy is HIDE ALL (VSE SKRYJ), then is saved into database
- to all items 'false' value
-
- 4)   if there is DISCL_DISPLAY flag and default policy is HIDE ALL (VSE SKRYJ), then is saved into database 'true'
- for idl items with 'true' value and 'false' for idl items with 'false' value
-
- 5)   if there is DISCL_EMPTY flag and default policy is SHOW ALL (VSE ZOBRAZ), then 'true' is saved into database for all
-
- 6)   if there is DISCL_EMPTY flag and default policy is HIDE ALL (VSE SKRYJ), then 'false' is saved into database for all
-
- update it is same as create only if there is DISCL_EMPTY flag then database isn't updated (no matter to server policy)
-
- */
-
-// for update
-// set parameter disclose when update
-char ccReg_EPP_i::update_DISCLOSE(
-  bool d, ccReg::Disclose flag)
-{
-
-  if (flag == ccReg::DISCL_EMPTY)
-    return ' '; // nothing change
-  else {
-    if (setvalue_DISCLOSE(d, flag) )
-      return 't';
-    else
-      return 'f';
-  }
-
-}
-
-// for create
-bool ccReg_EPP_i::setvalue_DISCLOSE(
-  bool d, ccReg::Disclose flag)
-{
-
-  switch (flag) {
-    case ccReg::DISCL_DISPLAY:
-      if (DefaultPolicy() )
-        return true; // 2
-      else // 4
-      {
-        if (d)
-          return true;
-        else
-          return false;
-      }
-
-    case ccReg::DISCL_HIDE:
-      if (DefaultPolicy() ) {
-        // 1
-        if (d)
-          return false;
-        else
-          return true;
-      } else
-        return true; // 3
-
-    case ccReg::DISCL_EMPTY:
-      // use policy from server
-      if (DefaultPolicy() )
-        return true; // 5
-      else
-        return false; // 6
-  }
-
-  // default
-  return false;
 }
 
 // ZONE parameters
@@ -1945,13 +1831,15 @@ ccReg::Response* ccReg_EPP_i::KeySetCheck(
 
 ccReg::Response* ccReg_EPP_i::ContactInfo(
         const char* const _contact_handle,
+        const ccReg::ControlledPrivacyDataMask& _available_disclose_flags,
         ccReg::Contact_out _contact_info,
         const ccReg::EppParams& _epp_params)
 {
     const Epp::RequestParams epp_request_params = LibFred::Corba::unwrap_EppParams(_epp_params);
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
-    try {
+    try
+    {
         const Epp::Contact::InfoContactConfigData info_contact_config_data(
                 rifd_epp_operations_charging_);
 
@@ -1982,12 +1870,11 @@ ccReg::Response* ccReg_EPP_i::ContactInfo(
                                 server_transaction_handle));
 
         // no exception shall be thrown from here onwards
-
         _contact_info = contact_info._retn();
         return return_value._retn();
-
     }
-    catch (const Epp::EppResponseFailureLocalized& e) {
+    catch (const Epp::EppResponseFailureLocalized& e)
+    {
         throw LibFred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
@@ -2056,7 +1943,8 @@ ccReg::Response* ccReg_EPP_i::ContactUpdate(
 
         const Epp::Contact::UpdateContactConfigData update_contact_config_data(
                 rifd_epp_operations_charging_,
-                epp_update_contact_enqueue_check_);
+                epp_update_contact_enqueue_check_,
+                rifd_epp_contact_update_operation_check_);
 
         const Epp::RegistrarSessionData registrar_session_data =
                 Epp::get_registrar_session_data(
@@ -2115,7 +2003,8 @@ ccReg::Response* ccReg_EPP_i::ContactCreate(
         const Epp::Contact::CreateContactInputData create_contact_input_data(contact_create_data);
 
         const Epp::Contact::CreateContactConfigData create_contact_config_data(
-                rifd_epp_operations_charging_);
+                rifd_epp_operations_charging_,
+                rifd_epp_contact_create_operation_check_);
 
         const Epp::RegistrarSessionData registrar_session_data =
                 Epp::get_registrar_session_data(

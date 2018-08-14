@@ -16,9 +16,9 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/backend/epp/contact/contact_change.hh"
 #include "src/backend/epp/contact/create_contact.hh"
-#include "src/backend/epp/impl/disclose_policy.hh"
+#include "src/backend/epp/contact/contact_change.hh"
+#include "src/backend/epp/contact/impl/get_personal_id_union.hh"
 
 #include "src/backend/epp/epp_response_failure.hh"
 #include "src/backend/epp/epp_result_code.hh"
@@ -33,8 +33,8 @@
 #include "src/util/optional_value.hh"
 
 #include <boost/optional.hpp>
-#include <boost/variant.hpp>
 
+#include <stdexcept>
 #include <string>
 
 namespace Epp {
@@ -42,58 +42,48 @@ namespace Contact {
 
 namespace {
 
-template <ContactDisclose::Item::Enum item>
-bool should_item_be_disclosed(const boost::optional<ContactDisclose>& disclose)
+template <typename T>
+Optional<bool> hideable_to_discloseflag(const Hideable<T>& hideable)
 {
-    const bool use_the_default_policy = !disclose;
-    if (use_the_default_policy)
+    if (hideable.is_publishability_specified())
     {
-        return is_the_default_policy_to_disclose();
+        if (hideable.is_public())
+        {
+            return true;
+        }
+        if (hideable.is_private())
+        {
+            return false;
+        }
+        throw std::logic_error("unexpected privacy policy");
     }
-    return disclose->should_be_disclosed<item>(is_the_default_policy_to_disclose());
+    return Optional<bool>();
 }
 
 template <typename T>
 Optional<T> to_optional(const boost::optional<T>& src)
 {
-    return src ? Optional<T>(*src)
-               : Optional<T>();
+    return static_cast<bool>(src) ? Optional<T>(*src)
+                                  : Optional<T>();
 }
 
-Optional<std::string> to_optional(const std::string& src)
+template <typename T>
+Optional<T> to_optional(const T&);
+
+template<>
+Optional<std::string> to_optional<std::string>(const std::string& src)
 {
     return src.empty() ? Optional<std::string>()
                        : Optional<std::string>(src);
 }
 
-struct GetPersonalIdUnionFromContactIdent:boost::static_visitor<LibFred::PersonalIdUnion>
+boost::optional<LibFred::PersonalIdUnion> get_optional_personal_id_union(const boost::optional<ContactIdent>& ident)
 {
-    LibFred::PersonalIdUnion operator()(const ContactIdentValueOf<ContactIdentType::Op>& src)const
+    if (static_cast<bool>(ident))
     {
-        return LibFred::PersonalIdUnion::get_OP(src.value);
+        return Impl::get_personal_id_union(*ident);
     }
-    LibFred::PersonalIdUnion operator()(const ContactIdentValueOf<ContactIdentType::Pass>& src)const
-    {
-        return LibFred::PersonalIdUnion::get_PASS(src.value);
-    }
-    LibFred::PersonalIdUnion operator()(const ContactIdentValueOf<ContactIdentType::Ico>& src)const
-    {
-        return LibFred::PersonalIdUnion::get_ICO(src.value);
-    }
-    LibFred::PersonalIdUnion operator()(const ContactIdentValueOf<ContactIdentType::Mpsv>& src)const
-    {
-        return LibFred::PersonalIdUnion::get_MPSV(src.value);
-    }
-    LibFred::PersonalIdUnion operator()(const ContactIdentValueOf<ContactIdentType::Birthday>& src)const
-    {
-        return LibFred::PersonalIdUnion::get_BIRTHDAY(src.value);
-    }
-};
-
-boost::optional<LibFred::PersonalIdUnion> get_ident(const boost::optional<ContactIdent>& ident)
-{
-    return ident ? boost::apply_visitor(GetPersonalIdUnionFromContactIdent(), *ident)
-                 : boost::optional<LibFred::PersonalIdUnion>();
+    return boost::none;
 }
 
 } // namespace Epp::Contact::{anonymous}
@@ -114,7 +104,6 @@ CreateContactResult create_contact(
         const CreateContactConfigData& create_contact_config_data,
         const SessionData& session_data)
 {
-
     if (!is_session_registrar_valid(session_data))
     {
         throw EppResponseFailure(EppResultFailure(
@@ -154,7 +143,7 @@ CreateContactResult create_contact(
                             Reason::protected_period));
         }
 
-        if (!is_country_code_valid(ctx, contact_data.country_code))
+        if (!is_country_code_valid(ctx, contact_data.address->country_code))
         {
             parameter_value_policy_errors.add_extended_error(
                     EppExtendedError::of_scalar_parameter(
@@ -179,32 +168,22 @@ CreateContactResult create_contact(
     try
     {
         LibFred::Contact::PlaceAddress place;
-        switch (contact_data.streets.size())
-        {
-            case 3: place.street3 = contact_data.streets[2];
-            case 2: place.street2 = contact_data.streets[1];
-            case 1: place.street1 = contact_data.streets[0];
-            case 0: break;
-            default: throw std::runtime_error("Too many streets.");
-        }
-        place.city = contact_data.city;
-        place.stateorprovince = to_optional(contact_data.state_or_province);
-        place.postalcode = contact_data.postal_code;
-        place.country = contact_data.country_code;
+        place.street1 = contact_data.address->street[0];
+        place.street2 = to_optional(contact_data.address->street[1]);
+        place.street3 = to_optional(contact_data.address->street[2]);
+        place.city = contact_data.address->city;
+        place.stateorprovince = to_optional(contact_data.address->state_or_province);
+        place.postalcode = contact_data.address->postal_code;
+        place.country = contact_data.address->country_code;
 
-        if (contact_data.disclose)
-        {
-            contact_data.disclose->check_validity();
-        }
-
-        const boost::optional<LibFred::PersonalIdUnion> ident = get_ident(contact_data.ident);
+        const auto ident = get_optional_personal_id_union(*contact_data.ident);
         Optional<LibFred::ContactAddressList> addresses;
         if (static_cast<bool>(contact_data.mailing_address))
         {
             LibFred::ContactAddress mailing_address;
-            mailing_address.street1 = contact_data.mailing_address->street1;
-            mailing_address.street2 = to_optional(contact_data.mailing_address->street2);
-            mailing_address.street3 = to_optional(contact_data.mailing_address->street3);
+            mailing_address.street1 = contact_data.mailing_address->street[0];
+            mailing_address.street2 = to_optional(contact_data.mailing_address->street[1]);
+            mailing_address.street3 = to_optional(contact_data.mailing_address->street[2]);
             mailing_address.city = contact_data.mailing_address->city;
             mailing_address.stateorprovince = to_optional(contact_data.mailing_address->state_or_province);
             mailing_address.postalcode = contact_data.mailing_address->postal_code;
@@ -213,32 +192,37 @@ CreateContactResult create_contact(
             address_list.insert(std::make_pair(LibFred::ContactAddressType::MAILING, mailing_address));
             addresses = address_list;
         }
-        const LibFred::CreateContact create_contact_op(
+        LibFred::CreateContact create_contact_op(
             contact_handle,
             LibFred::InfoRegistrarById(session_data.registrar_id).exec(ctx).info_registrar_data.handle,
             to_optional(contact_data.authinfopw),
-            to_optional(contact_data.name),
-            to_optional(contact_data.organization),
+            to_optional(*contact_data.name),
+            to_optional(*contact_data.organization),
             place,
-            to_optional(contact_data.telephone),
-            to_optional(contact_data.fax),
-            to_optional(contact_data.email),
-            to_optional(contact_data.notify_email),
-            to_optional(contact_data.vat),
-            ident ? ident->get_type() : Optional<std::string>(),
-            ident ? ident->get() : Optional<std::string>(),
+            to_optional(*contact_data.telephone),
+            to_optional(*contact_data.fax),
+            to_optional(*contact_data.email),
+            to_optional(*contact_data.notify_email),
+            to_optional(*contact_data.vat),
+            static_cast<bool>(ident) ? ident->get_type() : Optional<std::string>(),
+            static_cast<bool>(ident) ? ident->get() : Optional<std::string>(),
             addresses,
-            true,  // should_item_be_disclosed<ContactDisclose::Item::name>(contact_data.disclose),
-            true,  // should_item_be_disclosed<ContactDisclose::Item::organization>(contact_data.disclose),
-            true,  // should_item_be_disclosed<ContactDisclose::Item::address>(contact_data.disclose),
-            should_item_be_disclosed<ContactDisclose::Item::telephone>(contact_data.disclose),
-            should_item_be_disclosed<ContactDisclose::Item::fax>(contact_data.disclose),
-            should_item_be_disclosed<ContactDisclose::Item::email>(contact_data.disclose),
-            should_item_be_disclosed<ContactDisclose::Item::vat>(contact_data.disclose),
-            should_item_be_disclosed<ContactDisclose::Item::ident>(contact_data.disclose),
-            should_item_be_disclosed<ContactDisclose::Item::notify_email>(contact_data.disclose),
-            Optional< Nullable<bool> >(),
+            hideable_to_discloseflag(contact_data.name),
+            hideable_to_discloseflag(contact_data.organization),
+            hideable_to_discloseflag(contact_data.address),
+            hideable_to_discloseflag(contact_data.telephone),
+            hideable_to_discloseflag(contact_data.fax),
+            hideable_to_discloseflag(contact_data.email),
+            hideable_to_discloseflag(contact_data.vat),
+            hideable_to_discloseflag(contact_data.ident),
+            hideable_to_discloseflag(contact_data.notify_email),
+            Optional<Nullable<bool>>(),
             session_data.logd_request_id);
+        create_contact_config_data.get_operation_check()(
+                ctx,
+                contact_data,
+                session_data,
+                create_contact_op);
         const LibFred::CreateContact::Result create_data = create_contact_op.exec(ctx, "UTC");
 
         return CreateContactResult(
