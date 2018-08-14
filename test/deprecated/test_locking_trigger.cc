@@ -16,26 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <memory>
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <algorithm>
-#include <functional>
-#include <numeric>
-#include <map>
-#include <exception>
-#include <queue>
-#include <sys/time.h>
-#include <time.h>
-
-#include <boost/format.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/thread.hpp>
-#include <boost/thread/barrier.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/date_time.hpp>
-#include <boost/assign/list_of.hpp>
+//not using UTF defined main
+#define BOOST_TEST_NO_MAIN
 
 #include "src/util/setup_server_decl.hh"
 #include "src/util/time_clock.hh"
@@ -52,6 +34,10 @@
 #include "src/libfred/public_request/public_request.hh"
 #include "src/libfred/public_request/public_request_impl.hh"
 #include "src/libfred/public_request/public_request_authinfo_impl.hh"
+#include "src/libfred/public_request/create_public_request.hh"
+
+#include "src/backend/public_request/type/get_iface_of.hh"
+#include "src/backend/public_request/type/public_request_authinfo.hh"
 
 #include "src/util/cfg/handle_general_args.hh"
 #include "src/util/cfg/handle_server_args.hh"
@@ -61,18 +47,35 @@
 #include "src/util/cfg/handle_corbanameservice_args.hh"
 #include "src/util/cfg/handle_registry_args.hh"
 #include "src/util/cfg/handle_contactverification_args.hh"
-//not using UTF defined main
-#define BOOST_TEST_NO_MAIN
-
 #include "src/util/cfg/config_handler_decl.hh"
-#include <boost/test/unit_test.hpp>
-#include <utility>
 
-#include "src/bin/corba/mailer_manager.hh"
 #include "src/libfred/contact_verification/contact.hh"
 #include "src/backend/contact_verification/contact_verification_impl.hh"
 #include "src/libfred/object_states.hh"
+#include "src/bin/corba/mailer_manager.hh"
 
+#include <boost/test/unit_test.hpp>
+#include <boost/format.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/thread.hpp>
+#include <boost/thread/barrier.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time.hpp>
+#include <boost/assign/list_of.hpp>
+
+#include <utility>
+#include <memory>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <algorithm>
+#include <functional>
+#include <numeric>
+#include <map>
+#include <exception>
+#include <queue>
+#include <sys/time.h>
+#include <time.h>
 
 BOOST_AUTO_TEST_SUITE(TestLockingTrigger)
 
@@ -80,25 +83,22 @@ const std::string server_name = "test-locking-trigger";
 
 struct Case_locking_trigger_threaded_Fixture
 {
-    unsigned long long registrar_id;
-    ::LibFred::Contact::Verification::Contact fcvc;
-    std::string registrar_handle;
-
-    //init
     Case_locking_trigger_threaded_Fixture()
-    :registrar_handle("REG-FRED_A")
+        : registrar_handle("REG-FRED_A")
     {
         //corba config
         FakedArgs fa = CfgArgs::instance()->fa;
         //conf pointers
-        HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
-                    get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
-        CorbaContainer::set_instance(fa.get_argc(), fa.get_argv()
-                , ns_args_ptr->nameservice_host
-                , ns_args_ptr->nameservice_port
-                , ns_args_ptr->nameservice_context);
+        const HandleCorbaNameServiceArgs* const ns_args_ptr =
+                CfgArgs::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
+        CorbaContainer::set_instance(
+                fa.get_argc(),
+                fa.get_argv(),
+                ns_args_ptr->nameservice_host,
+                ns_args_ptr->nameservice_port,
+                ns_args_ptr->nameservice_context);
 
-        unsigned long long request_id =0;
+        unsigned long long request_id = 0;
         {
             //get db connection
             Database::Connection conn = Database::Manager::acquire();
@@ -106,31 +106,32 @@ struct Case_locking_trigger_threaded_Fixture
             //Database::Transaction trans(conn);
 
             //get registrar id
-            Database::Result res_reg = conn.exec_params(
+            const Database::Result res_reg = conn.exec_params(
                     "SELECT id FROM registrar WHERE handle=$1::text",
                     Database::query_param_list(registrar_handle));
-            if(res_reg.size() == 0) {
+            if (res_reg.size() == 0)
+            {
                 throw std::runtime_error("Registrar does not exist");
             }
 
-            registrar_id = res_reg[0][0];
+            registrar_id = static_cast<unsigned long long>(res_reg[0][0]);
 
             RandomDataGenerator rdg;
 
             //create test contact
-            std::string xmark = rdg.xnumstring(6);
-            fcvc.handle=std::string("TESTLT-HANDLE")+xmark;
-            fcvc.name=std::string("TESTLT NAME")+xmark;
-            fcvc.organization=std::string("TESTLT-ORG")+xmark;
-            fcvc.street1=std::string("TESTLT-STR1")+xmark;
-            fcvc.city=std::string("Praha");
-            fcvc.postalcode=std::string("11150");
-            fcvc.country=std::string("CZ");
-            fcvc.telephone=std::string("+420.728")+xmark;
-            fcvc.email=std::string("test")+xmark+"@nic.cz";
-            fcvc.ssn=std::string("1980-01-01");
-            fcvc.ssntype=std::string("BIRTHDAY");
-            fcvc.auth_info=rdg.xnstring(8);
+            const std::string xmark = rdg.xnumstring(6);
+            fcvc.handle = "TESTLT-HANDLE" + xmark;
+            fcvc.name = "TESTLT NAME" + xmark;
+            fcvc.organization = "TESTLT-ORG" + xmark;
+            fcvc.street1 = "TESTLT-STR1" + xmark;
+            fcvc.city = "Praha";
+            fcvc.postalcode = "11150";
+            fcvc.country = "CZ";
+            fcvc.telephone = "+420.728" + xmark;
+            fcvc.email = "test" + xmark + "@nic.cz";
+            fcvc.ssn = "1980-01-01";
+            fcvc.ssntype = "BIRTHDAY";
+            fcvc.auth_info = rdg.xnstring(8);
             //unsigned long long contact_hid =
 
             fcvc.disclosename = true;
@@ -148,9 +149,9 @@ struct Case_locking_trigger_threaded_Fixture
         }
     }
 
-    //destroy
-    virtual ~Case_locking_trigger_threaded_Fixture()
-    {}
+    unsigned long long registrar_id;
+    ::LibFred::Contact::Verification::Contact fcvc;
+    std::string registrar_handle;
 };
 
 //simple threaded test
@@ -183,7 +184,6 @@ typedef concurrent_queue<ThreadResult > ThreadResultQueue;
 class LockingTriggerTestThreadWorker
 {
 public:
-
     LockingTriggerTestThreadWorker(
             unsigned number,
             unsigned sleep_time,
@@ -248,10 +248,13 @@ public:
             res.desc = "unknown exception";
         }
 
-        while (number_of_entered_barriers < 1)
+        if (sb_ptr_ != nullptr)
         {
-            sb_ptr_->barrier.wait();//wait for other synced threads
-            ++number_of_entered_barriers;
+            while (number_of_entered_barriers < 1)
+            {
+                sb_ptr_->barrier.wait();//wait for other synced threads
+                ++number_of_entered_barriers;
+            }
         }
         if (rsq_ptr_ != nullptr)
         {
@@ -259,7 +262,6 @@ public:
         }
         //std::cout << "end: " << number_ << std::endl;
     }
-
 private:
     //need only defaultly constructible members here
     unsigned number_;//thred identification
@@ -269,7 +271,6 @@ private:
     RandomDataGenerator rdg_;
     ThreadResultQueue* rsq_ptr_; //result queue non-owning pointer
 };
-
 
 BOOST_FIXTURE_TEST_CASE(test_locking_trigger_threaded, Case_locking_trigger_threaded_Fixture)
 {
@@ -329,7 +330,6 @@ BOOST_FIXTURE_TEST_CASE(test_locking_trigger_threaded, Case_locking_trigger_thre
     BOOST_CHECK_EQUAL(pass_counter, 1);
 }
 
-
 struct Locking_object_state_request_fixture
 {
     ::LibFred::OperationContextCreator ctx;
@@ -340,7 +340,6 @@ struct Locking_object_state_request_fixture
     ::LibFred::InfoContactOutput info_contact;
     std::vector<::LibFred::InfoContactOutput> info_contact_history;
 
-    //init
     Locking_object_state_request_fixture()
         : registrar_handle(static_cast<std::string>(ctx.get_conn().exec(
                 "SELECT handle "
@@ -390,13 +389,10 @@ struct Locking_object_state_request_fixture
         ctx.commit_transaction();
     }
 
-    //destroy
-    virtual ~Locking_object_state_request_fixture()
+    ~Locking_object_state_request_fixture()
     {
         BOOST_TEST_MESSAGE(contact_handle);
     }
-
-
 };
 
 //thread functor
@@ -474,10 +470,13 @@ public:
             res.desc = "unknown exception";
         }
 
-        while (number_of_entered_barriers < 1)
+        if (sb_ptr_ != nullptr)
         {
-            sb_ptr_->barrier.wait();//wait for other synced threads
-            ++number_of_entered_barriers;
+            while (number_of_entered_barriers < 1)
+            {
+                sb_ptr_->barrier.wait();//wait for other synced threads
+                ++number_of_entered_barriers;
+            }
         }
         if (rsq_ptr_ != nullptr)
         {
@@ -485,7 +484,6 @@ public:
         }
         //std::cout << "end: " << number_ << std::endl;
     }
-
 private:
     //need only default constructible members here
     unsigned number_;//thread identification
@@ -555,32 +553,18 @@ BOOST_FIXTURE_TEST_CASE(test_locking_object_state_request_threaded, Locking_obje
     BOOST_CHECK_EQUAL(pass_counter, 1);
 }
 
-//lock_public_request
+namespace PublicRequestType = ::Fred::Backend::PublicRequest::Type;
 
-struct Locking_public_request_fixture
+class Locking_public_request_fixture
 {
-    ::LibFred::OperationContextCreator ctx;
-    std::string registrar_handle;
-    unsigned long long registrar_id;
-    std::string xmark;
-    std::string contact_handle;
-    unsigned long long contact_id;
-    ::LibFred::InfoContactOutput info_contact;
-    std::vector<::LibFred::InfoContactOutput> info_contact_history;
-    std::unique_ptr<::LibFred::Manager> registry_manager;
-    std::unique_ptr<::LibFred::Document::Manager> doc_manager;
-    std::shared_ptr<::LibFred::Mailer::Manager> mailer_manager;
-    std::unique_ptr<::LibFred::PublicRequest::Manager> request_manager;
-    unsigned long long preq_id;
-
-    //init
+public:
     Locking_public_request_fixture()
-        : registrar_handle(static_cast<std::string>(ctx.get_conn().exec(
+        : registrar_handle(static_cast<std::string>(ctx_.get_conn().exec(
                 "SELECT handle "
                 "FROM registrar "
                 "WHERE system "
                 "ORDER BY id LIMIT 1")[0][0])),
-          registrar_id(static_cast<unsigned long long>(ctx.get_conn().exec_params(
+          registrar_id(static_cast<unsigned long long>(ctx_.get_conn().exec_params(
                 "SELECT id FROM registrar WHERE handle=$1::text",
                 Database::query_param_list(registrar_handle))[0][0])),
           xmark(RandomDataGenerator().xnumstring(6)),
@@ -591,8 +575,8 @@ struct Locking_public_request_fixture
         //corba config
         FakedArgs fa = CfgArgs::instance()->fa;
         //conf pointers
-        HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
-                    get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
+        const HandleCorbaNameServiceArgs* const ns_args_ptr =
+                CfgArgs::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
         CorbaContainer::set_instance(
                 fa.get_argc(),
                 fa.get_argv(),
@@ -608,7 +592,7 @@ struct Locking_public_request_fixture
         place.postalcode = "11150";
         place.country = "CZ";
 
-        ::LibFred::CreateContact(contact_handle,registrar_handle)
+        ::LibFred::CreateContact(contact_handle, registrar_handle)
             .set_name("TEST-PUBLIC-REQUEST-CONTACT NAME" + xmark)
             .set_authinfo("testauthinfo")
             .set_disclosename(true)
@@ -616,72 +600,83 @@ struct Locking_public_request_fixture
             .set_discloseaddress(true)
             .set_email("test@nic.cz")
             .set_notifyemail("test-notify@nic.cz")
-            .exec(ctx);
+            .exec(ctx_);
 
-        contact_id = static_cast<unsigned long long>(ctx.get_conn().exec_params(
+        contact_id = static_cast<unsigned long long>(ctx_.get_conn().exec_params(
                 "SELECT id FROM object_registry WHERE name=UPPER($1::text) AND erdate IS NULL",
                 Database::query_param_list(contact_handle))[0][0]);
 
         BOOST_CHECK(contact_id != 0);//expecting existing object
-        info_contact = ::LibFred::InfoContactByHandle(contact_handle).exec(ctx);
-        info_contact_history = ::LibFred::InfoContactHistoryByRoid(info_contact.info_contact_data.roid).exec(ctx);
+        const auto info_contact = ::LibFred::InfoContactByHandle(contact_handle).exec(ctx_);
+        ::LibFred::InfoContactHistoryByRoid(info_contact.info_contact_data.roid).exec(ctx_);
 
-        ctx.commit_transaction();
+        ctx_.commit_transaction();
 
-        //create request
-        Database::Connection conn = Database::Manager::acquire();
-        Database::Transaction trans(conn);
-
-
-        const HandleRegistryArgs *const rconf =
-            CfgArgs::instance()->get_handler_ptr_by_type<HandleRegistryArgs>();
+        const HandleRegistryArgs* const rconf =
+                    CfgArgs::instance()->get_handler_ptr_by_type<HandleRegistryArgs>();
         DBSharedPtr nodb;
 
-        registry_manager.reset(::LibFred::Manager::create(
-                    nodb,
-                    rconf->restricted_handles));
+        registry_manager.reset(::LibFred::Manager::create(nodb, rconf->restricted_handles));
 
         doc_manager = ::LibFred::Document::Manager::create(
-                    rconf->docgen_path,
-                    rconf->docgen_template_path,
-                    rconf->fileclient_path,
-                    //doc_manager config dependence
-                    CfgArgs::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgs>()
-                            ->get_nameservice_host_port());
+                rconf->docgen_path,
+                rconf->docgen_template_path,
+                rconf->fileclient_path,
+                //doc_manager config dependence
+                CfgArgs::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgs>()->get_nameservice_host_port());
 
-        mailer_manager.reset(new MailerManager(CorbaContainer::get_instance()->getNS()));
+        mailer_manager = std::make_shared<MailerManager>(CorbaContainer::get_instance()->getNS());
 
-        request_manager.reset(::LibFred::PublicRequest::Manager::create(
-                    registry_manager->getDomainManager(),
-                    registry_manager->getContactManager(),
-                    registry_manager->getNssetManager(),
-                    registry_manager->getKeysetManager(),
-                    mailer_manager.get(),
-                    doc_manager.get(),
-                    registry_manager->getMessageManager()));
+        request_manager.reset(
+                ::LibFred::PublicRequest::Manager::create(
+                        registry_manager->getDomainManager(),
+                        registry_manager->getContactManager(),
+                        registry_manager->getNssetManager(),
+                        registry_manager->getKeysetManager(),
+                        mailer_manager.get(),
+                        doc_manager.get(),
+                        registry_manager->getMessageManager()));
 
-        const ::LibFred::PublicRequest::Type type = ::LibFred::PublicRequest::PRT_AUTHINFO_EMAIL_PIF;
-
-        std::unique_ptr<::LibFred::PublicRequest::PublicRequest> new_request(request_manager->createRequest(type));
-        new_request->setType(type);
-        new_request->setRegistrarId(0);
-        new_request->setReason("reason");
-        new_request->setEmailToAnswer("email_to_answer@nic.cz");
-        new_request->setRequestId(0);
-        new_request->addObject(
-            ::LibFred::PublicRequest::OID(contact_id, contact_handle, ::LibFred::PublicRequest::OT_CONTACT));
-        new_request->save();
-        preq_id = new_request->getId();
-        trans.commit();
+        //create request
+        {
+            ::LibFred::OperationContextCreator ctx;
+            ::LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_contact(ctx, contact_id);
+            ::LibFred::CreatePublicRequest create_public_request;
+            create_public_request.set_reason("reason");
+            create_public_request.set_email_to_answer("email_to_answer@nic.cz");
+            create_public_request.set_registrar_id(registrar_id);
+            try
+            {
+                preq_id = create_public_request.exec(
+                        locked_contact,
+                        PublicRequestType::get_iface_of<PublicRequestType::AuthinfoEmail>());
+            }
+            catch (const std::exception& e)
+            {
+                BOOST_TEST_MESSAGE(e.what());
+                throw;
+            }
+            ctx.commit_transaction();
+        }
     }
 
-    //destroy
-    virtual ~Locking_public_request_fixture()
+    ~Locking_public_request_fixture()
     {
         BOOST_TEST_MESSAGE(contact_handle);
     }
-
-
+private:
+    ::LibFred::OperationContextCreator ctx_;
+    std::string registrar_handle;
+    unsigned long long registrar_id;
+    std::string xmark;
+    std::string contact_handle;
+    std::unique_ptr<::LibFred::Manager> registry_manager;
+    std::unique_ptr<::LibFred::Document::Manager> doc_manager;
+    std::shared_ptr<::LibFred::Mailer::Manager> mailer_manager;
+public:
+    std::unique_ptr<::LibFred::PublicRequest::Manager> request_manager;
+    unsigned long long contact_id;
+    unsigned long long preq_id;
 };
 
 //thread functor
@@ -756,10 +751,13 @@ public:
             res.desc = "unknown exception";
         }
 
-        while (number_of_entered_barriers < 1)
+        if (sb_ptr_ != nullptr)
         {
-            sb_ptr_->barrier.wait();//wait for other synced threads
-            ++number_of_entered_barriers;
+            while (number_of_entered_barriers < 1)
+            {
+                sb_ptr_->barrier.wait();//wait for other synced threads
+                ++number_of_entered_barriers;
+            }
         }
         if (rsq_ptr_ != nullptr)
         {
@@ -780,8 +778,8 @@ private:
 
 BOOST_FIXTURE_TEST_CASE(test_locking_public_request_threaded, Locking_public_request_fixture)
 {
-    HandleThreadGroupArgs* thread_args_ptr = CfgArgs::instance()->
-                   get_handler_ptr_by_type<HandleThreadGroupArgs>();
+    const HandleThreadGroupArgs* const thread_args_ptr =
+            CfgArgs::instance()->get_handler_ptr_by_type<HandleThreadGroupArgs>();
 
     const std::size_t number_of_threads = thread_args_ptr->number_of_threads;
     ThreadResultQueue result_queue;
@@ -837,4 +835,4 @@ BOOST_FIXTURE_TEST_CASE(test_locking_public_request_threaded, Locking_public_req
     BOOST_CHECK_EQUAL(pass_counter, 1);
 }
 
-BOOST_AUTO_TEST_SUITE_END();//TestLockingTrigger
+BOOST_AUTO_TEST_SUITE_END()//TestLockingTrigger
