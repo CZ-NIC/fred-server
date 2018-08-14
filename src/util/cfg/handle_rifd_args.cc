@@ -54,7 +54,7 @@ std::shared_ptr<boost::program_options::options_description> HandleRifdArgs::get
               "<empty>, " +
               CzNicSpecific::get_check_name()).c_str());
 
-    Check::add_options_description<CzNicSpecific>(*opts_descs);
+    Epp::Contact::ConfigCheck::add_options_description<CzNicSpecific>(*opts_descs);
     return opts_descs;
 }
 
@@ -70,5 +70,5 @@ void HandleRifdArgs::handle(int argc, char* argv[], FakedArgs &fa)
     rifd_epp_operations_charging = vm["rifd.epp_operations_charging"].as<bool>();
     epp_update_contact_enqueue_check = vm["rifd.epp_update_contact_enqueue_check"].as<bool>();
     rifd_check.set_name(vm["rifd.check"].as<std::string>());
-    rifd_check.set_values<CzNicSpecific>(vm);
+    rifd_check.set_all_values<CzNicSpecific>(vm);
 }

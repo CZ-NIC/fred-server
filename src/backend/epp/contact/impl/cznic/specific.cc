@@ -266,7 +266,7 @@ const std::string& ConfigCheck::get_value()const
 }
 
 template <>
-ConfigCheck& ConfigCheck::set_values<CzNicSpecific>(const po_variables_map& vm)
+ConfigCheck& ConfigCheck::set_all_values<CzNicSpecific>(const po_variables_map& vm)
 {
     set_value<CzNicSpecific::CreateContact::Disclose::Name>(vm, options_);
     set_value<CzNicSpecific::CreateContact::Disclose::Organization>(vm, options_);
@@ -293,7 +293,7 @@ ConfigCheck& ConfigCheck::set_values<CzNicSpecific>(const po_variables_map& vm)
 template <>
 ConfigCheck ConfigCheck::get_default<CzNicSpecific>()
 {
-    Check check;
+    ConfigCheck check;
     check.set_name(CzNicSpecific::get_check_name());
     check.options_.emplace(get_key<CzNicSpecific::CreateContact::Disclose::Name>(), "show");
     check.options_.emplace(get_key<CzNicSpecific::CreateContact::Disclose::Organization>(), "show");

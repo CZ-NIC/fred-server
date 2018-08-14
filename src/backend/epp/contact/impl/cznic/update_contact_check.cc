@@ -218,9 +218,9 @@ bool is_fake_change_operation(
     if (old_address.isnull())
     {
         const Nullable<std::string> old_value;
-        for (unsigned idx = 0; idx < change.street.size(); ++idx)
+        for (const auto& op : change.street)
         {
-            if (!is_fake_change_operation(change.street[idx], old_value))
+            if (!is_fake_change_operation(op, old_value))
             {
                 return false;
             }
