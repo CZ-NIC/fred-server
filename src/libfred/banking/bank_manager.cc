@@ -31,9 +31,12 @@ unsigned long long get_registrar_id_by_handle(
     const std::string registrar_handle = boost::trim_copy(_registrar_handle);
 
     Database::Query query;
-    query.buffer()
-        << "SELECT id FROM registrar WHERE handle = "
-        << Database::Value(registrar_handle);
+    query.buffer() <<
+            // clang-format off
+            "SELECT id "
+              "FROM registrar "
+             "WHERE handle = " << Database::Value(registrar_handle);
+            // clang-format on
     Database::Connection conn = Database::Manager::acquire();
     const Database::Result res = conn.exec(query);
     if (res.size() == 0) {
@@ -49,12 +52,14 @@ unsigned long long get_registrar_id_by_payment(
         const PaymentData& _payment)
 {
     Database::Query query;
-    query.buffer() << "SELECT id FROM registrar WHERE varsymb = "
-                   << Database::Value(_payment.variable_symbol)
-                   << " OR (length(trim(regex)) > 0 AND "
-                   << Database::Value(_payment.memo)
-                   << " ~* trim(regex))";
-
+    query.buffer() <<
+            // clang-format off
+            "SELECT id "
+              "FROM registrar "
+             "WHERE varsymb = " << Database::Value(_payment.variable_symbol) << " "
+                "OR (length(trim(regex)) > 0 "
+                    "AND " << Database::Value(_payment.memo) << " ~* trim(regex))";
+            // clang-format on
     Database::Connection conn = Database::Manager::acquire();
     const Database::Result result = conn.exec(query);
     if (result.size() != 1) {
@@ -80,13 +85,14 @@ unsigned long long get_account_id_by_account_number_and_bank_code(
     }
 
     Database::Query query;
-    query.buffer() << "SELECT id FROM bank_account WHERE "
-                   << "trim(leading '0' from account_number) = "
-                   << "trim(leading '0' from " << Database::Value(_account_number) << ")";
-    if (_account_bank_code != boost::none)
-    {
-        query.buffer() << " AND bank_code = " << Database::Value(*_account_bank_code);
-    }
+    query.buffer() <<
+            // clang-format off
+            "SELECT id "
+              "FROM bank_account "
+             "WHERE TRIM(LEADING '0' FROM account_number) = "
+                   "TRIM(LEADING '0' FROM " << Database::Value(_account_number) << ") "
+               "AND bank_code = " << Database::Value(_account_bank_code.value_or(""));
+            // clang-format on
     Database::Connection conn = Database::Manager::acquire();
     const Database::Result result = conn.exec(query);
     if (result.size() == 0) {
@@ -103,9 +109,12 @@ std::string get_invoice_number_by_id(
         unsigned long long _invoice_id)
 {
     Database::Query query;
-    query.buffer()
-        << "SELECT prefix FROM invoice WHERE id = "
-        << Database::Value(_invoice_id);
+    query.buffer() <<
+            // clang-format off
+            "SELECT prefix "
+              "FROM invoice "
+             "WHERE id = " << Database::Value(_invoice_id);
+            // clang-format on
     Database::Connection conn = Database::Manager::acquire();
     const Database::Result res = conn.exec(query);
     if (res.size() == 0) {
@@ -125,10 +134,15 @@ private:
     File::Manager *file_manager_;
 
 
-    unsigned long long getZoneByAccountId(const unsigned long long &_account_id) {
+    unsigned long long getZoneByAccountId(const unsigned long long &_account_id)
+    {
         Database::Query query;
-        query.buffer() << "SELECT zone FROM bank_account WHERE "
-                       << "id = " << Database::Value(_account_id);
+        query.buffer() <<
+                // clang-format off
+                "SELECT zone "
+                  "FROM bank_account "
+                 "WHERE id = " << Database::Value(_account_id);
+                // clang-format on
 
         Database::Connection conn = Database::Manager::acquire();
         const Database::Result result = conn.exec(query);
@@ -141,11 +155,12 @@ private:
         }
     }
 
-    void pay_invoice(unsigned long long registrar_id
-            , unsigned long long zone_id
-            , const std::string& bank_payment_uuid
-            , Money price
-            , unsigned long long invoice_id)
+    void pay_invoice(
+            unsigned long long registrar_id,
+            unsigned long long zone_id,
+            const std::string& bank_payment_uuid,
+            Money price,
+            unsigned long long invoice_id)
     {
         Logging::Context ctx("pay_invoice");
         Database::Connection conn = Database::Manager::acquire();
@@ -156,11 +171,14 @@ private:
 
         //insert_bank_payment_registrar_credit_transaction_map
         conn.exec_params(
-        "INSERT INTO bank_payment_registrar_credit_transaction_map "
-                " (bank_payment_uuid, registrar_credit_transaction_id) "
-                " VALUES ($1::uuid, $2::bigint) "
-        ,Database::query_param_list(bank_payment_uuid)
-        (registrar_credit_transaction_id));
+                // clang-format off
+                "INSERT INTO bank_payment_registrar_credit_transaction_map "
+                "(bank_payment_uuid, registrar_credit_transaction_id) "
+                "VALUES ($1::uuid, $2::bigint)",
+                Database::query_param_list
+                        (bank_payment_uuid)
+                        (registrar_credit_transaction_id));
+                // clang-format on
 
 
     }
@@ -428,11 +446,11 @@ public:
         }
     }
 
-    void addBankAccount(const std::string &_account_number,
-                            const std::string &_bank_code,
-                            const std::string &_zone,
-                            const std::string &_account_name)
-        //throw (std::runtime_error)
+    void addBankAccount(
+            const std::string& _account_number,
+            const std::string& _bank_code,
+            const std::string& _zone,
+            const std::string& _account_name)
     {
         TRACE("[CALL] LibFred::Banking::Manager::insertBankAccount(zone_fqdn, ...)");
 
