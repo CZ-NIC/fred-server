@@ -32,19 +32,17 @@ namespace Zone {
 class UpdateZoneNs
 {
 public:
-    explicit UpdateZoneNs(unsigned long long _id)
-        : id_(_id)
-    {
-    }
+    explicit UpdateZoneNs(unsigned long long _id);
 
-    UpdateZoneNs& set_zone_fqdn(const std::string& _zone_fqdn);
+    UpdateZoneNs& set_zone_fqdn(const boost::optional<std::string>& _zone_fqdn);
 
-    UpdateZoneNs& set_nameserver_fqdn(const std::string& _nameserver_fqdn);
+    UpdateZoneNs& set_nameserver_fqdn(const boost::optional<std::string>& _nameserver_fqdn);
 
     UpdateZoneNs& set_nameserver_ip_addresses(
             const std::vector<boost::asio::ip::address>& _nameserver_ip_addresses);
 
     unsigned long long exec(OperationContext& _ctx) const;
+
 private:
     unsigned long long id_;
     boost::optional<std::string> zone_fqdn_;

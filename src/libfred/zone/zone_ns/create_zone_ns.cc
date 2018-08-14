@@ -27,9 +27,18 @@
 namespace LibFred {
 namespace Zone {
 
-CreateZoneNs& CreateZoneNs::set_nameserver_fqdn(const std::string& _nameserver_fqdn)
+CreateZoneNs::CreateZoneNs(const std::string& _zone_fqdn)
+    : zone_fqdn_(_zone_fqdn),
+      nameserver_fqdn_("localhost")
 {
-    nameserver_fqdn_ = _nameserver_fqdn;
+}
+
+CreateZoneNs& CreateZoneNs::set_nameserver_fqdn(const boost::optional<std::string>& _nameserver_fqdn)
+{
+    if (_nameserver_fqdn != boost::none)
+    {
+        nameserver_fqdn_ = _nameserver_fqdn.get();
+    }
     return *this;
 }
 

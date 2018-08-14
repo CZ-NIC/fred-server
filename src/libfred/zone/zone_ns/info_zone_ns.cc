@@ -19,11 +19,15 @@
 #include "src/libfred/zone/zone_ns/exceptions.hh"
 #include "src/libfred/zone/zone_ns/info_zone_ns.hh"
 
-#include <algorithm>
-#include <boost/algorithm/string.hpp>
+#include <boost/asio.hpp>
 
 namespace LibFred {
 namespace Zone {
+
+InfoZoneNs::InfoZoneNs(unsigned long long _id)
+    : id_(_id)
+{
+}
 
 InfoZoneNsData InfoZoneNs::exec(OperationContext& _ctx) const
 {
@@ -35,7 +39,7 @@ InfoZoneNsData InfoZoneNs::exec(OperationContext& _ctx) const
                 "SELECT id, zone, fqdn, "
                 "CASE WHEN array_length(addrs, 1) IS NULL THEN NULL "
                 "ELSE unnest(addrs) "
-                "END AS addrs "
+                "END AS addr "
                 "FROM zone_ns "
                 "WHERE id = $1::bigint",
                 // clang-format on
@@ -58,20 +62,14 @@ InfoZoneNsData InfoZoneNs::exec(OperationContext& _ctx) const
     info_zone_ns_data.nameserver_fqdn = static_cast<std::string>(result[0]["fqdn"]);
 
     std::vector<boost::asio::ip::address> ip_addrs;
-    if (result.size() == 1)
+    for (Database::Result::size_type i = 0; i < result.size(); ++i)
     {
-        const std::string& address = static_cast<std::string>(result[0]["addrs"]);
-        if (!address.empty())
+        if (!result[i]["addr"].isnull())
         {
+            const std::string address = static_cast<std::string>(result[i]["addr"]);
             ip_addrs.push_back(boost::asio::ip::address::from_string(address));
         }
     }
-    else
-    {
-        std::for_each (result.begin(), result.end(),
-                [&ip_addrs](const auto& s){ ip_addrs.push_back(boost::asio::ip::address::from_string(s["addrs"])); });
-    }
-
     info_zone_ns_data.nameserver_ip_addresses = ip_addrs;
 
     return info_zone_ns_data;
