@@ -14,13 +14,12 @@ util/db/test-mockdb
 util/hp/client-hp
 util/hp/crc32
 util/log/test-log
-Makefile
+/Makefile
 config.h
 config.log
 config.status
 config/hpmail.conf
 config/server.conf
-fred-server.spec
 init-scripts/fred-server
 stamp-h1
 util/decimal/mpdecimal-2.2/mpdecimal.h
