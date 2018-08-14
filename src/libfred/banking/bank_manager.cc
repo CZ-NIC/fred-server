@@ -76,11 +76,11 @@ unsigned long long get_account_id_by_account_number_and_bank_code(
         const std::string& _account_number,
         const boost::optional<std::string>& _account_bank_code)
 {
-    if (_account_number.empty() || _account_bank_code.value_or("").empty())
+    if (_account_number.empty() || _account_bank_code.get_value_or("").empty())
     {
         LOGGER(PACKAGE).error(boost::str(boost::format(
                 "invalid account_number/account_bank_code (%1%/%2%)")
-                % _account_number % _account_bank_code.value_or("")));
+                % _account_number % _account_bank_code.get_value_or("")));
         throw InvalidAccountData();
     }
 
@@ -91,14 +91,14 @@ unsigned long long get_account_id_by_account_number_and_bank_code(
               "FROM bank_account "
              "WHERE TRIM(LEADING '0' FROM account_number) = "
                    "TRIM(LEADING '0' FROM " << Database::Value(_account_number) << ") "
-               "AND bank_code = " << Database::Value(_account_bank_code.value_or(""));
+               "AND bank_code = " << Database::Value(_account_bank_code.get_value_or(""));
             // clang-format on
     Database::Connection conn = Database::Manager::acquire();
     const Database::Result result = conn.exec(query);
     if (result.size() == 0) {
         LOGGER(PACKAGE).error(boost::str(boost::format(
                 "not valid record found in database for account=%1% bankcode=%2%")
-                % _account_number % _account_bank_code.value_or("")));
+                % _account_number % _account_bank_code.get_value_or("")));
         throw InvalidAccountData();
     }
     const auto account_id = static_cast<unsigned long long>(result[0][0]);
@@ -405,7 +405,7 @@ public:
                     "payment imported (id=%1% account=%2%/%3% evid=%4% price=%5% account_date=%6%) account_id=%7%")
                     % payment.uuid
                     % payment.counter_account_number
-                    % payment.counter_account_bank_code.value_or("")
+                    % payment.counter_account_bank_code.get_value_or("")
                     % payment.account_payment_ident
                     % payment.price
                     % payment.date

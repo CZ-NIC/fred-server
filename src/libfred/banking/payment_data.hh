@@ -23,6 +23,8 @@
 #include "src/libfred/common_new.hh"
 #include "src/util/types/money.hh"
 
+#include <boost/date_time/gregorian/gregorian_types.hpp>
+#include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <boost/optional.hpp>
 
 #include <string>
@@ -72,9 +74,9 @@ struct PaymentData
     std::string variable_symbol;
     std::string specific_symbol;
     Money price;
-    Database::Date date;
+    boost::gregorian::date date;
     std::string memo;
-    Database::DateTime creation_time;
+    boost::posix_time::ptime creation_time;
 };
 
 } // namespace Banking

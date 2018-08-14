@@ -159,7 +159,7 @@ void change_zone_credit_of_registrar(
         }
         throw;
     }
-    catch (const LibFred::Zone::NonExistentZone& e)
+    catch (const LibFred::Zone::NonExistentZone&)
     {
         throw ZoneNotFound();
     }
@@ -469,7 +469,7 @@ std::vector<RegistrarReference> get_registrar_references(
                      "ORDER BY name");
                     // clang-format on
     registrar_references.reserve(dbresult.size());
-    for (std::size_t row_index = 0; row_index < dbresult.size(); ++row_index)
+    for (Database::Result::size_type row_index = 0; row_index < dbresult.size(); ++row_index)
     {
         registrar_references.emplace_back(
                         static_cast<std::string>(dbresult[row_index]["handle"]),
