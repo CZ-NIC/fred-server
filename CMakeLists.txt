@@ -373,27 +373,40 @@ prepare_object_files(
     src/backend/contact_verification/contact_verification_impl.cc
     src/backend/contact_verification/public_request_contact_verification_impl.cc
     src/backend/domain_browser/domain_browser.cc
+    src/backend/epp/contact/authinfo_contact.cc
+    src/backend/epp/contact/authinfo_contact_localized.cc
     src/backend/epp/contact/check_contact.cc
     src/backend/epp/contact/check_contact_localized.cc
+    src/backend/epp/contact/config_check.cc
     src/backend/epp/contact/contact_change.cc
     src/backend/epp/contact/contact_data.cc
     src/backend/epp/contact/create_contact.cc
+    src/backend/epp/contact/create_contact_config_data.cc
     src/backend/epp/contact/create_contact_input_data.cc
     src/backend/epp/contact/create_contact_localized.cc
     src/backend/epp/contact/delete_contact.cc
     src/backend/epp/contact/delete_contact_localized.cc
     src/backend/epp/contact/impl/contact_output.cc
+    src/backend/epp/contact/impl/cznic/create_contact_check.cc
+    src/backend/epp/contact/impl/cznic/specific.cc
+    src/backend/epp/contact/impl/cznic/update_contact_check.cc
+    src/backend/epp/contact/impl/get_create_contact_check.cc
+    src/backend/epp/contact/impl/get_personal_id_union.cc
+    src/backend/epp/contact/impl/get_update_contact_check.cc
     src/backend/epp/contact/info_contact.cc
     src/backend/epp/contact/info_contact_localized.cc
     src/backend/epp/contact/transfer_contact.cc
     src/backend/epp/contact/transfer_contact_localized.cc
     src/backend/epp/contact/update_contact.cc
+    src/backend/epp/contact/update_contact_config_data.cc
     src/backend/epp/contact/update_contact_localized.cc
     src/backend/epp/contact/update_contact_post_hooks.cc
     src/backend/epp/contact/util.cc
     src/backend/epp/credit/client_credit.cc
     src/backend/epp/credit/client_credit_localized.cc
     src/backend/epp/credit/client_credit_output_data.cc
+    src/backend/epp/domain/authinfo_domain.cc
+    src/backend/epp/domain/authinfo_domain_localized.cc
     src/backend/epp/domain/check_domain.cc
     src/backend/epp/domain/check_domain_localized.cc
     src/backend/epp/domain/create_domain.cc
@@ -420,6 +433,8 @@ prepare_object_files(
     src/backend/epp/epp_result_success_localized.cc
     src/backend/epp/impl/conditionally_enqueue_notification.cc
     src/backend/epp/impl/registraracl/authentic_registrar.cc
+    src/backend/epp/keyset/authinfo_keyset.cc
+    src/backend/epp/keyset/authinfo_keyset_localized.cc
     src/backend/epp/keyset/check_keyset.cc
     src/backend/epp/keyset/check_keyset_localized.cc
     src/backend/epp/keyset/create_keyset.cc
@@ -435,6 +450,8 @@ prepare_object_files(
     src/backend/epp/keyset/update_keyset.cc
     src/backend/epp/keyset/update_keyset_localized.cc
     src/backend/epp/localization.cc
+    src/backend/epp/nsset/authinfo_nsset.cc
+    src/backend/epp/nsset/authinfo_nsset_localized.cc
     src/backend/epp/nsset/check_nsset.cc
     src/backend/epp/nsset/check_nsset_localized.cc
     src/backend/epp/nsset/create_nsset.cc
@@ -461,6 +478,7 @@ prepare_object_files(
     src/backend/epp/poll/poll_request_get_update_nsset_details.cc
     src/backend/epp/poll/poll_request_get_update_nsset_details_localized.cc
     src/backend/epp/poll/poll_request_localized.cc
+    src/backend/epp/public_request/create_authinfo_request_registry_email.cc
     src/backend/epp/session_data.cc
     src/backend/mojeid/checkers.cc
     src/backend/mojeid/messages/generate.cc
@@ -468,9 +486,22 @@ prepare_object_files(
     src/backend/mojeid/mojeid_impl_data_conversion.cc
     src/backend/mojeid/mojeid_impl_internal.cc
     src/backend/mojeid/mojeid_public_request.cc
-    src/backend/public_request/process_public_requests.cc
-    src/backend/public_request/public_request.cc
-    src/backend/public_request/send_email.cc
+    src/backend/public_request/create_authinfo_request_non_registry_email.cc
+    src/backend/public_request/create_authinfo_request_registry_email.cc
+    src/backend/public_request/create_block_unblock_request.cc
+    src/backend/public_request/create_personal_info_request_non_registry_email.cc
+    src/backend/public_request/create_personal_info_request_registry_email.cc
+    src/backend/public_request/create_public_request_pdf.cc
+    src/backend/public_request/exceptions.cc
+    src/backend/public_request/get_default_document_manager.cc
+    src/backend/public_request/get_id_of_registered_object.cc
+    src/backend/public_request/process/authinfo.cc
+    src/backend/public_request/process/block_unblock.cc
+    src/backend/public_request/process/personal_info.cc
+    src/backend/public_request/type/impl/public_request_authinfo.cc
+    src/backend/public_request/type/impl/public_request_block_unblock.cc
+    src/backend/public_request/type/impl/public_request_personal_info.cc
+    src/backend/public_request/util/send_joined_address_email.cc
     src/backend/record_statement/exceptions.cc
     src/backend/record_statement/impl/europe_prague_impl.cc
     src/backend/record_statement/impl/factory.cc
@@ -692,7 +723,6 @@ prepare_object_files(
     src/libfred/messages/messages_impl.cc
     src/libfred/model_registrar_acl.cc
     src/libfred/model_registrar.cc
-    src/libfred/model_registrar_group_map.cc
     src/libfred/model_zone.cc
     src/libfred/model_zone_ns.cc
     src/libfred/model_zone_soa.cc
@@ -748,7 +778,7 @@ prepare_object_files(
     src/libfred/public_request/public_request_impl.cc
     src/libfred/public_request/public_request_lock_guard.cc
     src/libfred/public_request/public_request_object_lock_guard.cc
-    src/libfred/public_request/public_request_personalinfo_impl.cc
+    src/libfred/public_request/public_request_personal_info_impl.cc
     src/libfred/public_request/update_public_request.cc
     src/libfred/registrable_object/contact.cc
     src/libfred/registrable_object/contact/check_contact.cc
@@ -829,6 +859,10 @@ prepare_object_files(
     src/libfred/registrar/group/cancel_registrar_group.cc
     src/libfred/registrar/group/create_registrar_group.cc
     src/libfred/registrar/group/get_registrar_groups.cc
+    src/libfred/registrar/group/membership/create_registrar_group_membership.cc
+    src/libfred/registrar/group/membership/end_registrar_group_membership.cc
+    src/libfred/registrar/group/membership/info_group_membership_by_group.cc
+    src/libfred/registrar/group/membership/info_group_membership_by_registrar.cc
     src/libfred/registrar/group/update_registrar_group.cc
     src/libfred/registrar/info_registrar.cc
     src/libfred/registrar/info_registrar_data.cc
@@ -851,7 +885,22 @@ prepare_object_files(
     src/libfred/requests/session_cache.cc
     src/libfred/requests/session.cc
     src/libfred/zone.cc
+    src/libfred/zone/create_zone.cc
+    src/libfred/zone/exceptions.cc
+    src/libfred/zone/info_zone.cc
+    src/libfred/zone/info_zone_data.cc
+    src/libfred/zone_ns/create_zone_ns.cc
+    src/libfred/zone_ns/exceptions.cc
+    src/libfred/zone_ns/info_zone_ns.cc
+    src/libfred/zone_ns/update_zone_ns.cc
+    src/libfred/zone_ns/util.cc
+    src/libfred/zone_soa/create_zone_soa.cc
+    src/libfred/zone_soa/info_zone_soa.cc
+    src/libfred/zone_soa/update_zone_soa.cc
+    src/libfred/zone/update_zone.cc
+    src/libfred/zone/util.cc
     src/libfred/zone/zone.cc
+    src/util/cfg/handle_rifd_args.cc
     src/util/corba_conversion.cc
     src/util/csv_parser.cc
     src/util/db/param_query_composition.cc
@@ -1084,6 +1133,10 @@ prepare_object_files(
     test/libfred/registrar/certification/test_create_registrar_certification.cc
     test/libfred/registrar/certification/test_get_registrar_certifications.cc
     test/libfred/registrar/certification/test_update_registrar_certification.cc
+    test/libfred/registrar/group/membership/test_create.cc
+    test/libfred/registrar/group/membership/test_end.cc
+    test/libfred/registrar/group/membership/test_info_by_group.cc
+    test/libfred/registrar/group/membership/test_info_by_registrar.cc
     test/libfred/registrar/group/test_cancel.cc
     test/libfred/registrar/group/test_create.cc
     test/libfred/registrar/group/test_get.cc
@@ -1094,9 +1147,22 @@ prepare_object_files(
     test/libfred/registrar/test_registrar_zone_access.cc
     test/libfred/test_check_handle.cc
     test/libfred/test_opexception.cc
+    test/libfred/zone_ns/test_create_zone_ns.cc
+    test/libfred/zone_ns/test_info_zone_ns.cc
+    test/libfred/zone_ns/test_update_zone_ns.cc
+    test/libfred/zone_ns/util.cc
+    test/libfred/zone_soa/test_create_zone_soa.cc
+    test/libfred/zone_soa/test_info_zone_soa.cc
+    test/libfred/zone_soa/test_update_zone_soa.cc
+    test/libfred/zone_soa/util.cc
+    test/libfred/zone/test_create_zone.cc
+    test/libfred/zone/test_info_zone.cc
+    test/libfred/zone/test_update_zone.cc
+    test/libfred/zone/util.cc
     test/setup/fixtures.cc
     test/setup/fixtures_utils.cc
     test/setup/tests_common.cc
+    test/test_delete_objects_marked_as_delete_candidate.cc
     test/test_optys_main.cc
     test/util/test_corba_conversion.cc
     test/util/test_corba_conversion_main.cc
@@ -1217,7 +1283,6 @@ prepare_static_library(fred
     src/libfred/model_zone.cc
     src/libfred/model_zone_ns.cc
     src/libfred/model_zone_soa.cc
-    src/libfred/model_registrar_group_map.cc
     src/libfred/registrable_object/domain.cc
     src/libfred/registrable_object/contact.cc
     src/libfred/registrable_object/nsset.cc
@@ -1226,6 +1291,11 @@ prepare_static_library(fred
     src/libfred/credit.cc
     src/libfred/invoicing/invoice.cc
     src/libfred/zone.cc
+    src/libfred/zone_ns/create_zone_ns.cc
+    src/libfred/zone_ns/exceptions.cc
+    src/libfred/zone_ns/info_zone_ns.cc
+    src/libfred/zone_ns/update_zone_ns.cc
+    src/libfred/zone_ns/util.cc
     src/libfred/blacklist.cc
     src/libfred/documents.cc
     src/libfred/info_buffer.cc
@@ -1300,7 +1370,16 @@ prepare_static_library(fred
     src/libfred/registrable_object/contact/merge_contact_email_notification_data.cc
     src/libfred/registrable_object/domain/delete_domain.cc
     src/libfred/registrable_object/domain/domain_name.cc
+    src/libfred/zone/create_zone.cc
+    src/libfred/zone/exceptions.cc
+    src/libfred/zone/info_zone_data.cc
+    src/libfred/zone/info_zone.cc
+    src/libfred/zone/update_zone.cc
+    src/libfred/zone/util.cc
     src/libfred/zone/zone.cc
+    src/libfred/zone_soa/create_zone_soa.cc
+    src/libfred/zone_soa/info_zone_soa.cc
+    src/libfred/zone_soa/update_zone_soa.cc
     src/libfred/registrable_object/contact/verification/create_check.cc
     src/libfred/registrable_object/contact/verification/update_check.cc
     src/libfred/registrable_object/contact/verification/info_check.cc
@@ -1332,6 +1411,10 @@ prepare_static_library(fred
     src/libfred/registrar/zone_credit.cc
     src/libfred/registrar/registrar_zone_credit.cc
     src/libfred/registrar/get_registrar_zone_credit.cc
+    src/libfred/registrar/group/membership/create_registrar_group_membership.cc
+    src/libfred/registrar/group/membership/end_registrar_group_membership.cc
+    src/libfred/registrar/group/membership/info_group_membership_by_group.cc
+    src/libfred/registrar/group/membership/info_group_membership_by_registrar.cc
     src/libfred/object/object_id_handle_pair.cc
     src/libfred/object_state/object_has_state.cc
     src/libfred/object_state/lock_object_state_request_lock.cc
@@ -1375,12 +1458,29 @@ prepare_static_library(authentic_registrar
     src/backend/epp/impl/registraracl/authentic_registrar.cc)
 
 prepare_static_library(public_request
+    src/backend/buffer.cc
+    src/backend/public_request/create_authinfo_request_non_registry_email.cc
+    src/backend/public_request/create_authinfo_request_registry_email.cc
+    src/backend/public_request/create_block_unblock_request.cc
+    src/backend/public_request/create_personal_info_request_non_registry_email.cc
+    src/backend/public_request/create_personal_info_request_registry_email.cc
+    src/backend/public_request/create_public_request_pdf.cc
+    src/backend/public_request/exceptions.cc
+    src/backend/public_request/get_default_document_manager.cc
+    src/backend/public_request/get_id_of_registered_object.cc
+    src/backend/public_request/process/authinfo.cc
+    src/backend/public_request/process/block_unblock.cc
+    src/backend/public_request/process/personal_info.cc
+    src/backend/public_request/type/impl/public_request_authinfo.cc
+    src/backend/public_request/type/impl/public_request_block_unblock.cc
+    src/backend/public_request/type/impl/public_request_personal_info.cc
+    src/backend/public_request/util/send_joined_address_email.cc
+    src/libfred/public_request/create_public_request.cc
     src/libfred/public_request/public_request.cc
-    src/libfred/public_request/public_request_impl.cc
     src/libfred/public_request/public_request_authinfo_impl.cc
     src/libfred/public_request/public_request_block_impl.cc
-    src/libfred/public_request/public_request_personalinfo_impl.cc
-    src/libfred/public_request/create_public_request.cc
+    src/libfred/public_request/public_request_impl.cc
+    src/libfred/public_request/public_request_personal_info_impl.cc
     src/libfred/public_request/create_public_request_auth.cc
     src/libfred/public_request/public_request_lock_guard.cc
     src/libfred/public_request/public_request_object_lock_guard.cc
@@ -1648,14 +1748,22 @@ prepare_static_library(epp_impl
     src/backend/epp/epp_extended_error_localized.cc
     src/backend/epp/session_data.cc
     src/backend/epp/impl/conditionally_enqueue_notification.cc
+    src/backend/epp/contact/authinfo_contact.cc
+    src/backend/epp/contact/authinfo_contact_localized.cc
     src/backend/epp/contact/create_contact_localized.cc
     src/backend/epp/contact/create_contact.cc
     src/backend/epp/contact/util.cc
     src/backend/epp/contact/contact_change.cc
     src/backend/epp/contact/contact_data.cc
     src/backend/epp/contact/impl/contact_output.cc
+    src/backend/epp/contact/impl/get_personal_id_union.cc
+    src/backend/epp/contact/impl/cznic/create_contact_check.cc
+    src/backend/epp/contact/impl/cznic/update_contact_check.cc
+    src/backend/epp/contact/impl/get_create_contact_check.cc
+    src/backend/epp/contact/impl/get_update_contact_check.cc
     src/backend/epp/contact/update_contact_localized.cc
     src/backend/epp/contact/update_contact.cc
+    src/backend/epp/contact/update_contact_config_data.cc
     src/backend/epp/contact/info_contact_localized.cc
     src/backend/epp/contact/info_contact.cc
     src/backend/epp/contact/delete_contact_localized.cc
@@ -1666,9 +1774,12 @@ prepare_static_library(epp_impl
     src/backend/epp/contact/transfer_contact.cc
     src/backend/epp/contact/update_contact_post_hooks.cc
     src/backend/epp/contact/create_contact_input_data.cc
+    src/backend/epp/contact/create_contact_config_data.cc
     src/backend/epp/credit/client_credit_output_data.cc
     src/backend/epp/credit/client_credit.cc
     src/backend/epp/credit/client_credit_localized.cc
+    src/backend/epp/domain/authinfo_domain.cc
+    src/backend/epp/domain/authinfo_domain_localized.cc
     src/backend/epp/domain/check_domain_localized.cc
     src/backend/epp/domain/check_domain.cc
     src/backend/epp/poll/poll_acknowledgement_localized.cc
@@ -1698,6 +1809,8 @@ prepare_static_library(epp_impl
     src/backend/epp/domain/impl/domain_output.cc
     src/backend/epp/domain/update_domain_localized.cc
     src/backend/epp/domain/update_domain.cc
+    src/backend/epp/keyset/authinfo_keyset.cc
+    src/backend/epp/keyset/authinfo_keyset_localized.cc
     src/backend/epp/keyset/dns_key.cc
     src/backend/epp/keyset/info_keyset.cc
     src/backend/epp/keyset/info_keyset_localized.cc
@@ -1712,6 +1825,8 @@ prepare_static_library(epp_impl
     src/backend/epp/keyset/delete_keyset_localized.cc
     src/backend/epp/keyset/transfer_keyset.cc
     src/backend/epp/keyset/transfer_keyset_localized.cc
+    src/backend/epp/nsset/authinfo_nsset.cc
+    src/backend/epp/nsset/authinfo_nsset_localized.cc
     src/backend/epp/nsset/check_nsset_localized.cc
     src/backend/epp/nsset/check_nsset.cc
     src/backend/epp/nsset/info_nsset_localized.cc
@@ -1725,7 +1840,9 @@ prepare_static_library(epp_impl
     src/backend/epp/nsset/transfer_nsset_localized.cc
     src/backend/epp/nsset/transfer_nsset.cc
     src/backend/epp/nsset/impl/nsset.cc
-    src/backend/epp/nsset/impl/nsset_output.cc)
+    src/backend/epp/nsset/impl/nsset_output.cc
+    src/backend/epp/public_request/create_authinfo_request_registry_email.cc
+    src/backend/buffer.cc)
 
 prepare_static_library(log_impl
     src/bin/corba/log/log_impl_wrap.cc)
@@ -1757,6 +1874,11 @@ prepare_static_library(corbanullableisodatetime
     src/bin/corba/NullableIsoDateTimeSK.cc
     src/bin/corba/NullableIsoDateTimeDynSK.cc)
 
+prepare_static_library(handle_rifd_args
+    src/util/cfg/handle_rifd_args.cc
+    src/backend/epp/contact/config_check.cc
+    src/backend/epp/contact/impl/cznic/specific.cc)
+
 
 # fred-rifd
 prepare_executable(fred-rifd
@@ -1782,6 +1904,7 @@ target_link_libraries(fred-rifd
     db
     types
     log
+    handle_rifd_args
     oldutils
     util)
 target_link_external_libraries(fred-rifd
@@ -1906,9 +2029,7 @@ target_link_external_libraries(fred-adifd
 prepare_executable(fred-pifd
     src/bin/corba/contact_verification/contact_verification_i.cc
     src/backend/mojeid/mojeid_public_request.cc
-    src/backend/public_request/send_email.cc
     src/backend/contact_verification/contact_verification_impl.cc
-    src/backend/public_request/public_request.cc
     src/backend/buffer.cc
     src/bin/corba/public_request/server_i.cc
     src/util/corba_conversion.cc
@@ -2223,10 +2344,7 @@ prepare_executable(fred-admin
     src/backend/admin/domain/create_expired_domain.cc
     src/bin/cli/public_request_method.cc
     src/backend/admin/domain/create_expired_domain.cc
-    src/backend/public_request/public_request.cc
-    src/backend/buffer.cc
-    src/backend/public_request/send_email.cc
-    src/backend/public_request/process_public_requests.cc)
+    src/backend/buffer.cc)
 target_link_libraries(fred-admin
     admin_contact_verification
     fred
@@ -2442,7 +2560,8 @@ target_link_libraries(test-admin-contact-automerge
     db
     oldutils
     util
-    timezones)
+    timezones
+    handle_rifd_args)
 target_link_external_libraries(test-admin-contact-automerge
     boost_system
     boost_thread
@@ -2472,7 +2591,8 @@ target_link_libraries(test-admin-contact-verification
     log
     db
     util
-    timezones)
+    timezones
+    handle_rifd_args)
 target_link_external_libraries(test-admin-contact-verification
     boost_system
     boost_unit_test_framework
@@ -2587,6 +2707,7 @@ target_link_libraries(test-blocking
     banking
     log
     util
+    handle_rifd_args
     corbamessages
     corbamessages
     corbazone
@@ -2701,7 +2822,8 @@ target_link_libraries(test-epp
     types
     db
     log
-    util)
+    util
+    handle_rifd_args)
 target_link_external_libraries(test-epp
     boost_system
     boost_unit_test_framework
@@ -2758,6 +2880,10 @@ prepare_executable(test-libfred
     test/libfred/registrar/group/test_update.cc
     test/libfred/registrar/group/test_cancel.cc
     test/libfred/registrar/group/test_get.cc
+    test/libfred/registrar/group/membership/test_create.cc
+    test/libfred/registrar/group/membership/test_end.cc
+    test/libfred/registrar/group/membership/test_info_by_group.cc
+    test/libfred/registrar/group/membership/test_info_by_registrar.cc
     test/libfred/contact/test_delete_contact.cc
     test/libfred/contact/test_create_contact.cc
     test/libfred/contact/test_info_contact.cc
@@ -2853,6 +2979,18 @@ prepare_executable(test-libfred
     test/libfred/registrar/certification/test_get_registrar_certifications.cc
     test/libfred/test_opexception.cc
     test/libfred/test_check_handle.cc
+    test/libfred/zone_ns/test_create_zone_ns.cc
+    test/libfred/zone_ns/test_info_zone_ns.cc
+    test/libfred/zone_ns/test_update_zone_ns.cc
+    test/libfred/zone_ns/util.cc
+    test/libfred/zone_soa/test_create_zone_soa.cc
+    test/libfred/zone_soa/test_info_zone_soa.cc
+    test/libfred/zone_soa/test_update_zone_soa.cc
+    test/libfred/zone_soa/util.cc
+    test/libfred/zone/test_create_zone.cc
+    test/libfred/zone/test_info_zone.cc
+    test/libfred/zone/test_update_zone.cc
+    test/libfred/zone/util.cc
     test/util/test_param_query.cc
     test/setup/fixtures_utils.cc
     test/setup/fixtures.cc
@@ -2863,6 +3001,7 @@ target_link_libraries(test-libfred
     log
     db
     timezones
+    handle_rifd_args
     corba
     mailer
     corbadatatypes
@@ -2934,8 +3073,6 @@ target_link_external_libraries(test-password-storage
 prepare_executable(test-public-request
     test/backend/public_request/main.cc
     src/backend/buffer.cc
-    src/backend/public_request/public_request.cc
-    src/backend/public_request/send_email.cc
     test/backend/public_request/test_registry_email.cc
     test/backend/public_request/test_non_registry_email.cc
     test/backend/public_request/test_create_block_unblock_request.cc
@@ -2953,7 +3090,8 @@ target_link_libraries(test-public-request
     log
     db
     util
-    timezones)
+    timezones
+    handle_rifd_args)
 target_link_external_libraries(test-public-request
     boost_regex
     boost_thread
@@ -3076,6 +3214,7 @@ target_link_libraries(test-server
     banking
     log
     util
+    handle_rifd_args
     corbamessages
     corbazone
     filemanager
@@ -3150,7 +3289,8 @@ target_link_libraries(test-whois
     db
     oldutils
     util
-    timezones)
+    timezones
+    handle_rifd_args)
 target_link_external_libraries(test-whois
     boost_regex
     boost_thread
@@ -3163,6 +3303,28 @@ target_link_external_libraries(test-whois
     omniorb4
     mpdec)
 
+prepare_executable(test-delete-objects-marked-as-delete-candidate
+    test/test_delete_objects_marked_as_delete_candidate.cc)
+target_link_libraries(test-delete-objects-marked-as-delete-candidate
+    fred
+    log
+    db
+    oldutils
+    util)
+target_link_external_libraries(test-delete-objects-marked-as-delete-candidate
+    boost_program_options
+    boost_date_time
+    boost_regex
+    boost_random
+    boost_filesystem
+    boost_thread
+    boost_system
+    postgres
+    libidn
+    threads
+    mpdec
+    rt
+    resolv)
 
 install(TARGETS fred-adifd DESTINATION sbin)
 install(TARGETS fred-admin DESTINATION sbin)
@@ -3199,6 +3361,7 @@ install(TARGETS test-record-statement DESTINATION bin)
 install(TARGETS test-server DESTINATION bin)
 install(TARGETS test-whois DESTINATION bin)
 install(TARGETS test-admin-domain DESTINATION bin)
+install(TARGETS test-delete-objects-marked-as-delete-candidate DESTINATION bin)
 
 if(NOT TARGET uninstall)
     configure_file(
