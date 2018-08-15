@@ -27,43 +27,48 @@
 namespace LibFred {
 namespace Zone {
 
-UpdateZoneSoa& UpdateZoneSoa::set_ttl(const int _ttl)
+UpdateZoneSoa::UpdateZoneSoa(const std::string& _fqdn)
+    : fqdn_(_fqdn)
+{
+}
+
+UpdateZoneSoa& UpdateZoneSoa::set_ttl(const boost::optional<int> _ttl)
 {
     ttl_ = _ttl;
     return *this;
 }
 
-UpdateZoneSoa& UpdateZoneSoa::set_hostmaster(const std::string& _hostmaster)
+UpdateZoneSoa& UpdateZoneSoa::set_hostmaster(const boost::optional<std::string>& _hostmaster)
 {
     hostmaster_ = _hostmaster;
     return *this;
 }
 
-UpdateZoneSoa& UpdateZoneSoa::set_refresh(const int _refresh)
+UpdateZoneSoa& UpdateZoneSoa::set_refresh(const boost::optional<int> _refresh)
 {
     refresh_ = _refresh;
     return *this;
 }
 
-UpdateZoneSoa& UpdateZoneSoa::set_update_retr(const int _update_retr)
+UpdateZoneSoa& UpdateZoneSoa::set_update_retr(const boost::optional<int> _update_retr)
 {
     update_retr_ = _update_retr;
     return *this;
 }
 
-UpdateZoneSoa& UpdateZoneSoa::set_expiry(const int _expiry)
+UpdateZoneSoa& UpdateZoneSoa::set_expiry(const boost::optional<int> _expiry)
 {
     expiry_ = _expiry;
     return *this;
 }
 
-UpdateZoneSoa& UpdateZoneSoa::set_minimum(const int _minimum)
+UpdateZoneSoa& UpdateZoneSoa::set_minimum(const boost::optional<int> _minimum)
 {
     minimum_ = _minimum;
     return *this;
 }
 
-UpdateZoneSoa& UpdateZoneSoa::set_ns_fqdn(const std::string& _ns_fqdn)
+UpdateZoneSoa& UpdateZoneSoa::set_ns_fqdn(const boost::optional<std::string>& _ns_fqdn)
 {
     ns_fqdn_ = _ns_fqdn;
     return *this;

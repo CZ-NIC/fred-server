@@ -21,6 +21,7 @@
 
 #include "src/libfred/opcontext.hh"
 
+#include <boost/optional.hpp>
 #include <string>
 
 namespace LibFred {
@@ -31,31 +32,31 @@ class CreateZoneSoa
 public:
     explicit CreateZoneSoa(const std::string& _fqdn);
 
-    CreateZoneSoa& set_ttl(int _ttl);
+    CreateZoneSoa& set_ttl(boost::optional<int> _ttl);
 
-    CreateZoneSoa& set_hostmaster(const std::string& _hostmaster);
+    CreateZoneSoa& set_hostmaster(const boost::optional<std::string>& _hostmaster);
 
-    CreateZoneSoa& set_refresh(int _refresh);
+    CreateZoneSoa& set_refresh(boost::optional<int> _refresh);
 
-    CreateZoneSoa& set_update_retr(int _update_retr);
+    CreateZoneSoa& set_update_retr(boost::optional<int> _update_retr);
 
-    CreateZoneSoa& set_expiry(int _expiry);
+    CreateZoneSoa& set_expiry(boost::optional<int> _expiry);
 
-    CreateZoneSoa& set_minimum(int _minimum);
+    CreateZoneSoa& set_minimum(boost::optional<int> _minimum);
 
-    CreateZoneSoa& set_ns_fqdn(const std::string& _ns_fqdn);
+    CreateZoneSoa& set_ns_fqdn(const boost::optional<std::string>& _ns_fqdn);
 
     unsigned long long exec(OperationContext& _ctx) const;
 
 private:
     std::string fqdn_;
-    int ttl_;
-    std::string hostmaster_;
-    int refresh_;
-    int update_retr_;
-    int expiry_;
-    int minimum_;
-    std::string ns_fqdn_;
+    boost::optional<int> ttl_;
+    boost::optional<std::string> hostmaster_;
+    boost::optional<int> refresh_;
+    boost::optional<int> update_retr_;
+    boost::optional<int> expiry_;
+    boost::optional<int> minimum_;
+    boost::optional<std::string> ns_fqdn_;
 
 };
 

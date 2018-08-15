@@ -30,25 +30,21 @@ namespace Zone {
 class UpdateZoneSoa
 {
 public:
-    explicit UpdateZoneSoa(
-            const std::string& _fqdn)
-        : fqdn_(_fqdn)
-    {
-    }
+    explicit UpdateZoneSoa(const std::string& _fqdn);
 
-    UpdateZoneSoa& set_ttl(int _ttl);
+    UpdateZoneSoa& set_ttl(boost::optional<int> _ttl);
 
-    UpdateZoneSoa& set_hostmaster(const std::string& _hostmaster);
+    UpdateZoneSoa& set_hostmaster(const boost::optional<std::string>& _hostmaster);
 
-    UpdateZoneSoa& set_refresh(int _refresh);
+    UpdateZoneSoa& set_refresh(boost::optional<int> _refresh);
 
-    UpdateZoneSoa& set_update_retr(int _update_retr);
+    UpdateZoneSoa& set_update_retr(boost::optional<int> _update_retr);
 
-    UpdateZoneSoa& set_expiry(int _expiry);
+    UpdateZoneSoa& set_expiry(boost::optional<int> _expiry);
 
-    UpdateZoneSoa& set_minimum(int _minimum);
+    UpdateZoneSoa& set_minimum(boost::optional<int> _minimum);
 
-    UpdateZoneSoa& set_ns_fqdn(const std::string& _ns_fqdn);
+    UpdateZoneSoa& set_ns_fqdn(const boost::optional<std::string>& _ns_fqdn);
 
     unsigned long long exec(OperationContext& _ctx) const;
 
