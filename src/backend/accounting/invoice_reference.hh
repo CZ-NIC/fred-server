@@ -22,6 +22,9 @@
 #include "src/backend/credit.hh"
 #include "src/util/types/money.hh"
 
+#include <boost/optional.hpp>
+#include <boost/version.hpp>
+
 #include <string>
 
 namespace Fred {
@@ -53,6 +56,17 @@ struct InvoiceReference
     InvoiceType type;
     Credit credit_change;
 };
+
+
+#if BOOST_VERSION && BOOST_VERSION < 105600
+
+// The (in)equality comparison with boost::none does not require that T be EqualityComparable (fixed in boost-1.56.0)
+
+inline bool operator==(const boost::optional<InvoiceReference>& _optional, boost::none_t)
+{
+    return static_cast<bool>(_optional);
+}
+#endif
 
 } // namespace Fred::Backend::Accounting
 } // namespace Fred::Backend
