@@ -23,15 +23,33 @@
 namespace LibFred {
 namespace Zone {
 
-CreateZone& CreateZone::set_enum_validation_period_in_months(const int _enum_validation_period_in_months)
+CreateZone::CreateZone(
+        const std::string& _fqdn,
+        int _expiration_period_min_in_months,
+        int _expiration_period_max_in_months)
+    : fqdn_(_fqdn),
+      expiration_period_min_in_months_(_expiration_period_min_in_months),
+      expiration_period_max_in_months_(_expiration_period_max_in_months),
+      sending_warning_letter_(false)
 {
-    enum_validation_period_in_months_ = _enum_validation_period_in_months;
+}
+
+CreateZone& CreateZone::set_enum_validation_period_in_months(
+        const boost::optional<int> _enum_validation_period_in_months)
+{
+    if (_enum_validation_period_in_months != boost::none)
+    {
+        enum_validation_period_in_months_ = _enum_validation_period_in_months;
+    }
     return *this;
 }
 
-CreateZone& CreateZone::set_sending_warning_letter(const bool _sending_warning_letter)
+CreateZone& CreateZone::set_sending_warning_letter(const boost::optional<bool> _sending_warning_letter)
 {
-    sending_warning_letter_ = _sending_warning_letter;
+    if (_sending_warning_letter != boost::none)
+    {
+        sending_warning_letter_ = _sending_warning_letter;
+    }
     return *this;
 }
 
@@ -65,7 +83,7 @@ unsigned long long CreateZone::exec(OperationContext& _ctx) const
                                           (validation_period_in_months)
                                           (dots_max)
                                           (enum_zone)
-                                          (sending_warning_letter_));
+                                          (sending_warning_letter_.get()));
         if (create_result.size() == 1)
         {
             const unsigned long long id = static_cast<unsigned long long>(create_result[0][0]);

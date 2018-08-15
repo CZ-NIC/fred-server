@@ -23,6 +23,11 @@
 namespace LibFred {
 namespace Zone {
 
+InfoZone::InfoZone(const std::string& _fqdn)
+    : fqdn_(_fqdn)
+{
+}
+
 InfoZoneData InfoZone::exec(OperationContext& _ctx) const
 {
     Database::Result result;
