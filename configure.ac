@@ -459,6 +459,15 @@ AC_CHECK_FILE(
 	)]
 )
 
+AC_CHECK_FILE(
+	[$IDLDIR/Accounting.idl],
+	[],
+	[AC_MSG_ERROR(
+		[directory "$IDLDIR" does not contain Accounting.idl
+		(use --with-idldir)]
+	)]
+)
+
 AC_ARG_WITH(
   [libidn], 
   [AC_HELP_STRING(
