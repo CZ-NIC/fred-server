@@ -169,7 +169,7 @@ fred_start() {
         fi
     fi
 
-    FRED_CENTRAL_REGISTRY_CORBA_SERVERS_TOTAL=10
+    FRED_CENTRAL_REGISTRY_CORBA_SERVERS_TOTAL=11
     if [ $NUM -eq $FRED_CENTRAL_REGISTRY_CORBA_SERVERS_TOTAL ]; then
         log_success_msg "${MSG_START}"
     else
