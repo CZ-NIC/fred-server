@@ -18,11 +18,14 @@
 
 #include "src/backend/admin/zone/zone.hh"
 #include "src/libfred/zone/exceptions.hh"
+#include "src/libfred/zone/zone_ns/util.hh"
 #include "test/backend/admin/zone/fixtures.hh"
 #include "test/setup/fixtures.hh"
 
-#include <boost/test/unit_test.hpp>
+#include <boost/asio.hpp>
 #include <boost/test/test_tools.hpp>
+#include <boost/test/unit_test.hpp>
+#include <vector>
 
 namespace Test {
 
@@ -34,10 +37,9 @@ BOOST_AUTO_TEST_SUITE(TestAdminAddZoneNs)
 unsigned int exists_zone_ns(
         const unsigned long long _zone_id,
         const std::string& _fqdn,
-        const std::string& _addrs)
+        const std::vector<boost::asio::ip::address>& _addrs)
 {
     ::LibFred::OperationContextCreator ctx;
-    const std::string ip_addresses = "{" + _addrs + "}";
     const Database::Result db_result = ctx.get_conn().exec_params(
             // clang-format off
             "SELECT 1 FROM zone_ns AS zn "
@@ -45,7 +47,7 @@ unsigned int exists_zone_ns(
             "AND zn.fqdn = $2::text "
             "AND zn.addrs = $3::inet[] ",
             // clang-format on
-            Database::query_param_list(_zone_id)(_fqdn)(ip_addresses));
+            Database::query_param_list(_zone_id)(_fqdn)(::LibFred::Zone::ip_addresses_to_string(_addrs)));
     return db_result.size();
 }
 

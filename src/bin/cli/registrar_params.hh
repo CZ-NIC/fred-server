@@ -27,6 +27,9 @@
 #include "src/util/types/optional.hh"
 #include "src/util/decimal/decimal.hh"
 
+#include <boost/asio.hpp>
+#include <vector>
+
 /**
  * \class ZoneAddArgs
  * \brief admin client zone_add params
@@ -289,7 +292,7 @@ struct ZoneNsAddArgs
 {
     std::string zone_fqdn;
     std::string ns_fqdn;
-    optional_string addr;
+    std::vector<std::string> addrs;
 
     ZoneNsAddArgs()
     {}//ctor
@@ -297,11 +300,11 @@ struct ZoneNsAddArgs
     ZoneNsAddArgs(
             const std::string& _zone_fqdn
             , const std::string& _ns_fqdn
-            , const optional_string& _addr
+            , const std::vector<std::string>& _addrs
             )
     : zone_fqdn(_zone_fqdn)
     , ns_fqdn(_ns_fqdn)
-    , addr(_addr)
+    , addrs(_addrs)
     {}//init ctor
 };//struct ZoneNsAddArgs
 

@@ -19,7 +19,9 @@
 #ifndef ZONE_HH_B9DCA511FCD149BB9BEA44F320E7196F
 #define ZONE_HH_B9DCA511FCD149BB9BEA44F320E7196F
 
+#include <boost/asio.hpp>
 #include <string>
+#include <vector>
 
 namespace Admin {
 namespace Zone {
@@ -39,7 +41,7 @@ void add_zone(
 void add_zone_ns(
         const std::string& _zone_fqdn_,
         const std::string& _nameserver_fqdn_,
-        const std::string& _nameserver_ip_addresses);
+        const std::vector<boost::asio::ip::address>& _nameserver_ip_addresses);
 
 } // namespace Admin::Zone
 } // namespace Zone

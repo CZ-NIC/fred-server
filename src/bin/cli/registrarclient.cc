@@ -22,6 +22,7 @@
 #include "src/bin/corba/file_manager_client.hh"
 #include "src/util/types/money.hh"
 
+#include <boost/asio.hpp>
 #include <string>
 #include <vector>
 
@@ -181,13 +182,13 @@ RegistrarClient::zone_ns_add()
 {
     std::string zone = zone_ns_add_params_.zone_fqdn;//REGISTRAR_ZONE_FQDN_NAME
     std::string fqdn = zone_ns_add_params_.ns_fqdn;//REGISTRAR_NS_FQDN_NAME
-    std::string addr;
-    if (zone_ns_add_params_.addr.is_value_set()) {//REGISTRAR_ADDR_NAME
-        addr = zone_ns_add_params_.addr.get_value();
-    } else {
-        addr = "";
+    std::vector<boost::asio::ip::address> addrs;
+    if (!zone_ns_add_params_.addrs.empty()) {//REGISTRAR_ADDR_NAME
+        std::for_each(zone_ns_add_params_.addrs.begin(),
+                zone_ns_add_params_.addrs.end(),
+                [&addrs](const std::string& s) { addrs.push_back(boost::asio::ip::address::from_string(s));});
     }
-    Admin::Zone::add_zone_ns(zone, fqdn, addr);
+    Admin::Zone::add_zone_ns(zone, fqdn, addrs);
 }
 
 void

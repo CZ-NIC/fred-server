@@ -52,6 +52,7 @@
 #include <string>
 #include <vector>
 
+#include <boost/asio.hpp>
 #include <boost/program_options.hpp>
 
 /**
@@ -1633,15 +1634,14 @@ public:
         cfg_opts->add_options()
             ("zone_ns_add", "add new nameserver to the zone")
             ("zone_fqdn", boost::program_options
-                ::value<Checked::string>()->notifier(save_arg<std::string>(params.zone_fqdn))
-                , "zone fqdn")
+                ::value<Checked::string>()->notifier(save_arg<std::string>(params.zone_fqdn)),
+                "zone fqdn")
             ("ns_fqdn", boost::program_options
-                ::value<Checked::string>()->notifier(save_arg<std::string>(params.ns_fqdn))
-                , "nameserver fqdn")
-            ("addr", boost::program_options
-                ::value<Checked::string>()->notifier(save_optional_string(params.addr))
-                , "nameserver address")
-                ;
+                ::value<Checked::string>()->notifier(save_arg<std::string>(params.ns_fqdn)),
+                "nameserver fqdn")
+            ("addr", boost::program_options::value<std::vector<std::string> >()->multitoken()
+                ->notifier(save_arg<std::vector<std::string> >(params.addrs)),
+                "nameserver addresses");
         return cfg_opts;
     }//get_options_description
     std::size_t handle( int argc, char* argv[],  FakedArgs &fa

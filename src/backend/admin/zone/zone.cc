@@ -20,8 +20,8 @@
 #include "src/libfred/opcontext.hh"
 #include "src/libfred/zone/create_zone.hh"
 #include "src/libfred/zone/exceptions.hh"
-#include "src/libfred/zone/zone_soa/create_zone_soa.hh"
 #include "src/libfred/zone/zone_ns/create_zone_ns.hh"
+#include "src/libfred/zone/zone_soa/create_zone_soa.hh"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/asio.hpp>
@@ -55,37 +55,22 @@ void add_zone(
             .set_minimum(_minimum)
             .set_ns_fqdn(_ns_fqdn)
             .exec(ctx);
+
     ctx.commit_transaction();
 }
 
 void add_zone_ns(
         const std::string& _zone_fqdn,
         const std::string& _nameserver_fqdn,
-        const std::string& _nameserver_ip_addresses)
+        const std::vector<boost::asio::ip::address>& _nameserver_ip_addresses)
 {
     LibFred::OperationContextCreator ctx;
 
-    if (_nameserver_ip_addresses.empty())
-    {
-        LibFred::Zone::CreateZoneNs(_zone_fqdn)
-                .set_nameserver_fqdn(_nameserver_fqdn)
-                .exec(ctx);
-    }
-    else
-    {
-        std::vector<std::string> splitted_addresses;
-        boost::split(splitted_addresses, _nameserver_ip_addresses, boost::is_any_of(","));
+    LibFred::Zone::CreateZoneNs(_zone_fqdn)
+            .set_nameserver_fqdn(_nameserver_fqdn)
+            .set_nameserver_ip_addresses(_nameserver_ip_addresses)
+            .exec(ctx);
 
-        std::vector<boost::asio::ip::address> ip_addrs;
-        std::for_each(splitted_addresses.begin(),
-                splitted_addresses.end(),
-                [&ip_addrs](const std::string& s) { ip_addrs.push_back(boost::asio::ip::address::from_string(s)); });
-
-        LibFred::Zone::CreateZoneNs(_zone_fqdn)
-                .set_nameserver_fqdn(_nameserver_fqdn)
-                .set_nameserver_ip_addresses(ip_addrs)
-                .exec(ctx);
-    }
     ctx.commit_transaction();
 }
 

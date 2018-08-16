@@ -26,7 +26,9 @@
 #include "test/setup/fixtures.hh"
 #include "test/setup/fixtures_utils.hh"
 
+#include <boost/asio.hpp>
 #include <string>
+#include <vector>
 
 namespace Test {
 namespace Backend {
@@ -177,11 +179,11 @@ struct HasNonEnumZone {
 struct HasNonExistentZone {
         NonEnumZone zone;
         std::string nameserver_fqdn;
-        std::string nameserver_ip_addresses;
+        std::vector<boost::asio::ip::address> nameserver_ip_addresses;
     HasNonExistentZone(LibFred::OperationContext& _ctx)
         : zone(_ctx),
           nameserver_fqdn(ns_fqdn_name),
-          nameserver_ip_addresses("")
+          nameserver_ip_addresses()
     {}
 };
 
@@ -191,13 +193,13 @@ struct HasMoreRecords {
         std::string nameserver_fqdn_0;
         std::string nameserver_fqdn_1;
         std::string nameserver_fqdn_2;
-        std::string nameserver_ip_addresses;
+        std::vector<boost::asio::ip::address> nameserver_ip_addresses;
     HasMoreRecords(LibFred::OperationContext& _ctx)
         : zone(_ctx),
           nameserver_fqdn_0("t.ns.nic.cz"),
           nameserver_fqdn_1("h.ns.nic.cz"),
           nameserver_fqdn_2("i.ns.nic.cz"),
-          nameserver_ip_addresses("")
+          nameserver_ip_addresses()
     {
         zone_id = ::LibFred::Zone::CreateZone(
                 zone.fqdn,
@@ -211,11 +213,11 @@ struct HasEmptyIpAddress {
         NonEnumZone zone;
         unsigned long long zone_id;
         std::string nameserver_fqdn;
-        std::string nameserver_ip_addresses;
+        std::vector<boost::asio::ip::address> nameserver_ip_addresses;
     HasEmptyIpAddress(LibFred::OperationContext& _ctx)
         : zone(_ctx),
           nameserver_fqdn(ns_fqdn_name),
-          nameserver_ip_addresses("")
+          nameserver_ip_addresses()
     {
         zone_id = ::LibFred::Zone::CreateZone(
                 zone.fqdn,
@@ -229,12 +231,13 @@ struct HasOneIpAddress {
         NonEnumZone zone;
         unsigned long long zone_id;
         std::string nameserver_fqdn;
-        std::string nameserver_ip_addresses;
+        std::vector<boost::asio::ip::address> nameserver_ip_addresses;
     HasOneIpAddress(LibFred::OperationContext& _ctx)
         : zone(_ctx),
           nameserver_fqdn(ns_fqdn_name),
-          nameserver_ip_addresses("2.3.4.5")
+          nameserver_ip_addresses()
     {
+        nameserver_ip_addresses.emplace_back(boost::asio::ip::address::from_string("2.3.4.5"));
         zone_id = ::LibFred::Zone::CreateZone(
                 zone.fqdn,
                 expiration_period_min_in_months,
@@ -247,12 +250,15 @@ struct HasMoreIpAddresses {
         NonEnumZone zone;
         unsigned long long zone_id;
         std::string nameserver_fqdn;
-        std::string nameserver_ip_addresses;
+        std::vector<boost::asio::ip::address> nameserver_ip_addresses;
     HasMoreIpAddresses(LibFred::OperationContext& _ctx)
         : zone(_ctx),
           nameserver_fqdn(ns_fqdn_name),
-          nameserver_ip_addresses("2.3.4.5,3.6.7.5,0.0.0.9")
+          nameserver_ip_addresses()
     {
+        nameserver_ip_addresses.emplace_back(boost::asio::ip::address::from_string("2.3.4.5"));
+        nameserver_ip_addresses.emplace_back(boost::asio::ip::address::from_string("6.7.8.9"));
+        nameserver_ip_addresses.emplace_back(boost::asio::ip::address::from_string("0.0.0.7"));
         zone_id = ::LibFred::Zone::CreateZone(
                 zone.fqdn,
                 expiration_period_min_in_months,
