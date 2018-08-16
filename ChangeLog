@@ -1,3 +1,29 @@
+2018-08-16 (2.38.0)
+
+  * epp disclose flags defaults configuration
+
+  * mojeid
+    - join fist/last name to name
+    - check for registrar configuration
+
+  * public request impl. refactoring
+    - asynchronous processing of authinfo and block/unblock requests by fred-admin command
+    - status enum renaming
+    - new verification type for requests (government)
+
+  * new interface for accounting (registrar credit) - (phase 1)
+    - bank payments moved to separate project (django-pain, fred-pain)
+    - backend will manage only registrar credit transactions through this interface (fred-accifd)
+    - preparations for moving invoices as well
+
+  * fix - whois nameserver validity check
+
+  * fixes in random generator initialization (tests, call id logging)
+
+  * removed code duplicity
+
+  * removed old database model structures and rewriting them to libfred operations (phase 1)
+
 2018-05-17 (2.37.1)
 
   * bugfix of authinfo sending (automatic on registry e-mail) for multiple recipients
