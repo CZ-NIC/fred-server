@@ -61,7 +61,6 @@ struct invoice_list_impl
               , InvoiceCreditArgs()
               , InvoiceBillingArgs()
               , InvoicePrefixArgs()
-              , InvoiceCreateArgs()
               );
       invoice_client.runMethod();
 
@@ -98,7 +97,6 @@ struct invoice_archive_impl
               , InvoiceCreditArgs()
               , InvoiceBillingArgs()
               , InvoicePrefixArgs()
-              , InvoiceCreateArgs()
               );
       invoice_client.runMethod();
 
@@ -135,7 +133,6 @@ struct invoice_credit_impl
               , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientInvoiceCreditArgsGrp>()->params//InvoiceCreditArgs()
               , InvoiceBillingArgs()
               , InvoicePrefixArgs()
-              , InvoiceCreateArgs()
               );
       invoice_client.runMethod();
 
@@ -172,7 +169,6 @@ struct invoice_billing_impl
               , InvoiceCreditArgs()
               , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientInvoiceBillingArgsGrp>()->params//InvoiceBillingArgs()
               , InvoicePrefixArgs()
-              , InvoiceCreateArgs()
               );
       invoice_client.runMethod();
 
@@ -209,7 +205,6 @@ struct invoice_add_prefix_impl
               , InvoiceCreditArgs()
               , InvoiceBillingArgs()
               , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientInvoiceAddPrefixArgsGrp>()->params//InvoicePrefixArgs()
-              , InvoiceCreateArgs()
               );
       invoice_client.runMethod();
 
@@ -284,7 +279,6 @@ struct create_invoice_impl
               , InvoiceCreditArgs()
               , InvoiceBillingArgs()
               , InvoicePrefixArgs()
-              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientInvoiceCreateArgsGrp>()->params//InvoiceCreateArgs()
               );
       invoice_client.runMethod();
 

@@ -240,6 +240,11 @@ AC_ARG_WITH([rsifdport], [AS_HELP_STRING([--with-rsifdport],
             [CORBA fred-rsifd port [2231]])],
             [AC_SUBST([RSIFDPORT], [$withval])],
             [AC_SUBST([RSIFDPORT], [2231])])
+#accifd port
+AC_ARG_WITH([accifdport], [AS_HELP_STRING([--with-accifdport],
+            [CORBA fred-accifd port [2232]])],
+            [AC_SUBST([ACCIFDPORT], [$withval])],
+            [AC_SUBST([ACCIFDPORT], [2232])])
 
 
 #hp login name
@@ -450,6 +455,15 @@ AC_CHECK_FILE(
 	[],
 	[AC_MSG_ERROR(
 		[directory "$IDLDIR" does not contain ZoneGenerator.idl
+		(use --with-idldir)]
+	)]
+)
+
+AC_CHECK_FILE(
+	[$IDLDIR/Accounting.idl],
+	[],
+	[AC_MSG_ERROR(
+		[directory "$IDLDIR" does not contain Accounting.idl
 		(use --with-idldir)]
 	)]
 )

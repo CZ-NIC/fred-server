@@ -19,15 +19,29 @@
 #include "src/bin/corba/util/corba_conversions_isodatetime.hh"
 
 #include "src/bin/corba/IsoDateTime.hh"
-#include "src/bin/corba/NullableIsoDateTime.hh"
 #include "src/bin/corba/util/corba_conversions_string.hh"
-#include "src/util/db/nullable.hh"
 
-#include <boost/date_time/posix_time/posix_time_types.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 
 namespace CorbaConversion {
 namespace Util {
+
+Tz::LocalTimestamp
+unwrap_IsoDateTime_to_Tz_LocalTimestamp(
+        const Registry::IsoDateTime src)
+{
+    return Tz::LocalTimestamp::from_rfc3339_formated_string(
+            LibFred::Corba::unwrap_string_from_const_char_ptr(src.value.in()));
+}
+
+boost::posix_time::ptime
+unwrap_IsoDateTime_to_boost_posix_time_ptime(
+        const Registry::IsoDateTime src)
+{
+    return Tz::LocalTimestamp::from_rfc3339_formated_string(
+            LibFred::Corba::unwrap_string_from_const_char_ptr(src.value.in())).get_local_time();
+}
 
 Registry::IsoDateTime
 wrap_boost_posix_time_ptime_to_IsoDateTime(
@@ -48,19 +62,6 @@ wrap_boost_posix_time_ptime_to_IsoDateTime(
         Registry::IsoDateTime& dst)
 {
     dst = wrap_boost_posix_time_ptime_to_IsoDateTime(src);
-}
-
-Registry::NullableIsoDateTime_var
-wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(
-        const Nullable<boost::posix_time::ptime>& src)
-{
-    if (src.isnull()) {
-        return Registry::NullableIsoDateTime_var();
-    }
-
-    Registry::NullableIsoDateTime_var result(new Registry::NullableIsoDateTime());
-    wrap_boost_posix_time_ptime_to_IsoDateTime(src.get_value(), result.in()->_value());
-    return result._retn();
 }
 
 } // namespace CorbaConversion::Util

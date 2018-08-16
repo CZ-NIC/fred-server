@@ -1,37 +1,132 @@
 #include <string>
 #include <iostream>
 #include <algorithm>
-// #include <magic.h>
 
-#include "src/libfred/banking/bank_payment_list_impl.hh"
-#include "src/libfred/banking/bank_statement_list_impl.hh"
 #include "src/libfred/banking/bank_common.hh"
 #include "src/libfred/banking/bank_manager.hh"
+#include "src/libfred/banking/exceptions.hh"
+#include "src/libfred/banking/payment_data.hh"
 #include "src/libfred/credit.hh"
 #include "src/libfred/invoicing/invoice.hh"
 #include "src/libfred/registrar.hh"
-#include "src/util/types/stringify.hh"
 #include "src/util/types/money.hh"
+#include "src/util/types/stringify.hh"
 
 #include <boost/algorithm/string.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/optional.hpp>
+
 #include <utility>
 
-
-// std::string magic_string_to_mime_type(const std::string &_magic_str)
-// {
-//     std::string::size_type l = _magic_str.length();
-//     std::string::size_type scolon = _magic_str.find_first_of(";");
-//     if (scolon >= l) {
-//         return _magic_str;
-//     }
-//     else {
-//         return std::string(_magic_str, 0, scolon);
-//     }
-// }
 
 namespace LibFred {
 namespace Banking {
 
+namespace {
+
+unsigned long long get_registrar_id_by_handle(
+        const std::string& _registrar_handle)
+{
+    const std::string registrar_handle = boost::trim_copy(_registrar_handle);
+
+    Database::Query query;
+    query.buffer() <<
+            // clang-format off
+            "SELECT id "
+              "FROM registrar "
+             "WHERE handle = " << Database::Value(registrar_handle);
+            // clang-format on
+    Database::Connection conn = Database::Manager::acquire();
+    const Database::Result res = conn.exec(query);
+    if (res.size() == 0) {
+            LOGGER(PACKAGE).error(boost::str(boost::format(
+                    "Registrar with handle '%1%' not found in database.") % registrar_handle));
+            throw RegistrarNotFound();
+    }
+    const auto registrar_id = static_cast<unsigned long long>(res[0][0]);
+    return registrar_id;
+}
+
+unsigned long long get_registrar_id_by_payment(
+        const PaymentData& _payment)
+{
+    Database::Query query;
+    query.buffer() <<
+            // clang-format off
+            "SELECT id "
+              "FROM registrar "
+             "WHERE varsymb = " << Database::Value(_payment.variable_symbol) << " "
+                "OR (length(trim(regex)) > 0 "
+                    "AND " << Database::Value(_payment.memo) << " ~* trim(regex))";
+            // clang-format on
+    Database::Connection conn = Database::Manager::acquire();
+    const Database::Result result = conn.exec(query);
+    if (result.size() != 1) {
+        LOGGER(PACKAGE).warning(boost::format(
+                    "couldn't find suitable registrar for payment id=%1% "
+                    "=> processing canceled") % _payment.uuid);
+        throw RegistrarNotFound();
+    }
+    const auto registrar_id = static_cast<unsigned long long>(result[0][0]);
+    return registrar_id;
+}
+
+unsigned long long get_account_id_by_account_number_and_bank_code(
+        const std::string& _account_number,
+        const boost::optional<std::string>& _account_bank_code)
+{
+    if (_account_number.empty() || _account_bank_code.get_value_or("").empty())
+    {
+        LOGGER(PACKAGE).error(boost::str(boost::format(
+                "invalid account_number/account_bank_code (%1%/%2%)")
+                % _account_number % _account_bank_code.get_value_or("")));
+        throw InvalidAccountData();
+    }
+
+    Database::Query query;
+    query.buffer() <<
+            // clang-format off
+            "SELECT id "
+              "FROM bank_account "
+             "WHERE TRIM(LEADING '0' FROM account_number) = "
+                   "TRIM(LEADING '0' FROM " << Database::Value(_account_number) << ") "
+               "AND bank_code = " << Database::Value(_account_bank_code.get_value_or(""));
+            // clang-format on
+    Database::Connection conn = Database::Manager::acquire();
+    const Database::Result result = conn.exec(query);
+    if (result.size() == 0) {
+        LOGGER(PACKAGE).error(boost::str(boost::format(
+                "not valid record found in database for account=%1% bankcode=%2%")
+                % _account_number % _account_bank_code.get_value_or("")));
+        throw InvalidAccountData();
+    }
+    const auto account_id = static_cast<unsigned long long>(result[0][0]);
+    return account_id;
+}
+
+std::string get_invoice_number_by_id(
+        unsigned long long _invoice_id)
+{
+    Database::Query query;
+    query.buffer() <<
+            // clang-format off
+            "SELECT prefix "
+              "FROM invoice "
+             "WHERE id = " << Database::Value(_invoice_id);
+            // clang-format on
+    Database::Connection conn = Database::Manager::acquire();
+    const Database::Result res = conn.exec(query);
+    if (res.size() == 0) {
+            LOGGER(PACKAGE).error(boost::str(boost::format(
+                    "Invoice with id '%1%' not found in database.") % _invoice_id));
+            throw std::runtime_error("invoice not found");
+    }
+    const auto invoice_number = static_cast<std::string>(res[0][0]);
+    return invoice_number;
+}
+
+} // LibFred::Banking::{anonymous}
 
 class ManagerImpl : virtual public Manager
 {
@@ -39,42 +134,18 @@ private:
     File::Manager *file_manager_;
 
 
-    /**
-     *  core method for pairing payment and statement - no error checking
-     *  just statement update
-     */
-    void _pairPaymentWithStatement(const Database::ID &payment,
-                                   const Database::ID &statement)
+    unsigned long long getZoneByAccountId(const unsigned long long &_account_id)
     {
-        if (payment == 0) {
-            throw std::runtime_error("payment id not valid");
-        }
-
-        Database::Query uquery;
-        uquery.buffer() << "UPDATE bank_payment SET statement_id = ";
-        if (statement == 0) {
-            uquery.buffer() << "NULL";
-        }
-        else {
-            uquery.buffer() << Database::Value(statement);
-        }
-        uquery.buffer() << " WHERE id = " << Database::Value(payment);
-
-        Database::Connection conn = Database::Manager::acquire();
-        Database::Result uresult = conn.exec(uquery);
-
-        LOGGER(PACKAGE).info(
-                boost::format("pair payment id=%1% with statement id=%2%: "
-                              "success!") % payment % statement);
-    }
-
-    unsigned long long getZoneByAccountId(const unsigned long long &_account_id) {
         Database::Query query;
-        query.buffer() << "SELECT zone FROM bank_account WHERE "
-                       << "id = " << Database::Value(_account_id);
+        query.buffer() <<
+                // clang-format off
+                "SELECT zone "
+                  "FROM bank_account "
+                 "WHERE id = " << Database::Value(_account_id);
+                // clang-format on
 
         Database::Connection conn = Database::Manager::acquire();
-        Database::Result result = conn.exec(query);
+        const Database::Result result = conn.exec(query);
 
         if (result.size() != 0) {
             return static_cast<unsigned long long>(result[0][0]);
@@ -84,11 +155,12 @@ private:
         }
     }
 
-    void pay_invoice(unsigned long long registrar_id
-            , unsigned long long zone_id
-            , unsigned long long bank_payment_id
-            , Money price
-            , unsigned long long invoice_id)
+    void pay_invoice(
+            unsigned long long registrar_id,
+            unsigned long long zone_id,
+            const std::string& bank_payment_uuid,
+            Money price,
+            unsigned long long invoice_id)
     {
         Logging::Context ctx("pay_invoice");
         Database::Connection conn = Database::Manager::acquire();
@@ -99,63 +171,39 @@ private:
 
         //insert_bank_payment_registrar_credit_transaction_map
         conn.exec_params(
-        "INSERT INTO bank_payment_registrar_credit_transaction_map "
-                " (bank_payment_id, registrar_credit_transaction_id) "
-                " VALUES ($1::bigint, $2::bigint) "
-        ,Database::query_param_list(bank_payment_id)
-        (registrar_credit_transaction_id));
+                // clang-format off
+                "INSERT INTO bank_payment_registrar_credit_transaction_map "
+                "(bank_payment_uuid, registrar_credit_transaction_id) "
+                "VALUES ($1::uuid, $2::bigint)",
+                Database::query_param_list
+                        (bank_payment_uuid)
+                        (registrar_credit_transaction_id));
+                // clang-format on
 
 
     }
 
-    void processPayment(PaymentImpl *_payment,
-                        unsigned long long _registrar_id = 0)
+    PaymentInvoices processPayment(
+            PaymentData& _payment,
+            unsigned long long _registrar_id)
     {
         Logging::Context ctx("payment processing");
         try
         {
-            /* is payment in db? */
-            if (_payment->getId() == Database::ID(0))
+            PaymentInvoices payment_invoices;
+
+            if (_payment.price <= Money("0"))
             {
-                throw std::runtime_error("cannot process payment which was not"
-                        "saved");
+                throw std::runtime_error("could not process payment, price not > 0");
             }
-            _payment->reload();
-            if (_payment->getPrice() <= Money("0")) return;
 
             Database::Connection conn = Database::Manager::acquire();
             Database::Transaction transaction(conn);
 
-            /* we process only payment with code = 1 (normal transaction)
-             * and status = 1 (realized transfer) and type = 1 (not assigned) */
-            if(!_payment->is_eligible_to_process())
-            {
-                LOGGER(PACKAGE).info(boost::format(
-                            "payment id=%1% not eligible -- status: %2% != 1 "
-                            "code: %3% != 1 type: %4% != 1 => processing canceled")
-                            % _payment->getId()
-                            % _payment->getStatus()
-                            % _payment->getCode()
-                            % _payment->getType());
-                return;
-            }
-
             DBSharedPtr nodb;
-            /* automatic pair payment with registrar */
             LibFred::Registrar::Manager::AutoPtr rmanager(LibFred::Registrar::Manager::create(nodb));
-            if (_registrar_id == 0) {
-                _registrar_id = rmanager->getRegistrarByPayment(_payment->getVarSymb(),
-                                                                _payment->getAccountMemo());
-                /* did we find suitable registrar? */
-                if (_registrar_id == 0) {
-                    LOGGER(PACKAGE).warning(boost::format(
-                                "couldn't find suitable registrar for payment id=%1% "
-                                "=> processing canceled") % _payment->getId());
-                    return;
-                }
-            }
 
-            unsigned long long zone_id = getZoneByAccountId(_payment->getAccountId());
+            unsigned long long zone_id = getZoneByAccountId(_payment.account_id);
 
 
             std::unique_ptr<LibFred::Invoicing::Manager>
@@ -167,7 +215,7 @@ private:
                 = invoice_manager->find_unpaid_account_invoices(
                      _registrar_id, zone_id);
 
-            Money payment_price_rest = _payment->getPrice();
+            Money payment_price_rest = _payment.price;
 
             //for unpaid_account_invoices
             for(unsigned i = 0 ; i < uai_vect.size(); ++i)
@@ -192,16 +240,28 @@ private:
                         Money balance_change //is partial_price without vat
                             = invoice_manager->lower_account_invoice_balance_by_paid_amount(
                                 partial_price, uaci_vat , unpaid_account_invoice_id);
-                        pay_invoice(_registrar_id , zone_id, _payment->getId()
+                        pay_invoice(_registrar_id , zone_id, _payment.uuid
                             , balance_change, unpaid_account_invoice_id);
+                        payment_invoices.account_invoices.push_back(
+                                InvoiceReference(
+                                        unpaid_account_invoice_id,
+                                        get_invoice_number_by_id(unpaid_account_invoice_id),
+                                        InvoiceType::account,
+                                        balance_change));
                     }
                     else
                     {
                         Money balance_change //is rest of invoice balance without vat
                             = invoice_manager->zero_account_invoice_balance(
                                 unpaid_account_invoice_id);
-                        pay_invoice(_registrar_id , zone_id, _payment->getId()
+                        pay_invoice(_registrar_id , zone_id, _payment.uuid
                             , balance_change, unpaid_account_invoice_id);
+                        payment_invoices.account_invoices.push_back(
+                                InvoiceReference(
+                                        unpaid_account_invoice_id,
+                                        get_invoice_number_by_id(unpaid_account_invoice_id),
+                                        InvoiceType::account,
+                                        balance_change));
                     }
                 }
 
@@ -216,8 +276,8 @@ private:
                             " => processing canceled (payment id=%3%)")
                             % _registrar_id
                             % zone_id
-                            % _payment->getId());
-                    return;
+                            % _payment.uuid);
+                    throw std::runtime_error("could not process payment");
                 }
 
                 // amount larger than registrar debt
@@ -227,11 +287,11 @@ private:
                             " sent amount larger than debt (payment id=%3%) it will have to be resolved manually")
                             % _registrar_id
                             % zone_id
-                            % _payment->getId());
+                            % _payment.uuid);
+                    throw std::runtime_error("could not process payment");
 
                 }
             }
-
 
             // create advance invoice for rest amount after paying possible debt (account invoice)
             if (payment_price_rest > Money("0"))
@@ -240,7 +300,6 @@ private:
 
                 boost::posix_time::ptime local_current_timestamp
                     = boost::posix_time::microsec_clock::local_time();
-
 
                 boost::gregorian::date tax_date = local_current_timestamp.date();
 
@@ -253,277 +312,145 @@ private:
                         , payment_price_rest
                         , local_current_timestamp, out_credit);
 
-                pay_invoice(_registrar_id , zone_id, _payment->getId()
+                pay_invoice(_registrar_id , zone_id, _payment.uuid
                         , out_credit, advance_invoice_id);
+
+                payment_invoices.advance_invoice =
+                        InvoiceReference(
+                                advance_invoice_id,
+                                get_invoice_number_by_id(advance_invoice_id),
+                                InvoiceType::advance,
+                                out_credit);
             }
-            //set_payment_as_processed
-            _payment->setType(2);
-            _payment->save();
             LOGGER(PACKAGE).info(boost::format(
                         "payment paired with registrar (id=%1%) "
                         ) % _registrar_id );
 
             transaction.commit();
+
+            return payment_invoices;
         }
         catch (std::exception &ex) {
-            throw std::runtime_error(str(boost::format(
+            LOGGER(PACKAGE).info(boost::str(boost::format(
                             "processing payment failed: %1%") % ex.what()));
+            throw;
         }
     }
 
 
 public:
-    ManagerImpl(File::Manager *_file_manager)
-              : file_manager_(_file_manager)
+    explicit ManagerImpl(File::Manager* _file_manager)
+        : file_manager_(_file_manager)
     {
     }
 
-    StatementList* createStatementList() const
+    ManagerImpl()
     {
-        return new StatementListImpl();
     }
 
-    PaymentList* createPaymentList() const
+    PaymentInvoices importPayment(
+            const std::string& _uuid,
+            const std::string& _account_number,
+            const boost::optional<std::string>& _account_bank_code,
+            const std::string& _account_payment_ident,
+            const std::string& _counter_account_number,
+            const boost::optional<std::string>& _counter_account_bank_code,
+            const std::string& _counter_account_name,
+            const std::string& _constant_symbol,
+            const std::string& _variable_symbol,
+            const std::string& _specific_symbol,
+            const Money& _price,
+            const boost::gregorian::date _date,
+            const std::string& _memo,
+            const boost::posix_time::ptime _creation_time,
+            const boost::optional<std::string>& _registrar_handle)
     {
-        return new PaymentListImpl();
-    }
-
-    void importStatementXml(std::istream &_in,
-                            const std::string &_file_path,
-                            const std::string &_file_mime,
-                            const bool &_generate_invoices = false)
-         //throw (std::runtime_error)
-    {
-        TRACE("[CALL] LibFred::Banking::Manager::importStatementXml(...)");
-        Logging::Context ctx("bank xml import");
-
-
+        TRACE("[CALL] LibFred::Banking::Manager::importPayment(...)");
+        Logging::Context ctx("bank payment import");
 
         try {
-            /* load stream to string */
-            _in.seekg(0, std::ios::beg);
-            std::ostringstream stream;
-            stream << _in.rdbuf();
-            std::string xml = stream.str();
-
-            LOGGER(PACKAGE).debug(boost::format(
-                    "stream loaded into string : %1%")
-                    % xml );
-
-            /* parse */
-            XMLparser parser;
-            if (!parser.parse(xml)) {
-                throw std::runtime_error("parser error");
-            }
-
-            LOGGER(PACKAGE).debug("string parsed");
-
-            XMLnode root = parser.getRootNode();
-            if (root.getName().compare(STATEMENTS_ROOT) != 0) {
-                throw std::runtime_error(str(boost::format(
-                            "root xml element name is not `<%1%>'")
-                            % STATEMENTS_ROOT));
-            }
-
-            /* start transaction for saving */
             Database::Connection conn = Database::Manager::acquire();
             Database::Transaction tx(conn);
 
-            LOGGER(PACKAGE).debug(boost::format(
-                    "saving transaction for : %1%")
-                    % root.getChildrenSize() );
+            LOGGER(PACKAGE).debug("saving transaction for a single payment");
 
-            for (int i = 0; i < root.getChildrenSize(); i++) {
-
-                LOGGER(PACKAGE).debug(boost::format(
-                        "saving node : %1%")
-                        % i );
-
-                /* xml to statement */
-                XMLnode snode = root.getChild(i);
-                StatementImplPtr statement(parse_xml_statement_part(snode));
-
-                /* check if statement is valid or was processed in past */
-                bool statement_conflict = false;
-                bool statement_valid = statement->isValid();
-                if (statement_valid) {
-                    /* error when have valid statement and no original file */
-                    if (_file_path.empty() || _file_mime.empty()) {
-                        throw std::runtime_error("importing statement "
-                                "without original file path and file mime type set");
-                    }
-
-                    Database::ID conflict_sid(0);
-                    if ((conflict_sid = statement->getConflictId()) == 0) {
-                        statement_conflict = false;
-                        statement->save();
-                        LOGGER(PACKAGE).info(boost::format(
-                                "new statement imported (id=%1% account_id=%2% "
-                                "number=%3% date=%4%)")
-                                % statement->getId()
-                                % statement->getAccountId()
-                                % statement->getNum()
-                                % statement->getCreateDate());
-                    }
-                    else {
-                        statement_conflict = true;
-                        statement->setId(conflict_sid);
-                        LOGGER(PACKAGE).info(boost::format(
-                                "conflict statement found (id=%1% account_id=%2% "
-                                "number=%3%) -- checking payments")
-                                % statement->getId()
-                                % statement->getAccountId()
-                                % statement->getNum());
-                    }
-                }
-                else {
-                    statement->setId(0);
-                    LOGGER(PACKAGE).info("no statement -- importing only payments");
-
-                }
-                unsigned long long sid = statement->getId();
-
-                XMLnode pnodes = snode.getChild(STATEMENT_ITEMS);
-                for (int n = 0; n < pnodes.getChildrenSize(); n++) {
-                    /* xml to payment */
-                    XMLnode pnode = pnodes.getChild(n);
-                    PaymentImplPtr payment(parse_xml_payment_part(pnode));
-                    payment->setAccountId(statement->getAccountId());
-                    if (sid != 0) {
-                        payment->setStatementId(sid);
-                    }
-
-                    Database::ID conflict_pid(0);
-                    if ((conflict_pid = payment->getConflictId()) == 0) {
-                        payment->save();
-                        LOGGER(PACKAGE).info(boost::format(
-                                "payment imported (id=%1% account=%2%/%3% "
-                                "evid=%4% price=%5% account_date=%6%) account_id=%7%")
-                                % payment->getId()
-                                % payment->getAccountNumber()
-                                % payment->getBankCode()
-                                % payment->getAccountEvid()
-                                % payment->getPrice()
-                                % payment->getAccountDate()
-                                % payment->getAccountId());
-
-                        /* payment processing */
-                        processPayment(payment.get());
-                    }
-                    else {
-                        /* load conflict payment */
-                        PaymentImplPtr cpayment(new PaymentImpl());
-                        cpayment->setId(conflict_pid);
-                        cpayment->reload();
-                        /* compare major attributes which should never change */
-                        if (payment->getAccountNumber() != cpayment->getAccountNumber()
-                                || payment->getBankCode() != cpayment->getBankCode()
-                                || payment->getCode() != cpayment->getCode()
-                                || payment->getKonstSym() != cpayment->getKonstSym()
-                                || payment->getVarSymb() != cpayment->getVarSymb()
-                                || payment->getSpecSymb() != cpayment->getSpecSymb()
-                                || payment->getAccountMemo() != cpayment->getAccountMemo()) {
-
-                            LOGGER(PACKAGE).debug(boost::format("imported payment: %1%")
-                                                                % payment->toString());
-                            LOGGER(PACKAGE).debug(boost::format("conflict payment: %1%")
-                                                                % cpayment->toString());
-
-                            LOGGER(PACKAGE).error(boost::format(
-                                            "oops! found conflict payment with "
-                                            "INCONSISTENT DATA (id=%1% account_evid=%2%) "
-                                            "importing file=%3% -- please make manual checking"
-                                            "; skipping payment")
-                                            % cpayment->getId()
-                                            % cpayment->getAccountEvid()
-                                            % _file_path);
-                            /* lets do another payment */
-                            continue;
-                        }
-                        /* compare changable attributes for futher processing */
-                        else if (payment->getStatus() != cpayment->getStatus()) {
-                            LOGGER(PACKAGE).info(boost::format(
-                                    "already imported payment -- status changed "
-                                    "%1% => %2% (price %3% => %4%; account_date %5% => %6%)")
-                                    % cpayment->getStatus()
-                                    % payment->getStatus()
-                                    % cpayment->getPrice()
-                                    % payment->getPrice()
-                                    % cpayment->getAccountDate()
-                                    % payment->getAccountDate());
-
-                            cpayment->setStatus(payment->getStatus());
-                            cpayment->setAccountDate(payment->getAccountDate());
-                            cpayment->setPrice(payment->getPrice());
-                            cpayment->save();
-                            processPayment(cpayment.get());
-                        }
-
-                        /* there we should have already imported payment */
-                        LOGGER(PACKAGE).info(boost::format(
-                                "conflict payment found "
-                                "(id=%1% account=%2%/%3% evid=%4%)")
-                                % cpayment->getId()
-                                % cpayment->getAccountNumber()
-                                % cpayment->getBankCode()
-                                % cpayment->getAccountEvid());
-
-                        if (payment->getStatementId() != cpayment->getStatementId()
-                                && cpayment->getStatementId() == 0) {
-
-                            if (statement_valid && !statement_conflict) {
-                                LOGGER(PACKAGE).info(boost::format(
-                                            "conflict payment should be paired with imported "
-                                            "statement (payment=%1% statement=%2%)")
-                                            % cpayment->getId()
-                                            % statement->getId());
-                                _pairPaymentWithStatement(cpayment->getId(), statement->getId());
-                            }
-                       }
-                       else {
-                           LOGGER(PACKAGE).info(boost::format(
-                                       "conflict payment is already paired with this "
-                                       "statement (payment=%1% statement=%2%)")
-                                       % cpayment->getId()
-                                       % statement->getId());
-                       }
-                    }
-                }
-
-                /* upload file via file manager and update statement */
-                if (file_manager_ && statement_valid && !statement_conflict) {
-                    // /* get mime type */
-                    // magic_t magic = magic_open(MAGIC_MIME);
-                    // magic_load(magic, 0);
-                    // std::string magic_str = magic_file(magic, _file_path.c_str());
-                    // std::string mime_type = magic_string_to_mime_type(magic_str);
-
-                    unsigned long long id = file_manager_->upload(_file_path, _file_mime, 4);
-                    statement->setFileId(id);
-                    statement->save();
-                    LOGGER(PACKAGE).info(boost::format(
-                                "statement file (id=%1%) succesfully uploaded") % id);
-                }
-
+            Database::Query query;
+            // clang-format off
+            query.buffer() << "SELECT 1 "
+                                "FROM bank_payment_registrar_credit_transaction_map "
+                               "WHERE bank_payment_uuid = " << Database::Value(_uuid);
+            // clang-format on
+            const Database::Result result = conn.exec(query);
+            if (result.size() != 0) {
+                throw PaymentAlreadyProcessed();
             }
 
+            PaymentData payment =
+                    PaymentData(
+                            _uuid,
+                            get_account_id_by_account_number_and_bank_code(_account_number, _account_bank_code),
+                            _account_payment_ident,
+                            _counter_account_number,
+                            _counter_account_bank_code,
+                            _counter_account_name,
+                            _constant_symbol,
+                            _variable_symbol,
+                            _specific_symbol,
+                            _price,
+                            _date,
+                            _memo,
+                            _creation_time);
+
+            LOGGER(PACKAGE).info(boost::format(
+                    "payment imported (id=%1% account=%2%/%3% evid=%4% price=%5% account_date=%6%) account_id=%7%")
+                    % payment.uuid
+                    % payment.counter_account_number
+                    % payment.counter_account_bank_code.get_value_or("")
+                    % payment.account_payment_ident
+                    % payment.price
+                    % payment.date
+                    % payment.account_id);
+
+            const unsigned long long registrar_id =
+                    _registrar_handle != boost::none
+                            ? get_registrar_id_by_handle(*_registrar_handle)
+                            : get_registrar_id_by_payment(payment);
+
+            const auto invoice_references = processPayment(payment, registrar_id);
 
             tx.commit();
+
+            return invoice_references;
         }
-        catch (std::exception &ex) {
+        catch (const LibFred::Banking::RegistrarNotFound& e) {
+            LOGGER(PACKAGE).info(boost::str(boost::format(
+                            "bank import payment: %1%") % e.what()));
+            throw;
+        }
+        catch (const LibFred::Banking::InvalidAccountData& e) {
+            LOGGER(PACKAGE).info(boost::str(boost::format(
+                            "bank import payment: %1%") % e.what()));
+            throw;
+        }
+        catch (const LibFred::Banking::PaymentAlreadyProcessed& e) {
+            LOGGER(PACKAGE).info(boost::str(boost::format(
+                            "bank import payment: %1%") % e.what()));
+            throw;
+        }
+        catch (const std::exception& e) {
             throw std::runtime_error(str(boost::format(
-                            "bank xml import: %1%") % ex.what()));
+                            "bank import payment: %1%") % e.what()));
         }
         catch (...) {
-            throw std::runtime_error("bank xml import: an error occured");
+            throw std::runtime_error("bank import payment: an unexpected exception");
         }
     }
 
-    void addBankAccount(const std::string &_account_number,
-                            const std::string &_bank_code,
-                            const std::string &_zone,
-                            const std::string &_account_name)
-        //throw (std::runtime_error)
+    void addBankAccount(
+            const std::string& _account_number,
+            const std::string& _bank_code,
+            const std::string& _zone,
+            const std::string& _account_name)
     {
         TRACE("[CALL] LibFred::Banking::Manager::insertBankAccount(zone_fqdn, ...)");
 
@@ -535,7 +462,7 @@ public:
                 Database::Query query;
                 query.buffer() << "SELECT id FROM zone WHERE fqdn=" << Database::Value(_zone);
 
-                Database::Result result = conn.exec(query);
+                const Database::Result result = conn.exec(query);
                 if (result.size() == 0) {
                     throw std::runtime_error(str(boost::format(
                                         "zone '%1%' not found")
@@ -549,7 +476,7 @@ public:
                 query.buffer() << "SELECT id FROM bank_account WHERE "
                                << "account_number = " << Database::Value(_account_number)
                                << "AND bank_code = " << Database::Value(_bank_code);
-                Database::Result result = conn.exec(query);
+                const Database::Result result = conn.exec(query);
                 if (result.size() != 0) {
                     throw std::runtime_error(str(boost::format(
                                     "account '%1%/%2%' already exists")
@@ -577,172 +504,16 @@ public:
         }
     }
 
-    bool pairPaymentWithStatement(const Database::ID &payment,
-                                  const Database::ID &statement,
-                                  bool force = false)
-    {
-        TRACE("[CALL] LibFred::Banking::Manager::pairPaymentWithStatement(...)");
-        if (payment == 0) {
-            throw std::runtime_error("payment id not valid");
-        }
-
-        Database::Connection conn = Database::Manager::acquire();
-        try {
-            Database::Query pquery;
-            pquery.buffer() << "SELECT id, statement_id FROM bank_payment WHERE id = "
-                            << Database::Value(payment);
-
-            Database::Result presult = conn.exec(pquery);
-            if (presult.size() == 0) {
-                throw std::runtime_error("payment doesn't exist");
-            }
-
-            if (statement > 0) {
-                Database::Query squery;
-                squery.buffer() << "SELECT id FROM bank_statement WHERE id = "
-                                << Database::Value(statement);
-
-                Database::Result sresult = conn.exec(squery);
-                if (sresult.size() == 0) {
-                    throw std::runtime_error("statement doesn't exist");
-                }
-            }
-
-            unsigned long long payment_sid = presult[0][1];
-            if (payment_sid > 0) {
-                if (force) {
-                    LOGGER(PACKAGE).info(
-                            boost::format("Pair payment id=%1% with statement id=%2%: "
-                                          "payment is listed on statement id=%3% (FORCING)")
-                                           % payment % statement % payment_sid);
-                }
-                else {
-                    throw std::runtime_error(str(boost::format(
-                                    "payment is listed on statement id=%3% "
-                                    "(try run with `force' parameter)")
-                                    % payment % statement % payment_sid));
-                }
-            }
-
-            /* update payment */
-            _pairPaymentWithStatement(payment, statement);
-            return true;
-        }
-        catch (std::exception &ex) {
-            LOGGER(PACKAGE).error(
-                    boost::format("Cannot pair payment id=%1% with statement id=%2%: %3%")
-                                  % payment % statement % ex.what());
-            return false;
-         }
-        catch (...) {
-            LOGGER(PACKAGE).error(
-                    boost::format("Cannot pair payment id=%1% with statement id=%2%: "
-                                  "exception caught") % payment % statement);
-            return false;
-        }
-    }
-
-    virtual bool pairPaymentWithRegistrar(
-                const Database::ID &paymentId,
-                const std::string &_registrarHandle) {
-
-        TRACE("[CALL] LibFred::Invoicing::Manager::manualCreateInvoice(Database::ID, std::string)");
-
-        //trim spaces
-        std::string registrarHandle = boost::trim_copy(_registrarHandle);
-
-        Database::Query query;
-        query.buffer()
-            << "SELECT id FROM registrar WHERE handle="
-            << Database::Value(registrarHandle);
-        Database::Connection conn = Database::Manager::acquire();
-        Database::ID registrarId;
-        try {
-            Database::Result res = conn.exec(query);
-            if(res.size() == 0) {
-                    LOGGER(PACKAGE).error(boost::format(
-                    "Registrar with handle '%1%' not found in database.") %
-                            registrarHandle);
-                    return false;
-            }
-            registrarId = res[0][0];
-
-            PaymentImpl pi;
-            pi.setId(paymentId);
-            pi.reload();
-            processPayment(&pi, registrarId);
-
-        } catch (std::exception &e) {
-            LOGGER(PACKAGE).error(boost::format("An error has occured: %1% ") % e.what());
-            return false;
-        }
-
-        return true;
-    }
-
-    virtual void setPaymentType(
-            const Database::ID &payment_id,
-            const int &type)
-    {
-        Logging::Context ctx("set payment type");
-        try {
-            if (type < 1 || type > 6) {
-                throw std::runtime_error("parameter error "
-                        "(type should be in interval <1, 6>)");
-            }
-
-            if (payment_id == 0) {
-                throw std::runtime_error("parameter error "
-                        "invalid payment id");
-            }
-
-            PaymentImpl payment;
-            payment.setId(payment_id);
-            payment.reload();
-
-            int old_type = payment.getType();
-
-            if (old_type == 2 || old_type == 5) {
-                throw std::runtime_error(str(boost::format(
-                                "payment (id=%1% type=%2%) was already "
-                                "processed => type cannot be changed")
-                                % payment_id
-                                % old_type));
-            }
-
-            if (type == 2) {
-                throw std::runtime_error(str(boost::format(
-                                "payment (id=%1%) need to be processed "
-                                "to set type=2 (need registrar info) use "
-                                "pairPaymentWithRegistrar(...) instead")
-                                % payment_id));
-            }
-            else {
-                payment.setType(type);
-                payment.save();
-                LOGGER(PACKAGE).info(boost::format(
-                            "successfully changed payment id=%1% type "
-                            "%2% => %3%") % payment_id % old_type % type);
-
-            }
-        }
-        catch (NOT_FOUND) {
-            throw std::runtime_error(str(boost::format("set payment type: "
-                            "payment id=%1% not found") % payment_id));
-        }
-        catch (std::exception &ex) {
-            throw std::runtime_error(str(boost::format(
-                            "set payment type: %1%") % ex.what()));
-        }
-        catch (...) {
-            throw std::runtime_error("set payment type: unknown error occured");
-        }
-    }
 };
 
 Manager* Manager::create(File::Manager *_file_manager)
 {
     return new ManagerImpl(_file_manager);
+}
+
+Manager* Manager::create()
+{
+    return new ManagerImpl();
 }
 
 } // namespace Banking

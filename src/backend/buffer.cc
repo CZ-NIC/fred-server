@@ -16,7 +16,7 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "buffer.hh"
+#include "src/backend/buffer.hh"
 
 #include <string>
 

@@ -29,6 +29,7 @@
 #include "src/bin/corba/admin_block/corba_conversion.hh"
 #include "src/bin/corba/admin_block/server_i.hh"
 #include "src/bin/corba/util/corba_conversions_isodate.hh"
+#include "src/bin/corba/util/corba_conversions_nullableisodate.hh"
 
 #include <string>
 

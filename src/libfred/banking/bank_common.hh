@@ -144,7 +144,6 @@ public:
     XMLnode getRootNode() const;
 }; // class XMLparse;
 
-
 } // namespace Banking
 } // namespace LibFred
 

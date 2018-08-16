@@ -16,33 +16,32 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <memory>
-#include <vector>
-#include <algorithm>
-#include <functional>
-#include <iostream>
-#include <iomanip>
-#include <fstream>
-#include <cmath>
-#include <boost/date_time/posix_time/time_parsers.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/date_time/local_time_adjustor.hpp>
-#include <boost/date_time/c_local_time_adjustor.hpp>
-
-#include <boost/checked_delete.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string.hpp>
+#include "src/deprecated/util/dbsql.hh"
 #include "src/libfred/common_impl.hh"
+#include "src/libfred/documents.hh"
 #include "src/libfred/invoicing/invoice.hh"
-#include "src/util/log/logger.hh"
+#include "src/libfred/poll/get_request_fee_message.hh"
 #include "src/util/log/context.hh"
+#include "src/util/log/logger.hh"
 #include "src/util/types/convert_sql_db_types.hh"
 #include "src/util/types/sqlize.hh"
 
-#include "src/libfred/documents.hh"
-#include "src/libfred/poll/get_request_fee_message.hh"
+#include <boost/algorithm/string.hpp>
+#include <boost/checked_delete.hpp>
+#include <boost/date_time/c_local_time_adjustor.hpp>
+#include <boost/date_time/local_time_adjustor.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/posix_time/time_parsers.hpp>
+#include <boost/lexical_cast.hpp>
 
-#include "src/util/log/logger.hh"
+#include <algorithm>
+#include <cmath>
+#include <fstream>
+#include <functional>
+#include <iomanip>
+#include <iostream>
+#include <memory>
+#include <vector>
 
 using namespace boost::gregorian;
 using namespace boost::posix_time;

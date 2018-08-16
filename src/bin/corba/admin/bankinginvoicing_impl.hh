@@ -1,9 +1,12 @@
 #ifndef BANKINGINVOICING_IMPL_HH_03F685E625E04510AC2B1C6B1B6B5E20
 #define BANKINGINVOICING_IMPL_HH_03F685E625E04510AC2B1C6B1B6B5E20
 
-#include <string>
-#include "src/libfred/invoicing/invoice.hh"
+#include "src/bin/corba/Admin.hh"
+
 #include "src/bin/corba/nameservice.hh"
+#include "src/libfred/invoicing/invoice.hh"
+
+#include <string>
 
 class ccReg_BankingInvoicing_i:
     public POA_ccReg::BankingInvoicing,

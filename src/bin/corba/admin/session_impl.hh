@@ -37,8 +37,6 @@
 #include "src/bin/corba/admin/pagetable_publicrequests.hh"
 #include "src/bin/corba/admin/pagetable_mails.hh"
 #include "src/bin/corba/admin/pagetable_invoices.hh"
-#include "src/bin/corba/admin/pagetable_bank_payments.hh"
-//#include "pagetable_bank_statements.h"
 #include "src/bin/corba/admin/pagetable_filters.hh"
 #include "src/bin/corba/admin/pagetable_files.hh"
 // we don't need this at the momment, ccReg_Logger_i is not referenced directly, only through Pagetable_ptr
@@ -54,8 +52,6 @@
 #include "src/libfred/requests/request_manager.hh"
 #include "src/deprecated/util/dbsql.hh"
 #include "src/deprecated/model/model_filters.hh"
-
-//#include "conf/manager.h"
 
 #include "src/util/settings.hh"
 
@@ -92,8 +88,6 @@ private:
   ccReg_PublicRequests_i* m_publicrequests;
   ccReg_Mails_i* m_mails;
   ccReg_Invoices_i* m_invoices;
-  ccReg_Payments_i* m_payments;
-  // ccReg_Statement_i* m_statements;
   ccReg_Filters_i* m_filters;
   ccReg_User_i* m_user;
   ccReg_Files_i* m_files;
@@ -137,7 +131,6 @@ private:
   ccReg::Logger::Detail*  getLoggerDetail(ccReg::TID _id);
   Registry::Zone::Detail* getZoneDetail(ccReg::TID _id);
   Registry::Banking::BankItem::Detail * getPaymentDetail(ccReg::TID _id);
-  //Registry::Banking::BankHead::Detail * getStatementDetail(ccReg::TID _id);
   Registry::Message::Detail* getMessageDetail(ccReg::TID _id);
 
   /*
@@ -155,8 +148,6 @@ private:
   Registry::Mailing::Detail* createMailDetail(LibFred::Mail::Mail *_mail);
   Registry::Invoicing::Detail* createInvoiceDetail(LibFred::Invoicing::Invoice *_invoice);
   Registry::Zone::Detail* createZoneDetail(LibFred::Zone::Zone* _registrar);
-  Registry::Banking::BankItem::Detail *createPaymentDetail(LibFred::Banking::Payment *_payment);
-  //Registry::Banking::BankHead::Detail *createStatementDetail(LibFred::Banking::Statement *_statement);
   Registry::Message::Detail* createMessageDetail(LibFred::Messages::MessagePtr _message);
 
 public:
@@ -191,8 +182,6 @@ public:
 
   void setHistory(CORBA::Boolean _flag);
 };
-
-void fillPaymentDetail(Registry::Banking::BankItem::Detail &d, const LibFred::Banking::Payment *_payment);
 
 class CompareSessionsByLastActivity {
 public:

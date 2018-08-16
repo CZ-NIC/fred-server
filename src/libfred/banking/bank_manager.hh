@@ -1,12 +1,15 @@
 #ifndef BANK_MANAGER_HH_5C8C2E1D0B944AA19ED43A94CE1AE7FC
 #define BANK_MANAGER_HH_5C8C2E1D0B944AA19ED43A94CE1AE7FC
 
-#include "src/libfred/banking/bank_payment.hh"
-#include "src/libfred/banking/bank_payment_list.hh"
-#include "src/libfred/banking/bank_statement.hh"
-#include "src/libfred/banking/bank_statement_list.hh"
-#include "src/libfred/file.hh"
+#include "src/libfred/banking/invoice_reference.hh"
+#include "src/libfred/banking/payment_invoices.hh"
 #include "src/libfred/db_settings.hh"
+#include "src/libfred/file.hh"
+#include "src/util/types/money.hh"
+
+#include <boost/date_time/posix_time/posix_time_types.hpp>
+#include <boost/date_time/gregorian/gregorian_types.hpp>
+#include <boost/optional.hpp>
 
 namespace LibFred {
 namespace Banking {
@@ -14,9 +17,8 @@ namespace Banking {
 
 class Manager {
 public:
-    virtual StatementList *createStatementList() const = 0;
-    virtual PaymentList *createPaymentList() const = 0;
     static Manager *create(File::Manager *_file_manager);
+    static Manager *create();
 
     virtual void addBankAccount(
             const std::string &_account_number,
@@ -25,25 +27,23 @@ public:
             const std::string &_account_name) //throw (std::runtime_error)
                 = 0;
 
-    virtual void importStatementXml(
-            std::istream &_in,
-            const std::string &_file_path,
-            const std::string &_file_mime,
-            const bool &_generate_invoices = false) //throw (std::runtime_error)
+    virtual PaymentInvoices importPayment(
+            const std::string& _uuid,
+            const std::string& _account_number,
+            const boost::optional<std::string>& _account_bank_code,
+            const std::string& _account_payment_ident,
+            const std::string& _counter_account_number,
+            const boost::optional<std::string>& _counter_account_bank_code,
+            const std::string& _counter_account_name,
+            const std::string& _constant_symbol,
+            const std::string& _variable_symbol,
+            const std::string& _specific_symbol,
+            const Money& _price,
+            const boost::gregorian::date _date,
+            const std::string& _memo,
+            const boost::posix_time::ptime _creation_time,
+            const boost::optional<std::string>& _registrar_handle)
                 = 0;
-
-    virtual bool pairPaymentWithStatement(
-            const Database::ID &payment,
-            const Database::ID &statement,
-            bool force = false) = 0;
-
-    virtual bool pairPaymentWithRegistrar(
-            const Database::ID &paymentId,
-            const std::string &registrarHandle) = 0;
-
-    virtual void setPaymentType(
-            const Database::ID &payment,
-            const int &type) = 0;
 
 }; // class Manager
 

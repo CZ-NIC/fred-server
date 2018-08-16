@@ -1,10 +1,13 @@
-#include <utility>
-
 #include "src/libfred/banking/bank_common.hh"
-#include "src/util/types/stringify.hh"
-#include "src/util/types/money.hh"
 
-#include "src/libfred/banking/bank_payment_impl.hh"
+#include "src/libfred/banking/payment_data.hh"
+#include "src/libfred/db_settings.hh"
+#include "src/util/types/money.hh"
+#include "src/util/types/stringify.hh"
+
+#include <boost/date_time/posix_time/ptime.hpp>
+
+#include <utility>
 
 namespace LibFred {
 namespace Banking {
@@ -302,119 +305,5 @@ XMLparser::getRootNode() const
     return m_rootNode;
 }
 
-EnumList getBankAccounts()
-{
-    Database::Connection conn = Database::Manager::acquire();
-    Database::Result res = conn.exec("SELECT  id, "
-            " account_name || ' ' || account_number || '/' || bank_code "
-            " FROM bank_account "
-            " ORDER BY id");
-    EnumList el;
-    for(unsigned i=0;i<res.size();i++)
-    {
-        EnumListItem eli;
-        eli.id = res[i][0];
-        eli.name = std::string(res[i][1]);
-        el.push_back(eli);
-    }
-    return el;
-}//getBankAccounts
-
-PaymentImplPtr parse_xml_payment_part(const XMLnode &_node)
-{
-    TRACE("[CALL] LibFred::Banking::payment_from_xml(...)");
-
-    /* manual xml validation */
-    if (!_node.hasChild(ITEM_IDENT)
-            || !_node.hasChild(ITEM_ACCOUNT_NUMBER)
-            || !_node.hasChild(ITEM_ACCOUNT_BANK_CODE)
-            || !_node.hasChild(ITEM_CONST_SYMBOL)
-            || !_node.hasChild(ITEM_VAR_SYMBOL)
-            || !_node.hasChild(ITEM_SPEC_SYMBOL)
-            || !_node.hasChild(ITEM_PRICE)
-            || !_node.hasChild(ITEM_TYPE)
-            || !_node.hasChild(ITEM_CODE)
-            || !_node.hasChild(ITEM_MEMO)
-            || !_node.hasChild(ITEM_DATE)
-            || !_node.hasChild(ITEM_CRTIME)
-            || !_node.hasChild(ITEM_NAME)) {
-
-        throw std::runtime_error("not valid payment xml");
-    }
-    PaymentImplPtr payment(new PaymentImpl());
-    if (!_node.getChild(ITEM_IDENT).isEmpty()) {
-        std::string value = _node.getChild(ITEM_IDENT).getValue();
-        payment->setAccountEvid(value);
-    }
-    else {
-        throw std::runtime_error("no valid payment xml; "
-                "cannot identify payment with no accountevid");
-    }
-    // if (!_node.getChild(ITEM_ACCOUNT_NUMBER).isEmpty()) {
-    {
-        std::string value = _node.getChild(ITEM_ACCOUNT_NUMBER).getValue();
-        payment->setAccountNumber(value);
-    }
-    // }
-    // if (!_node.getChild(ITEM_ACCOUNT_BANK_CODE).isEmpty()) {
-    {
-        std::string value = _node.getChild(ITEM_ACCOUNT_BANK_CODE).getValue();
-        payment->setBankCode(value);
-    }
-        /* test if is in databaase? */
-    // }
-    // if (!_node.getChild(ITEM_PRICE).isEmpty()) {
-    {
-        Money value(_node.getChild(ITEM_PRICE).getValue());
-        payment->setPrice(value);
-    }
-    // }
-
-    if (!_node.getChild(ITEM_CONST_SYMBOL).isEmpty()) {
-        std::string value = _node.getChild(ITEM_CONST_SYMBOL).getValue();
-        payment->setKonstSym(value);
-    }
-    if (!_node.getChild(ITEM_VAR_SYMBOL).isEmpty()) {
-        std::string value = _node.getChild(ITEM_VAR_SYMBOL).getValue();
-        payment->setVarSymb(value);
-    }
-    if (!_node.getChild(ITEM_SPEC_SYMBOL).isEmpty()) {
-        std::string value = _node.getChild(ITEM_SPEC_SYMBOL).getValue();
-        payment->setSpecSymb(value);
-    }
-    if (!_node.getChild(ITEM_MEMO).isEmpty()) {
-        std::string value = _node.getChild(ITEM_MEMO).getValue();
-        payment->setAccountMemo(value);
-    }
-    if (!_node.getChild(ITEM_DATE).isEmpty()) {
-        Database::Date value = _node.getChild(ITEM_DATE).getValue();
-        payment->setAccountDate(value);
-    }
-    if (!_node.getChild(ITEM_CRTIME).isEmpty()) {
-        Database::DateTime value = _node.getChild(ITEM_CRTIME).getValue();
-        payment->setCrTime(value);
-    }
-    if (!_node.getChild(ITEM_NAME).isEmpty()) {
-        std::string value = _node.getChild(ITEM_NAME).getValue();
-        payment->setAccountName(value);
-    }
-
-
-    if (!_node.getChild(ITEM_TYPE).isEmpty()) {
-        int value = atoi(_node.getChild(ITEM_TYPE).getValue().c_str());
-        payment->setType(value);
-    }
-    if (!_node.getChild(ITEM_CODE).isEmpty()) {
-        int value = atoi(_node.getChild(ITEM_CODE).getValue().c_str());
-        payment->setCode(value);
-    }
-    if (!_node.getChild(ITEM_STATUS).isEmpty()) {
-        int value = atoi(_node.getChild(ITEM_STATUS).getValue().c_str());
-        payment->setStatus(value);
-    }
-
-    return payment;
-}
-
-} // namespace Banking
+} // namespace LibFred::Banking
 } // namespace LibFred

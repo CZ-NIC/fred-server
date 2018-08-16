@@ -27,6 +27,8 @@
 #include "src/bin/corba/DomainBrowser.hh"
 #include "src/bin/corba/util/corba_conversions_isodate.hh"
 #include "src/bin/corba/util/corba_conversions_isodatetime.hh"
+#include "src/bin/corba/util/corba_conversions_nullableisodate.hh"
+#include "src/bin/corba/util/corba_conversions_nullableisodatetime.hh"
 #include "src/bin/corba/util/corba_conversions_nullable_types.hh"
 #include "src/bin/corba/util/corba_conversions_string.hh"
 
