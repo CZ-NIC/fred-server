@@ -30,10 +30,7 @@ namespace Zone {
 class InfoZone
 {
 public:
-    explicit InfoZone(const std::string& _fqdn)
-        : fqdn_(_fqdn)
-    {
-    }
+    explicit InfoZone(const std::string& _fqdn);
 
     InfoZoneData exec(OperationContext& _ctx) const;
 

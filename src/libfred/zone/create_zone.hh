@@ -34,17 +34,11 @@ public:
     CreateZone(
             const std::string& _fqdn,
             int _expiration_period_min_in_months,
-            int _expiration_period_max_in_months)
-        : fqdn_(_fqdn),
-          expiration_period_min_in_months_(_expiration_period_min_in_months),
-          expiration_period_max_in_months_(_expiration_period_max_in_months),
-          sending_warning_letter_(false)
-    {
-    }
+            int _expiration_period_max_in_months);
 
-    CreateZone& set_enum_validation_period_in_months(int _enum_validation_period_in_months);
+    CreateZone& set_enum_validation_period_in_months(boost::optional<int> _enum_validation_period_in_months);
 
-    CreateZone& set_sending_warning_letter(bool _sending_warning_letter);
+    CreateZone& set_sending_warning_letter(boost::optional<bool> _sending_warning_letter);
 
     unsigned long long exec(OperationContext& _ctx) const;
 
@@ -52,7 +46,7 @@ private:
     std::string fqdn_;
     int expiration_period_min_in_months_;
     int expiration_period_max_in_months_;
-    bool sending_warning_letter_;
+    boost::optional<bool> sending_warning_letter_;
     boost::optional<int> enum_validation_period_in_months_;
 };
 
