@@ -297,6 +297,7 @@ function(compile_idl_files)
 endfunction()
 
 compile_idl_files(
+    Accounting
     Admin
     AdminContactVerification
     AdministrativeBlocking
@@ -336,6 +337,10 @@ execute_process(
 message(STATUS ${OMNIIDL_MESSAGE}${idl_name})
 
 prepare_object_files(
+    src/backend/accounting/accounting.cc
+    src/backend/accounting/exceptions.cc
+    src/backend/accounting/impl/accounting.cc
+    src/backend/accounting/impl/exceptions.cc
     src/backend/admin_block/administrativeblocking.cc
     src/backend/admin/contact/merge_contact_auto_procedure.cc
     src/backend/admin/contact/merge_contact.cc
@@ -362,6 +367,7 @@ prepare_object_files(
     src/backend/admin/contact/verification/update_tests.cc
     src/backend/admin/domain/create_expired_domain.cc
     src/backend/admin/notification/notification.cc
+    src/backend/admin/zone/zone.cc
     src/backend/automatic_keyset_management/automatic_keyset_management.cc
     src/backend/automatic_keyset_management/dns_key.cc
     src/backend/automatic_keyset_management/impl/logger_request_data.cc
@@ -370,6 +376,7 @@ prepare_object_files(
     src/backend/automatic_keyset_management/impl/logger_request_type.cc
     src/backend/automatic_keyset_management/impl/util.cc
     src/backend/buffer.cc
+    src/backend/credit.cc
     src/backend/contact_verification/contact_verification_impl.cc
     src/backend/contact_verification/public_request_contact_verification_impl.cc
     src/backend/domain_browser/domain_browser.cc
@@ -533,6 +540,12 @@ prepare_object_files(
     src/bin/cli/public_request_method.cc
     src/bin/cli/registrarclient.cc
     src/bin/cli/remove_delete_candidates.cc
+    src/bin/corba/AccountingDynSK.cc
+    src/bin/corba/AccountingSK.cc
+    src/bin/corba/accounting/accounting_i.cc
+    src/bin/corba/accounting/fred-accifd.cc
+    src/bin/corba/accounting/impl/corba_conversions.cc
+    src/bin/corba/accounting/impl/exceptions.cc
     src/bin/corba/admin/admin_impl.cc
     src/bin/corba/admin/bankinginvoicing_impl.cc
     src/bin/corba/admin_block/server_i.cc
@@ -544,8 +557,6 @@ prepare_object_files(
     src/bin/corba/admin/filter_impl.cc
     src/bin/corba/AdministrativeBlockingDynSK.cc
     src/bin/corba/AdministrativeBlockingSK.cc
-    src/bin/corba/admin/pagetable_bank_payments.cc
-    src/bin/corba/admin/pagetable_bank_statements.cc
     src/bin/corba/admin/pagetable_contacts.cc
     src/bin/corba/admin/pagetable_domains.cc
     src/bin/corba/admin/pagetable_files.cc
@@ -565,7 +576,6 @@ prepare_object_files(
     src/bin/corba/admin/session_impl.cc
     src/bin/corba/AdminSK.cc
     src/bin/corba/admin/user_impl.cc
-    src/bin/corba/admin/zone_impl.cc
     src/bin/corba/AutomaticKeysetManagementDynSK.cc
     src/bin/corba/automatic_keyset_management/fred-akmd.cc
     src/bin/corba/automatic_keyset_management/server_i.cc
@@ -656,7 +666,10 @@ prepare_object_files(
     src/bin/corba/util/corba_conversions_buffer.cc
     src/bin/corba/util/corba_conversions_isodate.cc
     src/bin/corba/util/corba_conversions_isodatetime.cc
+    src/bin/corba/util/corba_conversions_money.cc
     src/bin/corba/util/corba_conversions_nullable_types.cc
+    src/bin/corba/util/corba_conversions_nullableisodate.cc
+    src/bin/corba/util/corba_conversions_nullableisodatetime.cc
     src/bin/corba/util/corba_conversions_string.cc
     src/bin/corba/Whois2DynSK.cc
     src/bin/corba/Whois2SK.cc
@@ -668,8 +681,6 @@ prepare_object_files(
     src/bin/corba/ZoneGeneratorDynSK.cc
     src/bin/corba/ZoneGeneratorSK.cc
     src/bin/corba/ZoneSK.cc
-    src/deprecated/model/bank_payment_filter.cc
-    src/deprecated/model/bank_statement_filter.cc
     src/deprecated/model/contact_filter.cc
     src/deprecated/model/domain_filter.cc
     src/deprecated/model/file_filter.cc
@@ -697,10 +708,9 @@ prepare_object_files(
     src/deprecated/util/timeclock.cc
     src/deprecated/util/util.cc
     src/libfred/banking/bank_common.cc
-    src/libfred/banking/bank_exporter.cc
     src/libfred/banking/bank_manager.cc
-    src/libfred/banking/model_bank_payment.cc
-    src/libfred/banking/model_bank_statement.cc
+    src/libfred/banking/exceptions.cc
+    src/libfred/banking/get_bank_accounts.cc
     src/libfred/blacklist.cc
     src/libfred/common_diff.cc
     src/libfred/common_impl.cc
@@ -723,9 +733,6 @@ prepare_object_files(
     src/libfred/messages/messages_impl.cc
     src/libfred/model_registrar_acl.cc
     src/libfred/model_registrar.cc
-    src/libfred/model_zone.cc
-    src/libfred/model_zone_ns.cc
-    src/libfred/model_zone_soa.cc
     src/libfred/notifier/enqueue_notification.cc
     src/libfred/notifier/gather_email_data/gather_email_addresses.cc
     src/libfred/notifier/gather_email_data/gather_email_content.cc
@@ -889,14 +896,14 @@ prepare_object_files(
     src/libfred/zone/exceptions.cc
     src/libfred/zone/info_zone.cc
     src/libfred/zone/info_zone_data.cc
-    src/libfred/zone_ns/create_zone_ns.cc
-    src/libfred/zone_ns/exceptions.cc
-    src/libfred/zone_ns/info_zone_ns.cc
-    src/libfred/zone_ns/update_zone_ns.cc
-    src/libfred/zone_ns/util.cc
-    src/libfred/zone_soa/create_zone_soa.cc
-    src/libfred/zone_soa/info_zone_soa.cc
-    src/libfred/zone_soa/update_zone_soa.cc
+    src/libfred/zone/zone_ns/create_zone_ns.cc
+    src/libfred/zone/zone_ns/exceptions.cc
+    src/libfred/zone/zone_ns/info_zone_ns.cc
+    src/libfred/zone/zone_ns/update_zone_ns.cc
+    src/libfred/zone/zone_ns/util.cc
+    src/libfred/zone/zone_soa/create_zone_soa.cc
+    src/libfred/zone/zone_soa/info_zone_soa.cc
+    src/libfred/zone/zone_soa/update_zone_soa.cc
     src/libfred/zone/update_zone.cc
     src/libfred/zone/util.cc
     src/libfred/zone/zone.cc
@@ -957,6 +964,9 @@ prepare_object_files(
     test/backend/admin/domain/test_create_expired_domain.cc
     test/backend/admin/notification/main.cc
     test/backend/admin/notification/test_set_domain_outzone_unguarded_warning_emails.cc
+    test/backend/admin/zone/main.cc
+    test/backend/admin/zone/test_add_zone.cc
+    test/backend/admin/zone/test_add_zone_ns.cc
     test/backend/automatic_keyset_management/main.cc
     test/backend/automatic_keyset_management/test_automatic_keyset_management.cc
     test/backend/domain_browser/test_domain_browser.cc
@@ -1147,14 +1157,14 @@ prepare_object_files(
     test/libfred/registrar/test_registrar_zone_access.cc
     test/libfred/test_check_handle.cc
     test/libfred/test_opexception.cc
-    test/libfred/zone_ns/test_create_zone_ns.cc
-    test/libfred/zone_ns/test_info_zone_ns.cc
-    test/libfred/zone_ns/test_update_zone_ns.cc
-    test/libfred/zone_ns/util.cc
-    test/libfred/zone_soa/test_create_zone_soa.cc
-    test/libfred/zone_soa/test_info_zone_soa.cc
-    test/libfred/zone_soa/test_update_zone_soa.cc
-    test/libfred/zone_soa/util.cc
+    test/libfred/zone/zone_ns/test_create_zone_ns.cc
+    test/libfred/zone/zone_ns/test_info_zone_ns.cc
+    test/libfred/zone/zone_ns/test_update_zone_ns.cc
+    test/libfred/zone/zone_ns/util.cc
+    test/libfred/zone/zone_soa/test_create_zone_soa.cc
+    test/libfred/zone/zone_soa/test_info_zone_soa.cc
+    test/libfred/zone/zone_soa/test_update_zone_soa.cc
+    test/libfred/zone/zone_soa/util.cc
     test/libfred/zone/test_create_zone.cc
     test/libfred/zone/test_info_zone.cc
     test/libfred/zone/test_update_zone.cc
@@ -1237,10 +1247,13 @@ prepare_static_library(hp
 
 prepare_static_library(corbautil
     src/bin/corba/util/corba_conversions_buffer.cc
-    src/bin/corba/util/corba_conversions_nullable_types.cc
-    src/bin/corba/util/corba_conversions_string.cc
     src/bin/corba/util/corba_conversions_isodate.cc
-    src/bin/corba/util/corba_conversions_isodatetime.cc)
+    src/bin/corba/util/corba_conversions_isodatetime.cc
+    src/bin/corba/util/corba_conversions_money.cc
+    src/bin/corba/util/corba_conversions_nullable_types.cc
+    src/bin/corba/util/corba_conversions_nullableisodate.cc
+    src/bin/corba/util/corba_conversions_nullableisodatetime.cc
+    src/bin/corba/util/corba_conversions_string.cc)
 
 prepare_static_library(oldutils
     src/deprecated/util/dbsql.cc
@@ -1252,8 +1265,6 @@ prepare_static_library(oldutils
 prepare_static_library(model
     src/deprecated/model/object_registry_filter.cc
     src/deprecated/model/object_filter.cc
-    src/deprecated/model/bank_statement_filter.cc
-    src/deprecated/model/bank_payment_filter.cc
     src/deprecated/model/domain_filter.cc
     src/deprecated/model/contact_filter.cc
     src/deprecated/model/nsset_filter.cc
@@ -1280,9 +1291,6 @@ prepare_static_library(fred
     src/libfred/common_impl_new.cc
     src/libfred/model_registrar_acl.cc
     src/libfred/model_registrar.cc
-    src/libfred/model_zone.cc
-    src/libfred/model_zone_ns.cc
-    src/libfred/model_zone_soa.cc
     src/libfred/registrable_object/domain.cc
     src/libfred/registrable_object/contact.cc
     src/libfred/registrable_object/nsset.cc
@@ -1291,11 +1299,11 @@ prepare_static_library(fred
     src/libfred/credit.cc
     src/libfred/invoicing/invoice.cc
     src/libfred/zone.cc
-    src/libfred/zone_ns/create_zone_ns.cc
-    src/libfred/zone_ns/exceptions.cc
-    src/libfred/zone_ns/info_zone_ns.cc
-    src/libfred/zone_ns/update_zone_ns.cc
-    src/libfred/zone_ns/util.cc
+    src/libfred/zone/zone_ns/create_zone_ns.cc
+    src/libfred/zone/zone_ns/exceptions.cc
+    src/libfred/zone/zone_ns/info_zone_ns.cc
+    src/libfred/zone/zone_ns/update_zone_ns.cc
+    src/libfred/zone/zone_ns/util.cc
     src/libfred/blacklist.cc
     src/libfred/documents.cc
     src/libfred/info_buffer.cc
@@ -1377,9 +1385,9 @@ prepare_static_library(fred
     src/libfred/zone/update_zone.cc
     src/libfred/zone/util.cc
     src/libfred/zone/zone.cc
-    src/libfred/zone_soa/create_zone_soa.cc
-    src/libfred/zone_soa/info_zone_soa.cc
-    src/libfred/zone_soa/update_zone_soa.cc
+    src/libfred/zone/zone_soa/create_zone_soa.cc
+    src/libfred/zone/zone_soa/info_zone_soa.cc
+    src/libfred/zone/zone_soa/update_zone_soa.cc
     src/libfred/registrable_object/contact/verification/create_check.cc
     src/libfred/registrable_object/contact/verification/update_check.cc
     src/libfred/registrable_object/contact/verification/info_check.cc
@@ -1490,11 +1498,10 @@ prepare_static_library(public_request
     src/libfred/public_request/get_opened_public_request.cc)
 
 prepare_static_library(banking
-    src/libfred/banking/model_bank_statement.cc
-    src/libfred/banking/model_bank_payment.cc
     src/libfred/banking/bank_common.cc
     src/libfred/banking/bank_manager.cc
-    src/libfred/banking/bank_exporter.cc)
+    src/libfred/banking/exceptions.cc
+    src/libfred/banking/get_bank_accounts.cc)
 
 prepare_static_library(messages
     src/libfred/messages/messages_impl.cc)
@@ -1701,12 +1708,9 @@ prepare_static_library(admin_impl
     src/bin/corba/admin/pagetable_keysets.cc
     src/bin/corba/admin/pagetable_logger.cc
     src/bin/corba/admin/pagetable_logsession.cc
-    src/bin/corba/admin/pagetable_bank_payments.cc
-    src/bin/corba/admin/pagetable_bank_statements.cc
     src/bin/corba/admin/pagetable_zones.cc
     src/bin/corba/admin/pagetable_messages.cc
     src/bin/corba/admin/common.cc
-    src/bin/corba/admin/zone_impl.cc
     src/bin/corba/admin/bankinginvoicing_impl.cc)
 
 prepare_static_library(whois_impl
@@ -1879,6 +1883,14 @@ prepare_static_library(handle_rifd_args
     src/backend/epp/contact/config_check.cc
     src/backend/epp/contact/impl/cznic/specific.cc)
 
+prepare_static_library(corbaaccounting
+    src/bin/corba/IsoDateSK.cc
+    src/bin/corba/IsoDateDynSK.cc
+    src/bin/corba/IsoDateTimeSK.cc
+    src/bin/corba/IsoDateTimeDynSK.cc
+    src/bin/corba/AccountingSK.cc
+    src/bin/corba/AccountingDynSK.cc)
+
 
 # fred-rifd
 prepare_executable(fred-rifd
@@ -1918,7 +1930,6 @@ target_link_external_libraries(fred-rifd
     libidn
     omniorb4
     omnidynamic4
-    threads
     postgres
     threads
     openssl
@@ -2050,6 +2061,7 @@ target_link_libraries(fred-pifd
     filemanager
     corbalogger
     corbautil
+    timezones
     corbanullabletypes
     corbaisodate
     corbaisodatetime
@@ -2160,7 +2172,6 @@ prepare_executable(fred-mifd
     src/bin/corba/nameservice.cc
     src/bin/corba/mojeid/server_i.cc
     src/util/corba_conversion.cc
-    src/bin/corba/util/corba_conversions_isodatetime.cc
     src/bin/corba/mojeid/mojeid_corba_conversion.cc
     src/bin/corba/mojeid/service_name.cc
     src/bin/corba/mojeid/fred-mifd.cc
@@ -2179,6 +2190,7 @@ target_link_libraries(fred-mifd
     corbautil
     contact_verification
     public_request
+    timezones
     util
     log
     types
@@ -2222,6 +2234,7 @@ target_link_libraries(fred-dbifd
     corbadomainbrowser
     fred
     corbautil
+    timezones
     util
     log
     db)
@@ -2255,6 +2268,7 @@ target_link_libraries(fred-akmd
     corbaautomatickeysetmanagement
     fred
     corbautil
+    timezones
     corba
     corbalogger
     corbadatatypes
@@ -2313,38 +2327,78 @@ target_link_external_libraries(fred-rsifd
     boost_system
     boost_regex)
 
+# fred-accifd
+prepare_executable(fred-accifd
+    src/backend/accounting/accounting.cc
+    src/backend/accounting/exceptions.cc
+    src/backend/accounting/impl/accounting.cc
+    src/backend/accounting/impl/exceptions.cc
+    src/backend/credit.cc
+    src/bin/corba/accounting/accounting_i.cc
+    src/bin/corba/accounting/fred-accifd.cc
+    src/bin/corba/accounting/impl/corba_conversions.cc
+    src/bin/corba/accounting/impl/exceptions.cc
+    src/bin/corba/nameservice.cc)
+target_link_libraries(fred-accifd
+    banking
+    corba
+    corbaaccounting
+    corbautil
+    timezones
+    fred
+    log
+    model
+    db
+    oldutils
+    password_storage
+    types
+    util)
+target_link_external_libraries(fred-accifd
+    boost_random
+    boost_system
+    boost_regex
+    boost_date_time
+    boost_thread
+    boost_program_options
+    libidn
+    postgres
+    omniorb4
+    openssl
+    threads
+    mpdec)
+
 # fred-admin
 prepare_executable(fred-admin
-    src/bin/cli/fred-admin.cc
-    src/bin/cli/commonclient.cc
-    src/bin/cli/domainclient.cc
-    src/bin/cli/keysetclient.cc
-    src/bin/cli/contactclient.cc
-    src/bin/cli/invoiceclient.cc
-    src/bin/cli/bankclient.cc
-    src/bin/cli/pollclient.cc
-    src/bin/cli/registrarclient.cc
-    src/bin/cli/notifyclient.cc
-    src/bin/cli/optys_get_undelivered.cc
-    src/bin/cli/enumparamclient.cc
-    src/bin/cli/objectclient.cc
-    src/bin/cli/fileclient.cc
-    src/bin/cli/chargeclient.cc
-    src/bin/cli/remove_delete_candidates.cc
     src/backend/admin/contact/merge_contact.cc
-    src/backend/admin/contact/merge_contact_logger.cc
     src/backend/admin/contact/merge_contact_auto_procedure.cc
+    src/backend/admin/contact/merge_contact_logger.cc
     src/backend/admin/contact/merge_contact_reporting.cc
+    src/backend/admin/domain/create_expired_domain.cc
+    src/backend/admin/notification/notification.cc
+    src/backend/admin/zone/zone.cc
+    src/backend/buffer.cc
+    src/bin/cli/bankclient.cc
+    src/bin/cli/chargeclient.cc
+    src/bin/cli/commonclient.cc
+    src/bin/cli/contactclient.cc
+    src/bin/cli/domainclient.cc
+    src/bin/cli/enumparamclient.cc
+    src/bin/cli/fileclient.cc
+    src/bin/cli/fred-admin.cc
+    src/bin/cli/invoiceclient.cc
+    src/bin/cli/keysetclient.cc
+    src/bin/cli/notifyclient.cc
+    src/bin/cli/objectclient.cc
+    src/bin/cli/optys_get_undelivered.cc
+    src/bin/cli/pollclient.cc
+    src/bin/cli/public_request_method.cc
+    src/bin/cli/registrarclient.cc
+    src/bin/cli/remove_delete_candidates.cc
+    src/libfred/object_state/cancel_object_state_request_id.cc
     src/libfred/object_state/create_object_state_request_id.cc
     src/libfred/object_state/get_object_state_id_map.cc
-    src/libfred/object_state/cancel_object_state_request_id.cc
-    src/util/optys/upload_client.cc
     src/util/optys/download_client.cc
-    src/backend/admin/notification/notification.cc
-    src/backend/admin/domain/create_expired_domain.cc
-    src/bin/cli/public_request_method.cc
-    src/backend/admin/domain/create_expired_domain.cc
-    src/backend/buffer.cc)
+    src/util/optys/upload_client.cc)
 target_link_libraries(fred-admin
     admin_contact_verification
     fred
@@ -2444,6 +2498,7 @@ target_link_libraries(mojeid_contact_ssn_fix
     log
     db
     corbautil
+    timezones
     corbaisodatetime
     corbanullableisodate
     util)
@@ -2869,6 +2924,36 @@ target_link_external_libraries(test-admin-domain
     postgres
     omniorb4)
 
+prepare_executable(test-admin-zone
+    src/backend/admin/zone/zone.cc
+    test/backend/admin/zone/main.cc
+    test/backend/admin/zone/test_add_zone.cc
+    test/backend/admin/zone/test_add_zone_ns.cc
+    test/setup/fixtures.cc
+    test/setup/fixtures_utils.cc)
+target_link_libraries(test-admin-zone
+    corba
+    corbafilters
+    corbadatatypes
+    fred
+    log
+    db
+    util
+    types
+    timezones)
+target_link_external_libraries(test-admin-zone
+    boost_program_options
+    boost_date_time
+    boost_regex
+    boost_random
+    omniorb4
+    boost_thread
+    threads
+    postgres
+    boost_system
+    boost_unit_test_framework
+    libidn)
+
 # test-libfred
 prepare_executable(test-libfred
     test/libfred/main.cc
@@ -2979,14 +3064,14 @@ prepare_executable(test-libfred
     test/libfred/registrar/certification/test_get_registrar_certifications.cc
     test/libfred/test_opexception.cc
     test/libfred/test_check_handle.cc
-    test/libfred/zone_ns/test_create_zone_ns.cc
-    test/libfred/zone_ns/test_info_zone_ns.cc
-    test/libfred/zone_ns/test_update_zone_ns.cc
-    test/libfred/zone_ns/util.cc
-    test/libfred/zone_soa/test_create_zone_soa.cc
-    test/libfred/zone_soa/test_info_zone_soa.cc
-    test/libfred/zone_soa/test_update_zone_soa.cc
-    test/libfred/zone_soa/util.cc
+    test/libfred/zone/zone_ns/test_create_zone_ns.cc
+    test/libfred/zone/zone_ns/test_info_zone_ns.cc
+    test/libfred/zone/zone_ns/test_update_zone_ns.cc
+    test/libfred/zone/zone_ns/util.cc
+    test/libfred/zone/zone_soa/test_create_zone_soa.cc
+    test/libfred/zone/zone_soa/test_info_zone_soa.cc
+    test/libfred/zone/zone_soa/test_update_zone_soa.cc
+    test/libfred/zone/zone_soa/util.cc
     test/libfred/zone/test_create_zone.cc
     test/libfred/zone/test_info_zone.cc
     test/libfred/zone/test_update_zone.cc
@@ -3326,6 +3411,7 @@ target_link_external_libraries(test-delete-objects-marked-as-delete-candidate
     rt
     resolv)
 
+install(TARGETS fred-accifd DESTINATION sbin)
 install(TARGETS fred-adifd DESTINATION sbin)
 install(TARGETS fred-admin DESTINATION sbin)
 install(TARGETS fred-akmd DESTINATION sbin)
@@ -3361,6 +3447,7 @@ install(TARGETS test-record-statement DESTINATION bin)
 install(TARGETS test-server DESTINATION bin)
 install(TARGETS test-whois DESTINATION bin)
 install(TARGETS test-admin-domain DESTINATION bin)
+install(TARGETS test-admin-zone DESTINATION bin)
 install(TARGETS test-delete-objects-marked-as-delete-candidate DESTINATION bin)
 
 if(NOT TARGET uninstall)

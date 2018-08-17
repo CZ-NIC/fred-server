@@ -14,7 +14,6 @@
 #include "src/deprecated/model/mail_filter.hh"
 #include "src/deprecated/model/file_filter.hh"
 #include "src/deprecated/model/keyset_filter.hh"
-// #include "statement_head_filter.h"
 #include "src/deprecated/model/online_statement_filter.hh"
 #include "src/deprecated/model/log_filter.hh"
 #include "src/deprecated/model/zone_soa_filter.hh"
