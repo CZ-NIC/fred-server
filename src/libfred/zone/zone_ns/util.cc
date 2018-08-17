@@ -26,7 +26,7 @@ namespace Zone {
 std::string ip_addresses_to_string(
         const std::vector<boost::asio::ip::address> _ip_addresses)
 {
-    std::stringstream ns_addrs;
+    std::ostringstream ns_addrs;
 
     ns_addrs << "{";
     if (_ip_addresses.size() > 0)

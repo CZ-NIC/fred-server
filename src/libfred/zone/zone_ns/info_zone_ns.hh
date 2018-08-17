@@ -30,10 +30,7 @@ namespace Zone {
 class InfoZoneNs
 {
 public:
-    explicit InfoZoneNs(unsigned long long _id)
-        : id_(_id)
-    {
-    }
+    explicit InfoZoneNs(unsigned long long _id);
 
     InfoZoneNsData exec(OperationContext& _ctx) const;
 

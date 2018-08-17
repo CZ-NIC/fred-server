@@ -28,13 +28,18 @@
 namespace LibFred {
 namespace Zone {
 
-UpdateZoneNs& UpdateZoneNs::set_zone_fqdn(const std::string& _zone_fqdn)
+UpdateZoneNs::UpdateZoneNs(unsigned long long _id)
+    : id_(_id)
+{
+}
+
+UpdateZoneNs& UpdateZoneNs::set_zone_fqdn(const boost::optional<std::string>& _zone_fqdn)
 {
     zone_fqdn_ = _zone_fqdn;
     return *this;
 }
 
-UpdateZoneNs& UpdateZoneNs::set_nameserver_fqdn(const std::string& _nameserver_fqdn)
+UpdateZoneNs& UpdateZoneNs::set_nameserver_fqdn(const boost::optional<std::string>& _nameserver_fqdn)
 {
     nameserver_fqdn_ = _nameserver_fqdn;
     return *this;
