@@ -28,17 +28,13 @@ namespace LibFred {
 namespace Zone {
 
 CreateZoneNs::CreateZoneNs(const std::string& _zone_fqdn)
-    : zone_fqdn_(_zone_fqdn),
-      nameserver_fqdn_("localhost")
+    : zone_fqdn_(_zone_fqdn)
 {
 }
 
 CreateZoneNs& CreateZoneNs::set_nameserver_fqdn(const boost::optional<std::string>& _nameserver_fqdn)
 {
-    if (_nameserver_fqdn != boost::none)
-    {
-        nameserver_fqdn_ = _nameserver_fqdn.get();
-    }
+    nameserver_fqdn_ = _nameserver_fqdn;
     return *this;
 }
 
@@ -63,7 +59,7 @@ unsigned long long CreateZoneNs::exec(OperationContext& _ctx) const
                 "RETURNING id",
                 // clang-format on
                 Database::query_param_list(zone_id)
-                                          (nameserver_fqdn_)
+                                          (nameserver_fqdn_.get_value_or("localhost"))
                                           (ip_addresses_to_string(nameserver_ip_addresses_)));
 
         if (insert_result.size() == 1)

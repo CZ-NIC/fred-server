@@ -42,7 +42,7 @@ public:
     unsigned long long exec(OperationContext& _ctx) const;
 private:
     std::string zone_fqdn_;
-    std::string nameserver_fqdn_;
+    boost::optional<std::string> nameserver_fqdn_;
     std::vector<boost::asio::ip::address> nameserver_ip_addresses_;
 };
 
