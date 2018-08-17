@@ -1639,8 +1639,9 @@ public:
             ("ns_fqdn", boost::program_options
                 ::value<Checked::string>()->notifier(save_arg<std::string>(params.ns_fqdn)),
                 "nameserver fqdn")
-            ("addr", boost::program_options::value<std::vector<std::string> >()->multitoken()
-                ->notifier(save_arg<std::vector<std::string> >(params.addrs)),
+            ("addr", boost::program_options
+                ::value<Checked::ip_addresses>() ->multitoken()
+                ->notifier(save_arg<std::vector<boost::asio::ip::address> >(params.addrs)),
                 "nameserver addresses");
         return cfg_opts;
     }//get_options_description

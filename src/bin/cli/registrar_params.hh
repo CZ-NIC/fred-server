@@ -292,7 +292,7 @@ struct ZoneNsAddArgs
 {
     std::string zone_fqdn;
     std::string ns_fqdn;
-    std::vector<std::string> addrs;
+    std::vector<boost::asio::ip::address> addrs;
 
     ZoneNsAddArgs()
     {}//ctor
@@ -300,7 +300,7 @@ struct ZoneNsAddArgs
     ZoneNsAddArgs(
             const std::string& _zone_fqdn
             , const std::string& _ns_fqdn
-            , const std::vector<std::string>& _addrs
+            , const std::vector<boost::asio::ip::address>& _addrs
             )
     : zone_fqdn(_zone_fqdn)
     , ns_fqdn(_ns_fqdn)

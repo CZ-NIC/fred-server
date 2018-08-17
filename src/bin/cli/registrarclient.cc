@@ -180,14 +180,9 @@ RegistrarClient::zone_add()
 void
 RegistrarClient::zone_ns_add()
 {
-    std::string zone = zone_ns_add_params_.zone_fqdn;//REGISTRAR_ZONE_FQDN_NAME
-    std::string fqdn = zone_ns_add_params_.ns_fqdn;//REGISTRAR_NS_FQDN_NAME
-    std::vector<boost::asio::ip::address> addrs;
-    if (!zone_ns_add_params_.addrs.empty()) {//REGISTRAR_ADDR_NAME
-        std::for_each(zone_ns_add_params_.addrs.begin(),
-                zone_ns_add_params_.addrs.end(),
-                [&addrs](const std::string& s) { addrs.push_back(boost::asio::ip::address::from_string(s));});
-    }
+    std::string zone = zone_ns_add_params_.zone_fqdn;  //REGISTRAR_ZONE_FQDN_NAME
+    std::string fqdn = zone_ns_add_params_.ns_fqdn;  //REGISTRAR_NS_FQDN_NAME
+    std::vector<boost::asio::ip::address> addrs = zone_ns_add_params_.addrs;  //REGISTRAR_ADDR_NAME
     Admin::Zone::add_zone_ns(zone, fqdn, addrs);
 }
 

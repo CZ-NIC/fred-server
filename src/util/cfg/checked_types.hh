@@ -27,6 +27,7 @@
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <string>
+#include <vector>
 
 // types checked by custom validator
 struct Checked
@@ -39,6 +40,7 @@ struct Checked
     typedef double fpnumber;
     typedef boost::gregorian::date date;
     typedef boost::posix_time::ptime ptime;
+    typedef std::vector<std::string> ip_addresses;
     typedef unsigned short ushort;
 
     class string_fpnumber
