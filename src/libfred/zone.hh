@@ -1,21 +1,22 @@
 #ifndef ZONE_HH_2C5BE1B6D84C4463A8A448A6E083225F
 #define ZONE_HH_2C5BE1B6D84C4463A8A448A6E083225F
 
-#include <memory>
-#include <string>
+#include <idna.h>
 #include <map>
-#include <vector>
+#include <memory>
 #include <stdexcept>
+#include <string>
+#include <vector>
 
 #include "src/libfred/common_impl_new.hh"
 #include "src/libfred/common_object.hh"
+#include "src/libfred/exceptions.hh"
 #include "src/libfred/object.hh"
+#include "src/libfred/types.hh" 
+#include "src/util/decimal/decimal.hh"
 #include "src/util/types/data_types.hh"
 #include "src/util/types/money.hh"
-#include "src/util/decimal/decimal.hh"
-#include "src/libfred/types.hh" 
-#include "src/libfred/exceptions.hh"
-#include <idna.h>
+
 /// forward declaration for database connection
 class DB;
 
@@ -164,8 +165,6 @@ namespace LibFred
       virtual void deleteZoneNs(unsigned idx) = 0;
       /// Clear ZoneNs list
       virtual void clearZoneNsList() = 0;
-      /// Save changes to database
-      virtual void save() = 0;
       /// Check if zone is applicable for given domain
       virtual bool isDomainApplicable(const std::string& domain) const =0;
 
@@ -237,75 +236,23 @@ namespace LibFred
       /// check fqdn agains list of toplevel domain (true=found) 
       virtual bool checkTLD(const DomainName& domain) const = 0;
       /// add zone with zone_soa record
+
       virtual void addZone(
-              const std::string& fqdn,
-              int ex_period_min=12,
-              int ex_period_max=120,
-              int ttl=18000,
-              const std::string &hostmaster="hostmaster@localhost",
-              int refresh=10600,
-              int update_retr=3600,
-              int expiry=1209600,
-              int minimum=7200,
-              const std::string &ns_fqdn="localhost")
-        = 0;
-      /// add only zone record
-      virtual void addOnlyZoneRecord(
-              const std::string& fqdn,
-              int ex_period_min=12,
-              int ex_period_max=120)
-        = 0;
-      /// add only zone_soa record identified by fqdn
-      virtual void addOnlyZoneSoaRecordByFqdn(
-              const std::string& fqdn,
-              int ttl=18000,
-              const std::string &hostmaster="hostmaster@localhost",
-              int refresh=10600,
-              int update_retr=3600,
-              int expiry=1209600,
-              int minimum=7200,
-              const std::string &ns_fqdn="localhost")
-      = 0;
-      /// update zone and zone_soa record identified by fqdn
-      virtual void updateZoneByFqdn(
-              const std::string& fqdn,
-              int ex_period_min,
-              int ex_period_max,
-              int ttl,
-              const std::string &hostmaster,
-              int refresh,
-              int update_retr,
-              int expiry,
-              int minimum,
-              const std::string &ns_fqdn)
-        = 0;
-      /// update zone and zone_soa record identified by fqdn
-      virtual void updateZoneById(
-    		  const unsigned long long id,
-              const std::string& fqdn,
-              int ex_period_min,
-              int ex_period_max,
-              int ttl,
-              const std::string &hostmaster,
-              int refresh,
-              int update_retr,
-              int expiry,
-              int minimum,
-              const std::string &ns_fqdn)
-        = 0;
+              const std::string& _fqdn,
+              int _ex_period_min = 12,
+              int _ex_period_max = 120,
+              int _ttl = 18000,
+              const std::string& _hostmaster = "hostmaster@localhost",
+              int _refresh = 10600,
+              int _update_retr = 3600,
+              int _expiry = 1209600,
+              int _minimum = 7200,
+              const std::string& _ns_fqdn = "localhost") = 0;
 
       virtual void addZoneNs(
-              const std::string &zone,
-              const std::string &fqdn="localhost",
-              const std::string &addr="")
-          = 0;
-
-      virtual void updateZoneNsById(
-    		  const unsigned long long id,
-              const std::string &zone,
-              const std::string &fqdn,
-              const std::string &addr)
-          = 0;
+              const std::string& _zone,
+              const std::string& _fqdn = "localhost",
+              const std::string& _addr = "") = 0;
 
       virtual void addPrice(
               int zone,

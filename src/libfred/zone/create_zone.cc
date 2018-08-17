@@ -72,6 +72,10 @@ unsigned long long CreateZone::exec(OperationContext& _ctx) const
             return id;
         }
     }
+    catch (const Database::ResultFailed&)
+    {
+        throw DuplicateZone();
+    }
     catch (const std::exception&)
     {
         throw CreateZoneException();

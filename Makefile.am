@@ -399,6 +399,7 @@ noinst_LIBRARIES = \
 		src/backend/admin/contact/verification/libadmin_contact_verification.a \
 		src/backend/admin/notification/libadmin_notification.a \
 		src/backend/admin/domain/libadmin_create_expired_domain.a \
+		src/backend/admin/zone/libadmin_zone.a \
 		src/backend/epp/impl/registraracl/libauthentic_registrar.a \
 		src/bin/corba/libcorbaaccounting.a
 
@@ -834,12 +835,6 @@ src_libfred_libfred_a_SOURCES = \
 		src/libfred/model_registrar_acl.hh \
 		src/libfred/model_registrar.cc \
 		src/libfred/model_registrar.hh \
-		src/libfred/model_zone.cc \
-		src/libfred/model_zone.hh \
-		src/libfred/model_zone_ns.cc \
-		src/libfred/model_zone_ns.hh \
-		src/libfred/model_zone_soa.cc \
-		src/libfred/model_zone_soa.hh \
 		src/libfred/registrable_object/domain.cc \
 		src/libfred/registrable_object/domain.hh \
 		src/libfred/registrable_object/contact.cc \
@@ -856,17 +851,17 @@ src_libfred_libfred_a_SOURCES = \
 		src/libfred/invoicing/invoice.hh \
 		src/libfred/zone.cc \
 		src/libfred/zone.hh \
-		src/libfred/zone_ns/create_zone_ns.cc \
-		src/libfred/zone_ns/create_zone_ns.hh \
-		src/libfred/zone_ns/exceptions.cc \
-		src/libfred/zone_ns/exceptions.hh \
-		src/libfred/zone_ns/info_zone_ns_data.hh \
-		src/libfred/zone_ns/info_zone_ns.cc \
-		src/libfred/zone_ns/info_zone_ns.hh \
-		src/libfred/zone_ns/update_zone_ns.cc \
-		src/libfred/zone_ns/update_zone_ns.hh \
-		src/libfred/zone_ns/util.cc \
-		src/libfred/zone_ns/util.hh \
+		src/libfred/zone/zone_ns/create_zone_ns.cc \
+		src/libfred/zone/zone_ns/create_zone_ns.hh \
+		src/libfred/zone/zone_ns/exceptions.cc \
+		src/libfred/zone/zone_ns/exceptions.hh \
+		src/libfred/zone/zone_ns/info_zone_ns_data.hh \
+		src/libfred/zone/zone_ns/info_zone_ns.cc \
+		src/libfred/zone/zone_ns/info_zone_ns.hh \
+		src/libfred/zone/zone_ns/update_zone_ns.cc \
+		src/libfred/zone/zone_ns/update_zone_ns.hh \
+		src/libfred/zone/zone_ns/util.cc \
+		src/libfred/zone/zone_ns/util.hh \
 		src/libfred/blacklist.cc \
 		src/libfred/blacklist.hh \
 		src/libfred/documents.cc \
@@ -1046,14 +1041,14 @@ src_libfred_libfred_a_SOURCES = \
 		src/libfred/zone/util.cc \
 		src/libfred/zone/zone.hh \
 		src/libfred/zone/zone.cc \
-		src/libfred/zone_soa/create_zone_soa.hh \
-		src/libfred/zone_soa/create_zone_soa.cc \
-		src/libfred/zone_soa/exceptions.hh \
-		src/libfred/zone_soa/info_zone_soa.hh \
-		src/libfred/zone_soa/info_zone_soa.cc \
-		src/libfred/zone_soa/info_zone_soa_data.hh \
-		src/libfred/zone_soa/update_zone_soa.hh \
-		src/libfred/zone_soa/update_zone_soa.cc \
+		src/libfred/zone/zone_soa/create_zone_soa.hh \
+		src/libfred/zone/zone_soa/create_zone_soa.cc \
+		src/libfred/zone/zone_soa/exceptions.hh \
+		src/libfred/zone/zone_soa/info_zone_soa.hh \
+		src/libfred/zone/zone_soa/info_zone_soa.cc \
+		src/libfred/zone/zone_soa/info_zone_soa_data.hh \
+		src/libfred/zone/zone_soa/update_zone_soa.hh \
+		src/libfred/zone/zone_soa/update_zone_soa.cc \
 		src/libfred/registrable_object/contact/verification/create_check.hh \
 		src/libfred/registrable_object/contact/verification/create_check.cc \
 		src/libfred/registrable_object/contact/verification/update_check.hh \
@@ -1435,6 +1430,14 @@ src_backend_admin_domain_libadmin_create_expired_domain_a_SOURCES = \
 #
 # src/admin/domain/libadmin_create_expired_domain.a
 
+# src/admin/zone/libadmin_zone.a
+#
+src_backend_admin_zone_libadmin_zone_a_SOURCES = \
+		src/backend/admin/zone/zone.hh \
+		src/backend/admin/zone/zone.cc
+#
+# src/admin/zone/libadmin_zone.a
+
 
 BUILT_SOURCES = \
 		src/bin/corba/MessagesSK.cc \
@@ -1805,8 +1808,6 @@ src_bin_corba_admin_libadmin_impl_a_SOURCES = \
 		src/bin/corba/admin/usertype_conv.hh \
 		src/bin/corba/admin/common.cc \
 		src/bin/corba/admin/common.hh \
-		src/bin/corba/admin/zone_impl.cc \
-		src/bin/corba/admin/zone_impl.hh \
 		src/bin/corba/admin/bankinginvoicing_impl.cc \
 		src/bin/corba/admin/bankinginvoicing_impl.hh
 #
@@ -2936,6 +2937,7 @@ src_bin_cli_fred_admin_LDFLAGS = \
 
 src_bin_cli_fred_admin_LDADD = \
 		src/backend/admin/contact/verification/libadmin_contact_verification.a \
+		src/backend/admin/zone/libadmin_zone.a \
 		src/libfred/libfred.a \
 		src/backend/epp/impl/registraracl/libauthentic_registrar.a \
 		src/util/libpassword_storage.a \
@@ -3145,6 +3147,7 @@ SERVER_TESTS = \
 		test/backend/test-admin-contact-automerge \
 		test/backend/test-admin-notification \
 		test/backend/test-admin-domain \
+		test/backend/test-admin-zone \
 		test/backend/test-epp \
 		test/backend/test-whois \
 		test/backend/test-public-request \
@@ -3343,6 +3346,47 @@ test_backend_test_admin_domain_LDADD = \
 		$(LIBIDN_LIBS)
 #
 # test/backend/test-admin-domain
+
+# test/backend/test-admin-zone
+#
+test_backend_test_admin_zone_SOURCES = \
+		test/backend/admin/zone/fixtures.hh \
+		test/backend/admin/zone/main.cc \
+		test/backend/admin/zone/test_add_zone.cc \
+		test/backend/admin/zone/test_add_zone_ns.cc \
+		test/setup/fixtures.hh \
+		test/setup/fixtures.cc \
+		test/setup/fixtures_utils.hh \
+		test/setup/fixtures_utils.cc
+
+test_backend_test_admin_zone_LDFLAGS = \
+		$(POSTGRESQL_LDFLAGS) \
+		$(BOOST_LDFLAGS) \
+		$(AM_LDFLAGS)
+
+test_backend_test_admin_zone_LDADD = \
+		src/backend/admin/zone/libadmin_zone.a \
+		src/bin/corba/libcorba.a \
+		src/bin/corba/libcorbafilters.a \
+		src/bin/corba/libcorbadatatypes.a \
+		src/libfred/libfred.a \
+		src/util/log/liblog.a \
+		src/util/db/libdb.a \
+		src/util/libutil.a \
+		src/util/types/libtypes.a \
+		src/util/tz/libtimezones.a \
+		$(BOOST_PROGRAM_OPTIONS_LIB) \
+		$(BOOST_DATE_TIME_LIB) \
+		$(BOOST_REGEX_LIB) \
+		$(BOOST_RANDOM_LIB) \
+		$(OMNIORB4_LIBS) \
+		$(BOOST_THREAD_LIB) \
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB) \
+		$(BOOST_UNIT_TEST_FRAMEWORK_LIB) \
+		$(LIBIDN_LIBS)
+#
+# test/backend/test-admin-zone
 
 # test/backend/test-epp
 #
@@ -3876,16 +3920,16 @@ test_test_libfred_SOURCES = \
 		test/libfred/zone/test_update_zone.cc \
 		test/libfred/zone/util.cc \
 		test/libfred/zone/util.hh \
-		test/libfred/zone_soa/test_create_zone_soa.cc \
-		test/libfred/zone_soa/test_info_zone_soa.cc \
-		test/libfred/zone_soa/test_update_zone_soa.cc \
-		test/libfred/zone_soa/util.hh \
-		test/libfred/zone_soa/util.cc \
-		test/libfred/zone_ns/util.cc \
-		test/libfred/zone_ns/util.hh \
-		test/libfred/zone_ns/test_create_zone_ns.cc \
-		test/libfred/zone_ns/test_info_zone_ns.cc \
-		test/libfred/zone_ns/test_update_zone_ns.cc \
+		test/libfred/zone/zone_soa/test_create_zone_soa.cc \
+		test/libfred/zone/zone_soa/test_info_zone_soa.cc \
+		test/libfred/zone/zone_soa/test_update_zone_soa.cc \
+		test/libfred/zone/zone_soa/util.hh \
+		test/libfred/zone/zone_soa/util.cc \
+		test/libfred/zone/zone_ns/util.cc \
+		test/libfred/zone/zone_ns/util.hh \
+		test/libfred/zone/zone_ns/test_create_zone_ns.cc \
+		test/libfred/zone/zone_ns/test_info_zone_ns.cc \
+		test/libfred/zone/zone_ns/test_update_zone_ns.cc \
 		test/util/test_param_query.cc \
 		test/setup/fixtures_utils.hh \
 		test/setup/fixtures_utils.cc \

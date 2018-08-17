@@ -16,50 +16,41 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef EXCEPTIONS_HH_E5ED550598D54E5088577F9CDD9FEC93
-#define EXCEPTIONS_HH_E5ED550598D54E5088577F9CDD9FEC93
+#ifndef EXCEPTIONS_HH_239D1E918E5F498F9B7B8E83F678D9F6
+#define EXCEPTIONS_HH_239D1E918E5F498F9B7B8E83F678D9F6
 
 #include <exception>
 
 namespace LibFred {
 namespace Zone {
 
-struct NonExistentZone : std::exception
+struct CreateZoneNsException : std::exception
 {
     const char* what() const noexcept override;
 };
 
-struct NotEnumZone : std::exception
+struct InfoZoneNsException : std::exception
 {
     const char* what() const noexcept override;
 };
 
-struct NoZoneData : std::exception
+struct NonExistentZoneNs : std::exception
 {
     const char* what() const noexcept override;
 };
 
-struct DuplicateZone : std::exception
+struct NoZoneNsData : std::exception
 {
     const char* what() const noexcept override;
 };
 
-struct CreateZoneException : std::exception
-{
-    const char* what() const noexcept override;
-};
-
-struct InfoZoneException : std::exception
-{
-    const char* what() const noexcept override;
-};
-
-struct UpdateZoneException : std::exception
+struct UpdateZoneNsException : std::exception
 {
     const char* what() const noexcept override;
 };
 
 } // namespace LibFred::Zone
 } // namespace LibFred
+
 
 #endif

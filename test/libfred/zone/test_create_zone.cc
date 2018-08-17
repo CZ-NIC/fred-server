@@ -64,6 +64,14 @@ BOOST_AUTO_TEST_CASE(set_enum_val_period)
            ::LibFred::Zone::NotEnumZone);
 }
 
+BOOST_AUTO_TEST_CASE(set_create_duplicate_zone)
+{
+    ::LibFred::Zone::CreateZone(fqdn, ex_period_min, ex_period_max).exec(ctx);
+    BOOST_CHECK_THROW(::LibFred::Zone::CreateZone(fqdn, ex_period_min, ex_period_max)
+                .exec(ctx),
+           ::LibFred::Zone::DuplicateZone);
+}
+
 BOOST_AUTO_TEST_CASE(set_min_create_zone)
 {
    ::LibFred::Zone::CreateZone(fqdn, ex_period_min, ex_period_max).exec(ctx);
@@ -93,7 +101,6 @@ BOOST_AUTO_TEST_CASE(set_max_create_enum_zone)
             .set_sending_warning_letter(false)
             .exec(ctx);
     BOOST_CHECK_EQUAL(exists_new_zone(fqdn, ctx), 1);
-
 }
 
 BOOST_AUTO_TEST_SUITE_END();

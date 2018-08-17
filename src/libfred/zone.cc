@@ -16,28 +16,30 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <memory>
-#include <vector>
 #include <algorithm>
-#include <functional>
-#include "src/libfred/zone.hh"
-#include <iostream>
-#include <sstream>
-#include "src/libfred/types.hh"
-#include <ctype.h>
 #include <boost/algorithm/string.hpp>
+#include <boost/asio.hpp>
+#include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
-#include <memory>
 #include <boost/regex.hpp>
+#include <ctype.h>
+#include <functional>
+#include <iostream>
+#include <memory>
+#include <sstream>
+#include <vector>
 
-#include "src/libfred/model_zone.hh"
-#include "src/libfred/model_zone_ns.hh"
-#include "src/libfred/model_zone_soa.hh"
-
-#include "src/util/types/money.hh"
-
-#include "src/util/log/logger.hh"
+#include "src/libfred/opcontext.hh"
+#include "src/libfred/types.hh"
+#include "src/libfred/zone/create_zone.hh"
+#include "src/libfred/zone.hh"
+#include "src/libfred/zone/update_zone.hh"
+#include "src/libfred/zone/zone_ns/create_zone_ns.hh"
+#include "src/libfred/zone/zone_soa/create_zone_soa.hh"
 #include "src/util/log/context.hh"
+#include "src/util/log/logger.hh"
+#include "src/util/string_split.hh"
+#include "src/util/types/money.hh"
 
 
 #define RANGE(x) x.begin(),x.end()
@@ -51,56 +53,61 @@ namespace LibFred
 
    class ZoneNsImpl
        : virtual public ZoneNs
-       , private ModelZoneNs
-
     {
     public:
            ZoneNsImpl()
-           : ModelZoneNs()
-           {}
-           ZoneNsImpl(TID id
-                   , TID zoneid
-                   , const std::string& fqdn
-                   , const std::string& addrs)
-           : ModelZoneNs()
            {
-               ModelZoneNs::setId(id);
-               ModelZoneNs::setZoneId(zoneid);
-               ModelZoneNs::setFqdn(fqdn);
-               ModelZoneNs::setAddrs(addrs);
-           }
-           const TID &getId() const
-           {
-               return ModelZoneNs::getId();
-           }
-           const TID &getZoneId() const
-           {
-               return ModelZoneNs::getZoneId();
-           }
-           const std::string &getFqdn() const
-           {
-               return ModelZoneNs::getFqdn();
-           }
-           const std::string &getAddrs() const
-           {
-               return ModelZoneNs::getAddrs();
-           }
-           void setId(const TID id)
-           {
-               ModelZoneNs::setId(id);
-           }
-           void setZoneId(const TID zoneId)
-           {
-               ModelZoneNs::setZoneId(zoneId);
            }
 
-           void setFqdn(const std::string &fqdn)
+           ZoneNsImpl(TID _id,
+                   TID _zone_id,
+                   const std::string& _fqdn,
+                   const std::string& _addrs)
+               : id_(_id),
+                 zone_id_(_zone_id),
+                 fqdn_(_fqdn),
+                 addrs_(_addrs)
            {
-               ModelZoneNs::setFqdn(fqdn);
            }
-           void setAddrs(const std::string &addrs)
+
+           const TID &getId() const
            {
-               ModelZoneNs::setAddrs(addrs);
+               return id_;
+           }
+
+           const TID &getZoneId() const
+           {
+               return zone_id_;
+           }
+
+           const std::string &getFqdn() const
+           {
+               return fqdn_;
+           }
+
+           const std::string &getAddrs() const
+           {
+               return addrs_;
+           }
+
+           void setId(const TID _id)
+           {
+               id_ = _id;
+           }
+
+           void setZoneId(const TID _zone_id)
+           {
+               zone_id_ = _zone_id;
+           }
+
+           void setFqdn(const std::string& _fqdn)
+           {
+               fqdn_ = _fqdn;
+           }
+
+           void setAddrs(const std::string& _addrs)
+           {
+               addrs_ = _addrs;
            }
 
            bool operator==(const TID _id) const
@@ -108,93 +115,91 @@ namespace LibFred
              return getId() == _id;
            }
 
-           virtual void save()
-           {
-             try
-             {
-                 Database::Connection conn = Database::Manager::acquire();
-                 TID id = getId();
-
-                 if (id)
-                     ModelZoneNs::update();
-                 else
-                     ModelZoneNs::insert();
-             }//try
-             catch (...)
-             {
-              LOGGER(PACKAGE).error("save: an error has occured");
-              throw SQL_ERROR();
-             }//catch (...)
-           }//save
+    private:
+        TID id_;
+        TID zone_id_;
+        std::string fqdn_;
+        std::string addrs_;
 
     };//class ZoneNsImpl
 
 
-
-
-
     class ZoneImpl : public LibFred::CommonObjectImplNew
                    , virtual public  Zone
-                   , private ModelZoneSoa
     {
+    private:
+        TID id_;
+        std::string fqdn_;
+        int ex_period_min_;
+        int ex_period_max_;
+        int val_period_;
+        int dots_max_;
+        bool enum_zone_;
+        int ttl_;
+        std::string hostmaster_;
+        int serial_;
+        int refresh_;
+        int update_retr_;
+        int expiry_;
+        int minimum_;
+        std::string ns_fqdn_;
+
         typedef std::vector<std::shared_ptr<ZoneNsImpl> > ZoneNsList;
         typedef ZoneNsList::iterator ZoneNsListIter;
         ZoneNsList zone_ns_list; /// zone ns records
 
         void operator==(const ZoneImpl&){};
-    public:
 
+    public:
         ZoneImpl()
             : CommonObjectImplNew()
-            , ModelZoneSoa()
         {}
-        ZoneImpl(
-                    TID _id,
-                    const std::string& _fqdn,
-                    const int _exPeriodMin,
-                    const int _exPeriodMax,
-                    const int _valPeriod,
-                    const int _dotsMax,
-                    const bool _enumZone,
-                    const int _ttl,
-                    const std::string& _hostmaster,
-                    const int _serial,
-                    const int _refresh,
-                    const int _updateRetr,
-                    const int  _expiry,
-                    const int _minimum,
-                    const std::string& _nsFqdn
-                )
-            : CommonObjectImplNew()
-            , ModelZoneSoa()
-        {
-            ModelZone::setId(_id);
-            ModelZone::setFqdn(_fqdn);
-            ModelZone::setExPeriodMin(_exPeriodMin);
-            ModelZone::setExPeriodMax(_exPeriodMax);
-            ModelZone::setValPeriod(_valPeriod);
-            ModelZone::setDotsMax(_dotsMax);
-            ModelZone::setEnumZone(_enumZone);
 
-            ModelZoneSoa::setTtl(_ttl);
-            ModelZoneSoa::setHostmaster(_hostmaster);
-            ModelZoneSoa::setSerial(_serial);
-            ModelZoneSoa::setRefresh(_refresh);
-            ModelZoneSoa::setUpdateRetr(_updateRetr);
-            ModelZoneSoa::setExpiry(_expiry);
-            ModelZoneSoa::setMinimum(_minimum);
-            ModelZoneSoa::setNsFqdn(_nsFqdn);
+        ZoneImpl(
+                TID _id,
+                const std::string& _fqdn,
+                const int _ex_period_min,
+                const int _ex_period_max,
+                const int _val_period,
+                const int _dots_max,
+                const bool _enum_zone,
+                const int _ttl,
+                const std::string& _hostmaster,
+                const int _serial,
+                const int _refresh,
+                const int _update_retr,
+                const int _expiry,
+                const int _minimum,
+                const std::string& _ns_fqdn)
+            : CommonObjectImplNew(),
+              id_(_id),
+              fqdn_(_fqdn),
+              ex_period_min_(_ex_period_min),
+              ex_period_max_(_ex_period_max),
+              val_period_(_val_period),
+              dots_max_(_dots_max),
+              enum_zone_(_enum_zone),
+
+              ttl_(_ttl),
+              hostmaster_(_hostmaster),
+              serial_(_serial),
+              refresh_(_refresh),
+              update_retr_(_update_retr),
+              expiry_(_expiry),
+              minimum_(_minimum),
+              ns_fqdn_(_ns_fqdn)
+        {
         }
+
         ~ZoneImpl()
         {}
-
 
       /// compare if domain belongs to this zone (according to suffix)
       bool isDomainApplicable(const std::string& fqdn) const
       {
           typedef std::string string;
           // make local copies for normalization (to lower case)
-          string zone_fqdn ( ModelZone::getFqdn() );
+          string zone_fqdn (getFqdn());
           string domain_fqdn (fqdn);
 
           boost::to_lower(domain_fqdn);
@@ -208,7 +213,7 @@ namespace LibFred
           }
 
           // substr starts one char before zone length (must include the dot)
-          if( domain_fqdn.substr(domain_length - zone_length - 1)
+          if ( domain_fqdn.substr(domain_length - zone_length - 1)
               ==
               string(".") + zone_fqdn
           ) {
@@ -221,9 +226,9 @@ namespace LibFred
       /// max. number of labels in fqdn
       virtual unsigned getMaxLevel() const
       {
-          const std::string& fqdn = ModelZone::getFqdn();
+          const std::string& fqdn = getFqdn();
           int maxlevel = std::count(fqdn.begin(), fqdn.end(), '.')
-          + 1 + ModelZone::getDotsMax();
+          + 1 + getDotsMax();
           return  maxlevel;
       }
 
@@ -234,16 +239,19 @@ namespace LibFred
           zone_ns_list.push_back(new_ZoneNs);
           return new_ZoneNs.get();
       }
+
       /// Return ZoneNs list size
       virtual unsigned getZoneNsSize() const
       {
           return zone_ns_list.size();
       }
+
       /// Return ZoneNs list member by index
       virtual ZoneNs* getZoneNs(unsigned idx) const
       {
           return idx < zone_ns_list.size() ? zone_ns_list[idx].get() : NULL;
       }
+
       /// Delete ZoneNs or do nothing
       virtual void deleteZoneNs(unsigned idx)
       {
@@ -251,166 +259,168 @@ namespace LibFred
               zone_ns_list.erase(zone_ns_list.begin()+idx);
            }
       }
+
       /// Clear ZoneNs list
       virtual void clearZoneNsList()
       {
           zone_ns_list.clear();
       }
-      /// Save changes to database
-      virtual void save()
-      {
-          // save zone data
-        try
-        {
-            Database::Connection conn = Database::Manager::acquire();
-            Database::Transaction tx(conn);
-            TID id = getId();
-            if (id)
-                ModelZoneSoa::update();
-            else
-                ModelZoneSoa::insert();
-            std::ostringstream sql;
-            sql << "DELETE FROM zone_ns WHERE zone=" << id;
-            conn.exec(sql.str());
-            for (unsigned j = 0; j < zone_ns_list.size(); j++)
-            {
-                zone_ns_list[j]->setZoneId(id);
-                zone_ns_list[j]->save();
-            }
-            tx.commit();
-        }//try
-        catch (...)
-        {
-         LOGGER(PACKAGE).error("save: an error has occured");
-         throw SQL_ERROR();
-        }//catch (...)
-      }//save
 
-      //ModelZone
+      //Zone
       const TID &getId() const
       {
-          return ModelZone::getId();
+          return id_;
       }
-      void setId(const TID id)
+
+      void setId(const TID _id)
       {
-          ModelZone::setId(id);
+          id_ = _id;
       }
+
       const std::string &getFqdn() const
       {
-          return ModelZone::getFqdn();
+          return fqdn_;
       }
-      void setFqdn(const std::string &fqdn)
+
+      void setFqdn(const std::string& _fqdn)
       {
-          ModelZone::setFqdn(fqdn);
+          fqdn_ = _fqdn;
       }
+
       const int &getExPeriodMin() const
       {
-          return ModelZone::getExPeriodMin();
+          return ex_period_min_;
       }
-      void setExPeriodMin(const int exPeriodMin)
+
+      void setExPeriodMin(const int _ex_period_min)
       {
-          ModelZone::setExPeriodMin(exPeriodMin);
+          ex_period_min_ = _ex_period_min;
       }
+
       const int &getExPeriodMax() const
       {
-          return ModelZone::getExPeriodMax();
+          return ex_period_max_;
       }
-      void setExPeriodMax(const int exPeriodMax)
+
+      void setExPeriodMax(const int _ex_period_max)
       {
-          ModelZone::setExPeriodMax(exPeriodMax);
+          ex_period_max_ = _ex_period_max;
       }
+
       const int &getValPeriod() const
       {
-          return ModelZone::getValPeriod();
+          return val_period_;
       }
-      void setValPeriod(const int valPeriod)
+
+      void setValPeriod(const int _val_period)
       {
-          ModelZone::setValPeriod(valPeriod);
+          val_period_ = _val_period;
       }
+
       const int &getDotsMax() const
       {
-          return ModelZone::getDotsMax();
+          return dots_max_;
       }
-      void setDotsMax(const int dotsMax)
+
+      void setDotsMax(const int _dots_max)
       {
-          ModelZone::setDotsMax(dotsMax);
+          dots_max_ = _dots_max;
       }
+
       const bool &getEnumZone() const
       {
-          return ModelZone::getEnumZone();
+          return enum_zone_;
       }
+
       const bool &isEnumZone() const
       {
           return getEnumZone();
       }
-      void setEnumZone(const bool enumZone)
+
+      void setEnumZone(const bool _enum_zone)
       {
-          ModelZone::setEnumZone(enumZone);
+          enum_zone_ = _enum_zone;
       }
-      //ModelZoneSoa
+
+      //ZoneSoa
       const int &getTtl() const
       {
-          return ModelZoneSoa::getTtl();
+          return ttl_;
       }
+
       const std::string &getHostmaster() const
       {
-          return ModelZoneSoa::getHostmaster();
+          return hostmaster_;
       }
+
       const int &getSerial() const
       {
-          return ModelZoneSoa::getSerial();
+          return serial_;
       }
+
       const int &getRefresh() const
       {
-          return ModelZoneSoa::getRefresh();
+          return refresh_;
       }
+
       const int &getUpdateRetr() const
       {
-          return ModelZoneSoa::getUpdateRetr();
+          return update_retr_;
       }
+
       const int &getExpiry() const
       {
-          return ModelZoneSoa::getExpiry();
+          return expiry_;
       }
+
       const int &getMinimum() const
       {
-          return ModelZoneSoa::getMinimum();
+          return minimum_;
       }
+
       const std::string &getNsFqdn() const
       {
-          return ModelZoneSoa::getNsFqdn();
+          return ns_fqdn_;
       }
-      void setTtl(const int ttl)
+
+      void setTtl(const int _ttl)
       {
-          ModelZoneSoa::setTtl(ttl);
+          ttl_ = _ttl;
       }
-      void setHostmaster(const std::string &hostmaster)
+
+      void setHostmaster(const std::string& _hostmaster)
       {
-          ModelZoneSoa::setHostmaster(hostmaster);
+          hostmaster_ = _hostmaster;
       }
-      void setSerial(const int serial)
+
+      void setSerial(const int _serial)
       {
-          ModelZoneSoa::setSerial(serial);
+          serial_ = _serial;
       }
-      void setRefresh(const int refresh)
+
+      void setRefresh(const int _refresh)
       {
-          ModelZoneSoa::setRefresh(refresh);
+          refresh_ = _refresh;
       }
-      void setUpdateRetr(const int updateRetr)
+
+      void setUpdateRetr(const int _update_retr)
       {
-          ModelZoneSoa::setUpdateRetr(updateRetr);
+          update_retr_ = _update_retr;
       }
-      void setExpiry(const int expiry)
+
+      void setExpiry(const int _expiry)
       {
-          ModelZoneSoa::setExpiry(expiry);
+          expiry_ = _expiry;
       }
-      void setMinimum(const int minimum)
+
+      void setMinimum(const int _minimum)
       {
-          ModelZoneSoa::setMinimum(minimum);
+          minimum_ = _minimum;
       }
-      void setNsFqdn(const std::string &nsFqdn)
+
+      void setNsFqdn(const std::string& _ns_fqdn)
       {
-          ModelZoneSoa::setNsFqdn(nsFqdn);
+          ns_fqdn_ = _ns_fqdn;
       }
 
       void putZoneNs(TID _id,
@@ -420,10 +430,12 @@ namespace LibFred
       {
         zone_ns_list.push_back(std::make_shared<ZoneNsImpl>(_id,_zoneid,fqdn,addrs));
       }
+
       bool hasId(TID _id) const
       {
         return getId() == _id;
       }
+
       void resetId()
       {
         setId(0);
@@ -999,355 +1011,82 @@ namespace LibFred
           }//catch (...)
       }//checkTLD
 
-      /// add zone with zone_soa record
-      virtual void addZone(
-              const std::string& fqdn,
-              int ex_period_min,
-              int ex_period_max,
-              int ttl,
-              const std::string &hostmaster,
-              int refresh,
-              int update_retr,
-              int expiry,
-              int minimum,
-              const std::string &ns_fqdn)
+      void addZone(
+              const std::string& _fqdn,
+              int _ex_period_min,
+              int _ex_period_max,
+              int _ttl,
+              const std::string& _hostmaster,
+              int _refresh,
+              int _update_retr,
+              int _expiry,
+              int _minimum,
+              const std::string& _ns_fqdn) final override
       {
         try
         {
-            std::string fqdn_lower = boost::to_lower_copy(fqdn);
-        	Database::Connection conn = Database::Manager::acquire();
+            LibFred::OperationContextCreator ctx;
 
-        	std::stringstream sql;
-			sql << "SELECT COUNT(*) FROM zone WHERE fqdn='" << conn.escape(fqdn_lower) << "'";
+            LibFred::Zone::CreateZone(_fqdn, _ex_period_min, _ex_period_max).exec(ctx);
 
-			Database::Result res = conn.exec(sql.str());
+            LibFred::Zone::CreateZoneSoa(_fqdn)
+                    .set_ttl(_ttl)
+                    .set_hostmaster(_hostmaster)
+                    .set_refresh(_refresh)
+                    .set_update_retr(_update_retr)
+                    .set_expiry(_expiry)
+                    .set_minimum(_minimum)
+                    .set_ns_fqdn(_ns_fqdn)
+                    .exec(ctx);
 
-			unsigned count = res[0][0];
-
-			if (count != 0)
-			{
-				LOGGER(PACKAGE).notice("Zone already exists.");
-				throw ALREADY_EXISTS();
-			}
-
-			unsigned dots = 1;
-			bool enumZone = checkEnumDomainSuffix(fqdn_lower);
-			if (enumZone) dots = 9;
-
-			Database::Transaction tx(conn);
-
-			ModelZoneSoa zn;
-			zn.setFqdn(fqdn_lower);
-			zn.setExPeriodMax(ex_period_max);
-			zn.setExPeriodMin(ex_period_min);
-			zn.setValPeriod(enumZone ? 6 : 0);
-			zn.setDotsMax(static_cast<int>(dots));
-			zn.setEnumZone(enumZone);
-			zn.setTtl(ttl);
-			// zn.setSerial() is null
-			zn.setHostmaster(hostmaster);
-			zn.setRefresh(refresh);
-			zn.setUpdateRetr(update_retr);
-			zn.setExpiry(expiry);
-			zn.setMinimum(minimum);
-			zn.setNsFqdn(ns_fqdn);
-			zn.insert();
-
-			tx.commit();
-
-        }//try
+            ctx.commit_transaction();
+        }
         catch (...)
         {
             LOGGER(PACKAGE).error("addZone: an error has occured");
             throw SQL_ERROR();
-        }//catch (...)
-      }//addZone
+        }
+      }
 
-      /// add only zone record
-      virtual void addOnlyZoneRecord(
-              const std::string& fqdn,
-              int ex_period_min=12,
-              int ex_period_max=120)
-		{
-		try
-		{
-			Database::Connection conn = Database::Manager::acquire();
-
-			std::stringstream sql;
-			sql << "SELECT COUNT(*) FROM zone WHERE fqdn='" << conn.escape(fqdn) << "'";
-
-			Database::Result res = conn.exec(sql.str());
-
-			unsigned count = res[0][0];
-
-			if (count != 0)
-			{
-				LOGGER(PACKAGE).notice("Zone already exists.");
-				throw ALREADY_EXISTS();
-			}
-
-			unsigned dots = 1;
-			bool enumZone = checkEnumDomainSuffix(fqdn);
-			if (enumZone) dots = 9;
-
-			Database::Transaction tx(conn);
-
-			ModelZone zn;
-			zn.setFqdn(fqdn);
-			zn.setExPeriodMax(ex_period_max);
-			zn.setExPeriodMin(ex_period_min);
-			zn.setValPeriod(enumZone ? 6 : 0);
-			zn.setDotsMax(static_cast<int>(dots));
-			zn.setEnumZone(enumZone);
-			zn.insert();
-
-			tx.commit();
-
-		}//try
-		catch (...)
-		{
-			LOGGER(PACKAGE).error("addOnlyZoneRecord: an error has occured");
-			throw SQL_ERROR();
-		}//catch (...)
-		}//addOnlyZoneRecord
-
-      /// add only zone_soa record identified by fqdn
-      virtual void addOnlyZoneSoaRecordByFqdn(
-              const std::string& fqdn,
-              int ttl=18000,
-              const std::string &hostmaster="hostmaster@localhost",
-              int refresh=10600,
-              int update_retr=3600,
-              int expiry=1209600,
-              int minimum=7200,
-              const std::string &ns_fqdn="localhost")
-		{
-			try
-			{
-				Database::Connection conn = Database::Manager::acquire();
-
-				std::stringstream sql_zone;
-				sql_zone << "SELECT id FROM zone WHERE fqdn='" << conn.escape(fqdn) << "'";
-				Database::Result res_zone = conn.exec(sql_zone.str());
-				if (res_zone.size() < 1)
-				{
-					LOGGER(PACKAGE).notice("Zone not found.");
-					throw NOT_FOUND();//zone not found
-				}
-				const TID id = res_zone[0][0];
-
-				std::stringstream sql_zone_soa;
-				sql_zone_soa << "SELECT COUNT(*) FROM zone_soa WHERE zone = " << id ;
-				Database::Result res_zone_soa = conn.exec(sql_zone_soa.str());
-				if (res_zone_soa.size() != 1)
-				{
-					LOGGER(PACKAGE).error("addOnlyZoneSoaRecordByFqdn: an error has occured");
-					throw SQL_ERROR();
-				}
-
-				if (static_cast<unsigned int>(res_zone_soa[0][0]) == 1)
-				{
-					LOGGER(PACKAGE).notice("Zone already exists.");
-					throw ALREADY_EXISTS();//zone already exists
-				}
-
-				Database::Transaction tx(conn);
-
-				//ModelZone zn;
-				//zn.setId(id);
-
-				ModelZoneSoa zsa;
-                zsa.setId(id);
-				zsa.setTtl(ttl);
-				zsa.setHostmaster(hostmaster);
-				//zsa.setSerial() is null
-				zsa.setRefresh(refresh);
-				zsa.setUpdateRetr(update_retr);
-				zsa.setExpiry(expiry);
-				zsa.setMinimum(minimum);
-				zsa.setNsFqdn(ns_fqdn);
-				zsa.insert();
-
-				tx.commit();
-
-			}//try
-			catch (...)
-			{
-				LOGGER(PACKAGE).error("addOnlyZoneSoaRecordByFqdn: an error has occured");
-				throw SQL_ERROR();
-			}//catch (...)
-		}//addOnlyZoneSoaRecordByFqdn
-
-      /// update zone and zone_soa record identified by fqdn
-      virtual void updateZoneByFqdn(
-              const std::string& fqdn,
-              int ex_period_min,
-              int ex_period_max,
-              int ttl,
-              const std::string &hostmaster,
-              int refresh,
-              int update_retr,
-              int expiry,
-              int minimum,
-              const std::string &ns_fqdn)
-      {
-        try
-        {
-        	Database::Connection conn = Database::Manager::acquire();
-
-        	std::stringstream sql_zone;
-			sql_zone << "SELECT id FROM zone WHERE fqdn='" << conn.escape(fqdn) << "'";
-			Database::Result res_zone = conn.exec(sql_zone.str());
-			if (res_zone.size() < 1)
-				throw NOT_FOUND();//zone not found
-			const TID id = res_zone[0][0];
-
-        	std::stringstream sql_zone_soa;
-			sql_zone_soa << "SELECT COUNT(*) FROM zone_soa WHERE zone = " << id ;
-			Database::Result res_zone_soa = conn.exec(sql_zone_soa.str());
-			if (res_zone_soa.size() < 1)
-				throw NOT_FOUND();//zone not found
-
-			updateZoneById
-			(
-				id,
-				fqdn,
-				ex_period_min,
-				ex_period_max,
-				ttl,
-				hostmaster,
-				refresh,
-				update_retr,
-				expiry,
-				minimum,
-				ns_fqdn
-			);
-
-        }//try
-        catch (...)
-        {
-            LOGGER(PACKAGE).error("updateZoneByFqdn: an error has occured");
-            throw SQL_ERROR();
-        }//catch (...)
-      }//updateZoneByFqdn
-
-      /// update zone and zone_soa record identified by id
-      virtual void updateZoneById(
-    		  const unsigned long long id,
-              const std::string& fqdn,
-              int ex_period_min,
-              int ex_period_max,
-              int ttl,
-              const std::string &hostmaster,
-              int refresh,
-              int update_retr,
-              int expiry,
-              int minimum,
-              const std::string &ns_fqdn)
-      {
-        try
-        {
-        	Database::Connection conn = Database::Manager::acquire();
-
-			unsigned dots = 1;
-			bool enumZone = checkEnumDomainSuffix(fqdn);
-			if (enumZone) dots = 9;
-
-			Database::Transaction tx(conn);
-
-			ModelZoneSoa zn;
-			zn.setId(id);
-			zn.setFqdn(fqdn);
-			zn.setExPeriodMax(ex_period_max);
-			zn.setExPeriodMin(ex_period_min);
-			zn.setValPeriod(enumZone ? 6 : 0);
-			zn.setDotsMax(static_cast<int>(dots));
-			zn.setEnumZone(enumZone);
-			zn.setTtl(ttl);
-			zn.setHostmaster(hostmaster);
-			zn.setRefresh(refresh);
-			zn.setUpdateRetr(update_retr);
-			zn.setExpiry(expiry);
-			zn.setMinimum(minimum);
-			zn.setNsFqdn(ns_fqdn);
-			//zn.setSerial() is null
-			zn.update();
-
-			tx.commit();
-
-        }//try
-        catch (...)
-        {
-            LOGGER(PACKAGE).error("updateZoneById: an error has occured");
-            throw SQL_ERROR();
-        }//catch (...)
-      }//updateZoneById
-
-
-      virtual void addZoneNs(
-              const std::string &zone,
-              const std::string &fqdn,
-              const std::string &addr)
+      void addZoneNs(
+              const std::string& _zone_fqdn,
+              const std::string& _nameserver_fqdn,
+              const std::string& _nameserver_ip_addresses) final override
       {
           try
           {
-        	Database::Connection conn = Database::Manager::acquire();
+              OperationContextCreator ctx;
 
-  			std::stringstream sql_zone;
-  			sql_zone << "SELECT id FROM zone WHERE fqdn='" << conn.escape(zone) << "'";
-  			Database::Result res_zone = conn.exec(sql_zone.str());
-  			if (res_zone.size() < 1)
-  				throw NOT_FOUND();//zone not found
-  			const TID zone_id = res_zone[0][0];
+              if (!_nameserver_ip_addresses.empty())
+              {
+                  std::vector<std::string> addrs;
+                  boost::split(addrs, _nameserver_ip_addresses, boost::is_any_of(","));
 
-  			  ModelZoneNs zn;
-  			  zn.setZoneId(zone_id);
-  			  zn.setFqdn(fqdn);
-  			  zn.setAddrs(std::string("{")+addr+"}");
-  			  zn.insert();
+                  std::vector<boost::asio::ip::address> ip_addrs;
+                  std::for_each(addrs.begin(),
+                          addrs.end(),
+                          [&ip_addrs](const std::string& s)
+                                { ip_addrs.push_back(boost::asio::ip::address::from_string(s)); });
 
-          }//try
+                  CreateZoneNs(_zone_fqdn)
+                          .set_nameserver_fqdn(_nameserver_fqdn)
+                          .set_nameserver_ip_addresses(ip_addrs)
+                          .exec(ctx);
+              }
+              else
+              {
+                  CreateZoneNs(_zone_fqdn)
+                          .set_nameserver_fqdn(_nameserver_fqdn)
+                          .exec(ctx);
+              }
+              ctx.commit_transaction();
+          }
           catch (...)
           {
               LOGGER(PACKAGE).error("addZoneNs: an error has occured");
-              throw SQL_ERROR();
-          }//catch (...)
-
-      }//addZoneNs
-
-      virtual void updateZoneNsById(
-    		  const unsigned long long id,
-              const std::string &zone,
-              const std::string &fqdn,
-              const std::string &addr)
-	{
-		try
-		{
-		  Database::Connection conn = Database::Manager::acquire();
-
-			std::stringstream sql_zone;
-			sql_zone << "SELECT id FROM zone WHERE fqdn='" << conn.escape(zone) << "'";
-			Database::Result res_zone = conn.exec(sql_zone.str());
-			if (res_zone.size() < 1)
-				throw NOT_FOUND();//zone not found
-			const TID zone_id = res_zone[0][0];
-
-			  ModelZoneNs zn;
-			  zn.setId(id);
-			  zn.setZoneId(zone_id);
-			  zn.setFqdn(fqdn);
-			  zn.setAddrs(std::string("{")+addr+"}");
-			  zn.update();
-
-		}//try
-		catch (...)
-		{
-			LOGGER(PACKAGE).error("updateZoneNsById: an error has occured");
-			throw SQL_ERROR();
-		}//catch (...)
-
-	}//updateZoneNsById
-
+              throw;
+          }
+      }
 
     virtual void addPrice(
             int zone_id,

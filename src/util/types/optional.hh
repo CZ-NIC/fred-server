@@ -24,7 +24,9 @@
 #ifndef OPTIONAL_HH_42E8981D4545409A9C808870CB70787F
 #define OPTIONAL_HH_42E8981D4545409A9C808870CB70787F
 
+#include <algorithm>
 #include <string>
+#include <boost/asio.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 
@@ -222,6 +224,19 @@ public:
     }
 };
 
+template <>
+class save_arg<std::vector<boost::asio::ip::address> >
+{
+    std::vector<boost::asio::ip::address>& val_;
+public:
+    save_arg(std::vector<boost::asio::ip::address>& val) : val_(val) {}
+
+    void operator()(const std::vector<std::string>& arg)
+    {
+        std::for_each(arg.begin(), arg.end(),
+                [this](const std::string& s) { val_.push_back(boost::asio::ip::address::from_string(s)); });
+    }
+};
 
 typedef save_arg<optional_string> save_optional_string;
 typedef save_arg<optional_id> save_optional_id;

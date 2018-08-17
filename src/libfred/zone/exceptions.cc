@@ -36,6 +36,11 @@ const char* NoZoneData::what() const noexcept
     return "No zone data for update.";
 }
 
+const char* DuplicateZone::what() const noexcept
+{
+    return "Zone already exists.";
+}
+
 const char* CreateZoneException::what() const noexcept
 {
     return "Failed to create zone due to an unknown exception.";
