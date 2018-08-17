@@ -30,10 +30,7 @@ namespace Zone {
 class InfoZoneSoa
 {
 public:
-    explicit InfoZoneSoa(const std::string& _fqdn)
-        : fqdn_(_fqdn)
-    {
-    }
+    explicit InfoZoneSoa(const std::string& _fqdn);
 
     InfoZoneSoaData exec(OperationContext& _ctx) const;
 

@@ -23,6 +23,11 @@
 namespace LibFred {
 namespace Zone {
 
+InfoZoneSoa::InfoZoneSoa(const std::string& _fqdn)
+    : fqdn_(_fqdn)
+{
+}
+
 InfoZoneSoaData InfoZoneSoa::exec(OperationContext& _ctx) const
 {
     const LibFred::Zone::InfoZoneData zone_info = LibFred::Zone::InfoZone(fqdn_).exec(_ctx);
