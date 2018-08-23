@@ -114,7 +114,7 @@ Testing
 cmake_install.cmake
 install_manifest.txt
 CTestTestfile.cmake
-bin/
+./bin/
 cmake_uninstall.cmake
 config/optysmail.conf
 src/bin/corba/Admin.hh
@@ -210,3 +210,6 @@ src/bin/corba/_dataTypesSK.cc
 src/bin/corba/corba_conversion_test.hh
 src/bin/corba/corba_conversion_testDynSK.cc
 src/bin/corba/corba_conversion_testSK.cc
+src/bin/corba/Accounting.hh
+src/bin/corba/AccountingDynSK.cc
+src/bin/corba/AccountingSK.cc
