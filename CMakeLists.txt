@@ -956,6 +956,11 @@ prepare_object_files(
     src/util/tz/utc.cc
     src/util/util.cc
     src/util/xmlgen.cc
+    test/backend/accounting/main.cc
+    test/backend/accounting/test_get_registrar_by_handle.cc
+    test/backend/accounting/test_get_registrar_by_payment.cc
+    test/backend/accounting/test_get_registrar_references.cc
+    test/backend/accounting/test_get_zone_by_payment.cc
     test/backend/admin/contact/automerge/main.cc
     test/backend/admin/contact/automerge/test-merge-auto-proc.cc
     test/backend/admin/contact/verification/main.cc
@@ -3241,6 +3246,49 @@ target_link_external_libraries(test-record-statement
     postgres
     omniorb4
     threads)
+
+# test-admin-contact-automerge
+prepare_executable(test-accounting
+    src/backend/accounting/accounting.cc
+    src/backend/accounting/exceptions.cc
+    src/backend/accounting/impl/accounting.cc
+    src/backend/accounting/impl/exceptions.cc
+    src/backend/credit.cc
+    test/backend/accounting/main.cc
+    test/backend/accounting/test_get_registrar_by_handle.cc
+    test/backend/accounting/test_get_registrar_by_payment.cc
+    test/backend/accounting/test_get_registrar_references.cc
+    test/backend/accounting/test_get_zone_by_payment.cc
+    test/setup/fixtures.cc
+    test/setup/fixtures_utils.cc)
+target_link_libraries(test-accounting
+    banking
+    corba
+    corbaaccounting
+    corbautil
+    timezones
+    fred
+    log
+    model
+    db
+    oldutils
+    password_storage
+    types
+    util)
+target_link_external_libraries(test-accounting
+    boost_random
+    boost_system
+    boost_regex
+    boost_date_time
+    boost_thread
+    boost_unit_test_framework
+    boost_program_options
+    libidn
+    postgres
+    omniorb4
+    openssl
+    threads
+    mpdec)
 
 # test-server
 prepare_executable(test-server
