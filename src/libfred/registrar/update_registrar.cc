@@ -286,7 +286,7 @@ unsigned long long UpdateRegistrar::exec(OperationContext& _ctx) const
                 params);
         if (update_result.size() == 1)
         {
-            const unsigned long long id = static_cast<unsigned long long>(update_result[0][0]);
+            const auto id = static_cast<unsigned long long>(update_result[0][0]);
             return id;
         }
         else if (update_result.size() < 1)

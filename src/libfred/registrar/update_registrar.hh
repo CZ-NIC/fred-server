@@ -73,7 +73,7 @@ public:
     unsigned long long exec(OperationContext& _ctx) const;
 
 private:
-    const std::string& handle_;
+    std::string handle_;
     boost::optional<std::string> ico_;
     boost::optional<std::string> dic_;
     boost::optional<std::string> variable_symbol_;
