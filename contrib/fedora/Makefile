@@ -2,9 +2,9 @@
 
 .SHELLFLAGS := -xc
 
-spec_dir := `rpm --eval "%{_specdir}"`
-source_dir := `rpm --eval "%{_sourcedir}"`
-srcrpm_dir := `rpm --eval "%{_srcrpmdir}"`
+spec_dir := $(shell rpm --eval "%{_specdir}")
+source_dir := $(shell rpm --eval "%{_sourcedir}")
+srcrpm_dir := $(shell rpm --eval "%{_srcrpmdir}")
 
 our_version := `git describe --tags | cut -d'-' -f1`
 our_release := `git describe --tags | cut -s -d'-' -f2- | tr '-' '_'`
@@ -23,7 +23,7 @@ srpm:
 	git archive --prefix=$(project_name)-$(our_version)/ --format=tar.gz HEAD -o "$(source_dir)/$(project_name)-$(our_version).tar.gz" && \
 	echo "%define project_name $(project_name)" > $(spec_dir)/$(spec_file) && \
 	echo "%define our_version $(our_version)" >> $(spec_dir)/$(spec_file) && \
-	echo "%define our_release $(our_release)" >> $(spec_dir)/$(spec_file) && \
+	if [[ -n "$(our_release)" ]]; then echo "%define our_release $(our_release)" >> $(spec_dir)/$(spec_file); fi && \
 	echo "%define idl_branch $(idl_branch)" >> $(spec_dir)/$(spec_file) && \
 	cat .copr/$(spec_file) >> $(spec_dir)/$(spec_file) && \
 	rpmbuild -bs $(spec_dir)/$(spec_file) && \
