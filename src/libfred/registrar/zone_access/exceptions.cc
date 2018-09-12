@@ -16,30 +16,28 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef UTIL_HH_2EE13D72AC394742A492372492CD6F20
-#define UTIL_HH_2EE13D72AC394742A492372492CD6F20
+#include "src/libfred/registrar/zone_access/exceptions.hh"
 
-#include "src/libfred/opcontext.hh"
-#include "test/setup/fixtures.hh"
+namespace LibFred {
+namespace Registrar {
+namespace ZoneAccess {
 
-namespace Test {
-
-struct ContextHolder
-    : virtual instantiate_db_template
+const char* AddRegistrarZoneAccessException::what() const noexcept
 {
-    LibFred::OperationContextCreator ctx;
-};
+    return "Failed to add registrar zone access due to an unknown exception.";
+}
 
-template <class T>
-struct SupplyFixtureCtx : ContextHolder, T
+const char* NonexistentRegistrar::what() const noexcept
 {
-    SupplyFixtureCtx()
-        : ContextHolder(),
-          T(ctx)
-    {
-    }
-};
+    return "Registrar doesn't exist.";
+}
 
-} // namespace Test
+const char* NonexistentZone::what() const noexcept
+{
+    return "Zone doesn't exist.";
+}
 
-#endif
+} // namespace LibFred::Registrar::ZoneAccess
+} // namespace LibFred::Registrar
+} // namespace LibFred
+

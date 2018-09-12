@@ -16,30 +16,32 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef UTIL_HH_2EE13D72AC394742A492372492CD6F20
-#define UTIL_HH_2EE13D72AC394742A492372492CD6F20
+#ifndef EXCEPTIONS_HH_A96C589FC5F14474872247B053482D69
+#define EXCEPTIONS_HH_A96C589FC5F14474872247B053482D69
 
-#include "src/libfred/opcontext.hh"
-#include "test/setup/fixtures.hh"
+#include <exception>
 
-namespace Test {
+namespace LibFred {
+namespace Registrar {
+namespace ZoneAccess {
 
-struct ContextHolder
-    : virtual instantiate_db_template
+struct AddRegistrarZoneAccessException : std::exception
 {
-    LibFred::OperationContextCreator ctx;
+    const char* what() const noexcept override;
 };
 
-template <class T>
-struct SupplyFixtureCtx : ContextHolder, T
+struct NonexistentRegistrar : std::exception
 {
-    SupplyFixtureCtx()
-        : ContextHolder(),
-          T(ctx)
-    {
-    }
+    const char* what() const noexcept override;
 };
 
-} // namespace Test
+struct NonexistentZone : std::exception
+{
+    const char* what() const noexcept override;
+};
+
+} // namespace LibFred::Registrar::ZoneAccess
+} // namespace LibFred::Registrar
+} // namespace LibFred
 
 #endif
