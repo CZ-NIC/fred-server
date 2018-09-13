@@ -40,6 +40,21 @@ struct NonexistentZone : std::exception
     const char* what() const noexcept override;
 };
 
+struct UpdateRegistrarZoneAccessException : std::exception
+{
+    const char* what() const noexcept override;
+};
+
+struct NoUpdateData : std::exception
+{
+    const char* what() const noexcept override;
+};
+
+struct NonexistentZoneAccess : std::exception
+{
+    const char* what() const noexcept override;
+};
+
 } // namespace LibFred::Registrar::ZoneAccess
 } // namespace LibFred::Registrar
 } // namespace LibFred

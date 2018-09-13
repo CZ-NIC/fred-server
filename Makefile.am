@@ -1148,6 +1148,8 @@ src_libfred_libfred_a_SOURCES = \
 		src/libfred/registrar/zone_access/add_registrar_zone_access.cc \
 		src/libfred/registrar/zone_access/exceptions.cc \
 		src/libfred/registrar/zone_access/exceptions.hh \
+		src/libfred/registrar/zone_access/update_registrar_zone_access.hh \
+		src/libfred/registrar/zone_access/update_registrar_zone_access.cc \
 		src/libfred/object/object_id_handle_pair.hh \
 		src/libfred/object/object_id_handle_pair.cc \
 		src/libfred/object_state/object_state_name.hh \
@@ -3931,6 +3933,7 @@ test_test_libfred_SOURCES = \
 		test/libfred/notifier/test_process_one_notification_request.cc \
 		test/libfred/registrar/util.hh \
 		test/libfred/registrar/zone_access/test_add_zone_access.cc \
+		test/libfred/registrar/zone_access/test_update_zone_access.cc \
 		test/libfred/registrar/zone_access/util.hh \
 		test/libfred/registrar/zone_access/util.cc \
 		test/libfred/registrar/certification/test_create_registrar_certification.cc \

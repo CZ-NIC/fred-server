@@ -16,43 +16,37 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/libfred/registrar/zone_access/exceptions.hh"
+#ifndef UPDATE_REGISTRAR_ZONE_ACCESS_HH_869E1F1CF81E4E7AA6D1AE29840B5E08
+#define UPDATE_REGISTRAR_ZONE_ACCESS_HH_869E1F1CF81E4E7AA6D1AE29840B5E08
+
+#include "src/libfred/opcontext.hh"
+
+#include <boost/date_time/gregorian/gregorian_types.hpp>
+#include <boost/optional.hpp>
 
 namespace LibFred {
 namespace Registrar {
 namespace ZoneAccess {
 
-const char* AddRegistrarZoneAccessException::what() const noexcept
-{
-    return "Failed to add registrar zone access due to an unknown exception.";
-}
+class UpdateRegistrarZoneAccess{
 
-const char* NonexistentRegistrar::what() const noexcept
-{
-    return "Registrar doesn't exist.";
-}
+public:
+    explicit UpdateRegistrarZoneAccess(unsigned long long _id);
 
-const char* NonexistentZone::what() const noexcept
-{
-    return "Zone doesn't exist.";
-}
+    UpdateRegistrarZoneAccess& set_from_date(const boost::optional<boost::gregorian::date>& _from_date);
 
-const char* UpdateRegistrarZoneAccessException::what() const noexcept
-{
-    return "Failed to update registrar zone access due to an unknown exception.";
-}
+    UpdateRegistrarZoneAccess& set_to_date(const boost::optional<boost::gregorian::date>& _to_date);
 
-const char* NoUpdateData::what() const noexcept
-{
-    return "No registrar zone access data for update.";
-}
+    unsigned long long exec(OperationContext& _ctx) const;
 
-const char* NonexistentZoneAccess::what() const noexcept
-{
-    return "Registrar zone access doesn't exist.";
-}
+private:
+    unsigned long long id_;
+    boost::optional<boost::gregorian::date> from_date_;
+    boost::optional<boost::gregorian::date> to_date_;
+};
 
 } // namespace LibFred::Registrar::ZoneAccess
 } // namespace LibFred::Registrar
 } // namespace LibFred
 
+#endif
