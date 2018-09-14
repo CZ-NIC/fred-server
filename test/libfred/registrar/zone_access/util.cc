@@ -21,10 +21,10 @@
 namespace Test {
 
 unsigned long long get_zone_access_id(::LibFred::OperationContext& _ctx,
-        const std::string _registrar,
-        const std::string _zone,
-        const boost::gregorian::date _from_date,
-        const boost::gregorian::date _to_date)
+        const std::string& _registrar,
+        const std::string& _zone,
+        const boost::gregorian::date& _from_date,
+        const boost::gregorian::date& _to_date)
 {
     const Database::Result db_result = _ctx.get_conn().exec_params(
             // clang-format off
@@ -46,7 +46,7 @@ unsigned long long get_zone_access_id(::LibFred::OperationContext& _ctx,
         throw std::runtime_error("Failed to get new zone access id.");
     }
     try {
-        const unsigned long long id = static_cast<unsigned long long>(db_result[0][0]);
+        const auto id = static_cast<unsigned long long>(db_result[0][0]);
         return id;
     }
     catch (std::exception&)

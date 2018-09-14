@@ -28,7 +28,8 @@ namespace LibFred {
 namespace Registrar {
 namespace ZoneAccess {
 
-class UpdateRegistrarZoneAccess{
+class UpdateRegistrarZoneAccess
+{
 
 public:
     explicit UpdateRegistrarZoneAccess(unsigned long long _id);

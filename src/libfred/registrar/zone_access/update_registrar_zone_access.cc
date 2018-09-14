@@ -40,7 +40,7 @@ constexpr const char * psql_type(const unsigned long long&)
     return "::bigint";
 }
 
-} // namespace LibFred::Registrar::{anonymous}
+} // namespace LibFred::Registrar::ZoneAccess::{anonymous}
 
 UpdateRegistrarZoneAccess::UpdateRegistrarZoneAccess(const unsigned long long _id)
         :id_(_id)
@@ -63,8 +63,7 @@ UpdateRegistrarZoneAccess& UpdateRegistrarZoneAccess::set_to_date(
 
 unsigned long long UpdateRegistrarZoneAccess::exec(OperationContext& _ctx) const
 {
-    const bool values_for_update_are_set = (from_date_ != boost::none
-            || to_date_ != boost::none);
+    const bool values_for_update_are_set = (from_date_ != boost::none || to_date_ != boost::none);
     if (!values_for_update_are_set)
     {
         throw NoUpdateData();
@@ -100,7 +99,7 @@ unsigned long long UpdateRegistrarZoneAccess::exec(OperationContext& _ctx) const
                 params);
         if (update_result.size() == 1)
         {
-            const unsigned long long id = static_cast<unsigned long long>(update_result[0][0]);
+            const auto id = static_cast<unsigned long long>(update_result[0][0]);
             return id;
         }
         else if (update_result.size() < 1)

@@ -65,7 +65,7 @@ unsigned long long AddRegistrarZoneAccess::exec(OperationContext& _ctx) const
 
         if (insert_result.size() == 1)
         {
-            const unsigned long long id = static_cast<unsigned long long>(insert_result[0][0]);
+            const auto id = static_cast<unsigned long long>(insert_result[0][0]);
             return id;
         }
         else if (insert_result.size() == 0)

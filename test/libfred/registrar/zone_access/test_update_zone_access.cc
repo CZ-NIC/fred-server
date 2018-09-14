@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE(set_no_update_data)
 
 BOOST_AUTO_TEST_CASE(set_nonexistent_zone_access)
 {
-    unsigned long long nonexistent_id = RandomDataGenerator().xuint();
+    const unsigned long long nonexistent_id = RandomDataGenerator().xuint();
     BOOST_CHECK_THROW(
             ::LibFred::Registrar::ZoneAccess::UpdateRegistrarZoneAccess(nonexistent_id)
                     .set_to_date(to_date)
