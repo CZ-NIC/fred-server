@@ -27,6 +27,20 @@
 namespace LibFred {
 namespace Registrar {
 
+namespace
+{
+constexpr const char * psql_type(const std::string&)
+{
+    return "::text";
+}
+
+constexpr const char * psql_type(const bool&)
+{
+    return "::bool";
+}
+
+} // namespace LibFred::Registrar::{anonymous}
+
 UpdateRegistrar::UpdateRegistrar(const std::string& _handle)
         : handle_(_handle)
 {
@@ -150,25 +164,25 @@ UpdateRegistrar& UpdateRegistrar::set_payment_memo_regex(
 
 unsigned long long UpdateRegistrar::exec(OperationContext& _ctx) const
 {
-    const bool values_for_update_are_set = (ico_ != boost::none
-            || dic_ != boost::none
-            || variable_symbol_ != boost::none
-            || vat_payer_ != boost::none
-            || name_ != boost::none
-            || organization_ != boost::none
-            || street1_ != boost::none
-            || street2_ != boost::none
-            || street3_ != boost::none
-            || city_ != boost::none
-            || state_or_province_ != boost::none
-            || postal_code_ != boost::none
-            || country_ != boost::none
-            || telephone_ != boost::none
-            || fax_ != boost::none
-            || email_ != boost::none
-            || url_ != boost::none
-            || system_ != boost::none
-            || payment_memo_regex_ != boost::none);
+    const bool values_for_update_are_set = (ico_ != boost::none ||
+            dic_ != boost::none ||
+            variable_symbol_ != boost::none ||
+            vat_payer_ != boost::none ||
+            name_ != boost::none ||
+            organization_ != boost::none ||
+            street1_ != boost::none ||
+            street2_ != boost::none ||
+            street3_ != boost::none ||
+            city_ != boost::none ||
+            state_or_province_ != boost::none ||
+            postal_code_ != boost::none ||
+            country_ != boost::none ||
+            telephone_ != boost::none ||
+            fax_ != boost::none ||
+            email_ != boost::none ||
+            url_ != boost::none ||
+            system_ != boost::none ||
+            payment_memo_regex_ != boost::none);
 
     if (!values_for_update_are_set)
     {
@@ -183,101 +197,101 @@ unsigned long long UpdateRegistrar::exec(OperationContext& _ctx) const
     if (ico_ != boost::none)
     {
         params.push_back(*ico_);
-        object_sql << set_separator.get() <<  "ico = $" << params.size() << "::text";
+        object_sql << set_separator.get() <<  "ico = $" << params.size() << psql_type(*ico_);
     }
     if (dic_ != boost::none)
     {
         params.push_back(*dic_);
-        object_sql << set_separator.get() <<  "dic = $" << params.size() << "::text";
+        object_sql << set_separator.get() <<  "dic = $" << params.size() << psql_type(*dic_);
     }
     if (variable_symbol_ != boost::none)
     {
         params.push_back(*variable_symbol_);
-        object_sql << set_separator.get() <<  "varsymb = $" << params.size() << "::text";
+        object_sql << set_separator.get() <<  "varsymb = $" << params.size() << psql_type(*variable_symbol_);
     }
     if (vat_payer_ != boost::none)
     {
         params.push_back(*vat_payer_);
-        object_sql << set_separator.get() <<  "vat = $" << params.size() << "::bool";
+        object_sql << set_separator.get() <<  "vat = $" << params.size() << psql_type(*vat_payer_);
     }
     if (name_ != boost::none)
     {
         params.push_back(*name_);
-        object_sql << set_separator.get() <<  "name = $" << params.size() << "::text";
+        object_sql << set_separator.get() <<  "name = $" << params.size() << psql_type(*name_);
     }
     if (organization_ != boost::none)
     {
         params.push_back(*organization_);
-        object_sql << set_separator.get() <<  "organization = $" << params.size() << "::text";
+        object_sql << set_separator.get() <<  "organization = $" << params.size() << psql_type(*organization_);
     }
     if (street1_ != boost::none)
     {
         params.push_back(*street1_);
-        object_sql << set_separator.get() <<  "street1 = $" << params.size() << "::text";
+        object_sql << set_separator.get() <<  "street1 = $" << params.size() << psql_type(*street1_);
     }
     if (street2_ != boost::none)
     {
         params.push_back(*street2_);
-        object_sql << set_separator.get() <<  "street2 = $" << params.size() << "::text";
+        object_sql << set_separator.get() <<  "street2 = $" << params.size() << psql_type(*street2_);
     }
     if (street3_ != boost::none)
     {
         params.push_back(*street3_);
-        object_sql << set_separator.get() <<  "street3 = $" << params.size() << "::text";
+        object_sql << set_separator.get() <<  "street3 = $" << params.size() << psql_type(*street3_);
     }
     if (city_ != boost::none)
     {
         params.push_back(*city_);
-        object_sql << set_separator.get() <<  "city = $" << params.size() << "::text";
+        object_sql << set_separator.get() <<  "city = $" << params.size() << psql_type(*city_);
     }
     if (postal_code_ != boost::none)
     {
         params.push_back(*postal_code_);
-        object_sql << set_separator.get() <<  "postalcode = $" << params.size() << "::text";
+        object_sql << set_separator.get() <<  "postalcode = $" << params.size() << psql_type(*postal_code_);
     }
     if (state_or_province_ != boost::none)
     {
         params.push_back(*state_or_province_);
-        object_sql << set_separator.get() <<  "stateorprovince = $" << params.size() << "::text";
+        object_sql << set_separator.get() <<  "stateorprovince = $" << params.size() << psql_type(*state_or_province_);
     }
     if (country_ != boost::none)
     {
         params.push_back(*country_);
-        object_sql << set_separator.get() <<  "country = $" << params.size() << "::text";
+        object_sql << set_separator.get() <<  "country = $" << params.size() << psql_type(*country_);
     }
     if (telephone_ != boost::none)
     {
         params.push_back(*telephone_);
-        object_sql << set_separator.get() <<  "telephone = $" << params.size() << "::text";
+        object_sql << set_separator.get() <<  "telephone = $" << params.size() << psql_type(*telephone_);
     }
     if (fax_ != boost::none)
     {
         params.push_back(*fax_);
-        object_sql << set_separator.get() <<  "fax = $" << params.size() << "::text";
+        object_sql << set_separator.get() <<  "fax = $" << params.size() << psql_type(*fax_);
     }
     if (email_ != boost::none)
     {
         params.push_back(*email_);
-        object_sql << set_separator.get() <<  "email = $" << params.size() << "::text";
+        object_sql << set_separator.get() <<  "email = $" << params.size() << psql_type(*email_);
     }
     if (url_ != boost::none)
     {
         params.push_back(*url_);
-        object_sql << set_separator.get() <<  "url = $" << params.size() << "::text";
+        object_sql << set_separator.get() <<  "url = $" << params.size() << psql_type(*url_);
     }
     if (system_ != boost::none)
     {
         params.push_back(*system_);
-        object_sql << set_separator.get() <<  "system = $" << params.size() << "::bool";
+        object_sql << set_separator.get() <<  "system = $" << params.size() << psql_type(*system_);
     }
     if (payment_memo_regex_ != boost::none)
     {
         params.push_back(*payment_memo_regex_);
-        object_sql << set_separator.get() <<  "regex = $" << params.size() << "::text";
+        object_sql << set_separator.get() <<  "regex = $" << params.size() << psql_type(*payment_memo_regex_);
     }
 
     params.push_back(handle_);
-    object_sql << " WHERE handle = UPPER($" << params.size() << "::text) RETURNING id";
+    object_sql << " WHERE handle = UPPER($" << params.size() << psql_type(handle_) << ") RETURNING id";
 
     try
     {
