@@ -34,7 +34,7 @@ unsigned long long get_zone_access_id(::LibFred::OperationContext& _ctx,
             "WHERE r.handle = UPPER($1::text) "
             "AND z.fqdn = LOWER($2::text) "
             "AND ri.fromdate = $3::date "
-            "AND COALESCE(NULLIF(ri.todate, $4::date), NULLIF(ri.todate, $4::date)) IS NULL ",
+            "AND COALESCE(NULLIF(ri.todate, $4::date), NULLIF($4::date, ri.todate)) IS NULL ",
             // clang-format on
             Database::query_param_list(_registrar)
                     (_zone)
@@ -45,14 +45,8 @@ unsigned long long get_zone_access_id(::LibFred::OperationContext& _ctx,
     {
         throw std::runtime_error("Failed to get new zone access id.");
     }
-    try {
-        const auto id = static_cast<unsigned long long>(db_result[0][0]);
-        return id;
-    }
-    catch (std::exception&)
-    {
-        throw;
-    }
+    const auto id = static_cast<unsigned long long>(db_result[0][0]);
+    return id;
 }
 
 } // namespace Test

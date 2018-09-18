@@ -71,22 +71,18 @@ unsigned long long UpdateRegistrarZoneAccess::exec(OperationContext& _ctx) const
 
     Database::QueryParams params;
     std::ostringstream object_sql;
-
-    const std::string head_separator(" SET ");
-    const std::string body_separator(", ");
-    const auto set_separator = [&params, &head_separator, &body_separator]()
-            { return params.size() == 1 ? head_separator : body_separator; };
+    Util::HeadSeparator set_separator(" SET ", ", ");
 
     object_sql << "UPDATE registrarinvoice";
     if (from_date_ != boost::none)
     {
         params.push_back(*from_date_);
-        object_sql << set_separator() <<  "fromdate = $" << params.size() << psql_type(from_date_);
+        object_sql << set_separator.get() <<  "fromdate = $" << params.size() << psql_type(from_date_);
     }
     if (to_date_ != boost::none)
     {
         params.push_back(*to_date_);
-        object_sql << set_separator() <<  "todate = $" << params.size() << psql_type(to_date_);
+        object_sql << set_separator.get() <<  "todate = $" << params.size() << psql_type(to_date_);
     }
 
     params.push_back(id_);

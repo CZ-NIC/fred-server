@@ -3131,7 +3131,6 @@ prepare_executable(test-libfred
     test/libfred/registrar/certification/test_create_registrar_certification.cc
     test/libfred/registrar/certification/test_update_registrar_certification.cc
     test/libfred/registrar/certification/test_get_registrar_certifications.cc
-    test/libfred/registrar/util.hh
     test/libfred/registrar/zone_access/test_add_zone_access.cc
     test/libfred/registrar/zone_access/util.cc
     test/libfred/registrar/zone_access/test_update_zone_access.cc
