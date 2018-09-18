@@ -51,8 +51,8 @@ BOOST_FIXTURE_TEST_SUITE(TestCreateZoneSoa, SupplyFixtureCtx<CreateZoneSoaFixtur
 size_t exists_new_zone_soa(LibFred::OperationContext& _ctx, const std::string& _fqdn)
 {
     const Database::Result db_result = _ctx.get_conn().exec_params(
-            "SELECT COUNT(1) FROM zone AS z "
-            "LEFT JOIN zone_soa AS zs ON zs.zone=z.id "
+            "SELECT 1 FROM zone AS z "
+            "JOIN zone_soa AS zs ON zs.zone=z.id "
             "WHERE z.fqdn = LOWER($1::text) ",
             Database::query_param_list(_fqdn));
     return db_result.size();
