@@ -41,27 +41,45 @@ namespace PublicRequest {
 
 namespace {
 
-std::map<std::string, unsigned char> get_public_request_type_to_post_type_dictionary()
+std::map<std::string, unsigned char> get_public_request_type_to_post_or_government_type_dictionary()
 {
     std::map<std::string, unsigned char> dictionary;
     if (dictionary.insert(
                 std::make_pair(Type::get_iface_of<Type::AuthinfoPost>()
                                .get_public_request_type(), 1)).second &&
         dictionary.insert(
+                std::make_pair(Type::get_iface_of<Type::AuthinfoGovernment>()
+                               .get_public_request_type(), 1)).second &&
+        dictionary.insert(
                 std::make_pair(Type::get_iface_of<Type::BlockTransfer<ConfirmedBy::letter>>()
+                               .get_public_request_type(), 2)).second &&
+        dictionary.insert(
+                std::make_pair(Type::get_iface_of<Type::BlockTransfer<ConfirmedBy::government>>()
                                .get_public_request_type(), 2)).second &&
         dictionary.insert(
                 std::make_pair(Type::get_iface_of<Type::UnblockTransfer<ConfirmedBy::letter>>()
                                .get_public_request_type(), 3)).second &&
         dictionary.insert(
+                std::make_pair(Type::get_iface_of<Type::UnblockTransfer<ConfirmedBy::government>>()
+                               .get_public_request_type(), 3)).second &&
+        dictionary.insert(
                 std::make_pair(Type::get_iface_of<Type::BlockChanges<ConfirmedBy::letter>>()
+                               .get_public_request_type(), 4)).second &&
+        dictionary.insert(
+                std::make_pair(Type::get_iface_of<Type::BlockChanges<ConfirmedBy::government>>()
                                .get_public_request_type(), 4)).second &&
         dictionary.insert(
                 std::make_pair(Type::get_iface_of<Type::UnblockChanges<ConfirmedBy::letter>>()
                                .get_public_request_type(), 5)).second &&
         dictionary.insert(
+                std::make_pair(Type::get_iface_of<Type::UnblockChanges<ConfirmedBy::government>>()
+                               .get_public_request_type(), 5)).second &&
+        dictionary.insert(
                 std::make_pair(Type::get_iface_of<Type::PersonalInfoPost>()
-                               .get_public_request_type(), 6)).second)
+                               .get_public_request_type(), 6)).second &&
+        dictionary.insert(
+                std::make_pair(Type::get_iface_of<Type::PersonalInfoGovernment>()
+                               .get_public_request_type(), 8)).second)
     {
         return dictionary;
     }
@@ -71,7 +89,7 @@ std::map<std::string, unsigned char> get_public_request_type_to_post_type_dictio
 short public_request_type_to_post_type(const std::string& public_request_type)
 {
     typedef std::map<std::string, unsigned char> Dictionary;
-    static const Dictionary dictionary = get_public_request_type_to_post_type_dictionary();
+    static const Dictionary dictionary = get_public_request_type_to_post_or_government_type_dictionary();
     const Dictionary::const_iterator result_ptr = dictionary.find(public_request_type);
     const bool key_found = result_ptr != dictionary.end();
     if (key_found)
