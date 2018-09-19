@@ -31,59 +31,6 @@
 #include "src/bin/cli/bankclient.hh"
 
 /**
- * \class payment_list_impl
- * \brief admin client implementation of payment_list
- */
-struct payment_list_impl
-{
-  void operator()() const
-  {
-      Logging::Context ctx("payment_list_impl");
-      Admin::BankClient pom(
-              CfgArgGroups::instance()->get_handler_ptr_by_type<HandleDatabaseArgsGrp>()->get_conn_info()
-              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_host_port()
-              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_context()
-              , false//BANK_SHOW_OPTS_NAME
-              , true//BANK_PAYMENT_LIST_NAME
-              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientBankPaymentListArgsGrp>()->bank_payment_type //BANK_PAYMENT_TYPE_NAME
-              , false //BANK_IMPORT_XML_NAME
-              , ImportXMLArgs()
-              , false//BANK_ADD_ACCOUNT_NAME
-              , AddAccountArgs()
-              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientBankPaymentListArgsGrp>()->show_details
-              );
-      pom.runMethod();
-  }
-};
-
-/**
- * \class bank_import_xml_impl
- * \brief admin client implementation of bank_import_xml
- */
-struct bank_import_xml_impl
-{
-  void operator()() const
-  {
-      Logging::Context ctx("bank_import_xml_impl");
-      Admin::BankClient pom(
-              CfgArgGroups::instance()->get_handler_ptr_by_type<HandleDatabaseArgsGrp>()->get_conn_info()
-              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_host_port()
-              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_context()
-              , false//BANK_SHOW_OPTS_NAME
-              , false//BANK_PAYMENT_LIST_NAME
-              , optional_ulong()//CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientBankPaymentListArgsGrp>()->bank_payment_type //BANK_PAYMENT_TYPE_NAME
-              , true //BANK_IMPORT_XML_NAME
-              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientBankImportXMLArgsGrp>()->params //ImportXMLArgs()
-              , false//BANK_ADD_ACCOUNT_NAME
-              , AddAccountArgs()
-              , false
-              );
-      pom.runMethod();
-  }
-};
-
-
-/**
  * \class bank_add_account_impl
  * \brief admin client implementation of bank_add_account
  */
@@ -97,13 +44,8 @@ struct bank_add_account_impl
               , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_host_port()
               , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_context()
               , false//BANK_SHOW_OPTS_NAME
-              , false//BANK_PAYMENT_LIST_NAME
-              , optional_ulong()//BANK_PAYMENT_TYPE_NAME
-              , false //BANK_IMPORT_XML_NAME
-              , ImportXMLArgs()
               , true//BANK_ADD_ACCOUNT_NAME
               , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientBankAddAccountArgsGrp>()->params //AddAccountArgs()
-              , false
               );
       pom.runMethod();
   }

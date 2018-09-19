@@ -36,13 +36,8 @@ private:
     ccReg::EPP_var m_epp;
     std::string nameservice_context;
     bool bank_show_opts;//BANK_SHOW_OPTS_NAME
-    bool bank_payment_list;//BANK_PAYMENT_LIST_NAME
-    optional_ulong bank_payment_type;//BANK_PAYMENT_TYPE_NAME
-    bool bank_import_xml;//BANK_IMPORT_XML_NAME
-    ImportXMLArgs import_xml_params;
     bool bank_add_account;//BANK_ADD_ACCOUNT_NAME
     AddAccountArgs add_account_params;
-    bool bank_payment_list_details;
 
     bool parse_line(const char *line, std::vector<std::string> &vec);
 
@@ -50,8 +45,6 @@ private:
 public:
     BankClient()
     : bank_show_opts(false)
-    , bank_payment_list(false)
-    , bank_import_xml(false)
     , bank_add_account(false)
     { }
     BankClient(
@@ -59,24 +52,14 @@ public:
             , const std::string &nsAddr
             , const std::string& _nameservice_context
             , bool _bank_show_opts
-            , bool _bank_payment_list
-            , const optional_ulong& _bank_payment_type
-            , bool _bank_import_xml
-            , const ImportXMLArgs& _import_xml_params
             , bool _bank_add_account
             , const AddAccountArgs& _add_account_params
-            , bool _bank_payment_list_details
             )
     : BaseClient(connstring, nsAddr)
     , nameservice_context(_nameservice_context)
     , bank_show_opts(_bank_show_opts)
-    , bank_payment_list(_bank_payment_list)
-    , bank_payment_type(_bank_payment_type)
-    , bank_import_xml(_bank_import_xml)
-    , import_xml_params(_import_xml_params)
     , bank_add_account(_bank_add_account)
     , add_account_params(_add_account_params)
-    , bank_payment_list_details(_bank_payment_list_details)
     { }
     ~BankClient()
     { }
@@ -87,18 +70,12 @@ public:
 
     void show_opts();
     void statement_list();
-    void payment_list();
-    void import_xml();
-    void import_xml_help();
     void add_bank_account();
     void move_statement();
-    void set_payment_type();
 
     void statement_list_help();
-    void payment_list_help();
     void add_bank_account_help();
     void move_statement_help();
-    void set_payment_type_help();
 }; // class BankClient
 
 } // namespace Admin;

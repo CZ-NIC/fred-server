@@ -39,16 +39,6 @@ BankClient::runMethod()
 }
 
 void
-BankClient::payment_list()
-{
-}
-
-void
-BankClient::import_xml()
-{
-}
-
-void
 BankClient::add_bank_account()
 {
     //callHelp(m_conf, add_bank_account_help);
