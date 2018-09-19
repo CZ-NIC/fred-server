@@ -2802,7 +2802,6 @@ src_bin_corba_accounting_fred_accifd_SOURCES = \
 src_bin_corba_accounting_fred_accifd_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
 		$(BOOST_LDFLAGS) \
-		$(XML2_LIBS) \
 		$(AM_LDFLAGS)
 
 src_bin_corba_accounting_fred_accifd_LDADD = \
@@ -3158,6 +3157,7 @@ SERVER_TESTS = \
 		test/test-optys \
 		test/test-corba-conversion \
 		test/backend/test-record-statement \
+		test/backend/test-accounting \
 		test/test-password-storage \
 		test/test-delete-objects-marked-as-delete-candidate
 
@@ -4194,6 +4194,71 @@ test_backend_test_record_statement_LDADD = \
 		$(BOOST_UNIT_TEST_FRAMEWORK_LIB)
 #
 # test_backend_test_record_statement
+
+# test/backend/test-accounting
+#
+test_backend_test_accounting_SOURCES = \
+		src/backend/accounting/accounting.cc \
+		src/backend/accounting/accounting.hh \
+		src/backend/accounting/exceptions.cc \
+		src/backend/accounting/exceptions.hh \
+		src/backend/accounting/impl/accounting.cc \
+		src/backend/accounting/impl/accounting.hh \
+		src/backend/accounting/impl/exceptions.cc \
+		src/backend/accounting/impl/exceptions.hh \
+		src/backend/accounting/invoice_reference.hh \
+		src/backend/accounting/payment_data.hh \
+		src/backend/accounting/payment_invoices.hh \
+		src/backend/accounting/registrar.hh \
+		src/backend/accounting/registrar_reference.hh \
+		src/backend/credit.cc \
+		src/backend/credit.hh \
+		test/backend/accounting/fixture.hh \
+		test/backend/accounting/main.cc \
+		test/backend/accounting/test_get_registrar_by_handle.cc \
+		test/backend/accounting/test_get_registrar_by_payment.cc \
+		test/backend/accounting/test_get_registrar_references.cc \
+		test/backend/accounting/test_get_zone_by_payment.cc \
+		test/backend/accounting/util.hh \
+		test/setup/fixtures.cc \
+		test/setup/fixtures.hh \
+		test/setup/fixtures_utils.cc \
+		test/setup/fixtures_utils.hh
+
+test_backend_test_accounting_LDFLAGS = \
+		$(POSTGRESQL_LDFLAGS) \
+		$(BOOST_LDFLAGS) \
+		$(AM_LDFLAGS)
+
+test_backend_test_accounting_LDADD = \
+		src/libfred/banking/libbanking.a \
+		src/libfred/libfred.a \
+		src/deprecated/model/libmodel.a \
+		src/util/libpassword_storage.a \
+		src/deprecated/util/liboldutils.a \
+		src/bin/corba/util/libcorbautil.a \
+		src/util/libutil.a \
+		src/util/types/libtypes.a \
+		src/util/log/liblog.a \
+		src/util/db/libdb.a \
+		src/util/tz/libtimezones.a \
+		-lmpdec -lm -lrt \
+		src/bin/corba/libcorba.a \
+		src/bin/corba/libcorbaaccounting.a \
+		$(LIBCRYPTO_LIBS) \
+		$(LIBIDN_LIBS) \
+		$(BOOST_PROGRAM_OPTIONS_LIB) \
+		$(OMNIORB4_LIBS) \
+		$(BOOST_DATE_TIME_LIB) \
+		$(BOOST_REGEX_LIB) \
+		$(BOOST_RANDOM_LIB) \
+		$(BOOST_THREAD_LIB) \
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB) \
+		$(BOOST_UNIT_TEST_FRAMEWORK_LIB) \
+		$(LIBCRYPTO_LIBS)
+#
+# test_backend_test_accounting
 
 # test/test-password-storage
 #
