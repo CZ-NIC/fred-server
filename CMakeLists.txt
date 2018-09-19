@@ -29,13 +29,15 @@ if(NOT VERSION)
     execute_process(COMMAND ${GIT_PROGRAM} "describe" "--tags"
                     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
                     OUTPUT_VARIABLE RAWVERSION)
-    string(REGEX REPLACE "-.*\n" "" VERSION ${RAWVERSION})
+    string(REGEX REPLACE "-.*\n" "" VERSION "${RAWVERSION}")
 endif()
 set(TARBALL_FILE_NAME "${program_name}-${VERSION}")
 
 set_default(IDL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../idl/idl)
 
 set_default(PACKAGE ${program_name})
+
+set_default(DISTRO_PREFIX "")
 
 set_default(BINDIR ${CMAKE_INSTALL_PREFIX}/bin)
 set_default(DATAROOTDIR ${CMAKE_INSTALL_PREFIX}/usr/share/)
@@ -99,6 +101,9 @@ find_package(Boost 1.53.0
     unit_test_framework
     REQUIRED)
 
+set_default(BOOST_INCLUDE_DOXYGEN_PATH ${Boost_INCLUDE_DIRS})
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/doxy.conf.in ${CMAKE_BINARY_DIR}/doxy.conf)
+
 find_package(PkgConfig REQUIRED)
 
 pkg_search_module(LIBSSH REQUIRED libssh)
@@ -131,9 +136,7 @@ set(Resolv_LIBRARIES resolv)
 set(Rt_LIBRARIES rt)
 set(Mpdec_LIBRARIES mpdec)
 
-function(target_link_external_libraries)
-    list(GET ARGN 0 target_name)
-    list(REMOVE_AT ARGN 0)
+function(target_link_external_libraries target_name)
     foreach(library_name ${ARGN})
         target_link_libraries(${target_name} "${${linker_info_${library_name}}}")
     endforeach()
@@ -238,6 +241,12 @@ endfunction()
 
 function(prepare_object_files)
     foreach(src_files ${ARGN})
+        if(${src_files} MATCHES "hh$")
+            message(FATAL_ERROR ${src_files} " is a header!  There's no point in compiling it.")
+        endif()
+        if(NOT ${src_files} MATCHES "cc$")
+            message(FATAL_ERROR ${src_files} " is not a cc file!  There's no point in compiling it.")
+        endif()
         message(STATUS "adding an object file: " ${src_files})
         string(REGEX REPLACE "\.cc$" "_o" name ${src_files})
         string(REGEX REPLACE "\/" "_" name ${name})
@@ -249,9 +258,7 @@ function(prepare_object_files)
     endforeach()
 endfunction()
 
-function(prepare_static_library)
-    list(GET ARGN 0 name)
-    list(REMOVE_AT ARGN 0)
+function(prepare_static_library name)
     set(add_library_arguments "")
     foreach(src_file ${ARGN})
         string(REGEX REPLACE "\.cc$" "_o" object_file_name ${src_file})
@@ -262,9 +269,7 @@ function(prepare_static_library)
     set_common_properties_on_targets(${name})
 endfunction()
 
-function(prepare_executable)
-    list(GET ARGN 0 name)
-    list(REMOVE_AT ARGN 0)
+function(prepare_executable name)
     set(add_executable_arguments "")
     foreach(src_file ${ARGN})
         string(REGEX REPLACE "\.cc$" "_o" object_file_name ${src_file})
@@ -2247,7 +2252,8 @@ target_link_external_libraries(fred-dbifd
     boost_program_options
     omniorb4
     omnidynamic4
-    postgres)
+    postgres
+    threads)
 
 # fred-akmd
 prepare_executable(fred-akmd
@@ -2488,7 +2494,8 @@ target_link_external_libraries(mojeid_contact_address_import
     boost_date_time
     boost_thread
     boost_random
-    postgres)
+    postgres
+    threads)
 
 # mojeid_contact_ssn_fix
 prepare_executable(mojeid_contact_ssn_fix
@@ -2508,7 +2515,8 @@ target_link_external_libraries(mojeid_contact_ssn_fix
     boost_regex
     boost_random
     boost_date_time
-    postgres)
+    postgres
+    threads)
 
 # fred-disclose-flag-updater
 prepare_executable(fred-disclose-flag-updater
@@ -2626,7 +2634,8 @@ target_link_external_libraries(test-admin-contact-automerge
     boost_unit_test_framework
     boost_program_options
     omniorb4
-    postgres)
+    postgres
+    threads)
 
 # test-admin-contact-verification
 prepare_executable(test-admin-contact-verification
@@ -2656,7 +2665,8 @@ target_link_external_libraries(test-admin-contact-verification
     boost_random
     boost_program_options
     boost_date_time
-    postgres)
+    postgres
+    threads)
 
 # test-admin-notification
 prepare_executable(test-admin-notification
@@ -2681,7 +2691,8 @@ target_link_external_libraries(test-admin-notification
     boost_program_options
     omniorb4
     libidn
-    postgres)
+    postgres
+    threads)
 
 # test-automatic-keyset-management
 prepare_executable(test-automatic-keyset-management
@@ -2889,7 +2900,8 @@ target_link_external_libraries(test-epp
     boost_date_time
     postgres
     omnidynamic4
-    mpdec)
+    mpdec
+    threads)
 
 # test-exception
 prepare_executable(test-exception
@@ -2922,7 +2934,8 @@ target_link_external_libraries(test-admin-domain
     boost_thread
     boost_date_time
     postgres
-    omniorb4)
+    omniorb4
+    threads)
 
 prepare_executable(test-admin-zone
     src/backend/admin/zone/zone.cc
@@ -3102,7 +3115,8 @@ target_link_external_libraries(test-libfred
     boost_unit_test_framework
     omniorb4
     libidn
-    mpdec)
+    mpdec
+    threads)
 
 # test-optys
 prepare_executable(test-optys
@@ -3386,7 +3400,8 @@ target_link_external_libraries(test-whois
     boost_unit_test_framework
     postgres
     omniorb4
-    mpdec)
+    mpdec
+    threads)
 
 prepare_executable(test-delete-objects-marked-as-delete-candidate
     test/test_delete_objects_marked_as_delete_candidate.cc)
@@ -3411,44 +3426,49 @@ target_link_external_libraries(test-delete-objects-marked-as-delete-candidate
     rt
     resolv)
 
-install(TARGETS fred-accifd DESTINATION sbin)
-install(TARGETS fred-adifd DESTINATION sbin)
-install(TARGETS fred-admin DESTINATION sbin)
-install(TARGETS fred-akmd DESTINATION sbin)
-install(TARGETS fred-dbifd DESTINATION sbin)
-install(TARGETS fred-logd DESTINATION sbin)
-install(TARGETS fred-mifd DESTINATION sbin)
-install(TARGETS fred-mojeid-msgen DESTINATION sbin)
-install(TARGETS fred-msgd DESTINATION sbin)
-install(TARGETS fred-pifd DESTINATION sbin)
-install(TARGETS fred-rifd DESTINATION sbin)
-install(TARGETS fred-rsifd DESTINATION sbin)
-install(TARGETS migrate_log DESTINATION sbin)
-install(TARGETS mojeid_contact_address_import DESTINATION sbin)
-install(TARGETS mojeid_contact_ssn_fix DESTINATION sbin)
-install(TARGETS fred-disclose-flag-updater DESTINATION sbin)
+install(TARGETS fred-accifd DESTINATION ${DISTRO_PREFIX}sbin)
+install(TARGETS fred-adifd DESTINATION ${DISTRO_PREFIX}sbin)
+install(TARGETS fred-admin DESTINATION ${DISTRO_PREFIX}sbin)
+install(TARGETS fred-akmd DESTINATION ${DISTRO_PREFIX}sbin)
+install(TARGETS fred-dbifd DESTINATION ${DISTRO_PREFIX}sbin)
+install(TARGETS fred-logd DESTINATION ${DISTRO_PREFIX}sbin)
+install(TARGETS fred-mifd DESTINATION ${DISTRO_PREFIX}sbin)
+install(TARGETS fred-mojeid-msgen DESTINATION ${DISTRO_PREFIX}sbin)
+install(TARGETS fred-msgd DESTINATION ${DISTRO_PREFIX}sbin)
+install(TARGETS fred-pifd DESTINATION ${DISTRO_PREFIX}sbin)
+install(TARGETS fred-rifd DESTINATION ${DISTRO_PREFIX}sbin)
+install(TARGETS fred-rsifd DESTINATION ${DISTRO_PREFIX}sbin)
+install(TARGETS migrate_log DESTINATION ${DISTRO_PREFIX}sbin)
+install(TARGETS mojeid_contact_address_import DESTINATION ${DISTRO_PREFIX}sbin)
+install(TARGETS mojeid_contact_ssn_fix DESTINATION ${DISTRO_PREFIX}sbin)
+install(TARGETS fred-disclose-flag-updater DESTINATION ${DISTRO_PREFIX}sbin)
 
 install(DIRECTORY ${CMAKE_BINARY_DIR}/config/ DESTINATION etc/fred FILES_MATCHING PATTERN "*.conf")
-install(DIRECTORY ${CMAKE_BINARY_DIR}/init-scripts/ DESTINATION etc/inid.d FILES_MATCHING PATTERN "fred-*")
+install(DIRECTORY ${CMAKE_BINARY_DIR}/init-scripts/ DESTINATION etc/init.d FILES_MATCHING PATTERN "fred-server")
 
-install(TARGETS test-admin-contact-automerge DESTINATION bin)
-install(TARGETS test-admin-contact-verification DESTINATION bin)
-install(TARGETS test-admin-notification DESTINATION bin)
-install(TARGETS test-automatic-keyset-management DESTINATION bin)
-install(TARGETS test-blocking DESTINATION bin)
-install(TARGETS test-corba-conversion DESTINATION bin)
-install(TARGETS test-epp DESTINATION bin)
-install(TARGETS test-exception DESTINATION bin)
-install(TARGETS test-libfred DESTINATION bin)
-install(TARGETS test-optys DESTINATION bin)
-install(TARGETS test-password-storage DESTINATION bin)
-install(TARGETS test-public-request DESTINATION bin)
-install(TARGETS test-record-statement DESTINATION bin)
-install(TARGETS test-server DESTINATION bin)
-install(TARGETS test-whois DESTINATION bin)
-install(TARGETS test-admin-domain DESTINATION bin)
-install(TARGETS test-admin-zone DESTINATION bin)
-install(TARGETS test-delete-objects-marked-as-delete-candidate DESTINATION bin)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/test/deprecated/ DESTINATION ${DISTRO_PREFIX}share/doc/fred-server FILES_MATCHING PATTERN "example_payments.xml")
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/test/deprecated/ DESTINATION ${DISTRO_PREFIX}share/doc/fred-server FILES_MATCHING PATTERN "test_file.pdf")
+
+if(NOT DO_NOT_INSTALL_TESTS)
+    install(TARGETS test-admin-contact-automerge DESTINATION ${DISTRO_PREFIX}bin)
+    install(TARGETS test-admin-contact-verification DESTINATION ${DISTRO_PREFIX}bin)
+    install(TARGETS test-admin-notification DESTINATION ${DISTRO_PREFIX}bin)
+    install(TARGETS test-automatic-keyset-management DESTINATION ${DISTRO_PREFIX}bin)
+    install(TARGETS test-blocking DESTINATION ${DISTRO_PREFIX}bin)
+    install(TARGETS test-corba-conversion DESTINATION ${DISTRO_PREFIX}bin)
+    install(TARGETS test-epp DESTINATION ${DISTRO_PREFIX}bin)
+    install(TARGETS test-exception DESTINATION ${DISTRO_PREFIX}bin)
+    install(TARGETS test-libfred DESTINATION ${DISTRO_PREFIX}bin)
+    install(TARGETS test-optys DESTINATION ${DISTRO_PREFIX}bin)
+    install(TARGETS test-password-storage DESTINATION ${DISTRO_PREFIX}bin)
+    install(TARGETS test-public-request DESTINATION ${DISTRO_PREFIX}bin)
+    install(TARGETS test-record-statement DESTINATION ${DISTRO_PREFIX}bin)
+    install(TARGETS test-server DESTINATION ${DISTRO_PREFIX}bin)
+    install(TARGETS test-whois DESTINATION ${DISTRO_PREFIX}bin)
+    install(TARGETS test-admin-domain DESTINATION ${DISTRO_PREFIX}bin)
+    install(TARGETS test-admin-zone DESTINATION ${DISTRO_PREFIX}bin)
+    install(TARGETS test-delete-objects-marked-as-delete-candidate DESTINATION ${DISTRO_PREFIX}bin)
+endif()
 
 if(NOT TARGET uninstall)
     configure_file(
@@ -3462,7 +3482,7 @@ endif()
 if(EXISTS ${CMAKE_SOURCE_DIR}/.git AND GIT_PROGRAM)
     if(NOT TARGET dist)
         add_custom_target(dist
-            COMMAND ${GIT_PROGRAM} archive --format=tar --prefix=${TARBALL_FILE_NAME}/ HEAD | gzip > ${CMAKE_BINARY_DIR}/${TARBALL_FILE_NAME}.tar.gz
+            COMMAND ${GIT_PROGRAM} archive --format=tar.gz --prefix=${TARBALL_FILE_NAME}/ HEAD -o ${CMAKE_BINARY_DIR}/${TARBALL_FILE_NAME}.tar.gz
             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
     endif()
 
