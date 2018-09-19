@@ -34,7 +34,7 @@ constexpr const char * psql_type(const std::string&)
     return "::text";
 }
 
-constexpr const char * psql_type(const bool&)
+constexpr const char * psql_type(const bool)
 {
     return "::bool";
 }
@@ -291,7 +291,7 @@ unsigned long long UpdateRegistrar::exec(OperationContext& _ctx) const
     }
 
     params.push_back(handle_);
-    object_sql << " WHERE handle = UPPER($" << params.size() << psql_type(handle_) << ") RETURNING id";
+    object_sql << " WHERE registrar.handle = UPPER($" << params.size() << psql_type(handle_) << ") RETURNING id";
 
     try
     {
@@ -303,14 +303,11 @@ unsigned long long UpdateRegistrar::exec(OperationContext& _ctx) const
             const auto id = static_cast<unsigned long long>(update_result[0][0]);
             return id;
         }
-        else if (update_result.size() < 1)
+        if (update_result.size() < 1)
         {
             throw NonExistentRegistrar();
         }
-        else
-        {
-            throw std::runtime_error("Duplicity in database");
-        }
+        throw std::runtime_error("Duplicity in database");
     }
     catch (const NonExistentRegistrar&)
     {
