@@ -16,34 +16,28 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/libfred/registrar/epp_auth/exceptions.hh"
+#ifndef DELETE_REGISTRAR_EPP_AUTH_HH_7FB5773EAB814D37A611447D8A29E4D8
+#define DELETE_REGISTRAR_EPP_AUTH_HH_7FB5773EAB814D37A611447D8A29E4D8
+
+#include "src/libfred/opcontext.hh"
 
 namespace LibFred {
 namespace Registrar {
 namespace EppAuth {
 
-const char* AddRegistrarEppAuthException::what() const noexcept
+class DeleteRegistrarEppAuth
 {
-    return "Failed to add registrar EPP authentication due to an unknown exception.";
-}
+public:
+    explicit DeleteRegistrarEppAuth(unsigned long long _id);
 
-const char* NonexistentRegistrar::what() const noexcept
-{
-    return "Registrar does not exist.";
-}
+    void exec(OperationContext& _ctx) const;
 
-const char* DeleteRegistrarEppAuthException::what() const noexcept
-{
-    return "Failed to delete registrar EPP authentication due to an unknown exception.";
-}
-
-const char* NonexistentRegistrarEppAuth::what() const noexcept
-{
-    return "Registrar EPP authentication does not exist.";
-}
-
-}
+private:
+    unsigned long long id_;
+};
 
 } // namespace LibFred::Registrar::EppAuth
 } // namespace LibFred::Registrar
 } // namespace LibFred
+
+#endif
