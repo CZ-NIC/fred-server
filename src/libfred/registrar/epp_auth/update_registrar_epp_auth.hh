@@ -16,43 +16,34 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef EXCEPTIONS_HH_972EE3B938CE4074852072D1C880B936
-#define EXCEPTIONS_HH_972EE3B938CE4074852072D1C880B936
+#ifndef UPDATE_REGISTRAR_EPP_AUTH_HH_4D17531385D14877B071FDC2D35425A0
+#define UPDATE_REGISTRAR_EPP_AUTH_HH_4D17531385D14877B071FDC2D35425A0
 
-#include <exception>
+#include "src/libfred/opcontext.hh"
+
+#include <boost/optional.hpp>
+#include <string>
 
 namespace LibFred {
 namespace Registrar {
 namespace EppAuth {
 
-struct AddRegistrarEppAuthException : std::exception
+class UpdateRegistrarEppAuth
 {
-    const char* what() const noexcept override;
-};
+public:
+    explicit UpdateRegistrarEppAuth(unsigned long long _id);
 
-struct NonexistentRegistrar : std::exception
-{
-    const char* what() const noexcept override;
-};
+    UpdateRegistrarEppAuth& set_certificate_fingerprint(
+            const boost::optional<std::string>& _certificate_fingerprint);
 
-struct DeleteRegistrarEppAuthException : std::exception
-{
-    const char* what() const noexcept override;
-};
+    UpdateRegistrarEppAuth& set_plain_password(const boost::optional<std::string>& _plain_password);
 
-struct NonexistentRegistrarEppAuth : std::exception
-{
-    const char* what() const noexcept override;
-};
+    void exec(OperationContext& _ctx) const;
 
-struct UpdateRegistrarEppAuthException : std::exception
-{
-    const char* what() const noexcept override;
-};
-
-struct NoUpdateData : std::exception
-{
-    const char* what() const noexcept override;
+private:
+    unsigned long long id_;
+    boost::optional<std::string> certificate_fingerprint_;
+    boost::optional<std::string> plain_password_;
 };
 
 } // namespace LibFred::Registrar::EppAuth

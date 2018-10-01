@@ -1134,6 +1134,8 @@ src_libfred_libfred_a_SOURCES = \
 		src/libfred/registrar/epp_auth/add_registrar_epp_auth.cc \
 		src/libfred/registrar/epp_auth/delete_registrar_epp_auth.hh \
 		src/libfred/registrar/epp_auth/delete_registrar_epp_auth.cc \
+		src/libfred/registrar/epp_auth/update_registrar_epp_auth.hh \
+		src/libfred/registrar/epp_auth/update_registrar_epp_auth.cc \
 		src/libfred/registrar/epp_auth/exceptions.hh \
 		src/libfred/registrar/epp_auth/exceptions.cc \
 		src/libfred/registrar/certification/exceptions.hh \
@@ -3944,6 +3946,7 @@ test_test_libfred_SOURCES = \
 		test/libfred/registrar/zone_access/util.cc \
 		test/libfred/registrar/epp_auth/test_add_registrar_epp_auth.cc \
 		test/libfred/registrar/epp_auth/test_delete_registrar_epp_auth.cc \
+		test/libfred/registrar/epp_auth/test_update_registrar_epp_auth.cc \
 		test/libfred/registrar/certification/test_create_registrar_certification.cc \
 		test/libfred/registrar/certification/test_update_registrar_certification.cc \
 		test/libfred/registrar/certification/test_get_registrar_certifications.cc \
