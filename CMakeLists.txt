@@ -894,6 +894,7 @@ prepare_object_files(
     src/libfred/registrar.cc
     src/libfred/registrar/epp_auth/add_registrar_epp_auth.cc
     src/libfred/registrar/epp_auth/delete_registrar_epp_auth.cc
+    src/libfred/registrar/epp_auth/get_registrar_epp_auth.cc
     src/libfred/registrar/epp_auth/update_registrar_epp_auth.cc
     src/libfred/registrar/epp_auth/exceptions.cc
     src/libfred/registrar/certification/create_registrar_certification.cc
@@ -1192,6 +1193,7 @@ prepare_object_files(
     test/libfred/public_request/test_update_public_request.cc
     test/libfred/registrar/epp_auth/test_add_registrar_epp_auth.cc
     test/libfred/registrar/epp_auth/test_delete_registrar_epp_auth.cc
+    test/libfred/registrar/epp_auth/test_get_registrar_epp_auth.cc
     test/libfred/registrar/epp_auth/test_update_registrar_epp_auth.cc
     test/libfred/registrar/certification/test_create_registrar_certification.cc
     test/libfred/registrar/certification/test_get_registrar_certifications.cc
@@ -1512,6 +1514,7 @@ prepare_static_library(fred
     src/libfred/registrar/group/get_registrar_groups.cc
     src/libfred/registrar/epp_auth/add_registrar_epp_auth.cc
     src/libfred/registrar/epp_auth/delete_registrar_epp_auth.cc
+    src/libfred/registrar/epp_auth/get_registrar_epp_auth.cc
     src/libfred/registrar/epp_auth/update_registrar_epp_auth.cc
     src/libfred/registrar/epp_auth/exceptions.cc
     src/libfred/registrar/certification/create_registrar_certification.cc
@@ -3141,6 +3144,7 @@ prepare_executable(test-libfred
     test/libfred/notifier/test_process_one_notification_request.cc
     test/libfred/registrar/epp_auth/test_add_registrar_epp_auth.cc
     test/libfred/registrar/epp_auth/test_delete_registrar_epp_auth.cc
+    test/libfred/registrar/epp_auth/test_get_registrar_epp_auth.cc
     test/libfred/registrar/epp_auth/test_update_registrar_epp_auth.cc
     test/libfred/registrar/certification/test_create_registrar_certification.cc
     test/libfred/registrar/certification/test_update_registrar_certification.cc

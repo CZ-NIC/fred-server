@@ -55,6 +55,11 @@ struct NoUpdateData : std::exception
     const char* what() const noexcept override;
 };
 
+struct GetRegistrarEppAuthException : std::exception
+{
+    const char* what() const noexcept override;
+};
+
 } // namespace LibFred::Registrar::EppAuth
 } // namespace LibFred::Registrar
 } // namespace LibFred

@@ -52,6 +52,11 @@ const char* NoUpdateData::what() const noexcept
     return "No EPP authentication data of registrar for update.";
 }
 
+const char* GetRegistrarEppAuthException::what() const noexcept
+{
+    return "Failed to get registrar EPP authentication due to an unknown exception.";
+}
+
 } // namespace LibFred::Registrar::EppAuth
 } // namespace LibFred::Registrar
 } // namespace LibFred
