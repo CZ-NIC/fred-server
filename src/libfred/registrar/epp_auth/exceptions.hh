@@ -60,6 +60,16 @@ struct GetRegistrarEppAuthException : std::exception
     const char* what() const noexcept override;
 };
 
+struct CloneRegistrarEppAuthException : std::exception
+{
+    const char* what() const noexcept override;
+};
+
+struct DuplicateCertificate : std::exception
+{
+    const char* what() const noexcept override;
+};
+
 } // namespace LibFred::Registrar::EppAuth
 } // namespace LibFred::Registrar
 } // namespace LibFred

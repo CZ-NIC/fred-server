@@ -1132,6 +1132,8 @@ src_libfred_libfred_a_SOURCES = \
 		src/libfred/registrar/group/membership/info_group_membership_by_registrar.cc \
 		src/libfred/registrar/epp_auth/add_registrar_epp_auth.hh \
 		src/libfred/registrar/epp_auth/add_registrar_epp_auth.cc \
+		src/libfred/registrar/epp_auth/clone_registrar_epp_auth.hh \
+		src/libfred/registrar/epp_auth/clone_registrar_epp_auth.cc \
 		src/libfred/registrar/epp_auth/delete_registrar_epp_auth.hh \
 		src/libfred/registrar/epp_auth/delete_registrar_epp_auth.cc \
 		src/libfred/registrar/epp_auth/get_registrar_epp_auth.hh \
@@ -3948,6 +3950,7 @@ test_test_libfred_SOURCES = \
 		test/libfred/registrar/zone_access/util.hh \
 		test/libfred/registrar/zone_access/util.cc \
 		test/libfred/registrar/epp_auth/test_add_registrar_epp_auth.cc \
+		test/libfred/registrar/epp_auth/test_clone_registrar_epp_auth.cc \
 		test/libfred/registrar/epp_auth/test_delete_registrar_epp_auth.cc \
 		test/libfred/registrar/epp_auth/test_update_registrar_epp_auth.cc \
 		test/libfred/registrar/epp_auth/test_get_registrar_epp_auth.cc \

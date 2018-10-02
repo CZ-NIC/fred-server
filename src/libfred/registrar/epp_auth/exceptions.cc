@@ -57,6 +57,17 @@ const char* GetRegistrarEppAuthException::what() const noexcept
     return "Failed to get registrar EPP authentication due to an unknown exception.";
 }
 
+const char* CloneRegistrarEppAuthException::what() const noexcept
+{
+    return "Failed to clone registrar EPP authentication due to an unknown exception.";
+}
+
+const char* DuplicateCertificate::what() const noexcept
+{
+    return "Certificate already exists.";
+
+}
+
 } // namespace LibFred::Registrar::EppAuth
 } // namespace LibFred::Registrar
 } // namespace LibFred
