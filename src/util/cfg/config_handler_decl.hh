@@ -1,17 +1,17 @@
-/*  
+/*
  * Copyright (C) 2010  CZ.NIC, z.s.p.o.
- * 
+ *
  * This file is part of FRED.
- * 
+ *
  * FRED is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 2 of the License.
- * 
+ *
  * FRED is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -89,25 +89,23 @@ private:
     }
 
 public:
-    template <class HELP> static  CfgArgs * init(const HandlerPtrVector& hpv);
-    static CfgArgs * instance();
+    template <class HELP> static CfgArgs* init(const HandlerPtrVector& hpv);
+    static CfgArgs* instance();
 
     FakedArgs fa;
-    FakedArgs handle( int argc, char* argv[])
+    FakedArgs handle(int argc, char* argv[])
     {
-        //initial fa
         fa.init(argc, argv);
 
-        for(HandlerPtrVector::const_iterator i = hpv_.begin()
-                ; i != hpv_.end(); ++i )
+        for (HandlerPtrVector::const_iterator i = hpv_.begin(); i != hpv_.end(); ++i)
         {
             FakedArgs fa_out;
-            (*i)->handle( fa.get_argc(), fa.get_argv(), fa_out);
-            fa=fa_out;//last output to next input
-        }//for HandlerPtrVector
+            (*i)->handle(fa.get_argc(), fa.get_argv(), fa_out);
+            fa = fa_out;//last output to next input
+        }
         return fa;
-    }//handle
-};//class CfgArgs
+    }
+};
 
 
 //setter
