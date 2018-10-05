@@ -1490,11 +1490,17 @@ Registry::PublicRequest::Detail* ccReg_Session_i::createPublicRequestDetail(LibF
   else if (_request->getType() == LibFred::PublicRequest::PRT_AUTHINFO_POST_PIF) {
       detail->type = Registry::PublicRequest::PRT_AUTHINFO_POST_PIF;
   }
+  else if (_request->getType() == LibFred::PublicRequest::PRT_AUTHINFO_GOVERNMENT_PIF) {
+      detail->type = Registry::PublicRequest::PRT_AUTHINFO_GOVERNMENT_PIF;
+  }
   else if (_request->getType() == LibFred::PublicRequest::PRT_BLOCK_CHANGES_EMAIL_PIF) {
       detail->type = Registry::PublicRequest::PRT_BLOCK_CHANGES_EMAIL_PIF;
   }
   else if (_request->getType() == LibFred::PublicRequest::PRT_BLOCK_CHANGES_POST_PIF) {
       detail->type = Registry::PublicRequest::PRT_BLOCK_CHANGES_POST_PIF;
+  }
+  else if (_request->getType() == LibFred::PublicRequest::PRT_BLOCK_CHANGES_GOVERNMENT_PIF) {
+      detail->type = Registry::PublicRequest::PRT_BLOCK_CHANGES_GOVERNMENT_PIF;
   }
   else if (_request->getType() == LibFred::PublicRequest::PRT_BLOCK_TRANSFER_EMAIL_PIF) {
       detail->type = Registry::PublicRequest::PRT_BLOCK_TRANSFER_EMAIL_PIF;
@@ -1502,17 +1508,26 @@ Registry::PublicRequest::Detail* ccReg_Session_i::createPublicRequestDetail(LibF
   else if (_request->getType() == LibFred::PublicRequest::PRT_BLOCK_TRANSFER_POST_PIF) {
       detail->type = Registry::PublicRequest::PRT_BLOCK_TRANSFER_POST_PIF;
   }
+  else if (_request->getType() == LibFred::PublicRequest::PRT_BLOCK_TRANSFER_GOVERNMENT_PIF) {
+      detail->type = Registry::PublicRequest::PRT_BLOCK_TRANSFER_GOVERNMENT_PIF;
+  }
   else if (_request->getType() == LibFred::PublicRequest::PRT_UNBLOCK_CHANGES_EMAIL_PIF) {
       detail->type = Registry::PublicRequest::PRT_UNBLOCK_CHANGES_EMAIL_PIF;
   }
   else if (_request->getType() == LibFred::PublicRequest::PRT_UNBLOCK_CHANGES_POST_PIF) {
       detail->type = Registry::PublicRequest::PRT_UNBLOCK_CHANGES_POST_PIF;
   }
+  else if (_request->getType() == LibFred::PublicRequest::PRT_UNBLOCK_CHANGES_GOVERNMENT_PIF) {
+      detail->type = Registry::PublicRequest::PRT_UNBLOCK_CHANGES_GOVERNMENT_PIF;
+  }
   else if (_request->getType() == LibFred::PublicRequest::PRT_UNBLOCK_TRANSFER_EMAIL_PIF) {
       detail->type = Registry::PublicRequest::PRT_UNBLOCK_TRANSFER_EMAIL_PIF;
   }
   else if (_request->getType() == LibFred::PublicRequest::PRT_UNBLOCK_TRANSFER_POST_PIF) {
       detail->type = Registry::PublicRequest::PRT_UNBLOCK_TRANSFER_POST_PIF;
+  }
+  else if (_request->getType() == LibFred::PublicRequest::PRT_UNBLOCK_TRANSFER_GOVERNMENT_PIF) {
+      detail->type = Registry::PublicRequest::PRT_UNBLOCK_TRANSFER_GOVERNMENT_PIF;
   }
   else if (_request->getType() == CorbaConversion::Admin::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION) {
       detail->type = Registry::PublicRequest::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION;
@@ -1552,6 +1567,9 @@ Registry::PublicRequest::Detail* ccReg_Session_i::createPublicRequestDetail(LibF
   }
   else if (_request->getType() == LibFred::PublicRequest::PRT_PERSONALINFO_POST_PIF) {
       detail->type = Registry::PublicRequest::PRT_PERSONALINFO_POST_PIF;
+  }
+  else if (_request->getType() == LibFred::PublicRequest::PRT_PERSONALINFO_GOVERNMENT_PIF) {
+      detail->type = Registry::PublicRequest::PRT_PERSONALINFO_GOVERNMENT_PIF;
   }
   else {
       throw std::runtime_error("unknown public request type");
