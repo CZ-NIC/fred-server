@@ -24,7 +24,7 @@
 namespace Epp {
 namespace Contact {
 namespace Impl {
-namespace Dummy {
+namespace SetUnused {
 
 class CreateContactCheck final : public Epp::Contact::CreateOperationCheck
 {
@@ -63,7 +63,7 @@ private:
     const Data default_disclose_notify_email_;
 };
 
-}//namespace Epp::Contact::Impl::Dummy
+}//namespace Epp::Contact::Impl::SetUnused
 }//namespace Epp::Contact::Impl
 }//namespace Epp::Contact
 }//namespace Epp

@@ -16,14 +16,14 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/backend/epp/contact/impl/dummy/update_contact_check.hh"
+#include "src/backend/epp/contact/impl/set_unused/update_contact_check.hh"
 
 #include <stdexcept>
 
 namespace Epp {
 namespace Contact {
 namespace Impl {
-namespace Dummy {
+namespace SetUnused {
 
 namespace {
 
@@ -81,7 +81,7 @@ Public get_privacy(
     throw std::runtime_error("unknown publishability");
 }
 
-}//namespace Epp::Contact::Impl::Dummy::{anonymous}
+}//namespace Epp::Contact::Impl::SetUnused::{anonymous}
 
 UpdateContactCheck::UpdateContactCheck()
     : default_disclose_name_(Operation::do_not_change),
@@ -183,7 +183,7 @@ LibFred::UpdateContactByHandle& UpdateContactCheck::operator()(
     return update_op;
 }
 
-}//namespace Epp::Contact::Impl::Dummy
+}//namespace Epp::Contact::Impl::SetUnused
 }//namespace Epp::Contact::Impl
 }//namespace Epp::Contact
 }//namespace Epp

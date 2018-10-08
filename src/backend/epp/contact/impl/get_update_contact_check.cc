@@ -19,8 +19,8 @@
 #include "src/backend/epp/contact/impl/get_update_contact_check.hh"
 #include "src/backend/epp/contact/impl/cznic/update_contact_check.hh"
 #include "src/backend/epp/contact/impl/cznic/specific.hh"
-#include "src/backend/epp/contact/impl/dummy/update_contact_check.hh"
-#include "src/backend/epp/contact/impl/dummy/config.hh"
+#include "src/backend/epp/contact/impl/set_unused/update_contact_check.hh"
+#include "src/backend/epp/contact/impl/set_unused/config.hh"
 
 #include <stdexcept>
 
@@ -50,22 +50,22 @@ CzNic::UpdateContactCheck::Operation from_cznic_option_to_operation(const Config
 }
 
 template <typename T>
-Dummy::UpdateContactCheck::Operation from_dummy_option_to_operation(const ConfigCheck& check)
+SetUnused::UpdateContactCheck::Operation from_set_unused_option_to_operation(const ConfigCheck& check)
 {
     const auto option_value = check.get_value<T>();
     if (option_value == "show")
     {
-        return Dummy::UpdateContactCheck::Operation::set_to_show;
+        return SetUnused::UpdateContactCheck::Operation::set_to_show;
     }
     if (option_value == "hide")
     {
-        return Dummy::UpdateContactCheck::Operation::set_to_hide;
+        return SetUnused::UpdateContactCheck::Operation::set_to_hide;
     }
     if (option_value.empty())
     {
-        return Dummy::UpdateContactCheck::Operation::do_not_change;
+        return SetUnused::UpdateContactCheck::Operation::do_not_change;
     }
-    throw std::runtime_error("unable convert string to value of Dummy::UpdateContactCheck::Operation type");
+    throw std::runtime_error("unable convert string to value of SetUnused::UpdateContactCheck::Operation type");
 }
 
 }//namespace Epp::Contact::Impl::{anonymous}
@@ -85,18 +85,18 @@ std::shared_ptr<Epp::Contact::UpdateOperationCheck> get_update_contact_check(con
                 from_cznic_option_to_operation<CzNic::Specific::UpdateContact::Disclose::Ident>(check),
                 from_cznic_option_to_operation<CzNic::Specific::UpdateContact::Disclose::NotifyEmail>(check));
     }
-    if (check.is_type_of<Dummy::Config>())
+    if (check.is_type_of<SetUnused::Config>())
     {
-        return std::make_shared<Dummy::UpdateContactCheck>(
-                from_dummy_option_to_operation<Dummy::Config::UpdateContact::Disclose::Name>(check),
-                from_dummy_option_to_operation<Dummy::Config::UpdateContact::Disclose::Organization>(check),
-                from_dummy_option_to_operation<Dummy::Config::UpdateContact::Disclose::Address>(check),
-                from_dummy_option_to_operation<Dummy::Config::UpdateContact::Disclose::Telephone>(check),
-                from_dummy_option_to_operation<Dummy::Config::UpdateContact::Disclose::Fax>(check),
-                from_dummy_option_to_operation<Dummy::Config::UpdateContact::Disclose::Email>(check),
-                from_dummy_option_to_operation<Dummy::Config::UpdateContact::Disclose::Vat>(check),
-                from_dummy_option_to_operation<Dummy::Config::UpdateContact::Disclose::Ident>(check),
-                from_dummy_option_to_operation<Dummy::Config::UpdateContact::Disclose::NotifyEmail>(check));
+        return std::make_shared<SetUnused::UpdateContactCheck>(
+                from_set_unused_option_to_operation<SetUnused::Config::UpdateContact::Disclose::Name>(check),
+                from_set_unused_option_to_operation<SetUnused::Config::UpdateContact::Disclose::Organization>(check),
+                from_set_unused_option_to_operation<SetUnused::Config::UpdateContact::Disclose::Address>(check),
+                from_set_unused_option_to_operation<SetUnused::Config::UpdateContact::Disclose::Telephone>(check),
+                from_set_unused_option_to_operation<SetUnused::Config::UpdateContact::Disclose::Fax>(check),
+                from_set_unused_option_to_operation<SetUnused::Config::UpdateContact::Disclose::Email>(check),
+                from_set_unused_option_to_operation<SetUnused::Config::UpdateContact::Disclose::Vat>(check),
+                from_set_unused_option_to_operation<SetUnused::Config::UpdateContact::Disclose::Ident>(check),
+                from_set_unused_option_to_operation<SetUnused::Config::UpdateContact::Disclose::NotifyEmail>(check));
     }
     if (check.is_type_of<ConfigCheck::Empty>())
     {

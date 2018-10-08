@@ -595,8 +595,8 @@ src_util_cfg_libhandle_rifd_args_a_SOURCES = \
 		src/backend/epp/contact/config_check.hh \
 		src/backend/epp/contact/impl/cznic/specific.cc \
 		src/backend/epp/contact/impl/cznic/specific.hh \
-		src/backend/epp/contact/impl/dummy/config.cc \
-		src/backend/epp/contact/impl/dummy/config.hh
+		src/backend/epp/contact/impl/set_unused/config.cc \
+		src/backend/epp/contact/impl/set_unused/config.hh
 #
 # src/util/cfg/libhandle_rifd_args.a
 
@@ -1938,10 +1938,10 @@ src_bin_corba_epp_libepp_impl_a_SOURCES = \
 		src/backend/epp/contact/impl/cznic/create_contact_check.hh \
 		src/backend/epp/contact/impl/cznic/update_contact_check.cc \
 		src/backend/epp/contact/impl/cznic/update_contact_check.hh \
-		src/backend/epp/contact/impl/dummy/create_contact_check.cc \
-		src/backend/epp/contact/impl/dummy/create_contact_check.hh \
-		src/backend/epp/contact/impl/dummy/update_contact_check.cc \
-		src/backend/epp/contact/impl/dummy/update_contact_check.hh \
+		src/backend/epp/contact/impl/set_unused/create_contact_check.cc \
+		src/backend/epp/contact/impl/set_unused/create_contact_check.hh \
+		src/backend/epp/contact/impl/set_unused/update_contact_check.cc \
+		src/backend/epp/contact/impl/set_unused/update_contact_check.hh \
 		src/backend/epp/contact/impl/get_create_contact_check.cc \
 		src/backend/epp/contact/impl/get_create_contact_check.hh \
 		src/backend/epp/contact/impl/get_update_contact_check.cc \

@@ -16,14 +16,14 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/backend/epp/contact/impl/dummy/create_contact_check.hh"
+#include "src/backend/epp/contact/impl/set_unused/create_contact_check.hh"
 
 #include <stdexcept>
 
 namespace Epp {
 namespace Contact {
 namespace Impl {
-namespace Dummy {
+namespace SetUnused {
 
 namespace {
 
@@ -61,7 +61,7 @@ struct ExceptionDiscloseflagRulesViolation:
     ExceptionDiscloseflagRulesViolation() : std::runtime_error("discloseflag rules violation") { }
 };
 
-}//namespace Epp::Contact::Impl::Dummy::{anonymous}
+}//namespace Epp::Contact::Impl::SetUnused::{anonymous}
 
 CreateContactCheck::CreateContactCheck()
     : default_disclose_name_(Data::publishability_not_specified),
@@ -122,7 +122,7 @@ LibFred::CreateContact& CreateContactCheck::operator()(
     return create_op;
 }
 
-}//namespace Epp::Contact::Impl::Dummy
+}//namespace Epp::Contact::Impl::SetUnused
 }//namespace Epp::Contact::Impl
 }//namespace Epp::Contact
 }//namespace Epp

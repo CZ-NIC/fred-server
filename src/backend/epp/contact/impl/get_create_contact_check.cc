@@ -19,8 +19,8 @@
 #include "src/backend/epp/contact/impl/get_create_contact_check.hh"
 #include "src/backend/epp/contact/impl/cznic/create_contact_check.hh"
 #include "src/backend/epp/contact/impl/cznic/specific.hh"
-#include "src/backend/epp/contact/impl/dummy/create_contact_check.hh"
-#include "src/backend/epp/contact/impl/dummy/config.hh"
+#include "src/backend/epp/contact/impl/set_unused/create_contact_check.hh"
+#include "src/backend/epp/contact/impl/set_unused/config.hh"
 
 #include <stdexcept>
 
@@ -50,22 +50,22 @@ CzNic::CreateContactCheck::Data from_option_to_cznic_data(const ConfigCheck& che
 }
 
 template <typename T>
-Dummy::CreateContactCheck::Data from_option_to_dummy_data(const ConfigCheck& check)
+SetUnused::CreateContactCheck::Data from_option_to_set_unused_data(const ConfigCheck& check)
 {
     const auto option_value = check.get_value<T>();
     if (option_value == "show")
     {
-        return Dummy::CreateContactCheck::Data::show;
+        return SetUnused::CreateContactCheck::Data::show;
     }
     if (option_value == "hide")
     {
-        return Dummy::CreateContactCheck::Data::hide;
+        return SetUnused::CreateContactCheck::Data::hide;
     }
     if (option_value.empty())
     {
-        return Dummy::CreateContactCheck::Data::publishability_not_specified;
+        return SetUnused::CreateContactCheck::Data::publishability_not_specified;
     }
-    throw std::runtime_error("unable convert string to value of Dummy::CreateContactCheck::Data type");
+    throw std::runtime_error("unable convert string to value of SetUnused::CreateContactCheck::Data type");
 }
 
 }//namespace Epp::Contact::Impl::{anonymous}
@@ -85,18 +85,18 @@ std::shared_ptr<Epp::Contact::CreateOperationCheck> get_create_contact_check(con
                 from_option_to_cznic_data<CzNic::Specific::CreateContact::Disclose::Ident>(check),
                 from_option_to_cznic_data<CzNic::Specific::CreateContact::Disclose::NotifyEmail>(check));
     }
-    if (check.is_type_of<Dummy::Config>())
+    if (check.is_type_of<SetUnused::Config>())
     {
-        return std::make_shared<Dummy::CreateContactCheck>(
-                from_option_to_dummy_data<Dummy::Config::CreateContact::Disclose::Name>(check),
-                from_option_to_dummy_data<Dummy::Config::CreateContact::Disclose::Organization>(check),
-                from_option_to_dummy_data<Dummy::Config::CreateContact::Disclose::Address>(check),
-                from_option_to_dummy_data<Dummy::Config::CreateContact::Disclose::Telephone>(check),
-                from_option_to_dummy_data<Dummy::Config::CreateContact::Disclose::Fax>(check),
-                from_option_to_dummy_data<Dummy::Config::CreateContact::Disclose::Email>(check),
-                from_option_to_dummy_data<Dummy::Config::CreateContact::Disclose::Vat>(check),
-                from_option_to_dummy_data<Dummy::Config::CreateContact::Disclose::Ident>(check),
-                from_option_to_dummy_data<Dummy::Config::CreateContact::Disclose::NotifyEmail>(check));
+        return std::make_shared<SetUnused::CreateContactCheck>(
+                from_option_to_set_unused_data<SetUnused::Config::CreateContact::Disclose::Name>(check),
+                from_option_to_set_unused_data<SetUnused::Config::CreateContact::Disclose::Organization>(check),
+                from_option_to_set_unused_data<SetUnused::Config::CreateContact::Disclose::Address>(check),
+                from_option_to_set_unused_data<SetUnused::Config::CreateContact::Disclose::Telephone>(check),
+                from_option_to_set_unused_data<SetUnused::Config::CreateContact::Disclose::Fax>(check),
+                from_option_to_set_unused_data<SetUnused::Config::CreateContact::Disclose::Email>(check),
+                from_option_to_set_unused_data<SetUnused::Config::CreateContact::Disclose::Vat>(check),
+                from_option_to_set_unused_data<SetUnused::Config::CreateContact::Disclose::Ident>(check),
+                from_option_to_set_unused_data<SetUnused::Config::CreateContact::Disclose::NotifyEmail>(check));
     }
     if (check.is_type_of<ConfigCheck::Empty>())
     {
