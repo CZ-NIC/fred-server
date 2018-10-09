@@ -402,6 +402,9 @@ prepare_object_files(
     src/backend/epp/contact/impl/cznic/create_contact_check.cc
     src/backend/epp/contact/impl/cznic/specific.cc
     src/backend/epp/contact/impl/cznic/update_contact_check.cc
+    src/backend/epp/contact/impl/set_unused/create_contact_check.cc
+    src/backend/epp/contact/impl/set_unused/config.cc
+    src/backend/epp/contact/impl/set_unused/update_contact_check.cc
     src/backend/epp/contact/impl/get_create_contact_check.cc
     src/backend/epp/contact/impl/get_personal_id_union.cc
     src/backend/epp/contact/impl/get_update_contact_check.cc
@@ -1773,6 +1776,8 @@ prepare_static_library(epp_impl
     src/backend/epp/contact/impl/get_personal_id_union.cc
     src/backend/epp/contact/impl/cznic/create_contact_check.cc
     src/backend/epp/contact/impl/cznic/update_contact_check.cc
+    src/backend/epp/contact/impl/set_unused/create_contact_check.cc
+    src/backend/epp/contact/impl/set_unused/update_contact_check.cc
     src/backend/epp/contact/impl/get_create_contact_check.cc
     src/backend/epp/contact/impl/get_update_contact_check.cc
     src/backend/epp/contact/update_contact_localized.cc
@@ -1891,7 +1896,8 @@ prepare_static_library(corbanullableisodatetime
 prepare_static_library(handle_rifd_args
     src/util/cfg/handle_rifd_args.cc
     src/backend/epp/contact/config_check.cc
-    src/backend/epp/contact/impl/cznic/specific.cc)
+    src/backend/epp/contact/impl/cznic/specific.cc
+    src/backend/epp/contact/impl/set_unused/config.cc)
 
 prepare_static_library(corbaaccounting
     src/bin/corba/IsoDateSK.cc

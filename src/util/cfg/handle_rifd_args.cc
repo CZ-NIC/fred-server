@@ -18,8 +18,10 @@
 
 #include "src/util/cfg/handle_rifd_args.hh"
 #include "src/backend/epp/contact/impl/cznic/specific.hh"
+#include "src/backend/epp/contact/impl/set_unused/config.hh"
 
 using CzNicSpecific = Epp::Contact::Impl::CzNic::Specific;
+using SetUnusedConfig = Epp::Contact::Impl::SetUnused::Config;
 
 HandleRifdArgs::~HandleRifdArgs()
 {
@@ -52,9 +54,11 @@ std::shared_ptr<boost::program_options::options_description> HandleRifdArgs::get
              boost::program_options::value<std::string>()->default_value(std::string()),
              ("type of checks applied in EPP operations; possible values: "
               "<empty>, " +
-              CzNicSpecific::get_check_name()).c_str());
+              CzNicSpecific::get_check_name() + ", " +
+              SetUnusedConfig::get_check_name()).c_str());
 
     Epp::Contact::ConfigCheck::add_options_description<CzNicSpecific>(*opts_descs);
+    Epp::Contact::ConfigCheck::add_options_description<SetUnusedConfig>(*opts_descs);
     return opts_descs;
 }
 
@@ -71,4 +75,5 @@ void HandleRifdArgs::handle(int argc, char* argv[], FakedArgs &fa)
     epp_update_contact_enqueue_check = vm["rifd.epp_update_contact_enqueue_check"].as<bool>();
     rifd_check.set_name(vm["rifd.check"].as<std::string>());
     rifd_check.set_all_values<CzNicSpecific>(vm);
+    rifd_check.set_all_values<SetUnusedConfig>(vm);
 }
