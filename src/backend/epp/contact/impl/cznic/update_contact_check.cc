@@ -265,10 +265,10 @@ bool is_sufficient_authenticity_level_to_private_address(
         return true;
     }
     const bool change_is_fake_only =
-            is_fake_change_operation(change.name, old_data.name) ||
-            is_fake_change_operation(change.organization, old_data.organization) ||
-            is_fake_change_operation(change.address, old_data.place) ||
-            is_fake_change_operation(change.telephone, old_data.telephone) ||
+            is_fake_change_operation(change.name, old_data.name) &&
+            is_fake_change_operation(change.organization, old_data.organization) &&
+            is_fake_change_operation(change.address, old_data.place) &&
+            is_fake_change_operation(change.telephone, old_data.telephone) &&
             is_fake_change_operation(change.email, old_data.email);
     return change_is_fake_only;
 }
