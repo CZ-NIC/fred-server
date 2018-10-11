@@ -19,6 +19,8 @@
 #include "src/backend/public_request/create_personal_info_request_registry_email.hh"
 
 #include "src/backend/public_request/exceptions.hh"
+#include "src/backend/public_request/get_id_of_registered_object.hh"
+#include "src/backend/public_request/get_registry_emails_of_registered_object.hh"
 #include "src/backend/public_request/object_type.hh"
 #include "src/backend/public_request/type/get_iface_of.hh"
 #include "src/backend/public_request/type/public_request_personal_info.hh"
@@ -66,7 +68,12 @@ unsigned long long create_personal_info_request_registry_email(
     try
     {
         LibFred::OperationContextCreator ctx;
-        const auto contact_id = LibFred::get_id_of_registered<LibFred::Object_Type::contact>(ctx, contact_handle);
+        const auto contact_id = get_id_of_registered_object(ctx, ObjectType::contact, contact_handle);
+        const auto emails = get_registry_emails_of_registered_object(ctx, ObjectType::contact, contact_id);
+        if (emails.empty())
+        {
+            throw NoContactEmail();
+        }
         LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, contact_id);
         const auto public_request_id = LibFred::CreatePublicRequest()
             .exec(locked_object, Type::get_iface_of<Type::PersonalInfoAuto>(), log_request_id);

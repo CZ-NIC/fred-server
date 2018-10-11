@@ -1241,6 +1241,8 @@ src_libfred_public_request_libpublic_request_a_SOURCES = \
 		src/backend/public_request/get_default_document_manager.hh \
 		src/backend/public_request/get_id_of_registered_object.cc \
 		src/backend/public_request/get_id_of_registered_object.hh \
+		src/backend/public_request/get_registry_emails_of_registered_object.cc \
+		src/backend/public_request/get_registry_emails_of_registered_object.hh \
 		src/backend/public_request/lock_request_type.hh \
 		src/backend/public_request/object_type.hh \
 		src/backend/public_request/process/authinfo.cc \
