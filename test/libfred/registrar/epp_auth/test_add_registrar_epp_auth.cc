@@ -15,13 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "src/libfred/db_settings.hh"
-#include "src/libfred/opcontext.hh"
 #include "src/libfred/registrar/epp_auth/add_registrar_epp_auth.hh"
 #include "src/libfred/registrar/epp_auth/exceptions.hh"
-#include "src/util/password_storage.hh"
-#include "src/util/password_storage/password_data.hh"
 #include "src/util/random_data_generator.hh"
+#include "test/libfred/registrar/epp_auth/util.hh"
 #include "test/libfred/util.hh"
 #include "test/setup/fixtures.hh"
 
@@ -33,42 +30,19 @@ namespace Test {
 
 struct AddRegistrarEppAuthFixture : has_registrar
 {
-    std::string registrar_handle;
+    std::string& registrar_handle;
     std::string certificate_fingerprint;
     std::string plain_password;
 
     AddRegistrarEppAuthFixture()
-        : certificate_fingerprint(RandomDataGenerator().xstring(20)),
+        : registrar_handle(registrar.handle),
+          certificate_fingerprint(RandomDataGenerator().xstring(20)),
           plain_password(RandomDataGenerator().xstring(10))
     {
-        registrar_handle =  registrar.handle;
     }
 };
 
 BOOST_FIXTURE_TEST_SUITE(TestAddRegistrarEppAuth, AddRegistrarEppAuthFixture)
-
-unsigned long long get_epp_auth_id(::LibFred::OperationContext& _ctx,
-        const std::string& _registrar_handle,
-        const std::string& _certificate_fingerprint,
-        const std::string& _plain_password)
-{
-    const Database::Result db_result = _ctx.get_conn().exec_params(
-            "SELECT ra.id, ra.password FROM registraracl AS ra "
-            "JOIN registrar AS r ON r.id=ra.registrarid "
-            "WHERE r.handle = $1::text "
-            "AND ra.cert = $2::text ",
-            Database::query_param_list(_registrar_handle)
-                    (_certificate_fingerprint));
-    if (db_result.size() == 1)
-    {
-        const auto id = static_cast<unsigned long long>(db_result[0][0]);
-        const auto hashed_password =
-                ::PasswordStorage::PasswordData::construct_from(static_cast<std::string>(db_result[0][1]));
-        ::PasswordStorage::check_password(_plain_password, hashed_password);
-        return id;
-    }
-    throw ;
-}
 
 BOOST_AUTO_TEST_CASE(set_nonexistent_registrar)
 {
@@ -77,6 +51,16 @@ BOOST_AUTO_TEST_CASE(set_nonexistent_registrar)
             ::LibFred::Registrar::EppAuth::AddRegistrarEppAuth(
                     registrar_handle, certificate_fingerprint, plain_password).exec(ctx),
             ::LibFred::Registrar::EppAuth::NonexistentRegistrar);
+}
+
+BOOST_AUTO_TEST_CASE(set_duplicate_eep_auth)
+{
+    ::LibFred::Registrar::EppAuth::AddRegistrarEppAuth(
+            registrar_handle, certificate_fingerprint, plain_password).exec(ctx);
+    BOOST_CHECK_THROW(
+            ::LibFred::Registrar::EppAuth::AddRegistrarEppAuth(
+                    registrar_handle, certificate_fingerprint, plain_password).exec(ctx),
+            ::LibFred::Registrar::EppAuth::DuplicateCertificate);
 }
 
 BOOST_AUTO_TEST_CASE(set_add_registrar_epp_auth)

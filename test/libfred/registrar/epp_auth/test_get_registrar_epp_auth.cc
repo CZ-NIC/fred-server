@@ -15,12 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/registrar/epp_auth/add_registrar_epp_auth.hh"
-#include "src/libfred/registrar/epp_auth/exceptions.hh"
 #include "src/libfred/registrar/epp_auth/get_registrar_epp_auth.hh"
 #include "src/libfred/registrar/epp_auth/registrar_epp_auth_data.hh"
 #include "src/util/random_data_generator.hh"
+#include "test/libfred/registrar/epp_auth/util.hh"
 #include "test/libfred/util.hh"
 #include "test/setup/fixtures.hh"
 
@@ -32,32 +30,19 @@ namespace Test{
 
 struct GetRegistrarEppAuthFixture : has_registrar
 {
-    std::string registrar_handle;
+    std::string& registrar_handle;
     std::string certificate_fingerprint;
     std::string plain_password;
 
     GetRegistrarEppAuthFixture()
-        : certificate_fingerprint(RandomDataGenerator().xstring(20)),
+        : registrar_handle(registrar.handle),
+          certificate_fingerprint(RandomDataGenerator().xstring(20)),
           plain_password(RandomDataGenerator().xstring(10))
     {
-        registrar_handle =  registrar.handle;
     }
 };
 
 BOOST_FIXTURE_TEST_SUITE(TestGetRegistrarEppAuth, GetRegistrarEppAuthFixture)
-
-void add_epp_authentications(::LibFred::OperationContext& _ctx,
-        const std::string& registrar,
-        const unsigned size)
-{
-    for (unsigned i = 0; i < size; ++ i)
-    {
-        const std::string cert = RandomDataGenerator().xstring(20);
-        const std::string pass = RandomDataGenerator().xstring(20);
-        ::LibFred::Registrar::EppAuth::AddRegistrarEppAuth(
-                registrar, cert, pass).exec(_ctx);
-    }
-}
 
 BOOST_AUTO_TEST_CASE(set_nonexistent_registrar)
 {
@@ -74,24 +59,17 @@ BOOST_AUTO_TEST_CASE(set_nonexistent_registrar_epp_auth)
     BOOST_CHECK_EQUAL(epp_auth_data.epp_auth_records.size(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(set_one_registrar_epp_auth)
+BOOST_AUTO_TEST_CASE(set_registrar_epp_authentication)
 {
-    const unsigned size = 1;
-    add_epp_authentications(ctx, registrar_handle, size);
-    ::LibFred::Registrar::EppAuth::RegistrarEppAuthData epp_auth_data =
-            ::LibFred::Registrar::EppAuth::GetRegistrarEppAuth(registrar_handle).exec(ctx);
-    BOOST_CHECK_EQUAL(epp_auth_data.registrar_handle, registrar_handle);
-    BOOST_CHECK_EQUAL(epp_auth_data.epp_auth_records.size(), size);
-}
+    add_epp_authentications(ctx, registrar_handle, certificate_fingerprint, plain_password);
 
-BOOST_AUTO_TEST_CASE(set_more_registrar_epp_auth)
-{
-    const unsigned size = 10;
-    add_epp_authentications(ctx, registrar_handle, size);
     ::LibFred::Registrar::EppAuth::RegistrarEppAuthData epp_auth_data =
             ::LibFred::Registrar::EppAuth::GetRegistrarEppAuth(registrar_handle).exec(ctx);
-    BOOST_CHECK_EQUAL(epp_auth_data.registrar_handle, registrar_handle);
-    BOOST_CHECK_EQUAL(epp_auth_data.epp_auth_records.size(), size);
+
+    for (const auto& epp_auth : epp_auth_data.epp_auth_records)
+    {
+        BOOST_REQUIRE(get_epp_auth_id(ctx, registrar_handle, epp_auth.certificate_fingerprint, boost::none) > 0);
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END();

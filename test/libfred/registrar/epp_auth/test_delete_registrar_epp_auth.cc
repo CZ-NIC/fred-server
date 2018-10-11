@@ -15,12 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "src/libfred/db_settings.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/registrar/epp_auth/add_registrar_epp_auth.hh"
 #include "src/libfred/registrar/epp_auth/delete_registrar_epp_auth.hh"
 #include "src/libfred/registrar/epp_auth/exceptions.hh"
 #include "src/util/random_data_generator.hh"
+#include "test/libfred/registrar/epp_auth/util.hh"
 #include "test/libfred/util.hh"
 #include "test/setup/fixtures.hh"
 
@@ -32,35 +30,23 @@ namespace Test{
 
 struct DeleteRegistrarEppAuthFixture : has_registrar
 {
-    unsigned long long id;
     std::string registrar_handle;
     std::string certificate_fingerprint;
     std::string plain_password;
 
     DeleteRegistrarEppAuthFixture()
-        : certificate_fingerprint(RandomDataGenerator().xstring(20)),
+        : registrar_handle(registrar.handle),
+          certificate_fingerprint(RandomDataGenerator().xstring(20)),
           plain_password(RandomDataGenerator().xstring(10))
     {
-        registrar_handle =  registrar.handle;
-        id = ::LibFred::Registrar::EppAuth::AddRegistrarEppAuth(
-                registrar_handle, certificate_fingerprint, plain_password).exec(ctx);
     }
 };
 
 BOOST_FIXTURE_TEST_SUITE(TestDeleteRegistrarEppAuth, DeleteRegistrarEppAuthFixture)
 
-size_t get_epp_auth_size(::LibFred::OperationContext& _ctx, const unsigned long long _id)
-{
-    const Database::Result db_result = _ctx.get_conn().exec_params(
-            "SELECT 1 FROM registraracl "
-            "WHERE id = $1::bigint ",
-            Database::query_param_list(_id));
-    return db_result.size();
-}
-
 BOOST_AUTO_TEST_CASE(set_nonexistent_registrar_epp_auth)
 {
-    id = RandomDataGenerator().xuint();
+    const unsigned long long id = RandomDataGenerator().xuint();
     BOOST_CHECK_THROW(
             ::LibFred::Registrar::EppAuth::DeleteRegistrarEppAuth(id).exec(ctx),
             ::LibFred::Registrar::EppAuth::NonexistentRegistrarEppAuth);
@@ -68,8 +54,12 @@ BOOST_AUTO_TEST_CASE(set_nonexistent_registrar_epp_auth)
 
 BOOST_AUTO_TEST_CASE(set_delete_registrar_epp_auth)
 {
+    const unsigned long long id =
+            add_epp_authentications(ctx, registrar_handle, certificate_fingerprint, plain_password);
+
     ::LibFred::Registrar::EppAuth::DeleteRegistrarEppAuth(id).exec(ctx);
-    BOOST_CHECK_EQUAL(get_epp_auth_size(ctx, id), 0);
+
+    BOOST_CHECK_EQUAL(get_epp_auth_id(ctx, registrar_handle, certificate_fingerprint, plain_password), 0);
 }
 
 BOOST_AUTO_TEST_SUITE_END();

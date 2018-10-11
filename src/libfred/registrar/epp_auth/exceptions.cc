@@ -64,8 +64,7 @@ const char* CloneRegistrarEppAuthException::what() const noexcept
 
 const char* DuplicateCertificate::what() const noexcept
 {
-    return "Certificate already exists.";
-
+    return "Registrar certificate already exists.";
 }
 
 } // namespace LibFred::Registrar::EppAuth

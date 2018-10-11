@@ -3954,6 +3954,8 @@ test_test_libfred_SOURCES = \
 		test/libfred/registrar/epp_auth/test_delete_registrar_epp_auth.cc \
 		test/libfred/registrar/epp_auth/test_update_registrar_epp_auth.cc \
 		test/libfred/registrar/epp_auth/test_get_registrar_epp_auth.cc \
+		test/libfred/registrar/epp_auth/util.hh \
+		test/libfred/registrar/epp_auth/util.cc \
 		test/libfred/registrar/certification/test_create_registrar_certification.cc \
 		test/libfred/registrar/certification/test_update_registrar_certification.cc \
 		test/libfred/registrar/certification/test_get_registrar_certifications.cc \
