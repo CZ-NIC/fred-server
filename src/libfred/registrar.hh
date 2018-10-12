@@ -224,16 +224,14 @@ public:
   /// Clear ACL list
   virtual void clearACLList() = 0;
 
-  /// Return ZoneAccess list size
-  virtual unsigned getZoneAccessSize() const = 0;
-  /// Return ZoneAccess list member by index
-  virtual ZoneAccess* getZoneAccess(unsigned idx) const = 0;
-  /// Delete ZoneAccess or do nothing
-  virtual void deleteZoneAccess(unsigned idx) = 0;
-  /// Clear ZoneAccess list
-  virtual void clearZoneAccessList() = 0;
   /// Create new RegistrarZone record
-  virtual RegistrarZone* newZoneAccess() = 0;
+  virtual RegistrarZone* newRegistrarZone() = 0;
+  /// Return RegistrarZone list size
+  virtual unsigned getRegistrarZoneSize() const = 0;
+  /// Return RegistrarZone list member by index
+  virtual RegistrarZone* getRegistrarZone(unsigned idx) const = 0;
+  /// Clear RegistrarZone list
+  virtual void clearRegistrarZoneList() = 0;
   /// Look if registrar have currently access to zone by zone id
   virtual bool isInZone(unsigned id) const = 0;
   /// Look if registrar have currently access to zone by zone fqdn

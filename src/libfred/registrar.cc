@@ -563,7 +563,7 @@ public:
     return acl.size();
   }
   
-  virtual unsigned getZoneAccessSize() const {
+  virtual unsigned getRegistrarZoneSize() const {
       return actzones.size();
     }
 
@@ -571,7 +571,7 @@ public:
   {
     return idx < acl.size() ? acl[idx].get() : NULL;
   }
-  virtual RegistrarZone* getZoneAccess(unsigned idx) const
+  virtual RegistrarZone* getRegistrarZone(unsigned idx) const
   {
     return idx < actzones.size() ? actzones[idx].get() : NULL;
   }
@@ -583,11 +583,11 @@ public:
     return newACL.get();
   }
 
-  virtual RegistrarZone* newZoneAccess()
+  virtual RegistrarZone* newRegistrarZone()
   {
-    std::shared_ptr<RegistrarZone> newZoneAccess ( new RegistrarZone());
-    actzones.push_back(newZoneAccess);
-    return newZoneAccess.get();
+    std::shared_ptr<RegistrarZone> newRegistrarZone ( new RegistrarZone());
+    actzones.push_back(newRegistrarZone);
+    return newRegistrarZone.get();
   }
 
   virtual void deleteACL(unsigned idx)
@@ -597,19 +597,12 @@ public:
     }
   }
 
-  virtual void deleteZoneAccess(unsigned idx)
-  {
-    if (idx < actzones.size()) {
-        actzones.erase(actzones.begin()+idx);
-    }
-  }
-
   virtual void clearACLList()
   {
     acl.clear();
   }
 
-  virtual void clearZoneAccessList()
+  virtual void clearRegistrarZoneList()
   {
       actzones.clear();
   }
@@ -827,7 +820,7 @@ public:
     acl.push_back(std::make_shared<ACLImpl>(_id, certificateMD5, password));
   }
 
-  void putZoneAccess(TID _id
+  void putRegistrarZone(TID _id
           , std::string _name
           , Money _credit
           , Database::Date _fromdate
@@ -1124,7 +1117,7 @@ public:
         RegistrarImpl *registrar_ptr = dynamic_cast<RegistrarImpl* >(findIDSequence(registrar_id));
         if (registrar_ptr)
         {
-          registrar_ptr->putZoneAccess(azone_id, zone_name, credit, fromdate, todate);
+          registrar_ptr->putRegistrarZone(azone_id, zone_name, credit, fromdate, todate);
         }
 
       }//for r_azone
