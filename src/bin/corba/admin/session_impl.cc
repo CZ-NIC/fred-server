@@ -1383,7 +1383,7 @@ ccReg::TID ccReg_Session_i::updateRegistrar(const ccReg::AdminRegistrar& _regist
   update_registrar->clearZoneAccessList();
   for (unsigned i = 0; i < _registrar.zones.length();i++)
     {
-      LibFred::Registrar::ZoneAccess *registrar_azone = update_registrar->newZoneAccess();
+      LibFred::Registrar::RegistrarZone *registrar_azone = update_registrar->newZoneAccess();
 
       LOGGER(PACKAGE).debug(boost::format
               ("ccReg_Session_i::updateRegistrar azone : i: %1% "

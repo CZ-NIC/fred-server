@@ -294,10 +294,10 @@ class RegistrarImpl : public LibFred::CommonObjectImplNew,
   typedef std::map<Database::ID, Money> ZoneCreditMap;
   ZoneCreditMap zone_credit_map;
 
-  typedef  std::shared_ptr<ZoneAccess> ZoneAccessPtr;
-  typedef std::vector<ZoneAccessPtr> ZoneAccessList;
-  typedef ZoneAccessList::iterator ZoneAccessListIter;
-  ZoneAccessList actzones;
+  typedef  std::shared_ptr<RegistrarZone> RegistrarZonePtr;
+  typedef std::vector<RegistrarZonePtr> RegistrarZoneList;
+//  typedef RegistrarZoneList::iterator RegistrarZoneListIter;
+  RegistrarZoneList actzones;
 
 public:
   RegistrarImpl()
@@ -571,7 +571,7 @@ public:
   {
     return idx < acl.size() ? acl[idx].get() : NULL;
   }
-  virtual ZoneAccess* getZoneAccess(unsigned idx) const
+  virtual RegistrarZone* getZoneAccess(unsigned idx) const
   {
     return idx < actzones.size() ? actzones[idx].get() : NULL;
   }
@@ -583,9 +583,9 @@ public:
     return newACL.get();
   }
 
-  virtual ZoneAccess* newZoneAccess()
+  virtual RegistrarZone* newZoneAccess()
   {
-    std::shared_ptr<ZoneAccess> newZoneAccess ( new ZoneAccess());
+    std::shared_ptr<RegistrarZone> newZoneAccess ( new RegistrarZone());
     actzones.push_back(newZoneAccess);
     return newZoneAccess.get();
   }
@@ -833,7 +833,7 @@ public:
           , Database::Date _fromdate
           , Database::Date _todate)
   {
-      actzones.push_back(std::make_shared<ZoneAccess>(_id,_name,_credit,_fromdate,_todate));
+      actzones.push_back(std::make_shared<RegistrarZone>(_id,_name,_credit,_fromdate,_todate));
   }
 
   bool hasId(TID _id) const

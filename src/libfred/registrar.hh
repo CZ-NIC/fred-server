@@ -82,21 +82,21 @@ protected:
 };
 
 /// Registrar's active zone structure
-struct ZoneAccess
+struct RegistrarZone
 {
     TID id; /// registrarinvoice record id
     std::string name; /// zone name
     Money credit; /// registrar's credit
     Database::Date fromdate; /// from day
     Database::Date todate;/// to day
-    ZoneAccess()
+    RegistrarZone()
     :id()
         ,name()
         ,credit()
         ,fromdate()
         ,todate()
     {}
-    ZoneAccess(std::string _name
+    RegistrarZone(std::string _name
             , Money _credit
             , Database::Date _fromdate
             , Database::Date _todate)
@@ -106,7 +106,7 @@ struct ZoneAccess
     ,fromdate(_fromdate)
     ,todate(_todate)
     {}
-    ZoneAccess(TID _id
+    RegistrarZone(TID _id
             ,std::string _name
             , Money _credit
             , Database::Date _fromdate
@@ -117,7 +117,7 @@ struct ZoneAccess
     ,fromdate(_fromdate)
     ,todate(_todate)
     {}
-};//struct ZoneAccess
+};//struct RegistrarZone
 
 /// Registrar detail access
 class Registrar
@@ -224,8 +224,6 @@ public:
   /// Clear ACL list
   virtual void clearACLList() = 0;
 
-  /// Create new ZoneAccess record
-  virtual ZoneAccess* newZoneAccess() = 0;
   /// Return ZoneAccess list size
   virtual unsigned getZoneAccessSize() const = 0;
   /// Return ZoneAccess list member by index
@@ -234,6 +232,8 @@ public:
   virtual void deleteZoneAccess(unsigned idx) = 0;
   /// Clear ZoneAccess list
   virtual void clearZoneAccessList() = 0;
+  /// Create new RegistrarZone record
+  virtual RegistrarZone* newZoneAccess() = 0;
   /// Look if registrar have currently access to zone by zone id
   virtual bool isInZone(unsigned id) const = 0;
   /// Look if registrar have currently access to zone by zone fqdn
