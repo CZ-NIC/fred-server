@@ -24,11 +24,15 @@
 #include "src/bin/corba/mailer_manager.hh"
 #include "src/libfred/object/object_states_info.hh"
 #include "src/libfred/object/object_type.hh"
+#include "src/backend/public_request/get_valid_registry_emails_of_registered_object.hh"
 #include "src/libfred/public_request/info_public_request.hh"
 #include "src/libfred/public_request/public_request_lock_guard.hh"
 #include "src/libfred/public_request/public_request_on_status_action.hh"
 #include "src/libfred/public_request/update_public_request.hh"
 #include "src/libfred/registrable_object/contact/info_contact.hh"
+#include "src/libfred/registrable_object/domain/info_domain.hh"
+#include "src/libfred/registrable_object/keyset/info_keyset.hh"
+#include "src/libfred/registrable_object/nsset/info_nsset.hh"
 #include "src/libfred/registrar/info_registrar.hh"
 #include "src/util/corba_wrapper_decl.hh"
 
@@ -38,6 +42,28 @@ namespace PublicRequest {
 namespace Process {
 
 namespace {
+
+ObjectType convert_libfred_object_type_to_public_request_objecttype(
+        const LibFred::Object_Type::Enum _libfred_object_type)
+{
+        switch (_libfred_object_type)
+        {
+            case LibFred::Object_Type::contact:
+                return ObjectType::contact;
+
+            case LibFred::Object_Type::nsset:
+                return ObjectType::nsset;
+
+            case LibFred::Object_Type::domain:
+                return ObjectType::domain;
+
+            case LibFred::Object_Type::keyset:
+                return ObjectType::keyset;
+
+        }
+        throw std::runtime_error("unexpected LibFred::Object_Type");
+}
+
 
 unsigned long long send_authinfo(
         const LibFred::LockedPublicRequestForUpdate& _locked_request,
@@ -90,99 +116,46 @@ unsigned long long send_authinfo(
         email_template_params.insert(LibFred::Mailer::Parameters::value_type("handle", handle));
     }
 
-    std::string sql;
-    std::string object_type_handle;
+    std::set<std::string> emails;
+    const auto email_to_answer = request_info.get_email_to_answer();
+    if (!email_to_answer.isnull())
+    {
+        emails.insert(email_to_answer.get_value()); // validity checked when public_request was created
+    }
+    else
+    {
+        emails = get_valid_registry_emails_of_registered_object(ctx, convert_libfred_object_type_to_public_request_objecttype(object_type), object_id);
+        if (emails.empty())
+        {
+            throw NoContactEmail();
+        }
+    }
+
+    std::string type;
+    std::string authinfo;
     switch (object_type)
     {
         case LibFred::Object_Type::contact:
-            // clang-format off
-            sql = "SELECT o.authinfopw,TRIM(c.email) "
-                  "FROM object o "
-                  "JOIN object_registry obr ON obr.id=o.id "
-                  "JOIN contact c ON c.id=o.id "
-                  "WHERE obr.name=UPPER($1::TEXT) AND "
-                        "obr.type=get_object_type_id($2::TEXT) AND "
-                        "obr.erdate IS NULL AND "
-                        "COALESCE(TRIM(c.email),'')<>''";
-            // clang-format on
-            object_type_handle = Conversion::Enums::to_db_handle(LibFred::Object_Type::contact);
-            email_template_params.insert(LibFred::Mailer::Parameters::value_type("type", "1"));
+            type = "1";
+            authinfo = LibFred::InfoContactById(object_id).exec(ctx).info_contact_data.authinfopw;
             break;
         case LibFred::Object_Type::nsset:
-            // clang-format off
-            sql = "SELECT o.authinfopw,TRIM(c.email) "
-                  "FROM object o "
-                  "JOIN object_registry obr ON obr.id=o.id "
-                  "JOIN nsset n ON n.id=o.id "
-                  "JOIN nsset_contact_map ncm ON ncm.nssetid=n.id "
-                  "JOIN contact c ON c.id=ncm.contactid "
-                  "WHERE obr.name=UPPER($1::TEXT) AND "
-                        "obr.type=get_object_type_id($2::TEXT) AND "
-                        "obr.erdate IS NULL AND "
-                        "COALESCE(TRIM(c.email),'')<>''";
-            // clang-format on
-            object_type_handle = Conversion::Enums::to_db_handle(LibFred::Object_Type::nsset);
-            email_template_params.insert(LibFred::Mailer::Parameters::value_type("type", "2"));
+            type = "2";
+            authinfo = LibFred::InfoNssetById(object_id).exec(ctx).info_nsset_data.authinfopw;
             break;
         case LibFred::Object_Type::domain:
-            // clang-format off
-            sql = "SELECT o.authinfopw,TRIM(c.email) "
-                  "FROM object o "
-                  "JOIN object_registry obr ON obr.id=o.id "
-                  "JOIN domain d ON d.id=o.id "
-                  "JOIN contact c ON c.id=d.registrant "
-                  "WHERE obr.name=LOWER($1::TEXT) AND "
-                        "obr.type=get_object_type_id($2::TEXT) AND "
-                        "obr.erdate IS NULL AND "
-                        "COALESCE(TRIM(c.email),'')<>'' "
-              "UNION "
-                  "SELECT o.authinfopw,TRIM(c.email) "
-                  "FROM object o "
-                  "JOIN object_registry obr ON obr.id=o.id "
-                  "JOIN domain d ON d.id=o.id "
-                  "JOIN domain_contact_map dcm ON dcm.domainid=d.id "
-                  "JOIN contact c ON c.id=dcm.contactid AND c.id!=d.registrant "
-                  "WHERE obr.name=LOWER($1::TEXT) AND "
-                        "obr.type=get_object_type_id($2::TEXT) AND "
-                        "obr.erdate IS NULL AND "
-                        "COALESCE(TRIM(c.email),'')<>'' AND "
-                        "dcm.role=1";
-            // clang-format on
-            object_type_handle = Conversion::Enums::to_db_handle(LibFred::Object_Type::domain);
-            email_template_params.insert(LibFred::Mailer::Parameters::value_type("type", "3"));
+            type = "3";
+            authinfo = LibFred::InfoDomainById(object_id).exec(ctx).info_domain_data.authinfopw;
             break;
         case LibFred::Object_Type::keyset:
-            // clang-format off
-            sql = "SELECT o.authinfopw,TRIM(c.email) "
-                  "FROM object o "
-                  "JOIN object_registry obr ON obr.id=o.id "
-                  "JOIN keyset k ON k.id=o.id "
-                  "JOIN keyset_contact_map kcm ON kcm.keysetid=k.id "
-                  "JOIN contact c ON c.id=kcm.contactid "
-                  "WHERE obr.name=UPPER($1::TEXT) AND "
-                        "obr.type=get_object_type_id($2::TEXT) AND "
-                        "obr.erdate IS NULL AND "
-                        "COALESCE(TRIM(c.email),'')<>''";
-            // clang-format on
-            object_type_handle = Conversion::Enums::to_db_handle(LibFred::Object_Type::keyset);
-            email_template_params.insert(LibFred::Mailer::Parameters::value_type("type", "4"));
+            type = "4";
+            authinfo = LibFred::InfoKeysetById(object_id).exec(ctx).info_keyset_data.authinfopw;
             break;
     }
-    const Database::Result dbres = ctx.get_conn().exec_params(
-            sql,
-            Database::query_param_list(handle)(object_type_handle));
-    if (dbres.size() < 1)
-    {
-        throw NoContactEmail();
-    }
+    email_template_params.insert(LibFred::Mailer::Parameters::value_type("type", type));
+    email_template_params.insert(LibFred::Mailer::Parameters::value_type("authinfo", authinfo));
 
-    email_template_params.insert(LibFred::Mailer::Parameters::value_type("authinfo", static_cast<std::string>(dbres[0][0])));
-    std::set<std::string> recipients;
-    for (unsigned idx = 0; idx < dbres.size(); ++idx)
-    {
-        recipients.insert(static_cast<std::string>(dbres[idx][1]));
-    }
-    const Util::EmailData data(recipients, "sendauthinfo_pif", email_template_params, std::vector<unsigned long long>());
+    const Util::EmailData data(emails, "sendauthinfo_pif", email_template_params, std::vector<unsigned long long>());
     return send_joined_addresses_email(_mailer_manager, data);
 }
 

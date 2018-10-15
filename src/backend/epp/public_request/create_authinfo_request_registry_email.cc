@@ -21,7 +21,7 @@
 #include "src/backend/public_request/exceptions.hh"
 #include "src/backend/public_request/object_type.hh"
 #include "src/backend/public_request/get_id_of_registered_object.hh"
-#include "src/backend/public_request/get_registry_emails_of_registered_object.hh"
+#include "src/backend/public_request/get_valid_registry_emails_of_registered_object.hh"
 #include "src/backend/public_request/type/get_iface_of.hh"
 #include "src/backend/public_request/type/public_request_authinfo.hh"
 #include "src/libfred/object/get_id_of_registered.hh"
@@ -75,7 +75,7 @@ unsigned long long create_authinfo_request_registry_email(
         {
             throw Fred::Backend::PublicRequest::ObjectTransferProhibited();
         }
-        const auto emails = get_registry_emails_of_registered_object(_ctx, _object_type, object_id);
+        const auto emails = get_valid_registry_emails_of_registered_object(_ctx, _object_type, object_id);
         if (emails.empty())
         {
             throw Fred::Backend::PublicRequest::NoContactEmail();

@@ -16,9 +16,10 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/backend/public_request/get_registry_emails_of_registered_object.hh"
+#include "src/backend/public_request/get_valid_registry_emails_of_registered_object.hh"
 
 #include "src/backend/public_request/object_type.hh"
+#include "src/libfred/contact_verification/django_email_format.hh"
 #include "src/libfred/object/object_type.hh"
 #include "src/libfred/registrable_object/contact/info_contact.hh"
 #include "src/libfred/registrable_object/domain/info_domain.hh"
@@ -36,27 +37,26 @@ std::set<unsigned long long> get_registry_contacts_of_registered_object(
         ObjectType _object_type,
         unsigned long long _object_id)
 {
-
-    std::set<unsigned long long> contacts;
+    std::set<unsigned long long> object_contacts;
 
     switch (_object_type)
     {
         case ObjectType::contact:
             {
-                contacts.insert(_object_id);
+                object_contacts.insert(_object_id);
             }
-            return contacts;
+            return object_contacts;
 
         case ObjectType::nsset:
             {
                 const auto tech_contacts = LibFred::InfoNssetById(_object_id).exec(_ctx).info_nsset_data.tech_contacts;
 
-                for (const auto& tech_contact : tech_contacts)
+                for (const auto& contact : tech_contacts)
                 {
-                    contacts.insert(tech_contact.id);
+                    object_contacts.insert(contact.id);
                 }
             }
-            return contacts;
+            return object_contacts;
 
         case ObjectType::domain:
             {
@@ -64,51 +64,51 @@ std::set<unsigned long long> get_registry_contacts_of_registered_object(
                 const auto registrant = info_domain_data.registrant;
                 const auto admin_contacts = info_domain_data.admin_contacts;
 
-                contacts.insert(registrant.id);
-                for (const auto& admin_contact : admin_contacts)
+                object_contacts.insert(registrant.id);
+                for (const auto& contact : admin_contacts)
                 {
-                    contacts.insert(admin_contact.id);
+                    object_contacts.insert(contact.id);
                 }
             }
-            return contacts;
+            return object_contacts;
 
         case ObjectType::keyset:
             {
                 const auto tech_contacts = LibFred::InfoKeysetById(_object_id).exec(_ctx).info_keyset_data.tech_contacts;
 
-                for (const auto& tech_contact : tech_contacts)
+                for (const auto& contact : tech_contacts)
                 {
-                    contacts.insert(tech_contact.id);
+                    object_contacts.insert(contact.id);
                 }
             }
-            return contacts;
+            return object_contacts;
     }
     throw std::runtime_error("unexpected ObjectType");
-
 }
 
 } // namespace Fred::Backend::PublicRequest::{anonymous}
 
-std::set<std::string> get_registry_emails_of_registered_object(
+std::set<std::string> get_valid_registry_emails_of_registered_object(
         LibFred::OperationContext& _ctx,
         ObjectType _object_type,
         unsigned long long _object_id)
 {
 
-    const auto contacts = get_registry_contacts_of_registered_object(_ctx, _object_type, _object_id);
+    const auto object_contacts = get_registry_contacts_of_registered_object(_ctx, _object_type, _object_id);
 
-    std::set<std::string> emails;
+    std::set<std::string> valid_emails;
 
-    for (const auto& contact : contacts)
+    for (const auto contact_id : object_contacts)
     {
-        const auto email = LibFred::InfoContactById(contact).exec(_ctx).info_contact_data.email.get_value_or("");
-        if (email != "")
+        const std::string email = LibFred::InfoContactById(contact_id).exec(_ctx).info_contact_data.email.get_value_or_default();
+        const bool email_format_is_valid = DjangoEmailFormat().check(email);
+        if (email_format_is_valid)
         {
-            emails.insert(email);
+            valid_emails.insert(email);
         }
     }
 
-    return emails;
+    return valid_emails;
 }
 
 } // namespace Fred::Backend::PublicRequest

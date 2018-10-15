@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.or/licenses/>.
  */
 
-#ifndef GET_REGISTRY_EMAILS_OF_REGISTERED_OBJECT_HH_368F424059874406A9FA167E52DC3804
-#define GET_REGISTRY_EMAILS_OF_REGISTERED_OBJECT_HH_368F424059874406A9FA167E52DC3804
+#ifndef GET_VALID_REGISTRY_EMAILS_OF_REGISTERED_OBJECT_HH_368F424059874406A9FA167E52DC3804
+#define GET_VALID_REGISTRY_EMAILS_OF_REGISTERED_OBJECT_HH_368F424059874406A9FA167E52DC3804
 
 #include "src/backend/public_request/object_type.hh"
 #include "src/libfred/opcontext.hh"
@@ -29,7 +29,7 @@ namespace Fred {
 namespace Backend {
 namespace PublicRequest {
 
-std::set<std::string> get_registry_emails_of_registered_object(
+std::set<std::string> get_valid_registry_emails_of_registered_object(
         LibFred::OperationContext& _ctx,
         ObjectType _object_type,
         unsigned long long _object_id);
