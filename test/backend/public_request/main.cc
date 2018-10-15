@@ -29,31 +29,56 @@ namespace Test
 
 struct handle_command_line_args
 {
-    HandlerPtrVector config_handlers;
-
+public:
     handle_command_line_args()
+    :    config_handlers(
+            static_cast<const HandlerPtrVector&>(
+                boost::assign::list_of
+                    (HandleArgsPtr(new HandleTestsArgs(CONFIG_FILE)))
+                    (HandleArgsPtr(new HandleServerArgs))
+                    (HandleArgsPtr(new HandleLoggingArgs))
+                    (HandleArgsPtr(new HandleDatabaseArgs))
+                    (HandleArgsPtr(new HandleCorbaNameServiceArgs))
+                    (HandleArgsPtr(new HandleThreadGroupArgs))
+                    (HandleArgsPtr(new HandleRegistryArgs))
+                    (HandleArgsPtr(new HandleRifdArgs))
+                    (HandleArgsPtr(new HandleMojeIdArgs))
+                    (HandleArgsPtr(new HandleAdminDatabaseArgs)).convert_to_container<HandlerPtrVector>()))
     {
-
-        config_handlers =
-            boost::assign::list_of
-                (HandleArgsPtr(new HandleTestsArgs(CONFIG_FILE)))
-                (HandleArgsPtr(new HandleServerArgs))
-                (HandleArgsPtr(new HandleLoggingArgs))
-                (HandleArgsPtr(new HandleDatabaseArgs))
-                (HandleArgsPtr(new HandleCorbaNameServiceArgs))
-                (HandleArgsPtr(new HandleThreadGroupArgs))
-                (HandleArgsPtr(new HandleRegistryArgs))
-                (HandleArgsPtr(new HandleRifdArgs))
-                (HandleArgsPtr(new HandleMojeIdArgs))
-                (HandleArgsPtr(new HandleAdminDatabaseArgs)).convert_to_container<HandlerPtrVector>();
-
-        namespace boost_args_ns = boost::unit_test::framework;
-
         CfgArgs::init<HandleTestsArgs>(config_handlers)->handle(
-            boost_args_ns::master_test_suite().argc,
-            boost_args_ns::master_test_suite().argv
+            boost::unit_test::framework::master_test_suite().argc,
+            boost::unit_test::framework::master_test_suite().argv
         ).copy_onlynospaces_args();
+        setup_logging(CfgArgs::instance());
     }
+
+private:
+    static void setup_logging(CfgArgs *cfg_instance_ptr);
+    const HandlerPtrVector config_handlers;
+};
+
+void handle_command_line_args::setup_logging(CfgArgs *cfg_instance_ptr)
+{
+    const HandleLoggingArgs* const handler_ptr = cfg_instance_ptr->get_handler_ptr_by_type< HandleLoggingArgs >();
+
+    const Logging::Log::Type log_type = static_cast< Logging::Log::Type >(handler_ptr->log_type);
+    const Logging::Log::Level log_level = static_cast< Logging::Log::Level >(handler_ptr->log_level);
+
+    boost::any param;
+    switch (log_type)
+    {
+        case Logging::Log::LT_FILE:
+            param = handler_ptr->log_file;
+            break;
+        case Logging::Log::LT_SYSLOG:
+            param = handler_ptr->log_syslog_facility;
+            break;
+        case Logging::Log::LT_CONSOLE:
+            break;
+    }
+
+    Logging::Manager::instance_ref().get(PACKAGE).addHandler(log_type, param);
+    Logging::Manager::instance_ref().get(PACKAGE).setLevel(log_level);
 };
 
 } // namespace Test
