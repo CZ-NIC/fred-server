@@ -1,0 +1,116 @@
+/*
+ * Copyright (C) 2018  CZ.NIC, z.s.p.o.
+ *
+ * This file is part of FRED.
+ *
+ * FRED is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 2 of the License.
+ *
+ * FRED is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include "src/backend/public_request/get_valid_registry_emails_of_registered_object.hh"
+
+#include "src/backend/public_request/object_type.hh"
+#include "src/libfred/contact_verification/django_email_format.hh"
+#include "src/libfred/object/object_type.hh"
+#include "src/libfred/registrable_object/contact/info_contact.hh"
+#include "src/libfred/registrable_object/domain/info_domain.hh"
+#include "src/libfred/registrable_object/keyset/info_keyset.hh"
+#include "src/libfred/registrable_object/nsset/info_nsset.hh"
+
+namespace Fred {
+namespace Backend {
+namespace PublicRequest {
+
+namespace {
+
+std::set<unsigned long long> get_registry_contacts_of_registered_object(
+        LibFred::OperationContext& _ctx,
+        ObjectType _object_type,
+        unsigned long long _object_id)
+{
+    std::set<unsigned long long> object_contacts;
+
+    switch (_object_type)
+    {
+        case ObjectType::contact:
+            {
+                object_contacts.insert(_object_id);
+            }
+            return object_contacts;
+
+        case ObjectType::nsset:
+            {
+                const auto tech_contacts = LibFred::InfoNssetById(_object_id).exec(_ctx).info_nsset_data.tech_contacts;
+
+                for (const auto& contact : tech_contacts)
+                {
+                    object_contacts.insert(contact.id);
+                }
+            }
+            return object_contacts;
+
+        case ObjectType::domain:
+            {
+                const auto info_domain_data = LibFred::InfoDomainById(_object_id).exec(_ctx).info_domain_data;
+                const auto registrant = info_domain_data.registrant;
+                const auto admin_contacts = info_domain_data.admin_contacts;
+
+                object_contacts.insert(registrant.id);
+                for (const auto& contact : admin_contacts)
+                {
+                    object_contacts.insert(contact.id);
+                }
+            }
+            return object_contacts;
+
+        case ObjectType::keyset:
+            {
+                const auto tech_contacts = LibFred::InfoKeysetById(_object_id).exec(_ctx).info_keyset_data.tech_contacts;
+
+                for (const auto& contact : tech_contacts)
+                {
+                    object_contacts.insert(contact.id);
+                }
+            }
+            return object_contacts;
+    }
+    throw std::runtime_error("unexpected ObjectType");
+}
+
+} // namespace Fred::Backend::PublicRequest::{anonymous}
+
+std::set<std::string> get_valid_registry_emails_of_registered_object(
+        LibFred::OperationContext& _ctx,
+        ObjectType _object_type,
+        unsigned long long _object_id)
+{
+
+    const auto object_contacts = get_registry_contacts_of_registered_object(_ctx, _object_type, _object_id);
+
+    std::set<std::string> valid_emails;
+
+    for (const auto contact_id : object_contacts)
+    {
+        const std::string email = LibFred::InfoContactById(contact_id).exec(_ctx).info_contact_data.email.get_value_or_default();
+        const bool email_format_is_valid = DjangoEmailFormat().check(email);
+        if (email_format_is_valid)
+        {
+            valid_emails.insert(email);
+        }
+    }
+
+    return valid_emails;
+}
+
+} // namespace Fred::Backend::PublicRequest
+} // namespace Fred::Backend
+} // namespace Fred

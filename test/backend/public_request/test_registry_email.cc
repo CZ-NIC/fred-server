@@ -81,6 +81,11 @@ struct registry_email_fixture : Test::instantiate_db_template
                     .make(registrar.handle)
                     .set_email("someemail@nic.cz"),
                 ctx);
+        contact_with_invalid_email = Test::exec(
+                Test::CreateX_factory<::LibFred::CreateContact>()
+                    .make(registrar.handle)
+                    .set_email("some@invalid@email@nic.cz"),
+                ctx);
         nsset = Test::exec(
                 Test::CreateX_factory<::LibFred::CreateNsset>()
                     .make(registrar.handle)
@@ -97,38 +102,50 @@ struct registry_email_fixture : Test::instantiate_db_template
                 ctx);
         ctx.commit_transaction();
 
-        contact_id = Fred::Backend::PublicRequest::create_authinfo_request_registry_email(
+        contact_pr_id = Fred::Backend::PublicRequest::create_authinfo_request_registry_email(
                 Fred::Backend::PublicRequest::ObjectType::contact,
                 contact.handle,
                 Optional<unsigned long long>());
-        nsset_id = Fred::Backend::PublicRequest::create_authinfo_request_registry_email(
+        nsset_pr_id = Fred::Backend::PublicRequest::create_authinfo_request_registry_email(
                 Fred::Backend::PublicRequest::ObjectType::nsset,
                 nsset.handle,
                 Optional<unsigned long long>());
-        domain_id = Fred::Backend::PublicRequest::create_authinfo_request_registry_email(
+        domain_pr_id = Fred::Backend::PublicRequest::create_authinfo_request_registry_email(
                 Fred::Backend::PublicRequest::ObjectType::domain,
                 domain.fqdn,
                 Optional<unsigned long long>());
-        keyset_id = Fred::Backend::PublicRequest::create_authinfo_request_registry_email(
+        keyset_pr_id = Fred::Backend::PublicRequest::create_authinfo_request_registry_email(
                 Fred::Backend::PublicRequest::ObjectType::keyset,
                 keyset.handle,
                 Optional<unsigned long long>());
     }
     LibFred::InfoContactData contact;
+    LibFred::InfoContactData contact_with_invalid_email;
     LibFred::InfoNssetData nsset;
     LibFred::InfoDomainData domain;
     LibFred::InfoKeysetData keyset;
-    unsigned long long contact_id;
-    unsigned long long nsset_id;
-    unsigned long long domain_id;
-    unsigned long long keyset_id;
+    unsigned long long contact_pr_id;
+    unsigned long long nsset_pr_id;
+    unsigned long long domain_pr_id;
+    unsigned long long keyset_pr_id;
 };
 
 BOOST_FIXTURE_TEST_CASE(authinfo_request_to_registry_email, registry_email_fixture)
 {
     LibFred::OperationContextCreator ctx;
-    const Database::Result request = get_db_public_request(ctx, contact_id, 1, 0);
+    const Database::Result request = get_db_public_request(ctx, contact_pr_id, 1, 1);
     BOOST_CHECK_EQUAL(request.size(), 1);
+}
+
+BOOST_FIXTURE_TEST_CASE(authinfo_request_to_invalid_registry_email, registry_email_fixture)
+{
+    LibFred::OperationContextCreator ctx;
+    BOOST_CHECK_THROW(
+        Fred::Backend::PublicRequest::create_authinfo_request_registry_email(
+                Fred::Backend::PublicRequest::ObjectType::contact,
+                contact_with_invalid_email.handle,
+                Optional<unsigned long long>()),
+        Fred::Backend::PublicRequest::NoContactEmail);
 }
 
 BOOST_FIXTURE_TEST_CASE(no_entity_email, Test::instantiate_db_template)

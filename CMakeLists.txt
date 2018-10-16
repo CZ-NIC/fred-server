@@ -510,6 +510,7 @@ prepare_object_files(
     src/backend/public_request/exceptions.cc
     src/backend/public_request/get_default_document_manager.cc
     src/backend/public_request/get_id_of_registered_object.cc
+    src/backend/public_request/get_valid_registry_emails_of_registered_object.cc
     src/backend/public_request/process/authinfo.cc
     src/backend/public_request/process/block_unblock.cc
     src/backend/public_request/process/personal_info.cc
@@ -1489,6 +1490,7 @@ prepare_static_library(public_request
     src/backend/public_request/exceptions.cc
     src/backend/public_request/get_default_document_manager.cc
     src/backend/public_request/get_id_of_registered_object.cc
+    src/backend/public_request/get_valid_registry_emails_of_registered_object.cc
     src/backend/public_request/process/authinfo.cc
     src/backend/public_request/process/block_unblock.cc
     src/backend/public_request/process/personal_info.cc
