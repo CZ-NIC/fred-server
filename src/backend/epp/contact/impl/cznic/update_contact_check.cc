@@ -260,17 +260,22 @@ bool is_sufficient_authenticity_level_to_private_address(
             is_change_operation(change.address.country_code) ||
             is_change_operation(change.telephone) ||
             is_change_operation(change.email);
-    if (!change_planned)
+    if (change_planned)
     {
-        return true;
+        const bool change_is_fake_only =
+                is_fake_change_operation(change.name, old_data.name) &&
+                is_fake_change_operation(change.organization, old_data.organization) &&
+                is_fake_change_operation(change.address, old_data.place) &&
+                is_fake_change_operation(change.telephone, old_data.telephone) &&
+                is_fake_change_operation(change.email, old_data.email);
+        if (!change_is_fake_only)
+        {
+            return false;
+        }
     }
-    const bool change_is_fake_only =
-            is_fake_change_operation(change.name, old_data.name) &&
-            is_fake_change_operation(change.organization, old_data.organization) &&
-            is_fake_change_operation(change.address, old_data.place) &&
-            is_fake_change_operation(change.telephone, old_data.telephone) &&
-            is_fake_change_operation(change.email, old_data.email);
-    return change_is_fake_only;
+    const bool contact_is_organization = !old_data.organization.get_value_or("").empty();
+    const bool address_can_be_hidden = !contact_is_organization;
+    return address_can_be_hidden;
 }
 
 }//namespace Epp::Contact::Impl::CzNic::{anonymous}
