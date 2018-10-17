@@ -54,7 +54,7 @@ unsigned long long get_epp_auth_id(::LibFred::OperationContext& _ctx,
     {
         return 0;
     }
-    throw std::runtime_error("Find duplicate EPP authentications in database.");
+    throw std::runtime_error("Duplicate EPP authentications have been found in the database.");
 }
 
 unsigned long long add_epp_authentications(::LibFred::OperationContext& _ctx,
