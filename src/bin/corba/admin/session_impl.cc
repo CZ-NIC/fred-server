@@ -21,6 +21,10 @@
 #include <iomanip>
 #include <algorithm>
 #include <utility>
+#include <boost/optional.hpp>
+#include <boost/optional/optional_io.hpp>
+#include <ostream>
+#include <set>
 #include "src/bin/corba/Admin.hh"
 
 #include "src/bin/corba/admin/public_request_mojeid.hh"
@@ -42,6 +46,19 @@
 
 #include "src/bin/corba/connection_releaser.hh"
 
+#include "src/libfred/opcontext.hh"
+#include "src/libfred/registrar/create_registrar.hh"
+#include "src/libfred/registrar/update_registrar.hh"
+#include "src/libfred/registrar/epp_auth/add_registrar_epp_auth.hh"
+#include "src/libfred/registrar/epp_auth/clone_registrar_epp_auth.hh"
+#include "src/libfred/registrar/epp_auth/delete_registrar_epp_auth.hh"
+#include "src/libfred/registrar/epp_auth/exceptions.hh"
+#include "src/libfred/registrar/epp_auth/get_registrar_epp_auth.hh"
+#include "src/libfred/registrar/epp_auth/update_registrar_epp_auth.hh"
+#include "src/libfred/registrar/zone_access/add_registrar_zone_access.hh"
+#include "src/libfred/registrar/zone_access/exceptions.hh"
+#include "src/libfred/registrar/zone_access/update_registrar_zone_access.hh"
+#include "src/bin/corba/util/corba_conversions_string.hh"
 
 ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
                                  const std::string& database,
@@ -1259,206 +1276,156 @@ Registry::Registrar::Detail* ccReg_Session_i::createRegistrarDetail(LibFred::Reg
 }
 
 ccReg::TID ccReg_Session_i::updateRegistrar(const ccReg::AdminRegistrar& _registrar)
+try
 {
-  Logging::Context ctx(base_context_);
-  ConnectionReleaser releaser;
+    const std::string operation_name = "ccReg_Session_i::updateRegistrar() ";
+    TRACE("[CALL] " + operation_name);
 
-  TRACE("[CALL] ccReg_Session_i::updateRegistrar()");
-  LibFred::Registrar::RegistrarList::AutoPtr tmp_registrar_list =
-      m_registry_manager->getRegistrarManager()->createList();
-  LibFred::Registrar::Registrar::AutoPtr  update_registrar_guard;//delete at the end
-  LibFred::Registrar::Registrar* update_registrar; // registrar to be created or updated
+    LibFred::OperationContextCreator ctx;
+    unsigned long long registrar_id;
+    const std::string registrar_handle = LibFred::Corba::unwrap_string(_registrar.handle);
 
-  if (!_registrar.id)
-  {
-    LOGGER(PACKAGE).debug("no registrar id specified; creating new registrar...");
-    update_registrar_guard = m_registry_manager->getRegistrarManager()->createRegistrar();
-    update_registrar = update_registrar_guard.get();
-  }
-  else
-  {
-    LOGGER(PACKAGE).debug(boost::format("registrar '%1%' id=%2% specified; updating registrar...")
-      % _registrar.handle % _registrar.id);
-    Database::Filters::Union uf;
-    Database::Filters::Registrar *filter = new Database::Filters::RegistrarImpl();
-    filter->addId().setValue(Database::ID(_registrar.id));
-    uf.addFilter(filter);
-
-    tmp_registrar_list->reload(uf);
-
-    if (tmp_registrar_list->size() != 1) {
-      throw ccReg::Admin::ObjectNotFound();
-    }
-    update_registrar = tmp_registrar_list->get(0);
-  }
-  update_registrar->setIco((const char *)_registrar.ico);
-  update_registrar->setDic((const char *)_registrar.dic);
-  update_registrar->setVarSymb((const char *)_registrar.varSymb);
-  update_registrar->setVat((bool)_registrar.vat);
-  update_registrar->setHandle((const char *)_registrar.handle);
-  update_registrar->setURL((const char *)_registrar.url);
-  update_registrar->setName((const char *)_registrar.name);
-  update_registrar->setOrganization((const char *)_registrar.organization);
-  update_registrar->setStreet1((const char *)_registrar.street1);
-  update_registrar->setStreet2((const char *)_registrar.street2);
-  update_registrar->setStreet3((const char *)_registrar.street3);
-  update_registrar->setCity((const char *)_registrar.city);
-  update_registrar->setProvince((const char *)_registrar.stateorprovince);
-  update_registrar->setPostalCode((const char *)_registrar.postalcode);
-  update_registrar->setCountry((const char *)_registrar.country);
-  update_registrar->setTelephone((const char *)_registrar.telephone);
-  update_registrar->setFax((const char *)_registrar.fax);
-  update_registrar->setEmail((const char *)_registrar.email);
-  update_registrar->setSystem((bool)_registrar.hidden);
-
-
-  update_registrar->clearACLList();
-  for (unsigned i = 0; i < _registrar.access.length(); i++)
-  {
-    LibFred::Registrar::ACL *registrar_acl = update_registrar->newACL();
-
-    LOGGER(PACKAGE).debug(boost::format
-            ("ccReg_Session_i::updateRegistrar : i: %1% setRegistrarId: %2%")
-                % i % update_registrar->getId());
-
-    const unsigned long long acl_id = _registrar.access[i].id;
-    const std::string password = std::string(_registrar.access[i].password);
-    const std::string md5cert = std::string(_registrar.access[i].md5Cert);
-
-    registrar_acl->setCertificateMD5(md5cert);
-    if (!password.empty())
+    const bool new_registrar = (_registrar.id == 0);
+    if (new_registrar)
     {
-        registrar_acl->set_password(password);
-    }
-
-    const bool is_new_registrar = (_registrar.id == 0);
-    if (!is_new_registrar)
-    {
-        const std::string md5_cert2 = std::string(_registrar.access[i].md5Cert2SamePasswd);
-        registrar_acl->setRegistrarId(update_registrar->getId());
-
-        const bool is_new_acl_record = (acl_id == 0);
-        if (!is_new_acl_record)
-        {
-            registrar_acl->setId(acl_id);
-
-            // add second record with same password
-            if (!md5_cert2.empty())
-            {
-                LibFred::Registrar::ACL *registrar_acl_same_password = update_registrar->newACL();
-                registrar_acl_same_password->setRegistrarId(update_registrar->getId());
-                registrar_acl_same_password->setCertificateMD5(md5_cert2);
-                registrar_acl_same_password->set_password_same_as_acl_id(acl_id);
-            }
-        }
-        else
-        {
-            if (password.empty())
-            {
-                throw ccReg::Admin::UpdateFailed();
-            }
-            // add second record with same password but - we don't have id of acl record yet
-            // so we use same password value (due to password hashing, records in database will
-            // be different)
-            else if (!md5_cert2.empty())
-            {
-                LibFred::Registrar::ACL *registrar_acl_same_password = update_registrar->newACL();
-                registrar_acl_same_password->setRegistrarId(update_registrar->getId());
-                registrar_acl_same_password->setCertificateMD5(md5_cert2);
-                registrar_acl_same_password->set_password(password);
-            }
-        }
+        LOGGER(PACKAGE).debug(operation_name + "creating new registrar: " + registrar_handle);
+        registrar_id = LibFred::CreateRegistrar(registrar_handle)
+              .set_ico((const char*)_registrar.ico)
+              .set_dic((const char*)_registrar.dic)
+              .set_variable_symbol((const char*)_registrar.varSymb)
+              .set_vat_payer((bool)_registrar.vat)
+              .set_url((const char*)_registrar.url)
+              .set_name((const char*)_registrar.name)
+              .set_organization((const char*)_registrar.organization)
+              .set_street1((const char*)_registrar.street1)
+              .set_street2((const char*)_registrar.street2)
+              .set_street3((const char*)_registrar.street3)
+              .set_city((const char*)_registrar.city)
+              .set_stateorprovince((const char*)_registrar.stateorprovince)
+              .set_postalcode((const char*)_registrar.postalcode)
+              .set_country((const char*)_registrar.country)
+              .set_telephone((const char*)_registrar.telephone)
+              .set_fax((const char*)_registrar.fax)
+              .set_email((const char*)_registrar.email)
+              .set_system((bool)_registrar.hidden)
+              .exec(ctx);
     }
     else
     {
-        const bool new_registrar_has_mandatory_data = !password.empty() && !md5cert.empty();
-        if (!new_registrar_has_mandatory_data)
+        LOGGER(PACKAGE).debug(operation_name + "updating specified registrar: " + registrar_handle);
+        registrar_id = LibFred::Registrar::UpdateRegistrar(registrar_handle)
+              .set_ico(LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar.ico))
+              .set_dic(LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar.dic))
+              .set_variable_symbol(LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar.varSymb))
+              .set_vat_payer((bool)_registrar.vat)
+              .set_url(LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar.url))
+              .set_name(LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar.name))
+              .set_organization(LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar.organization))
+              .set_street1(LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar.street1))
+              .set_street2(LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar.street2))
+              .set_street3(LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar.street3))
+              .set_city(LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar.city))
+              .set_state_or_province(LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar.stateorprovince))
+              .set_postal_code(LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar.postalcode))
+              .set_country(LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar.country))
+              .set_telephone(LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar.telephone))
+              .set_fax(LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar.fax))
+              .set_email(LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar.email))
+              .set_system((bool)_registrar.hidden)
+              .exec(ctx);
+    }
+
+    std::stringstream registrar_info;
+    registrar_info << " registrar id: " << registrar_id << " handle: " << registrar_handle;
+
+    LibFred::Registrar::EppAuth::RegistrarEppAuthData epp_auth_data =
+          LibFred::Registrar::EppAuth::GetRegistrarEppAuth(registrar_handle).exec(ctx);
+    std::set<unsigned long long> auth_ids;
+    std::for_each(epp_auth_data.epp_auth_records.begin(),
+          epp_auth_data.epp_auth_records.end(),
+          [&auth_ids](const auto record){return auth_ids.insert(record.id);});
+
+    for (unsigned i = 0; i < _registrar.access.length(); i++)
+    {
+        unsigned long long acl_id = _registrar.access[i].id;
+        const std::string password = std::string(_registrar.access[i].password);
+        const std::string md5cert = std::string(_registrar.access[i].md5Cert);
+        const std::string md5_cert2 = std::string(_registrar.access[i].md5Cert2SamePasswd);
+
+        std::stringstream debug_info;
+        debug_info << registrar_info.str() << " id: " << acl_id << " password: " << password;
+        debug_info << " md5 cert: " << md5cert << " md5 cert2: " << md5_cert2;
+
+        const bool is_new_acl_record = (acl_id == 0);
+        if (is_new_acl_record)
         {
-            throw ccReg::Admin::UpdateFailed();
+            const bool has_mandatory_data = !password.empty() && !md5cert.empty();
+            if (!has_mandatory_data)
+            {
+                throw ccReg::Admin::UpdateFailed();
+            }
+            LOGGER(PACKAGE).debug(operation_name + "AddRegistrarEppAuth : " + debug_info.str());
+            acl_id = LibFred::Registrar::EppAuth::AddRegistrarEppAuth(registrar_handle, md5cert, password)
+                   .exec(ctx);
+        }
+        else
+        {
+            LOGGER(PACKAGE).debug(operation_name + "UpdateRegistrarEppAuth : " + debug_info.str());
+            LibFred::Registrar::EppAuth::UpdateRegistrarEppAuth(acl_id)
+                    .set_certificate_fingerprint(md5cert)
+                    .set_plain_password(password)
+                    .exec(ctx);
+            auth_ids.erase(acl_id);
+        }
+        if (!new_registrar && !md5_cert2.empty())
+        {
+            LOGGER(PACKAGE).debug(operation_name + "CloneRegistrarEppAuth : " + debug_info.str());
+            LibFred::Registrar::EppAuth::CloneRegistrarEppAuth(acl_id, md5_cert2);
         }
     }
 
-  }
-
-  update_registrar->clearRegistrarZoneList();
-  for (unsigned i = 0; i < _registrar.zones.length();i++)
+    for (const auto id : auth_ids)
     {
-      LibFred::Registrar::RegistrarZone *registrar_azone = update_registrar->newRegistrarZone();
+        LOGGER(PACKAGE).debug(operation_name + "DeleteRegistrarEppAuth ");
+        LibFred::Registrar::EppAuth::DeleteRegistrarEppAuth(id).exec(ctx);
+    }
 
-      LOGGER(PACKAGE).debug(boost::format
-              ("ccReg_Session_i::updateRegistrar azone : i: %1% "
-              "id: %2% name: %3% "
-              "fromdate: %4% - %5% - %6% "
-              "todate %7% - %8% - %9% "
-              )
-                  % i
-                  % _registrar.zones[i].id
-                  % _registrar.zones[i].name //3
+    for (unsigned i = 0; i < _registrar.zones.length(); i++)
+    {
+        const unsigned long long zone_id = _registrar.zones[i].id;
+        const boost::optional<std::string> zone_name = std::string(_registrar.zones[i].name);
+        const boost::optional<boost::gregorian::date> from_date = makeBoostDate( _registrar.zones[i].fromDate);
+        const boost::optional<boost::gregorian::date> to_date = makeBoostDate(_registrar.zones[i].toDate);
 
-                  % _registrar.zones[i].fromDate.year
-                  % _registrar.zones[i].fromDate.month
-                  % _registrar.zones[i].fromDate.day
+        std::stringstream debug_info;
+        debug_info << registrar_info.str() << " id: " << zone_id << " name: " << zone_name;
+        debug_info << " fromdate: " << from_date.get() << " todate: " << to_date.get();
 
-                  % _registrar.zones[i].toDate.year //7
-                  % _registrar.zones[i].toDate.month
-                  % _registrar.zones[i].toDate.day
+        if (zone_id == 0)
+        {
+            LOGGER(PACKAGE).debug(operation_name + "AddRegistrarZoneAccess : " + debug_info.str());
+            LibFred::Registrar::ZoneAccess::AddRegistrarZoneAccess(registrar_handle, zone_name.get(), from_date.get())
+                  .set_to_date(to_date)
+                  .exec(ctx);
+        }
+        else
+        {
+            LOGGER(PACKAGE).debug(operation_name + "UpdateRegistrarZoneAccess : " + debug_info.str());
+            LibFred::Registrar::ZoneAccess::UpdateRegistrarZoneAccess(zone_id)
+                  .set_from_date(from_date)
+                  .set_to_date(to_date)
+                  .exec(ctx);
+        }
+    }
+    ctx.commit_transaction();
+    LOGGER(PACKAGE).debug(operation_name + "saved " + registrar_info.str());
 
-      );
-
-      registrar_azone->id = _registrar.zones[i].id;
-      registrar_azone->name = _registrar.zones[i].name;
-      try
-      {
-          date fdate = makeBoostDate( _registrar.zones[i].fromDate);
-          registrar_azone->fromdate = fdate;
-      }
-      catch(...)
-      {//no date is NOT ok, webadmin should check this
-          LOGGER(PACKAGE).error(boost::format
-                  ("ccReg_Session_i::updateRegistrar Invalid fromDate "
-                  "in azone: i: %1% "
-                  "id: %2% name: %3% "
-                  "fromdate: %4% - %5% - %6% "
-                  "todate %7% - %8% - %9% "
-                  )
-                      % i
-                      % _registrar.zones[i].id
-                      % _registrar.zones[i].name //3
-
-                      % _registrar.zones[i].fromDate.year
-                      % _registrar.zones[i].fromDate.month
-                      % _registrar.zones[i].fromDate.day
-
-                      % _registrar.zones[i].toDate.year //7
-                      % _registrar.zones[i].toDate.month
-                      % _registrar.zones[i].toDate.day
-          );
-
-          throw;
-      }//catch all fromdate
-
-      try
-      {
-          date tdate = makeBoostDate( _registrar.zones[i].toDate);
-          registrar_azone->todate = tdate;
-      }
-      catch(...){}//no date is ok
-
-    }//for i
-
-  try {
-    update_registrar->save();
-  } catch (...) {
+    return registrar_id;
+}
+catch (const std::exception& e)
+{
+    LOGGER(PACKAGE).debug(e.what());
     throw ccReg::Admin::UpdateFailed();
-  }
-
-  ccReg::TID rid = update_registrar->getId();
-
-  LOGGER(PACKAGE).debug(boost::format("registrar with id=%1% saved")
-      % rid);
-
-  return rid;
-
 }
 
 Registry::PublicRequest::Detail* ccReg_Session_i::createPublicRequestDetail(LibFred::PublicRequest::PublicRequest* _request) {
