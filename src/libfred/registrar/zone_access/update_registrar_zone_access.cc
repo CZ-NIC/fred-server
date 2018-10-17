@@ -76,13 +76,19 @@ unsigned long long UpdateRegistrarZoneAccess::exec(OperationContext& _ctx) const
     object_sql << "UPDATE registrarinvoice";
     if (from_date_ != boost::none)
     {
-        params.push_back(*from_date_);
-        object_sql << set_separator.get() <<  "fromdate = $" << params.size() << psql_type(from_date_);
+        if (!from_date_->is_special())
+        {
+            params.push_back(from_date_.get());
+            object_sql << set_separator.get() << "fromdate = $" << params.size() << psql_type(from_date_);
+        }
     }
     if (to_date_ != boost::none)
     {
-        params.push_back(*to_date_);
-        object_sql << set_separator.get() <<  "todate = $" << params.size() << psql_type(to_date_);
+        if (!to_date_->is_special())
+        {
+            params.push_back(to_date_.get());
+            object_sql << set_separator.get() << "todate = $" << params.size() << psql_type(to_date_);
+        }
     }
 
     params.push_back(id_);

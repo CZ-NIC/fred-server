@@ -20,7 +20,7 @@
 #include "src/libfred/registrar/zone_access/add_registrar_zone_access.hh"
 #include "src/libfred/registrar/zone_access/exceptions.hh"
 
-#include <boost/date_time/gregorian/gregorian_types.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/optional.hpp>
 #include <string>
 
@@ -50,6 +50,16 @@ unsigned long long AddRegistrarZoneAccess::exec(OperationContext& _ctx) const
 {
     try
     {
+        Database::QueryParam to_date = Database::QPNull;
+
+        if (to_date_ != boost::none)
+        {
+            if (!to_date_->is_special())
+            {
+                to_date = Database::QueryParam(to_date_.get());
+            }
+        }
+
         const Database::Result insert_result = _ctx.get_conn().exec_params(
                 // clang-format off
                 "INSERT INTO registrarinvoice (registrarid, zone, fromdate, todate) "
@@ -59,8 +69,7 @@ unsigned long long AddRegistrarZoneAccess::exec(OperationContext& _ctx) const
                 // clang-format on
                 Database::query_param_list(zone_fqdn_)
                                           (from_date_)
-                                          (to_date_->is_special() ?
-                                                Database::QPNull : Database::QueryParam(to_date_.get()))
+                                          (to_date)
                                           (registrar_handle_));
 
         if (insert_result.size() == 1)
