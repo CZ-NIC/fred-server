@@ -294,10 +294,7 @@ class RegistrarImpl : public LibFred::CommonObjectImplNew,
   typedef std::map<Database::ID, Money> ZoneCreditMap;
   ZoneCreditMap zone_credit_map;
 
-  typedef  std::shared_ptr<RegistrarZone> RegistrarZonePtr;
-  typedef std::vector<RegistrarZonePtr> RegistrarZoneList;
-//  typedef RegistrarZoneList::iterator RegistrarZoneListIter;
-  RegistrarZoneList actzones;
+  std::vector<std::shared_ptr<RegistrarZone>> actzones;
 
 public:
   RegistrarImpl()
