@@ -79,7 +79,7 @@ std::map<std::string, unsigned char> get_public_request_type_to_post_or_governme
                                .get_public_request_type(), 6)).second &&
         dictionary.insert(
                 std::make_pair(Type::get_iface_of<Type::PersonalInfoGovernment>()
-                               .get_public_request_type(), 8)).second)
+                               .get_public_request_type(), 6)).second)
     {
         return dictionary;
     }
