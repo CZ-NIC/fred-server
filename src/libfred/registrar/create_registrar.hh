@@ -262,7 +262,7 @@ namespace LibFred
         * Executes create
         * @param ctx contains reference to database and logging interface
         */
-        void exec(OperationContext& ctx);
+        unsigned long long exec(OperationContext& ctx);
 
         /**
         * Dumps state of the instance into the string
