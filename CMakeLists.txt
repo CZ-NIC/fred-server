@@ -3505,7 +3505,8 @@ install(TARGETS mojeid_contact_ssn_fix DESTINATION ${DISTRO_PREFIX}sbin)
 install(TARGETS fred-disclose-flag-updater DESTINATION ${DISTRO_PREFIX}sbin)
 
 install(DIRECTORY ${CMAKE_BINARY_DIR}/config/ DESTINATION etc/fred FILES_MATCHING PATTERN "*.conf")
-install(DIRECTORY ${CMAKE_BINARY_DIR}/init-scripts/ DESTINATION etc/init.d FILES_MATCHING PATTERN "fred-server")
+install(DIRECTORY ${CMAKE_BINARY_DIR}/init-scripts/ DESTINATION etc/init.d FILES_MATCHING PATTERN "fred-server"
+    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/test/deprecated/ DESTINATION ${DISTRO_PREFIX}share/doc/fred-server FILES_MATCHING PATTERN "example_payments.xml")
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/test/deprecated/ DESTINATION ${DISTRO_PREFIX}share/doc/fred-server FILES_MATCHING PATTERN "test_file.pdf")
