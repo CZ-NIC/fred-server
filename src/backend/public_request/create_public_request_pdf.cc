@@ -41,57 +41,71 @@ namespace PublicRequest {
 
 namespace {
 
-std::map<std::string, unsigned char> get_public_request_type_to_post_or_government_type_dictionary()
+struct TemplateParams
 {
-    std::map<std::string, unsigned char> dictionary;
+    TemplateParams(unsigned int _type, const std::string& _confirmation_type) :
+        type(_type), confirmation_type(_confirmation_type)
+    {}
+
+    unsigned int type;
+    std::string confirmation_type;
+};
+
+
+std::map<std::string, TemplateParams> get_public_request_type_to_template_params_mapping()
+{
+    const std::string confirmation_type_notarized_letter = "notarized_letter";
+    const std::string confirmation_type_government = "government";
+
+    std::map<std::string, TemplateParams> dictionary;
     if (dictionary.insert(
                 std::make_pair(Type::get_iface_of<Type::AuthinfoPost>()
-                               .get_public_request_type(), 1)).second &&
+                               .get_public_request_type(), TemplateParams(1, confirmation_type_notarized_letter))).second &&
         dictionary.insert(
                 std::make_pair(Type::get_iface_of<Type::AuthinfoGovernment>()
-                               .get_public_request_type(), 1)).second &&
+                               .get_public_request_type(), TemplateParams(1, confirmation_type_government))).second &&
         dictionary.insert(
                 std::make_pair(Type::get_iface_of<Type::BlockTransfer<ConfirmedBy::letter>>()
-                               .get_public_request_type(), 2)).second &&
+                               .get_public_request_type(), TemplateParams(2, confirmation_type_notarized_letter))).second &&
         dictionary.insert(
                 std::make_pair(Type::get_iface_of<Type::BlockTransfer<ConfirmedBy::government>>()
-                               .get_public_request_type(), 2)).second &&
+                               .get_public_request_type(), TemplateParams(2, confirmation_type_government))).second &&
         dictionary.insert(
                 std::make_pair(Type::get_iface_of<Type::UnblockTransfer<ConfirmedBy::letter>>()
-                               .get_public_request_type(), 3)).second &&
+                               .get_public_request_type(), TemplateParams(3, confirmation_type_notarized_letter))).second &&
         dictionary.insert(
                 std::make_pair(Type::get_iface_of<Type::UnblockTransfer<ConfirmedBy::government>>()
-                               .get_public_request_type(), 3)).second &&
+                               .get_public_request_type(), TemplateParams(3, confirmation_type_government))).second &&
         dictionary.insert(
                 std::make_pair(Type::get_iface_of<Type::BlockChanges<ConfirmedBy::letter>>()
-                               .get_public_request_type(), 4)).second &&
+                               .get_public_request_type(), TemplateParams(4, confirmation_type_notarized_letter))).second &&
         dictionary.insert(
                 std::make_pair(Type::get_iface_of<Type::BlockChanges<ConfirmedBy::government>>()
-                               .get_public_request_type(), 4)).second &&
+                               .get_public_request_type(), TemplateParams(4, confirmation_type_government))).second &&
         dictionary.insert(
                 std::make_pair(Type::get_iface_of<Type::UnblockChanges<ConfirmedBy::letter>>()
-                               .get_public_request_type(), 5)).second &&
+                               .get_public_request_type(), TemplateParams(5, confirmation_type_notarized_letter))).second &&
         dictionary.insert(
                 std::make_pair(Type::get_iface_of<Type::UnblockChanges<ConfirmedBy::government>>()
-                               .get_public_request_type(), 5)).second &&
+                               .get_public_request_type(), TemplateParams(5, confirmation_type_government))).second &&
         dictionary.insert(
                 std::make_pair(Type::get_iface_of<Type::PersonalInfoPost>()
-                               .get_public_request_type(), 6)).second &&
+                               .get_public_request_type(), TemplateParams(6, confirmation_type_notarized_letter))).second &&
         dictionary.insert(
                 std::make_pair(Type::get_iface_of<Type::PersonalInfoGovernment>()
-                               .get_public_request_type(), 6)).second)
+                               .get_public_request_type(), TemplateParams(6, confirmation_type_government))).second)
     {
         return dictionary;
     }
     throw std::logic_error("duplicate public request type");
 }
 
-short public_request_type_to_post_type(const std::string& public_request_type)
+TemplateParams public_request_type_to_template_params(const std::string& public_request_type)
 {
-    typedef std::map<std::string, unsigned char> Dictionary;
-    static const Dictionary dictionary = get_public_request_type_to_post_or_government_type_dictionary();
-    const Dictionary::const_iterator result_ptr = dictionary.find(public_request_type);
-    const bool key_found = result_ptr != dictionary.end();
+    typedef std::map<std::string, TemplateParams> TemplateParamsMapping;
+    static const TemplateParamsMapping mapping = get_public_request_type_to_template_params_mapping();
+    const TemplateParamsMapping::const_iterator result_ptr = mapping.find(public_request_type);
+    const bool key_found = result_ptr != mapping.end();
     if (key_found)
     {
         return result_ptr->second;
@@ -143,12 +157,15 @@ Fred::Backend::Buffer create_public_request_pdf(
     LibFred::OperationContextCreator ctx;
     std::string create_time;
     std::string email_to_answer;
+    std::string confirmation_type;
     unsigned long long post_type;
     try
     {
         LibFred::PublicRequestLockGuardById locked_request(ctx, public_request_id);
         const LibFred::PublicRequestInfo request_info = LibFred::InfoPublicRequest().exec(ctx, locked_request);
-        post_type = public_request_type_to_post_type(request_info.get_type());
+        const TemplateParams params = public_request_type_to_template_params(request_info.get_type());
+        post_type = params.type;
+        confirmation_type = params.confirmation_type;
         create_time = stringify(request_info.get_create_time().date());
         email_to_answer = request_info.get_email_to_answer().get_value_or_default();
     }
@@ -180,21 +197,24 @@ Fred::Backend::Buffer create_public_request_pdf(
                     LibFred::Document::GT_PUBLIC_REQUEST_PDF,
                     pdf_content,
                     lang_code));
-    docgen_ptr->getInput()
-            // clang-format off
-            << "<?xml version='1.0' encoding='utf-8'?>"
-            << "<enum_whois>"
-            << "<public_request>"
-                << "<type>" << post_type << "</type>"
-                << "<handle type='" << type_id << "'>"
-                << handle
-                << "</handle>"
-                << "<date>" << create_time << "</date>"
-                << "<id>" << public_request_id << "</id>"
-                << "<replymail>" << email_to_answer << "</replymail>"
-            << "</public_request>"
-            << "</enum_whois>";
-            // clang-format on
+    std::ostringstream xml_content;
+    // clang-format off
+    xml_content << "<?xml version='1.0' encoding='utf-8'?>"
+                << "<enum_whois>"
+                << "<public_request>"
+                    << "<type>" << post_type << "</type>"
+                    << "<confirmation_type>" << confirmation_type << "</confirmation_type>"
+                    << "<handle type='" << type_id << "'>"
+                    << handle
+                    << "</handle>"
+                    << "<date>" << create_time << "</date>"
+                    << "<id>" << public_request_id << "</id>"
+                    << "<replymail>" << email_to_answer << "</replymail>"
+                << "</public_request>"
+                << "</enum_whois>";
+    // clang-format on
+    ctx.get_log().debug(xml_content.str());
+    docgen_ptr->getInput() << xml_content.str();
     docgen_ptr->closeInput();
 
     return Fred::Backend::Buffer(pdf_content.str());
