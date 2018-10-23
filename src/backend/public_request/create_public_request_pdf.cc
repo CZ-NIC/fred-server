@@ -155,24 +155,17 @@ Fred::Backend::Buffer create_public_request_pdf(
     const std::string lang_code = language_to_lang_code(lang);
 
     LibFred::OperationContextCreator ctx;
-    std::string create_time;
-    std::string email_to_answer;
-    std::string confirmation_type;
-    unsigned long long post_type;
-    try
-    {
-        LibFred::PublicRequestLockGuardById locked_request(ctx, public_request_id);
-        const LibFred::PublicRequestInfo request_info = LibFred::InfoPublicRequest().exec(ctx, locked_request);
-        const TemplateParams params = public_request_type_to_template_params(request_info.get_type());
-        post_type = params.type;
-        confirmation_type = params.confirmation_type;
-        create_time = stringify(request_info.get_create_time().date());
-        email_to_answer = request_info.get_email_to_answer().get_value_or_default();
-    }
-    catch (const LibFred::PublicRequestLockGuardById::Exception&)
-    {
-        throw ObjectNotFound();
-    }
+
+    const LibFred::PublicRequestInfo request_info = [&ctx, public_request_id]() {
+        try {
+            LibFred::PublicRequestLockGuardById locked_request(ctx, public_request_id);
+            return LibFred::InfoPublicRequest().exec(ctx, locked_request);
+        }
+        catch (const LibFred::PublicRequestLockGuardById::Exception&)
+        {
+            throw ObjectNotFound();
+        }
+    }();
 
     const Database::Result dbres = ctx.get_conn().exec_params(
             "SELECT oreg.type,oreg.name "
@@ -191,6 +184,8 @@ Fred::Backend::Buffer create_public_request_pdf(
     }
     const unsigned type_id = static_cast<unsigned>(dbres[0][0]);
     const std::string handle = static_cast<std::string>(dbres[0][1]);
+    const TemplateParams params = public_request_type_to_template_params(request_info.get_type());
+
     std::ostringstream pdf_content;
     const std::unique_ptr<LibFred::Document::Generator> docgen_ptr(
             manager.get()->createOutputGenerator(
@@ -202,14 +197,14 @@ Fred::Backend::Buffer create_public_request_pdf(
     xml_content << "<?xml version='1.0' encoding='utf-8'?>"
                 << "<enum_whois>"
                 << "<public_request>"
-                    << "<type>" << post_type << "</type>"
-                    << "<confirmation_type>" << confirmation_type << "</confirmation_type>"
+                    << "<type>" << params.type << "</type>"
+                    << "<confirmation_type>" << params.confirmation_type << "</confirmation_type>"
                     << "<handle type='" << type_id << "'>"
                     << handle
                     << "</handle>"
-                    << "<date>" << create_time << "</date>"
+                    << "<date>" << stringify(request_info.get_create_time().date()) << "</date>"
                     << "<id>" << public_request_id << "</id>"
-                    << "<replymail>" << email_to_answer << "</replymail>"
+                    << "<replymail>" << request_info.get_email_to_answer().get_value_or_default() << "</replymail>"
                 << "</public_request>"
                 << "</enum_whois>";
     // clang-format on
