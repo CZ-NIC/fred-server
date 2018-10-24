@@ -21,7 +21,6 @@
 #include "src/bin/cli/commonclient.hh"
 #include "src/libfred/banking/bank_manager.hh"
 #include "src/libfred/registry.hh"
-#include "src/bin/corba/file_manager_client.hh"
 
 #include <iostream>
 #include <fstream>
@@ -54,13 +53,8 @@ BankClient::add_bank_account()
         zone_fqdn = add_account_params.zone_fqdn.get_value();
     }
 
-    // init file manager
-    CorbaClient corba_client(0, 0, m_nsAddr, nameservice_context);
-    FileManagerClient fm_client(corba_client.getNS());
-    LibFred::File::ManagerPtr file_manager(LibFred::File::Manager::create(&fm_client));
-
     // bank manager
-    LibFred::Banking::ManagerPtr bank_manager(LibFred::Banking::Manager::create(file_manager.get()));
+    LibFred::Banking::ManagerPtr bank_manager(LibFred::Banking::Manager::create());
     bank_manager->addBankAccount(account_number, bank_code, zone_fqdn, account_name);
 }
 

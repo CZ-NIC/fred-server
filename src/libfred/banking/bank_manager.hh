@@ -4,7 +4,6 @@
 #include "src/libfred/banking/invoice_reference.hh"
 #include "src/libfred/banking/payment_invoices.hh"
 #include "src/libfred/db_settings.hh"
-#include "src/libfred/file.hh"
 #include "src/util/types/money.hh"
 
 #include <boost/date_time/posix_time/posix_time_types.hpp>
@@ -17,7 +16,6 @@ namespace Banking {
 
 class Manager {
 public:
-    static Manager *create(File::Manager *_file_manager);
     static Manager *create();
 
     virtual void addBankAccount(
