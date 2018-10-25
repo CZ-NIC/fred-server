@@ -131,9 +131,6 @@ std::string get_invoice_number_by_id(
 class ManagerImpl : virtual public Manager
 {
 private:
-    File::Manager *file_manager_;
-
-
     unsigned long long getZoneByAccountId(const unsigned long long &_account_id)
     {
         Database::Query query;
@@ -339,11 +336,6 @@ private:
 
 
 public:
-    explicit ManagerImpl(File::Manager* _file_manager)
-        : file_manager_(_file_manager)
-    {
-    }
-
     ManagerImpl()
     {
     }
@@ -505,11 +497,6 @@ public:
     }
 
 };
-
-Manager* Manager::create(File::Manager *_file_manager)
-{
-    return new ManagerImpl(_file_manager);
-}
 
 Manager* Manager::create()
 {

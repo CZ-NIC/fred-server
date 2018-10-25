@@ -22,8 +22,6 @@
 
 #include "src/libfred/banking/bank_manager.hh"
 #include "src/bin/cli/commonclient.hh"
-#include "src/bin/corba/file_manager_client.hh"
-#include "src/libfred/file.hh"
 
 #include "src/util/cfg/config_handler.hh"
 #include "src/util/cfg/handle_database_args.hh"

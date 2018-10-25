@@ -99,7 +99,7 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
 
   mail_manager_.reset(LibFred::Mail::Manager::create());
   file_manager_.reset(LibFred::File::Manager::create(&m_fm_client));
-  m_banking_manager.reset(LibFred::Banking::Manager::create(file_manager_.get()));
+  m_banking_manager.reset(LibFred::Banking::Manager::create());
 
   m_domains = new ccReg_Domains_i(m_registry_manager->getDomainManager()->createList(), &settings_);
   m_contacts = new ccReg_Contacts_i(m_registry_manager->getContactManager()->createList(), &settings_);
