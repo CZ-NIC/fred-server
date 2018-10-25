@@ -76,7 +76,7 @@ unsigned long long CreateZone::exec(OperationContext& _ctx) const
                                           (validation_period_in_months)
                                           (dots_max)
                                           (enum_zone)
-                                          (sending_warning_letter_.get_value_or(false)));
+                                          (sending_warning_letter_.get_value_or(true)));
         if (create_result.size() == 1)
         {
             const unsigned long long id = static_cast<unsigned long long>(create_result[0][0]);
