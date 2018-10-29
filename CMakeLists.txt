@@ -398,6 +398,7 @@ prepare_object_files(
     src/backend/admin/contact/verification/update_tests.cc
     src/backend/admin/domain/create_expired_domain.cc
     src/backend/admin/notification/notification.cc
+    src/backend/admin/registrar/create_registrar.cc
     src/backend/admin/zone/zone.cc
     src/backend/automatic_keyset_management/automatic_keyset_management.cc
     src/backend/automatic_keyset_management/dns_key.cc
@@ -1016,6 +1017,8 @@ prepare_object_files(
     test/backend/admin/domain/test_create_expired_domain.cc
     test/backend/admin/notification/main.cc
     test/backend/admin/notification/test_set_domain_outzone_unguarded_warning_emails.cc
+    test/backend/admin/registrar/main.cc
+    test/backend/admin/registrar/test_create_registrar.cc
     test/backend/admin/zone/main.cc
     test/backend/admin/zone/test_add_zone.cc
     test/backend/admin/zone/test_add_zone_ns.cc
@@ -3010,6 +3013,35 @@ target_link_external_libraries(test-admin-domain
     omniorb4
     threads)
 
+prepare_executable(test-admin-registrar
+    src/backend/admin/registrar/create_registrar.cc
+    test/backend/admin/registrar/main.cc
+    test/backend/admin/registrar/test_create_registrar.cc
+    test/setup/fixtures.cc
+    test/setup/fixtures_utils.cc)
+target_link_libraries(test-admin-registrar
+    corba
+    corbafilters
+    corbadatatypes
+    fred
+    log
+    db
+    util
+    types
+    timezones)
+target_link_external_libraries(test-admin-registrar
+    boost_system
+    boost_unit_test_framework
+    boost_program_options
+    boost_date_time
+    boost_regex
+    boost_random
+    omniorb4
+    boost_thread
+    threads
+    postgres
+    libidn)
+
 prepare_executable(test-admin-zone
     src/backend/admin/zone/zone.cc
     test/backend/admin/zone/main.cc
@@ -3595,6 +3627,7 @@ if(NOT DO_NOT_INSTALL_TESTS)
     install(TARGETS test-server DESTINATION ${BINDIR})
     install(TARGETS test-whois DESTINATION ${BINDIR})
     install(TARGETS test-admin-domain DESTINATION ${BINDIR})
+    install(TARGETS test-admin-registrar DESTINATION ${BINDIR})
     install(TARGETS test-admin-zone DESTINATION ${BINDIR})
     install(TARGETS test-delete-objects-marked-as-delete-candidate DESTINATION ${BINDIR})
 endif()
