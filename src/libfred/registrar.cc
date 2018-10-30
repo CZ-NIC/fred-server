@@ -1523,7 +1523,8 @@ public:
         {
             OperationContextCreator ctx;
             const unsigned long long id = CreateRegistrarCertification(_registrar_id,
-                        _valid_from, _valid_until, _classification, _eval_file_id)
+                        _valid_from, _classification, _eval_file_id)
+                    .set_valid_until(_valid_until.get())
                     .exec(ctx);
             ctx.commit_transaction();
             return id;

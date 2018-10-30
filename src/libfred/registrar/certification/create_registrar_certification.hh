@@ -26,7 +26,8 @@
 
 #include "src/libfred/opcontext.hh"
 
-#include <boost/date_time/posix_time/posix_time.hpp>
+//#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
 
 namespace LibFred {
 namespace Registrar {
@@ -37,15 +38,15 @@ public:
     CreateRegistrarCertification(
             unsigned long long _registrar_id,
             boost::gregorian::date _valid_from,
-            boost::gregorian::date _valid_until,
             int _classification,
             unsigned long long _eval_file_id)
     : registrar_id_(_registrar_id),
       valid_from_(_valid_from),
-      valid_until_(_valid_until),
       classification_(_classification),
       eval_file_id_(_eval_file_id)
     {}
+
+    CreateRegistrarCertification& set_valid_until(const boost::gregorian::date& _valid_until);
 
     unsigned long long exec(OperationContext& _ctx);
 
