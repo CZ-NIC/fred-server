@@ -259,18 +259,18 @@ RegistrarClient::registrar_add_zone()
 void
 RegistrarClient::registrar_create_certification()
 {
-    std::string cert_eval_file =
+    const std::string cert_eval_file =
             registrar_create_certification_params_.certification_evaluation;//REGISTRAR_CERTIFICATION_EVALUATION_NAME
 
-    std::string cert_eval_file_mimetype =
+    const std::string cert_eval_file_mimetype =
             registrar_create_certification_params_.certification_evaluation_mime_type;//REGISTRAR_CERTIFICATION_EVALUATION_MIME_TYPE_NAME
 
-    int score = registrar_create_certification_params_.certification_score;//REGISTRAR_CERTIFICATION_SCORE_NAME
+    const int score = registrar_create_certification_params_.certification_score;//REGISTRAR_CERTIFICATION_SCORE_NAME
     if((score < 0) || (score > 5))
         throw std::runtime_error("Invalid value of score");
 
-    std::string registrar_handle = registrar_create_certification_params_.handle;//REGISTRAR_ADD_HANDLE_NAME
-    Database::Date fromDate;
+    const std::string registrar_handle = registrar_create_certification_params_.handle;//REGISTRAR_ADD_HANDLE_NAME
+    Database::Date fromDate(DateTimeSpecial::NOW);
     Database::Date toDate;
     if (registrar_create_certification_params_.from_date.is_value_set())//REGISTRAR_FROM_DATE_NAME
     {
@@ -289,7 +289,7 @@ RegistrarClient::registrar_create_certification()
     LibFred::File::ManagerPtr file_manager(
             LibFred::File::Manager::create(&fm_client));
 
-    unsigned long long evaluation_file_id
+    const unsigned long long evaluation_file_id
         = file_manager->upload(cert_eval_file
         		, cert_eval_file_mimetype//"application/pdf"
         		, 6);

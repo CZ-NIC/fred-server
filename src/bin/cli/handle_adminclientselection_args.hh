@@ -1371,16 +1371,19 @@ public:
         cfg_opts->add_options()
             ("registrar_create_certification", "create registrar certification")
             ("certification_evaluation", boost::program_options
-                ::value<Checked::string>()->notifier(save_arg<std::string>(params.certification_evaluation))
+                ::value<Checked::string>()->required()
+                ->notifier(save_arg<std::string>(params.certification_evaluation))
                 , "registrar certification evaluation pdf file")
             ("certification_evaluation_mime_type", boost::program_options
-                ::value<Checked::string>()->notifier(save_arg<std::string>(params.certification_evaluation_mime_type))
+                ::value<Checked::string>()->required()
+                ->notifier(save_arg<std::string>(params.certification_evaluation_mime_type))
                 , "registrar certification evaluation file MIME type")
             ("certification_score", boost::program_options
-                ::value<Checked::ulong>()->notifier(save_arg<long>(params.certification_score))
+                ::value<Checked::ulong>()->required()
+                ->notifier(save_arg<long>(params.certification_score))
                 , "registrar certification score 0 - 5")
             ("handle", boost::program_options
-                ::value<Checked::string>()->notifier(save_arg<std::string>(params.handle))
+                ::value<Checked::string>()->required()->notifier(save_arg<std::string>(params.handle))
                 , "registrar handle")
             ("from_date", boost::program_options
                 ::value<Checked::string>()->notifier(save_optional_string(params.from_date))
