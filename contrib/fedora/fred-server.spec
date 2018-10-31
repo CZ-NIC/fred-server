@@ -14,7 +14,7 @@ BuildRequires: centos-release-scl, devtoolset-7, devtoolset-7-build, llvm-toolse
 %else
 BuildRequires: cmake
 %endif
-Requires: omniORB, boost, postgresql-libs, libxml2, libcurl, libidn, fred-pyfred, fred-doc2pdf, fred-db, redhat-lsb, mpdecimal, openssl-libs
+Requires: omniORB, boost, postgresql-libs, libxml2, libcurl, libidn, fred-pyfred, fred-doc2pdf, fred-db, redhat-lsb, mpdecimal, openssl-libs, libxslt
 
 %description
 FRED (Free Registry for Enum and Domain) is free registry system for 
