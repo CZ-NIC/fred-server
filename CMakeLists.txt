@@ -17,6 +17,12 @@ macro(set_default variable_name variable_value)
     endif()
 endmacro()
 
+macro(set_default_path variable_name variable_value)
+    if(NOT ${variable_name})
+        string(REGEX REPLACE "//*" "/" "${variable_name}" "${variable_value}")
+    endif()
+endmacro()
+
 set_default(CMAKE_BUILD_TYPE "Release")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2")
 
@@ -37,18 +43,16 @@ set_default(IDL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../idl/idl)
 
 set_default(PACKAGE ${program_name})
 
-set_default(DISTRO_PREFIX "")
+set_default_path(BINDIR ${CMAKE_INSTALL_PREFIX}/${DISTRO_PREFIX}/bin)
+set_default_path(DATAROOTDIR ${CMAKE_INSTALL_PREFIX}/${DISTRO_PREFIX}/share)
+set_default_path(LOCALSTATEDIR ${CMAKE_INSTALL_PREFIX}/var)
+set_default_path(MONITORINGIPS ${CMAKE_INSTALL_PREFIX}/etc/fred/monitoring_hosts.conf)
+set_default_path(SBINDIR ${CMAKE_INSTALL_PREFIX}/${DISTRO_PREFIX}/sbin)
+set_default_path(SYSCONFDIR ${CMAKE_INSTALL_PREFIX}/etc)
 
-set_default(BINDIR ${CMAKE_INSTALL_PREFIX}/bin)
-set_default(DATAROOTDIR ${CMAKE_INSTALL_PREFIX}/usr/share/)
-set_default(LOCALSTATEDIR ${CMAKE_INSTALL_PREFIX}/var)
-set_default(MONITORINGIPS ${CMAKE_INSTALL_PREFIX}/usr/local/etc/fred/monitoring_hosts.conf)
-set_default(SBINDIR ${CMAKE_INSTALL_PREFIX}/sbin)
-set_default(SYSCONFIG_DIR ${CMAKE_INSTALL_PREFIX}/etc)
-
-set_default(CONFIG_FILE ${SYSCONFIG_DIR}/fred/server.conf)
-set_default(HPMAIL_CONFIG ${SYSCONFIG_DIR}/fred/hpmail.conf)
-set_default(OPTYS_CONFIG ${SYSCONFIG_DIR}/fred/optysmail.conf)
+set_default_path(CONFIG_FILE ${SYSCONFDIR}/fred/server.conf)
+set_default_path(HPMAIL_CONFIG ${SYSCONFDIR}/fred/hpmail.conf)
+set_default_path(OPTYS_CONFIG ${SYSCONFDIR}/fred/optysmail.conf)
 
 set_default(DBHOST localhost)
 set_default(DBNAME fred)
@@ -64,7 +68,7 @@ set_default(NSCONTEXT fred)
 set_default(NSHOST localhost)
 set_default(OPTYS_LOGIN_NAME test)
 set_default(OPTYS_LOGIN_PASSWORD test)
-set_default(TEST_DATA ${DATAROOTDIR}/)
+set_default_path(TEST_DATA ${DATAROOTDIR}/)
 
 set_default(OPTYS_LOGIN_PORT 22)
 set_default(RIFDPORT 2222)
@@ -76,6 +80,7 @@ set_default(MSGDPORT 2228)
 set_default(DBIFDPORT 2229)
 set_default(AKMDPORT 2230)
 set_default(RSIFDPORT 2231)
+set_default(ACCIFDPORT 2232)
 set_default(NSPORT 2809)
 set_default(DBPORT 5432)
 
@@ -83,7 +88,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_BINARY_DIR}/co
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config/hpmail.conf.in ${CMAKE_BINARY_DIR}/config/hpmail.conf)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config/optysmail.conf.in ${CMAKE_BINARY_DIR}/config/optysmail.conf)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config/server.conf.in ${CMAKE_BINARY_DIR}/config/server.conf)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/init-scripts/fred-server.in ${CMAKE_BINARY_DIR}/init-scripts/fred-server)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/init-scripts/fred-server.in ${CMAKE_BINARY_DIR}/init-scripts/fred-server @ONLY)
 
 find_package(Threads REQUIRED)
 set(Threads_LIBRARIES Threads::Threads)
@@ -3500,7 +3505,8 @@ install(TARGETS mojeid_contact_ssn_fix DESTINATION ${DISTRO_PREFIX}sbin)
 install(TARGETS fred-disclose-flag-updater DESTINATION ${DISTRO_PREFIX}sbin)
 
 install(DIRECTORY ${CMAKE_BINARY_DIR}/config/ DESTINATION etc/fred FILES_MATCHING PATTERN "*.conf")
-install(DIRECTORY ${CMAKE_BINARY_DIR}/init-scripts/ DESTINATION etc/init.d FILES_MATCHING PATTERN "fred-server")
+install(DIRECTORY ${CMAKE_BINARY_DIR}/init-scripts/ DESTINATION etc/init.d FILES_MATCHING PATTERN "fred-server"
+    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/test/deprecated/ DESTINATION ${DISTRO_PREFIX}share/doc/fred-server FILES_MATCHING PATTERN "example_payments.xml")
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/test/deprecated/ DESTINATION ${DISTRO_PREFIX}share/doc/fred-server FILES_MATCHING PATTERN "test_file.pdf")
