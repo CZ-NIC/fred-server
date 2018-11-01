@@ -34,9 +34,11 @@ namespace Test {
 struct CreateZoneNsFixture
 {
     std::string zone;
+    std::string nameserver_fqdn;
 
     CreateZoneNsFixture(::LibFred::OperationContext& _ctx)
-        : zone(RandomDataGenerator().xstring(3))
+        : zone(RandomDataGenerator().xstring(3)),
+          nameserver_fqdn("a.ns.nic." + zone)
     {
     }
 
@@ -47,7 +49,7 @@ struct CreateZoneNsFixture
 
 BOOST_FIXTURE_TEST_SUITE(TestCreateZoneNs, SupplyFixtureCtx<CreateZoneNsFixture>)
 
-size_t exists_new_zone_ns(const std::string& _zone, ::LibFred::OperationContext& _ctx)
+std::size_t exists_new_zone_ns(const std::string& _zone, ::LibFred::OperationContext& _ctx)
 {
     const Database::Result db_result = _ctx.get_conn().exec_params(
             "SELECT 1 FROM zone_ns AS zn "
@@ -59,7 +61,7 @@ size_t exists_new_zone_ns(const std::string& _zone, ::LibFred::OperationContext&
 
 BOOST_AUTO_TEST_CASE(set_nonexistent_zone)
 {
-    BOOST_CHECK_THROW(::LibFred::Zone::CreateZoneNs(zone)
+    BOOST_CHECK_THROW(::LibFred::Zone::CreateZoneNs(zone, nameserver_fqdn)
             .exec(ctx),
             ::LibFred::Zone::NonExistentZone);
 }
@@ -67,7 +69,7 @@ BOOST_AUTO_TEST_CASE(set_nonexistent_zone)
 BOOST_AUTO_TEST_CASE(set_min_create_zone_ns)
 {
     ::LibFred::Zone::CreateZone(zone, 6, 12).exec(ctx);
-    ::LibFred::Zone::CreateZoneNs(zone).exec(ctx);
+    ::LibFred::Zone::CreateZoneNs(zone, nameserver_fqdn).exec(ctx);
     BOOST_CHECK_EQUAL(exists_new_zone_ns(zone, ctx), 1);
 }
 
@@ -75,18 +77,15 @@ BOOST_AUTO_TEST_CASE(set_max_create_zone_ns)
 {
     std::vector<boost::asio::ip::address> ns_ip_addrs;
     ::LibFred::Zone::CreateZone(zone, 6, 12).exec(ctx);
-    ::LibFred::Zone::CreateZoneNs(zone)
-            .set_nameserver_fqdn("a.ns.nic." + zone)
+    ::LibFred::Zone::CreateZoneNs(zone, nameserver_fqdn)
             .exec(ctx);
     ns_ip_addrs.push_back(boost::asio::ip::address::from_string("1.2.3.4"));
-    ::LibFred::Zone::CreateZoneNs(zone)
-            .set_nameserver_fqdn("b.ns.nic." + zone)
+    ::LibFred::Zone::CreateZoneNs(zone, "b.ns.nic." + zone)
             .set_nameserver_ip_addresses(ns_ip_addrs)
             .exec(ctx);
     ns_ip_addrs.push_back(boost::asio::ip::address::from_string("5.6.7.8"));
     ns_ip_addrs.push_back(boost::asio::ip::address::from_string("9.9.9.9"));
-    ::LibFred::Zone::CreateZoneNs(zone)
-            .set_nameserver_fqdn("c.ns.nic." + zone)
+    ::LibFred::Zone::CreateZoneNs(zone, "c.ns.nic." + zone)
             .set_nameserver_ip_addresses(ns_ip_addrs)
             .exec(ctx);
     BOOST_CHECK_EQUAL(exists_new_zone_ns(zone, ctx), 3);

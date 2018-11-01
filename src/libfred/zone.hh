@@ -249,11 +249,6 @@ namespace LibFred
               int _minimum = 7200,
               const std::string& _ns_fqdn = "localhost") = 0;
 
-      virtual void addZoneNs(
-              const std::string& _zone,
-              const std::string& _fqdn = "localhost",
-              const std::string& _addr = "") = 0;
-
       virtual void addPrice(
               int zone,
               const std::string& operation,

@@ -1546,13 +1546,15 @@ public:
         cfg_opts->add_options()
             ("zone_ns_add", "add new nameserver to the zone")
             ("zone_fqdn", boost::program_options
-                ::value<Checked::string>()->notifier(save_arg<std::string>(params.zone_fqdn)),
+                ::value<Checked::string>()->required()
+                ->notifier(save_arg<std::string>(params.zone_fqdn)),
                 "zone fqdn")
             ("ns_fqdn", boost::program_options
-                ::value<Checked::string>()->notifier(save_arg<std::string>(params.ns_fqdn)),
+                ::value<Checked::string>()->required()
+                ->notifier(save_arg<std::string>(params.ns_fqdn)),
                 "nameserver fqdn")
             ("addr", boost::program_options
-                ::value<Checked::ip_addresses>() ->multitoken()
+                ::value<Checked::ip_addresses>()->multitoken()
                 ->notifier(save_arg<std::vector<boost::asio::ip::address> >(params.addrs)),
                 "nameserver addresses");
         return cfg_opts;

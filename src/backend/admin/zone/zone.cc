@@ -66,8 +66,7 @@ void add_zone_ns(
 {
     LibFred::OperationContextCreator ctx;
 
-    LibFred::Zone::CreateZoneNs(_zone_fqdn)
-            .set_nameserver_fqdn(_nameserver_fqdn)
+    LibFred::Zone::CreateZoneNs(_zone_fqdn, _nameserver_fqdn)
             .set_nameserver_ip_addresses(_nameserver_ip_addresses)
             .exec(ctx);
 

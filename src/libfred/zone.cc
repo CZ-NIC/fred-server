@@ -1048,46 +1048,6 @@ namespace LibFred
         }
       }
 
-      void addZoneNs(
-              const std::string& _zone_fqdn,
-              const std::string& _nameserver_fqdn,
-              const std::string& _nameserver_ip_addresses) final override
-      {
-          try
-          {
-              OperationContextCreator ctx;
-
-              if (!_nameserver_ip_addresses.empty())
-              {
-                  std::vector<std::string> addrs;
-                  boost::split(addrs, _nameserver_ip_addresses, boost::is_any_of(","));
-
-                  std::vector<boost::asio::ip::address> ip_addrs;
-                  std::for_each(addrs.begin(),
-                          addrs.end(),
-                          [&ip_addrs](const std::string& s)
-                                { ip_addrs.push_back(boost::asio::ip::address::from_string(s)); });
-
-                  CreateZoneNs(_zone_fqdn)
-                          .set_nameserver_fqdn(_nameserver_fqdn)
-                          .set_nameserver_ip_addresses(ip_addrs)
-                          .exec(ctx);
-              }
-              else
-              {
-                  CreateZoneNs(_zone_fqdn)
-                          .set_nameserver_fqdn(_nameserver_fqdn)
-                          .exec(ctx);
-              }
-              ctx.commit_transaction();
-          }
-          catch (...)
-          {
-              LOGGER(PACKAGE).error("addZoneNs: an error has occured");
-              throw;
-          }
-      }
-
     virtual void addPrice(
             int zone_id,
             const std::string& operation,

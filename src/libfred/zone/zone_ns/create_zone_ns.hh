@@ -22,7 +22,6 @@
 #include "src/libfred/opcontext.hh"
 
 #include <boost/asio/ip/address.hpp>
-#include <boost/optional.hpp>
 #include <string>
 #include <vector>
 
@@ -32,9 +31,7 @@ namespace Zone {
 class CreateZoneNs
 {
 public:
-    explicit CreateZoneNs(const std::string& _zone_fqdn);
-
-    CreateZoneNs& set_nameserver_fqdn(const boost::optional<std::string>& _nameserver_fqdn);
+    CreateZoneNs(const std::string& _zone_fqdn, const std::string& _nameserver_fqdn);
 
     CreateZoneNs& set_nameserver_ip_addresses(
             const std::vector<boost::asio::ip::address>& _nameserver_ip_addresses);
@@ -42,7 +39,7 @@ public:
     unsigned long long exec(OperationContext& _ctx) const;
 private:
     std::string zone_fqdn_;
-    boost::optional<std::string> nameserver_fqdn_;
+    std::string nameserver_fqdn_;
     std::vector<boost::asio::ip::address> nameserver_ip_addresses_;
 };
 

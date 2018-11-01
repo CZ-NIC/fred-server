@@ -34,7 +34,7 @@ BOOST_AUTO_TEST_SUITE(Admin)
 BOOST_AUTO_TEST_SUITE(Zone)
 BOOST_AUTO_TEST_SUITE(TestAdminAddZoneNs)
 
-unsigned int exists_zone_ns(
+std::size_t exists_zone_ns(
         const unsigned long long _zone_id,
         const std::string& _fqdn,
         const std::vector<boost::asio::ip::address>& _addrs)
