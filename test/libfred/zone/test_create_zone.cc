@@ -46,13 +46,21 @@ struct create_zone_fixture
 
 BOOST_FIXTURE_TEST_SUITE(TestCreateZone, SupplyFixtureCtx<create_zone_fixture>)
 
-size_t exists_new_zone(const std::string& _fqdn, ::LibFred::OperationContext& _ctx)
+unsigned long long get_zone_id(::LibFred::OperationContext& _ctx,
+        const std::string& _fqdn,
+        const int _ex_min,
+        const int _ex_max,
+        const bool _warn_letter = true,
+        const int _val_period = 0)
 {
     const Database::Result db_result = _ctx.get_conn().exec_params(
-            "SELECT 1 FROM zone AS z "
-            "WHERE z.fqdn = LOWER($1::text)",
-            Database::query_param_list(_fqdn));
-    return db_result.size();
+            "SELECT id FROM zone AS z "
+            "WHERE z.fqdn = LOWER($1::text) "
+            "AND z.ex_period_min = $2::integer "
+            "AND z.ex_period_max = $3::integer ",
+            Database::query_param_list(_fqdn)(_ex_min)(_ex_max));
+    const auto id = static_cast<unsigned long long>(db_result[0][0]);
+    return id;
 }
 
 
@@ -74,33 +82,33 @@ BOOST_AUTO_TEST_CASE(set_create_duplicate_zone)
 
 BOOST_AUTO_TEST_CASE(set_min_create_zone)
 {
-   ::LibFred::Zone::CreateZone(fqdn, ex_period_min, ex_period_max).exec(ctx);
-   BOOST_CHECK_EQUAL(exists_new_zone(fqdn, ctx), 1);
+   const unsigned long long id = ::LibFred::Zone::CreateZone(fqdn, ex_period_min, ex_period_max).exec(ctx);
+   BOOST_CHECK_EQUAL(get_zone_id(ctx, fqdn, ex_period_min, ex_period_max), id);
 }
 
 BOOST_AUTO_TEST_CASE(set_max_create_zone)
 {
-   ::LibFred::Zone::CreateZone(fqdn, ex_period_min, ex_period_max)
+   const unsigned long long id = ::LibFred::Zone::CreateZone(fqdn, ex_period_min, ex_period_max)
            .set_sending_warning_letter(true)
            .exec(ctx);
-   BOOST_CHECK_EQUAL(exists_new_zone(fqdn, ctx), 1);
+   BOOST_CHECK_EQUAL(get_zone_id(ctx, fqdn, ex_period_min, ex_period_max), id);
 }
 
 BOOST_AUTO_TEST_CASE(set_min_create_enum_zone)
 {
-    const std::string fqdn = "0.3.4.e164.arpa";
-    ::LibFred::Zone::CreateZone(fqdn, ex_period_min, ex_period_max).exec(ctx);
-    BOOST_CHECK_EQUAL(exists_new_zone(fqdn, ctx), 1);
+    fqdn = "0.3.4.e164.arpa";
+    const unsigned long long id = ::LibFred::Zone::CreateZone(fqdn, ex_period_min, ex_period_max).exec(ctx);
+    BOOST_CHECK_EQUAL(get_zone_id(ctx, fqdn, ex_period_min, ex_period_max, true, 6), id);
 }
 
 BOOST_AUTO_TEST_CASE(set_max_create_enum_zone)
 {
-    const std::string fqdn = "1.2.E164.ArpA";
-    ::LibFred::Zone::CreateZone(fqdn, ex_period_min, ex_period_max)
+    fqdn = "1.2.E164.ArpA";
+    const unsigned long long id = ::LibFred::Zone::CreateZone(fqdn, ex_period_min, ex_period_max)
             .set_enum_validation_period_in_months(5)
             .set_sending_warning_letter(false)
             .exec(ctx);
-    BOOST_CHECK_EQUAL(exists_new_zone(fqdn, ctx), 1);
+    BOOST_CHECK_EQUAL(get_zone_id(ctx, fqdn, ex_period_min, ex_period_max, false, 5), id);
 }
 
 BOOST_AUTO_TEST_SUITE_END();

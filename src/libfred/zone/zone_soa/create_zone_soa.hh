@@ -30,33 +30,29 @@ namespace Zone {
 class CreateZoneSoa
 {
 public:
-    explicit CreateZoneSoa(const std::string& _fqdn);
+    CreateZoneSoa(const std::string& _fqdn, const std::string& _hostmaster, const std::string& _ns_fqdn);
 
-    CreateZoneSoa& set_ttl(boost::optional<int> _ttl);
+    CreateZoneSoa& set_ttl(boost::optional<unsigned long> _ttl);
 
-    CreateZoneSoa& set_hostmaster(const boost::optional<std::string>& _hostmaster);
+    CreateZoneSoa& set_refresh(boost::optional<unsigned long> _refresh);
 
-    CreateZoneSoa& set_refresh(boost::optional<int> _refresh);
+    CreateZoneSoa& set_update_retr(boost::optional<unsigned long> _update_retr);
 
-    CreateZoneSoa& set_update_retr(boost::optional<int> _update_retr);
+    CreateZoneSoa& set_expiry(boost::optional<unsigned long> _expiry);
 
-    CreateZoneSoa& set_expiry(boost::optional<int> _expiry);
-
-    CreateZoneSoa& set_minimum(boost::optional<int> _minimum);
-
-    CreateZoneSoa& set_ns_fqdn(const boost::optional<std::string>& _ns_fqdn);
+    CreateZoneSoa& set_minimum(boost::optional<unsigned long> _minimum);
 
     unsigned long long exec(OperationContext& _ctx) const;
 
 private:
     std::string fqdn_;
-    boost::optional<int> ttl_;
-    boost::optional<std::string> hostmaster_;
-    boost::optional<int> refresh_;
-    boost::optional<int> update_retr_;
-    boost::optional<int> expiry_;
-    boost::optional<int> minimum_;
-    boost::optional<std::string> ns_fqdn_;
+    std::string hostmaster_;
+    std::string ns_fqdn_;
+    boost::optional<unsigned long> ttl_;
+    boost::optional<unsigned long> refresh_;
+    boost::optional<unsigned long> update_retr_;
+    boost::optional<unsigned long> expiry_;
+    boost::optional<unsigned long> minimum_;
 
 };
 

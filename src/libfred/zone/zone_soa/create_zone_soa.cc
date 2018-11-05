@@ -17,68 +17,49 @@
  */
 
 #include "src/libfred/zone/info_zone.hh"
+#include "src/libfred/zone/zone_soa/default_values.hh"
 #include "src/libfred/zone/zone_soa/create_zone_soa.hh"
 #include "src/libfred/zone/zone_soa/exceptions.hh"
 
 namespace LibFred {
 namespace Zone {
 
-namespace {
-constexpr int seconds_per_hour = 60 * 60;
-
-constexpr int default_ttl_in_seconds = 5 * seconds_per_hour;
-const std::string default_hostmaster = "hostmaster@localhost";
-constexpr int default_refresh_in_seconds  = 3 * seconds_per_hour;
-constexpr int default_update_retr_in_seconds = seconds_per_hour;
-constexpr int default_expiry_in_seconds = 2 * 7 * 24 * seconds_per_hour;
-constexpr int default_minimum_in_seconds = 2 * seconds_per_hour;
-const std::string default_ns_fqdn = "localhost";
-}
-
-CreateZoneSoa::CreateZoneSoa(const std::string& _fqdn)
-        : fqdn_(_fqdn)
+CreateZoneSoa::CreateZoneSoa(const std::string& _fqdn,
+        const std::string& _hostmaster,
+        const std::string& _ns_fqdn)
+        : fqdn_(_fqdn),
+          hostmaster_(_hostmaster),
+          ns_fqdn_(_ns_fqdn)
 {
 }
 
-CreateZoneSoa& CreateZoneSoa::set_ttl(const boost::optional<int> _ttl)
+CreateZoneSoa& CreateZoneSoa::set_ttl(const boost::optional<unsigned long> _ttl)
 {
     ttl_ = _ttl;
     return *this;
 }
 
-CreateZoneSoa& CreateZoneSoa::set_hostmaster(const boost::optional<std::string>& _hostmaster)
-{
-    hostmaster_ = _hostmaster;
-    return *this;
-}
-
-CreateZoneSoa& CreateZoneSoa::set_refresh(const boost::optional<int> _refresh)
+CreateZoneSoa& CreateZoneSoa::set_refresh(const boost::optional<unsigned long> _refresh)
 {
     refresh_ = _refresh;
     return *this;
 }
 
-CreateZoneSoa& CreateZoneSoa::set_update_retr(const boost::optional<int> _update_retr)
+CreateZoneSoa& CreateZoneSoa::set_update_retr(const boost::optional<unsigned long> _update_retr)
 {
     update_retr_ = _update_retr;
     return *this;
 }
 
-CreateZoneSoa& CreateZoneSoa::set_expiry(const boost::optional<int> _expiry)
+CreateZoneSoa& CreateZoneSoa::set_expiry(const boost::optional<unsigned long> _expiry)
 {
     expiry_ = _expiry;
     return *this;
 }
 
-CreateZoneSoa& CreateZoneSoa::set_minimum(const boost::optional<int> _minimum)
+CreateZoneSoa& CreateZoneSoa::set_minimum(const boost::optional<unsigned long> _minimum)
 {
     minimum_ = _minimum;
-    return *this;
-}
-
-CreateZoneSoa& CreateZoneSoa::set_ns_fqdn(const boost::optional<std::string>& _ns_fqdn)
-{
-    ns_fqdn_ = _ns_fqdn;
     return *this;
 }
 
@@ -108,17 +89,17 @@ unsigned long long CreateZoneSoa::exec(OperationContext& _ctx) const
                 // clang-format on
                 Database::query_param_list(zone_id)
                                         (ttl_.get_value_or(default_ttl_in_seconds))
-                                        (hostmaster_.get_value_or(default_hostmaster))
+                                        (hostmaster_)
                                         (refresh_.get_value_or(default_refresh_in_seconds))
                                         (update_retr_.get_value_or(default_update_retr_in_seconds))
                                         (expiry_.get_value_or(default_expiry_in_seconds))
                                         (minimum_.get_value_or(default_minimum_in_seconds))
-                                        (ns_fqdn_.get_value_or(default_ns_fqdn))
+                                        (ns_fqdn_)
                 );
 
         if (insert_result.size() == 1)
         {
-            const unsigned long long id = static_cast<unsigned long long>(insert_result[0][0]);
+            const auto id = static_cast<unsigned long long>(insert_result[0][0]);
             return id;
         }
     }

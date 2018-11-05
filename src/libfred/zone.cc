@@ -1029,14 +1029,12 @@ namespace LibFred
 
             LibFred::Zone::CreateZone(_fqdn, _ex_period_min, _ex_period_max).exec(ctx);
 
-            LibFred::Zone::CreateZoneSoa(_fqdn)
+            LibFred::Zone::CreateZoneSoa(_fqdn, _hostmaster, _ns_fqdn)
                     .set_ttl(_ttl)
-                    .set_hostmaster(_hostmaster)
                     .set_refresh(_refresh)
                     .set_update_retr(_update_retr)
                     .set_expiry(_expiry)
                     .set_minimum(_minimum)
-                    .set_ns_fqdn(_ns_fqdn)
                     .exec(ctx);
 
             ctx.commit_transaction();

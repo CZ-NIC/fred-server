@@ -33,8 +33,8 @@ class CreateZone
 public:
     CreateZone(
             const std::string& _fqdn,
-            int _expiration_period_min_in_months,
-            int _expiration_period_max_in_months);
+            unsigned short _expiration_period_min_in_months,
+            unsigned short _expiration_period_max_in_months);
 
     CreateZone& set_enum_validation_period_in_months(boost::optional<int> _enum_validation_period_in_months);
 
@@ -44,8 +44,8 @@ public:
 
 private:
     std::string fqdn_;
-    int expiration_period_min_in_months_;
-    int expiration_period_max_in_months_;
+    unsigned short expiration_period_min_in_months_;
+    unsigned short expiration_period_max_in_months_;
     boost::optional<bool> sending_warning_letter_;
     boost::optional<int> enum_validation_period_in_months_;
 };

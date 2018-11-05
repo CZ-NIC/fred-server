@@ -48,7 +48,8 @@ struct info_zone_fixture
                 non_enum_zone.fqdn,
                 non_enum_zone.expiration_period_min_in_months,
                 non_enum_zone.expiration_period_max_in_months)
-                                   .exec(_ctx);
+                    .set_sending_warning_letter(non_enum_zone.sending_warning_letter)
+                    .exec(_ctx);
 
         enum_zone.fqdn = "3.2.1.e164.arpa";
         enum_zone.expiration_period_max_in_months = 12;

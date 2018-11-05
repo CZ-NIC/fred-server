@@ -37,28 +37,28 @@
 struct ZoneAddArgs
 {
     std::string zone_fqdn;
-    optional_ulong ex_period_min;
-    optional_ulong ex_period_max;
-    optional_ulong ttl;
-    optional_string hostmaster;
-    optional_ulong update_retr;
-    optional_ulong refresh;
-    optional_ulong expiry;
-    optional_ulong minimum;
-    optional_string ns_fqdn;
+    unsigned short ex_period_min;
+    unsigned short ex_period_max;
+    unsigned long ttl;
+    std::string hostmaster;
+    unsigned long update_retr;
+    unsigned long refresh;
+    unsigned long expiry;
+    unsigned long minimum;
+    std::string ns_fqdn;
 
     ZoneAddArgs()
     {}//ctor
     ZoneAddArgs( const std::string& _zone_fqdn
-            , const optional_ulong& _ex_period_min
-            , const optional_ulong& _ex_period_max
-            , const optional_ulong& _ttl
-            , const optional_string& _hostmaster
-            , const optional_ulong& _update_retr
-            , const optional_ulong& _refresh
-            , const optional_ulong& _expiry
-            , const optional_ulong& _minimum
-            , const optional_string& _ns_fqdn
+            , const unsigned short _ex_period_min
+            , const unsigned short _ex_period_max
+            , const unsigned long _ttl
+            , const std::string& _hostmaster
+            , const unsigned long _update_retr
+            , const unsigned long _refresh
+            , const unsigned long _expiry
+            , const unsigned long _minimum
+            , const std::string& _ns_fqdn
             )
     : zone_fqdn(_zone_fqdn)
     , ex_period_min(_ex_period_min)

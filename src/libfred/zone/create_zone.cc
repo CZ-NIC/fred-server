@@ -25,8 +25,8 @@ namespace Zone {
 
 CreateZone::CreateZone(
         const std::string& _fqdn,
-        int _expiration_period_min_in_months,
-        int _expiration_period_max_in_months)
+        unsigned short _expiration_period_min_in_months,
+        unsigned short _expiration_period_max_in_months)
     : fqdn_(_fqdn),
       expiration_period_min_in_months_(_expiration_period_min_in_months),
       expiration_period_max_in_months_(_expiration_period_max_in_months)

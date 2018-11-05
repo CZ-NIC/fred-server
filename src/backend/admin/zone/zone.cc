@@ -25,35 +25,33 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/asio.hpp>
+#include <boost/optional.hpp>
 #include <vector>
 
 namespace Admin {
 namespace Zone {
 
-void add_zone(
-        const std::string& _fqdn,
-        int _expiration_period_min,
-        int _expiration_period_max,
-        int _ttl,
+void add_zone(const std::string& _fqdn,
+        const unsigned short _expiration_period_min,
+        const unsigned short _expiration_period_max,
         const std::string& _hostmaster,
-        int _refresh,
-        int _update_retr,
-        int _expiry,
-        int _minimum,
-        const std::string& _ns_fqdn)
+        const std::string& _ns_fqdn,
+        const boost::optional<unsigned long> _ttl,
+        const boost::optional<unsigned long> _refresh,
+        const boost::optional<unsigned long> _update_retr,
+        const boost::optional<unsigned long> _expiry,
+        const boost::optional<unsigned long> _minimum)
 {
     LibFred::OperationContextCreator ctx;
 
     LibFred::Zone::CreateZone(_fqdn, _expiration_period_min, _expiration_period_max).exec(ctx);
 
-    LibFred::Zone::CreateZoneSoa(_fqdn)
+    LibFred::Zone::CreateZoneSoa(_fqdn, _hostmaster, _ns_fqdn)
             .set_ttl(_ttl)
-            .set_hostmaster(_hostmaster)
             .set_refresh(_refresh)
             .set_update_retr(_update_retr)
             .set_expiry(_expiry)
             .set_minimum(_minimum)
-            .set_ns_fqdn(_ns_fqdn)
             .exec(ctx);
 
     ctx.commit_transaction();
