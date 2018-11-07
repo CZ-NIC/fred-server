@@ -30,7 +30,7 @@ clients.
 %{?scl:scl enable devtoolset-7 llvm-toolset-7 - << \EOF}
 %global __cmake /opt/rh/llvm-toolset-7/root/usr/bin/cmake
 %endif
-%cmake -DCMAKE_INSTALL_PREFIX=/ -DDISTRO_PREFIX=usr/ -DDO_NOT_INSTALL_TESTS=1 -DVERSION=%{version} -DIDL_DIR=%{_topdir}/BUILD/idl-%{idl_branch}/idl .
+%cmake -DCMAKE_INSTALL_PREFIX=/ -DUSE_USR_PREFIX=1 -DDO_NOT_INSTALL_TESTS=1 -DVERSION=%{version} -DIDL_DIR=%{_topdir}/BUILD/idl-%{idl_branch}/idl .
 %make_build
 %if 0%{?centos}
 %{?scl:EOF}
