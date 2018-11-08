@@ -265,7 +265,7 @@ RegistrarClient::registrar_create_certification()
     const std::string cert_eval_file_mimetype =
             registrar_create_certification_params_.certification_evaluation_mime_type;//REGISTRAR_CERTIFICATION_EVALUATION_MIME_TYPE_NAME
 
-    const int score = registrar_create_certification_params_.certification_score;//REGISTRAR_CERTIFICATION_SCORE_NAME
+    const unsigned short score = registrar_create_certification_params_.certification_score;//REGISTRAR_CERTIFICATION_SCORE_NAME
     if((score < 0) || (score > 5))
         throw std::runtime_error("Invalid value of score");
 

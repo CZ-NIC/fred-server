@@ -26,6 +26,22 @@
 
 #include "src/util/base_exception.hh"
 
+struct InvalidDateFrom : std::exception
+{
+    virtual const char* what() const noexcept
+    {
+        return "date from is not a date time";
+    }
+};
+
+struct InvalidDateTo : std::exception
+{
+    virtual const char* what() const noexcept
+    {
+        return "end date is not a date time";
+    }
+};
+
 struct WrongIntervalOrder : std::exception
 {
     virtual const char* what() const noexcept
@@ -47,14 +63,6 @@ struct CertificationInPast : std::exception
     virtual const char* what() const noexcept
     {
         return "end date is earlier than current date";
-    }
-};
-
-struct CertificationExtension : std::exception
-{
-    virtual const char* what() const noexcept
-    {
-        return "end date is later than latter value";
     }
 };
 

@@ -108,14 +108,14 @@ BOOST_AUTO_TEST_CASE(certification_in_past)
         CertificationInPast);
 }
 
-BOOST_AUTO_TEST_CASE(certification_extension)
+BOOST_AUTO_TEST_CASE(invalid_date_until)
 {
     LibFred::OperationContextCreator ctx;
     LibFred::Registrar::UpdateRegistrarCertification(certification_id, valid_until).exec(ctx);
-    valid_until += boost::gregorian::date_duration(1);
+    valid_until = boost::gregorian::date(not_a_date_time);
     BOOST_CHECK_THROW(
         LibFred::Registrar::UpdateRegistrarCertification(certification_id, valid_until).exec(ctx),
-        CertificationExtension);
+        InvalidDateTo);
 }
 
 BOOST_AUTO_TEST_CASE(wrong_interval_order)

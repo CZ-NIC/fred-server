@@ -47,7 +47,7 @@ struct test_get_certifications_fixture : virtual public Test::instantiate_db_tem
                 "VALUES ('update_file', "
                 "CONCAT(TO_CHAR(current_timestamp, 'YYYY/fmMM/fmD'), '/', CURRVAL('files_id_seq'::regclass))::text, "
                 "0, 6) RETURNING id;")[0][0];
-        int score = 1;
+        unsigned score = 1;
         unsigned date_duration = 10;
         LibFred::Registrar::RegistrarCertification rc;
         rc.valid_from = boost::gregorian::day_clock::local_day();

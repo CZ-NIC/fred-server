@@ -1358,10 +1358,12 @@ class HandleAdminClientRegistrarCreateCertificationArgsGrp : public HandleComman
 {
 public:
     RegistrarCreateCertificationArgs params;
+
     CommandDescription get_command_option()
     {
         return CommandDescription("registrar_create_certification");
     }
+
     std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
@@ -1372,26 +1374,26 @@ public:
             ("registrar_create_certification", "create registrar certification")
             ("certification_evaluation", boost::program_options
                 ::value<Checked::string>()->required()
-                ->notifier(save_arg<std::string>(params.certification_evaluation))
-                , "registrar certification evaluation pdf file")
+                ->notifier(save_arg<std::string>(params.certification_evaluation)),
+                "registrar certification evaluation pdf file")
             ("certification_evaluation_mime_type", boost::program_options
                 ::value<Checked::string>()->required()
-                ->notifier(save_arg<std::string>(params.certification_evaluation_mime_type))
-                , "registrar certification evaluation file MIME type")
+                ->notifier(save_arg<std::string>(params.certification_evaluation_mime_type)),
+                "registrar certification evaluation file MIME type")
             ("certification_score", boost::program_options
-                ::value<Checked::ulong>()->required()
-                ->notifier(save_arg<long>(params.certification_score))
-                , "registrar certification score 0 - 5")
+                ::value<Checked::ushort>()->required()
+                ->notifier(save_arg<ushort>(params.certification_score)),
+                "registrar certification score 0 - 5")
             ("handle", boost::program_options
-                ::value<Checked::string>()->required()->notifier(save_arg<std::string>(params.handle))
-                , "registrar handle")
+                ::value<Checked::string>()->required()
+                ->notifier(save_arg<std::string>(params.handle)),
+                "registrar handle")
             ("from_date", boost::program_options
-                ::value<Checked::string>()->notifier(save_optional_string(params.from_date))
-                , "from date (default today)")
+                ::value<Checked::string>()->notifier(save_optional_string(params.from_date)),
+                "from date (default today)")
             ("to_date", boost::program_options
-                ::value<Checked::string>()->notifier(save_optional_string(params.to_date))
-                , "to date (default not filled)")
-                ;
+                ::value<Checked::string>()->notifier(save_optional_string(params.to_date)),
+                "to date (default not filled)");
         return cfg_opts;
     }//get_options_description
     std::size_t handle( int argc, char* argv[],  FakedArgs &fa

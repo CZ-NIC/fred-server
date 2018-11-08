@@ -27,7 +27,7 @@
 #include "src/libfred/opcontext.hh"
 #include "src/libfred/registrar/certification/registrar_certification_type.hh"
 
-#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
 
 namespace LibFred {
 namespace Registrar {
