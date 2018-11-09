@@ -22,9 +22,7 @@
 namespace LibFred {
 namespace Zone {
 
-namespace {
 constexpr int seconds_per_hour = 60 * 60;
-} // namespace LibFred::Zone::{anonymous}
 
 constexpr unsigned long default_ttl_in_seconds = 5 * seconds_per_hour;
 constexpr unsigned long default_refresh_in_seconds  = 3 * seconds_per_hour;
