@@ -1171,15 +1171,15 @@ public:
             ("ex_period_min", boost::program_options
                 ::value<Checked::ushort>()->default_value(12)
                 ->notifier(save_arg<unsigned short>(params.ex_period_min)),
-                "minimal prolongation of the period of domains validity in months")
+                "minimal prolongation of the period of domains validity (in months)")
             ("ex_period_max", boost::program_options
                 ::value<Checked::ushort>()->default_value(120)
                 ->notifier(save_arg<unsigned short>(params.ex_period_max)),
-                "minimal prolongation of the period of domains validity in months")
+                "maximal prolongation of the period of domains validity (in months)")
             ("ttl", boost::program_options
                 ::value<Checked::ulong>()->default_value(18000)
                 ->notifier(save_arg<unsigned long>(params.ttl)),
-                "time to live - default validity period of records in the zone in seconds")
+                "time to live - the default validity period of resource records in the zone (in seconds)")
             ("hostmaster", boost::program_options
                 ::value<Checked::string>()->required()
                 ->notifier(save_arg<std::string>(params.hostmaster)),
@@ -1187,19 +1187,19 @@ public:
             ("update_retr", boost::program_options
                 ::value<Checked::ulong>()->default_value(300)
                 ->notifier(save_arg<unsigned long>(params.update_retr)),
-                "retry interval of secondary nameservers zone update (in case of failed zone refresh) in seconds")
+                "retry interval of zone update for secondary nameservers in case of failed zone refresh (in seconds)")
             ("refresh", boost::program_options
                 ::value<Checked::ulong>()->default_value(900)
                 ->notifier(save_arg<unsigned long>(params.refresh)),
-                "secondary nameservers copy of zone refresh interval in seconds")
+                "secondary nameservers copy of zone refresh interval (in seconds)")
             ("expiry", boost::program_options
                 ::value<Checked::ulong>()->default_value(604800)
                 ->notifier(save_arg<unsigned long>(params.expiry)),
-                "zone expiration period for secondary nameservers in seconds")
+                "zone expiration period for secondary nameservers (in seconds)")
             ("minimum", boost::program_options
                 ::value<Checked::ulong>()->default_value(900)
                 ->notifier(save_arg<unsigned long>(params.minimum)),
-                "the time a non-existent domain result may be cached by any resolver in second")
+                "the period for which a result of a non-existent domain should be cached by resolvers (in seconds)")
             ("ns_fqdn", boost::program_options
                 ::value<Checked::string>()->required()
                 ->notifier(save_arg<std::string>(params.ns_fqdn)),
