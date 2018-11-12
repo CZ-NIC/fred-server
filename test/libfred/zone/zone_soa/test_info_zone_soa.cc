@@ -21,6 +21,7 @@
 #include "src/libfred/zone/create_zone.hh"
 #include "src/libfred/zone/exceptions.hh"
 #include "src/libfred/zone/zone_soa/create_zone_soa.hh"
+#include "src/libfred/zone/zone_soa/default_values.hh"
 #include "src/libfred/zone/zone_soa/info_zone_soa_data.hh"
 #include "src/libfred/zone/zone_soa/info_zone_soa.hh"
 #include "src/libfred/zone/zone_soa/exceptions.hh"
@@ -43,24 +44,22 @@ struct InfoZoneSoaFixture
     InfoZoneSoaFixture(::LibFred::OperationContext& _ctx)
             :fqdn(RandomDataGenerator().xstring(3))
     {
-        zone_soa.ttl = new_ttl_in_seconds;
-        zone_soa.hostmaster = new_hostmaster;
-        zone_soa.refresh = new_refresh_in_seconds;
-        zone_soa.update_retr = new_update_retr_in_seconds;
-        zone_soa.expiry = new_expiry_in_seconds;
-        zone_soa.minimum = new_minimum_in_seconds;
-        zone_soa.ns_fqdn = new_ns_fqdn;
+        zone_soa.ttl = ::LibFred::Zone::default_ttl_in_seconds;
+        zone_soa.hostmaster = "hostmaster@nic.cz";
+        zone_soa.refresh = ::LibFred::Zone::default_refresh_in_seconds;
+        zone_soa.update_retr = ::LibFred::Zone::default_update_retr_in_seconds;
+        zone_soa.expiry = ::LibFred::Zone::default_expiry_in_seconds;
+        zone_soa.minimum = ::LibFred::Zone::default_minimum_in_seconds;
+        zone_soa.ns_fqdn = "a.ns.nic.cz";
 
         zone_soa.zone = ::LibFred::Zone::CreateZone(fqdn, 6, 12).exec(_ctx);
 
-        ::LibFred::Zone::CreateZoneSoa(fqdn)
+        ::LibFred::Zone::CreateZoneSoa(fqdn, zone_soa.hostmaster, zone_soa.ns_fqdn)
                 .set_ttl(zone_soa.ttl)
-                .set_hostmaster(zone_soa.hostmaster)
                 .set_refresh(zone_soa.refresh)
                 .set_update_retr(zone_soa.update_retr)
                 .set_expiry(zone_soa.expiry)
                 .set_minimum(zone_soa.minimum)
-                .set_ns_fqdn(zone_soa.ns_fqdn)
                 .exec(_ctx);
     }
     ~InfoZoneSoaFixture()

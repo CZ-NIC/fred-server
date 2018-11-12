@@ -45,15 +45,11 @@ struct InfoZoneNsFixture
 
         std::transform(zone.begin(), zone.end(), zone.begin(), ::tolower);
 
-        info_zone_ns.nameserver_fqdn = "localhost";
+        info_zone_ns.nameserver_fqdn = "a.ns.nic." + zone;
 
         std::vector<boost::asio::ip::address> ns_ip_addrs;
         info_zone_ns.nameserver_ip_addresses = ns_ip_addrs;
 
-        info_zone_ns.id = ::LibFred::Zone::CreateZoneNs(zone)
-                .set_nameserver_fqdn(info_zone_ns.nameserver_fqdn)
-                .set_nameserver_ip_addresses(info_zone_ns.nameserver_ip_addresses)
-                .exec(_ctx);
     }
 
     ~InfoZoneNsFixture()
@@ -66,14 +62,13 @@ BOOST_FIXTURE_TEST_SUITE(TestInfoZoneNs, SupplyFixtureCtx<InfoZoneNsFixture>)
 
 BOOST_AUTO_TEST_CASE(set_nonexistent_zone)
 {
-    BOOST_CHECK_THROW(::LibFred::Zone::InfoZoneNs(info_zone_ns.id + RandomDataGenerator().xuint())
-                .exec(ctx),
+    BOOST_CHECK_THROW(::LibFred::Zone::InfoZoneNs(info_zone_ns.id).exec(ctx),
            ::LibFred::Zone::NonExistentZoneNs);
 }
 
 BOOST_AUTO_TEST_CASE(set_min_info_zone_ns)
 {
-    info_zone_ns.id = ::LibFred::Zone::CreateZoneNs(zone).exec(ctx);
+    info_zone_ns.id = ::LibFred::Zone::CreateZoneNs(zone, info_zone_ns.nameserver_fqdn).exec(ctx);
 
     ::LibFred::Zone::InfoZoneNsData zone_ns_info = ::LibFred::Zone::InfoZoneNs(info_zone_ns.id).exec(ctx);
     BOOST_CHECK(info_zone_ns == zone_ns_info);
@@ -81,14 +76,11 @@ BOOST_AUTO_TEST_CASE(set_min_info_zone_ns)
 
 BOOST_AUTO_TEST_CASE(set_all_info_zone_ns)
 {
-    info_zone_ns.nameserver_fqdn = "a.b.c.test." + zone;
-
     std::vector<boost::asio::ip::address> ns_ip_addrs;
     ns_ip_addrs.push_back(boost::asio::ip::address::from_string("1.2.3.4"));
     info_zone_ns.nameserver_ip_addresses = ns_ip_addrs;
 
-    info_zone_ns.id = ::LibFred::Zone::CreateZoneNs(zone)
-            .set_nameserver_fqdn(info_zone_ns.nameserver_fqdn)
+    info_zone_ns.id = ::LibFred::Zone::CreateZoneNs(zone, info_zone_ns.nameserver_fqdn)
             .set_nameserver_ip_addresses(info_zone_ns.nameserver_ip_addresses)
             .exec(ctx);
 
@@ -98,15 +90,13 @@ BOOST_AUTO_TEST_CASE(set_all_info_zone_ns)
 
 BOOST_AUTO_TEST_CASE(set_more_addresses_info_zone_ns)
 {
-    info_zone_ns.nameserver_fqdn = "";
     std::vector<boost::asio::ip::address> ns_ip_addrs;
     ns_ip_addrs.push_back(boost::asio::ip::address::from_string("1.2.3.4"));
     ns_ip_addrs.push_back(boost::asio::ip::address::from_string("5.6.7.8"));
     ns_ip_addrs.push_back(boost::asio::ip::address::from_string("9.9.9.9"));
     info_zone_ns.nameserver_ip_addresses = ns_ip_addrs;
 
-    info_zone_ns.id = ::LibFred::Zone::CreateZoneNs(zone)
-            .set_nameserver_fqdn(info_zone_ns.nameserver_fqdn)
+    info_zone_ns.id = ::LibFred::Zone::CreateZoneNs(zone, info_zone_ns.nameserver_fqdn)
             .set_nameserver_ip_addresses(info_zone_ns.nameserver_ip_addresses)
             .exec(ctx);
 

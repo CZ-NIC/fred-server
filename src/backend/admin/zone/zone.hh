@@ -20,23 +20,23 @@
 #define ZONE_HH_B9DCA511FCD149BB9BEA44F320E7196F
 
 #include <boost/asio.hpp>
+#include <boost/optional.hpp>
 #include <string>
 #include <vector>
 
 namespace Admin {
 namespace Zone {
 
-void add_zone(
-        const std::string& _fqdn,
-        int _expiration_period_min,
-        int _expiration_period_max,
-        int _ttl,
+void add_zone(const std::string& _fqdn,
+        unsigned short _expiration_period_min,
+        unsigned short _expiration_period_max,
         const std::string& _hostmaster,
-        int _refresh,
-        int _update_retr,
-        int _expiry,
-        int _minimum,
-        const std::string& _ns_fqdn);
+        const std::string& _ns_fqdn,
+        boost::optional<unsigned long> _ttl,
+        boost::optional<unsigned long> _refresh,
+        boost::optional<unsigned long> _update_retr,
+        boost::optional<unsigned long> _expiry,
+        boost::optional<unsigned long> _minimum);
 
 void add_zone_ns(
         const std::string& _zone_fqdn_,

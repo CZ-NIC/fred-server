@@ -2993,6 +2993,8 @@ target_link_libraries(test-admin-zone
     types
     timezones)
 target_link_external_libraries(test-admin-zone
+    boost_system
+    boost_unit_test_framework
     boost_program_options
     boost_date_time
     boost_regex
@@ -3001,8 +3003,6 @@ target_link_external_libraries(test-admin-zone
     boost_thread
     threads
     postgres
-    boost_system
-    boost_unit_test_framework
     libidn)
 
 # test-libfred

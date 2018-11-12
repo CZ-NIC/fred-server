@@ -46,12 +46,12 @@ struct UpdateZoneNsFixture
     {
         info_zone_ns.zone_id = ::LibFred::Zone::CreateZone(zone, 6, 12).exec(_ctx);
 
-        info_zone_ns.nameserver_fqdn = "localhost";
+        info_zone_ns.nameserver_fqdn = "a.ns.nic.cz";
 
         std::vector<boost::asio::ip::address> ns_ip_addrs;
         info_zone_ns.nameserver_ip_addresses = ns_ip_addrs;
 
-        info_zone_ns.id = ::LibFred::Zone::CreateZoneNs(zone)
+        info_zone_ns.id = ::LibFred::Zone::CreateZoneNs(zone, info_zone_ns.nameserver_fqdn)
                 .exec(_ctx);
     }
 

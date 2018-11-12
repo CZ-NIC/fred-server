@@ -16,32 +16,19 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CREATE_ZONE_NS_HH_2D413215C56D4D7F9D5233D84B5915B8
-#define CREATE_ZONE_NS_HH_2D413215C56D4D7F9D5233D84B5915B8
-
-#include "src/libfred/opcontext.hh"
-
-#include <boost/asio/ip/address.hpp>
-#include <string>
-#include <vector>
+#ifndef DEFAULT_VALUES_HH_C52F6BD816B642DFB3E605253A871D76
+#define DEFAULT_VALUES_HH_C52F6BD816B642DFB3E605253A871D76
 
 namespace LibFred {
 namespace Zone {
 
-class CreateZoneNs
-{
-public:
-    CreateZoneNs(const std::string& _zone_fqdn, const std::string& _nameserver_fqdn);
+constexpr int seconds_per_hour = 60 * 60;
 
-    CreateZoneNs& set_nameserver_ip_addresses(
-            const std::vector<boost::asio::ip::address>& _nameserver_ip_addresses);
-
-    unsigned long long exec(OperationContext& _ctx) const;
-private:
-    std::string zone_fqdn_;
-    std::string nameserver_fqdn_;
-    std::vector<boost::asio::ip::address> nameserver_ip_addresses_;
-};
+constexpr unsigned long default_ttl_in_seconds = 5 * seconds_per_hour;
+constexpr unsigned long default_refresh_in_seconds  = 3 * seconds_per_hour;
+constexpr unsigned long default_update_retr_in_seconds = seconds_per_hour;
+constexpr unsigned long default_expiry_in_seconds = 2 * 7 * 24 * seconds_per_hour;
+constexpr unsigned long default_minimum_in_seconds = 2 * seconds_per_hour;
 
 } // namespace LibFred::Zone
 } // namespace LibFred

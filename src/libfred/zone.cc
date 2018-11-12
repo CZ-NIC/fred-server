@@ -1029,14 +1029,12 @@ namespace LibFred
 
             LibFred::Zone::CreateZone(_fqdn, _ex_period_min, _ex_period_max).exec(ctx);
 
-            LibFred::Zone::CreateZoneSoa(_fqdn)
+            LibFred::Zone::CreateZoneSoa(_fqdn, _hostmaster, _ns_fqdn)
                     .set_ttl(_ttl)
-                    .set_hostmaster(_hostmaster)
                     .set_refresh(_refresh)
                     .set_update_retr(_update_retr)
                     .set_expiry(_expiry)
                     .set_minimum(_minimum)
-                    .set_ns_fqdn(_ns_fqdn)
                     .exec(ctx);
 
             ctx.commit_transaction();
@@ -1046,46 +1044,6 @@ namespace LibFred
             LOGGER(PACKAGE).error("addZone: an error has occured");
             throw SQL_ERROR();
         }
-      }
-
-      void addZoneNs(
-              const std::string& _zone_fqdn,
-              const std::string& _nameserver_fqdn,
-              const std::string& _nameserver_ip_addresses) final override
-      {
-          try
-          {
-              OperationContextCreator ctx;
-
-              if (!_nameserver_ip_addresses.empty())
-              {
-                  std::vector<std::string> addrs;
-                  boost::split(addrs, _nameserver_ip_addresses, boost::is_any_of(","));
-
-                  std::vector<boost::asio::ip::address> ip_addrs;
-                  std::for_each(addrs.begin(),
-                          addrs.end(),
-                          [&ip_addrs](const std::string& s)
-                                { ip_addrs.push_back(boost::asio::ip::address::from_string(s)); });
-
-                  CreateZoneNs(_zone_fqdn)
-                          .set_nameserver_fqdn(_nameserver_fqdn)
-                          .set_nameserver_ip_addresses(ip_addrs)
-                          .exec(ctx);
-              }
-              else
-              {
-                  CreateZoneNs(_zone_fqdn)
-                          .set_nameserver_fqdn(_nameserver_fqdn)
-                          .exec(ctx);
-              }
-              ctx.commit_transaction();
-          }
-          catch (...)
-          {
-              LOGGER(PACKAGE).error("addZoneNs: an error has occured");
-              throw;
-          }
       }
 
     virtual void addPrice(

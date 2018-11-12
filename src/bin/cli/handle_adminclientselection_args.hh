@@ -1165,35 +1165,45 @@ public:
         cfg_opts->add_options()
             ("zone_add", "add new zone")
             ("zone_fqdn", boost::program_options
-                ::value<Checked::string>()->notifier(save_arg<std::string>(params.zone_fqdn))
-                , "fqdn of new zone")
+                ::value<Checked::string>()->required()
+                ->notifier(save_arg<std::string>(params.zone_fqdn)),
+                "zone fully qualified name")
             ("ex_period_min", boost::program_options
-                ::value<Checked::ulong>()->notifier(save_optional_ulong(params.ex_period_min))
-                , "ex_period_min")
+                ::value<Checked::ushort>()->default_value(12)
+                ->notifier(save_arg<unsigned short>(params.ex_period_min)),
+                "minimal prolongation of the period of domains validity (in months)")
             ("ex_period_max", boost::program_options
-                ::value<Checked::ulong>()->notifier(save_optional_ulong(params.ex_period_max))
-                , "ex_period_max")
+                ::value<Checked::ushort>()->default_value(120)
+                ->notifier(save_arg<unsigned short>(params.ex_period_max)),
+                "maximal prolongation of the period of domains validity (in months)")
             ("ttl", boost::program_options
-                ::value<Checked::ulong>()->notifier(save_optional_ulong(params.ttl))
-                , "time to live")
+                ::value<Checked::ulong>()->default_value(18000)
+                ->notifier(save_arg<unsigned long>(params.ttl)),
+                "time to live - the default validity period of resource records in the zone (in seconds)")
             ("hostmaster", boost::program_options
-                ::value<Checked::string>()->notifier(save_optional_string(params.hostmaster))
-                , "hostmaster")
+                ::value<Checked::string>()->required()
+                ->notifier(save_arg<std::string>(params.hostmaster)),
+                "responsible person email (in format: user@domain.tld)")
             ("update_retr", boost::program_options
-                ::value<Checked::ulong>()->notifier(save_optional_ulong(params.update_retr))
-                , "update_retr")
+                ::value<Checked::ulong>()->default_value(300)
+                ->notifier(save_arg<unsigned long>(params.update_retr)),
+                "retry interval of zone update for secondary nameservers in case of failed zone refresh (in seconds)")
             ("refresh", boost::program_options
-                ::value<Checked::ulong>()->notifier(save_optional_ulong(params.refresh))
-                , "refresh")
+                ::value<Checked::ulong>()->default_value(900)
+                ->notifier(save_arg<unsigned long>(params.refresh)),
+                "secondary nameservers copy of zone refresh interval (in seconds)")
             ("expiry", boost::program_options
-                ::value<Checked::ulong>()->notifier(save_optional_ulong(params.expiry))
-                , "expiry")
+                ::value<Checked::ulong>()->default_value(604800)
+                ->notifier(save_arg<unsigned long>(params.expiry)),
+                "zone expiration period for secondary nameservers (in seconds)")
             ("minimum", boost::program_options
-                ::value<Checked::ulong>()->notifier(save_optional_ulong(params.minimum))
-                , "minimum")
+                ::value<Checked::ulong>()->default_value(900)
+                ->notifier(save_arg<unsigned long>(params.minimum)),
+                "the period for which a result of a non-existent domain should be cached by resolvers (in seconds)")
             ("ns_fqdn", boost::program_options
-                ::value<Checked::string>()->notifier(save_optional_string(params.ns_fqdn))
-                , "ns_fqdn")
+                ::value<Checked::string>()->required()
+                ->notifier(save_arg<std::string>(params.ns_fqdn)),
+                "primary nameserver fully qualified name")
             ;
         return cfg_opts;
     }//get_options_description
@@ -1546,13 +1556,15 @@ public:
         cfg_opts->add_options()
             ("zone_ns_add", "add new nameserver to the zone")
             ("zone_fqdn", boost::program_options
-                ::value<Checked::string>()->notifier(save_arg<std::string>(params.zone_fqdn)),
+                ::value<Checked::string>()->required()
+                ->notifier(save_arg<std::string>(params.zone_fqdn)),
                 "zone fqdn")
             ("ns_fqdn", boost::program_options
-                ::value<Checked::string>()->notifier(save_arg<std::string>(params.ns_fqdn)),
+                ::value<Checked::string>()->required()
+                ->notifier(save_arg<std::string>(params.ns_fqdn)),
                 "nameserver fqdn")
             ("addr", boost::program_options
-                ::value<Checked::ip_addresses>() ->multitoken()
+                ::value<Checked::ip_addresses>()->multitoken()
                 ->notifier(save_arg<std::vector<boost::asio::ip::address> >(params.addrs)),
                 "nameserver addresses");
         return cfg_opts;

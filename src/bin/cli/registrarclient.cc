@@ -135,46 +135,18 @@ RegistrarClient::list()
 void
 RegistrarClient::zone_add()
 {
-    std::string fqdn = zone_add_params_.zone_fqdn;//REGISTRAR_ZONE_FQDN_NAME
-    int exPeriodMin = 12;
-    int exPeriodMax = 120;
-    int ttl = 18000;
-    std::string hostmaster = "hostmaster@localhost";
-    int updateRetr = 300;
-    int refresh = 900;
-    int expiry = 604800;
-    int minimum = 900;
-    std::string nsFqdn("localhost");
-
-    if (zone_add_params_.ex_period_min.is_value_set()) {
-        exPeriodMin = zone_add_params_.ex_period_min.get_value();
-    };//REGISTRAR_EX_PERIOD_MIN_NAME
-    if (zone_add_params_.ex_period_max.is_value_set()) {
-        exPeriodMax = zone_add_params_.ex_period_max.get_value();
-    };//REGISTRAR_EX_PERIOD_MAX_NAME
-    if (zone_add_params_.ttl.is_value_set()) {
-        ttl = zone_add_params_.ttl.get_value();
-    };//REGISTRAR_TTL_NAME
-    if (zone_add_params_.hostmaster.is_value_set()) {
-        hostmaster = zone_add_params_.hostmaster.get_value();
-    };//REGISTRAR_HOSTMASTER_NAME
-    if (zone_add_params_.update_retr.is_value_set()) {
-        updateRetr = zone_add_params_.update_retr.get_value();
-    };//REGISTRAR_UPDATE_RETR_NAME
-    if (zone_add_params_.refresh.is_value_set()) {
-        refresh = zone_add_params_.refresh.get_value();
-    };//REGISTRAR_REFRESH_NAME
-    if (zone_add_params_.expiry.is_value_set()) {
-        expiry = zone_add_params_.expiry.get_value();
-    };//REGISTRAR_EXPIRY_NAME
-    if (zone_add_params_.minimum.is_value_set()) {
-        minimum = zone_add_params_.minimum.get_value();
-    };//REGISTRAR_MINIMUM_NAME
-    if (zone_add_params_.ns_fqdn.is_value_set()) {
-        nsFqdn = zone_add_params_.ns_fqdn.get_value();
-    };//REGISTRAR_NS_FQDN_NAME
-    Admin::Zone::add_zone(fqdn, exPeriodMin, exPeriodMax,
-            ttl, hostmaster, refresh, updateRetr, expiry, minimum, nsFqdn);
+    std::string fqdn = zone_add_params_.zone_fqdn;
+    unsigned short exPeriodMin = zone_add_params_.ex_period_min;
+    unsigned short exPeriodMax = zone_add_params_.ex_period_max;
+    std::string hostmaster = zone_add_params_.hostmaster;
+    std::string nsFqdn = zone_add_params_.ns_fqdn;
+    unsigned long ttl = zone_add_params_.ttl;
+    unsigned long refresh = zone_add_params_.refresh;
+    unsigned long updateRetr = zone_add_params_.update_retr;
+    unsigned long expiry = zone_add_params_.expiry;
+    unsigned long minimum = zone_add_params_.minimum;
+    Admin::Zone::add_zone(fqdn, exPeriodMin, exPeriodMax, hostmaster, nsFqdn,
+            ttl, refresh, updateRetr, expiry, minimum);
 }
 
 void

@@ -28,12 +28,12 @@ namespace Test {
 constexpr int seconds_per_hour = 60 * 60;
 
 constexpr int new_ttl_in_seconds = 6 * seconds_per_hour;
-const std::string new_hostmaster = "hostmaster_test@localhost";
+const std::string new_hostmaster = "new_hostmaster@nic.cz";
 constexpr int new_refresh_in_seconds  = 4 * seconds_per_hour;
 constexpr int new_update_retr_in_seconds = 2 * seconds_per_hour;
 constexpr int new_expiry_in_seconds = 1 * 7 * 24 * seconds_per_hour;
 constexpr int new_minimum_in_seconds = 3 * seconds_per_hour;
-const std::string new_ns_fqdn = "localhost_test";
+const std::string new_ns_fqdn = "new.ns.nic.cz";
 
 bool operator==(const ::LibFred::Zone::InfoZoneSoaData& _lhs, const ::LibFred::Zone::InfoZoneSoaData& _rhs);
 

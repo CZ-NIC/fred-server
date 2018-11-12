@@ -17,6 +17,7 @@
  */
 
 #include "src/backend/admin/zone/zone.hh"
+#include "src/libfred/opcontext.hh"
 #include "src/libfred/zone/exceptions.hh"
 #include "test/backend/admin/zone/fixtures.hh"
 #include "test/setup/fixtures.hh"
@@ -31,7 +32,7 @@ BOOST_AUTO_TEST_SUITE(Admin)
 BOOST_AUTO_TEST_SUITE(Zone)
 BOOST_AUTO_TEST_SUITE(TestAdminAddZone)
 
-unsigned int exists_zone(const std::string& _fqdn)
+std::size_t exists_zone(const std::string& _fqdn)
 {
     ::LibFred::OperationContextCreator ctx;
     const Database::Result db_result = ctx.get_conn().exec_params(
@@ -51,13 +52,13 @@ BOOST_FIXTURE_TEST_CASE(set_already_existing_zone, SupplyFixtureCtx<HasExistingZ
                     zone.fqdn,
                     expiration_period_min,
                     expiration_period_max,
-                    ttl,
                     hostmaster,
+                    ns_fqdn,
+                    ttl,
                     refresh,
                     update_retr,
                     expiry,
-                    minimum,
-                    ns_fqdn),
+                    minimum),
             ::LibFred::Zone::DuplicateZone);
 }
 
@@ -67,13 +68,13 @@ BOOST_FIXTURE_TEST_CASE(set_enum_zone, SupplyFixtureCtx<HasEnumZone>)
             zone.fqdn,
             expiration_period_min,
             expiration_period_max,
-            ttl,
             hostmaster,
+            ns_fqdn,
+            ttl,
             refresh,
             update_retr,
             expiry,
-            minimum,
-            ns_fqdn);
+            minimum);
     BOOST_CHECK_EQUAL(exists_zone(zone.fqdn), 1);
 }
 
@@ -83,13 +84,13 @@ BOOST_FIXTURE_TEST_CASE(set_non_enum_zone, SupplyFixtureCtx<HasNonEnumZone>)
             zone.fqdn,
             expiration_period_min,
             expiration_period_max,
-            ttl,
             hostmaster,
+            ns_fqdn,
+            ttl,
             refresh,
             update_retr,
             expiry,
-            minimum,
-            ns_fqdn);
+            minimum);
     BOOST_CHECK_EQUAL(exists_zone(zone.fqdn), 1);
 }
 
