@@ -2,15 +2,25 @@
 #include "src/libfred/registrar/certification/create_registrar_certification.hh"
 #include "src/libfred/registrar/certification/exceptions.hh"
 
-#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
 
 namespace LibFred {
 namespace Registrar {
+
+CreateRegistrarCertification& CreateRegistrarCertification::set_valid_until(const boost::gregorian::date& _valid_until)
+{
+    valid_until_ = _valid_until;
+    return *this;
+}
 
 unsigned long long CreateRegistrarCertification::exec(OperationContext& _ctx)
 {
     try
     {
+        if (valid_from_.is_special())
+        {
+            throw InvalidDateFrom();
+        }
         if (valid_from_ > valid_until_)
         {
             throw WrongIntervalOrder();
@@ -25,37 +35,58 @@ unsigned long long CreateRegistrarCertification::exec(OperationContext& _ctx)
             throw ScoreOutOfRange();
         }
 
-        const Database::Result cert_in_past = _ctx.get_conn().exec_params(
-                "SELECT now()::date > $1::date",
-                Database::query_param_list(valid_until_));
-        if (cert_in_past[0][0])
+        if (!valid_until_.is_special())
         {
-            throw CertificationInPast();
+            const Database::Result cert_in_past = _ctx.get_conn().exec_params(
+                    // clang-format off
+                    "SELECT now()::date > $1::date",
+                    // clang-format on
+                    Database::query_param_list(valid_until_));
+            const bool expired_date_to = static_cast<bool>(cert_in_past[0][0]);
+            if (expired_date_to)
+            {
+                throw CertificationInPast();
+            }
         }
 
         _ctx.get_conn().exec("LOCK TABLE registrar_certification IN ACCESS EXCLUSIVE MODE");
+        const Database::Result terminate_last_cert = _ctx.get_conn().exec_params(
+                // clang-format off
+                "UPDATE registrar_certification "
+                "SET valid_until = ($1::date - interval '1 day') "
+                "WHERE registrar_id = $2::bigint "
+                "AND valid_from < $1::date "
+                "AND valid_until IS NULL ",
+                // clang-format on
+                Database::query_param_list(valid_from_)(registrar_id_));
+
         const Database::Result range_overlap = _ctx.get_conn().exec_params(
+                // clang-format off
                 "SELECT * FROM registrar_certification "
-                "WHERE registrar_id = $3::bigint AND "
-                "(valid_from <= $1::date "
-                "AND $1::date <= valid_until "
-                "OR valid_from <= $2::date "
-                "AND $2::date <= valid_until) ",
-                Database::query_param_list(valid_from_)(valid_until_)(registrar_id_));
+                "WHERE registrar_id = $1::bigint "
+                "AND (valid_until IS NULL "
+                "OR valid_until >= $2::date) ",
+                // clang-format on
+                Database::query_param_list(registrar_id_)(valid_from_));
         if (range_overlap.size() > 0)
         {
             throw OverlappingRange();
         }
 
         const Database::Result created_certification = _ctx.get_conn().exec_params(
-                "INSERT INTO registrar_certification ("
-                "registrar_id, valid_from, valid_until, classification, eval_file_id)"
-                " VALUES ( "
-                "$1::bigint, $2::date, $3::date, $4::integer, $5::bigint)"
+                // clang-format off
+                "INSERT INTO registrar_certification "
+                "(registrar_id, valid_from, valid_until, classification, eval_file_id) "
+                "VALUES ($1::bigint, $2::date, $3::date, $4::integer, $5::bigint) "
                 "RETURNING id",
-                Database::query_param_list(registrar_id_)(valid_from_)(valid_until_)(classification_)(eval_file_id_));
-
-        return created_certification[0][0];
+                // clang-format on
+                Database::query_param_list(registrar_id_)
+                                        (valid_from_)
+                                        (valid_until_.is_special() ? Database::QPNull : valid_until_)
+                                        (classification_)
+                                        (eval_file_id_));
+        const auto id = static_cast<unsigned long long>(created_certification[0][0]);
+        return id;
     }
     catch (const std::exception& e)
     {

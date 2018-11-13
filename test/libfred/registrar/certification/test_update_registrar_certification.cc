@@ -48,8 +48,8 @@ struct test_update_certification_fixture : virtual public Test::instantiate_db_t
                 "concat(to_char(current_timestamp, 'YYYY/fmMM/fmD'), '/', currval('files_id_seq'::regclass))::text, "
                 "0, 6) RETURNING ID;")[0][0];
         certification_id = LibFred::Registrar::CreateRegistrarCertification(test_registrar.id,
-                valid_from, valid_until, score, file_id)
-            .exec(ctx);
+                                    valid_from, score, file_id)
+                            .exec(ctx);
         ctx.commit_transaction();
     }
 };
@@ -59,18 +59,28 @@ BOOST_FIXTURE_TEST_SUITE(TestUpdateRegistrarCertification, test_update_certifica
 BOOST_AUTO_TEST_CASE(update_registrar_certification_date)
 {
     LibFred::OperationContextCreator ctx;
-    valid_until -= boost::gregorian::date_duration(1);
     LibFred::Registrar::UpdateRegistrarCertification(certification_id, valid_until).exec(ctx);
     Database::Result result = ctx.get_conn().exec_params(
             "SELECT * FROM registrar_certification "
             "WHERE id = $1::bigint",
             Database::query_param_list(certification_id));
-    BOOST_CHECK(test_registrar.id == static_cast<unsigned long long>(result[0][1]));
-    BOOST_CHECK(to_iso_extended_string(valid_from) == static_cast<std::string>(result[0][2]));
-    BOOST_CHECK(to_iso_extended_string(valid_until) == static_cast<std::string>(result[0][3]));
-    BOOST_CHECK(score == static_cast<int>(result[0][4]));
-    BOOST_CHECK(file_id == static_cast<int>(result[0][5]));
-    ctx.commit_transaction();
+    BOOST_CHECK(test_registrar.id == static_cast<unsigned long long>(result[0]["registrar_id"]));
+    BOOST_CHECK(to_iso_extended_string(valid_from) == static_cast<std::string>(result[0]["valid_from"]));
+    BOOST_CHECK(to_iso_extended_string(valid_until) == static_cast<std::string>(result[0]["valid_until"]));
+    BOOST_CHECK(score == static_cast<int>(result[0]["classification"]));
+    BOOST_CHECK(file_id == static_cast<int>(result[0]["eval_file_id"]));
+
+    valid_until -= boost::gregorian::date_duration(1);
+    LibFred::Registrar::UpdateRegistrarCertification(certification_id, valid_until).exec(ctx);
+    Database::Result new_result = ctx.get_conn().exec_params(
+            "SELECT * FROM registrar_certification "
+            "WHERE id = $1::bigint",
+            Database::query_param_list(certification_id));
+    BOOST_CHECK(test_registrar.id == static_cast<unsigned long long>(new_result[0]["registrar_id"]));
+    BOOST_CHECK(to_iso_extended_string(valid_from) == static_cast<std::string>(new_result[0]["valid_from"]));
+    BOOST_CHECK(to_iso_extended_string(valid_until) == static_cast<std::string>(new_result[0]["valid_until"]));
+    BOOST_CHECK(score == static_cast<int>(new_result[0]["classification"]));
+    BOOST_CHECK(file_id == static_cast<int>(new_result[0]["eval_file_id"]));
 }
 
 BOOST_AUTO_TEST_CASE(update_registrar_certification_score_file)
@@ -79,15 +89,14 @@ BOOST_AUTO_TEST_CASE(update_registrar_certification_score_file)
     const int new_score = 2;
     LibFred::Registrar::UpdateRegistrarCertification(certification_id, new_score, file_id).exec(ctx);
     Database::Result result = ctx.get_conn().exec_params(
-            "SELECT * FROM registrar_certification "
-            "WHERE id = $1::bigint",
+            "SELECT registrar_id, valid_from, classification, eval_file_id FROM registrar_certification "
+            "WHERE id = $1::bigint "
+            "AND valid_until IS NULL ",
             Database::query_param_list(certification_id));
-    BOOST_CHECK(test_registrar.id == static_cast<unsigned long long>(result[0][1]));
-    BOOST_CHECK(to_iso_extended_string(valid_from) == static_cast<std::string>(result[0][2]));
-    BOOST_CHECK(to_iso_extended_string(valid_until) == static_cast<std::string>(result[0][3]));
-    BOOST_CHECK(new_score == static_cast<int>(result[0][4]));
-    BOOST_CHECK(file_id == static_cast<int>(result[0][5]));
-    ctx.commit_transaction();
+    BOOST_CHECK(test_registrar.id == static_cast<unsigned long long>(result[0]["registrar_id"]));
+    BOOST_CHECK(to_iso_extended_string(valid_from) == static_cast<std::string>(result[0]["valid_from"]));
+    BOOST_CHECK(new_score == static_cast<int>(result[0]["classification"]));
+    BOOST_CHECK(file_id == static_cast<int>(result[0]["eval_file_id"]));
 }
 
 BOOST_AUTO_TEST_CASE(certification_in_past)
@@ -97,17 +106,16 @@ BOOST_AUTO_TEST_CASE(certification_in_past)
     BOOST_CHECK_THROW(
         LibFred::Registrar::UpdateRegistrarCertification(certification_id, valid_until).exec(ctx),
         CertificationInPast);
-    ctx.commit_transaction();
 }
 
-BOOST_AUTO_TEST_CASE(certification_extension)
+BOOST_AUTO_TEST_CASE(invalid_date_until)
 {
     LibFred::OperationContextCreator ctx;
-    valid_until += boost::gregorian::date_duration(1);
+    LibFred::Registrar::UpdateRegistrarCertification(certification_id, valid_until).exec(ctx);
+    valid_until = boost::gregorian::date(not_a_date_time);
     BOOST_CHECK_THROW(
         LibFred::Registrar::UpdateRegistrarCertification(certification_id, valid_until).exec(ctx),
-        CertificationExtension);
-    ctx.commit_transaction();
+        InvalidDateTo);
 }
 
 BOOST_AUTO_TEST_CASE(wrong_interval_order)
@@ -117,7 +125,6 @@ BOOST_AUTO_TEST_CASE(wrong_interval_order)
     BOOST_CHECK_THROW(
         LibFred::Registrar::UpdateRegistrarCertification(certification_id, valid_until).exec(ctx),
         WrongIntervalOrder);
-    ctx.commit_transaction();
 }
 
 BOOST_AUTO_TEST_CASE(score_overcome)
@@ -130,4 +137,4 @@ BOOST_AUTO_TEST_CASE(score_overcome)
         ScoreOutOfRange);
 }
 
-BOOST_AUTO_TEST_SUITE_END(); //TestCreateRegistrarCertification
+BOOST_AUTO_TEST_SUITE_END(); //TestUpdateRegistrarCertification

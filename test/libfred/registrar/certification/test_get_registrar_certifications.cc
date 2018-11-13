@@ -42,21 +42,29 @@ struct test_get_certifications_fixture : virtual public Test::instantiate_db_tem
     {
         LibFred::OperationContextCreator ctx;
         test_registrar = Test::registrar::make(ctx);
-        int file_id = ctx.get_conn().exec(
+        const int file_id = ctx.get_conn().exec(
                 "INSERT INTO files (name, path, filesize, filetype) "
                 "VALUES ('update_file', "
                 "CONCAT(TO_CHAR(current_timestamp, 'YYYY/fmMM/fmD'), '/', CURRVAL('files_id_seq'::regclass))::text, "
                 "0, 6) RETURNING id;")[0][0];
-        int score = 1;
+        unsigned score = 1;
+        unsigned date_duration = 10;
         LibFred::Registrar::RegistrarCertification rc;
-        rc.valid_until = boost::gregorian::day_clock::local_day();
+        rc.valid_from = boost::gregorian::day_clock::local_day();
         for (unsigned int i = 0; i < certifications_amount; ++i)
         {
-            rc.valid_from = rc.valid_until + boost::gregorian::date_duration(1);
-            rc.valid_until = rc.valid_from + boost::gregorian::date_duration(1);
+            rc.valid_from += boost::gregorian::date_duration(date_duration);
+            if (i == certifications_amount - 1)
+            {
+                rc.valid_until = boost::gregorian::date(boost::gregorian::not_a_date_time);
+            }
+            else
+            {
+                rc.valid_until = rc.valid_from + boost::gregorian::date_duration(date_duration - 1);
+            }
             rc.id = LibFred::Registrar::CreateRegistrarCertification(
-                    test_registrar.id, rc.valid_from, rc.valid_until, score, file_id)
-                .exec(ctx);
+                                    test_registrar.id, rc.valid_from, score, file_id)
+                        .exec(ctx);
             rc.classification = score++;
             rc.eval_file_id = file_id;
             reg_certs.push_back(rc);
@@ -71,7 +79,8 @@ BOOST_FIXTURE_TEST_SUITE(TestGetRegistrarCertifications, test_get_certifications
 BOOST_AUTO_TEST_CASE(get_registrar_certifications)
 {
     LibFred::OperationContextCreator ctx;
-    std::vector<LibFred::Registrar::RegistrarCertification> result = LibFred::Registrar::GetRegistrarCertifications(test_registrar.id).exec(ctx);
+    std::vector<LibFred::Registrar::RegistrarCertification> result =
+            LibFred::Registrar::GetRegistrarCertifications(test_registrar.id).exec(ctx);
 
     BOOST_CHECK(result.size() == certifications_amount);
     for (unsigned int i = 0; i < certifications_amount; ++i)

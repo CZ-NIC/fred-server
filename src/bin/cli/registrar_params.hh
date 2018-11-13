@@ -181,7 +181,7 @@ struct RegistrarCreateCertificationArgs
 {
     std::string certification_evaluation;
     std::string certification_evaluation_mime_type;
-    long certification_score;
+    unsigned short certification_score;
     std::string handle;
     optional_string from_date;
     optional_string to_date;
@@ -192,7 +192,7 @@ struct RegistrarCreateCertificationArgs
     RegistrarCreateCertificationArgs(
             const std::string& _certification_evaluation
             , const std::string& _certification_evaluation_mime_type
-            , const long _certification_score
+            , const unsigned short _certification_score
             , const std::string& _handle
             , const optional_string& _from_date
             , const optional_string& _to_date

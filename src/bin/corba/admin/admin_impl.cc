@@ -1379,7 +1379,7 @@ ccReg::TID Registry_Registrar_Certification_Manager_i::createCertification(
         return regman->createRegistrarCertification(
                 reg_id
                 , Database::Date(makeBoostDate_throw(from))
-                , Database::Date(makeBoostDate_throw(to))
+                , Database::Date(makeBoostDate(to))
                 , static_cast<LibFred::Registrar::RegCertClass>(score)
                 , evaluation_file_id);
     }//try
