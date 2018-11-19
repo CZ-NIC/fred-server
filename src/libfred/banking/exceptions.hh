@@ -42,6 +42,11 @@ struct InvalidAccountData : std::exception
     const char* what() const noexcept;
 };
 
+struct InvalidPaymentData : std::exception
+{
+    const char* what() const noexcept;
+};
+
 struct InvalidPriceValue : std::exception
 {
     const char* what() const noexcept;
