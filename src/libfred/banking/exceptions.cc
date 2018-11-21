@@ -31,6 +31,11 @@ const char* InvalidAccountData::what() const noexcept
     return "invalid account number or bank code";
 }
 
+const char* InvalidPaymentData::what() const noexcept
+{
+    return "invalid payment data";
+}
+
 const char* InvalidPriceValue::what() const noexcept
 {
     return "invalid price value";

@@ -267,25 +267,25 @@ private:
             /* zone access check */
             if (!rmanager->hasRegistrarZoneAccess(_registrar_id, zone_id)) {
                 // no acces to zone and no debt payed - invalid payment
-                if(uai_vect.size() == 0) {
+                if (uai_vect.size() == 0) {
                     LOGGER(PACKAGE).warning(boost::format(
                             "registrar (id=%1%) has not access to zone (id=%2%)"
                             " => processing canceled (payment id=%3%)")
                             % _registrar_id
                             % zone_id
                             % _payment.uuid);
-                    throw std::runtime_error("could not process payment");
+                    throw InvalidPaymentData();
                 }
 
                 // amount larger than registrar debt
-                if(payment_price_rest > Money("0")) {
+                if (payment_price_rest > Money("0")) {
                     LOGGER(PACKAGE).warning(boost::format(
                             "registrar (id=%1%) who has no longer access to zone (id=%2%)"
                             " sent amount larger than debt (payment id=%3%) it will have to be resolved manually")
                             % _registrar_id
                             % zone_id
                             % _payment.uuid);
-                    throw std::runtime_error("could not process payment");
+                    throw InvalidPaymentData();
 
                 }
             }
@@ -420,6 +420,11 @@ public:
             throw;
         }
         catch (const LibFred::Banking::InvalidAccountData& e) {
+            LOGGER(PACKAGE).info(boost::str(boost::format(
+                            "bank import payment: %1%") % e.what()));
+            throw;
+        }
+        catch (const LibFred::Banking::InvalidPaymentData& e) {
             LOGGER(PACKAGE).info(boost::str(boost::format(
                             "bank import payment: %1%") % e.what()));
             throw;
