@@ -245,6 +245,60 @@ struct HasSystemRegistrar : NonexistentRegistrar
     }
 };
 
+struct HasExistingRegistrarMin : ExistingRegistrar
+{
+    EmptyContactAddress address;
+    EmptyContactData contact;
+    boost::optional<bool> system;
+    EmptyMerchantInformation merchant;
+
+    HasExistingRegistrarMin(::LibFred::OperationContext& _ctx)
+            : ExistingRegistrar(_ctx)
+    {
+        const std::string& name = "Updated Name";
+        registrar.name = name;
+        contact.name = name;
+    }
+};
+
+struct HasExistingRegistrarMax : ExistingRegistrar
+{
+    FullContactAddress address;
+    FullContactData contact;
+    boost::optional<bool> system;
+    FullMerchantInformation merchant;
+
+    HasExistingRegistrarMax(::LibFred::OperationContext& _ctx)
+            : ExistingRegistrar(_ctx),
+              contact(registrar.handle),
+              system(false),
+              merchant(registrar.handle)
+    {
+        registrar.street1 = address.street1.get();
+        registrar.street2 = address.street2.get();
+        registrar.street3 = address.street3.get();
+        registrar.city = address.city.get();
+        registrar.stateorprovince = address.state_or_province.get();
+        registrar.postalcode = address.postal_code.get();
+        registrar.country = address.country.get();
+
+        registrar.name = contact.name.get();
+        registrar.telephone = contact.telephone.get();
+        registrar.fax = contact.fax.get();
+        registrar.email = contact.email.get();
+        registrar.url = contact.url.get();
+
+        registrar.system = system.get();
+
+        registrar.organization = merchant.organization.get();
+        registrar.ico = merchant.ico.get();
+        registrar.dic = merchant.dic.get();
+        registrar.variable_symbol = merchant.variable_symbol.get();
+        registrar.vat_payer = merchant.vat_payer.get();
+        registrar.payment_memo_regex = merchant.payment_memo_regex.get();
+    }
+};
+
 } // namespace Test::Backend::Admin::Registrar
 } // namespace Test::Backend::Admin
 } // namespace Test::Backend
