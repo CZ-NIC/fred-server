@@ -53,6 +53,18 @@ public:
 };
 
 
+class AuthInfoRequestEPPImpl
+        : public AuthInfoRequestImpl,
+          public Util::FactoryAutoRegister<PublicRequest, AuthInfoRequestEPPImpl>
+{
+public:
+  static std::string registration_name()
+  {
+      return PRT_AUTHINFO_AUTO_RIF;
+  }
+};
+
+
 class AuthInfoRequestPIFAutoImpl
         : public AuthInfoRequestImpl,
           public Util::FactoryAutoRegister<PublicRequest, AuthInfoRequestPIFAutoImpl>
