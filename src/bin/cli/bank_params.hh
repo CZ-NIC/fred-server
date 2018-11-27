@@ -27,33 +27,6 @@
 #include "src/util/types/optional.hh"
 
 /**
- * \class ImportXMLArgs
- * \brief admin client import_xml params
- */
-struct ImportXMLArgs
-{
-    optional_string bank_xml;//BANK_XML_FILE_NAME
-    bool cr_credit_invoice;//BANK_CREATE_CREDIT_INVOICE_NAME
-    optional_string bank_statement_file;//BANK_XML_FILE_STATEMENT_NAME
-    optional_string bank_statement_file_mimetype;//BANK_XML_FILE_STATEMENT_MIME_NAME
-
-    ImportXMLArgs()
-    : cr_credit_invoice(false)
-    {}//ctor
-    ImportXMLArgs(
-             const optional_string& _bank_xml
-             , bool _cr_credit_invoice
-             , const optional_string& _bank_statement_file
-             , const optional_string& _bank_statement_file_mimetype
-            )
-    : bank_xml(_bank_xml)
-    , cr_credit_invoice(_cr_credit_invoice)
-    , bank_statement_file(_bank_statement_file)
-    , bank_statement_file_mimetype(_bank_statement_file_mimetype)
-    {}//init ctor
-};//struct ImportXMLArgs
-
-/**
  * \class AddAccountArgs
  * \brief admin client bank_add_account params
  */
