@@ -33,6 +33,13 @@ struct ZoneAccess
     std::string zone_fqdn;
     boost::gregorian::date from_date;
     boost::gregorian::date to_date;
+
+    bool operator==(const ZoneAccess& _other)
+    {
+        return (zone_fqdn == _other.zone_fqdn &&
+                from_date == _other.from_date &&
+                to_date == _other.to_date);
+    }
 };
 
 struct RegistrarZoneAccesses

@@ -19,13 +19,18 @@
 #ifndef FIXTURES_HH_F2C20603D23A42859C090AFDAF38F926
 #define FIXTURES_HH_F2C20603D23A42859C090AFDAF38F926
 
+#include "src/backend/admin/registrar/update_zone_access.hh"
 #include "src/libfred/object_state/perform_object_state_request.hh"
 #include "src/libfred/opcontext.hh"
 #include "src/libfred/registrar/create_registrar.hh"
 #include "src/libfred/registrar/info_registrar_data.hh"
+#include "src/libfred/registrar/zone_access/add_registrar_zone_access.hh"
+#include "src/libfred/zone/create_zone.hh"
+#include "src/util/random_data_generator.hh"
 #include "test/setup/fixtures.hh"
 #include "test/setup/fixtures_utils.hh"
 
+#include <boost/date_time/gregorian/gregorian.hpp>
 #include <string>
 
 namespace Test {
@@ -85,6 +90,25 @@ struct ExistingRegistrar
         registrar = Test::exec(Test::CreateX_factory<LibFred::CreateRegistrar>().make(), _ctx);
         registrar.system = default_system;
         registrar.vat_payer = default_vat_payer;
+    }
+};
+
+struct NonexistentZone
+{
+    ::LibFred::Registrar::ZoneAccess::ZoneAccess zone;
+
+    NonexistentZone(::LibFred::OperationContext& _ctx)
+    {
+        zone.zone_fqdn = Test::get_nonexistent_value(_ctx, "zone", "fqdn", "text", generate_random_handle);
+    }
+};
+
+struct ExistingZone : NonexistentZone
+{
+    ExistingZone(::LibFred::OperationContext& _ctx)
+            : NonexistentZone(_ctx)
+    {
+        ::LibFred::Zone::CreateZone(zone.zone_fqdn, 6, 12).exec(_ctx);
     }
 };
 
@@ -296,6 +320,168 @@ struct HasExistingRegistrarMax : ExistingRegistrar
         registrar.variable_symbol = merchant.variable_symbol.get();
         registrar.vat_payer = merchant.vat_payer.get();
         registrar.payment_memo_regex = merchant.payment_memo_regex.get();
+    }
+};
+
+struct HasZoneAccessWithNonexistentRegistrar : NonexistentRegistrar
+{
+    ExistingZone zone;
+    ::LibFred::Registrar::ZoneAccess::RegistrarZoneAccesses accesses;
+
+    HasZoneAccessWithNonexistentRegistrar(::LibFred::OperationContext& _ctx)
+            : NonexistentRegistrar(_ctx),
+              zone(_ctx)
+    {
+        zone.zone.from_date = boost::gregorian::day_clock::local_day();
+        accesses.zone_accesses.push_back(zone.zone);
+        accesses.registrar_handle = registrar.handle;
+    }
+};
+
+struct HasZoneAccessWithNonexistentZone : ExistingRegistrar
+{
+    NonexistentZone zone;
+    ::LibFred::Registrar::ZoneAccess::RegistrarZoneAccesses accesses;
+
+    HasZoneAccessWithNonexistentZone(::LibFred::OperationContext& _ctx)
+            : ExistingRegistrar(_ctx),
+              zone(_ctx)
+    {
+        zone.zone.from_date = boost::gregorian::day_clock::local_day();
+        accesses.zone_accesses.push_back(zone.zone);
+        accesses.registrar_handle = registrar.handle;
+    }
+};
+
+struct HasNonexistentZoneAccess : ExistingRegistrar
+{
+    ExistingZone zone;
+    ::LibFred::Registrar::ZoneAccess::RegistrarZoneAccesses accesses;
+
+    HasNonexistentZoneAccess(::LibFred::OperationContext& _ctx)
+            : ExistingRegistrar(_ctx),
+              zone(_ctx)
+    {
+        zone.zone.id =
+                Test::get_nonexistent_value(_ctx, "registrarinvoice", "id", "bigint", generate_random_bigserial);
+        zone.zone.from_date = boost::gregorian::day_clock::local_day();
+        accesses.zone_accesses.push_back(zone.zone);
+        accesses.registrar_handle = registrar.handle;
+    }
+};
+
+struct HasNoUpdateData : ExistingRegistrar
+{
+    ExistingZone zone;
+    ::LibFred::Registrar::ZoneAccess::RegistrarZoneAccesses accesses;
+
+    HasNoUpdateData(::LibFred::OperationContext& _ctx)
+            : ExistingRegistrar(_ctx),
+              zone(_ctx)
+    {
+        zone.zone.id = 1;
+        accesses.zone_accesses.push_back(zone.zone);
+        accesses.registrar_handle = registrar.handle;
+    }
+};
+
+struct HasMissingParams : ExistingRegistrar
+{
+    ExistingZone zone;
+    ::LibFred::Registrar::ZoneAccess::RegistrarZoneAccesses accesses;
+
+    HasMissingParams(::LibFred::OperationContext& _ctx)
+            : ExistingRegistrar(_ctx),
+              zone(_ctx)
+    {
+        accesses.zone_accesses.push_back(zone.zone);
+        accesses.registrar_handle = registrar.handle;
+    }
+};
+
+struct HasZoneAccessEmpty : ExistingRegistrar
+{
+    ::LibFred::Registrar::ZoneAccess::RegistrarZoneAccesses accesses;
+
+    HasZoneAccessEmpty(::LibFred::OperationContext& _ctx)
+            : ExistingRegistrar(_ctx)
+    {
+        accesses.registrar_handle = registrar.handle;
+    }
+};
+
+struct HasAddZoneAccessMax : ExistingRegistrar
+{
+    ExistingZone zone;
+    ::LibFred::Registrar::ZoneAccess::RegistrarZoneAccesses accesses;
+
+    HasAddZoneAccessMax(::LibFred::OperationContext& _ctx)
+            : ExistingRegistrar(_ctx),
+              zone(_ctx)
+    {
+        zone.zone.from_date = boost::gregorian::day_clock::local_day();
+        zone.zone.to_date = zone.zone.from_date + boost::gregorian::weeks_duration(3);
+        accesses.zone_accesses.push_back(zone.zone);
+        accesses.registrar_handle = registrar.handle;
+    }
+};
+
+struct HasUpdateZoneAccessMax : ExistingRegistrar
+{
+    ExistingZone zone;
+    ::LibFred::Registrar::ZoneAccess::RegistrarZoneAccesses accesses;
+
+    HasUpdateZoneAccessMax(::LibFred::OperationContext& _ctx)
+            : ExistingRegistrar(_ctx),
+              zone(_ctx)
+    {
+        boost::gregorian::date today = boost::gregorian::day_clock::local_day();
+        zone.zone.id = ::LibFred::Registrar::ZoneAccess::AddRegistrarZoneAccess(
+                        registrar.handle,
+                        zone.zone.zone_fqdn,
+                        today)
+                .exec(_ctx);
+        zone.zone.from_date = today + boost::gregorian::date_duration(1);
+        zone.zone.to_date = zone.zone.from_date + boost::gregorian::weeks_duration(3);
+        accesses.zone_accesses.push_back(zone.zone);
+        accesses.registrar_handle = registrar.handle;
+    }
+};
+
+struct HasMoreZoneAccesses : ExistingRegistrar
+{
+    ExistingZone zone;
+    ::LibFred::Registrar::ZoneAccess::RegistrarZoneAccesses accesses;
+
+    HasMoreZoneAccesses(::LibFred::OperationContext& _ctx)
+            : ExistingRegistrar(_ctx),
+              zone(_ctx)
+    {
+        boost::gregorian::date today = boost::gregorian::day_clock::local_day();
+        for (unsigned i = 0; i < 2; ++i)
+        {
+            zone.zone.from_date = today;
+            accesses.zone_accesses.push_back(zone.zone);
+        }
+        for (unsigned i = 0; i < 3; ++i)
+        {
+            zone.zone.id =
+                    ::LibFred::Registrar::ZoneAccess::AddRegistrarZoneAccess(
+                            registrar.handle,
+                            zone.zone.zone_fqdn,
+                            today)
+                    .exec(_ctx);
+            if (i % 2 == 1 || i == 0)
+            {
+                zone.zone.from_date = today - boost::gregorian::date_duration(i + 1);
+            }
+            if (i % 2 == 0)
+            {
+                zone.zone.to_date = today + boost::gregorian::weeks_duration(3);
+            }
+            accesses.zone_accesses.push_back(zone.zone);
+        }
+        accesses.registrar_handle = registrar.handle;
     }
 };
 
