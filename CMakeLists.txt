@@ -928,6 +928,7 @@ prepare_object_files(
     src/libfred/registrar/zone_credit.cc
     src/libfred/registrar/zone_access/add_registrar_zone_access.cc
     src/libfred/registrar/zone_access/exceptions.cc
+    src/libfred/registrar/zone_access/get_registrar_zone_access.cc
     src/libfred/registrar/zone_access/update_registrar_zone_access.cc
     src/libfred/registry.cc
     src/libfred/reminder.cc
@@ -1531,6 +1532,7 @@ prepare_static_library(fred
     src/libfred/registrar/certification/get_registrar_certifications.cc
     src/libfred/registrar/zone_access/add_registrar_zone_access.cc
     src/libfred/registrar/zone_access/exceptions.cc
+    src/libfred/registrar/zone_access/get_registrar_zone_access.cc
     src/libfred/registrar/zone_access/update_registrar_zone_access.cc)
 
 prepare_static_library(password_storage
