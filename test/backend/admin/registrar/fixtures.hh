@@ -20,9 +20,11 @@
 #define FIXTURES_HH_F2C20603D23A42859C090AFDAF38F926
 
 #include "src/backend/admin/registrar/update_zone_access.hh"
+#include "src/backend/admin/registrar/update_epp_auth.hh"
 #include "src/libfred/object_state/perform_object_state_request.hh"
 #include "src/libfred/opcontext.hh"
 #include "src/libfred/registrar/create_registrar.hh"
+#include "src/libfred/registrar/epp_auth/add_registrar_epp_auth.hh"
 #include "src/libfred/registrar/info_registrar_data.hh"
 #include "src/libfred/registrar/zone_access/add_registrar_zone_access.hh"
 #include "src/libfred/zone/create_zone.hh"
@@ -482,6 +484,245 @@ struct HasMoreZoneAccesses : ExistingRegistrar
             accesses.zone_accesses.push_back(zone.zone);
         }
         accesses.registrar_handle = registrar.handle;
+    }
+};
+
+struct NonexistentEppAuth
+{
+    ::Admin::Registrar::EppAuthRecord auth;
+
+    NonexistentEppAuth(::LibFred::OperationContext& _ctx)
+    {
+        auth.certificate_fingerprint =
+                Test::get_nonexistent_value(_ctx, "registraracl", "cert", "text", generate_random_handle);
+    }
+};
+
+struct ExistingEppAuth : NonexistentEppAuth
+{
+    ExistingEppAuth(::LibFred::OperationContext& _ctx, const std::string& _registrar_handle)
+            : NonexistentEppAuth(_ctx)
+    {
+        auth.plain_password = RandomDataGenerator().xstring(20);
+        auth.id = ::LibFred::Registrar::EppAuth::AddRegistrarEppAuth(_registrar_handle,
+                    auth.certificate_fingerprint,
+                    auth.plain_password)
+                .exec(_ctx);
+    }
+};
+
+struct HasEppAuthWithNonexistentRegistrar : NonexistentRegistrar
+{
+    NonexistentEppAuth epp_auth;
+    ::Admin::Registrar::EppAuthData epp_auth_data;
+
+    HasEppAuthWithNonexistentRegistrar(::LibFred::OperationContext& _ctx)
+            : NonexistentRegistrar(_ctx),
+              epp_auth(_ctx)
+    {
+        epp_auth_data.registrar_handle = registrar.handle;
+        epp_auth.auth.plain_password = RandomDataGenerator().xstring(20);
+        epp_auth_data.epp_auth_records.push_back(epp_auth.auth);
+    }
+};
+
+struct HasEppAuthMissingParams : ExistingRegistrar
+{
+    NonexistentEppAuth epp_auth;
+    ::Admin::Registrar::EppAuthData epp_auth_data;
+
+    HasEppAuthMissingParams(::LibFred::OperationContext& _ctx)
+            : ExistingRegistrar(_ctx),
+              epp_auth(_ctx)
+    {
+        epp_auth_data.registrar_handle = registrar.handle;
+        epp_auth_data.epp_auth_records.push_back(epp_auth.auth);
+    }
+};
+
+struct HasAddDuplicateCert : ExistingRegistrar
+{
+    ExistingEppAuth epp_auth;
+    ::Admin::Registrar::EppAuthData epp_auth_data;
+
+    HasAddDuplicateCert(::LibFred::OperationContext& _ctx)
+            : ExistingRegistrar(_ctx),
+              epp_auth(_ctx, registrar.handle)
+    {
+        epp_auth.auth.id = 0;
+        epp_auth_data.registrar_handle = registrar.handle;
+        epp_auth_data.epp_auth_records.push_back(epp_auth.auth);
+    }
+};
+
+struct HasUpdateDuplicateCert : ExistingRegistrar
+{
+    ExistingEppAuth epp_auth;
+    ExistingEppAuth auth_for_update;
+    ::Admin::Registrar::EppAuthData epp_auth_data;
+
+    HasUpdateDuplicateCert(::LibFred::OperationContext& _ctx)
+            : ExistingRegistrar(_ctx),
+              epp_auth(_ctx, registrar.handle),
+              auth_for_update(_ctx, registrar.handle)
+    {
+        epp_auth_data.registrar_handle = registrar.handle;
+        epp_auth_data.epp_auth_records.push_back(epp_auth.auth);
+        auth_for_update.auth.certificate_fingerprint = epp_auth.auth.certificate_fingerprint;
+        epp_auth_data.epp_auth_records.push_back(auth_for_update.auth);
+    }
+};
+
+struct HasCloneDuplicateCert : ExistingRegistrar
+{
+    ExistingEppAuth epp_auth;
+    ::Admin::Registrar::EppAuthData epp_auth_data;
+
+    HasCloneDuplicateCert(::LibFred::OperationContext& _ctx)
+            : ExistingRegistrar(_ctx),
+              epp_auth(_ctx, registrar.handle)
+    {
+        epp_auth.auth.new_certificate_fingerprint = epp_auth.auth.certificate_fingerprint;
+        epp_auth_data.registrar_handle = registrar.handle;
+        epp_auth_data.epp_auth_records.push_back(epp_auth.auth);
+    }
+};
+
+struct HasEppAuthNoUpdateData : ExistingRegistrar
+{
+    ::Admin::Registrar::EppAuthData epp_auth_data;
+
+    HasEppAuthNoUpdateData(::LibFred::OperationContext& _ctx)
+            : ExistingRegistrar(_ctx)
+    {
+        ::Admin::Registrar::EppAuthRecord epp_auth;
+        epp_auth.id = 1;
+        epp_auth_data.epp_auth_records.push_back(epp_auth);
+    }
+};
+
+struct HasNoexistentEppAuth : ExistingRegistrar
+{
+    NonexistentEppAuth epp_auth;
+    ::Admin::Registrar::EppAuthData epp_auth_data;
+
+    HasNoexistentEppAuth(::LibFred::OperationContext& _ctx)
+            : ExistingRegistrar(_ctx),
+              epp_auth(_ctx)
+    {
+        epp_auth.auth.id =
+                Test::get_nonexistent_value(_ctx, "registraracl", "id", "bigint", generate_random_bigserial);
+        epp_auth_data.registrar_handle = registrar.handle;
+        epp_auth_data.epp_auth_records.push_back(epp_auth.auth);
+    }
+};
+
+struct HasEmptyEppAuth : ExistingRegistrar
+{
+    ::Admin::Registrar::EppAuthData epp_auth_data;
+
+    HasEmptyEppAuth(::LibFred::OperationContext& _ctx)
+            : ExistingRegistrar(_ctx)
+    {
+    }
+};
+
+struct HasEppAuthAddWithDelete : ExistingRegistrar
+{
+    NonexistentEppAuth nonexistent_auth;
+    ExistingEppAuth existing_auth;
+    ExistingEppAuth auth_for_delete;
+    ::Admin::Registrar::EppAuthData epp_auth_data;
+
+    HasEppAuthAddWithDelete(::LibFred::OperationContext& _ctx)
+            : ExistingRegistrar(_ctx),
+              nonexistent_auth(_ctx),
+              existing_auth(_ctx, registrar.handle),
+              auth_for_delete(_ctx, registrar.handle)
+    {
+        epp_auth_data.registrar_handle = registrar.handle;
+        nonexistent_auth.auth.plain_password = RandomDataGenerator().xstring(10);
+        epp_auth_data.epp_auth_records.push_back(nonexistent_auth.auth);
+        epp_auth_data.epp_auth_records.push_back(existing_auth.auth);
+    }
+};
+
+struct HasEppAuthUpdateWithDelete : ExistingRegistrar
+{
+    ExistingEppAuth auth_for_delete;
+    ExistingEppAuth update_pass;
+    ExistingEppAuth update_cert;
+    ::Admin::Registrar::EppAuthData epp_auth_data;
+
+    HasEppAuthUpdateWithDelete(::LibFred::OperationContext& _ctx)
+            : ExistingRegistrar(_ctx),
+              auth_for_delete(_ctx, registrar.handle),
+              update_pass(_ctx, registrar.handle),
+              update_cert(_ctx, registrar.handle)
+    {
+        update_pass.auth.plain_password = RandomDataGenerator().xstring(10);
+        update_cert.auth.certificate_fingerprint =
+                Test::get_nonexistent_value(_ctx, "registraracl", "cert", "text", generate_random_handle);
+        epp_auth_data.registrar_handle = registrar.handle;
+        epp_auth_data.epp_auth_records.push_back(update_pass.auth);
+        epp_auth_data.epp_auth_records.push_back(update_cert.auth);
+    }
+};
+
+struct HasEppAuthCloneWithDelete : ExistingRegistrar
+{
+    ExistingEppAuth auth_for_delete;
+    NonexistentEppAuth new_epp_auth;
+    ::Admin::Registrar::EppAuthData epp_auth_data;
+
+    HasEppAuthCloneWithDelete(::LibFred::OperationContext& _ctx)
+            : ExistingRegistrar(_ctx),
+              auth_for_delete(_ctx, registrar.handle),
+              new_epp_auth(_ctx)
+    {
+        new_epp_auth.auth.plain_password = RandomDataGenerator().xstring(10);
+        new_epp_auth.auth.new_certificate_fingerprint =
+                Test::get_nonexistent_value(_ctx, "registraracl", "cert", "text", generate_random_handle);
+        epp_auth_data.registrar_handle = registrar.handle;
+        epp_auth_data.epp_auth_records.push_back(new_epp_auth.auth);
+    }
+};
+
+struct HasMoreEppAuthData : ExistingRegistrar
+{
+    ::Admin::Registrar::EppAuthData epp_auth_data;
+
+    HasMoreEppAuthData(::LibFred::OperationContext& _ctx)
+            : ExistingRegistrar(_ctx)
+    {
+        ExistingEppAuth auth_for_delete(_ctx, registrar.handle);
+
+        NonexistentEppAuth auth_for_add(_ctx);
+        auth_for_add.auth.plain_password = RandomDataGenerator().xstring(10);
+        epp_auth_data.epp_auth_records.push_back(auth_for_add.auth);
+
+        NonexistentEppAuth auth_for_clone(_ctx);
+        auth_for_clone.auth.plain_password = RandomDataGenerator().xstring(10);
+        auth_for_clone.auth.new_certificate_fingerprint =
+                Test::get_nonexistent_value(_ctx, "registraracl", "cert", "text", generate_random_handle);
+        epp_auth_data.epp_auth_records.push_back(auth_for_clone.auth);
+
+        ExistingEppAuth pass_for_update(_ctx, registrar.handle);
+        pass_for_update.auth.plain_password = RandomDataGenerator().xstring(10);
+        epp_auth_data.epp_auth_records.push_back(pass_for_update.auth);
+
+        ExistingEppAuth cert_for_update(_ctx, registrar.handle);
+        cert_for_update.auth.certificate_fingerprint =
+                Test::get_nonexistent_value(_ctx, "registraracl", "cert", "text", generate_random_handle);
+        epp_auth_data.epp_auth_records.push_back(cert_for_update.auth);
+
+        ExistingEppAuth update_all(_ctx, registrar.handle);
+        update_all.auth.plain_password = RandomDataGenerator().xstring(10);
+        update_all.auth.certificate_fingerprint =
+                Test::get_nonexistent_value(_ctx, "registraracl", "cert", "text", generate_random_handle);
+        epp_auth_data.epp_auth_records.push_back(update_all.auth);
+
+        epp_auth_data.registrar_handle = registrar.handle;
     }
 };
 

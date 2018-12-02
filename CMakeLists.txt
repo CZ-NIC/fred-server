@@ -399,6 +399,7 @@ prepare_object_files(
     src/backend/admin/domain/create_expired_domain.cc
     src/backend/admin/notification/notification.cc
     src/backend/admin/registrar/create_registrar.cc
+    src/backend/admin/registrar/update_epp_auth.cc
     src/backend/admin/registrar/update_registrar.cc
     src/backend/admin/registrar/update_zone_access.cc
     src/backend/admin/zone/zone.cc
@@ -1022,6 +1023,7 @@ prepare_object_files(
     test/backend/admin/notification/test_set_domain_outzone_unguarded_warning_emails.cc
     test/backend/admin/registrar/main.cc
     test/backend/admin/registrar/test_create_registrar.cc
+    test/backend/admin/registrar/test_update_epp_auth.cc
     test/backend/admin/registrar/test_update_registrar.cc
     test/backend/admin/registrar/test_update_zone_access.cc
     test/backend/admin/zone/main.cc
@@ -3021,12 +3023,15 @@ target_link_external_libraries(test-admin-domain
 
 prepare_executable(test-admin-registrar
     src/backend/admin/registrar/create_registrar.cc
+    src/backend/admin/registrar/update_epp_auth.cc
     src/backend/admin/registrar/update_registrar.cc
     src/backend/admin/registrar/update_zone_access.cc
     test/backend/admin/registrar/main.cc
     test/backend/admin/registrar/test_create_registrar.cc
+    test/backend/admin/registrar/test_update_epp_auth.cc
     test/backend/admin/registrar/test_update_registrar.cc
     test/backend/admin/registrar/test_update_zone_access.cc
+    test/libfred/registrar/epp_auth/util.cc
     test/setup/fixtures.cc
     test/setup/fixtures_utils.cc)
 target_link_libraries(test-admin-registrar
@@ -3036,6 +3041,7 @@ target_link_libraries(test-admin-registrar
     fred
     log
     db
+    password_storage
     util
     types
     timezones)
@@ -3049,6 +3055,7 @@ target_link_external_libraries(test-admin-registrar
     omniorb4
     boost_thread
     threads
+    openssl
     postgres
     libidn)
 
