@@ -191,7 +191,8 @@ private:
 
             if (_payment.price <= Money("0"))
             {
-                throw std::runtime_error("could not process payment, price not > 0");
+                LOGGER(PACKAGE).warning("could not process payment, price not > 0");
+                throw InvalidPaymentData();
             }
 
             Database::Connection conn = Database::Manager::acquire();
