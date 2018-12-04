@@ -111,6 +111,10 @@ void UpdateRegistrarEppAuth::exec(OperationContext& _ctx) const
     {
         throw;
     }
+    catch (const Database::ResultFailed&)
+    {
+        throw DuplicateCertificate();
+    }
     catch (const std::exception&)
     {
         throw UpdateRegistrarEppAuthException();
