@@ -31,22 +31,22 @@
 namespace Epp {
 namespace Contact {
 
-class ConfigCheck
+class ConfigDataFilter
 {
 public:
-    ConfigCheck() = default;
+    ConfigDataFilter() = default;
     template <typename>
     bool is_type_of()const;
     struct Empty;//specialization is_type_of<Empty>
-    ConfigCheck& set_name(const std::string&);
+    ConfigDataFilter& set_name(const std::string&);
     template <typename>
     static void add_options_description(boost::program_options::options_description& options_description);
     template <typename>
     const std::string& get_value()const;
     template <typename>
-    ConfigCheck& set_all_values(const boost::program_options::variables_map&);
+    ConfigDataFilter& set_all_values(const boost::program_options::variables_map&);
     template <typename>
-    static ConfigCheck get_default();
+    static ConfigDataFilter get_default();
     using KeyValue = std::unordered_map<std::string, std::string>;
 private:
     std::string name_;

@@ -21,14 +21,14 @@
 namespace Epp {
 namespace Contact {
 
-ConfigCheck& ConfigCheck::set_name(const std::string& name)
+ConfigDataFilter& ConfigDataFilter::set_name(const std::string& name)
 {
     name_ = name;
     return *this;
 }
 
 template <>
-bool ConfigCheck::is_type_of<ConfigCheck::Empty>()const
+bool ConfigDataFilter::is_type_of<ConfigDataFilter::Empty>()const
 {
     return name_.empty();
 }

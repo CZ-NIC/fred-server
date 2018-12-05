@@ -36,7 +36,7 @@ enum class Public
 template <typename T>
 Public compute_publishability(
         const Hideable<T>& hideable_data,
-        CreateContactCheck::Data default_publishability)
+        CreateContactDataFilter::Data default_publishability)
 {
     if (hideable_data.is_publishability_specified())
     {
@@ -52,11 +52,11 @@ Public compute_publishability(
     }
     switch (default_publishability)
     {
-        case CreateContactCheck::Data::show:
+        case CreateContactDataFilter::Data::show:
             return Public::yes;
-        case CreateContactCheck::Data::hide:
+        case CreateContactDataFilter::Data::hide:
             return Public::no;
-        case CreateContactCheck::Data::publishability_not_specified:
+        case CreateContactDataFilter::Data::publishability_not_specified:
             throw std::runtime_error("publishability must be specified");
     }
     throw std::runtime_error("unknown default publishability");
@@ -65,7 +65,7 @@ Public compute_publishability(
 template <typename> struct Constraint;
 
 template <typename C, typename T>
-bool is_public(const Hideable<T>& hideable_data, CreateContactCheck::Data default_publishability)
+bool is_public(const Hideable<T>& hideable_data, CreateContactDataFilter::Data default_publishability)
 {
     const auto publishability = compute_publishability(hideable_data, default_publishability);
     switch (publishability)
@@ -82,7 +82,7 @@ struct PublicIsMandatory;
 struct AnyIsAvailable;
 
 struct ExceptionDiscloseflagRulesViolation:
-        Epp::Contact::CreateOperationCheck::DiscloseflagRulesViolation,
+        Epp::Contact::CreateContactDataFilter::DiscloseflagRulesViolation,
         std::runtime_error
 {
     ExceptionDiscloseflagRulesViolation() : std::runtime_error("discloseflag rules violation") { }
@@ -121,7 +121,7 @@ struct Constraint<AnyIsAvailable>
 
 }//namespace Epp::Contact::Impl::CzNic::{anonymous}
 
-CreateContactCheck::CreateContactCheck()
+CreateContactDataFilter::CreateContactDataFilter()
     : default_disclose_name_(Data::publishability_not_specified),
       default_disclose_organization_(Data::publishability_not_specified),
       default_disclose_address_(Data::publishability_not_specified),
@@ -133,7 +133,7 @@ CreateContactCheck::CreateContactCheck()
       default_disclose_notify_email_(Data::publishability_not_specified)
 { }
 
-CreateContactCheck::CreateContactCheck(
+CreateContactDataFilter::CreateContactDataFilter(
         Data default_disclose_name,
         Data default_disclose_organization,
         Data default_disclose_address,
@@ -154,7 +154,7 @@ CreateContactCheck::CreateContactCheck(
       default_disclose_notify_email_(default_disclose_notify_email)
 { }
 
-LibFred::CreateContact& CreateContactCheck::operator()(
+LibFred::CreateContact& CreateContactDataFilter::operator()(
         LibFred::OperationContext& ctx,
         const CreateContactInputData& contact_data,
         const SessionData&,

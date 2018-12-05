@@ -29,7 +29,7 @@ namespace Epp {
 namespace Contact {
 namespace Impl {
 
-std::shared_ptr<Epp::Contact::CreateOperationCheck> get_create_contact_check(const ConfigCheck& check);
+std::shared_ptr<Epp::Contact::CreateContactDataFilter> get_create_contact_data_filter(const ConfigDataFilter& filter);
 
 }//namespace Epp::Contact::Impl
 }//namespace Epp::Contact

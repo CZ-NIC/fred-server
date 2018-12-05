@@ -31,79 +31,79 @@ namespace Impl {
 namespace {
 
 template <typename T>
-CzNic::CreateContactCheck::Data from_option_to_cznic_data(const ConfigCheck& check)
+CzNic::CreateContactDataFilter::Data from_option_to_cznic_data(const ConfigDataFilter& filter)
 {
-    const auto option_value = check.get_value<T>();
+    const auto option_value = filter.get_value<T>();
     if (option_value == "show")
     {
-        return CzNic::CreateContactCheck::Data::show;
+        return CzNic::CreateContactDataFilter::Data::show;
     }
     if (option_value == "hide")
     {
-        return CzNic::CreateContactCheck::Data::hide;
+        return CzNic::CreateContactDataFilter::Data::hide;
     }
     if (option_value.empty())
     {
-        return CzNic::CreateContactCheck::Data::publishability_not_specified;
+        return CzNic::CreateContactDataFilter::Data::publishability_not_specified;
     }
     throw std::runtime_error("unable convert string to value of CzNic::CreateContactCheck::Data type");
 }
 
 template <typename T>
-SetUnused::CreateContactCheck::Data from_option_to_set_unused_data(const ConfigCheck& check)
+SetUnused::CreateContactDataFilter::Data from_option_to_set_unused_data(const ConfigDataFilter& filter)
 {
-    const auto option_value = check.get_value<T>();
+    const auto option_value = filter.get_value<T>();
     if (option_value == "show")
     {
-        return SetUnused::CreateContactCheck::Data::show;
+        return SetUnused::CreateContactDataFilter::Data::show;
     }
     if (option_value == "hide")
     {
-        return SetUnused::CreateContactCheck::Data::hide;
+        return SetUnused::CreateContactDataFilter::Data::hide;
     }
     if (option_value.empty())
     {
-        return SetUnused::CreateContactCheck::Data::publishability_not_specified;
+        return SetUnused::CreateContactDataFilter::Data::publishability_not_specified;
     }
     throw std::runtime_error("unable convert string to value of SetUnused::CreateContactCheck::Data type");
 }
 
 }//namespace Epp::Contact::Impl::{anonymous}
 
-std::shared_ptr<Epp::Contact::CreateOperationCheck> get_create_contact_check(const ConfigCheck& check)
+std::shared_ptr<Epp::Contact::CreateContactDataFilter> get_create_contact_data_filter(const ConfigDataFilter& filter)
 {
-    if (check.is_type_of<CzNic::Specific>())
+    if (filter.is_type_of<CzNic::Specific>())
     {
-        return std::make_shared<CzNic::CreateContactCheck>(
-                from_option_to_cznic_data<CzNic::Specific::CreateContact::Disclose::Name>(check),
-                from_option_to_cznic_data<CzNic::Specific::CreateContact::Disclose::Organization>(check),
-                from_option_to_cznic_data<CzNic::Specific::CreateContact::Disclose::Address>(check),
-                from_option_to_cznic_data<CzNic::Specific::CreateContact::Disclose::Telephone>(check),
-                from_option_to_cznic_data<CzNic::Specific::CreateContact::Disclose::Fax>(check),
-                from_option_to_cznic_data<CzNic::Specific::CreateContact::Disclose::Email>(check),
-                from_option_to_cznic_data<CzNic::Specific::CreateContact::Disclose::Vat>(check),
-                from_option_to_cznic_data<CzNic::Specific::CreateContact::Disclose::Ident>(check),
-                from_option_to_cznic_data<CzNic::Specific::CreateContact::Disclose::NotifyEmail>(check));
+        return std::make_shared<CzNic::CreateContactDataFilter>(
+                from_option_to_cznic_data<CzNic::Specific::CreateContact::Disclose::Name>(filter),
+                from_option_to_cznic_data<CzNic::Specific::CreateContact::Disclose::Organization>(filter),
+                from_option_to_cznic_data<CzNic::Specific::CreateContact::Disclose::Address>(filter),
+                from_option_to_cznic_data<CzNic::Specific::CreateContact::Disclose::Telephone>(filter),
+                from_option_to_cznic_data<CzNic::Specific::CreateContact::Disclose::Fax>(filter),
+                from_option_to_cznic_data<CzNic::Specific::CreateContact::Disclose::Email>(filter),
+                from_option_to_cznic_data<CzNic::Specific::CreateContact::Disclose::Vat>(filter),
+                from_option_to_cznic_data<CzNic::Specific::CreateContact::Disclose::Ident>(filter),
+                from_option_to_cznic_data<CzNic::Specific::CreateContact::Disclose::NotifyEmail>(filter));
     }
-    if (check.is_type_of<SetUnused::Config>())
+    if (filter.is_type_of<SetUnused::Config>())
     {
-        return std::make_shared<SetUnused::CreateContactCheck>(
-                from_option_to_set_unused_data<SetUnused::Config::CreateContact::Disclose::Name>(check),
-                from_option_to_set_unused_data<SetUnused::Config::CreateContact::Disclose::Organization>(check),
-                from_option_to_set_unused_data<SetUnused::Config::CreateContact::Disclose::Address>(check),
-                from_option_to_set_unused_data<SetUnused::Config::CreateContact::Disclose::Telephone>(check),
-                from_option_to_set_unused_data<SetUnused::Config::CreateContact::Disclose::Fax>(check),
-                from_option_to_set_unused_data<SetUnused::Config::CreateContact::Disclose::Email>(check),
-                from_option_to_set_unused_data<SetUnused::Config::CreateContact::Disclose::Vat>(check),
-                from_option_to_set_unused_data<SetUnused::Config::CreateContact::Disclose::Ident>(check),
-                from_option_to_set_unused_data<SetUnused::Config::CreateContact::Disclose::NotifyEmail>(check));
+        return std::make_shared<SetUnused::CreateContactDataFilter>(
+                from_option_to_set_unused_data<SetUnused::Config::CreateContact::Disclose::Name>(filter),
+                from_option_to_set_unused_data<SetUnused::Config::CreateContact::Disclose::Organization>(filter),
+                from_option_to_set_unused_data<SetUnused::Config::CreateContact::Disclose::Address>(filter),
+                from_option_to_set_unused_data<SetUnused::Config::CreateContact::Disclose::Telephone>(filter),
+                from_option_to_set_unused_data<SetUnused::Config::CreateContact::Disclose::Fax>(filter),
+                from_option_to_set_unused_data<SetUnused::Config::CreateContact::Disclose::Email>(filter),
+                from_option_to_set_unused_data<SetUnused::Config::CreateContact::Disclose::Vat>(filter),
+                from_option_to_set_unused_data<SetUnused::Config::CreateContact::Disclose::Ident>(filter),
+                from_option_to_set_unused_data<SetUnused::Config::CreateContact::Disclose::NotifyEmail>(filter));
     }
-    if (check.is_type_of<ConfigCheck::Empty>())
+    if (filter.is_type_of<ConfigDataFilter::Empty>())
     {
-        class EmptyCreateContactCheck final : public Epp::Contact::CreateOperationCheck
+        class EmptyCreateContactDataFilter final : public Epp::Contact::CreateContactDataFilter
         {
         public:
-            EmptyCreateContactCheck() = default;
+            EmptyCreateContactDataFilter() = default;
         private:
             LibFred::CreateContact& operator()(
                     LibFred::OperationContext&,
@@ -114,9 +114,9 @@ std::shared_ptr<Epp::Contact::CreateOperationCheck> get_create_contact_check(con
                 return create_op;
             }
         };
-        return std::make_shared<EmptyCreateContactCheck>();
+        return std::make_shared<EmptyCreateContactDataFilter>();
     }
-    throw std::runtime_error("unknown create contact check name");
+    throw std::runtime_error("unknown create contact data filter name");
 }
 
 }//namespace Epp::Contact::Impl

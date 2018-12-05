@@ -49,7 +49,7 @@ public:
     bool rifd_epp_operations_charging;
     bool epp_update_contact_enqueue_check;
 
-    Epp::Contact::ConfigCheck rifd_check;
+    Epp::Contact::ConfigDataFilter rifd_contact_data_filter;
 };
 
 #endif

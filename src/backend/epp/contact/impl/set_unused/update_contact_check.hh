@@ -26,7 +26,7 @@ namespace Contact {
 namespace Impl {
 namespace SetUnused {
 
-class UpdateContactCheck final : public Epp::Contact::UpdateOperationCheck
+class UpdateContactDataFilter final : public Epp::Contact::UpdateContactDataFilter
 {
 public:
     enum class Operation
@@ -35,8 +35,8 @@ public:
         set_to_hide,
         do_not_change
     };
-    UpdateContactCheck();
-    UpdateContactCheck(
+    UpdateContactDataFilter();
+    UpdateContactDataFilter(
             Operation default_disclose_name,
             Operation default_disclose_organization,
             Operation default_disclose_address,

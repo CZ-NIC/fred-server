@@ -50,15 +50,15 @@ std::shared_ptr<boost::program_options::options_description> HandleRifdArgs::get
             ("rifd.epp_update_contact_enqueue_check",
              boost::program_options::value<bool>()->default_value(false),
              "turn enqueueing of automatic check after contact check via EPP on/off")
-            ("rifd.check",
+            ("rifd.contact_data_filter",
              boost::program_options::value<std::string>()->default_value(std::string()),
-             ("type of checks applied in EPP operations; possible values: "
+             ("filter applied on contacts data in EPP operations; possible values: "
               "<empty>, " +
-              CzNicSpecific::get_check_name() + ", " +
-              SetUnusedConfig::get_check_name()).c_str());
+              CzNicSpecific::get_contact_data_filter_name() + ", " +
+              SetUnusedConfig::get_contact_data_filter_name()).c_str());
 
-    Epp::Contact::ConfigCheck::add_options_description<CzNicSpecific>(*opts_descs);
-    Epp::Contact::ConfigCheck::add_options_description<SetUnusedConfig>(*opts_descs);
+    Epp::Contact::ConfigDataFilter::add_options_description<CzNicSpecific>(*opts_descs);
+    Epp::Contact::ConfigDataFilter::add_options_description<SetUnusedConfig>(*opts_descs);
     return opts_descs;
 }
 
@@ -73,7 +73,7 @@ void HandleRifdArgs::handle(int argc, char* argv[], FakedArgs &fa)
     rifd_epp_update_domain_keyset_clear = vm["rifd.epp_update_domain_keyset_clear"].as<bool>();
     rifd_epp_operations_charging = vm["rifd.epp_operations_charging"].as<bool>();
     epp_update_contact_enqueue_check = vm["rifd.epp_update_contact_enqueue_check"].as<bool>();
-    rifd_check.set_name(vm["rifd.check"].as<std::string>());
-    rifd_check.set_all_values<CzNicSpecific>(vm);
-    rifd_check.set_all_values<SetUnusedConfig>(vm);
+    rifd_contact_data_filter.set_name(vm["rifd.contact_data_filter"].as<std::string>());
+    rifd_contact_data_filter.set_all_values<CzNicSpecific>(vm);
+    rifd_contact_data_filter.set_all_values<SetUnusedConfig>(vm);
 }

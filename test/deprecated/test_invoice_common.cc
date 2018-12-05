@@ -77,7 +77,7 @@ std::unique_ptr<ccReg_EPP_i> create_epp_backend_object()
             rifd_args_ptr->rifd_epp_update_domain_keyset_clear,
             rifd_args_ptr->rifd_epp_operations_charging,
             rifd_args_ptr->epp_update_contact_enqueue_check,
-            rifd_args_ptr->rifd_check);
+            rifd_args_ptr->rifd_contact_data_filter);
 
     EPP_backend_init(ret_epp.get(), rifd_args_ptr);
 

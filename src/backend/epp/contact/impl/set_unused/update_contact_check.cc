@@ -36,7 +36,7 @@ enum class Public
 Public compute_publishability(
         bool is_public,
         const boost::optional<PrivacyPolicy>& publishability,
-        UpdateContactCheck::Operation default_operation)
+        UpdateContactDataFilter::Operation default_operation)
 {
     if (static_cast<bool>(publishability))
     {
@@ -51,11 +51,11 @@ Public compute_publishability(
     }
     switch (default_operation)
     {
-        case UpdateContactCheck::Operation::set_to_show:
+        case UpdateContactDataFilter::Operation::set_to_show:
             return Public::yes;
-        case UpdateContactCheck::Operation::set_to_hide:
+        case UpdateContactDataFilter::Operation::set_to_hide:
             return Public::no;
-        case UpdateContactCheck::Operation::do_not_change:
+        case UpdateContactDataFilter::Operation::do_not_change:
             return is_public ? Public::yes : Public::no;
     }
     throw std::runtime_error("unknown publishability");
@@ -66,7 +66,7 @@ Public get_privacy(
         U& updater,
         bool is_public,
         const boost::optional<PrivacyPolicy>& publishability,
-        UpdateContactCheck::Operation default_operation,
+        UpdateContactDataFilter::Operation default_operation,
         U&(LibFred::UpdateContact<U>::*privacy_setter)(bool))
 {
     switch (compute_publishability(is_public, publishability, default_operation))
@@ -83,7 +83,7 @@ Public get_privacy(
 
 }//namespace Epp::Contact::Impl::SetUnused::{anonymous}
 
-UpdateContactCheck::UpdateContactCheck()
+UpdateContactDataFilter::UpdateContactDataFilter()
     : default_disclose_name_(Operation::do_not_change),
       default_disclose_organization_(Operation::do_not_change),
       default_disclose_address_(Operation::do_not_change),
@@ -95,7 +95,7 @@ UpdateContactCheck::UpdateContactCheck()
       default_disclose_notify_email_(Operation::do_not_change)
 { }
 
-UpdateContactCheck::UpdateContactCheck(
+UpdateContactDataFilter::UpdateContactDataFilter(
         Operation default_disclose_name,
         Operation default_disclose_organization,
         Operation default_disclose_address,
@@ -116,7 +116,7 @@ UpdateContactCheck::UpdateContactCheck(
       default_disclose_notify_email_(default_disclose_notify_email)
 { }
 
-LibFred::UpdateContactByHandle& UpdateContactCheck::operator()(
+LibFred::UpdateContactByHandle& UpdateContactDataFilter::operator()(
         LibFred::OperationContext& ctx,
         const LibFred::InfoContactData& old_data,
         const ContactChange& change,

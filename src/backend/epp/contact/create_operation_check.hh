@@ -27,11 +27,11 @@
 namespace Epp {
 namespace Contact {
 
-class CreateOperationCheck
+class CreateContactDataFilter
 {
 public:
     struct DiscloseflagRulesViolation { };
-    virtual ~CreateOperationCheck() { }
+    virtual ~CreateContactDataFilter() { }
     virtual LibFred::CreateContact& operator()(
             LibFred::OperationContext& ctx,
             const CreateContactInputData& contact_data,

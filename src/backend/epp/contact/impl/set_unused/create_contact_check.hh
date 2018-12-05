@@ -26,7 +26,7 @@ namespace Contact {
 namespace Impl {
 namespace SetUnused {
 
-class CreateContactCheck final : public Epp::Contact::CreateOperationCheck
+class CreateContactDataFilter final : public Epp::Contact::CreateContactDataFilter
 {
 public:
     enum class Data
@@ -35,8 +35,8 @@ public:
         hide,
         publishability_not_specified
     };
-    CreateContactCheck();
-    CreateContactCheck(
+    CreateContactDataFilter();
+    CreateContactDataFilter(
             Data default_disclose_name,
             Data default_disclose_organization,
             Data default_disclose_address,

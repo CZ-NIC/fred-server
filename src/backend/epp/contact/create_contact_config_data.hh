@@ -31,12 +31,12 @@ class CreateContactConfigData
 public:
     CreateContactConfigData(
             bool _rifd_epp_operations_charging,
-            const std::shared_ptr<CreateOperationCheck>& _operation_check);
+            const std::shared_ptr<CreateContactDataFilter>& _data_filter);
     bool are_rifd_epp_operations_charged()const;
-    const CreateOperationCheck& get_operation_check()const;
+    const CreateContactDataFilter& get_data_filter()const;
 private:
     bool rifd_epp_operations_charging_;
-    std::shared_ptr<CreateOperationCheck> operation_check_;
+    std::shared_ptr<CreateContactDataFilter> data_filter_;
 };
 
 } // namespace Epp::Contact

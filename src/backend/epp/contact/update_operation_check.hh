@@ -28,11 +28,11 @@
 namespace Epp {
 namespace Contact {
 
-class UpdateOperationCheck
+class UpdateContactDataFilter
 {
 public:
     struct DiscloseflagRulesViolation { };
-    virtual ~UpdateOperationCheck() { }
+    virtual ~UpdateContactDataFilter() { }
     virtual LibFred::UpdateContactByHandle& operator()(
             LibFred::OperationContext& ctx,
             const LibFred::InfoContactData& old_data,
