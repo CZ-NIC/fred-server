@@ -16,9 +16,9 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/backend/epp/contact/config_check.hh"
-#include "src/backend/epp/contact/create_operation_check.hh"
-#include "src/backend/epp/contact/update_operation_check.hh"
+#include "src/backend/epp/contact/config_data_filter.hh"
+#include "src/backend/epp/contact/create_contact_data_filter.hh"
+#include "src/backend/epp/contact/update_contact_data_filter.hh"
 
 #include "src/bin/corba/epp/messages.hh"
 #include "src/bin/corba/epp/epp_session.hh"

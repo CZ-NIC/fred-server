@@ -27,7 +27,7 @@
 #include "src/util/cfg/faked_args.hh"
 #include "src/util/cfg/handle_args.hh"
 
-#include "src/backend/epp/contact/config_check.hh"
+#include "src/backend/epp/contact/config_data_filter.hh"
 
 #include <boost/program_options.hpp>
 

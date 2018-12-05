@@ -72,8 +72,8 @@
 #include "src/backend/epp/contact/info_contact_localized.hh"
 #include "src/backend/epp/contact/transfer_contact_localized.hh"
 #include "src/backend/epp/contact/update_contact_localized.hh"
-#include "src/backend/epp/contact/impl/get_create_contact_check.hh"
-#include "src/backend/epp/contact/impl/get_update_contact_check.hh"
+#include "src/backend/epp/contact/impl/get_create_contact_data_filter.hh"
+#include "src/backend/epp/contact/impl/get_update_contact_data_filter.hh"
 
 #include "src/bin/corba/epp/credit/credit_corba_conversions.hh"
 #include "src/backend/epp/credit/client_credit_localized.hh"

@@ -18,7 +18,7 @@
 
 #include "src/backend/epp/contact/impl/set_unused/config.hh"
 
-#include "src/backend/epp/contact/config_check.hh"
+#include "src/backend/epp/contact/config_data_filter.hh"
 
 #include <stdexcept>
 

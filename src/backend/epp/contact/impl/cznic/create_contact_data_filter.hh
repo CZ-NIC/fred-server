@@ -16,10 +16,10 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CREATE_CONTACT_CHECK_HH_81C90864A65006DED8E05B59BC583804//date "+%s.%N"|md5sum|tr "[a-f]" "[A-F]"
-#define CREATE_CONTACT_CHECK_HH_81C90864A65006DED8E05B59BC583804
+#ifndef CREATE_CONTACT_DATA_FILTER_HH_81C90864A65006DED8E05B59BC583804//date "+%s.%N"|md5sum|tr "[a-f]" "[A-F]"
+#define CREATE_CONTACT_DATA_FILTER_HH_81C90864A65006DED8E05B59BC583804
 
-#include "src/backend/epp/contact/create_operation_check.hh"
+#include "src/backend/epp/contact/create_contact_data_filter.hh"
 
 namespace Epp {
 namespace Contact {
@@ -68,4 +68,4 @@ private:
 }//namespace Epp::Contact
 }//namespace Epp
 
-#endif//CREATE_CONTACT_CHECK_HH_81C90864A65006DED8E05B59BC583804
+#endif//CREATE_CONTACT_DATA_FILTER_HH_81C90864A65006DED8E05B59BC583804

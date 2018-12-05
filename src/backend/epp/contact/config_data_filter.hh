@@ -17,11 +17,11 @@
  */
 
 /**
- *  @file config_check.hh
+ *  @file config_data_filter.hh
  */
 
-#ifndef CONFIG_CHECK_HH_E2B2E9AA4B484E66C688B724EC0DF0DD//date "+%s.%N"|md5sum|tr "[a-f]" "[A-F]"
-#define CONFIG_CHECK_HH_E2B2E9AA4B484E66C688B724EC0DF0DD
+#ifndef CONFIG_DATA_FILTER_HH_E2B2E9AA4B484E66C688B724EC0DF0DD//date "+%s.%N"|md5sum|tr "[a-f]" "[A-F]"
+#define CONFIG_DATA_FILTER_HH_E2B2E9AA4B484E66C688B724EC0DF0DD
 
 #include <boost/program_options.hpp>
 
@@ -56,4 +56,4 @@ private:
 }//namespace Epp::Contact
 }//namespace Epp
 
-#endif//CONFIG_CHECK_HH_E2B2E9AA4B484E66C688B724EC0DF0DD
+#endif//CONFIG_DATA_FILTER_HH_E2B2E9AA4B484E66C688B724EC0DF0DD

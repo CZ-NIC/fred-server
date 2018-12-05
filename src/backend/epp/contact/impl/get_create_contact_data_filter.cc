@@ -16,10 +16,10 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/backend/epp/contact/impl/get_create_contact_check.hh"
-#include "src/backend/epp/contact/impl/cznic/create_contact_check.hh"
+#include "src/backend/epp/contact/impl/get_create_contact_data_filter.hh"
+#include "src/backend/epp/contact/impl/cznic/create_contact_data_filter.hh"
 #include "src/backend/epp/contact/impl/cznic/specific.hh"
-#include "src/backend/epp/contact/impl/set_unused/create_contact_check.hh"
+#include "src/backend/epp/contact/impl/set_unused/create_contact_data_filter.hh"
 #include "src/backend/epp/contact/impl/set_unused/config.hh"
 
 #include <stdexcept>

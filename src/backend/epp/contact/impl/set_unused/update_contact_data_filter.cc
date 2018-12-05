@@ -16,7 +16,7 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/backend/epp/contact/impl/set_unused/update_contact_check.hh"
+#include "src/backend/epp/contact/impl/set_unused/update_contact_data_filter.hh"
 
 #include <stdexcept>
 

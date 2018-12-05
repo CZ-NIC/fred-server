@@ -16,7 +16,7 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/backend/epp/contact/impl/cznic/update_contact_check.hh"
+#include "src/backend/epp/contact/impl/cznic/update_contact_data_filter.hh"
 #include "src/backend/epp/contact/util.hh"
 
 #include "src/libfred/object/object_states_info.hh"

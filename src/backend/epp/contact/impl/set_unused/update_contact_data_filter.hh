@@ -16,15 +16,15 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef UPDATE_CONTACT_CHECK_HH_9C87D4B1C6E34297BFAE2DAF9440B049//date "+%s.%N"|md5sum|tr "[a-f]" "[A-F]"
-#define UPDATE_CONTACT_CHECK_HH_9C87D4B1C6E34297BFAE2DAF9440B049
+#ifndef UPDATE_CONTACT_DATA_FILTER_HH_53A04B8AEE936CF7CE7F4BA9ACD27875//date "+%s.%N"|md5sum|tr "[a-f]" "[A-F]"
+#define UPDATE_CONTACT_DATA_FILTER_HH_53A04B8AEE936CF7CE7F4BA9ACD27875
 
-#include "src/backend/epp/contact/update_operation_check.hh"
+#include "src/backend/epp/contact/update_contact_data_filter.hh"
 
 namespace Epp {
 namespace Contact {
 namespace Impl {
-namespace CzNic {
+namespace SetUnused {
 
 class UpdateContactDataFilter final : public Epp::Contact::UpdateContactDataFilter
 {
@@ -64,9 +64,9 @@ private:
     const Operation default_disclose_notify_email_;
 };
 
-}//namespace Epp::Contact::Impl::CzNic
+}//namespace Epp::Contact::Impl::SetUnused
 }//namespace Epp::Contact::Impl
 }//namespace Epp::Contact
 }//namespace Epp
 
-#endif//UPDATE_CONTACT_CHECK_HH_9C87D4B1C6E34297BFAE2DAF9440B049
+#endif//UPDATE_CONTACT_DATA_FILTER_HH_53A04B8AEE936CF7CE7F4BA9ACD27875

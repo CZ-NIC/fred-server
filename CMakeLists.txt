@@ -415,7 +415,7 @@ prepare_object_files(
     src/backend/epp/contact/authinfo_contact_localized.cc
     src/backend/epp/contact/check_contact.cc
     src/backend/epp/contact/check_contact_localized.cc
-    src/backend/epp/contact/config_check.cc
+    src/backend/epp/contact/config_data_filter.cc
     src/backend/epp/contact/contact_change.cc
     src/backend/epp/contact/contact_data.cc
     src/backend/epp/contact/create_contact.cc
@@ -425,15 +425,15 @@ prepare_object_files(
     src/backend/epp/contact/delete_contact.cc
     src/backend/epp/contact/delete_contact_localized.cc
     src/backend/epp/contact/impl/contact_output.cc
-    src/backend/epp/contact/impl/cznic/create_contact_check.cc
+    src/backend/epp/contact/impl/cznic/create_contact_data_filter.cc
     src/backend/epp/contact/impl/cznic/specific.cc
-    src/backend/epp/contact/impl/cznic/update_contact_check.cc
-    src/backend/epp/contact/impl/set_unused/create_contact_check.cc
+    src/backend/epp/contact/impl/cznic/update_contact_data_filter.cc
+    src/backend/epp/contact/impl/set_unused/create_contact_data_filter.cc
     src/backend/epp/contact/impl/set_unused/config.cc
-    src/backend/epp/contact/impl/set_unused/update_contact_check.cc
-    src/backend/epp/contact/impl/get_create_contact_check.cc
+    src/backend/epp/contact/impl/set_unused/update_contact_data_filter.cc
+    src/backend/epp/contact/impl/get_create_contact_data_filter.cc
     src/backend/epp/contact/impl/get_personal_id_union.cc
-    src/backend/epp/contact/impl/get_update_contact_check.cc
+    src/backend/epp/contact/impl/get_update_contact_data_filter.cc
     src/backend/epp/contact/info_contact.cc
     src/backend/epp/contact/info_contact_localized.cc
     src/backend/epp/contact/transfer_contact.cc
@@ -1802,12 +1802,12 @@ prepare_static_library(epp_impl
     src/backend/epp/contact/contact_data.cc
     src/backend/epp/contact/impl/contact_output.cc
     src/backend/epp/contact/impl/get_personal_id_union.cc
-    src/backend/epp/contact/impl/cznic/create_contact_check.cc
-    src/backend/epp/contact/impl/cznic/update_contact_check.cc
-    src/backend/epp/contact/impl/set_unused/create_contact_check.cc
-    src/backend/epp/contact/impl/set_unused/update_contact_check.cc
-    src/backend/epp/contact/impl/get_create_contact_check.cc
-    src/backend/epp/contact/impl/get_update_contact_check.cc
+    src/backend/epp/contact/impl/cznic/create_contact_data_filter.cc
+    src/backend/epp/contact/impl/cznic/update_contact_data_filter.cc
+    src/backend/epp/contact/impl/set_unused/create_contact_data_filter.cc
+    src/backend/epp/contact/impl/set_unused/update_contact_data_filter.cc
+    src/backend/epp/contact/impl/get_create_contact_data_filter.cc
+    src/backend/epp/contact/impl/get_update_contact_data_filter.cc
     src/backend/epp/contact/update_contact_localized.cc
     src/backend/epp/contact/update_contact.cc
     src/backend/epp/contact/update_contact_config_data.cc
@@ -1923,7 +1923,7 @@ prepare_static_library(corbanullableisodatetime
 
 prepare_static_library(handle_rifd_args
     src/util/cfg/handle_rifd_args.cc
-    src/backend/epp/contact/config_check.cc
+    src/backend/epp/contact/config_data_filter.cc
     src/backend/epp/contact/impl/cznic/specific.cc
     src/backend/epp/contact/impl/set_unused/config.cc)
 

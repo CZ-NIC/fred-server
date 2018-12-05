@@ -19,7 +19,7 @@
 #ifndef UPDATE_CONTACT_CONFIG_DATA_HH_560A4052E8EB4FEF9DBD656BAC6C346B
 #define UPDATE_CONTACT_CONFIG_DATA_HH_560A4052E8EB4FEF9DBD656BAC6C346B
 
-#include "src/backend/epp/contact/update_operation_check.hh"
+#include "src/backend/epp/contact/update_contact_data_filter.hh"
 
 #include <memory>
 
