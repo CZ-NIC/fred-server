@@ -107,11 +107,23 @@ std::shared_ptr<Epp::Contact::CreateContactDataFilter> get_create_contact_data_f
         private:
             LibFred::CreateContact& operator()(
                     LibFred::OperationContext&,
-                    const CreateContactInputData&,
+                    const CreateContactInputData& input_data,
                     const SessionData&,
                     LibFred::CreateContact& create_op)const override
             {
-                return create_op;
+                if (input_data.name.is_publishability_specified() &&
+                    input_data.organization.is_publishability_specified() &&
+                    input_data.address.is_publishability_specified() &&
+                    input_data.telephone.is_publishability_specified() &&
+                    input_data.fax.is_publishability_specified() &&
+                    input_data.email.is_publishability_specified() &&
+                    input_data.vat.is_publishability_specified() &&
+                    input_data.ident.is_publishability_specified() &&
+                    input_data.notify_email.is_publishability_specified())
+                {
+                    return create_op;
+                }
+                throw std::runtime_error("publishability must be specified");
             }
         };
         return std::make_shared<EmptyCreateContactDataFilter>();
