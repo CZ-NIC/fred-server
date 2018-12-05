@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef UPDATE_OPERATION_CHECK_HH_F26DDFC8A2F6B4F427A86B163A68B1D4//date "+%s.%N"|md5sum|tr "[a-f]" "[A-F]"
-#define UPDATE_OPERATION_CHECK_HH_F26DDFC8A2F6B4F427A86B163A68B1D4
+#ifndef UPDATE_CONTACT_DATA_FILTER_HH_F26DDFC8A2F6B4F427A86B163A68B1D4//date "+%s.%N"|md5sum|tr "[a-f]" "[A-F]"
+#define UPDATE_CONTACT_DATA_FILTER_HH_F26DDFC8A2F6B4F427A86B163A68B1D4
 
 #include "src/libfred/opcontext.hh"
 #include "src/libfred/registrable_object/contact/info_contact_data.hh"
@@ -44,4 +44,4 @@ public:
 }//namespace Epp::Contact
 }//namespace Epp
 
-#endif//UPDATE_OPERATION_CHECK_HH_F26DDFC8A2F6B4F427A86B163A68B1D4
+#endif//UPDATE_CONTACT_DATA_FILTER_HH_F26DDFC8A2F6B4F427A86B163A68B1D4
