@@ -51,6 +51,42 @@ private:
 
 } // namespace Admin::Registrar::{anonymous}
 
+unsigned long long add_epp_auth(const std::string& _registrar_handle,
+        const std::string& _certificate_fingerprint,
+        const std::string& _plain_password)
+{
+    LOGGING_CONTEXT(log_ctx);
+    LOGGER(PACKAGE).debug("Registrar handle: " + _registrar_handle +
+                          ", certificate: " + _certificate_fingerprint +
+                          ", password: " + _plain_password);
+
+    LibFred::OperationContextCreator ctx;
+    try
+    {
+        TRACE("[CALL] LibFred::Registrar::EppAuth::AddRegistrarEppAuth()");
+        const unsigned long long id = LibFred::Registrar::EppAuth::AddRegistrarEppAuth(_registrar_handle,
+                    _certificate_fingerprint,
+                    _plain_password).exec(ctx);
+        ctx.commit_transaction();
+        return id;
+    }
+    catch (const LibFred::Registrar::EppAuth::NonexistentRegistrar& e)
+    {
+        LOGGER(PACKAGE).warning(e.what());
+        throw EppAuthNonexistentRegistrar();
+    }
+    catch (const LibFred::Registrar::EppAuth::DuplicateCertificate& e)
+    {
+        LOGGER(PACKAGE).warning(e.what());
+        throw DuplicateCertificate();
+    }
+    catch (const std::exception& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw AddEppAuthException();
+    }
+}
+
 void update_epp_auth(const EppAuthData& _auth_data)
 {
     LOGGING_CONTEXT(log_ctx);
@@ -198,6 +234,11 @@ bool EppAuthRecord::operator==(const EppAuthRecord& _other) const
             certificate_fingerprint == _other.certificate_fingerprint &&
             plain_password == _other.plain_password &&
             new_certificate_fingerprint == _other.new_certificate_fingerprint);
+}
+
+const char* AddEppAuthException::what() const noexcept
+{
+    return "Failed to add registrar EPP authentication due to an unknown exception.";
 }
 
 const char* UpdateEppAuthException::what() const noexcept

@@ -44,7 +44,16 @@ struct EppAuthData
     std::vector<EppAuthRecord> epp_auth_records;
 };
 
+unsigned long long add_epp_auth(const std::string& _registrar_handle,
+        const std::string& _certificate_fingerprint,
+        const std::string& _plain_password);
+
 void update_epp_auth(const EppAuthData& _auth_data);
+
+struct AddEppAuthException : std::exception
+{
+    const char* what() const noexcept override;
+};
 
 struct UpdateEppAuthException : std::exception
 {
