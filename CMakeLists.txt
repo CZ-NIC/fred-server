@@ -69,6 +69,7 @@ set_default_path(LOCALSTATEDIR ${CMAKE_INSTALL_PREFIX}/var)
 set_default_path(MONITORINGIPS ${CMAKE_INSTALL_PREFIX}/etc/fred/monitoring_hosts.conf)
 set_default_path(SBINDIR ${CMAKE_INSTALL_PREFIX}/${USR_PREFIX}/sbin)
 set_default_path(SYSCONFDIR ${CMAKE_INSTALL_PREFIX}/etc)
+set_default_path(PREFIX ${CMAKE_INSTALL_PREFIX})
 
 set_default_path(CONFIG_FILE ${SYSCONFDIR}/fred/server.conf)
 set_default_path(HPMAIL_CONFIG ${SYSCONFDIR}/fred/hpmail.conf)
