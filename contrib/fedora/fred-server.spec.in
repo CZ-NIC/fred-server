@@ -4,7 +4,7 @@ Release:        1%{?dist}
 Summary:        FRED - CORBA backend C++ server
 
 Group:          Applications/Utils
-License:        GPL
+License:        GPLv3+
 URL:            http://fred.nic.cz
 Source:         %{name}-%{version}.tar.gz
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-%(%{__id_u} -n)
