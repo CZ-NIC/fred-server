@@ -88,7 +88,7 @@ set_default(NSCONTEXT fred)
 set_default(NSHOST localhost)
 set_default(OPTYS_LOGIN_NAME test)
 set_default(OPTYS_LOGIN_PASSWORD test)
-set_default_path(TEST_DATA ${DATAROOTDIR}/)
+set_default_path(TEST_DATA ${DATAROOTDIR})
 
 set_default(OPTYS_LOGIN_PORT 22)
 set_default(RIFDPORT 2222)

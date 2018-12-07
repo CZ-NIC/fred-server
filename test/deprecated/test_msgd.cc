@@ -89,7 +89,7 @@ BOOST_AUTO_TEST_CASE( test_corba_interface )
             Registry::Messages::PostalAddress_var paddr = make_test_postal_address();
 
             //load test pdf
-            std::string test_pdf_file_name = std::string(TEST_DATA)+"doc/fred-server/test_file.pdf";
+            std::string test_pdf_file_name = std::string(TEST_DATA)+"/doc/fred-server/test_file.pdf";
             std::ifstream test_pdf;
             long long test_pdf_length = 0;
             test_pdf.open (test_pdf_file_name.c_str()
@@ -205,7 +205,7 @@ void test_save_letter_to_send_bad_address_impl(Registry::Messages::PostalAddress
     CORBA::String_var letter_contact = CORBA::string_dup("REG-FRED_B");
 
     //load test pdf
-    std::string test_pdf_file_name = std::string(TEST_DATA)+"doc/fred-server/test_file.pdf";
+    std::string test_pdf_file_name = std::string(TEST_DATA)+"/doc/fred-server/test_file.pdf";
     std::ifstream test_pdf;
     long long test_pdf_length = 0;
     test_pdf.open (test_pdf_file_name.c_str()
