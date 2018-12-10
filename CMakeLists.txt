@@ -771,8 +771,6 @@ prepare_object_files(
     src/libfred/invoicing/invoice.cc
     src/libfred/mail.cc
     src/libfred/messages/messages_impl.cc
-    src/libfred/model_registrar_acl.cc
-    src/libfred/model_registrar.cc
     src/libfred/notifier/enqueue_notification.cc
     src/libfred/notifier/gather_email_data/gather_email_addresses.cc
     src/libfred/notifier/gather_email_data/gather_email_content.cc
@@ -1361,8 +1359,6 @@ prepare_static_library(fred
     src/libfred/common_impl.cc
     src/libfred/object_impl.cc
     src/libfred/common_impl_new.cc
-    src/libfred/model_registrar_acl.cc
-    src/libfred/model_registrar.cc
     src/libfred/registrable_object/domain.cc
     src/libfred/registrable_object/contact.cc
     src/libfred/registrable_object/nsset.cc
