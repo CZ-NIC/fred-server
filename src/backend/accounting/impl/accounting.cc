@@ -456,6 +456,10 @@ PaymentInvoices import_payment_by_registrar_handle(
     {
         throw InvalidPaymentData();
     }
+    catch (const LibFred::Banking::InvalidPaymentData&)
+    {
+        throw InvalidPaymentData();
+    }
     catch (const LibFred::Banking::PaymentAlreadyProcessed&)
     {
         throw PaymentAlreadyProcessed();
