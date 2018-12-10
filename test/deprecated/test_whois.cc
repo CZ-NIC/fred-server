@@ -39,6 +39,8 @@
 #include "src/util/setup_server_decl.hh"
 #include "src/util/time_clock.hh"
 #include "src/libfred/registrar.hh"
+#include "src/libfred/opcontext.hh"
+#include "src/libfred/registrar/create_registrar.hh"
 
 #include "src/util/cfg/handle_general_args.hh"
 #include "src/util/cfg/handle_server_args.hh"
@@ -88,15 +90,14 @@ BOOST_AUTO_TEST_CASE( test_whois )
     // registrar
     std::string time_string(TimeStamp::microsec());
     std::string registrar_handle(std::string("REG-FRED_WHOIS")+time_string);
-    ::LibFred::Registrar::Manager::AutoPtr regMan
-             = ::LibFred::Registrar::Manager::create(DBSharedPtr());
-    ::LibFred::Registrar::Registrar::AutoPtr registrar_ = regMan->createRegistrar();
-    registrar_->setHandle(registrar_handle);//REGISTRAR_ADD_HANDLE_NAME
-    registrar_->setCountry("CZ");//REGISTRAR_COUNTRY_NAME
-    registrar_->setName("Whois Pepa");
-    registrar_->setCity("WhoisPraha");
-    registrar_->setVat(true);
-    registrar_->save();
+    ::LibFred::OperationContextCreator ctx;
+    ::LibFred::CreateRegistrar(registrar_handle)
+            .set_country("CZ")
+            .set_name("Whois Pepa")
+            .set_city("WhoisPepa")
+            .set_vat_payer(true)
+            .exec(ctx);
+    ctx.commit_transaction();
 
     Database::Result res_contact =
     conn.exec("select obr.name, c.name from contact c "
