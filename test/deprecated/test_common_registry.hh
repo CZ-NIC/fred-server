@@ -15,7 +15,7 @@ static std::string zone_registrar_credit_query (
 
 Database::ID get_zone_cz_id();
 LibFred::Registrar::Registrar::AutoPtr createTestRegistrarClass();
-LibFred::Registrar::Registrar::AutoPtr createTestRegistrarClassNoCz(const std::string &varsymb);
+//LibFred::Registrar::Registrar::AutoPtr createTestRegistrarClassNoCz(const std::string &varsymb);
 Database::ID createTestRegistrar();
 
 bool check_std_exception_invoice_prefix(std::exception const & ex);
