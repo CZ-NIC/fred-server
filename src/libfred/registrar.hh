@@ -20,9 +20,6 @@
 #include "src/util/decimal/decimal.hh"
 #include "src/util/types/money.hh"
 
-#include "src/libfred/model_registrar_acl.hh"
-#include "src/libfred/model_registrar.hh"
-
 #include "src/libfred/epp_corba_client.hh"
 #include "src/libfred/logger_client.hh"
 
@@ -75,7 +72,6 @@ public:
   virtual void setCertificateMD5(const std::string& newCertificateMD5) = 0;
   virtual void setRegistrarId(const TID &_registrar_id) = 0;
   virtual void set_password(const std::string& _plaintext_password) = 0;
-  virtual void set_password_same_as_acl_id(unsigned long long _acl_id) = 0;
 protected:
   /// Protected destructor, object is managed by object Registrar
   virtual ~ACL() { }
@@ -236,9 +232,6 @@ public:
   virtual bool isInZone(unsigned id) const = 0;
   /// Look if registrar have currently access to zone by zone fqdn
   virtual bool isInZone(std::string zone_fqdn) const = 0;
-
-  /// Save changes to database
-  virtual void save() = 0;
 
   /// Zones number for credit by zone
   //virtual unsigned long getZonesNumber() = 0;
