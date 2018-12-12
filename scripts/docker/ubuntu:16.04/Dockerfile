@@ -3,6 +3,9 @@ ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get -y clean
 RUN apt-get -y update
 RUN apt-get -y dist-upgrade
+RUN printf 'deb http://archive.nic.cz/ubuntu xenial main\n' > /etc/apt/sources.list.d/cz.nic.list
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 1C0200016A9AC5C6
+RUN apt-get -y update
 RUN apt-get -y install               \
         autoconf                     \
         automake                     \
