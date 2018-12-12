@@ -2,11 +2,8 @@ FROM fedora:27
 RUN dnf -y clean all
 RUN dnf -y upgrade
 RUN dnf -y install       \
-        autoconf         \
-        autoconf-archive \
-        automake         \
+        cmake            \
         pkgconf          \
-        libtool          \
         make             \
         gcc-c++          \
         git              \

@@ -106,7 +106,7 @@ build:centos:amd64:
   <<: *build_job
   script:
     - echo "\$PWD=$PWD"
-    - cmake -DIDL_DIR=/builds/fred/server/idl/idl .
+    - cmake3 -DIDL_DIR=/builds/fred/server/idl/idl .
     - make -j $(($(grep -c processor /proc/cpuinfo) / 2 + 1)) distcheck
   only:
     - master
