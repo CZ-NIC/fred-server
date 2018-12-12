@@ -111,6 +111,11 @@ unsigned long long create_authinfo_request_non_registry_email(
         LOGGER(PACKAGE).info(e.what());
         throw ObjectNotFound();
     }
+    catch (const ObjectTransferProhibited& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw;
+    }
     catch (const LibFred::CreatePublicRequest::Exception& e)
     {
         if (e.is_set_wrong_email())

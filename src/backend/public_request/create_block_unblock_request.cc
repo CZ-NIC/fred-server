@@ -155,22 +155,22 @@ unsigned long long create_block_unblock_request(
     catch (const OperationProhibited& e)
     {
         LOGGER(PACKAGE).info(e.what());
-        throw OperationProhibited();
+        throw;
     }
     catch (const ObjectAlreadyBlocked& e)
     {
         LOGGER(PACKAGE).info(e.what());
-        throw ObjectAlreadyBlocked();
+        throw;
     }
     catch (const ObjectNotBlocked& e)
     {
         LOGGER(PACKAGE).info(e.what());
-        throw ObjectNotBlocked();
+        throw;
     }
     catch (const HasDifferentBlock& e)
     {
         LOGGER(PACKAGE).info(e.what());
-        throw HasDifferentBlock();
+        throw;
     }
     catch (const LibFred::CreatePublicRequest::Exception& e)
     {
