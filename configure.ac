@@ -85,8 +85,8 @@ PKG_CHECK_MODULES(LIBCRYPTO, [libcrypto])
 
 AC_CHECK_HEADER([openssl/evp.h],,[AC_MSG_ERROR([Header openssl/evp.h not found])])
 
-# Check for omniORB (note that 4.1.1 is bugged for us)
-PKG_CHECK_MODULES(OMNIORB4, [omniORB4 > 4.1.1, omniDynamic4, omnithread3])
+# Check for omniORB
+PKG_CHECK_MODULES(OMNIORB4, [omniORB4 >= 4.2.2, omniDynamic4, omnithread4])
 # check for libxml2
 PKG_CHECK_MODULES(XML2, [libxml-2.0 >= 2.5.0])
 
