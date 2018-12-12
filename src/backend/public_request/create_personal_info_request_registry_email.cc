@@ -84,7 +84,7 @@ unsigned long long create_personal_info_request_registry_email(
 
         return public_request_id;
     }
-    catch (const NoPublicRequest& e)
+    catch (const LibFred::UnknownObject& e)
     {
         LOGGER(PACKAGE).info(e.what());
         throw ObjectNotFound();
@@ -93,11 +93,6 @@ unsigned long long create_personal_info_request_registry_email(
     {
         LOGGER(PACKAGE).info(e.what());
         throw NoContactEmail();
-    }
-    catch (const LibFred::UnknownObject& e)
-    {
-        LOGGER(PACKAGE).info(e.what());
-        throw ObjectNotFound();
     }
     catch (const std::exception& e)
     {

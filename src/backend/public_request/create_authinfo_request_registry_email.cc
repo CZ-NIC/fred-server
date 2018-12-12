@@ -93,20 +93,20 @@ unsigned long long create_authinfo_request_registry_email(
 
         return public_request_id;
     }
-    catch (const NoPublicRequest& e)
-    {
-        LOGGER(PACKAGE).info(e.what());
-        throw ObjectNotFound();
-    }
-    catch (const NoContactEmail& e)
-    {
-        LOGGER(PACKAGE).info(e.what());
-        throw NoContactEmail();
-    }
     catch (const LibFred::UnknownObject& e)
     {
         LOGGER(PACKAGE).info(e.what());
         throw ObjectNotFound();
+    }
+    catch (const ObjectTransferProhibited& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw;
+    }
+    catch (const NoContactEmail& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw;
     }
     catch (const std::exception& e)
     {
