@@ -18,7 +18,7 @@
 
 #include "src/backend/epp/contact/impl/set_unused/config.hh"
 
-#include "src/backend/epp/contact/config_check.hh"
+#include "src/backend/epp/contact/config_data_filter.hh"
 
 #include <stdexcept>
 
@@ -27,15 +27,15 @@ namespace Contact {
 namespace Impl {
 namespace SetUnused {
 
-const std::string& Config::get_check_name()
+const std::string& Config::get_contact_data_filter_name()
 {
     static const std::string singleton = "set_unused_discloseflags";
     return singleton;
 }
 
-bool Config::is_name_of_this_check(const std::string& check_name)
+bool Config::is_name_of_this_contact_data_filter(const std::string& filter_name)
 {
-    return check_name == get_check_name();
+    return filter_name == get_contact_data_filter_name();
 }
 
 }//namespace Epp::Contact::Impl::SetUnused
@@ -166,7 +166,7 @@ const std::string& get_key()
 }
 
 template <typename T>
-void set_value(const po_variables_map& vm, ConfigCheck::KeyValue& options)
+void set_value(const po_variables_map& vm, ConfigDataFilter::KeyValue& options)
 {
     const auto key_value_itr = options.find(get_key<T>());
     if (key_value_itr != options.end())
@@ -187,7 +187,7 @@ auto default_value_is_empty() { return boost::program_options::value<std::string
 }//namespace {anonymous}
 
 template <>
-void ConfigCheck::add_options_description<SetUnusedConfig>(
+void ConfigDataFilter::add_options_description<SetUnusedConfig>(
         boost::program_options::options_description& options_description)
 {
     options_description.add_options()
@@ -248,13 +248,13 @@ void ConfigCheck::add_options_description<SetUnusedConfig>(
 }
 
 template <>
-bool ConfigCheck::is_type_of<SetUnusedConfig>()const
+bool ConfigDataFilter::is_type_of<SetUnusedConfig>()const
 {
-    return SetUnusedConfig::is_name_of_this_check(name_);
+    return SetUnusedConfig::is_name_of_this_contact_data_filter(name_);
 }
 
 template <typename T>
-const std::string& ConfigCheck::get_value()const
+const std::string& ConfigDataFilter::get_value()const
 {
     const auto key_value_itr = options_.find(get_key<T>());
     if (key_value_itr != options_.end())
@@ -266,7 +266,7 @@ const std::string& ConfigCheck::get_value()const
 }
 
 template <>
-ConfigCheck& ConfigCheck::set_all_values<SetUnusedConfig>(const po_variables_map& vm)
+ConfigDataFilter& ConfigDataFilter::set_all_values<SetUnusedConfig>(const po_variables_map& vm)
 {
     set_value<SetUnusedConfig::CreateContact::Disclose::Name>(vm, options_);
     set_value<SetUnusedConfig::CreateContact::Disclose::Organization>(vm, options_);
@@ -291,85 +291,85 @@ ConfigCheck& ConfigCheck::set_all_values<SetUnusedConfig>(const po_variables_map
 }
 
 template <>
-ConfigCheck ConfigCheck::get_default<SetUnusedConfig>()
+ConfigDataFilter ConfigDataFilter::get_default<SetUnusedConfig>()
 {
-    ConfigCheck check;
-    check.set_name(SetUnusedConfig::get_check_name());
-    check.options_.emplace(get_key<SetUnusedConfig::CreateContact::Disclose::Name>(), "show");
-    check.options_.emplace(get_key<SetUnusedConfig::CreateContact::Disclose::Organization>(), "show");
-    check.options_.emplace(get_key<SetUnusedConfig::CreateContact::Disclose::Address>(), "show");
-    check.options_.emplace(get_key<SetUnusedConfig::CreateContact::Disclose::Telephone>(), "hide");
-    check.options_.emplace(get_key<SetUnusedConfig::CreateContact::Disclose::Fax>(), "hide");
-    check.options_.emplace(get_key<SetUnusedConfig::CreateContact::Disclose::Email>(), "hide");
-    check.options_.emplace(get_key<SetUnusedConfig::CreateContact::Disclose::Vat>(), "hide");
-    check.options_.emplace(get_key<SetUnusedConfig::CreateContact::Disclose::Ident>(), "hide");
-    check.options_.emplace(get_key<SetUnusedConfig::CreateContact::Disclose::NotifyEmail>(), "hide");
+    ConfigDataFilter filter;
+    filter.set_name(SetUnusedConfig::get_contact_data_filter_name());
+    filter.options_.emplace(get_key<SetUnusedConfig::CreateContact::Disclose::Name>(), "show");
+    filter.options_.emplace(get_key<SetUnusedConfig::CreateContact::Disclose::Organization>(), "show");
+    filter.options_.emplace(get_key<SetUnusedConfig::CreateContact::Disclose::Address>(), "show");
+    filter.options_.emplace(get_key<SetUnusedConfig::CreateContact::Disclose::Telephone>(), "hide");
+    filter.options_.emplace(get_key<SetUnusedConfig::CreateContact::Disclose::Fax>(), "hide");
+    filter.options_.emplace(get_key<SetUnusedConfig::CreateContact::Disclose::Email>(), "hide");
+    filter.options_.emplace(get_key<SetUnusedConfig::CreateContact::Disclose::Vat>(), "hide");
+    filter.options_.emplace(get_key<SetUnusedConfig::CreateContact::Disclose::Ident>(), "hide");
+    filter.options_.emplace(get_key<SetUnusedConfig::CreateContact::Disclose::NotifyEmail>(), "hide");
 
-    check.options_.emplace(get_key<SetUnusedConfig::UpdateContact::Disclose::Name>(), std::string());
-    check.options_.emplace(get_key<SetUnusedConfig::UpdateContact::Disclose::Organization>(), std::string());
-    check.options_.emplace(get_key<SetUnusedConfig::UpdateContact::Disclose::Address>(), std::string());
-    check.options_.emplace(get_key<SetUnusedConfig::UpdateContact::Disclose::Telephone>(), std::string());
-    check.options_.emplace(get_key<SetUnusedConfig::UpdateContact::Disclose::Fax>(), std::string());
-    check.options_.emplace(get_key<SetUnusedConfig::UpdateContact::Disclose::Email>(), std::string());
-    check.options_.emplace(get_key<SetUnusedConfig::UpdateContact::Disclose::Vat>(), std::string());
-    check.options_.emplace(get_key<SetUnusedConfig::UpdateContact::Disclose::Ident>(), std::string());
-    check.options_.emplace(get_key<SetUnusedConfig::UpdateContact::Disclose::NotifyEmail>(), std::string());
-    return check;
+    filter.options_.emplace(get_key<SetUnusedConfig::UpdateContact::Disclose::Name>(), std::string());
+    filter.options_.emplace(get_key<SetUnusedConfig::UpdateContact::Disclose::Organization>(), std::string());
+    filter.options_.emplace(get_key<SetUnusedConfig::UpdateContact::Disclose::Address>(), std::string());
+    filter.options_.emplace(get_key<SetUnusedConfig::UpdateContact::Disclose::Telephone>(), std::string());
+    filter.options_.emplace(get_key<SetUnusedConfig::UpdateContact::Disclose::Fax>(), std::string());
+    filter.options_.emplace(get_key<SetUnusedConfig::UpdateContact::Disclose::Email>(), std::string());
+    filter.options_.emplace(get_key<SetUnusedConfig::UpdateContact::Disclose::Vat>(), std::string());
+    filter.options_.emplace(get_key<SetUnusedConfig::UpdateContact::Disclose::Ident>(), std::string());
+    filter.options_.emplace(get_key<SetUnusedConfig::UpdateContact::Disclose::NotifyEmail>(), std::string());
+    return filter;
 }
 
 template const std::string&
-ConfigCheck::get_value<SetUnusedConfig::CreateContact::Disclose::Name>()const;
+ConfigDataFilter::get_value<SetUnusedConfig::CreateContact::Disclose::Name>()const;
 
 template const std::string&
-ConfigCheck::get_value<SetUnusedConfig::CreateContact::Disclose::Organization>()const;
+ConfigDataFilter::get_value<SetUnusedConfig::CreateContact::Disclose::Organization>()const;
 
 template const std::string&
-ConfigCheck::get_value<SetUnusedConfig::CreateContact::Disclose::Address>()const;
+ConfigDataFilter::get_value<SetUnusedConfig::CreateContact::Disclose::Address>()const;
 
 template const std::string&
-ConfigCheck::get_value<SetUnusedConfig::CreateContact::Disclose::Telephone>()const;
+ConfigDataFilter::get_value<SetUnusedConfig::CreateContact::Disclose::Telephone>()const;
 
 template const std::string&
-ConfigCheck::get_value<SetUnusedConfig::CreateContact::Disclose::Fax>()const;
+ConfigDataFilter::get_value<SetUnusedConfig::CreateContact::Disclose::Fax>()const;
 
 template const std::string&
-ConfigCheck::get_value<SetUnusedConfig::CreateContact::Disclose::Email>()const;
+ConfigDataFilter::get_value<SetUnusedConfig::CreateContact::Disclose::Email>()const;
 
 template const std::string&
-ConfigCheck::get_value<SetUnusedConfig::CreateContact::Disclose::Vat>()const;
+ConfigDataFilter::get_value<SetUnusedConfig::CreateContact::Disclose::Vat>()const;
 
 template const std::string&
-ConfigCheck::get_value<SetUnusedConfig::CreateContact::Disclose::Ident>()const;
+ConfigDataFilter::get_value<SetUnusedConfig::CreateContact::Disclose::Ident>()const;
 
 template const std::string&
-ConfigCheck::get_value<SetUnusedConfig::CreateContact::Disclose::NotifyEmail>()const;
+ConfigDataFilter::get_value<SetUnusedConfig::CreateContact::Disclose::NotifyEmail>()const;
 
 template const std::string&
-ConfigCheck::get_value<SetUnusedConfig::UpdateContact::Disclose::Name>()const;
+ConfigDataFilter::get_value<SetUnusedConfig::UpdateContact::Disclose::Name>()const;
 
 template const std::string&
-ConfigCheck::get_value<SetUnusedConfig::UpdateContact::Disclose::Organization>()const;
+ConfigDataFilter::get_value<SetUnusedConfig::UpdateContact::Disclose::Organization>()const;
 
 template const std::string&
-ConfigCheck::get_value<SetUnusedConfig::UpdateContact::Disclose::Address>()const;
+ConfigDataFilter::get_value<SetUnusedConfig::UpdateContact::Disclose::Address>()const;
 
 template const std::string&
-ConfigCheck::get_value<SetUnusedConfig::UpdateContact::Disclose::Telephone>()const;
+ConfigDataFilter::get_value<SetUnusedConfig::UpdateContact::Disclose::Telephone>()const;
 
 template const std::string&
-ConfigCheck::get_value<SetUnusedConfig::UpdateContact::Disclose::Fax>()const;
+ConfigDataFilter::get_value<SetUnusedConfig::UpdateContact::Disclose::Fax>()const;
 
 template const std::string&
-ConfigCheck::get_value<SetUnusedConfig::UpdateContact::Disclose::Email>()const;
+ConfigDataFilter::get_value<SetUnusedConfig::UpdateContact::Disclose::Email>()const;
 
 template const std::string&
-ConfigCheck::get_value<SetUnusedConfig::UpdateContact::Disclose::Vat>()const;
+ConfigDataFilter::get_value<SetUnusedConfig::UpdateContact::Disclose::Vat>()const;
 
 template const std::string&
-ConfigCheck::get_value<SetUnusedConfig::UpdateContact::Disclose::Ident>()const;
+ConfigDataFilter::get_value<SetUnusedConfig::UpdateContact::Disclose::Ident>()const;
 
 template const std::string&
-ConfigCheck::get_value<SetUnusedConfig::UpdateContact::Disclose::NotifyEmail>()const;
+ConfigDataFilter::get_value<SetUnusedConfig::UpdateContact::Disclose::NotifyEmail>()const;
 
 }//namespace Epp::Contact
 }//namespace Epp

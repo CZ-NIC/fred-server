@@ -16,32 +16,30 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef UPDATE_OPERATION_CHECK_HH_F26DDFC8A2F6B4F427A86B163A68B1D4//date "+%s.%N"|md5sum|tr "[a-f]" "[A-F]"
-#define UPDATE_OPERATION_CHECK_HH_F26DDFC8A2F6B4F427A86B163A68B1D4
+#ifndef CREATE_CONTACT_DATA_FILTER_HH_6CF3D340D5D780F311B845C8C34088AE//date "+%s.%N"|md5sum|tr "[a-f]" "[A-F]"
+#define CREATE_CONTACT_DATA_FILTER_HH_6CF3D340D5D780F311B845C8C34088AE
 
 #include "src/libfred/opcontext.hh"
-#include "src/libfred/registrable_object/contact/info_contact_data.hh"
-#include "src/libfred/registrable_object/contact/update_contact.hh"
-#include "src/backend/epp/contact/contact_change.hh"
+#include "src/libfred/registrable_object/contact/create_contact.hh"
+#include "src/backend/epp/contact/create_contact_input_data.hh"
 #include "src/backend/epp/session_data.hh"
 
 namespace Epp {
 namespace Contact {
 
-class UpdateOperationCheck
+class CreateContactDataFilter
 {
 public:
     struct DiscloseflagRulesViolation { };
-    virtual ~UpdateOperationCheck() { }
-    virtual LibFred::UpdateContactByHandle& operator()(
+    virtual ~CreateContactDataFilter() { }
+    virtual LibFred::CreateContact& operator()(
             LibFred::OperationContext& ctx,
-            const LibFred::InfoContactData& old_data,
-            const ContactChange& change,
+            const CreateContactInputData& contact_data,
             const SessionData& session_data,
-            LibFred::UpdateContactByHandle& update_op)const = 0;
+            LibFred::CreateContact& create_op)const = 0;
 };
 
 }//namespace Epp::Contact
 }//namespace Epp
 
-#endif//UPDATE_OPERATION_CHECK_HH_F26DDFC8A2F6B4F427A86B163A68B1D4
+#endif//CREATE_CONTACT_DATA_FILTER_HH_6CF3D340D5D780F311B845C8C34088AE

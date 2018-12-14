@@ -395,14 +395,14 @@ unsigned long long update_contact(
 
         try
         {
-            update_contact_config_data.get_operation_check()(
+            update_contact_config_data.get_data_filter()(
                     ctx,
                     contact_data_before_update,
                     change,
                     session_data,
                     updater);
         }
-        catch (const UpdateOperationCheck::DiscloseflagRulesViolation&)
+        catch (const UpdateContactDataFilter::DiscloseflagRulesViolation&)
         {
             throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
         }

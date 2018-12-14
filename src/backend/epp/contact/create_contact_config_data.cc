@@ -23,9 +23,9 @@ namespace Contact {
 
 CreateContactConfigData::CreateContactConfigData(
         bool _rifd_epp_operations_charging,
-        const std::shared_ptr<CreateOperationCheck>& _operation_check)
+        const std::shared_ptr<CreateContactDataFilter>& _data_filter)
     : rifd_epp_operations_charging_(_rifd_epp_operations_charging),
-      operation_check_(_operation_check)
+      data_filter_(_data_filter)
 { }
 
 bool CreateContactConfigData::are_rifd_epp_operations_charged()const
@@ -33,9 +33,9 @@ bool CreateContactConfigData::are_rifd_epp_operations_charged()const
     return rifd_epp_operations_charging_;
 }
 
-const CreateOperationCheck& CreateContactConfigData::get_operation_check()const
+const CreateContactDataFilter& CreateContactConfigData::get_data_filter()const
 {
-    return *operation_check_;
+    return *data_filter_;
 }
 
 }//namespace Epp::Contact

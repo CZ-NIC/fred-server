@@ -16,11 +16,11 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GET_CREATE_CONTACT_CHECK_HH_DD99A7E34F2E2A4E57B0B1035DCA8A41//date "+%s.%N"|md5sum|tr "[a-f]" "[A-F]"
-#define GET_CREATE_CONTACT_CHECK_HH_DD99A7E34F2E2A4E57B0B1035DCA8A41
+#ifndef GET_UPDATE_CONTACT_DATA_FILTER_HH_5A28C15EE725DB000D21BC9CB3A1542E//date "+%s.%N"|md5sum|tr "[a-f]" "[A-F]"
+#define GET_UPDATE_CONTACT_DATA_FILTER_HH_5A28C15EE725DB000D21BC9CB3A1542E
 
-#include "src/backend/epp/contact/create_operation_check.hh"
-#include "src/backend/epp/contact/config_check.hh"
+#include "src/backend/epp/contact/update_contact_data_filter.hh"
+#include "src/backend/epp/contact/config_data_filter.hh"
 
 #include <memory>
 #include <string>
@@ -29,10 +29,10 @@ namespace Epp {
 namespace Contact {
 namespace Impl {
 
-std::shared_ptr<Epp::Contact::CreateOperationCheck> get_create_contact_check(const ConfigCheck& check);
+std::shared_ptr<Epp::Contact::UpdateContactDataFilter> get_update_contact_data_filter(const ConfigDataFilter& filter);
 
 }//namespace Epp::Contact::Impl
 }//namespace Epp::Contact
 }//namespace Epp
 
-#endif//GET_CREATE_CONTACT_CHECK_HH_DD99A7E34F2E2A4E57B0B1035DCA8A41
+#endif//GET_UPDATE_CONTACT_DATA_FILTER_HH_5A28C15EE725DB000D21BC9CB3A1542E

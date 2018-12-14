@@ -19,7 +19,7 @@
 #ifndef UPDATE_CONTACT_CONFIG_DATA_HH_560A4052E8EB4FEF9DBD656BAC6C346B
 #define UPDATE_CONTACT_CONFIG_DATA_HH_560A4052E8EB4FEF9DBD656BAC6C346B
 
-#include "src/backend/epp/contact/update_operation_check.hh"
+#include "src/backend/epp/contact/update_contact_data_filter.hh"
 
 #include <memory>
 
@@ -32,14 +32,14 @@ public:
     UpdateContactConfigData(
             bool _rifd_epp_operations_charging,
             bool _epp_update_contact_enqueue_check,
-            const std::shared_ptr<UpdateOperationCheck>& _operation_check);
+            const std::shared_ptr<UpdateContactDataFilter>& _data_filter);
     bool are_rifd_epp_operations_charged()const;
     bool are_epp_update_contact_checks_enqueued()const;
-    const UpdateOperationCheck& get_operation_check()const;
+    const UpdateContactDataFilter& get_data_filter()const;
 private:
     bool rifd_epp_operations_charging_;
     bool epp_update_contact_enqueue_check_;
-    std::shared_ptr<UpdateOperationCheck> operation_check_;
+    std::shared_ptr<UpdateContactDataFilter> data_filter_;
 };
 
 }//namespace Epp::Contact

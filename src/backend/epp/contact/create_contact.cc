@@ -218,7 +218,7 @@ CreateContactResult create_contact(
             hideable_to_discloseflag(contact_data.notify_email),
             Optional<Nullable<bool>>(),
             session_data.logd_request_id);
-        create_contact_config_data.get_operation_check()(
+        create_contact_config_data.get_data_filter()(
                 ctx,
                 contact_data,
                 session_data,

@@ -28,8 +28,8 @@ namespace SetUnused {
 
 struct Config
 {
-    static const std::string& get_check_name();
-    static bool is_name_of_this_check(const std::string& check_name);
+    static const std::string& get_contact_data_filter_name();
+    static bool is_name_of_this_contact_data_filter(const std::string& filter_name);
     struct CreateContact
     {
         struct Disclose

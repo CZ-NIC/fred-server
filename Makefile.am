@@ -591,8 +591,8 @@ src_util_tz_libtimezones_a_SOURCES = \
 src_util_cfg_libhandle_rifd_args_a_SOURCES = \
 		src/util/cfg/handle_rifd_args.cc \
 		src/util/cfg/handle_rifd_args.hh \
-		src/backend/epp/contact/config_check.cc \
-		src/backend/epp/contact/config_check.hh \
+		src/backend/epp/contact/config_data_filter.cc \
+		src/backend/epp/contact/config_data_filter.hh \
 		src/backend/epp/contact/impl/cznic/specific.cc \
 		src/backend/epp/contact/impl/cznic/specific.hh \
 		src/backend/epp/contact/impl/set_unused/config.cc \
@@ -1937,25 +1937,25 @@ src_bin_corba_epp_libepp_impl_a_SOURCES = \
 		src/backend/epp/contact/impl/contact_output.hh \
 		src/backend/epp/contact/impl/get_personal_id_union.cc \
 		src/backend/epp/contact/impl/get_personal_id_union.hh \
-		src/backend/epp/contact/impl/cznic/create_contact_check.cc \
-		src/backend/epp/contact/impl/cznic/create_contact_check.hh \
-		src/backend/epp/contact/impl/cznic/update_contact_check.cc \
-		src/backend/epp/contact/impl/cznic/update_contact_check.hh \
-		src/backend/epp/contact/impl/set_unused/create_contact_check.cc \
-		src/backend/epp/contact/impl/set_unused/create_contact_check.hh \
-		src/backend/epp/contact/impl/set_unused/update_contact_check.cc \
-		src/backend/epp/contact/impl/set_unused/update_contact_check.hh \
-		src/backend/epp/contact/impl/get_create_contact_check.cc \
-		src/backend/epp/contact/impl/get_create_contact_check.hh \
-		src/backend/epp/contact/impl/get_update_contact_check.cc \
-		src/backend/epp/contact/impl/get_update_contact_check.hh \
+		src/backend/epp/contact/impl/cznic/create_contact_data_filter.cc \
+		src/backend/epp/contact/impl/cznic/create_contact_data_filter.hh \
+		src/backend/epp/contact/impl/cznic/update_contact_data_filter.cc \
+		src/backend/epp/contact/impl/cznic/update_contact_data_filter.hh \
+		src/backend/epp/contact/impl/set_unused/create_contact_data_filter.cc \
+		src/backend/epp/contact/impl/set_unused/create_contact_data_filter.hh \
+		src/backend/epp/contact/impl/set_unused/update_contact_data_filter.cc \
+		src/backend/epp/contact/impl/set_unused/update_contact_data_filter.hh \
+		src/backend/epp/contact/impl/get_create_contact_data_filter.cc \
+		src/backend/epp/contact/impl/get_create_contact_data_filter.hh \
+		src/backend/epp/contact/impl/get_update_contact_data_filter.cc \
+		src/backend/epp/contact/impl/get_update_contact_data_filter.hh \
 		src/backend/epp/contact/update_contact_localized.cc \
 		src/backend/epp/contact/update_contact_localized.hh \
 		src/backend/epp/contact/update_contact.cc \
 		src/backend/epp/contact/update_contact.hh \
 		src/backend/epp/contact/update_contact_config_data.cc \
 		src/backend/epp/contact/update_contact_config_data.hh \
-		src/backend/epp/contact/update_operation_check.hh \
+		src/backend/epp/contact/update_contact_data_filter.hh \
 		src/backend/epp/contact/info_contact_localized.cc \
 		src/backend/epp/contact/info_contact_localized.hh \
 		src/backend/epp/contact/info_contact_localized_response.hh \
@@ -1989,7 +1989,7 @@ src_bin_corba_epp_libepp_impl_a_SOURCES = \
 		src/backend/epp/contact/create_contact_input_data.hh \
 		src/backend/epp/contact/create_contact_config_data.cc \
 		src/backend/epp/contact/create_contact_config_data.hh \
-		src/backend/epp/contact/create_operation_check.hh \
+		src/backend/epp/contact/create_contact_data_filter.hh \
 		src/backend/epp/contact/create_contact_localized_response.hh \
 		src/backend/epp/contact/contact_ident.hh \
 		src/backend/epp/contact/status_value.hh \

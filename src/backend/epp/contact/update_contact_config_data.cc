@@ -24,10 +24,10 @@ namespace Contact {
 UpdateContactConfigData::UpdateContactConfigData(
         bool _rifd_epp_operations_charging,
         bool _epp_update_contact_enqueue_check,
-        const std::shared_ptr<UpdateOperationCheck>& _operation_check)
+        const std::shared_ptr<UpdateContactDataFilter>& _data_filter)
     : rifd_epp_operations_charging_(_rifd_epp_operations_charging),
       epp_update_contact_enqueue_check_(_epp_update_contact_enqueue_check),
-      operation_check_(_operation_check)
+      data_filter_(_data_filter)
 { }
 
 bool UpdateContactConfigData::are_rifd_epp_operations_charged()const
@@ -40,9 +40,9 @@ bool UpdateContactConfigData::are_epp_update_contact_checks_enqueued()const
     return epp_update_contact_enqueue_check_;
 }
 
-const UpdateOperationCheck& UpdateContactConfigData::get_operation_check()const
+const UpdateContactDataFilter& UpdateContactConfigData::get_data_filter()const
 {
-    return *operation_check_;
+    return *data_filter_;
 }
 
 }//namespace Epp::Contact

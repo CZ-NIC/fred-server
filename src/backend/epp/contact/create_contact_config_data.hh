@@ -19,7 +19,7 @@
 #ifndef CREATE_CONTACT_CONFIG_DATA_HH_DFE73286069847C7803E1DABB05D9CA0
 #define CREATE_CONTACT_CONFIG_DATA_HH_DFE73286069847C7803E1DABB05D9CA0
 
-#include "src/backend/epp/contact/create_operation_check.hh"
+#include "src/backend/epp/contact/create_contact_data_filter.hh"
 
 #include <memory>
 
@@ -31,12 +31,12 @@ class CreateContactConfigData
 public:
     CreateContactConfigData(
             bool _rifd_epp_operations_charging,
-            const std::shared_ptr<CreateOperationCheck>& _operation_check);
+            const std::shared_ptr<CreateContactDataFilter>& _data_filter);
     bool are_rifd_epp_operations_charged()const;
-    const CreateOperationCheck& get_operation_check()const;
+    const CreateContactDataFilter& get_data_filter()const;
 private:
     bool rifd_epp_operations_charging_;
-    std::shared_ptr<CreateOperationCheck> operation_check_;
+    std::shared_ptr<CreateContactDataFilter> data_filter_;
 };
 
 } // namespace Epp::Contact
