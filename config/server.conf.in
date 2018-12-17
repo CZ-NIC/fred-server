@@ -154,7 +154,7 @@ contact_data_filter = set_unused_discloseflags
 [rifd::set_unused_discloseflags::create_contact]
 default_disclosename = show
 default_discloseorganization = show
-# default_discloseaddress =
+default_discloseaddress = show
 # default_disclosetelephone =
 # default_disclosefax =
 # default_discloseemail =
