@@ -143,7 +143,7 @@ epp_operations_charging = @EPP_OPERATIONS_CHARGING@
 epp_update_contact_enqueue_check = false
 #possible values: <empty>, cznic_specific
 #default value: <empty>
-check = cznic_specific
+contact_data_filter = set_unused_discloseflags
 
 #default values of discloseflags not shown in epp xml schemas
 #possible values: <empty> - discloseflag must present, no substitution available
@@ -151,16 +151,16 @@ check = cznic_specific
 #                 hide    - missing discloseflag means "to hide"
 #default value: <empty>
 #for a create_contact operation
-[rifd::cznic_specific::create_contact]
+[rifd::set_unused_discloseflags::create_contact]
 default_disclosename = show
 default_discloseorganization = show
-default_discloseaddress = show
-default_disclosetelephone = hide
-default_disclosefax = hide
-default_discloseemail = hide
-default_disclosevat = hide
-default_discloseident = hide
-default_disclosenotifyemail = hide
+# default_discloseaddress =
+# default_disclosetelephone =
+# default_disclosefax =
+# default_discloseemail =
+# default_disclosevat =
+# default_discloseident =
+# default_disclosenotifyemail =
 
 #default values of discloseflags not shown in epp xml schemas
 #possible values: <empty> - missing discloseflag means "do not change"
@@ -168,16 +168,16 @@ default_disclosenotifyemail = hide
 #                 hide    - missing discloseflag means "set to hide"
 #default value: <empty>
 #for an update_contact operation
-[rifd::cznic_specific::update_contact]
+[rifd::set_unused_discloseflags::update_contact]
 default_disclosename = show
 default_discloseorganization = show
-default_discloseaddress = show
-default_disclosetelephone = hide
-default_disclosefax = hide
-default_discloseemail = hide
-default_disclosevat = hide
-default_discloseident = hide
-default_disclosenotifyemail = hide
+# default_discloseaddress =
+# default_disclosetelephone =
+# default_disclosefax =
+# default_discloseemail =
+# default_disclosevat =
+# default_discloseident =
+# default_disclosenotifyemail =
 
 ###
 ### ADIFD specific settings
