@@ -78,19 +78,23 @@ docker:server:centos:
     - if [ -e pr-version/devel/$CI_BUILD_REF_NAME.conf ]; then IDL_BRANCH=$(python -c "import json;obj=json.loads(open('pr-version/devel/${CI_BUILD_REF_NAME}.conf').read());print obj.get('idl',{}).get('revision', 'master')"); else IDL_BRANCH="master"; fi
     # get idl repository and checkout corresponding branch
     - git clone git@gitlab.office.nic.cz:fred/idl.git --single-branch --depth 1 --branch $IDL_BRANCH
+
+build:ubuntu:amd64:
+  <<: *ubuntu_16_04
+  <<: *build_job
   script:
     - autoreconf -vfi
     - echo "\$PWD=$PWD"
     - ./configure --with-idldir=./idl/idl || ( cat config.log && exit 1 )
     - DISTCHECK_CONFIGURE_FLAGS="--with-idldir=/builds/fred/server/idl/idl" make -j $(($(grep -c processor /proc/cpuinfo) / 2 + 1)) distcheck
 
-build:ubuntu:amd64:
-  <<: *ubuntu_16_04
-  <<: *build_job
-
 build:fedora:amd64:
   <<: *fedora_27
   <<: *build_job
+  script:
+    - echo "\$PWD=$PWD"
+    - cmake -DIDL_DIR=/builds/fred/server/idl/idl .
+    - make -j $(($(grep -c processor /proc/cpuinfo) / 2 + 1)) distcheck
   only:
     - master
     - triggers
@@ -100,6 +104,10 @@ build:fedora:amd64:
 build:centos:amd64:
   <<: *centos_7
   <<: *build_job
+  script:
+    - echo "\$PWD=$PWD"
+    - cmake3 -DIDL_DIR=/builds/fred/server/idl/idl .
+    - make -j $(($(grep -c processor /proc/cpuinfo) / 2 + 1)) distcheck
   only:
     - master
     - triggers

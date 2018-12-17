@@ -4,11 +4,8 @@ RUN yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.n
 RUN yum -y clean all
 RUN yum -y upgrade
 RUN yum -y install       \
-        autoconf         \
-        autoconf-archive \
-        automake         \
+        cmake3           \
         pkgconf          \
-        libtool          \
         make             \
         gcc-c++          \
         git              \

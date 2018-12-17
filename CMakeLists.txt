@@ -3590,7 +3590,7 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/.git AND GIT_PROGRAM)
             && (tar xzf ${TARBALL_FILE_NAME}.tar.gz
                 || (echo 'Error: failed to unpack the archive' 2>&1\; false))
             && (cd ${DISTCHECK_BUILD_DIR}
-                && (cmake -G${CMAKE_GENERATOR} -DCMAKE_INSTALL_PREFIX=../${DISTCHECK_INSTALL_DIR} -DIDL_DIR=${IDL_DIR} ../${TARBALL_FILE_NAME}
+                && (${CMAKE_COMMAND} -G${CMAKE_GENERATOR} -DCMAKE_INSTALL_PREFIX=../${DISTCHECK_INSTALL_DIR} -DIDL_DIR=${IDL_DIR} ../${TARBALL_FILE_NAME}
                     || (echo 'Error: failed to configure the archive' 2>&1\; false))
                 && (${DISTCHECK_MAKEFLAGS} ${DISTCHECK_BUILD_CMD}
                     || (echo 'Error: the build target failed ' 2>&1\; false))
