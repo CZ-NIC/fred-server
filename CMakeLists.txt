@@ -2062,6 +2062,10 @@ prepare_executable(fred-adifd
     src/bin/corba/notification/server_i.cc
     src/bin/corba/notification/notification_corba_conversion.cc
     src/backend/admin/notification/notification.cc
+    src/backend/admin/registrar/create_registrar.cc
+    src/backend/admin/registrar/update_epp_auth.cc
+    src/backend/admin/registrar/update_registrar.cc
+    src/backend/admin/registrar/update_zone_access.cc
     src/util/corba_conversion.cc)
 target_link_libraries(fred-adifd
     admin_create_expired_domain

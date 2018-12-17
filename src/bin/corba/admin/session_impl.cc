@@ -27,38 +27,30 @@
 #include <set>
 #include "src/bin/corba/Admin.hh"
 
+#include "src/backend/admin/registrar/create_registrar.hh"
+#include "src/backend/admin/registrar/update_epp_auth.hh"
+#include "src/backend/admin/registrar/update_registrar.hh"
+#include "src/backend/admin/registrar/update_zone_access.hh"
+#include "src/backend/contact_verification/public_request_contact_verification_impl.hh"
+#include "src/bin/corba/admin/common.hh"
 #include "src/bin/corba/admin/public_request_mojeid.hh"
 #include "src/bin/corba/admin/session_impl.hh"
-#include "src/deprecated/util/log.hh"
-#include "src/deprecated/util/dbsql.hh"
-#include "src/libfred/registry.hh"
-#include "src/libfred/notify.hh"
-#include "src/libfred/registrar.hh"
 #include "src/bin/corba/admin/usertype_conv.hh"
-#include "src/bin/corba/admin/common.hh"
+#include "src/bin/corba/connection_releaser.hh"
+#include "src/bin/corba/util/corba_conversions_string.hh"
+#include "src/deprecated/util/dbsql.hh"
+#include "src/deprecated/util/log.hh"
+#include "src/libfred/notify.hh"
 #include "src/libfred/public_request/public_request_authinfo_impl.hh"
 #include "src/libfred/public_request/public_request_block_impl.hh"
 #include "src/libfred/public_request/public_request_personal_info_impl.hh"
-#include "src/backend/contact_verification/public_request_contact_verification_impl.hh"
-#include "src/util/log/logger.hh"
-#include "src/util/log/context.hh"
-#include "src/util/util.hh"
-
-#include "src/bin/corba/connection_releaser.hh"
-
-#include "src/libfred/opcontext.hh"
 #include "src/libfred/registrar/create_registrar.hh"
-#include "src/libfred/registrar/update_registrar.hh"
-#include "src/libfred/registrar/epp_auth/add_registrar_epp_auth.hh"
-#include "src/libfred/registrar/epp_auth/clone_registrar_epp_auth.hh"
-#include "src/libfred/registrar/epp_auth/delete_registrar_epp_auth.hh"
-#include "src/libfred/registrar/epp_auth/exceptions.hh"
-#include "src/libfred/registrar/epp_auth/get_registrar_epp_auth.hh"
-#include "src/libfred/registrar/epp_auth/update_registrar_epp_auth.hh"
-#include "src/libfred/registrar/zone_access/add_registrar_zone_access.hh"
-#include "src/libfred/registrar/zone_access/exceptions.hh"
-#include "src/libfred/registrar/zone_access/update_registrar_zone_access.hh"
-#include "src/bin/corba/util/corba_conversions_string.hh"
+#include "src/libfred/registrar.hh"
+#include "src/libfred/registrar/zone_access/registrar_zone_access_type.hh"
+#include "src/libfred/registry.hh"
+#include "src/util/log/context.hh"
+#include "src/util/log/logger.hh"
+#include "src/util/util.hh"
 
 ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
                                  const std::string& database,
@@ -1278,153 +1270,107 @@ Registry::Registrar::Detail* ccReg_Session_i::createRegistrarDetail(LibFred::Reg
 ccReg::TID ccReg_Session_i::updateRegistrar(const ccReg::AdminRegistrar& _registrar)
 try
 {
-    const std::string operation_name = "ccReg_Session_i::updateRegistrar() ";
-    TRACE("[CALL] " + operation_name);
+    //const std::string operation_name = "ccReg_Session_i::updateRegistrar";
+    Logging::Context ctx(base_context_ + "/updateRegistrar");
+    TRACE("[CALL] ccReg_Session_i::updateRegistrar()");
+    ConnectionReleaser releaser;
 
-    LibFred::OperationContextCreator ctx;
     unsigned long long registrar_id;
-    const std::string registrar_handle = LibFred::Corba::unwrap_string(_registrar.handle);
+    const std::string registrar_handle = LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar.handle);
+
+    std::stringstream registrar_info;
+    registrar_info << "Registrar id: " << _registrar.id << " handle: " << registrar_handle;
+    registrar_info << " epp auth size: " << _registrar.access.length();
+    registrar_info << " zone access size: " << _registrar.zones.length();
+    LOGGER(PACKAGE).debug(registrar_info.str());
 
     const bool new_registrar = (_registrar.id == 0);
     if (new_registrar)
     {
-        LOGGER(PACKAGE).debug(operation_name + "creating new registrar: " + registrar_handle);
-        registrar_id = LibFred::CreateRegistrar(registrar_handle)
-              .set_ico((const char*)_registrar.ico)
-              .set_dic((const char*)_registrar.dic)
-              .set_variable_symbol((const char*)_registrar.varSymb)
-              .set_vat_payer((bool)_registrar.vat)
-              .set_url((const char*)_registrar.url)
-              .set_name((const char*)_registrar.name)
-              .set_organization((const char*)_registrar.organization)
-              .set_street1((const char*)_registrar.street1)
-              .set_street2((const char*)_registrar.street2)
-              .set_street3((const char*)_registrar.street3)
-              .set_city((const char*)_registrar.city)
-              .set_stateorprovince((const char*)_registrar.stateorprovince)
-              .set_postalcode((const char*)_registrar.postalcode)
-              .set_country((const char*)_registrar.country)
-              .set_telephone((const char*)_registrar.telephone)
-              .set_fax((const char*)_registrar.fax)
-              .set_email((const char*)_registrar.email)
-              .set_system((bool)_registrar.hidden)
-              .exec(ctx);
+        TRACE("[CALL] Admin::Registrar::CreateRegistrar()");
+        registrar_id = ::Admin::Registrar::create_registrar(registrar_handle,
+                LibFred::Corba::unwrap_string(_registrar.name),
+                LibFred::Corba::unwrap_string(_registrar.organization),
+                LibFred::Corba::unwrap_string(_registrar.street1),
+                LibFred::Corba::unwrap_string(_registrar.street2),
+                LibFred::Corba::unwrap_string(_registrar.street3),
+                LibFred::Corba::unwrap_string(_registrar.city),
+                LibFred::Corba::unwrap_string(_registrar.stateorprovince),
+                LibFred::Corba::unwrap_string(_registrar.postalcode),
+                LibFred::Corba::unwrap_string(_registrar.country),
+                LibFred::Corba::unwrap_string(_registrar.telephone),
+                LibFred::Corba::unwrap_string(_registrar.fax),
+                LibFred::Corba::unwrap_string(_registrar.email),
+                LibFred::Corba::unwrap_string(_registrar.url),
+                (bool)_registrar.hidden,
+                LibFred::Corba::unwrap_string(_registrar.ico),
+                LibFred::Corba::unwrap_string(_registrar.dic),
+                LibFred::Corba::unwrap_string(_registrar.varSymb),
+                boost::none,
+                (bool)_registrar.vat);
     }
     else
     {
-        LOGGER(PACKAGE).debug(operation_name + "updating specified registrar: " + registrar_handle);
-        registrar_id = LibFred::Registrar::UpdateRegistrar(registrar_handle)
-              .set_ico(LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar.ico))
-              .set_dic(LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar.dic))
-              .set_variable_symbol(LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar.varSymb))
-              .set_vat_payer((bool)_registrar.vat)
-              .set_url(LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar.url))
-              .set_name(LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar.name))
-              .set_organization(LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar.organization))
-              .set_street1(LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar.street1))
-              .set_street2(LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar.street2))
-              .set_street3(LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar.street3))
-              .set_city(LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar.city))
-              .set_state_or_province(LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar.stateorprovince))
-              .set_postal_code(LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar.postalcode))
-              .set_country(LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar.country))
-              .set_telephone(LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar.telephone))
-              .set_fax(LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar.fax))
-              .set_email(LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar.email))
-              .set_system((bool)_registrar.hidden)
-              .exec(ctx);
+        TRACE("[CALL] Admin::Registrar::UpdateRegistrar()");
+        registrar_id = ::Admin::Registrar::update_registrar(registrar_handle,
+                LibFred::Corba::unwrap_string(_registrar.name),
+                LibFred::Corba::unwrap_string(_registrar.organization),
+                LibFred::Corba::unwrap_string(_registrar.street1),
+                LibFred::Corba::unwrap_string(_registrar.street2),
+                LibFred::Corba::unwrap_string(_registrar.street3),
+                LibFred::Corba::unwrap_string(_registrar.city),
+                LibFred::Corba::unwrap_string(_registrar.stateorprovince),
+                LibFred::Corba::unwrap_string(_registrar.postalcode),
+                LibFred::Corba::unwrap_string(_registrar.country),
+                LibFred::Corba::unwrap_string(_registrar.telephone),
+                LibFred::Corba::unwrap_string(_registrar.fax),
+                LibFred::Corba::unwrap_string(_registrar.email),
+                LibFred::Corba::unwrap_string(_registrar.url),
+                (bool)_registrar.hidden,
+                LibFred::Corba::unwrap_string(_registrar.ico),
+                LibFred::Corba::unwrap_string(_registrar.dic),
+                LibFred::Corba::unwrap_string(_registrar.varSymb),
+                boost::none,
+                (bool)_registrar.vat);
     }
 
-    std::stringstream registrar_info;
-    registrar_info << " registrar id: " << registrar_id << " handle: " << registrar_handle;
-
-    LibFred::Registrar::EppAuth::RegistrarEppAuthData epp_auth_data =
-          LibFred::Registrar::EppAuth::GetRegistrarEppAuth(registrar_handle).exec(ctx);
-    std::set<unsigned long long> auth_ids;
-    std::for_each(epp_auth_data.epp_auth_records.begin(),
-          epp_auth_data.epp_auth_records.end(),
-          [&auth_ids](const auto record){return auth_ids.insert(record.id);});
-
-    for (unsigned i = 0; i < _registrar.access.length(); i++)
+    TRACE("[CALL] Admin::Registrar::UpdateEppAuth()");
+    Admin::Registrar::EppAuthData epp_auth_data;
+    epp_auth_data.registrar_handle = registrar_handle;
+    epp_auth_data.epp_auth_records.reserve(_registrar.access.length());
+    for (unsigned i = 0; i < _registrar.access.length(); ++i)
     {
-        unsigned long long acl_id = _registrar.access[i].id;
-        const std::string password = std::string(_registrar.access[i].password);
-        const std::string md5cert = std::string(_registrar.access[i].md5Cert);
-        const std::string md5_cert2 = std::string(_registrar.access[i].md5Cert2SamePasswd);
-
-        std::stringstream debug_info;
-        debug_info << registrar_info.str() << " id: " << acl_id << " password: " << password;
-        debug_info << " md5 cert: " << md5cert << " md5 cert2: " << md5_cert2;
-
-        const bool is_new_acl_record = (acl_id == 0);
-        if (is_new_acl_record)
-        {
-            const bool has_mandatory_data = !password.empty() && !md5cert.empty();
-            if (!has_mandatory_data)
-            {
-                throw ccReg::Admin::UpdateFailed();
-            }
-            LOGGER(PACKAGE).debug(operation_name + "AddRegistrarEppAuth : " + debug_info.str());
-            acl_id = LibFred::Registrar::EppAuth::AddRegistrarEppAuth(registrar_handle, md5cert, password)
-                   .exec(ctx);
-        }
-        else
-        {
-            LOGGER(PACKAGE).debug(operation_name + "UpdateRegistrarEppAuth : " + debug_info.str());
-            LibFred::Registrar::EppAuth::UpdateRegistrarEppAuth(acl_id)
-                    .set_certificate_fingerprint(md5cert)
-                    .set_plain_password(password)
-                    .exec(ctx);
-            auth_ids.erase(acl_id);
-        }
-        if (!new_registrar && !md5_cert2.empty())
-        {
-            LOGGER(PACKAGE).debug(operation_name + "CloneRegistrarEppAuth : " + debug_info.str());
-            LibFred::Registrar::EppAuth::CloneRegistrarEppAuth(acl_id, md5_cert2);
-        }
+        Admin::Registrar::EppAuthRecord epp_auth_record;
+        epp_auth_record.id = _registrar.access[i].id;
+        epp_auth_record.plain_password = LibFred::Corba::unwrap_string(_registrar.access[i].password);
+        epp_auth_record.certificate_fingerprint = LibFred::Corba::unwrap_string(_registrar.access[i].md5Cert);
+        epp_auth_record.new_certificate_fingerprint =
+                LibFred::Corba::unwrap_string(_registrar.access[i].md5Cert2SamePasswd);
+        epp_auth_data.epp_auth_records.push_back(epp_auth_record);
     }
+    Admin::Registrar::update_epp_auth(epp_auth_data);
 
-    for (const auto id : auth_ids)
+    TRACE("[CALL] Admin::Registrar::UpdateZoneAccess()");
+    LibFred::Registrar::ZoneAccess::RegistrarZoneAccesses zone_accesses;
+    zone_accesses.registrar_handle = registrar_handle;
+    zone_accesses.zone_accesses.reserve(_registrar.zones.length());
+    for (unsigned i = 0; i < _registrar.zones.length(); ++i)
     {
-        LOGGER(PACKAGE).debug(operation_name + "DeleteRegistrarEppAuth ");
-        LibFred::Registrar::EppAuth::DeleteRegistrarEppAuth(id).exec(ctx);
+        LibFred::Registrar::ZoneAccess::ZoneAccess zone_access;
+        zone_access.id = _registrar.zones[i].id;
+        zone_access.zone_fqdn = LibFred::Corba::unwrap_string(_registrar.zones[i].name);
+        zone_access.from_date = makeBoostDate( _registrar.zones[i].fromDate);
+        zone_access.to_date = makeBoostDate(_registrar.zones[i].toDate);
+        zone_accesses.zone_accesses.push_back(zone_access);
     }
+    Admin::Registrar::update_zone_access(zone_accesses);
 
-    for (unsigned i = 0; i < _registrar.zones.length(); i++)
-    {
-        const unsigned long long zone_id = _registrar.zones[i].id;
-        const boost::optional<std::string> zone_name = std::string(_registrar.zones[i].name);
-        const boost::optional<boost::gregorian::date> from_date = makeBoostDate( _registrar.zones[i].fromDate);
-        const boost::optional<boost::gregorian::date> to_date = makeBoostDate(_registrar.zones[i].toDate);
-
-        std::stringstream debug_info;
-        debug_info << registrar_info.str() << " id: " << zone_id << " name: " << zone_name;
-        debug_info << " fromdate: " << from_date.get() << " todate: " << to_date.get();
-
-        if (zone_id == 0)
-        {
-            LOGGER(PACKAGE).debug(operation_name + "AddRegistrarZoneAccess : " + debug_info.str());
-            LibFred::Registrar::ZoneAccess::AddRegistrarZoneAccess(registrar_handle, zone_name.get(), from_date.get())
-                  .set_to_date(to_date)
-                  .exec(ctx);
-        }
-        else
-        {
-            LOGGER(PACKAGE).debug(operation_name + "UpdateRegistrarZoneAccess : " + debug_info.str());
-            LibFred::Registrar::ZoneAccess::UpdateRegistrarZoneAccess(zone_id)
-                  .set_from_date(from_date)
-                  .set_to_date(to_date)
-                  .exec(ctx);
-        }
-    }
-    ctx.commit_transaction();
-    LOGGER(PACKAGE).debug(operation_name + "saved " + registrar_info.str());
-
+    LOGGER(PACKAGE).debug("Registrar " + registrar_handle + " was saved.");
     return registrar_id;
 }
 catch (const std::exception& e)
 {
-    LOGGER(PACKAGE).debug(e.what());
+    LOGGER(PACKAGE).warning(e.what());
     throw ccReg::Admin::UpdateFailed();
 }
 
