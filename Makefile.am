@@ -310,9 +310,6 @@ noinst_HEADERS = \
 		src/backend/epp/nsset/dns_host_input.hh \
 		src/backend/epp/nsset/nsset_handle_state_to_check_result.hh \
 		src/backend/epp/nsset/impl/limits.hh \
-		src/backend/public_request/process/authinfo.hh \
-		src/backend/public_request/process/block_unblock.hh \
-		src/backend/public_request/process/personal_info.hh \
 		src/backend/public_request/confirmed_by.hh \
 		src/backend/public_request/create_authinfo_request_non_registry_email.hh \
 		src/backend/public_request/create_authinfo_request_registry_email.hh \
@@ -329,6 +326,7 @@ noinst_HEADERS = \
 		src/backend/public_request/object_type.hh \
 		src/backend/public_request/process/authinfo.hh \
 		src/backend/public_request/process/block_unblock.hh \
+		src/backend/public_request/process/exceptions.hh \
 		src/backend/public_request/process/personal_info.hh \
 		test/backend/epp/nsset/fixture.hh \
 		src/bin/corba/accounting/impl/corba_conversions.hh \
@@ -1250,6 +1248,8 @@ src_libfred_public_request_libpublic_request_a_SOURCES = \
 		src/backend/public_request/process/authinfo.hh \
 		src/backend/public_request/process/block_unblock.cc \
 		src/backend/public_request/process/block_unblock.hh \
+		src/backend/public_request/process/exceptions.cc \
+		src/backend/public_request/process/exceptions.hh \
 		src/backend/public_request/process/personal_info.cc \
 		src/backend/public_request/process/personal_info.hh \
 		src/backend/public_request/type/get_iface_of.hh \

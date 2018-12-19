@@ -22,11 +22,6 @@ namespace Fred {
 namespace Backend {
 namespace PublicRequest {
 
-const char* NoPublicRequest::what() const noexcept
-{
-    return "no public request found";
-}
-
 const char* ObjectAlreadyBlocked::what() const noexcept
 {
     return "object is already blocked";
