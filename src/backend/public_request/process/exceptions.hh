@@ -16,26 +16,22 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef AUTHINFO_HH_F36A7EC6F242440990E2AB46C3F298BC
-#define AUTHINFO_HH_F36A7EC6F242440990E2AB46C3F298BC
+#ifndef EXCEPTIONS_HH_1651CB1ECA524CDAA8B59E68439246D5
+#define EXCEPTIONS_HH_1651CB1ECA524CDAA8B59E68439246D5
 
-#include "src/libfred/mailer.hh"
-#include "src/bin/corba/mailer_manager.hh"
-#include "src/bin/corba/file_manager_client.hh"
-#include "src/libfred/file_transferer.hh"
-#include "src/libfred/public_request/public_request_type_iface.hh"
+#include <stdexcept>
 
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
 namespace Process {
 
-void process_public_request_authinfo_resolved(
-        unsigned long long _public_request_id,
-        const LibFred::PublicRequestTypeIface& _public_request_type,
-        std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager);
+struct NoPublicRequest : std::exception
+{
+    const char* what() const noexcept override;
+};
 
-} // namespace Fred::Backend::PublicRequest::Process
+} // namespace Fred::Backend::Publicrequest::Process
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend
 } // namespace Fred

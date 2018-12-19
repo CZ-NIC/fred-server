@@ -49,6 +49,10 @@ void authinfo_domain(
     {
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
     }
+    catch (const Fred::Backend::PublicRequest::ObjectTransferProhibited&)
+    {
+        throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
+    }
     catch (const Fred::Backend::PublicRequest::NoContactEmail&)
     {
         throw EppResponseFailure(EppResultFailure(EppResultCode::command_failed));

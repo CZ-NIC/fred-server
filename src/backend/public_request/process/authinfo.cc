@@ -20,6 +20,7 @@
 
 #include "src/backend/public_request/exceptions.hh"
 #include "src/backend/public_request/object_type.hh"
+#include "src/backend/public_request/process/exceptions.hh"
 #include "src/backend/public_request/util/send_joined_address_email.hh"
 #include "src/bin/corba/mailer_manager.hh"
 #include "src/libfred/object/object_states_info.hh"

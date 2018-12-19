@@ -51,24 +51,9 @@ unsigned long long send_personal_info(
         std::shared_ptr<LibFred::File::Transferer> _file_manager_client)
 {
     auto& ctx = _locked_request.get_ctx();
-    const auto public_request_id = _locked_request.get_id();
     const LibFred::PublicRequestInfo request_info = LibFred::InfoPublicRequest().exec(ctx, _locked_request);
     const auto contact_id = request_info.get_object_id().get_value(); // oops
 
-    LibFred::Mailer::Parameters email_template_params;
-
-    const Database::Result dbres = ctx.get_conn().exec_params(
-            "SELECT (create_time AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Prague')::DATE FROM public_request "
-            "WHERE id=$1::BIGINT",
-            Database::query_param_list(public_request_id));
-    if (dbres.size() < 1)
-    {
-        throw NoPublicRequest();
-    }
-    if (1 < dbres.size())
-    {
-        throw std::runtime_error("too many public requests for given id");
-    }
     const std::string email_to_answer = request_info.get_email_to_answer().get_value_or_default();
 
     LibFred::InfoContactData info_contact_data;
@@ -84,6 +69,9 @@ unsigned long long send_personal_info(
         }
         throw;
     }
+
+    LibFred::Mailer::Parameters email_template_params;
+
     email_template_params.insert(LibFred::Mailer::Parameters::value_type("handle", info_contact_data.handle));
     email_template_params.insert(
             LibFred::Mailer::Parameters::value_type("organization", info_contact_data.organization.get_value_or_default()));

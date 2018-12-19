@@ -25,11 +25,6 @@ namespace Fred {
 namespace Backend {
 namespace PublicRequest {
 
-struct NoPublicRequest : std::exception
-{
-    const char* what() const noexcept override;
-};
-
 struct ObjectAlreadyBlocked : std::exception
 {
     const char* what() const noexcept override;

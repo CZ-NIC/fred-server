@@ -93,15 +93,15 @@ unsigned long long create_authinfo_request_registry_email(
 
         return public_request_id;
     }
-    catch (const Fred::Backend::PublicRequest::NoPublicRequest& e)
+    catch (const Fred::Backend::PublicRequest::ObjectTransferProhibited& e)
     {
         LOGGER(PACKAGE).info(e.what());
-        throw Fred::Backend::PublicRequest::ObjectNotFound();
+        throw;
     }
     catch (const Fred::Backend::PublicRequest::NoContactEmail& e)
     {
         LOGGER(PACKAGE).info(e.what());
-        throw Fred::Backend::PublicRequest::NoContactEmail();
+        throw;
     }
     catch (const LibFred::UnknownObject& e)
     {
