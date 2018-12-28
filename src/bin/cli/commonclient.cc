@@ -67,18 +67,18 @@ print_version()
     std::cout
         << g_prog_name << " version " << g_version << "\nFor list of all options type: ``$ "
         << g_prog_name << " --help''\n\n"
-        << "Copyright (c) 2008, 2009 CZ.NIC z.s.p.o.\n"
-        << "This file is part of FRED (for details see fred.nic.cz)\n"
-        << "Licence information:\n"
+        << "Copyright (C) 2008-2018  CZ.NIC, z. s. p. o.\n\n"
+        << "This file is part of FRED (for details see fred.nic.cz).\n\n"
         << "FRED is free software: you can redistribute it and/or modify\n"
         << "it under the terms of the GNU General Public License as published by\n"
-        << "the Free Software Foundation, version 2 of the License.\n\n"
+        << "the Free Software Foundation, either version 3 of the License, or\n"
+        << "(at your option) any later version.\n\n"
         << "FRED is distributed in the hope that it will be useful,\n"
         << "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
         << "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
         << "GNU General Public License for more details.\n\n"
         << "You should have received a copy of the GNU General Public License\n"
-        << "along with FRED.  If not, see <http://www.gnu.org/licenses/>."
+        << "along with FRED.  If not, see <https://www.gnu.org/licenses/>.\n"
         << std::endl;
 }
 void
