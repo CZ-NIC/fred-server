@@ -45,7 +45,7 @@ RegistrarZoneAccesses GetZoneAccess::exec(OperationContext& _ctx) const
                 Database::query_param_list(registrar_handle_));
         if (db_result.size() > 0)
         {
-            for (unsigned i = 0; i < db_result.size(); ++i)
+            for (std::size_t i = 0; i < db_result.size(); ++i)
             {
                 ZoneAccess access;
                 access.id = static_cast<unsigned long long>(db_result[i]["id"]);

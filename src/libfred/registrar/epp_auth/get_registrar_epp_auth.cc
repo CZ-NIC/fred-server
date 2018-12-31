@@ -46,7 +46,7 @@ RegistrarEppAuthData GetRegistrarEppAuth::exec(OperationContext& _ctx) const
         if (db_result.size() > 0)
         {
             registrar_epp_auth_data.registrar_handle = static_cast<std::string>(db_result[0]["handle"]);
-            for (unsigned i = 0; i < db_result.size(); ++i)
+            for (std::size_t i = 0; i < db_result.size(); ++i)
             {
                 EppAuthRecord record;
                 record.id = static_cast<unsigned long long>(db_result[i]["id"]);

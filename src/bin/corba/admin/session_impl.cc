@@ -1270,7 +1270,6 @@ Registry::Registrar::Detail* ccReg_Session_i::createRegistrarDetail(LibFred::Reg
 ccReg::TID ccReg_Session_i::updateRegistrar(const ccReg::AdminRegistrar& _registrar)
 try
 {
-    //const std::string operation_name = "ccReg_Session_i::updateRegistrar";
     Logging::Context ctx(base_context_ + "/updateRegistrar");
     TRACE("[CALL] ccReg_Session_i::updateRegistrar()");
     ConnectionReleaser releaser;
@@ -1302,12 +1301,12 @@ try
                 LibFred::Corba::unwrap_string(_registrar.fax),
                 LibFred::Corba::unwrap_string(_registrar.email),
                 LibFred::Corba::unwrap_string(_registrar.url),
-                (bool)_registrar.hidden,
+                static_cast<bool>(_registrar.hidden),
                 LibFred::Corba::unwrap_string(_registrar.ico),
                 LibFred::Corba::unwrap_string(_registrar.dic),
                 LibFred::Corba::unwrap_string(_registrar.varSymb),
                 boost::none,
-                (bool)_registrar.vat);
+                static_cast<bool>(_registrar.vat));
     }
     else
     {
@@ -1326,19 +1325,19 @@ try
                 LibFred::Corba::unwrap_string(_registrar.fax),
                 LibFred::Corba::unwrap_string(_registrar.email),
                 LibFred::Corba::unwrap_string(_registrar.url),
-                (bool)_registrar.hidden,
+                static_cast<bool>(_registrar.hidden),
                 LibFred::Corba::unwrap_string(_registrar.ico),
                 LibFred::Corba::unwrap_string(_registrar.dic),
                 LibFred::Corba::unwrap_string(_registrar.varSymb),
                 boost::none,
-                (bool)_registrar.vat);
+                static_cast<bool>(_registrar.vat));
     }
 
     TRACE("[CALL] Admin::Registrar::UpdateEppAuth()");
     Admin::Registrar::EppAuthData epp_auth_data;
     epp_auth_data.registrar_handle = registrar_handle;
     epp_auth_data.epp_auth_records.reserve(_registrar.access.length());
-    for (unsigned i = 0; i < _registrar.access.length(); ++i)
+    for (std::size_t i = 0; i < _registrar.access.length(); ++i)
     {
         Admin::Registrar::EppAuthRecord epp_auth_record;
         epp_auth_record.id = _registrar.access[i].id;
@@ -1354,7 +1353,7 @@ try
     LibFred::Registrar::ZoneAccess::RegistrarZoneAccesses zone_accesses;
     zone_accesses.registrar_handle = registrar_handle;
     zone_accesses.zone_accesses.reserve(_registrar.zones.length());
-    for (unsigned i = 0; i < _registrar.zones.length(); ++i)
+    for (std::size_t i = 0; i < _registrar.zones.length(); ++i)
     {
         LibFred::Registrar::ZoneAccess::ZoneAccess zone_access;
         zone_access.id = _registrar.zones[i].id;

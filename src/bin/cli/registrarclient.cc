@@ -227,7 +227,7 @@ RegistrarClient::registrar_add()
     {
         url = registrar_add_params_.url.get_value();
     }
-    boost::optional<bool> system = false;
+    boost::optional<bool> system;
     if (registrar_add_params_.system)
     {
         system = true;
@@ -248,7 +248,7 @@ RegistrarClient::registrar_add()
         variable_symbol = registrar_add_params_.varsymb.get_value();
     }
     boost::optional<std::string> payment_memo_regex = boost::none;
-    boost::optional<bool> vat_payer = true;
+    boost::optional<bool> vat_payer;
     if (registrar_add_params_.no_vat)
     {
         vat_payer = false;

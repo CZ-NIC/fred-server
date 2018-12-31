@@ -58,7 +58,7 @@ BOOST_FIXTURE_TEST_SUITE(TestAddRegistrarZoneAccess, SupplyFixtureCtx<AddRegistr
 
 BOOST_AUTO_TEST_CASE(set_nonexistent_registrar)
 {
-    const std::string& nonexistent_registrar = "noreg" + RandomDataGenerator().xstring(3);
+    const std::string nonexistent_registrar = "noreg" + RandomDataGenerator().xstring(3);
     BOOST_CHECK_THROW(
             ::LibFred::Registrar::ZoneAccess::AddRegistrarZoneAccess(
                     nonexistent_registrar,
@@ -70,7 +70,7 @@ BOOST_AUTO_TEST_CASE(set_nonexistent_registrar)
 
 BOOST_AUTO_TEST_CASE(set_nonexistent_zone)
 {
-    const std::string& nonexistent_zone = "nozone" + RandomDataGenerator().xstring(3);
+    const std::string nonexistent_zone = "nozone" + RandomDataGenerator().xstring(3);
     BOOST_CHECK_THROW(
             ::LibFred::Registrar::ZoneAccess::AddRegistrarZoneAccess(
                     registrar_handle,

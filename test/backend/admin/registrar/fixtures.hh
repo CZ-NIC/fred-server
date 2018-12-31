@@ -281,7 +281,7 @@ struct HasExistingRegistrarMin : ExistingRegistrar
     HasExistingRegistrarMin(::LibFred::OperationContext& _ctx)
             : ExistingRegistrar(_ctx)
     {
-        const std::string& name = "Updated Name";
+        const std::string name = "Updated Name";
         registrar.name = name;
         contact.name = name;
     }

@@ -61,8 +61,8 @@ BOOST_FIXTURE_TEST_CASE(set_noexistent_registrar, SupplyFixtureCtx<HasEppAuthWit
             ::Admin::Registrar::EppAuthNonexistentRegistrar);
 
     const std::string& reg_handle = epp_auth_data.registrar_handle;
-    const std::string& certificate = "new certificate";
-    const std::string& password = "new password";
+    const std::string certificate = "new certificate";
+    const std::string password = "new password";
     BOOST_CHECK_THROW(::Admin::Registrar::add_epp_auth(reg_handle, certificate, password),
             ::Admin::Registrar::EppAuthNonexistentRegistrar);
 }

@@ -232,7 +232,10 @@ class RegistrarImpl : public LibFred::CommonObjectImplNew,
 public:
   RegistrarImpl()
       : CommonObjectImplNew(),
-        credit("0")
+        credit("0"),
+        id_(0),
+        vat_(true),
+        system_(false)
   {}
   RegistrarImpl(TID _id,
                 const std::string& _ico,

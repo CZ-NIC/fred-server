@@ -98,16 +98,16 @@ void update_epp_auth(const EppAuthData& _auth_data)
     const LibFred::Registrar::EppAuth::RegistrarEppAuthData& epp_auth_data =
             LibFred::Registrar::EppAuth::GetRegistrarEppAuth(_auth_data.registrar_handle).exec(ctx);
     std::set<unsigned long long> auth_ids;
-    std::for_each(epp_auth_data.epp_auth_records.begin(),
-            epp_auth_data.epp_auth_records.end(),
-            [&auth_ids](const auto record) { return auth_ids.insert(record.id); });
+    std::for_each(epp_auth_data.epp_auth_records.cbegin(),
+            epp_auth_data.epp_auth_records.cend(),
+            [&auth_ids](const auto& record) { return auth_ids.insert(record.id); });
 
-    for (unsigned i = 0; i < _auth_data.epp_auth_records.size(); ++i)
+    for (const auto& record : _auth_data.epp_auth_records)
     {
-        unsigned long long auth_id = _auth_data.epp_auth_records[i].id;
-        const std::string password = _auth_data.epp_auth_records[i].plain_password;
-        const std::string certificate = _auth_data.epp_auth_records[i].certificate_fingerprint;
-        const std::string second_cert = _auth_data.epp_auth_records[i].new_certificate_fingerprint;
+        unsigned long long auth_id = record.id;
+        const std::string password = record.plain_password;
+        const std::string certificate = record.certificate_fingerprint;
+        const std::string second_cert = record.new_certificate_fingerprint;
         const bool is_new_acl_record = (auth_id == 0);
 
         std::stringstream debug_info;
@@ -117,7 +117,7 @@ void update_epp_auth(const EppAuthData& _auth_data)
 
         if (is_new_acl_record)
         {
-            const std::string& operation_name = "Libfred::Registrar::EppAuth::AddRegistrarEppAuth()";
+            const std::string operation_name = "Libfred::Registrar::EppAuth::AddRegistrarEppAuth()";
 
             const bool has_mandatory_data = !password.empty() && !certificate.empty();
             if (!has_mandatory_data)
@@ -153,7 +153,7 @@ void update_epp_auth(const EppAuthData& _auth_data)
         }
         else
         {
-            const std::string& operation_name = "Libfred::Registrar::EppAuth::UpdateRegistrarEppAuth()";
+            const std::string operation_name = "Libfred::Registrar::EppAuth::UpdateRegistrarEppAuth()";
             const bool has_mandatory_data = !password.empty() || !certificate.empty();
             if (!has_mandatory_data)
             {
@@ -187,7 +187,7 @@ void update_epp_auth(const EppAuthData& _auth_data)
         }
         if (!second_cert.empty())
         {
-            const std::string& operation_name = "Libfred::Registrar::EppAuth::CloneRegistrarEppAuth()";
+            const std::string operation_name = "Libfred::Registrar::EppAuth::CloneRegistrarEppAuth()";
             try
             {
                 TRACE("[CALL] " + operation_name);
@@ -208,7 +208,7 @@ void update_epp_auth(const EppAuthData& _auth_data)
 
     for (const auto id : auth_ids)
     {
-        const std::string& operation_name = "Libfred::Registrar::EppAuth::DeleteRegistrarEppAuth()";
+        const std::string operation_name = "Libfred::Registrar::EppAuth::DeleteRegistrarEppAuth()";
         try
         {
             TRACE("[CALL] " + operation_name);
