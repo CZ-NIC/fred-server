@@ -42,7 +42,7 @@ if(NOT VERSION)
     execute_process(COMMAND ${GIT_PROGRAM} "describe" "--tags"
                     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
                     OUTPUT_VARIABLE RAWVERSION)
-    string(REGEX REPLACE "-.*\n" "" VERSION "${RAWVERSION}")
+    string(REGEX REPLACE "(-.*)?\n" "" VERSION "${RAWVERSION}")
 endif()
 set(TARBALL_FILE_NAME "${program_name}-${VERSION}")
 
