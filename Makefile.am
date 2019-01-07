@@ -1130,6 +1130,19 @@ src_libfred_libfred_a_SOURCES = \
 		src/libfred/registrar/group/membership/info_group_membership_by_group.cc \
 		src/libfred/registrar/group/membership/info_group_membership_by_registrar.hh \
 		src/libfred/registrar/group/membership/info_group_membership_by_registrar.cc \
+		src/libfred/registrar/epp_auth/add_registrar_epp_auth.hh \
+		src/libfred/registrar/epp_auth/add_registrar_epp_auth.cc \
+		src/libfred/registrar/epp_auth/clone_registrar_epp_auth.hh \
+		src/libfred/registrar/epp_auth/clone_registrar_epp_auth.cc \
+		src/libfred/registrar/epp_auth/delete_registrar_epp_auth.hh \
+		src/libfred/registrar/epp_auth/delete_registrar_epp_auth.cc \
+		src/libfred/registrar/epp_auth/get_registrar_epp_auth.hh \
+		src/libfred/registrar/epp_auth/get_registrar_epp_auth.cc \
+		src/libfred/registrar/epp_auth/registrar_epp_auth_data.hh \
+		src/libfred/registrar/epp_auth/update_registrar_epp_auth.hh \
+		src/libfred/registrar/epp_auth/update_registrar_epp_auth.cc \
+		src/libfred/registrar/epp_auth/exceptions.hh \
+		src/libfred/registrar/epp_auth/exceptions.cc \
 		src/libfred/registrar/certification/exceptions.hh \
 		src/libfred/registrar/certification/registrar_certification_type.hh \
 		src/libfred/registrar/certification/create_registrar_certification.hh \
@@ -3936,6 +3949,13 @@ test_test_libfred_SOURCES = \
 		test/libfred/registrar/zone_access/test_update_zone_access.cc \
 		test/libfred/registrar/zone_access/util.hh \
 		test/libfred/registrar/zone_access/util.cc \
+		test/libfred/registrar/epp_auth/test_add_registrar_epp_auth.cc \
+		test/libfred/registrar/epp_auth/test_clone_registrar_epp_auth.cc \
+		test/libfred/registrar/epp_auth/test_delete_registrar_epp_auth.cc \
+		test/libfred/registrar/epp_auth/test_update_registrar_epp_auth.cc \
+		test/libfred/registrar/epp_auth/test_get_registrar_epp_auth.cc \
+		test/libfred/registrar/epp_auth/util.hh \
+		test/libfred/registrar/epp_auth/util.cc \
 		test/libfred/registrar/certification/test_create_registrar_certification.cc \
 		test/libfred/registrar/certification/test_update_registrar_certification.cc \
 		test/libfred/registrar/certification/test_get_registrar_certifications.cc \
@@ -3972,6 +3992,7 @@ test_test_libfred_LDFLAGS = \
 
 test_test_libfred_LDADD = \
 		src/libfred/libfred.a \
+		src/util/libpassword_storage.a \
 		src/util/libutil.a \
 		src/util/log/liblog.a \
 		src/util/db/libdb.a \
@@ -3982,6 +4003,7 @@ test_test_libfred_LDADD = \
 		src/bin/corba/libmailer.a \
 		src/bin/corba/libcorbadatatypes.a \
 		src/libfred/public_request/libpublic_request.a \
+		$(LIBCRYPTO_LIBS) \
 		$(LIBIDN_LIBS) \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
