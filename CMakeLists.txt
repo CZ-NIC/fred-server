@@ -918,6 +918,9 @@ prepare_object_files(
     src/libfred/registrar/update_registrar.cc
     src/libfred/registrar/exceptions.cc
     src/libfred/registrar/zone_credit.cc
+    src/libfred/registrar/zone_access/add_registrar_zone_access.cc
+    src/libfred/registrar/zone_access/exceptions.cc
+    src/libfred/registrar/zone_access/update_registrar_zone_access.cc
     src/libfred/registry.cc
     src/libfred/reminder.cc
     src/libfred/requests/model_request.cc
@@ -1199,6 +1202,9 @@ prepare_object_files(
     test/libfred/registrar/test_info_registrar.cc
     test/libfred/registrar/test_registrar_zone_access.cc
     test/libfred/registrar/test_update_registrar.cc
+    test/libfred/registrar/zone_access/test_add_zone_access.cc
+    test/libfred/registrar/zone_access/util.cc
+    test/libfred/registrar/zone_access/test_update_zone_access.cc
     test/libfred/test_check_handle.cc
     test/libfred/test_opexception.cc
     test/libfred/zone/zone_ns/test_create_zone_ns.cc
@@ -1499,7 +1505,10 @@ prepare_static_library(fred
     src/libfred/registrar/group/get_registrar_groups.cc
     src/libfred/registrar/certification/create_registrar_certification.cc
     src/libfred/registrar/certification/update_registrar_certification.cc
-    src/libfred/registrar/certification/get_registrar_certifications.cc)
+    src/libfred/registrar/certification/get_registrar_certifications.cc
+    src/libfred/registrar/zone_access/add_registrar_zone_access.cc
+    src/libfred/registrar/zone_access/exceptions.cc
+    src/libfred/registrar/zone_access/update_registrar_zone_access.cc)
 
 prepare_static_library(password_storage
     src/util/password_storage.cc
@@ -3122,6 +3131,9 @@ prepare_executable(test-libfred
     test/libfred/registrar/certification/test_create_registrar_certification.cc
     test/libfred/registrar/certification/test_update_registrar_certification.cc
     test/libfred/registrar/certification/test_get_registrar_certifications.cc
+    test/libfred/registrar/zone_access/test_add_zone_access.cc
+    test/libfred/registrar/zone_access/util.cc
+    test/libfred/registrar/zone_access/test_update_zone_access.cc
     test/libfred/test_opexception.cc
     test/libfred/test_check_handle.cc
     test/libfred/zone/zone_ns/test_create_zone_ns.cc

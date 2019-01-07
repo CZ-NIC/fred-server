@@ -16,29 +16,21 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef UTIL_HH_2EE13D72AC394742A492372492CD6F20
-#define UTIL_HH_2EE13D72AC394742A492372492CD6F20
+#ifndef UTIL_HH_DD3EDFB0F2864035BAA88C1F84FFA378
+#define UTIL_HH_DD3EDFB0F2864035BAA88C1F84FFA378
 
 #include "src/libfred/opcontext.hh"
-#include "test/setup/fixtures.hh"
+
+#include <boost/date_time/gregorian/gregorian_types.hpp>
+#include <string>
 
 namespace Test {
 
-struct ContextHolder
-    : virtual instantiate_db_template
-{
-    LibFred::OperationContextCreator ctx;
-};
-
-template <class T>
-struct SupplyFixtureCtx : ContextHolder, T
-{
-    SupplyFixtureCtx()
-        : ContextHolder(),
-          T(ctx)
-    {
-    }
-};
+unsigned long long get_zone_access_id(::LibFred::OperationContext& _ctx,
+        const std::string& _registrar,
+        const std::string& _zone,
+        const boost::gregorian::date& _from_date,
+        const boost::gregorian::date& _to_date);
 
 } // namespace Test
 
