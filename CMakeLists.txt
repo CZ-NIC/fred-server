@@ -915,6 +915,8 @@ prepare_object_files(
     src/libfred/registrar/registrar_impl.cc
     src/libfred/registrar/registrar_zone_access.cc
     src/libfred/registrar/registrar_zone_credit.cc
+    src/libfred/registrar/update_registrar.cc
+    src/libfred/registrar/exceptions.cc
     src/libfred/registrar/zone_credit.cc
     src/libfred/registry.cc
     src/libfred/reminder.cc
@@ -1196,6 +1198,7 @@ prepare_object_files(
     test/libfred/registrar/test_get_registrar_zone_credit.cc
     test/libfred/registrar/test_info_registrar.cc
     test/libfred/registrar/test_registrar_zone_access.cc
+    test/libfred/registrar/test_update_registrar.cc
     test/libfred/test_check_handle.cc
     test/libfred/test_opexception.cc
     test/libfred/zone/zone_ns/test_create_zone_ns.cc
@@ -1453,6 +1456,8 @@ prepare_static_library(fred
     src/libfred/registrar/info_registrar_diff.cc
     src/libfred/registrar/registrar_zone_access.cc
     src/libfred/registrar/create_registrar.cc
+    src/libfred/registrar/update_registrar.cc
+    src/libfred/registrar/exceptions.cc
     src/libfred/registrar/info_registrar_impl.cc
     src/libfred/registrar/info_registrar_output.cc
     src/libfred/registrar/get_registrar_handles.cc
@@ -3015,6 +3020,7 @@ prepare_executable(test-libfred
     test/libfred/registrar/test_get_registrar_zone_credit.cc
     test/libfred/registrar/test_info_registrar.cc
     test/libfred/registrar/test_create_registrar.cc
+    test/libfred/registrar/test_update_registrar.cc
     test/libfred/registrar/group/test_create.cc
     test/libfred/registrar/group/test_update.cc
     test/libfred/registrar/group/test_cancel.cc
