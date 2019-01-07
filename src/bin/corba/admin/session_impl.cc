@@ -1243,14 +1243,14 @@ Registry::Registrar::Detail* ccReg_Session_i::createRegistrarDetail(LibFred::Reg
     detail->access[i].md5Cert = DUPSTRFUN(_registrar->getACL(i)->getCertificateMD5);
     detail->access[i].password = "";
   }
-  detail->zones.length(_registrar->getZoneAccessSize());
-  for (unsigned i = 0; i < _registrar->getZoneAccessSize(); i++)
+  detail->zones.length(_registrar->getRegistrarZoneSize());
+  for (unsigned i = 0; i < _registrar->getRegistrarZoneSize(); i++)
   {
-    detail->zones[i].id = _registrar->getZoneAccess(i)->id;
-    detail->zones[i].name = CORBA::string_dup(_registrar->getZoneAccess(i)->name.c_str());
-    detail->zones[i].credit = CORBA::string_dup(C_STR(_registrar->getZoneAccess(i)->credit));//_registrar->getCredit(__registrar->getAZone(i)->id);
-    detail->zones[i].fromDate = makeCorbaDate(_registrar->getZoneAccess(i)->fromdate);//CORBA::string_dup(_registrar->getZoneAccess(i)->fromdate.to_string().c_str());
-    detail->zones[i].toDate = makeCorbaDate(_registrar->getZoneAccess(i)->todate);
+    detail->zones[i].id = _registrar->getRegistrarZone(i)->id;
+    detail->zones[i].name = CORBA::string_dup(_registrar->getRegistrarZone(i)->name.c_str());
+    detail->zones[i].credit = CORBA::string_dup(C_STR(_registrar->getRegistrarZone(i)->credit));//_registrar->getCredit(__registrar->getAZone(i)->id);
+    detail->zones[i].fromDate = makeCorbaDate(_registrar->getRegistrarZone(i)->fromdate);//CORBA::string_dup(_registrar->getRegistrarZone(i)->fromdate.to_string().c_str());
+    detail->zones[i].toDate = makeCorbaDate(_registrar->getRegistrarZone(i)->todate);
   }
 
   detail->hidden = _registrar->getSystem();
@@ -1380,10 +1380,10 @@ ccReg::TID ccReg_Session_i::updateRegistrar(const ccReg::AdminRegistrar& _regist
 
   }
 
-  update_registrar->clearZoneAccessList();
+  update_registrar->clearRegistrarZoneList();
   for (unsigned i = 0; i < _registrar.zones.length();i++)
     {
-      LibFred::Registrar::ZoneAccess *registrar_azone = update_registrar->newZoneAccess();
+      LibFred::Registrar::RegistrarZone *registrar_azone = update_registrar->newRegistrarZone();
 
       LOGGER(PACKAGE).debug(boost::format
               ("ccReg_Session_i::updateRegistrar azone : i: %1% "

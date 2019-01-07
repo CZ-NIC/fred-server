@@ -294,10 +294,7 @@ class RegistrarImpl : public LibFred::CommonObjectImplNew,
   typedef std::map<Database::ID, Money> ZoneCreditMap;
   ZoneCreditMap zone_credit_map;
 
-  typedef  std::shared_ptr<ZoneAccess> ZoneAccessPtr;
-  typedef std::vector<ZoneAccessPtr> ZoneAccessList;
-  typedef ZoneAccessList::iterator ZoneAccessListIter;
-  ZoneAccessList actzones;
+  std::vector<std::shared_ptr<RegistrarZone>> actzones;
 
 public:
   RegistrarImpl()
@@ -563,7 +560,7 @@ public:
     return acl.size();
   }
   
-  virtual unsigned getZoneAccessSize() const {
+  virtual unsigned getRegistrarZoneSize() const {
       return actzones.size();
     }
 
@@ -571,7 +568,7 @@ public:
   {
     return idx < acl.size() ? acl[idx].get() : NULL;
   }
-  virtual ZoneAccess* getZoneAccess(unsigned idx) const
+  virtual RegistrarZone* getRegistrarZone(unsigned idx) const
   {
     return idx < actzones.size() ? actzones[idx].get() : NULL;
   }
@@ -583,11 +580,11 @@ public:
     return newACL.get();
   }
 
-  virtual ZoneAccess* newZoneAccess()
+  virtual RegistrarZone* newRegistrarZone()
   {
-    std::shared_ptr<ZoneAccess> newZoneAccess ( new ZoneAccess());
-    actzones.push_back(newZoneAccess);
-    return newZoneAccess.get();
+    std::shared_ptr<RegistrarZone> newRegistrarZone ( new RegistrarZone());
+    actzones.push_back(newRegistrarZone);
+    return newRegistrarZone.get();
   }
 
   virtual void deleteACL(unsigned idx)
@@ -597,19 +594,12 @@ public:
     }
   }
 
-  virtual void deleteZoneAccess(unsigned idx)
-  {
-    if (idx < actzones.size()) {
-        actzones.erase(actzones.begin()+idx);
-    }
-  }
-
   virtual void clearACLList()
   {
     acl.clear();
   }
 
-  virtual void clearZoneAccessList()
+  virtual void clearRegistrarZoneList()
   {
       actzones.clear();
   }
@@ -827,13 +817,13 @@ public:
     acl.push_back(std::make_shared<ACLImpl>(_id, certificateMD5, password));
   }
 
-  void putZoneAccess(TID _id
+  void putRegistrarZone(TID _id
           , std::string _name
           , Money _credit
           , Database::Date _fromdate
           , Database::Date _todate)
   {
-      actzones.push_back(std::make_shared<ZoneAccess>(_id,_name,_credit,_fromdate,_todate));
+      actzones.push_back(std::make_shared<RegistrarZone>(_id,_name,_credit,_fromdate,_todate));
   }
 
   bool hasId(TID _id) const
@@ -1124,7 +1114,7 @@ public:
         RegistrarImpl *registrar_ptr = dynamic_cast<RegistrarImpl* >(findIDSequence(registrar_id));
         if (registrar_ptr)
         {
-          registrar_ptr->putZoneAccess(azone_id, zone_name, credit, fromdate, todate);
+          registrar_ptr->putRegistrarZone(azone_id, zone_name, credit, fromdate, todate);
         }
 
       }//for r_azone
