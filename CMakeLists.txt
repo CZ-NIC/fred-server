@@ -398,6 +398,10 @@ prepare_object_files(
     src/backend/admin/contact/verification/update_tests.cc
     src/backend/admin/domain/create_expired_domain.cc
     src/backend/admin/notification/notification.cc
+    src/backend/admin/registrar/create_registrar.cc
+    src/backend/admin/registrar/update_epp_auth.cc
+    src/backend/admin/registrar/update_registrar.cc
+    src/backend/admin/registrar/update_zone_access.cc
     src/backend/admin/zone/zone.cc
     src/backend/automatic_keyset_management/automatic_keyset_management.cc
     src/backend/automatic_keyset_management/dns_key.cc
@@ -767,8 +771,6 @@ prepare_object_files(
     src/libfred/invoicing/invoice.cc
     src/libfred/mail.cc
     src/libfred/messages/messages_impl.cc
-    src/libfred/model_registrar_acl.cc
-    src/libfred/model_registrar.cc
     src/libfred/notifier/enqueue_notification.cc
     src/libfred/notifier/gather_email_data/gather_email_addresses.cc
     src/libfred/notifier/gather_email_data/gather_email_content.cc
@@ -926,6 +928,7 @@ prepare_object_files(
     src/libfred/registrar/zone_credit.cc
     src/libfred/registrar/zone_access/add_registrar_zone_access.cc
     src/libfred/registrar/zone_access/exceptions.cc
+    src/libfred/registrar/zone_access/get_registrar_zone_access.cc
     src/libfred/registrar/zone_access/update_registrar_zone_access.cc
     src/libfred/registry.cc
     src/libfred/reminder.cc
@@ -1016,6 +1019,11 @@ prepare_object_files(
     test/backend/admin/domain/test_create_expired_domain.cc
     test/backend/admin/notification/main.cc
     test/backend/admin/notification/test_set_domain_outzone_unguarded_warning_emails.cc
+    test/backend/admin/registrar/main.cc
+    test/backend/admin/registrar/test_create_registrar.cc
+    test/backend/admin/registrar/test_update_epp_auth.cc
+    test/backend/admin/registrar/test_update_registrar.cc
+    test/backend/admin/registrar/test_update_zone_access.cc
     test/backend/admin/zone/main.cc
     test/backend/admin/zone/test_add_zone.cc
     test/backend/admin/zone/test_add_zone_ns.cc
@@ -1351,8 +1359,6 @@ prepare_static_library(fred
     src/libfred/common_impl.cc
     src/libfred/object_impl.cc
     src/libfred/common_impl_new.cc
-    src/libfred/model_registrar_acl.cc
-    src/libfred/model_registrar.cc
     src/libfred/registrable_object/domain.cc
     src/libfred/registrable_object/contact.cc
     src/libfred/registrable_object/nsset.cc
@@ -1526,6 +1532,7 @@ prepare_static_library(fred
     src/libfred/registrar/certification/get_registrar_certifications.cc
     src/libfred/registrar/zone_access/add_registrar_zone_access.cc
     src/libfred/registrar/zone_access/exceptions.cc
+    src/libfred/registrar/zone_access/get_registrar_zone_access.cc
     src/libfred/registrar/zone_access/update_registrar_zone_access.cc)
 
 prepare_static_library(password_storage
@@ -2055,6 +2062,10 @@ prepare_executable(fred-adifd
     src/bin/corba/notification/server_i.cc
     src/bin/corba/notification/notification_corba_conversion.cc
     src/backend/admin/notification/notification.cc
+    src/backend/admin/registrar/create_registrar.cc
+    src/backend/admin/registrar/update_epp_auth.cc
+    src/backend/admin/registrar/update_registrar.cc
+    src/backend/admin/registrar/update_zone_access.cc
     src/util/corba_conversion.cc)
 target_link_libraries(fred-adifd
     admin_create_expired_domain
@@ -2454,6 +2465,8 @@ prepare_executable(fred-admin
     src/backend/admin/contact/merge_contact_reporting.cc
     src/backend/admin/domain/create_expired_domain.cc
     src/backend/admin/notification/notification.cc
+    src/backend/admin/registrar/create_registrar.cc
+    src/backend/admin/registrar/update_epp_auth.cc
     src/backend/admin/zone/zone.cc
     src/backend/buffer.cc
     src/bin/cli/bankclient.cc
@@ -3009,6 +3022,44 @@ target_link_external_libraries(test-admin-domain
     postgres
     omniorb4
     threads)
+
+prepare_executable(test-admin-registrar
+    src/backend/admin/registrar/create_registrar.cc
+    src/backend/admin/registrar/update_epp_auth.cc
+    src/backend/admin/registrar/update_registrar.cc
+    src/backend/admin/registrar/update_zone_access.cc
+    test/backend/admin/registrar/main.cc
+    test/backend/admin/registrar/test_create_registrar.cc
+    test/backend/admin/registrar/test_update_epp_auth.cc
+    test/backend/admin/registrar/test_update_registrar.cc
+    test/backend/admin/registrar/test_update_zone_access.cc
+    test/libfred/registrar/epp_auth/util.cc
+    test/setup/fixtures.cc
+    test/setup/fixtures_utils.cc)
+target_link_libraries(test-admin-registrar
+    corba
+    corbafilters
+    corbadatatypes
+    fred
+    log
+    db
+    password_storage
+    util
+    types
+    timezones)
+target_link_external_libraries(test-admin-registrar
+    boost_system
+    boost_unit_test_framework
+    boost_program_options
+    boost_date_time
+    boost_regex
+    boost_random
+    omniorb4
+    boost_thread
+    threads
+    openssl
+    postgres
+    libidn)
 
 prepare_executable(test-admin-zone
     src/backend/admin/zone/zone.cc
@@ -3595,6 +3646,7 @@ if(NOT DO_NOT_INSTALL_TESTS)
     install(TARGETS test-server DESTINATION ${BINDIR})
     install(TARGETS test-whois DESTINATION ${BINDIR})
     install(TARGETS test-admin-domain DESTINATION ${BINDIR})
+    install(TARGETS test-admin-registrar DESTINATION ${BINDIR})
     install(TARGETS test-admin-zone DESTINATION ${BINDIR})
     install(TARGETS test-delete-objects-marked-as-delete-candidate DESTINATION ${BINDIR})
 endif()

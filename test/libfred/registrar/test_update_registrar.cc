@@ -41,23 +41,7 @@ struct update_registrar_fixture
     {
         registrar.handle = RandomDataGenerator().xstring(12);
         registrar.name = Nullable<std::string>("Testname");
-        registrar.street1 = Nullable<std::string>("STR1");
-        registrar.street2 = Nullable<std::string>("str2");
-        registrar.street3 = Nullable<std::string>("str3");
-        registrar.stateorprovince = Nullable<std::string>("");
-        registrar.city = Nullable<std::string>("Praha");
-        registrar.postalcode = Nullable<std::string>("11150");
-        registrar.country = Nullable<std::string>("CZ");
-        registrar.dic = Nullable<std::string>("5555551234");
-        registrar.email = Nullable<std::string>("test@nic.cz");
-        registrar.fax = Nullable<std::string>("132456789");
-        registrar.ico = Nullable<std::string>("1234567890");
-        registrar.organization = Nullable<std::string>("org");
-        registrar.payment_memo_regex = Nullable<std::string>("");
-        registrar.system = Nullable<bool>(false);
-        registrar.telephone = Nullable<std::string>("123456789");
-        registrar.url = Nullable<std::string>("http://test.nic.cz");
-        registrar.variable_symbol = Nullable<std::string>("1234567890");
+        registrar.system = false;
         registrar.vat_payer = true;
 
         ::LibFred::CreateRegistrar(registrar.handle).exec(_ctx);
@@ -71,7 +55,7 @@ BOOST_FIXTURE_TEST_SUITE(TestUpdateRegistrar, SupplyFixtureCtx<update_registrar_
 
 BOOST_AUTO_TEST_CASE(set_nonexistent_registrar)
 {
-    const std::string& nonexistentRegistrar = RandomDataGenerator().xstring(13);
+    const std::string nonexistentRegistrar = RandomDataGenerator().xstring(13);
     BOOST_CHECK_THROW(::LibFred::Registrar::UpdateRegistrar(nonexistentRegistrar)
             .set_name(registrar.name.get_value())
             .exec(ctx),
@@ -85,8 +69,38 @@ BOOST_AUTO_TEST_CASE(set_no_update_registrar_data)
            ::LibFred::Registrar::NoUpdateData);
 }
 
+BOOST_AUTO_TEST_CASE(set_registrar_update_min)
+{
+    registrar.id = ::LibFred::Registrar::UpdateRegistrar(registrar.handle)
+            .set_name(registrar.name.get_value())
+            .exec(ctx);
+
+    ::LibFred::InfoRegistrarOutput registrar_info = ::LibFred::InfoRegistrarByHandle(registrar.handle).exec(ctx);
+
+    BOOST_CHECK(registrar == registrar_info.info_registrar_data);
+}
+
 BOOST_AUTO_TEST_CASE(set_registrar_update_all)
 {
+    registrar.street1 = Nullable<std::string>("STR1");
+    registrar.street2 = Nullable<std::string>("str2");
+    registrar.street3 = Nullable<std::string>("str3");
+    registrar.stateorprovince = Nullable<std::string>("");
+    registrar.city = Nullable<std::string>("Praha");
+    registrar.postalcode = Nullable<std::string>("11150");
+    registrar.country = Nullable<std::string>("CZ");
+    registrar.dic = Nullable<std::string>("5555551234");
+    registrar.email = Nullable<std::string>("test@nic.cz");
+    registrar.fax = Nullable<std::string>("132456789");
+    registrar.ico = Nullable<std::string>("1234567890");
+    registrar.organization = Nullable<std::string>("org");
+    registrar.payment_memo_regex = Nullable<std::string>("");
+    registrar.system = Nullable<bool>(false);
+    registrar.telephone = Nullable<std::string>("123456789");
+    registrar.url = Nullable<std::string>("http://test.nic.cz");
+    registrar.variable_symbol = Nullable<std::string>("1234567890");
+    registrar.vat_payer = true;
+
     registrar.id = ::LibFred::Registrar::UpdateRegistrar(registrar.handle)
             .set_name(registrar.name.get_value())
             .set_street1(registrar.street1.get_value())

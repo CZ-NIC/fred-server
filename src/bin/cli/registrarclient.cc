@@ -16,6 +16,8 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "src/backend/admin/registrar/create_registrar.hh"
+#include "src/backend/admin/registrar/update_epp_auth.hh"
 #include "src/backend/admin/zone/zone.hh"
 #include "src/bin/cli/commonclient.hh"
 #include "src/bin/cli/registrarclient.hh"
@@ -23,6 +25,7 @@
 #include "src/util/types/money.hh"
 
 #include <boost/asio.hpp>
+#include <boost/optional.hpp>
 #include <string>
 #include <vector>
 
@@ -161,82 +164,125 @@ RegistrarClient::zone_ns_add()
 void
 RegistrarClient::registrar_add()
 {
-    LibFred::Registrar::Manager::AutoPtr regMan
-             = LibFred::Registrar::Manager::create(m_db);
-    LibFred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
-    registrar->setHandle(registrar_add_params_.handle);//REGISTRAR_ADD_HANDLE_NAME
-    registrar->setCountry(registrar_add_params_.country);//REGISTRAR_COUNTRY_NAME
-    if (registrar_add_params_.ico.is_value_set()) {
-        registrar->setIco(registrar_add_params_.ico.get_value());
-    };//REGISTRAR_ICO_NAME
-    if (registrar_add_params_.dic.is_value_set()) {
-        registrar->setDic(registrar_add_params_.dic.get_value());
-    };//REGISTRAR_DIC_NAME
-    if (registrar_add_params_.varsymb.is_value_set()) {
-        registrar->setVarSymb(registrar_add_params_.varsymb.get_value());
-    };//REGISTRAR_VAR_SYMB_NAME
-    if (registrar_add_params_.reg_name.is_value_set()) {
-        registrar->setName(registrar_add_params_.reg_name.get_value());
-    };//REGISTRAR_ADD_NAME_NAME
-    if (registrar_add_params_.organization.is_value_set()) {
-        registrar->setOrganization(registrar_add_params_.organization.get_value());
-    };//REGISTRAR_ORGANIZATION_NAME
-    if (registrar_add_params_.street1.is_value_set()) {
-        registrar->setStreet1(registrar_add_params_.street1.get_value());
-    };//REGISTRAR_STREET1_NAME
-    if (registrar_add_params_.street2.is_value_set()) {
-        registrar->setStreet2(registrar_add_params_.street2.get_value());
-    };//REGISTRAR_STREET2_NAME
-    if (registrar_add_params_.street3.is_value_set()) {
-        registrar->setStreet3(registrar_add_params_.street3.get_value());
-    };//REGISTRAR_STREET3_NAME
-    if (registrar_add_params_.city.is_value_set()) {
-        registrar->setCity(registrar_add_params_.city.get_value());
-    };//REGISTRAR_CITY_NAME
-    if (registrar_add_params_.stateorprovince.is_value_set()) {
-        registrar->setProvince(registrar_add_params_.stateorprovince.get_value());
-    };//REGISTRAR_STATEORPROVINCE_NAME
-    if (registrar_add_params_.postalcode.is_value_set()) {
-        registrar->setPostalCode(registrar_add_params_.postalcode.get_value());
-    };//REGISTRAR_POSTALCODE_NAME
-    if (registrar_add_params_.telephone.is_value_set()) {
-        registrar->setTelephone(registrar_add_params_.telephone.get_value());
-    };//REGISTRAR_TELEPHONE_NAME
-    if (registrar_add_params_.fax.is_value_set()) {
-        registrar->setFax(registrar_add_params_.fax.get_value());
-    };//REGISTRAR_FAX_NAME
-    if (registrar_add_params_.email.is_value_set()) {
-        registrar->setEmail(registrar_add_params_.email.get_value());
-    };//REGISTRAR_EMAIL_NAME
-    if (registrar_add_params_.url.is_value_set()) {
-        registrar->setURL(registrar_add_params_.url.get_value());
-    };//REGISTRAR_URL_NAME
-    if (registrar_add_params_.system) {//REGISTRAR_SYSTEM_NAME
-        registrar->setSystem(true);
-    } else {
-        registrar->setSystem(false);
+    const std::string registrar_handle = registrar_add_params_.handle;
+    const boost::optional<std::string> country = registrar_add_params_.country;
+
+    boost::optional<std::string> name;
+    if (registrar_add_params_.reg_name.is_value_set())
+    {
+        name = registrar_add_params_.reg_name.get_value();
     }
-    if (registrar_add_params_.no_vat) {//REGISTRAR_NO_VAT_NAME
-        registrar->setVat(false);
-    } else {
-        registrar->setVat(true);
+    boost::optional<std::string> organization;
+    if (registrar_add_params_.organization.is_value_set())
+    {
+        organization = registrar_add_params_.organization.get_value();
     }
-    registrar->save();
+    boost::optional<std::string> street1;
+    if (registrar_add_params_.street1.is_value_set())
+    {
+        street1 = registrar_add_params_.street1.get_value();
+    }
+    boost::optional<std::string> street2;
+    if (registrar_add_params_.street2.is_value_set())
+    {
+        street2 = registrar_add_params_.street2.get_value();
+    }
+    boost::optional<std::string> street3;
+    if (registrar_add_params_.street3.is_value_set())
+    {
+        street3 = registrar_add_params_.street3.get_value();
+    }
+    boost::optional<std::string> city;
+    if (registrar_add_params_.city.is_value_set())
+    {
+        city = registrar_add_params_.city.get_value();
+    }
+    boost::optional<std::string> state_or_province;
+    if (registrar_add_params_.stateorprovince.is_value_set())
+    {
+        state_or_province = registrar_add_params_.stateorprovince.get_value();
+    }
+    boost::optional<std::string> postal_code;
+    if (registrar_add_params_.postalcode.is_value_set())
+    {
+        postal_code = registrar_add_params_.postalcode.get_value();
+    }
+    boost::optional<std::string> telephone;
+    if (registrar_add_params_.telephone.is_value_set())
+    {
+        telephone = registrar_add_params_.telephone.get_value();
+    }
+    boost::optional<std::string> fax;
+    if (registrar_add_params_.fax.is_value_set())
+    {
+        fax = registrar_add_params_.fax.get_value();
+    }
+    boost::optional<std::string> email;
+    if (registrar_add_params_.email.is_value_set())
+    {
+        email = registrar_add_params_.email.get_value();
+    }
+    boost::optional<std::string> url;
+    if (registrar_add_params_.url.is_value_set())
+    {
+        url = registrar_add_params_.url.get_value();
+    }
+    boost::optional<bool> system;
+    if (registrar_add_params_.system)
+    {
+        system = true;
+    }
+    boost::optional<std::string> ico;
+    if (registrar_add_params_.ico.is_value_set())
+    {
+        ico = registrar_add_params_.ico.get_value();
+    }
+    boost::optional<std::string> dic;
+    if (registrar_add_params_.dic.is_value_set())
+    {
+        dic = registrar_add_params_.dic.get_value();
+    }
+    boost::optional<std::string> variable_symbol;
+    if (registrar_add_params_.varsymb.is_value_set())
+    {
+        variable_symbol = registrar_add_params_.varsymb.get_value();
+    }
+    boost::optional<std::string> payment_memo_regex = boost::none;
+    boost::optional<bool> vat_payer;
+    if (registrar_add_params_.no_vat)
+    {
+        vat_payer = false;
+    }
+
+    Admin::Registrar::create_registrar(registrar_handle,
+            name,
+            organization,
+            street1,
+            street2,
+            street3,
+            city,
+            state_or_province,
+            postal_code,
+            country,
+            telephone,
+            fax,
+            email,
+            url,
+            system,
+            ico,
+            dic,
+            variable_symbol,
+            payment_memo_regex,
+            vat_payer);
 }
 
 void
 RegistrarClient::registrar_acl_add()
 {
-    LibFred::Registrar::Manager::AutoPtr regMan
-        = LibFred::Registrar::Manager::create(m_db);
-    std::string handle = registrar_acl_add_params_.handle;//REGISTRAR_ADD_HANDLE_NAME
-    std::string cert = registrar_acl_add_params_.certificate;//REGISTRAR_CERT_NAME
-    std::string pass = registrar_acl_add_params_.password;//REGISTRAR_PASSWORD_NAME
-    try {
-        regMan->addRegistrarAcl(handle, cert, pass);
-    } catch (...) {
-        std::cerr << "An error has occured" << std::endl;
-    }
+    const std::string handle = registrar_acl_add_params_.handle;
+    const std::string certificate = registrar_acl_add_params_.certificate;
+    const std::string password = registrar_acl_add_params_.password;
+    Admin::Registrar::add_epp_auth(handle, certificate, password);
 }
 
 void

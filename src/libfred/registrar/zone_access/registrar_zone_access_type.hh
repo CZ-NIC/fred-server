@@ -16,48 +16,36 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef EXCEPTIONS_HH_A96C589FC5F14474872247B053482D69
-#define EXCEPTIONS_HH_A96C589FC5F14474872247B053482D69
+#ifndef REGISTRAR_ZONE_ACCESS_TYPE_HH_584CBFFFE37842FCB727553E142592A1
+#define REGISTRAR_ZONE_ACCESS_TYPE_HH_584CBFFFE37842FCB727553E142592A1
 
-#include <exception>
+#include <boost/date_time/gregorian/gregorian.hpp>
+#include <string>
+#include <vector>
 
 namespace LibFred {
 namespace Registrar {
 namespace ZoneAccess {
 
-struct AddRegistrarZoneAccessException : std::exception
+struct ZoneAccess
 {
-    const char* what() const noexcept override;
+    unsigned long long id = 0;
+    std::string zone_fqdn;
+    boost::gregorian::date from_date;
+    boost::gregorian::date to_date;
+
+    bool operator==(const ZoneAccess& _other)
+    {
+        return (zone_fqdn == _other.zone_fqdn &&
+                from_date == _other.from_date &&
+                to_date == _other.to_date);
+    }
 };
 
-struct NonexistentRegistrar : std::exception
+struct RegistrarZoneAccesses
 {
-    const char* what() const noexcept override;
-};
-
-struct NonexistentZone : std::exception
-{
-    const char* what() const noexcept override;
-};
-
-struct UpdateRegistrarZoneAccessException : std::exception
-{
-    const char* what() const noexcept override;
-};
-
-struct NoUpdateData : std::exception
-{
-    const char* what() const noexcept override;
-};
-
-struct NonexistentZoneAccess : std::exception
-{
-    const char* what() const noexcept override;
-};
-
-struct GetRegistrarZoneAccessException : std::exception
-{
-    const char* what() const noexcept override;
+    std::string registrar_handle;
+    std::vector<ZoneAccess> zone_accesses;
 };
 
 } // namespace LibFred::Registrar::ZoneAccess

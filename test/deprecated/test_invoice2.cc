@@ -47,7 +47,10 @@
 #include "src/util/cfg/handle_registry_args.hh"
 #include "src/util/cfg/handle_rifd_args.hh"
 
-#include "src/libfred/registrar.hh"
+#include "src/libfred/opcontext.hh"
+#include "src/libfred/registrar/create_registrar.hh"
+#include "src/libfred/registrar/epp_auth/add_registrar_epp_auth.hh"
+#include "src/libfred/registrar/zone_access/add_registrar_zone_access.hh"
 #include "src/libfred/invoicing/invoice.hh"
 #include "src/bin/corba/mailer_manager.hh"
 #include "src/util/time_clock.hh"
@@ -528,21 +531,17 @@ struct registrar_fixture
     unsigned long long create_test_registrar(const std::string& registrar_handle, bool vat = true)
     {
         //BOOST_TEST_MESSAGE( std::string("Create test registrar: ")+registrar_handle);
-        ::LibFred::Registrar::Manager::AutoPtr regMan
-                 = ::LibFred::Registrar::Manager::create(DBSharedPtr());
-        ::LibFred::Registrar::Registrar::AutoPtr registrar
-                = regMan->createRegistrar();
-        registrar->setName(registrar_handle+"_Name");
-        registrar->setOrganization(registrar_handle+"_Organization");
-        registrar->setHandle(registrar_handle);
-        registrar->setCountry("CZ");
-        registrar->setStreet1(registrar_handle+"_Street1");
-        registrar->setVat(vat);
-        ::LibFred::Registrar::ACL* registrar_acl = registrar->newACL();
-        registrar_acl->setCertificateMD5("");
-        registrar_acl->set_password("");
-        registrar->save();
-        return registrar->getId();
+        ::LibFred::OperationContextCreator ctx;
+        const unsigned long long id = ::LibFred::CreateRegistrar(registrar_handle)
+                .set_name(registrar_handle + "_Name")
+                .set_organization(registrar_handle+"_Organization")
+                .set_country("CZ")
+                .set_street1(registrar_handle+"_Street1")
+                .set_vat_payer(vat)
+                .exec(ctx);
+        ::LibFred::Registrar::EppAuth::AddRegistrarEppAuth(registrar_handle, "", "").exec(ctx);
+        ctx.commit_transaction();
+        return id;
     }//create_test_registrar
 
 
@@ -580,7 +579,9 @@ struct registrar_fixture
                     Database::Date rzfromDate;
                     Database::Date rztoDate;
 
-                    ::LibFred::Registrar::addRegistrarZone(registrar_handle, rzzone, rzfromDate, rztoDate);
+                    ::LibFred::OperationContextCreator ctx;
+                    ::LibFred::Registrar::ZoneAccess::AddRegistrarZoneAccess(registrar_handle, rzzone, rzfromDate).exec(ctx);
+                    ctx.commit_transaction();
                 }
             }//for nocredit
 
@@ -612,7 +613,9 @@ struct registrar_fixture
                         Database::Date rzfromDate;
                         Database::Date rztoDate;
 
-                        ::LibFred::Registrar::addRegistrarZone(registrar_handle, rzzone, rzfromDate, rztoDate);
+                        ::LibFred::OperationContextCreator ctx;
+                        ::LibFred::Registrar::ZoneAccess::AddRegistrarZoneAccess(registrar_handle, rzzone, rzfromDate).exec(ctx);
+                        ctx.commit_transaction();
                     }
 
                 }//for vat
@@ -644,7 +647,9 @@ struct registrar_fixture
                     Database::Date rzfromDate;
                     Database::Date rztoDate;
 
-                    ::LibFred::Registrar::addRegistrarZone(registrar_handle, rzzone, rzfromDate, rztoDate);
+                    ::LibFred::OperationContextCreator ctx;
+                    ::LibFred::Registrar::ZoneAccess::AddRegistrarZoneAccess(registrar_handle, rzzone, rzfromDate).exec(ctx);
+                    ctx.commit_transaction();
                 }
             }//for vat
 
@@ -674,7 +679,9 @@ struct registrar_fixture
                     Database::Date rzfromDate;
                     Database::Date rztoDate;
 
-                    ::LibFred::Registrar::addRegistrarZone(registrar_handle, rzzone, rzfromDate, rztoDate);
+                    ::LibFred::OperationContextCreator ctx;
+                    ::LibFred::Registrar::ZoneAccess::AddRegistrarZoneAccess(registrar_handle, rzzone, rzfromDate).exec(ctx);
+                    ctx.commit_transaction();
                 }
 
             }//for vat
@@ -707,7 +714,9 @@ struct registrar_fixture
                         Database::Date rzfromDate;
                         Database::Date rztoDate;
 
-                        ::LibFred::Registrar::addRegistrarZone(registrar_handle, rzzone, rzfromDate, rztoDate);
+                        ::LibFred::OperationContextCreator ctx;
+                        ::LibFred::Registrar::ZoneAccess::AddRegistrarZoneAccess(registrar_handle, rzzone, rzfromDate).exec(ctx);
+                        ctx.commit_transaction();
                     }
 
                 }//for vat

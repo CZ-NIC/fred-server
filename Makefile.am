@@ -831,10 +831,6 @@ src_libfred_libfred_a_SOURCES = \
 		src/libfred/object_impl.hh \
 		src/libfred/common_impl_new.cc \
 		src/libfred/common_impl_new.hh \
-		src/libfred/model_registrar_acl.cc \
-		src/libfred/model_registrar_acl.hh \
-		src/libfred/model_registrar.cc \
-		src/libfred/model_registrar.hh \
 		src/libfred/registrable_object/domain.cc \
 		src/libfred/registrable_object/domain.hh \
 		src/libfred/registrable_object/contact.cc \

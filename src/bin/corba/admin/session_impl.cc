@@ -21,27 +21,36 @@
 #include <iomanip>
 #include <algorithm>
 #include <utility>
+#include <boost/optional.hpp>
+#include <boost/optional/optional_io.hpp>
+#include <ostream>
+#include <set>
 #include "src/bin/corba/Admin.hh"
 
+#include "src/backend/admin/registrar/create_registrar.hh"
+#include "src/backend/admin/registrar/update_epp_auth.hh"
+#include "src/backend/admin/registrar/update_registrar.hh"
+#include "src/backend/admin/registrar/update_zone_access.hh"
+#include "src/backend/contact_verification/public_request_contact_verification_impl.hh"
+#include "src/bin/corba/admin/common.hh"
 #include "src/bin/corba/admin/public_request_mojeid.hh"
 #include "src/bin/corba/admin/session_impl.hh"
-#include "src/deprecated/util/log.hh"
-#include "src/deprecated/util/dbsql.hh"
-#include "src/libfred/registry.hh"
-#include "src/libfred/notify.hh"
-#include "src/libfred/registrar.hh"
 #include "src/bin/corba/admin/usertype_conv.hh"
-#include "src/bin/corba/admin/common.hh"
+#include "src/bin/corba/connection_releaser.hh"
+#include "src/bin/corba/util/corba_conversions_string.hh"
+#include "src/deprecated/util/dbsql.hh"
+#include "src/deprecated/util/log.hh"
+#include "src/libfred/notify.hh"
 #include "src/libfred/public_request/public_request_authinfo_impl.hh"
 #include "src/libfred/public_request/public_request_block_impl.hh"
 #include "src/libfred/public_request/public_request_personal_info_impl.hh"
-#include "src/backend/contact_verification/public_request_contact_verification_impl.hh"
-#include "src/util/log/logger.hh"
+#include "src/libfred/registrar/create_registrar.hh"
+#include "src/libfred/registrar.hh"
+#include "src/libfred/registrar/zone_access/registrar_zone_access_type.hh"
+#include "src/libfred/registry.hh"
 #include "src/util/log/context.hh"
+#include "src/util/log/logger.hh"
 #include "src/util/util.hh"
-
-#include "src/bin/corba/connection_releaser.hh"
-
 
 ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
                                  const std::string& database,
@@ -1259,206 +1268,109 @@ Registry::Registrar::Detail* ccReg_Session_i::createRegistrarDetail(LibFred::Reg
 }
 
 ccReg::TID ccReg_Session_i::updateRegistrar(const ccReg::AdminRegistrar& _registrar)
+try
 {
-  Logging::Context ctx(base_context_);
-  ConnectionReleaser releaser;
+    Logging::Context ctx(base_context_ + "/updateRegistrar");
+    TRACE("[CALL] ccReg_Session_i::updateRegistrar()");
+    ConnectionReleaser releaser;
 
-  TRACE("[CALL] ccReg_Session_i::updateRegistrar()");
-  LibFred::Registrar::RegistrarList::AutoPtr tmp_registrar_list =
-      m_registry_manager->getRegistrarManager()->createList();
-  LibFred::Registrar::Registrar::AutoPtr  update_registrar_guard;//delete at the end
-  LibFred::Registrar::Registrar* update_registrar; // registrar to be created or updated
+    unsigned long long registrar_id;
+    const std::string registrar_handle = LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar.handle);
 
-  if (!_registrar.id)
-  {
-    LOGGER(PACKAGE).debug("no registrar id specified; creating new registrar...");
-    update_registrar_guard = m_registry_manager->getRegistrarManager()->createRegistrar();
-    update_registrar = update_registrar_guard.get();
-  }
-  else
-  {
-    LOGGER(PACKAGE).debug(boost::format("registrar '%1%' id=%2% specified; updating registrar...")
-      % _registrar.handle % _registrar.id);
-    Database::Filters::Union uf;
-    Database::Filters::Registrar *filter = new Database::Filters::RegistrarImpl();
-    filter->addId().setValue(Database::ID(_registrar.id));
-    uf.addFilter(filter);
+    std::stringstream registrar_info;
+    registrar_info << "Registrar id: " << _registrar.id << " handle: " << registrar_handle;
+    registrar_info << " epp auth size: " << _registrar.access.length();
+    registrar_info << " zone access size: " << _registrar.zones.length();
+    LOGGER(PACKAGE).debug(registrar_info.str());
 
-    tmp_registrar_list->reload(uf);
-
-    if (tmp_registrar_list->size() != 1) {
-      throw ccReg::Admin::ObjectNotFound();
-    }
-    update_registrar = tmp_registrar_list->get(0);
-  }
-  update_registrar->setIco((const char *)_registrar.ico);
-  update_registrar->setDic((const char *)_registrar.dic);
-  update_registrar->setVarSymb((const char *)_registrar.varSymb);
-  update_registrar->setVat((bool)_registrar.vat);
-  update_registrar->setHandle((const char *)_registrar.handle);
-  update_registrar->setURL((const char *)_registrar.url);
-  update_registrar->setName((const char *)_registrar.name);
-  update_registrar->setOrganization((const char *)_registrar.organization);
-  update_registrar->setStreet1((const char *)_registrar.street1);
-  update_registrar->setStreet2((const char *)_registrar.street2);
-  update_registrar->setStreet3((const char *)_registrar.street3);
-  update_registrar->setCity((const char *)_registrar.city);
-  update_registrar->setProvince((const char *)_registrar.stateorprovince);
-  update_registrar->setPostalCode((const char *)_registrar.postalcode);
-  update_registrar->setCountry((const char *)_registrar.country);
-  update_registrar->setTelephone((const char *)_registrar.telephone);
-  update_registrar->setFax((const char *)_registrar.fax);
-  update_registrar->setEmail((const char *)_registrar.email);
-  update_registrar->setSystem((bool)_registrar.hidden);
-
-
-  update_registrar->clearACLList();
-  for (unsigned i = 0; i < _registrar.access.length(); i++)
-  {
-    LibFred::Registrar::ACL *registrar_acl = update_registrar->newACL();
-
-    LOGGER(PACKAGE).debug(boost::format
-            ("ccReg_Session_i::updateRegistrar : i: %1% setRegistrarId: %2%")
-                % i % update_registrar->getId());
-
-    const unsigned long long acl_id = _registrar.access[i].id;
-    const std::string password = std::string(_registrar.access[i].password);
-    const std::string md5cert = std::string(_registrar.access[i].md5Cert);
-
-    registrar_acl->setCertificateMD5(md5cert);
-    if (!password.empty())
+    const bool new_registrar = (_registrar.id == 0);
+    if (new_registrar)
     {
-        registrar_acl->set_password(password);
-    }
-
-    const bool is_new_registrar = (_registrar.id == 0);
-    if (!is_new_registrar)
-    {
-        const std::string md5_cert2 = std::string(_registrar.access[i].md5Cert2SamePasswd);
-        registrar_acl->setRegistrarId(update_registrar->getId());
-
-        const bool is_new_acl_record = (acl_id == 0);
-        if (!is_new_acl_record)
-        {
-            registrar_acl->setId(acl_id);
-
-            // add second record with same password
-            if (!md5_cert2.empty())
-            {
-                LibFred::Registrar::ACL *registrar_acl_same_password = update_registrar->newACL();
-                registrar_acl_same_password->setRegistrarId(update_registrar->getId());
-                registrar_acl_same_password->setCertificateMD5(md5_cert2);
-                registrar_acl_same_password->set_password_same_as_acl_id(acl_id);
-            }
-        }
-        else
-        {
-            if (password.empty())
-            {
-                throw ccReg::Admin::UpdateFailed();
-            }
-            // add second record with same password but - we don't have id of acl record yet
-            // so we use same password value (due to password hashing, records in database will
-            // be different)
-            else if (!md5_cert2.empty())
-            {
-                LibFred::Registrar::ACL *registrar_acl_same_password = update_registrar->newACL();
-                registrar_acl_same_password->setRegistrarId(update_registrar->getId());
-                registrar_acl_same_password->setCertificateMD5(md5_cert2);
-                registrar_acl_same_password->set_password(password);
-            }
-        }
+        TRACE("[CALL] Admin::Registrar::CreateRegistrar()");
+        registrar_id = ::Admin::Registrar::create_registrar(registrar_handle,
+                LibFred::Corba::unwrap_string(_registrar.name),
+                LibFred::Corba::unwrap_string(_registrar.organization),
+                LibFred::Corba::unwrap_string(_registrar.street1),
+                LibFred::Corba::unwrap_string(_registrar.street2),
+                LibFred::Corba::unwrap_string(_registrar.street3),
+                LibFred::Corba::unwrap_string(_registrar.city),
+                LibFred::Corba::unwrap_string(_registrar.stateorprovince),
+                LibFred::Corba::unwrap_string(_registrar.postalcode),
+                LibFred::Corba::unwrap_string(_registrar.country),
+                LibFred::Corba::unwrap_string(_registrar.telephone),
+                LibFred::Corba::unwrap_string(_registrar.fax),
+                LibFred::Corba::unwrap_string(_registrar.email),
+                LibFred::Corba::unwrap_string(_registrar.url),
+                static_cast<bool>(_registrar.hidden),
+                LibFred::Corba::unwrap_string(_registrar.ico),
+                LibFred::Corba::unwrap_string(_registrar.dic),
+                LibFred::Corba::unwrap_string(_registrar.varSymb),
+                boost::none,
+                static_cast<bool>(_registrar.vat));
     }
     else
     {
-        const bool new_registrar_has_mandatory_data = !password.empty() && !md5cert.empty();
-        if (!new_registrar_has_mandatory_data)
-        {
-            throw ccReg::Admin::UpdateFailed();
-        }
+        TRACE("[CALL] Admin::Registrar::UpdateRegistrar()");
+        registrar_id = ::Admin::Registrar::update_registrar(registrar_handle,
+                LibFred::Corba::unwrap_string(_registrar.name),
+                LibFred::Corba::unwrap_string(_registrar.organization),
+                LibFred::Corba::unwrap_string(_registrar.street1),
+                LibFred::Corba::unwrap_string(_registrar.street2),
+                LibFred::Corba::unwrap_string(_registrar.street3),
+                LibFred::Corba::unwrap_string(_registrar.city),
+                LibFred::Corba::unwrap_string(_registrar.stateorprovince),
+                LibFred::Corba::unwrap_string(_registrar.postalcode),
+                LibFred::Corba::unwrap_string(_registrar.country),
+                LibFred::Corba::unwrap_string(_registrar.telephone),
+                LibFred::Corba::unwrap_string(_registrar.fax),
+                LibFred::Corba::unwrap_string(_registrar.email),
+                LibFred::Corba::unwrap_string(_registrar.url),
+                static_cast<bool>(_registrar.hidden),
+                LibFred::Corba::unwrap_string(_registrar.ico),
+                LibFred::Corba::unwrap_string(_registrar.dic),
+                LibFred::Corba::unwrap_string(_registrar.varSymb),
+                boost::none,
+                static_cast<bool>(_registrar.vat));
     }
 
-  }
-
-  update_registrar->clearRegistrarZoneList();
-  for (unsigned i = 0; i < _registrar.zones.length();i++)
+    TRACE("[CALL] Admin::Registrar::UpdateEppAuth()");
+    Admin::Registrar::EppAuthData epp_auth_data;
+    epp_auth_data.registrar_handle = registrar_handle;
+    epp_auth_data.epp_auth_records.reserve(_registrar.access.length());
+    for (std::size_t i = 0; i < _registrar.access.length(); ++i)
     {
-      LibFred::Registrar::RegistrarZone *registrar_azone = update_registrar->newRegistrarZone();
+        Admin::Registrar::EppAuthRecord epp_auth_record;
+        epp_auth_record.id = _registrar.access[i].id;
+        epp_auth_record.plain_password = LibFred::Corba::unwrap_string(_registrar.access[i].password);
+        epp_auth_record.certificate_fingerprint = LibFred::Corba::unwrap_string(_registrar.access[i].md5Cert);
+        epp_auth_record.new_certificate_fingerprint =
+                LibFred::Corba::unwrap_string(_registrar.access[i].md5Cert2SamePasswd);
+        epp_auth_data.epp_auth_records.push_back(epp_auth_record);
+    }
+    Admin::Registrar::update_epp_auth(epp_auth_data);
 
-      LOGGER(PACKAGE).debug(boost::format
-              ("ccReg_Session_i::updateRegistrar azone : i: %1% "
-              "id: %2% name: %3% "
-              "fromdate: %4% - %5% - %6% "
-              "todate %7% - %8% - %9% "
-              )
-                  % i
-                  % _registrar.zones[i].id
-                  % _registrar.zones[i].name //3
+    TRACE("[CALL] Admin::Registrar::UpdateZoneAccess()");
+    LibFred::Registrar::ZoneAccess::RegistrarZoneAccesses zone_accesses;
+    zone_accesses.registrar_handle = registrar_handle;
+    zone_accesses.zone_accesses.reserve(_registrar.zones.length());
+    for (std::size_t i = 0; i < _registrar.zones.length(); ++i)
+    {
+        LibFred::Registrar::ZoneAccess::ZoneAccess zone_access;
+        zone_access.id = _registrar.zones[i].id;
+        zone_access.zone_fqdn = LibFred::Corba::unwrap_string(_registrar.zones[i].name);
+        zone_access.from_date = makeBoostDate( _registrar.zones[i].fromDate);
+        zone_access.to_date = makeBoostDate(_registrar.zones[i].toDate);
+        zone_accesses.zone_accesses.push_back(zone_access);
+    }
+    Admin::Registrar::update_zone_access(zone_accesses);
 
-                  % _registrar.zones[i].fromDate.year
-                  % _registrar.zones[i].fromDate.month
-                  % _registrar.zones[i].fromDate.day
-
-                  % _registrar.zones[i].toDate.year //7
-                  % _registrar.zones[i].toDate.month
-                  % _registrar.zones[i].toDate.day
-
-      );
-
-      registrar_azone->id = _registrar.zones[i].id;
-      registrar_azone->name = _registrar.zones[i].name;
-      try
-      {
-          date fdate = makeBoostDate( _registrar.zones[i].fromDate);
-          registrar_azone->fromdate = fdate;
-      }
-      catch(...)
-      {//no date is NOT ok, webadmin should check this
-          LOGGER(PACKAGE).error(boost::format
-                  ("ccReg_Session_i::updateRegistrar Invalid fromDate "
-                  "in azone: i: %1% "
-                  "id: %2% name: %3% "
-                  "fromdate: %4% - %5% - %6% "
-                  "todate %7% - %8% - %9% "
-                  )
-                      % i
-                      % _registrar.zones[i].id
-                      % _registrar.zones[i].name //3
-
-                      % _registrar.zones[i].fromDate.year
-                      % _registrar.zones[i].fromDate.month
-                      % _registrar.zones[i].fromDate.day
-
-                      % _registrar.zones[i].toDate.year //7
-                      % _registrar.zones[i].toDate.month
-                      % _registrar.zones[i].toDate.day
-          );
-
-          throw;
-      }//catch all fromdate
-
-      try
-      {
-          date tdate = makeBoostDate( _registrar.zones[i].toDate);
-          registrar_azone->todate = tdate;
-      }
-      catch(...){}//no date is ok
-
-    }//for i
-
-  try {
-    update_registrar->save();
-  } catch (...) {
+    LOGGER(PACKAGE).debug("Registrar " + registrar_handle + " was saved.");
+    return registrar_id;
+}
+catch (const std::exception& e)
+{
+    LOGGER(PACKAGE).warning(e.what());
     throw ccReg::Admin::UpdateFailed();
-  }
-
-  ccReg::TID rid = update_registrar->getId();
-
-  LOGGER(PACKAGE).debug(boost::format("registrar with id=%1% saved")
-      % rid);
-
-  return rid;
-
 }
 
 Registry::PublicRequest::Detail* ccReg_Session_i::createPublicRequestDetail(LibFred::PublicRequest::PublicRequest* _request) {

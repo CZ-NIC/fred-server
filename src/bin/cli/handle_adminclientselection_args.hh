@@ -1236,64 +1236,64 @@ public:
                 new boost::program_options::options_description(
                         std::string("registrar_add options")));
         cfg_opts->add_options()
-            ("registrar_add", "add new registrar (make a copy of REG-FRED_A)")
+            ("registrar_add", "add new registrar")
             ("handle", boost::program_options
-                ::value<Checked::string>()->notifier(save_arg<std::string>(params.handle))
-                , "registrar handle")
+                ::value<Checked::string>()->required()->notifier(save_arg<std::string>(params.handle)),
+                "registrar handle")
             ("country", boost::program_options
-                ::value<Checked::string>()->notifier(save_arg<std::string>(params.country))
-                , "registrar two letter country code")
+                ::value<Checked::string>()->required()->notifier(save_arg<std::string>(params.country)),
+                "registrar two letter country code")
             ("ico", boost::program_options
-                ::value<Checked::string>()->notifier(save_optional_string(params.ico))
-                , "organization identifier number")
+                ::value<Checked::string>()->notifier(save_optional_string(params.ico)),
+                "organization identifier number")
             ("dic", boost::program_options
-                ::value<Checked::string>()->notifier(save_optional_string(params.dic))
-                , "tax identifier number")
+                ::value<Checked::string>()->notifier(save_optional_string(params.dic)),
+                "tax identifier number")
             ("varsymb", boost::program_options
-                ::value<Checked::string>()->notifier(save_optional_string(params.varsymb))
-                , "registrar variable symbol")
+                ::value<Checked::string>()->notifier(save_optional_string(params.varsymb)),
+                "registrar variable symbol")
             ("reg_name", boost::program_options
-                ::value<Checked::string>()->notifier(save_optional_string(params.reg_name))
-                , "registrar name")
+                ::value<Checked::string>()->notifier(save_optional_string(params.reg_name)),
+                "registrar name")
             ("organization", boost::program_options
-                ::value<Checked::string>()->notifier(save_optional_string(params.organization))
-                , "registrar organization")
+                ::value<Checked::string>()->notifier(save_optional_string(params.organization)),
+                "registrar organization")
             ("street1", boost::program_options
-                ::value<Checked::string>()->notifier(save_optional_string(params.street1))
-                , "registrar street #1")
+                ::value<Checked::string>()->notifier(save_optional_string(params.street1)),
+                "registrar street #1")
             ("street2", boost::program_options
-                ::value<Checked::string>()->notifier(save_optional_string(params.street2))
-                , "registrar street #2")
+                ::value<Checked::string>()->notifier(save_optional_string(params.street2)),
+                "registrar street #2")
             ("street3", boost::program_options
-                ::value<Checked::string>()->notifier(save_optional_string(params.street3))
-                , "registrar street #3")
+                ::value<Checked::string>()->notifier(save_optional_string(params.street3)),
+                "registrar street #3")
             ("city", boost::program_options
-                ::value<Checked::string>()->notifier(save_optional_string(params.city))
-                , "registrar city")
+                ::value<Checked::string>()->notifier(save_optional_string(params.city)),
+                "registrar city")
             ("stateorprovince", boost::program_options
-                ::value<Checked::string>()->notifier(save_optional_string(params.stateorprovince))
-                , "registrar state or province")
+                ::value<Checked::string>()->notifier(save_optional_string(params.stateorprovince)),
+                "registrar state or province")
             ("postalcode", boost::program_options
-                ::value<Checked::string>()->notifier(save_optional_string(params.postalcode))
-                , "registrar postal code")
+                ::value<Checked::string>()->notifier(save_optional_string(params.postalcode)),
+                "registrar postal code")
             ("telephone", boost::program_options
-                ::value<Checked::string>()->notifier(save_optional_string(params.telephone))
-                , "registrar telephone")
+                ::value<Checked::string>()->notifier(save_optional_string(params.telephone)),
+                "registrar telephone")
             ("fax", boost::program_options
-                ::value<Checked::string>()->notifier(save_optional_string(params.fax))
-                , "registrar fax")
+                ::value<Checked::string>()->notifier(save_optional_string(params.fax)),
+                "registrar fax")
             ("email", boost::program_options
-                ::value<Checked::string>()->notifier(save_optional_string(params.email))
-                , "registrar email")
+                ::value<Checked::string>()->notifier(save_optional_string(params.email)),
+                "registrar email")
             ("url", boost::program_options
-                ::value<Checked::string>()->notifier(save_optional_string(params.url))
-                , "registrar url")
+                ::value<Checked::string>()->notifier(save_optional_string(params.url)),
+                "registrar url")
             ("system", boost::program_options
-                ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.system))
-                , "if registrar is system")
+                ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.system)),
+                "if registrar is system")
             ("no_vat", boost::program_options
-                ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.no_vat))
-                , "no vat")
+                ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.no_vat)),
+                "no vat")
             ;
         return cfg_opts;
     }//get_options_description
@@ -1604,15 +1604,18 @@ public:
         cfg_opts->add_options()
             ("registrar_acl_add", "add new certificate for registrar")
             ("handle", boost::program_options
-                ::value<Checked::string>()->notifier(save_arg<std::string>(params.handle))
-                , "registrar handle")
+                ::value<Checked::string>()->required()
+                ->notifier(save_arg<std::string>(params.handle)),
+                "registrar handle")
             ("certificate", boost::program_options
-                ::value<Checked::string>()->notifier(save_arg<std::string>(params.certificate))
-                , "registrar certificate")
+                ::value<Checked::string>()->required()
+                ->notifier(save_arg<std::string>(params.certificate)),
+                "registrar certificate fingerprint")
             ("password", boost::program_options
-                ::value<Checked::string>()->notifier(save_arg<std::string>(params.password))
-                , "registrar password")
-                ;
+                ::value<Checked::string>()->required()
+                ->notifier(save_arg<std::string>(params.password)),
+                "registrar password")
+            ;
         return cfg_opts;
     }//get_options_description
     std::size_t handle( int argc, char* argv[],  FakedArgs &fa

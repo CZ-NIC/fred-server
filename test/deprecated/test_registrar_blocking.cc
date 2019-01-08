@@ -5,7 +5,9 @@
 
 #include "src/libfred/db_settings.hh"
 #include "src/deprecated/util/dbsql.hh"
+#include "src/libfred/opcontext.hh"
 #include "src/libfred/registrar.hh"
+#include "src/libfred/registrar/create_registrar.hh"
 
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/handle_general_args.hh"
@@ -28,9 +30,15 @@ Database::ID create_registrar(::LibFred::Registrar::Manager *regMan)
     registrar->setHandle(registrar_novat_handle);//REGISTRAR_ADD_HANDLE_NAME
     registrar->setCountry("CZ");//REGISTRAR_COUNTRY_NAME
     registrar->setVat(true);
-    registrar->save();
 
-    return registrar->getId();
+    ::LibFred::OperationContextCreator ctx;
+    const unsigned long long id = ::LibFred::CreateRegistrar(registrar_novat_handle)
+            .set_country("CZ")
+            .set_vat_payer(true)
+            .exec(ctx);
+    ctx.commit_transaction();
+    registrar->setId(id);
+    return id;
 }
 
 Database::ID block_reg_and_test(::LibFred::Registrar::Manager *regman)

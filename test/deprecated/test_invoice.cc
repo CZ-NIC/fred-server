@@ -47,7 +47,6 @@
 
 
 #include "src/util/types/money.hh"
-//#include "src/libfred/registrar.hh"
 #include "src/libfred/invoicing/invoice.hh"
 
 #include "src/util/time_clock.hh"

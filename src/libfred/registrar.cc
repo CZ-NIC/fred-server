@@ -20,8 +20,6 @@
 #include "src/deprecated/util/dbsql.hh"
 #include "src/deprecated/util/log.hh"
 #include "src/deprecated/model/model_filters.hh"
-#include "src/libfred/model_registrar_acl.hh"
-#include "src/libfred/model_registrar.hh"
 
 #include "src/libfred/registrar/group/cancel_registrar_group.hh"
 #include "src/libfred/registrar/group/create_registrar_group.hh"
@@ -69,142 +67,57 @@ namespace Registrar {
 class RegistrarImpl;
 
 
-class ACLImpl:public ACL, private ModelRegistrarAcl
+class ACLImpl:public ACL
 {
 private:
-    boost::optional<unsigned long long> password_same_as_acl_id_;
+    TID id_;
+    TID registrar_id_;
+    std::string certificateMD5_;
+    std::string password_;
 
 public:
   ACLImpl()
-      : ModelRegistrarAcl(),
-        password_same_as_acl_id_()
   { }
   ACLImpl(TID _id,
           const std::string& _certificateMD5,
           const std::string& _plaintext_password)
-      : ModelRegistrarAcl(),
-        password_same_as_acl_id_()
+      : id_(_id),
+        certificateMD5_(_certificateMD5)
   {
-	  this->ModelRegistrarAcl::setId(_id);
-	  this->ModelRegistrarAcl::setCert(_certificateMD5);
-	  this->set_password(_plaintext_password);
+        this->set_password(_plaintext_password);
   }
-  TID getId()const
+  TID getId() const final
   {
-      return this->ModelRegistrarAcl::getId();
+      return id_;
   }
-  void setId(TID _id)
+  void setId(TID _id) final
   {
-      this->ModelRegistrarAcl::setId(_id);
+      id_ = _id;
   }
-  TID getRegistarId()const
+  TID getRegistarId() const
   {
-      return this->ModelRegistrarAcl::getRegistarId();
+      return registrar_id_;
   }
-  void setRegistrarId(const TID& _registrar_id)override
+  void setRegistrarId(const TID& _registrar_id) override
   {
-      this->ModelRegistrarAcl::setRegistrarId(_registrar_id);
+      registrar_id_ = _registrar_id;
   }
   const std::string& getCertificateMD5()const override
   {
-      return this->ModelRegistrarAcl::getCert();
+      return certificateMD5_;
   }
   void setCertificateMD5(const std::string& _certificateMD5)override
   {
-      this->ModelRegistrarAcl::setCert(_certificateMD5);
+      certificateMD5_ = _certificateMD5;
   }
   void set_password(const std::string& _plaintext_password)override
   {
       const auto encrypted_password = ::PasswordStorage::encrypt_password_by_preferred_method(_plaintext_password);
-      this->ModelRegistrarAcl::setPassword(encrypted_password.get_value());
-  }
-  void set_password_same_as_acl_id(const unsigned long long _acl_id) override
-  {
-      this->ModelRegistrarAcl::setPassword("");
-      password_same_as_acl_id_ = _acl_id;
+      password_ = encrypted_password.get_value();
   }
   bool operator==(TID _id)const
   {
     return getId() == _id;
-  }
-  void save()
-  {
-    TRACE("[CALL] ACLImpl::save()");
-	try
-	{
-		Database::Connection conn = Database::Manager::acquire();
-		const TID id = this->getId();
-		LOGGER(PACKAGE).debug(boost::format("ACLImpl::save id: %1% RegistrarId: %2%")
-		% id % this->getRegistarId());
-
-        if (id != 0)
-        {
-            if (!this->ModelRegistrarAcl::getPassword().empty())
-            {
-                conn.exec_params(
-                    "UPDATE registraracl SET cert = $1::text, password = $2::text"
-                    " WHERE registrarid = $3::bigint and id = $4::bigint",
-                    Database::query_param_list
-                        (this->ModelRegistrarAcl::getCert())
-                        (this->ModelRegistrarAcl::getPassword())
-                        (this->ModelRegistrarAcl::getRegistarId())
-                        (id)
-                );
-            }
-            else
-            {
-                conn.exec_params(
-                    "UPDATE registraracl SET cert = $1::text"
-                    " WHERE registrarid = $2::bigint and id = $3::bigint",
-                    Database::query_param_list
-                        (this->ModelRegistrarAcl::getCert())
-                        (this->ModelRegistrarAcl::getRegistarId())
-                        (id)
-                );
-            }
-        }
-        else
-        {
-            if (password_same_as_acl_id_ == boost::none)
-            {
-                Database::Result r_id = conn.exec_params(
-                    "INSERT INTO registraracl (registrarid, cert, password) VALUES"
-                    " ($1::bigint, $2::text, $3::text)"
-                    " RETURNING id",
-                    Database::query_param_list
-                        (this->ModelRegistrarAcl::getRegistarId())
-                        (this->ModelRegistrarAcl::getCert())
-                        (this->ModelRegistrarAcl::getPassword())
-                );
-                if (r_id.size() == 1)
-                {
-                    this->setId(static_cast<unsigned long long>(r_id[0][0]));
-                }
-            }
-            else
-            {
-                Database::Result r_id = conn.exec_params(
-                    "INSERT INTO registraracl (registrarid, cert, password) VALUES"
-                    " ($1::bigint, $2::text,"
-                    " (SELECT password FROM registraracl WHERE id = $3 AND registrarid = $1))"
-                    " RETURNING id",
-                    Database::query_param_list
-                        (this->ModelRegistrarAcl::getRegistarId())
-                        (this->ModelRegistrarAcl::getCert())
-                        (*password_same_as_acl_id_)
-                );
-                if (r_id.size() == 1)
-                {
-                    this->setId(static_cast<unsigned long long>(r_id[0][0]));
-                }
-            }
-        }
-	}
-	catch (...)
-	{
-        LOGGER(PACKAGE).error("save: an error has occured");
-        throw SQL_ERROR();
-	}
   }
 };
 
@@ -281,8 +194,7 @@ unsigned long addRegistrarZone(
 
 
 class RegistrarImpl : public LibFred::CommonObjectImplNew,
-                      virtual public Registrar,
-                      private ModelRegistrar
+                      virtual public Registrar
 {
   typedef std::shared_ptr<ACLImpl> ACLImplPtr;
   typedef std::vector<ACLImplPtr> ACLList;
@@ -296,12 +208,34 @@ class RegistrarImpl : public LibFred::CommonObjectImplNew,
 
   std::vector<std::shared_ptr<RegistrarZone>> actzones;
 
+  TID id_;
+  std::string ico_;
+  std::string dic_;
+  std::string var_symb_;
+  bool vat_;
+  std::string handle_;
+  std::string name_;
+  std::string url_;
+  std::string organization_;
+  std::string street1_;
+  std::string street2_;
+  std::string street3_;
+  std::string city_;
+  std::string province_;
+  std::string postal_code_;
+  std::string country_;
+  std::string telephone_;
+  std::string fax_;
+  std::string email_;
+  bool system_;
+
 public:
   RegistrarImpl()
-  : CommonObjectImplNew()
-  , ModelRegistrar()
-  , credit("0")
-
+      : CommonObjectImplNew(),
+        credit("0"),
+        id_(0),
+        vat_(true),
+        system_(false)
   {}
   RegistrarImpl(TID _id,
                 const std::string& _ico,
@@ -317,37 +251,36 @@ public:
                 const std::string& _street3,
                 const std::string& _city,
                 const std::string& _province,
-                const std::string& _postalCode,
+                const std::string& _postal_code,
                 const std::string& _country,
                 const std::string& _telephone,
                 const std::string& _fax,
                 const std::string& _email,
                 bool _system,
-                Money _credit) :
-        CommonObjectImplNew(),
-        ModelRegistrar(),
-        credit(_credit)
+                Money _credit)
+      : CommonObjectImplNew(),
+        credit(_credit),
+        id_(_id),
+        ico_(_ico),
+        dic_(_dic),
+        var_symb_(_var_symb),
+        vat_(_vat),
+        handle_(_handle),
+        name_(_name),
+        url_(_url),
+        organization_(_organization),
+        street1_(_street1),
+        street2_(_street2),
+        street3_(_street3),
+        city_(_city),
+        province_(_province),
+        postal_code_(_postal_code),
+        country_(_country),
+        telephone_(_telephone),
+        fax_(_fax),
+        email_(_email),
+        system_(_system)
   {
-	ModelRegistrar::setId(_id);
-	ModelRegistrar::setIco(_ico);
-	ModelRegistrar::setDic(_dic);
-	ModelRegistrar::setVarsymb(_var_symb);
-	ModelRegistrar::setVat(_vat);
-	ModelRegistrar::setHandle(_handle);
-	ModelRegistrar::setName(_name);
-	ModelRegistrar::setOrganization(_organization);
-	ModelRegistrar::setStreet1(_street1);
-	ModelRegistrar::setStreet2(_street2);
-	ModelRegistrar::setStreet3(_street3);
-	ModelRegistrar::setCity(_city);
-	ModelRegistrar::setStateorprovince(_province);
-	ModelRegistrar::setPostalcode(_postalCode);
-	ModelRegistrar::setCountry(_country);
-	ModelRegistrar::setTelephone(_telephone);
-	ModelRegistrar::setFax(_fax);
-	ModelRegistrar::setEmail(_email);
-	ModelRegistrar::setUrl(_url);
-	ModelRegistrar::setSystem(_system);
   }
   void clear() {
     acl.clear();
@@ -357,163 +290,163 @@ public:
 
   virtual const TID& getId() const
   {
-     return ModelRegistrar::getId();
+     return id_;
   }
   virtual void setId(const TID &_id)
   {
-	ModelRegistrar::setId(_id);
+	id_ = _id;
   }
   virtual const std::string& getIco() const
   {
-    return ModelRegistrar::getIco();
+    return ico_;
   }
   virtual void setIco(const std::string& _ico)
   {
-	ModelRegistrar::setIco(_ico);
+	ico_ = _ico;
   }
   virtual const std::string& getDic() const
   {
-    return ModelRegistrar::getDic();
+    return dic_;
   }
   virtual void setDic(const std::string& _dic)
   {
-	ModelRegistrar::setDic(_dic);
+	dic_ = _dic;
   }
   virtual const std::string& getVarSymb() const
   {
-    return ModelRegistrar::getVarsymb();
+    return var_symb_;
   }
   virtual void setVarSymb(const std::string& _var_symb)
   {
-	ModelRegistrar::setVarsymb(_var_symb);
+	var_symb_ = _var_symb;
   }
   virtual bool getVat() const
   {
-    return ModelRegistrar::getVat();
+    return vat_;
   }
   virtual void setVat(bool _vat)
   {
-	ModelRegistrar::setVat(_vat);
+	vat_ = _vat;
   }
   virtual const std::string& getHandle() const
   {
-    return ModelRegistrar::getHandle();
+    return handle_;
   }
   virtual void setHandle(const std::string& _handle)
   {
-	ModelRegistrar::setHandle(_handle);
+	handle_ = _handle;
   }
   virtual const std::string& getName() const
   {
-    return ModelRegistrar::getName();
+    return name_;
   }
   virtual void setName(const std::string& _name)
   {
-	ModelRegistrar::setName(_name);
+	name_ = _name;
   }
   virtual const std::string& getURL() const
   {
-    return ModelRegistrar::getUrl();
+    return url_;
   }
   virtual void setURL(const std::string& _url)
   {
-	ModelRegistrar::setUrl(_url);
+	url_ = _url;
   }
   virtual const std::string& getOrganization() const
   {
-    return ModelRegistrar::getOrganization();
+    return organization_;
   }
   virtual void setOrganization(const std::string& _organization)
   {
-	ModelRegistrar::setOrganization(_organization);
+	organization_ = _organization;
   }
   virtual const std::string& getStreet1() const
   {
-    return ModelRegistrar::getStreet1();
+    return street1_;
   }
   virtual void setStreet1(const std::string& _street1)
   {
-	ModelRegistrar::setStreet1(_street1);
+	street1_ = _street1;
   }
   virtual const std::string& getStreet2() const
   {
-    return ModelRegistrar::getStreet2();
+    return street2_;
   }
   virtual void setStreet2(const std::string& _street2)
   {
-	ModelRegistrar::setStreet2(_street2);
+	street2_ = _street2;
   }
   virtual const std::string& getStreet3() const
   {
-    return ModelRegistrar::getStreet3();
+    return street3_;
   }
   virtual void setStreet3(const std::string& _street3)
   {
-	ModelRegistrar::setStreet3(_street3);
+	street3_ = _street3;
   }
   virtual const std::string& getCity() const
   {
-	return ModelRegistrar::getCity();
+	return city_;
   }
   virtual void setCity(const std::string& _city)
   {
-	ModelRegistrar::setCity(_city);
+	city_ = _city;
   }
   virtual const std::string& getProvince() const
   {
-    return ModelRegistrar::getStateorprovince();
+    return province_;
   }
   virtual void setProvince(const std::string& _province)
   {
-	ModelRegistrar::setStateorprovince(_province);
+	province_ = _province;
   }
   virtual const std::string& getPostalCode() const
   {
-    return ModelRegistrar::getPostalcode();
+    return postal_code_;
   }
-  virtual void setPostalCode(const std::string& _postalCode)
+  virtual void setPostalCode(const std::string& _postal_code)
   {
-	ModelRegistrar::setPostalcode(_postalCode);
+	postal_code_ = _postal_code;
   }
   virtual const std::string& getCountry() const
   {
-    return ModelRegistrar::getCountry();
+    return country_;
   }
   virtual void setCountry(const std::string& _country)
   {
-	ModelRegistrar::setCountry(_country);
+	country_ = _country;
   }
   virtual const std::string& getTelephone() const
   {
-    return ModelRegistrar::getTelephone();
+    return telephone_;
   }
   virtual void setTelephone(const std::string& _telephone)
   {
-	ModelRegistrar::setTelephone(_telephone);
+	telephone_ = _telephone;
   }
   virtual const std::string& getFax() const
   {
-    return ModelRegistrar::getFax();
+    return fax_;
   }
   virtual void setFax(const std::string& _fax)
   {
-	ModelRegistrar::setFax(_fax);
+	fax_ = _fax;
   }
   virtual const std::string& getEmail() const
   {
-    return ModelRegistrar::getEmail();
+    return email_;
   }
   virtual void setEmail(const std::string& _email)
   {
-	ModelRegistrar::setEmail(_email);
+	email_ = _email;
   }
   virtual bool getSystem() const
   {
-    return ModelRegistrar::getSystem();
+    return system_;
   }
   virtual void setSystem(bool _system)
   {
-	ModelRegistrar::setSystem(_system);
+	system_ = _system;
   }
 
   virtual Money getCredit() const {
@@ -736,79 +669,6 @@ public:
       return ret;
   }//isInZone by fqdn
 
-
-  virtual void save()
-  {
-    TRACE("[CALL] RegistrarImpl::save()");
-      // save registrar data
-	try
-	{
-		Database::Connection conn = Database::Manager::acquire();
-		Database::Transaction tx(conn);
-		TID id = getId();
-	    LOGGER(PACKAGE).debug(boost::format
-	            ("RegistrarImpl::save : id: %1%")
-	                % id);
-
-		if (id)
-			ModelRegistrar::update();
-		else
-		{
-			ModelRegistrar::insert();
-			ModelRegistrar::reload();
-			id = getId();
-	        LOGGER(PACKAGE).debug(boost::format
-	                ("RegistrarImpl::save after reload: id: %1%")
-	                    % id);
-		}
-
-        std::set<unsigned long long> keep_acl_ids;
-        for (unsigned j = 0; j < acl.size(); j++)
-        {
-            acl[j]->setRegistrarId(id);
-            acl[j]->save();
-            keep_acl_ids.insert(acl[j]->getId());
-        }
-        std::string delete_sql = "DELETE FROM registraracl WHERE registrarid = $1::bigint";
-        Database::query_param_list delete_params(id);
-        if (keep_acl_ids.size())
-        {
-            std::string id_list_sql;
-            for (const auto id : keep_acl_ids)
-            {
-                if (!id_list_sql.empty())
-                {
-                    id_list_sql += ", ";
-                }
-                id_list_sql += "$" + delete_params.add(id) + "::bigint";
-            }
-            delete_sql += " AND id NOT IN (" + id_list_sql + ")";
-        }
-        conn.exec_params(delete_sql, delete_params);
-
-		for (unsigned i = 0; i < actzones.size(); i++)
-		{
-		    if(actzones[i]->id)//use addRegistrarZone or updateRegistrarZone
-                this->updateRegistrarZone (actzones[i]->id
-                            ,actzones[i]->fromdate
-                            ,actzones[i]->todate);
-		    else
-		    {
-		        addRegistrarZone (getHandle()
-                            ,actzones[i]->name
-                            ,actzones[i]->fromdate
-                            ,actzones[i]->todate);
-		    }//else id
-		}//for actzones
-
-		tx.commit();
-	}//try
-	catch (...)
-	{
-	 LOGGER(PACKAGE).error("save: an error has occured");
-	 throw SQL_ERROR();
-	}//catch (...)
-  }//save()
 
   void putACL(TID _id,
               const std::string& certificateMD5,

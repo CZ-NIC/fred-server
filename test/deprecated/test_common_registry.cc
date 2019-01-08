@@ -44,7 +44,11 @@
 #include "src/bin/corba/file_manager_client.hh"
 #include "src/libfred/banking/bank_common.hh"
 #include "src/libfred/exceptions.hh"
+#include "src/libfred/opcontext.hh"
 #include "src/libfred/poll/create_request_fee_info_message.hh"
+#include "src/libfred/registrar/create_registrar.hh"
+#include "src/libfred/registrar/epp_auth/add_registrar_epp_auth.hh"
+#include "src/libfred/registrar/zone_access/add_registrar_zone_access.hh"
 
 
 
@@ -71,7 +75,7 @@ LibFred::Registrar::Registrar::AutoPtr createTestRegistrarClass()
     registrar->setCity("Brno");
     registrar->setStreet1("Street 1");
     registrar->setStreet2("Street 2");
-    registrar->setStreet2("Street 3");
+    registrar->setStreet3("Street 3");
     registrar->setDic("1234567889");
     registrar->setEmail("info@nic.cz");
     registrar->setFax("+420.123456");
@@ -88,54 +92,38 @@ LibFred::Registrar::Registrar::AutoPtr createTestRegistrarClass()
     ::LibFred::Registrar::ACL* registrar_acl = registrar->newACL();
     registrar_acl->setCertificateMD5("");
     registrar_acl->set_password("");
-    registrar->save();
+
+    ::LibFred::OperationContextCreator ctx;
+    const unsigned long long registrar_id = ::LibFred::CreateRegistrar(registrar_handle)
+            .set_name(registrar->getName())
+            .set_organization(registrar->getOrganization())
+            .set_city(registrar->getCity())
+            .set_street1(registrar->getStreet1())
+            .set_street2(registrar->getStreet2())
+            .set_street3(registrar->getStreet3())
+            .set_dic(registrar->getDic())
+            .set_email(registrar->getEmail())
+            .set_fax(registrar->getFax())
+            .set_ico(registrar->getIco())
+            .set_postalcode(registrar->getPostalCode())
+            .set_stateorprovince(registrar->getProvince())
+            .set_telephone(registrar->getTelephone())
+            .set_variable_symbol(registrar->getVarSymb())
+            .set_url(registrar->getURL())
+            .set_country(registrar->getCountry())
+            .set_vat_payer(registrar->getVat())
+            .exec(ctx);
+    registrar->setId(registrar_id);
+    const unsigned long long epp_auth_id =
+            ::LibFred::Registrar::EppAuth::AddRegistrarEppAuth(registrar_handle, "", "").exec(ctx);
+    ctx.commit_transaction();
+    registrar_acl->setId(epp_auth_id);
 
     //add registrar into zone
     std::string rzzone ("cz");//REGISTRAR_ZONE_FQDN_NAME
     Database::Date rzfromDate;
     Database::Date rztoDate;
     ::LibFred::Registrar::addRegistrarZone(registrar_handle, rzzone, rzfromDate, rztoDate);
-    ::LibFred::Registrar::addRegistrarZone(registrar_handle, "0.2.4.e164.arpa", rzfromDate, rztoDate);
-
-    return registrar;
-}
-
-
-LibFred::Registrar::Registrar::AutoPtr createTestRegistrarClassNoCz(const std::string& var_symb)
-{
-    std::string time_string(TimeStamp::microsec());
-    std::string registrar_handle = std::string("REG-FREDTEST") + time_string;
-    ::LibFred::Registrar::Manager::AutoPtr regMan
-             = ::LibFred::Registrar::Manager::create(DBSharedPtr());
-    ::LibFred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
-
-    registrar->setName(registrar_handle+"_Name");
-    registrar->setOrganization(registrar_handle+"_Organization");
-    registrar->setCity("Brno");
-    registrar->setStreet1("Street 1");
-    registrar->setStreet2("Street 2");
-    registrar->setStreet2("Street 3");
-    registrar->setDic("1234567889");
-    registrar->setEmail("info@nic.cz");
-    registrar->setFax("+420.123456");
-    registrar->setIco("92345678899");
-    registrar->setPostalCode("11150");
-    registrar->setProvince("noprovince");
-    registrar->setTelephone("+420.987654");
-    registrar->setVarSymb(var_symb);
-    registrar->setURL("http://ucho.cz");
-
-    registrar->setHandle(registrar_handle);//REGISTRAR_ADD_HANDLE_NAME
-    registrar->setCountry("CZ");//REGISTRAR_COUNTRY_NAME
-    registrar->setVat(true);
-    ::LibFred::Registrar::ACL* registrar_acl = registrar->newACL();
-    registrar_acl->setCertificateMD5("");
-    registrar_acl->set_password("");
-    registrar->save();
-
-    //add registrar into zone
-    Database::Date rzfromDate;
-    Database::Date rztoDate;
     ::LibFred::Registrar::addRegistrarZone(registrar_handle, "0.2.4.e164.arpa", rzfromDate, rztoDate);
 
     return registrar;

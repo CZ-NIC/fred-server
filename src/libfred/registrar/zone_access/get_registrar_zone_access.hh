@@ -16,48 +16,26 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef EXCEPTIONS_HH_A96C589FC5F14474872247B053482D69
-#define EXCEPTIONS_HH_A96C589FC5F14474872247B053482D69
+#ifndef GET_REGISTRAR_ZONE_ACCESS_HH_D244602CE4E742B08CA40AE73028E1EF
+#define GET_REGISTRAR_ZONE_ACCESS_HH_D244602CE4E742B08CA40AE73028E1EF
 
-#include <exception>
+#include "src/libfred/opcontext.hh"
+#include "src/libfred/registrar/zone_access/registrar_zone_access_type.hh"
+
+#include <string>
 
 namespace LibFred {
 namespace Registrar {
 namespace ZoneAccess {
 
-struct AddRegistrarZoneAccessException : std::exception
-{
-    const char* what() const noexcept override;
-};
+class GetZoneAccess {
+public:
+    explicit GetZoneAccess(const std::string& _registrar_handle);
 
-struct NonexistentRegistrar : std::exception
-{
-    const char* what() const noexcept override;
-};
+    RegistrarZoneAccesses exec(OperationContext& _ctx) const;
 
-struct NonexistentZone : std::exception
-{
-    const char* what() const noexcept override;
-};
-
-struct UpdateRegistrarZoneAccessException : std::exception
-{
-    const char* what() const noexcept override;
-};
-
-struct NoUpdateData : std::exception
-{
-    const char* what() const noexcept override;
-};
-
-struct NonexistentZoneAccess : std::exception
-{
-    const char* what() const noexcept override;
-};
-
-struct GetRegistrarZoneAccessException : std::exception
-{
-    const char* what() const noexcept override;
+private:
+    std::string registrar_handle_;
 };
 
 } // namespace LibFred::Registrar::ZoneAccess

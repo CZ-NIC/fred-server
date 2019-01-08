@@ -52,6 +52,11 @@ const char* NonexistentZoneAccess::what() const noexcept
     return "Registrar zone access doesn't exist.";
 }
 
+const char* GetRegistrarZoneAccessException::what() const noexcept
+{
+    return "Failed to get registrar zone access due to an unknown exception.";
+}
+
 } // namespace LibFred::Registrar::ZoneAccess
 } // namespace LibFred::Registrar
 } // namespace LibFred
