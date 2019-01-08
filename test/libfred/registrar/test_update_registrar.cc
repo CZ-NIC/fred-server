@@ -55,7 +55,7 @@ BOOST_FIXTURE_TEST_SUITE(TestUpdateRegistrar, SupplyFixtureCtx<update_registrar_
 
 BOOST_AUTO_TEST_CASE(set_nonexistent_registrar)
 {
-    const std::string& nonexistentRegistrar = RandomDataGenerator().xstring(13);
+    const std::string nonexistentRegistrar = RandomDataGenerator().xstring(13);
     BOOST_CHECK_THROW(::LibFred::Registrar::UpdateRegistrar(nonexistentRegistrar)
             .set_name(registrar.name.get_value())
             .exec(ctx),

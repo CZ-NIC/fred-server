@@ -95,7 +95,7 @@ void update_epp_auth(const EppAuthData& _auth_data)
     LibFred::OperationContextCreator ctx;
 
     TRACE("[CALL] LibFred::Registrar::EppAuth::GetRegistrarEppAuth()");
-    const LibFred::Registrar::EppAuth::RegistrarEppAuthData& epp_auth_data =
+    const LibFred::Registrar::EppAuth::RegistrarEppAuthData epp_auth_data =
             LibFred::Registrar::EppAuth::GetRegistrarEppAuth(_auth_data.registrar_handle).exec(ctx);
     std::set<unsigned long long> auth_ids;
     std::for_each(epp_auth_data.epp_auth_records.cbegin(),

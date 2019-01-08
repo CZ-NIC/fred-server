@@ -60,7 +60,7 @@ BOOST_FIXTURE_TEST_CASE(set_noexistent_registrar, SupplyFixtureCtx<HasEppAuthWit
     BOOST_CHECK_THROW(::Admin::Registrar::update_epp_auth(epp_auth_data),
             ::Admin::Registrar::EppAuthNonexistentRegistrar);
 
-    const std::string& reg_handle = epp_auth_data.registrar_handle;
+    const std::string reg_handle = epp_auth_data.registrar_handle;
     const std::string certificate = "new certificate";
     const std::string password = "new password";
     BOOST_CHECK_THROW(::Admin::Registrar::add_epp_auth(reg_handle, certificate, password),
@@ -78,7 +78,7 @@ BOOST_FIXTURE_TEST_CASE(set_add_duplicate_cert, SupplyFixtureCtx<HasAddDuplicate
     BOOST_CHECK_THROW(::Admin::Registrar::update_epp_auth(epp_auth_data),
             ::Admin::Registrar::DuplicateCertificate);
 
-    const ::Admin::Registrar::EppAuthRecord& new_auth = epp_auth_data.epp_auth_records[0];
+    const ::Admin::Registrar::EppAuthRecord new_auth = epp_auth_data.epp_auth_records[0];
     BOOST_CHECK_THROW(::Admin::Registrar::add_epp_auth(epp_auth_data.registrar_handle,
                    new_auth.certificate_fingerprint,
                    new_auth.plain_password),
