@@ -83,10 +83,9 @@ build:ubuntu:amd64:
   <<: *ubuntu_16_04
   <<: *build_job
   script:
-    - autoreconf -vfi
     - echo "\$PWD=$PWD"
-    - ./configure --with-idldir=./idl/idl || ( cat config.log && exit 1 )
-    - DISTCHECK_CONFIGURE_FLAGS="--with-idldir=/builds/fred/server/idl/idl" make -j $(($(grep -c processor /proc/cpuinfo) / 2 + 1)) distcheck
+    - cmake -DPostgreSQL_ADDITIONAL_VERSIONS=9.6 -DIDL_DIR=/builds/fred/server/idl/idl .
+    - make -j $(($(grep -c processor /proc/cpuinfo) / 2 + 1)) distcheck
 
 build:fedora:amd64:
   <<: *fedora_27
