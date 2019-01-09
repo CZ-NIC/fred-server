@@ -169,6 +169,11 @@ Fred::Backend::Accounting::Registrar get_registrar_by_payment(
         LibFred::OperationContext& _ctx,
         const PaymentData& _payment_data)
 {
+    if (_payment_data.variable_symbol.empty())
+    {
+        throw InvalidPaymentData();
+    }
+
     const Database::Result dbres = _ctx.get_conn().exec_params(
             // clang-format off
             "SELECT id, "

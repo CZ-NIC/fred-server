@@ -83,6 +83,11 @@ Fred::Backend::Accounting::Registrar get_registrar_by_payment(
         LOGGER(PACKAGE).info(e.what());
         throw InvalidPaymentData();
     }
+    catch (const Impl::InvalidPaymentData& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw InvalidPaymentData();
+    }
     catch (const std::exception& e)
     {
         LOGGER(PACKAGE).error(e.what());
