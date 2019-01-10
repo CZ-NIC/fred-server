@@ -84,7 +84,7 @@ build:ubuntu:amd64:
   <<: *build_job
   script:
     - echo "\$PWD=$PWD"
-    - cmake -DPostgreSQL_ADDITIONAL_VERSIONS=9.6 -DIDL_DIR=/builds/fred/server/idl/idl .
+    - DISTCHECK_CMAKE_FLAGS=-DPostgreSQL_ADDITIONAL_VERSIONS=9.6 cmake -DPostgreSQL_ADDITIONAL_VERSIONS=9.6 -DIDL_DIR=/builds/fred/server/idl/idl .
     - make -j $(($(grep -c processor /proc/cpuinfo) / 2 + 1)) distcheck
 
 build:fedora:amd64:
