@@ -6,13 +6,14 @@ RUN apt-get -y dist-upgrade
 RUN printf 'deb http://archive.nic.cz/ubuntu xenial main\n' > /etc/apt/sources.list.d/cz.nic.list
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 1C0200016A9AC5C6
 RUN apt-get -y update
+RUN apt-get -y install curl
+RUN printf 'deb http://apt.postgresql.org/pub/repos/apt/ xenial-pgdg main\n' > /etc/apt/sources.list.d/postgres.list
+RUN curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
+RUN apt-get -y update
 RUN apt-get -y install               \
-        autoconf                     \
-        automake                     \
-        autotools-dev                \
-        autoconf-archive             \
+        cmake                        \
+        postgresql-server-dev-9.6    \
         pkg-config                   \
-        libtool                      \
         build-essential              \
         bash-completion              \
         git                          \
