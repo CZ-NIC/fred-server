@@ -1,3 +1,7 @@
+2019-01-15 (2.38.1)
+
+  * Fix accounting (fred-accifd) - getting registrar by payment data (invalid data and logging)
+
 2018-08-16 (2.38.0)
 
   * epp disclose flags defaults configuration
