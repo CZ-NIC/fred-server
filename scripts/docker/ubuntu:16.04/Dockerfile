@@ -38,3 +38,5 @@ RUN apt-get -y install               \
         libminizip-dev               \
         libxml2-dev                  \
         libidn11-dev
+RUN apt-get -y clean
+RUN rm -rf /var/lib/apt/lists/*
