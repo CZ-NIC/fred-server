@@ -19,7 +19,7 @@
 #ifndef UTIL_HH_4675308061E4499E93103CD4A942696F
 #define UTIL_HH_4675308061E4499E93103CD4A942696F
 
-#include "src/libfred/registrable_object/keyset/keyset_dns_key.hh"
+#include "libfred/registrable_object/keyset/keyset_dns_key.hh"
 
 #include <string>
 

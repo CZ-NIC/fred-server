@@ -20,8 +20,8 @@
 #include <string>
 #include <stack>
 
-#include "src/libfred/opcontext.hh"
-#include "src/util/db/param_query_composition.hh"
+#include "libfred/opcontext.hh"
+#include "util/db/param_query_composition.hh"
 #include "test/setup/fixtures.hh"
 
 BOOST_AUTO_TEST_SUITE(TestParamQuery)

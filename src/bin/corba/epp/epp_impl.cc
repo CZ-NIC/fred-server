@@ -21,9 +21,9 @@
 
 #include "src/bin/corba/connection_releaser.hh"
 
-#include "src/util/optional_value.hh"
-#include "src/util/db/nullable.hh"
-#include "src/libfred/notifier/enqueue_notification.hh"
+#include "util/optional_value.hh"
+#include "util/db/nullable.hh"
+#include "libfred/notifier/enqueue_notification.hh"
 
 #include "config.h"
 
@@ -45,25 +45,25 @@
 #include "src/deprecated/util/log.hh"
 
 // MailerManager is connected in constructor
-#include "src/libfred/common_diff.hh"
-#include "src/libfred/registrable_object/domain.hh"
-#include "src/libfred/registrable_object/contact.hh"
-#include "src/libfred/registrable_object/nsset.hh"
-#include "src/libfred/registrable_object/keyset.hh"
-#include "src/libfred/info_buffer.hh"
-#include "src/libfred/zone.hh"
-#include "src/libfred/invoicing/invoice.hh"
+#include "src/deprecated/libfred/common_diff.hh"
+#include "src/deprecated/libfred/registrable_object/domain.hh"
+#include "src/deprecated/libfred/registrable_object/contact.hh"
+#include "src/deprecated/libfred/registrable_object/nsset.hh"
+#include "src/deprecated/libfred/registrable_object/keyset.hh"
+#include "src/deprecated/libfred/info_buffer.hh"
+#include "src/deprecated/libfred/zone.hh"
+#include "src/deprecated/libfred/invoicing/invoice.hh"
 #include "src/bin/corba/epp/tech_check.hh"
 
-#include "src/libfred/registrar/info_registrar.hh"
+#include "libfred/registrar/info_registrar.hh"
 
-#include "src/util/factory_check.hh"
-#include "src/libfred/public_request/public_request.hh"
-#include "src/libfred/public_request/public_request_authinfo_impl.hh"
+#include "util/factory_check.hh"
+#include "src/deprecated/libfred/public_request/public_request.hh"
+#include "src/deprecated/libfred/public_request/public_request_authinfo_impl.hh"
 
 // logger
-#include "src/util/log/logger.hh"
-#include "src/util/log/context.hh"
+#include "util/log/logger.hh"
+#include "util/log/context.hh"
 
 #include "src/backend/epp/contact/create_contact_localized.hh"
 #include "src/backend/epp/contact/delete_contact_localized.hh"
@@ -117,8 +117,8 @@
 
 #include "src/backend/epp/impl/registraracl/authentic_registrar.hh"
 
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/object_state/object_has_state.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/object_state/object_has_state.hh"
 #include "src/bin/corba/epp/contact/contact_corba_conversions.hh"
 #include "src/bin/corba/epp/corba_conversions.hh"
 #include "src/bin/corba/epp/domain/domain_corba_conversions.hh"
@@ -128,7 +128,7 @@
 #include "src/bin/corba/epp/nsset/nsset_corba_conversions.hh"
 #include "src/bin/corba/util/corba_conversions_string.hh"
 #include "src/bin/corba/util/corba_conversions_int.hh"
-#include "src/util/util.hh"
+#include "util/util.hh"
 
 #include "src/backend/epp/contact/check_contact_config_data.hh"
 #include "src/backend/epp/contact/create_contact_config_data.hh"
@@ -267,13 +267,13 @@ public:
                 }
                 catch (const std::exception& ex)
                 {
-                    LOGGER(PACKAGE).error(boost::format(" ~EPPAction() failed to get historyid: "
+                    LOGGER.error(boost::format(" ~EPPAction() failed to get historyid: "
                           "(svtrid %1% what: %2%)") % db->GetsvTRID() % ex.what());
                     throw;
                 }
                 catch (...)
                 {
-                    LOGGER(PACKAGE).error(boost::format(" ~EPPAction() failed to get historyid: "
+                    LOGGER.error(boost::format(" ~EPPAction() failed to get historyid: "
                           "(svtrid %1%)") % db->GetsvTRID());
                     throw;
                 }
@@ -291,7 +291,7 @@ public:
             if (boost::starts_with(cltrid, epp->get_disable_epp_notifier_cltrid_prefix())
                     && db->GetRegistrarSystem(getRegistrar()))
             {
-                LOGGER(PACKAGE).debug(boost::format("disable command notification "
+                LOGGER.debug(boost::format("disable command notification "
                       "(registrator=%1% cltrid=%2%)") % getRegistrar() % cltrid);
             }
             else {
@@ -307,13 +307,13 @@ public:
                 }
                 catch (const std::exception& ex)
                 {
-                    LOGGER(PACKAGE).error(boost::format(" ~EPPAction() enqueue_notification failed: "
+                    LOGGER.error(boost::format(" ~EPPAction() enqueue_notification failed: "
                           "(svtrid %1% what: %2%)") % db->GetsvTRID() % ex.what());
                     throw;
                 }
                 catch (...)
                 {
-                    LOGGER(PACKAGE).error(boost::format(" ~EPPAction() enqueue_notification failed: "
+                    LOGGER.error(boost::format(" ~EPPAction() enqueue_notification failed: "
                           "(svtrid %1%)") % db->GetsvTRID());
                     throw;
                 }
@@ -327,7 +327,7 @@ public:
     {
         try
         {
-            LOGGER(PACKAGE).error(
+            LOGGER.error(
                 "~EPPAction() got exception, "
                 "db transaction or anything else failed");
         }
@@ -519,7 +519,7 @@ ccReg_EPP_i::ccReg_EPP_i(
   Database::Connection conn = Database::Manager::acquire();
   db_disconnect_guard_.reset(new DB(conn));
 
-  LOG(NOTICE_LOG, "successfully  connect to DATABASE");
+  LOG<Logging::Log::EventImportance::notice>( "successfully  connect to DATABASE");
   regMan.reset(LibFred::Manager::create(db_disconnect_guard_, false)); //TODO: replace 'false'
   regMan->initStates();
 }
@@ -531,28 +531,28 @@ ccReg_EPP_i::~ccReg_EPP_i()
   delete ReasonMsg;
   delete ErrorMsg;
 
-  LOG( ERROR_LOG, "EPP_i destructor");
+  LOG<Logging::Log::EventImportance::err>( "EPP_i destructor");
 }
 
 // HANDLE EXCEPTIONS
 void ccReg_EPP_i::ServerInternalError(
   const char *fce, const char *svTRID)
 {
-  LOG( ERROR_LOG ,"Internal errror in fce %s svTRID[%s] " , fce , svTRID );
+  LOG<Logging::Log::EventImportance::err>("Internal errror in fce %s svTRID[%s] " , fce , svTRID );
   throw ccReg::EPP::EppError( COMMAND_FAILED , "" , svTRID , ccReg::Errors(0) );
 }
 
 void ccReg_EPP_i::EppError(
   short errCode, const char *msg, const char *svTRID, ccReg::Errors_var& errors)
 {
-  LOG( WARNING_LOG ,"EppError errCode %d msg %s svTRID[%s] " , errCode , msg , svTRID );
+  LOG<Logging::Log::EventImportance::warning>("EppError errCode %d msg %s svTRID[%s] " , errCode , msg , svTRID );
   throw ccReg::EPP::EppError( errCode , msg , svTRID , errors );
 }
 
 void ccReg_EPP_i::NoMessages(
   short errCode, const char *msg, const char *svTRID)
 {
-  LOG( WARNING_LOG ,"NoMessages errCode %d msg %s svTRID[%s] " , errCode , msg , svTRID );
+  LOG<Logging::Log::EventImportance::warning>("NoMessages errCode %d msg %s svTRID[%s] " , errCode , msg , svTRID );
   throw ccReg::EPP::NoMessages ( errCode , msg , svTRID );
 
 }
@@ -662,7 +662,7 @@ short ccReg_EPP_i::SetErrorReason(
   errors[seq].position = position;
   errors[seq].reason = CORBA::string_dup(GetReasonMessage(reasonMsg, lang) );
 
-  LOG( WARNING_LOG, "SetErrorReason seq%d: err_code %d position [%d]  param %d msgID [%d] " , seq , errCode , position , paramCode , reasonMsg );
+  LOG<Logging::Log::EventImportance::warning>( "SetErrorReason seq%d: err_code %d position [%d]  param %d msgID [%d] " , seq , errCode , position , paramCode , reasonMsg );
   return errCode;
 }
 
@@ -670,7 +670,7 @@ short ccReg_EPP_i::SetReasonContactHandle(
   ccReg::Errors_var& err, const char *handle, int lang)
 {
 
-  LOG( WARNING_LOG, "bad format of contact [%s]" , handle );
+  LOG<Logging::Log::EventImportance::warning>( "bad format of contact [%s]" , handle );
   return SetErrorReason(err, COMMAND_PARAMETR_ERROR, ccReg::contact_handle, 1,
   REASON_MSG_BAD_FORMAT_CONTACT_HANDLE, lang);
 }
@@ -679,7 +679,7 @@ short ccReg_EPP_i::SetReasonNSSetHandle(
   ccReg::Errors_var& err, const char *handle, int lang)
 {
 
-  LOG( WARNING_LOG, "bad format of nsset  [%s]" , handle );
+  LOG<Logging::Log::EventImportance::warning>( "bad format of nsset  [%s]" , handle );
   return SetErrorReason(err, COMMAND_PARAMETR_ERROR, ccReg::nsset_handle, 1,
   REASON_MSG_BAD_FORMAT_NSSET_HANDLE, lang);
 
@@ -691,7 +691,7 @@ ccReg_EPP_i::SetReasonKeySetHandle(
         const char *handle,
         int lang)
 {
-    LOG(WARNING_LOG, "bad format of keyset [%s]", handle);
+    LOG<Logging::Log::EventImportance::warning>( "bad format of keyset [%s]", handle);
     return SetErrorReason(err, COMMAND_PARAMETR_ERROR, ccReg::keyset_handle, 1,
             REASON_MSG_BAD_FORMAT_KEYSET_HANDLE, lang);
 }
@@ -700,7 +700,7 @@ short ccReg_EPP_i::SetReasonDomainFQDN(
   ccReg::Errors_var& err, const char *fqdn, int zone, int lang)
 {
 
-  LOG( WARNING_LOG, "domain in zone %s" , (const char * ) fqdn );
+  LOG<Logging::Log::EventImportance::warning>( "domain in zone %s" , (const char * ) fqdn );
   if (zone == 0)
     return SetErrorReason(err, COMMAND_PARAMETR_ERROR, ccReg::domain_fqdn, 1,
     REASON_MSG_NOT_APPLICABLE_DOMAIN, lang);
@@ -722,7 +722,7 @@ char* ccReg_EPP_i::version(
   time_t t;
   char dateStr[MAX_DATE+1];
 
-  LOG( NOTICE_LOG, "get version %s BUILD %s %s", VERSION, __DATE__, __TIME__);
+  LOG<Logging::Log::EventImportance::notice>( "get version %s BUILD %s %s", VERSION, __DATE__, __TIME__);
 
   // return  actual time (local time)
   t = time(NULL);
@@ -741,7 +741,7 @@ int ccReg_EPP_i::GetZoneExPeriodMin(
     query << "SELECT ex_period_min FROM zone WHERE id=" << id << ";";
     DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db.get());
     if (!db->ExecSelect(query.str().c_str())) {
-        LOGGER(PACKAGE).error("Cannot retrieve ``ex_period_min'' from the database");
+        LOGGER.error("Cannot retrieve ``ex_period_min'' from the database");
         return 0;
     }
     return atoi(db->GetFieldValue(0, 0));
@@ -755,7 +755,7 @@ int ccReg_EPP_i::GetZoneExPeriodMax(
     query << "SELECT ex_period_max FROM zone WHERE id=" << id << ";";
     DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db.get());
     if (!db->ExecSelect(query.str().c_str())) {
-        LOGGER(PACKAGE).error("Cannot retrieve ``ex_period_max'' from the database");
+        LOGGER.error("Cannot retrieve ``ex_period_max'' from the database");
         return 0;
     }
     return atoi(db->GetFieldValue(0, 0));
@@ -769,7 +769,7 @@ int ccReg_EPP_i::GetZoneValPeriod(
     query << "SELECT val_period FROM zone WHERE id=" << id << ";";
     DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db.get());
     if (!db->ExecSelect(query.str().c_str())) {
-        LOGGER(PACKAGE).error("Cannot retrieve ``val_period'' from the database");
+        LOGGER.error("Cannot retrieve ``val_period'' from the database");
         return 0;
     }
     return atoi(db->GetFieldValue(0, 0));
@@ -783,7 +783,7 @@ bool ccReg_EPP_i::GetZoneEnum(
     query << "SELECT enum_zone FROM zone WHERE id=" << id << ";";
     DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db.get());
     if (!db->ExecSelect(query.str().c_str())) {
-        LOGGER(PACKAGE).error("cannot retrieve ``enum_zone'' from the database");
+        LOGGER.error("cannot retrieve ``enum_zone'' from the database");
         return false;
     }
     if (strcmp("t", db->GetFieldValue(0, 0)) == 0) {
@@ -800,7 +800,7 @@ int ccReg_EPP_i::GetZoneDotsMax(
     query << "SELECT dots_max FROM zone WHERE id=" << id << ";";
     DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db.get());
     if (!db->ExecSelect(query.str().c_str())) {
-        LOGGER(PACKAGE).error("cannot retrieve ``dots_max'' from the database");
+        LOGGER.error("cannot retrieve ``dots_max'' from the database");
         return 0;
     }
     return atoi(db->GetFieldValue(0, 0));
@@ -814,7 +814,7 @@ std::string ccReg_EPP_i::GetZoneFQDN(
     query << "SELECT fqdn FROM zone WHERE id=" << id << ";";
     DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db.get());
     if (!db->ExecSelect(query.str().c_str())) {
-        LOGGER(PACKAGE).error("cannot retrieve ``fqdn'' from the database");
+        LOGGER.error("cannot retrieve ``fqdn'' from the database");
         return std::string("");
     }
     return std::string(db->GetFieldValue(0, 0));
@@ -828,7 +828,7 @@ int ccReg_EPP_i::getZone(
     std::string domain_fqdn(fqdn);
     int pos = getZoneMax(db, fqdn);
     if (pos == 0) {
-        LOGGER(PACKAGE).debug("getZone: dot position is zero");
+        LOGGER.debug("getZone: dot position is zero");
         return 0;
     }
     zoneQuery
@@ -837,7 +837,7 @@ int ccReg_EPP_i::getZone(
         << "');";
     DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db.get());
     if (!db->ExecSelect(zoneQuery.str().c_str())) {
-        LOGGER(PACKAGE).error("cannot retrieve zone id from the database");
+        LOGGER.error("cannot retrieve zone id from the database");
         return 0;
     } else {
         return atoi(db->GetFieldValue(0, 0));
@@ -852,11 +852,11 @@ int ccReg_EPP_i::getZoneMax(
     std::string query("SELECT fqdn FROM zone ORDER BY length(fqdn) DESC");
     DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db.get());
     if (!db->ExecSelect(query.c_str())) {
-        LOGGER(PACKAGE).error("cannot retrieve list of fqdn from the database");
+        LOGGER.error("cannot retrieve list of fqdn from the database");
         return 0;
     }
     if (db->GetSelectRows() == 0) {
-        LOGGER(PACKAGE).error("getZoneMax: result size is zero");
+        LOGGER.error("getZoneMax: result size is zero");
         return 0;
     }
     std::string domain(fqdn);
@@ -888,15 +888,15 @@ int ccReg_EPP_i::getFQDN(
 
   FQDN[0] = 0;
 
-  LOG( LOG_DEBUG , "getFQDN [%s] zone %d max %d" , fqdn , z , max );
+  LOG<Logging::Log::EventImportance::debug>( "getFQDN [%s] zone %d max %d" , fqdn , z , max );
 
   // maximal length of the domain
   if (len > 67) {
-    LOG( LOG_DEBUG , "out ouf maximal length %d" , len );
+    LOG<Logging::Log::EventImportance::debug>( "out ouf maximal length %d" , len );
     return -1;
   }
   if (max == 0) {
-    LOG( LOG_DEBUG , "minimal length" );
+    LOG<Logging::Log::EventImportance::debug>( "minimal length" );
     return -1;
   }
 
@@ -904,19 +904,19 @@ int ccReg_EPP_i::getFQDN(
   for (i = 1; i < len; i ++) {
 
     if (fqdn[i] == '.' && fqdn[i-1] == '.') {
-      LOG( LOG_DEBUG , "double \'.\' not allowed" );
+      LOG<Logging::Log::EventImportance::debug>( "double \'.\' not allowed" );
       return -1;
     }
 
     if (fqdn[i] == '-' && fqdn[i-1] == '-') {
-      LOG( LOG_DEBUG , "double  \'-\' not allowed" );
+      LOG<Logging::Log::EventImportance::debug>( "double  \'-\' not allowed" );
       return -1;
     }
 
   }
 
   if (fqdn[0] == '-') {
-    LOG( LOG_DEBUG , "first \'-\' not allowed" );
+    LOG<Logging::Log::EventImportance::debug>( "first \'-\' not allowed" );
     return -1;
   }
 
@@ -929,7 +929,7 @@ int ccReg_EPP_i::getFQDN(
   dot_max = GetZoneDotsMax(db, z);
 
   if (dot > dot_max) {
-    LOG( LOG_DEBUG , "too much %d dots max %d" , dot , dot_max );
+    LOG<Logging::Log::EventImportance::debug>( "too much %d dots max %d" , dot , dot_max );
     return -1;
   }
 
@@ -942,14 +942,14 @@ int ccReg_EPP_i::getFQDN(
       if (isdigit(fqdn[i]) || fqdn[i] == '.' || fqdn[i] == '-')
         FQDN[i] = fqdn[i];
       else {
-        LOG( LOG_DEBUG , "character  %c not allowed" , fqdn[i] );
+        LOG<Logging::Log::EventImportance::debug>( "character  %c not allowed" , fqdn[i] );
         FQDN[0] = 0;
         return -1;
       }
 
       // test double numbers
       if (isdigit(fqdn[i]) && isdigit(fqdn[i+1]) ) {
-        LOG( LOG_DEBUG , "double digit [%c%c] not allowed" , fqdn[i] , fqdn[i+1] );
+        LOG<Logging::Log::EventImportance::debug>( "double digit [%c%c] not allowed" , fqdn[i] , fqdn[i+1] );
         FQDN[0] = 0;
         return -1;
       }
@@ -959,7 +959,7 @@ int ccReg_EPP_i::getFQDN(
       if (isalnum(fqdn[i]) || fqdn[i] == '-' || fqdn[i] == '.')
         FQDN[i] = tolower(fqdn[i]) ;
       else {
-        LOG( LOG_DEBUG , "character  %c not allowed" , fqdn[i] );
+        LOG<Logging::Log::EventImportance::debug>( "character  %c not allowed" , fqdn[i] );
         FQDN[0] = 0;
         return -1;
       }
@@ -973,7 +973,7 @@ int ccReg_EPP_i::getFQDN(
   FQDN[i] = 0; // on the end
 
 
-  LOG( LOG_DEBUG , "zone %d -> FQDN [%s]" , z , FQDN );
+  LOG<Logging::Log::EventImportance::debug>( "zone %d -> FQDN [%s]" , z , FQDN );
   return z;
 
 }
@@ -986,7 +986,7 @@ void ccReg_EPP_i::sessionClosed(
   Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
   ConnectionReleaser releaser;
 
-  LOGGER(PACKAGE).debug( boost::format("sessionClosed called for clientID %1%") % clientID);
+  LOGGER.debug( boost::format("sessionClosed called for clientID %1%") % clientID);
   epp_sessions_.logout_session(clientID);
 }
 
@@ -1007,11 +1007,11 @@ ccReg::Response* ccReg_EPP_i::GetTransaction(
   ret = new ccReg::Response;
   int i, len;
 
-  LOG( NOTICE_LOG, "GetTransaction: clientID -> %llu clTRID [%s] ", clientID, clTRID );
-  LOG( NOTICE_LOG, "GetTransaction:  errCode %d", (int ) errCode );
+  LOG<Logging::Log::EventImportance::notice>( "GetTransaction: clientID -> %llu clTRID [%s] ", clientID, clTRID );
+  LOG<Logging::Log::EventImportance::notice>( "GetTransaction:  errCode %d", (int ) errCode );
 
   len = errorCodes.length();
-  LOG( NOTICE_LOG, "GetTransaction:  errorCodes length %d" , len );
+  LOG<Logging::Log::EventImportance::notice>( "GetTransaction:  errorCodes length %d" , len );
 
   // default
   ret->code = 0;
@@ -1041,7 +1041,7 @@ ccReg::Response* ccReg_EPP_i::GetTransaction(
         (*errStrings)[i] = CORBA::string_dup("not specified error");
     }
 
-    LOG( NOTICE_LOG, "return reason msg: errors[%d] code %d  message %s\n" , i , errorCodes[i] , ( char * ) (*errStrings)[i] );
+    LOG<Logging::Log::EventImportance::notice>( "return reason msg: errors[%d] code %d  message %s\n" , i , errorCodes[i] , ( char * ) (*errStrings)[i] );
   }
 
   {
@@ -1054,7 +1054,7 @@ ccReg::Response* ccReg_EPP_i::GetTransaction(
           ret->msg = CORBA::string_dup(GetErrorMessage(ret->code,
               GetRegistrarLang(clientID) ) );
 
-          LOG( NOTICE_LOG, "GetTransaction: svTRID [%s] errCode -> %d msg [%s] ", ( char * ) ret->svTRID, ret->code, ( char * ) ret->msg );
+          LOG<Logging::Log::EventImportance::notice>( "GetTransaction: svTRID [%s] errCode -> %d msg [%s] ", ( char * ) ret->svTRID, ret->code, ( char * ) ret->msg );
       }
     }
   }
@@ -1425,7 +1425,7 @@ ccReg_EPP_i::ClientLogout(const ccReg::EppParams &params)
     Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
     ConnectionReleaser releaser;
 
-    LOG( NOTICE_LOG, "ClientLogout: clientID -> %llu clTRID [%s]", params.loginID, static_cast<const char*>(params.clTRID) );
+    LOG<Logging::Log::EventImportance::notice>( "ClientLogout: clientID -> %llu clTRID [%s]", params.loginID, static_cast<const char*>(params.clTRID) );
     EPPAction action(this, params.loginID, EPP_ClientLogout, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
 
     epp_sessions_.logout_session(params.loginID);
@@ -1466,13 +1466,13 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
     ret->code = 0;
     out_clientID = 0;
 
-    LOGGER(PACKAGE).notice(
+    LOGGER.notice(
             boost::format("ClientLogin: username-> [%1%] clTRID [%2%] passwd [%3%] newpass [%4%]") %
             ClID %
             clTRID %
             hide(passwd) %
             hide(newpass));
-    LOG(NOTICE_LOG, "ClientLogin: certID [%s] language [%d]", certID, lang);
+    LOG<Logging::Log::EventImportance::notice>( "ClientLogin: certID [%s] language [%d]", certID, lang);
 
     Database::Connection conn = Database::Manager::acquire();
     DB DBsql(conn);
@@ -1484,7 +1484,7 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
         const int regID = DBsql.GetNumericFromTable("REGISTRAR", "id", "handle", const_cast<char*>(ClID));
         if (regID == 0)
         {
-            LOG(NOTICE_LOG, "bad username [%s]", ClID);
+            LOG<Logging::Log::EventImportance::notice>( "bad username [%s]", ClID);
             // bad username
             ret->code = COMMAND_AUTH_ERROR;
         }
@@ -1494,7 +1494,7 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
             const std::unique_ptr<LibFred::Registrar::Manager> regman(LibFred::Registrar::Manager::create(nodb));
             if (regman->isRegistrarBlocked(regID))
             {
-                LOGGER(PACKAGE).notice((boost::format("Registrar %1% login attempt while blocked.") % ClID).str());
+                LOGGER.notice((boost::format("Registrar %1% login attempt while blocked.") % ClID).str());
                 ret->code = COMMAND_AUTOR_ERROR;
             }
         }
@@ -1504,7 +1504,7 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
             const bool set_new_password = (newpass != NULL) && (*newpass != '\0');
             if (set_new_password)
             {
-                LOGGER(PACKAGE).notice(
+                LOGGER.notice(
                             boost::format("change password [%1%] to newpass [%2%]") %
                             hide(passwd) %
                             hide(newpass));
@@ -1519,7 +1519,7 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
                     switch (lang_)
                     {
                         case ccReg::CS:
-                            LOG(NOTICE_LOG, "SET LANG to CS");
+                            LOG<Logging::Log::EventImportance::notice>( "SET LANG to CS");
                             return 1;
                         case ccReg::EN:
                             return 0;
@@ -1534,7 +1534,7 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
             {
                 out_clientID = epp_sessions_.login_session(regID, language);
 
-                LOGGER(PACKAGE).notice(
+                LOGGER.notice(
                         boost::format("ClientLogin: username %1%, regID %2%, clTRID %3%, lang %4% got clientID %5%") %
                         ClID %
                         regID %
@@ -1546,7 +1546,7 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
             }
             catch (const NumberSessionLimit& e)
             {
-                LOGGER(PACKAGE).warning(
+                LOGGER.warning(
                         boost::format("ClientLogin: username %1%, regID %2% clTRID %3%, lang %4% login FAILED, reason %5%") %
                         ClID %
                         regID %
@@ -1560,7 +1560,7 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
     }
     catch (const Epp::RegistrarAcl::AuthenticRegistrar::AuthenticationFailed &e)
     {
-        LOGGER(PACKAGE).notice(
+        LOGGER.notice(
                     boost::format("password [%1%] or certID [%2%] not accept: %3%") %
                     hide(passwd) %
                     certID %
@@ -1569,12 +1569,12 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
     }
     catch (const std::exception &e)
     {
-        LOGGER(PACKAGE).error(boost::format("Exception in ccReg_EPP_i::ClientLogin: %1%") % e.what());
+        LOGGER.error(boost::format("Exception in ccReg_EPP_i::ClientLogin: %1%") % e.what());
         ret->code = COMMAND_FAILED;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("Unknown exception in ccReg_EPP_i::ClientLogin");
+        LOGGER.error("Unknown exception in ccReg_EPP_i::ClientLogin");
     }
 
     if (ret->code == 0)
@@ -3112,7 +3112,7 @@ ccReg_EPP_i::FullList(short act, const char *table, const char *fname,
 
     list = new ccReg::Lists;
 
-    LOG( NOTICE_LOG , "LIST %d  clientID -> %llu clTRID [%s] " , act , params.loginID, static_cast<const char*>(params.clTRID) );
+    LOG<Logging::Log::EventImportance::notice >( "LIST %d  clientID -> %llu clTRID [%s] " , act , params.loginID, static_cast<const char*>(params.clTRID) );
 
     EPPAction action(this, params.loginID, act, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
 
@@ -3142,7 +3142,7 @@ ccReg_EPP_i::FullList(short act, const char *table, const char *fname,
     if (action.getDB()->ExecSelect(sqlString) ) {
         rows = action.getDB()->GetSelectRows();
 
-        LOG( NOTICE_LOG, "Full List: %s  num -> %d ClID %d", table , rows , action.getRegistrar() );
+        LOG<Logging::Log::EventImportance::notice>( "Full List: %s  num -> %d ClID %d", table , rows , action.getRegistrar() );
         list->length(rows);
 
         for (i = 0; i < rows; i ++) {
@@ -3223,7 +3223,7 @@ ccReg::Response* ccReg_EPP_i::nssetTest(
   int nssetid;
   bool internalError = false;
 
-  LOG( NOTICE_LOG , "nssetTest nsset %s  clientID -> %llu clTRID [%s] \n" , handle, params.loginID, static_cast<const char*>(params.clTRID) );
+  LOG<Logging::Log::EventImportance::notice >( "nssetTest nsset %s  clientID -> %llu clTRID [%s] \n" , handle, params.loginID, static_cast<const char*>(params.clTRID) );
 
   Database::Connection conn = Database::Manager::acquire();
   DBSharedPtr DBsql (new DB(conn));
@@ -3249,19 +3249,19 @@ ccReg::Response* ccReg_EPP_i::nssetTest(
             tc.checkFromRegistrar(regHandle,handle,level,ifqdns,params.clTRID);
           }
           catch (TechCheckManager::INTERNAL_ERROR) {
-            LOG(ERROR_LOG,"Tech check internal error nsset [%s] clientID -> %llu clTRID [%s] " , handle , params.loginID , static_cast<const char*>(params.clTRID) );
+            LOG<Logging::Log::EventImportance::err>("Tech check internal error nsset [%s] clientID -> %llu clTRID [%s] " , handle , params.loginID , static_cast<const char*>(params.clTRID) );
             internalError = true;
           }
           catch (TechCheckManager::REGISTRAR_NOT_FOUND) {
-            LOG(ERROR_LOG,"Tech check reg not found nsset [%s] clientID -> %llu clTRID [%s] " , handle , params.loginID , static_cast<const char*>(params.clTRID) );
+            LOG<Logging::Log::EventImportance::err>("Tech check reg not found nsset [%s] clientID -> %llu clTRID [%s] " , handle , params.loginID , static_cast<const char*>(params.clTRID) );
             internalError = true;
           }
           catch (TechCheckManager::NSSET_NOT_FOUND) {
-            LOG(ERROR_LOG,"Tech check nsset not found nset [%s] clientID -> %llu clTRID [%s] " , handle , params.loginID , static_cast<const char*>(params.clTRID) );
+            LOG<Logging::Log::EventImportance::err>("Tech check nsset not found nset [%s] clientID -> %llu clTRID [%s] " , handle , params.loginID , static_cast<const char*>(params.clTRID) );
             internalError = true;
           }
         } else {
-          LOG( WARNING_LOG, "nsset handle [%s] NOT_EXIST", handle );
+          LOG<Logging::Log::EventImportance::warning>( "nsset handle [%s] NOT_EXIST", handle );
           ret->code = COMMAND_OBJECT_NOT_EXIST;
         }
 
@@ -3443,10 +3443,10 @@ ccReg::Response* ccReg_EPP_i::info(
   Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
   ConnectionReleaser releaser;
 
-  LOG(
-      NOTICE_LOG,
-      "Info: clientID -> %llu clTRID [%s]", params.loginID, static_cast<const char*>(params.clTRID)
-  );
+  LOG<Logging::Log::EventImportance::notice>(
+      "Info: clientID -> %llu clTRID [%s]",
+      params.loginID,
+      static_cast<const char*>(params.clTRID));
   // start EPP action - this will handle all init stuff
   EPPAction a(this, params.loginID, EPP_Info, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
   try {
@@ -3514,9 +3514,10 @@ ccReg::Response* ccReg_EPP_i::getInfoResults(
   Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
   ConnectionReleaser releaser;
 
-  LOG(
-      NOTICE_LOG,
-      "getResults: clientID -> %llu clTRID [%s]", params.loginID, static_cast<const char*>(params.clTRID)
+  LOG<Logging::Log::EventImportance::notice>(
+      "getResults: clientID -> %llu clTRID [%s]",
+      params.loginID,
+      static_cast<const char*>(params.clTRID)
   );
   // start EPP action - this will handle all init stuff
   EPPAction a(this, params.loginID, EPP_GetInfoResults, static_cast<const char*>(params.clTRID), params.XML, params.requestID);

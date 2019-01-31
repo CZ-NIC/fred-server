@@ -24,11 +24,11 @@
 #include "src/backend/epp/exception.hh"
 #include "src/backend/epp/reason.hh"
 #include "src/backend/epp/keyset/impl/limits.hh"
-#include "src/libfred/registrable_object/contact/check_contact.hh"
-#include "src/libfred/registrable_object/keyset/check_keyset.hh"
-#include "src/libfred/registrable_object/keyset/create_keyset.hh"
-#include "src/libfred/registrar/info_registrar.hh"
-#include "src/util/map_at.hh"
+#include "libfred/registrable_object/contact/check_contact.hh"
+#include "libfred/registrable_object/keyset/check_keyset.hh"
+#include "libfred/registrable_object/keyset/create_keyset.hh"
+#include "libfred/registrar/info_registrar.hh"
+#include "util/map_at.hh"
 
 #include <map>
 #include <set>

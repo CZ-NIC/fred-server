@@ -21,20 +21,20 @@
 
 #include "src/util/setup_server_decl.hh"
 #include "src/util/time_clock.hh"
-#include "src/util/random_data_generator.hh"
+#include "util/random_data_generator.hh"
 #include "src/util/concurrent_queue.hh"
 
-#include "src/libfred/registry.hh"
-#include "src/libfred/registrable_object/contact/create_contact.hh"
-#include "src/libfred/registrable_object/contact/info_contact.hh"
-#include "src/libfred/registrable_object/contact/info_contact_output.hh"
-#include "src/libfred/registrable_object/contact/info_contact_diff.hh"
+#include "src/deprecated/libfred/registry.hh"
+#include "libfred/registrable_object/contact/create_contact.hh"
+#include "libfred/registrable_object/contact/info_contact.hh"
+#include "libfred/registrable_object/contact/info_contact_output.hh"
+#include "libfred/registrable_object/contact/info_contact_diff.hh"
 #include "src/backend/contact_verification/public_request_contact_verification_impl.hh"
 
-#include "src/libfred/public_request/public_request.hh"
-#include "src/libfred/public_request/public_request_impl.hh"
-#include "src/libfred/public_request/public_request_authinfo_impl.hh"
-#include "src/libfred/public_request/create_public_request.hh"
+#include "src/deprecated/libfred/public_request/public_request.hh"
+#include "src/deprecated/libfred/public_request/public_request_impl.hh"
+#include "src/deprecated/libfred/public_request/public_request_authinfo_impl.hh"
+#include "libfred/public_request/create_public_request.hh"
 
 #include "src/backend/public_request/type/get_iface_of.hh"
 #include "src/backend/public_request/type/public_request_authinfo.hh"
@@ -49,9 +49,9 @@
 #include "src/util/cfg/handle_contactverification_args.hh"
 #include "src/util/cfg/config_handler_decl.hh"
 
-#include "src/libfred/contact_verification/contact.hh"
+#include "src/deprecated/libfred/contact_verification/contact.hh"
 #include "src/backend/contact_verification/contact_verification_impl.hh"
-#include "src/libfred/object_states.hh"
+#include "src/deprecated/libfred/object_states.hh"
 #include "src/bin/corba/mailer_manager.hh"
 
 #include <boost/test/unit_test.hpp>

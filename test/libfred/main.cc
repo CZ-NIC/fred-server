@@ -69,9 +69,9 @@ namespace Test {
             param = handler_ptr->log_syslog_facility;
         }
 
-        Logging::Manager::instance_ref().get(PACKAGE).addHandler(log_type, param);
+        Logging::Manager::instance_ref().addHandler(log_type, param);
 
-        Logging::Manager::instance_ref().get(PACKAGE).setLevel(
+        Logging::Manager::instance_ref().setLevel(
             static_cast<Logging::Log::Level>(handler_ptr->log_level)
         );
     }

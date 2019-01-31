@@ -23,7 +23,7 @@
 #include "src/backend/epp/epp_extended_error_localized.hh"
 #include "src/backend/epp/localization.hh"
 
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 #include <boost/optional.hpp>
 

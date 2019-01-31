@@ -19,7 +19,7 @@
 #ifndef POLL_ACKNOWLEDGEMENT_HH_B99FF2A5A2874E81AA71B1ED5AAC03FC
 #define POLL_ACKNOWLEDGEMENT_HH_B99FF2A5A2874E81AA71B1ED5AAC03FC
 
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 namespace Epp {
 namespace Poll {

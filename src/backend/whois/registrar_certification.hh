@@ -1,7 +1,7 @@
 #ifndef REGISTRAR_CERTIFICATION_HH_41E9029ADF8B47A7B604F087420D5518
 #define REGISTRAR_CERTIFICATION_HH_41E9029ADF8B47A7B604F087420D5518
 
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 #include <string>
 #include <vector>
 

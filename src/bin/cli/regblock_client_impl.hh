@@ -78,7 +78,7 @@ private:
         // check if sendmail is present
         if (!Cmd::Executable("test")("-x")("/usr/sbin/sendmail")
                 .run_with_path(params.shell_cmd_timeout).succeeded()) {
-            LOGGER(PACKAGE).error("/usr/sbin/sendmail: command not found");
+            LOGGER.error("/usr/sbin/sendmail: command not found");
         }
 
         LibFred::Registrar::BlockedRegistrars blocked_registrars = regMan->getRegistrarsBlockedToday();
@@ -143,7 +143,7 @@ private:
        if(!params.notify_email.empty()) {
            send_block_notification();
        } else {
-           LOGGER(PACKAGE).info("No email specified, not trying to send information about blocked registrars");
+           LOGGER.info("No email specified, not trying to send information about blocked registrars");
        }
     }
 };

@@ -22,8 +22,8 @@
 #include "src/backend/epp/domain/domain_enum_validation.hh"
 #include "src/backend/epp/domain/status_value.hh"
 #include "src/backend/epp/object_states_localized.hh"
-#include "src/libfred/registrable_object/domain/enum_validation_extension.hh"
-#include "src/util/db/nullable.hh"
+#include "libfred/registrable_object/domain/enum_validation_extension.hh"
+#include "util/db/nullable.hh"
 
 #include <boost/date_time/gregorian/greg_date.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>

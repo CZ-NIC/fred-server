@@ -19,7 +19,7 @@
 #ifndef POLL_REQUEST_GET_UPDATE_CONTACT_DETAILS_HH_4783DA914F9A425D98BA1FEAD4F7787B
 #define POLL_REQUEST_GET_UPDATE_CONTACT_DETAILS_HH_4783DA914F9A425D98BA1FEAD4F7787B
 
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 #include "src/backend/epp/contact/info_contact.hh"
 

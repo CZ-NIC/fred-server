@@ -1,7 +1,7 @@
 #include <boost/tokenizer.hpp>
 #include <boost/utility.hpp>
 #include "src/util/db/query/query_old.hh"
-#include "src/util/log/logger.hh"
+#include "util/log/logger.hh"
 
 
 namespace Database {
@@ -59,7 +59,7 @@ void SelectQuery::finalize() {
 void SelectQuery::make(escape_function_type _esc_func) {
   TRACE("[CALL] SelectQuery::make()");
   if (m_initialized) {
-    LOGGER(PACKAGE).debug(boost::format("buffer-generated select SQL = %1%") % sql_buffer.str());
+    LOGGER.debug(boost::format("buffer-generated select SQL = %1%") % sql_buffer.str());
     return;
   }
 
@@ -95,7 +95,7 @@ void SelectQuery::make(escape_function_type _esc_func) {
   if (!group_by_s.str().empty())
   sql_buffer << " GROUP BY " << group_by_s.str(); 
   finalize();
-  LOGGER(PACKAGE).debug(boost::format("generated select SQL = %1%") % sql_buffer.str());
+  LOGGER.debug(boost::format("generated select SQL = %1%") % sql_buffer.str());
 }
 
 

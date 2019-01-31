@@ -24,8 +24,8 @@
 #include "src/backend/epp/nsset/status_value.hh"
 #include "src/backend/epp/session_data.hh"
 #include "src/backend/epp/session_lang.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/util/db/nullable.hh"
+#include "libfred/opcontext.hh"
+#include "util/db/nullable.hh"
 
 #include <boost/asio/ip/address.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>

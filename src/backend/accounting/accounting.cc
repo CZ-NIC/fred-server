@@ -21,7 +21,7 @@
 #include "src/backend/accounting/exceptions.hh"
 #include "src/backend/accounting/impl/accounting.hh"
 #include "src/backend/accounting/impl/exceptions.hh"
-#include "src/util/log/context.hh"
+#include "util/log/context.hh"
 
 namespace Fred {
 namespace Backend {
@@ -70,32 +70,32 @@ Fred::Backend::Accounting::Registrar get_registrar_by_payment(
     }
     catch (const Impl::RegistrarNotFound& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw RegistrarNotFound();
     }
     catch (const Impl::ZoneNotFound& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw InvalidPaymentData();
     }
     catch (const Impl::InvalidAccountData& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw InvalidPaymentData();
     }
     catch (const Impl::InvalidPaymentData& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw InvalidPaymentData();
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("an unexpected exception");
+        LOGGER.error("an unexpected exception");
         throw;
     }
 }
@@ -119,27 +119,27 @@ Fred::Backend::Accounting::Registrar get_registrar_by_handle_and_payment(
     }
     catch (const Impl::RegistrarNotFound& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw RegistrarNotFound();
     }
     catch (const Impl::ZoneNotFound& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw InvalidPaymentData();
     }
     catch (const Impl::InvalidAccountData& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw InvalidPaymentData();
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("an unexpected exception");
+        LOGGER.error("an unexpected exception");
         throw;
     }
 }
@@ -155,32 +155,32 @@ PaymentInvoices import_payment(
     }
     catch (const Impl::RegistrarNotFound& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw RegistrarNotFound();
     }
     catch (const Impl::InvalidAccountData& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw InvalidPaymentData();
     }
     catch (const Impl::InvalidPaymentData& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw InvalidPaymentData();
     }
     catch (const Impl::PaymentAlreadyProcessed& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw PaymentAlreadyProcessed();
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("an unexpected exception");
+        LOGGER.error("an unexpected exception");
         throw;
     }
 }
@@ -198,32 +198,32 @@ PaymentInvoices import_payment_by_registrar_handle(
     }
     catch (const Impl::RegistrarNotFound& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw RegistrarNotFound();
     }
     catch (const Impl::InvalidAccountData& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw InvalidPaymentData();
     }
     catch (const Impl::InvalidPaymentData& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw InvalidPaymentData();
     }
     catch (const Impl::PaymentAlreadyProcessed& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw PaymentAlreadyProcessed();
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("an unexpected exception");
+        LOGGER.error("an unexpected exception");
         throw;
     }
 }
@@ -239,12 +239,12 @@ std::vector<RegistrarReference> get_registrar_references()
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("an unexpected exception");
+        LOGGER.error("an unexpected exception");
         throw;
     }
 }

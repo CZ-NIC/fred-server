@@ -17,10 +17,10 @@
  */
 
 #include "src/backend/mojeid/checkers.hh"
-#include "src/libfred/contact_verification/django_email_format.hh"
-#include "src/libfred/object/object_type.hh"
-#include "src/libfred/registrable_object/contact/ssntype.hh"
-#include "src/util/idn_utils.hh"
+#include "libfred/contact_verification/django_email_format.hh"
+#include "libfred/object/object_type.hh"
+#include "src/deprecated/libfred/registrable_object/contact/ssntype.hh"
+#include "util/idn_utils.hh"
 #include "src/util/types/birthdate.hh"
 
 #include <boost/algorithm/string/classification.hpp>

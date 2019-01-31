@@ -24,7 +24,7 @@
 #ifndef UTIL_HH_ED5811D1A69D4FC2BE585F9F0414A7DF
 #define UTIL_HH_ED5811D1A69D4FC2BE585F9F0414A7DF
 
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 #include <string>
 

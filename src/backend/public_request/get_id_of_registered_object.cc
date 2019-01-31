@@ -19,8 +19,8 @@
 #include "src/backend/public_request/get_id_of_registered_object.hh"
 
 #include "src/backend/public_request/object_type.hh"
-#include "src/libfred/object/get_id_of_registered.hh"
-#include "src/libfred/object/object_type.hh"
+#include "libfred/object/get_id_of_registered.hh"
+#include "libfred/object/object_type.hh"
 
 namespace Fred {
 namespace Backend {

@@ -23,7 +23,7 @@
 #include "src/backend/epp/contact/create_contact_config_data.hh"
 #include "src/backend/epp/contact/create_contact_localized.hh"
 #include "src/backend/epp/session_data.hh"
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 

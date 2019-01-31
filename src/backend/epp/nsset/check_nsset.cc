@@ -22,7 +22,7 @@
 #include "src/backend/epp/epp_result_code.hh"
 #include "src/backend/epp/epp_result_failure.hh"
 #include "src/backend/epp/nsset/nsset_handle_state_to_check_result.hh"
-#include "src/libfred/registrable_object/nsset/check_nsset.hh"
+#include "libfred/registrable_object/nsset/check_nsset.hh"
 
 #include <boost/foreach.hpp>
 

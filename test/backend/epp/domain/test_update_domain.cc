@@ -24,10 +24,10 @@
 #include "src/backend/epp/domain/update_domain.hh"
 #include "src/backend/epp/epp_response_failure.hh"
 #include "src/backend/epp/epp_result_code.hh"
-#include "src/libfred/registrable_object/domain/info_domain.hh"
-#include "src/libfred/registrable_object/nsset/create_nsset.hh"
-#include "src/util/db/nullable.hh"
-#include "src/util/optional_value.hh"
+#include "libfred/registrable_object/domain/info_domain.hh"
+#include "libfred/registrable_object/nsset/create_nsset.hh"
+#include "util/db/nullable.hh"
+#include "util/optional_value.hh"
 
 #include <boost/mpl/assert.hpp>
 #include <boost/test/auto_unit_test.hpp>

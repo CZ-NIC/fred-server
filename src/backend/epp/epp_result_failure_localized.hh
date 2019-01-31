@@ -22,7 +22,7 @@
 #include "src/backend/epp/epp_extended_error_localized.hh"
 #include "src/backend/epp/epp_result_failure.hh"
 #include "src/backend/epp/session_lang.hh"
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 #include <boost/optional.hpp>
 

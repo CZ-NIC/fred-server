@@ -20,9 +20,9 @@
 #define PUBLIC_REQUEST_CONTACT_VERIFICATION_WRAPPER_HH_EC031A84BE7647918B85B93686D53575
 
 #include "src/backend/contact_verification/public_request_contact_verification_impl.hh"
-#include "src/libfred/mailer.hh"
-#include "src/libfred/public_request/public_request.hh"
-#include "src/libfred/registry.hh"
+#include "libfred/mailer.hh"
+#include "src/deprecated/libfred/public_request/public_request.hh"
+#include "src/deprecated/libfred/registry.hh"
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/handle_contactverification_args.hh"
 #include "src/util/cfg/handle_corbanameservice_args.hh"

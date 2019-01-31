@@ -21,7 +21,7 @@
 
 #include "src/bin/corba/epp/messages.hh"
 #include "src/deprecated/util/log.hh"
-#include "src/util/log/logger.hh"
+#include "util/log/logger.hh"
 
 Mesg::Mesg()
 {

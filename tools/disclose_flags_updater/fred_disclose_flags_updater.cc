@@ -1,22 +1,22 @@
-#include <iostream>
-#include <iomanip>
-#include <cmath>
-#include <string>
-#include <chrono>
-#include <thread>
-#include <boost/program_options.hpp>
-#include <boost/optional.hpp>
-#include <boost/optional/optional_io.hpp>
-
 #include "tools/disclose_flags_updater/options.hh"
 #include "tools/disclose_flags_updater/disclose_value.hh"
 #include "tools/disclose_flags_updater/disclose_settings.hh"
 #include "tools/disclose_flags_updater/contact_search_query.hh"
 #include "tools/disclose_flags_updater/worker.hh"
 #include "tools/disclose_flags_updater/thread_safe_output.hh"
-#include "src/libfred/db_settings.hh"
-#include "src/libfred/registrar/info_registrar.hh"
+#include "libfred/db_settings.hh"
+#include "libfred/registrar/info_registrar.hh"
 
+#include <boost/program_options.hpp>
+#include <boost/optional.hpp>
+#include <boost/optional/optional_io.hpp>
+
+#include <iostream>
+#include <iomanip>
+#include <cmath>
+#include <string>
+#include <chrono>
+#include <thread>
 
 int main(int argc, char *argv[])
 {
@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
             return 1;
         }
 
-        Database::Manager::init(new Database::ConnectionFactory(opts.db_connect));
+        Database::emplace_default_manager<Database::StandaloneManager>(opts.db_connect);
         try
         {
             LibFred::OperationContextCreator ctx;

@@ -99,7 +99,7 @@ Registry::TableRow* ccReg_Domains_i::getRow(CORBA::UShort row)
     }//try
     catch(...)
     {
-        LOGGER(PACKAGE).error("ccReg_Domains_i::getRow error");
+        LOGGER.error("ccReg_Domains_i::getRow error");
         throw Registry::Table::INVALID_ROW();
     }//catch(...)
 }
@@ -189,7 +189,7 @@ ccReg::TID ccReg_Domains_i::getRowId(CORBA::UShort row)
     }//try
     catch(...)
     {
-        LOGGER(PACKAGE).error("ccReg_Domains_i::getRowId error");
+        LOGGER.error("ccReg_Domains_i::getRowId error");
         throw Registry::Table::INVALID_ROW();
     }//catch(...)
 }

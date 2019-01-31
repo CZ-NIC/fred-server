@@ -16,31 +16,10 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <memory>
-#include <iostream>
-#include <string>
-#include <algorithm>
-#include <functional>
-#include <numeric>
-#include <map>
-#include <exception>
-#include <queue>
-#include <sys/time.h>
-#include <time.h>
-
-#include <boost/format.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/thread.hpp>
-#include <boost/thread/barrier.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/date_time.hpp>
-#include <boost/assign/list_of.hpp>
-#include <utility>
-
-#include "src/libfred/db_settings.hh"
+#include "libfred/db_settings.hh"
 #include "src/util/corba_wrapper.hh"
-#include "src/util/log/logger.hh"
-#include "src/util/log/context.hh"
+#include "util/log/logger.hh"
+#include "util/log/context.hh"
 #include "src/bin/corba/connection_releaser.hh"
 
 #include "src/bin/cli/domain_client_impl.hh"
@@ -74,9 +53,28 @@
 
 #include "src/util/cfg/config_handler.hh"
 
-using namespace std;
+#include <boost/format.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/thread.hpp>
+#include <boost/thread/barrier.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time.hpp>
+#include <boost/assign/list_of.hpp>
 
-const string prog_name = "fred-admin";
+#include <memory>
+#include <iostream>
+#include <string>
+#include <algorithm>
+#include <functional>
+#include <numeric>
+#include <map>
+#include <exception>
+#include <queue>
+#include <sys/time.h>
+#include <time.h>
+#include <utility>
+
+const std::string prog_name = "fred-admin";
 
 //config args processing
 
@@ -141,8 +139,7 @@ CommandHandlerPtrVector chpv = boost::assign::list_of
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleContactVerificationStartEnqueuedChecksArgsGrp), contact_verification_start_enqueued_checks_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleSendObjectEventNotificationEmailsArgsGrp), send_object_event_notification_emails_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientCreateExpiredDomainArgsGrp), create_expired_domain_impl()))
-    (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientProcessPublicRequestsArgsGrp), process_public_requests_impl()))
-    ;
+    (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientProcessPublicRequestsArgsGrp), process_public_requests_impl()));
 
 CommandOptionGroups cog(chpv);
 
@@ -178,34 +175,62 @@ HandlerPtrGrid global_hpg = gv_list
 
 void setup_admin_logging(CfgArgGroups * cfg_instance_ptr)
 {
-    // setting up logger
-    Logging::Log::Type  log_type = static_cast<Logging::Log::Type>(
-        cfg_instance_ptr->get_handler_ptr_by_type<HandleLoggingArgsGrp>()
-            ->get_log_type());
+    HandleLoggingArgsGrp* const handler_ptr = cfg_instance_ptr->get_handler_ptr_by_type<HandleLoggingArgsGrp>();
 
-    boost::any param;
-    if (log_type == Logging::Log::LT_FILE) param = cfg_instance_ptr
-        ->get_handler_ptr_by_type<HandleLoggingArgsGrp>()->get_log_file();
+    const auto log_type = static_cast<unsigned>(handler_ptr->get_log_type());
+    Logging::Log::EventImportance min_importance = Logging::Log::EventImportance::trace;
+    if ((log_type == 0) || (log_type == 1))
+    {
+        switch (handler_ptr->get_log_level())
+        {
+            case 0:
+                min_importance = Logging::Log::EventImportance::emerg;
+                break;
+            case 1:
+                min_importance = Logging::Log::EventImportance::alert;
+                break;
+            case 2:
+                min_importance = Logging::Log::EventImportance::crit;
+                break;
+            case 3:
+                min_importance = Logging::Log::EventImportance::err;
+                break;
+            case 4:
+                min_importance = Logging::Log::EventImportance::warning;
+                break;
+            case 5:
+                min_importance = Logging::Log::EventImportance::notice;
+                break;
+            case 6:
+                min_importance = Logging::Log::EventImportance::info;
+                break;
+            case 7:
+                min_importance = Logging::Log::EventImportance::debug;
+                break;
+            case 8:
+                min_importance = Logging::Log::EventImportance::trace;
+                break;
+        }
+    }
 
-    if (log_type == Logging::Log::LT_SYSLOG) param = cfg_instance_ptr
-        ->get_handler_ptr_by_type<HandleLoggingArgsGrp>()
-        ->get_log_syslog_facility();
-
-    Logging::Manager::instance_ref().get(PACKAGE)
-        .addHandler(log_type, param);
-
-    Logging::Manager::instance_ref().get(PACKAGE).setLevel(
-        static_cast<Logging::Log::Level>(
-        cfg_instance_ptr->get_handler_ptr_by_type
-            <HandleLoggingArgsGrp>()->get_log_level()));
+    switch (log_type)
+    {
+        case 0:
+            LOGGER.add_handler_of<Logging::Log::Device::console>(min_importance);
+            break;
+        case 1:
+            LOGGER.add_handler_of<Logging::Log::Device::file>(handler_ptr->get_log_file(), min_importance);
+            break;
+        case 2:
+            LOGGER.add_handler_of<Logging::Log::Device::syslog>(handler_ptr->get_log_syslog_facility());
+            break;
+    }
 }
-
 
 int main(int argc, char* argv[])
 {
     Logging::Context ctx("cli_admin");
-    Logging::Manager::instance_ref().get(PACKAGE).debug("main start");
-
+    Logging::Manager::instance_ref().debug("main start");
 
     FakedArgs fa; //producing faked args with unrecognized ones
     try
@@ -222,84 +247,76 @@ int main(int argc, char* argv[])
             for (std::string config_item = AccumulatedConfig::get_instance().pop_front();
                 !config_item.empty(); config_item = AccumulatedConfig::get_instance().pop_front())
             {
-                Logging::Manager::instance_ref().get(PACKAGE).debug(config_item);
+                Logging::Manager::instance_ref().debug(config_item);
             }
         }
 
-        HandleCommandSelectionArgsGrp* selection_ptr
-            = CfgArgGroups::instance()->get_handler_ptr_by_type<
-                HandleCommandSelectionArgsGrp>();
+        HandleCommandSelectionArgsGrp* const selection_ptr =
+                CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCommandSelectionArgsGrp>();
 
         //test callback impl
         ImplCallback impl_callback = selection_ptr->get_impl_callback();
-        if(impl_callback)
+        if (impl_callback)
+        {
             impl_callback();//call impl
-        else
-            throw std::runtime_error("have no implementation for selected command");
-
-    }//try
-    catch(CORBA::TRANSIENT&)
+            return EXIT_SUCCESS;
+        }
+        throw std::runtime_error("have no implementation for selected command");
+    }
+    catch (const CORBA::TRANSIENT&)
     {
-        Logging::Manager::instance_ref().get(PACKAGE).error("Caught exception CORBA::TRANSIENT -- unable to contact the server." );
-        cerr << "Caught exception CORBA::TRANSIENT -- unable to contact the "
-             << "server." << endl;
+        Logging::Manager::instance_ref().error("Caught exception CORBA::TRANSIENT -- unable to contact the server.");
+        std::cerr << "Caught exception CORBA::TRANSIENT -- unable to contact the "
+             << "server." << std::endl;
         return EXIT_FAILURE;
     }
-    catch(CORBA::SystemException& ex)
+    catch (const CORBA::SystemException& e)
     {
-        Logging::Manager::instance_ref().get(PACKAGE).error(string("Caught CORBA::SystemException: ")+ex._name() );
-        cerr << "Caught CORBA::SystemException" << ex._name() << endl;
+        Logging::Manager::instance_ref().error(std::string("Caught CORBA::SystemException: ") + e._name());
+        std::cerr << "Caught CORBA::SystemException" << e._name() << std::endl;
         return EXIT_FAILURE;
     }
-    catch(CORBA::Exception& ex)
+    catch (const CORBA::Exception& e)
     {
-        Logging::Manager::instance_ref().get(PACKAGE).error(string("Caught CORBA::Exception: ")+ex._name() );
-        cerr << "Caught CORBA::Exception: " << ex._name() << endl;
+        Logging::Manager::instance_ref().error(std::string("Caught CORBA::Exception: ") + e._name());
+        std::cerr << "Caught CORBA::Exception: " << e._name() << std::endl;
         return EXIT_FAILURE;
     }
-    catch(omniORB::fatalException& fe)
+    catch (const omniORB::fatalException& e)
     {
-        string errmsg = string("Caught omniORB::fatalException: ")
-                        + string("  file: ") + string(fe.file())
-                        + string("  line: ") + boost::lexical_cast<string>(fe.line())
-                        + string("  mesg: ") + string(fe.errmsg());
-        Logging::Manager::instance_ref().get(PACKAGE).error(errmsg);
-        cerr << errmsg  << endl;
+        const auto errmsg = std::string("Caught omniORB::fatalException: ") +
+                "  file: " + e.file() +
+                "  line: " + boost::lexical_cast<std::string>(e.line()) +
+                "  mesg: " + e.errmsg();
+        Logging::Manager::instance_ref().error(errmsg);
+        std::cerr << errmsg  << std::endl;
         return EXIT_FAILURE;
     }
-
-    catch(const ReturnCode&rc)
+    catch (const ReturnCode& e)
     {
-        Logging::Manager::instance_ref().get(PACKAGE).debug(
-                string("ReturnCode: ") + boost::lexical_cast<std::string>(rc.get_return_code())
-                + string(" ") + rc.what()
-                );
-        if (!std::string(rc.what()).empty()) {
-            std::cerr << "error: " << rc.what() << std::endl;
+        Logging::Manager::instance_ref().debug(
+                "ReturnCode: " + boost::lexical_cast<std::string>(e.get_return_code()) + " " + e.what());
+        if (e.what()[0] != '\0')
+        {
+            std::cerr << "error: " << e.what() << std::endl;
         }
 
-        return rc.get_return_code();
+        return e.get_return_code();
     }
-
-    catch(const ReturnFromMain&)
+    catch (const ReturnFromMain&)
     {
         return EXIT_SUCCESS;
     }
-
-
-    catch(exception& ex)
+    catch (const std::exception& e)
     {
-        Logging::Manager::instance_ref().get(PACKAGE).error(string("Error: ")+ex.what());
-        cerr << "Error: " << ex.what() << endl;
+        Logging::Manager::instance_ref().error(std::string("Error: ") + e.what());
+        std::cerr << "Error: " << e.what() << std::endl;
         return EXIT_FAILURE;
     }
     catch(...)
     {
-        Logging::Manager::instance_ref().get(PACKAGE).error("Unknown Error");
-        cerr << "Unknown Error" << endl;
+        Logging::Manager::instance_ref().error("Unknown Error");
+        std::cerr << "Unknown Error" << std::endl;
         return EXIT_FAILURE;
     }
-
-    return EXIT_SUCCESS;
 }
-

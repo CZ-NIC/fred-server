@@ -19,8 +19,9 @@
 
 #include "src/bin/cli/bankclient.hh"
 #include "src/bin/cli/commonclient.hh"
-#include "src/libfred/banking/bank_manager.hh"
-#include "src/libfred/registry.hh"
+#include "src/deprecated/libfred/banking/bank_manager.hh"
+#include "src/deprecated/libfred/registry.hh"
+#include "src/bin/corba/file_manager_client.hh"
 
 #include <iostream>
 #include <fstream>

@@ -20,7 +20,7 @@
 #define CLIENT_CREDIT_HH_25CA480C60E84583A20F3B5FB1D4B650
 
 #include "src/backend/epp/credit/client_credit_output_data.hh"
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 namespace Epp {
 namespace Credit {

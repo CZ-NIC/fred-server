@@ -3,7 +3,7 @@
 #include <boost/utility.hpp>
 #include "src/util/db/query/compound_filter.hh"
 #include "src/util/db/query/filter_it.hh"
-#include "src/util/log/logger.hh"
+#include "util/log/logger.hh"
 
 namespace Database {
 namespace Filters {
@@ -18,7 +18,7 @@ Compound::~Compound() {
  */
 void Compound::serialize(Database::SelectQuery& _sq, const Settings *_settings) {
   TRACE("[CALL] Compound::serialize()");
-  LOGGER(PACKAGE).debug(boost::format("serializing filter '%1%'") % getName());
+  LOGGER.debug(boost::format("serializing filter '%1%'") % getName());
   
 //  if (!polymorphic_joined_) 
 //    _joinPolymorphicTables();
@@ -46,7 +46,7 @@ void Compound::serialize(Database::SelectQuery& _sq, const Settings *_settings) 
   for (std::vector<Filter*>::const_iterator it = filter_list.begin(); it
       != filter_list.end(); ++it) {
     if (!(*it)->isActive()) {
-      LOGGER(PACKAGE).debug(boost::format("filter '%1%' is not set; skipping")
+      LOGGER.debug(boost::format("filter '%1%' is not set; skipping")
           % (*it)->getName());
       continue;
     }

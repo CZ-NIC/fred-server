@@ -24,8 +24,8 @@
 #ifndef NOTIFICATION_HH_53C90537B4B44D188FA0933BCE7B555C
 #define NOTIFICATION_HH_53C90537B4B44D188FA0933BCE7B555C
 
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/opexception.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/opexception.hh"
 
 // CORBA stub for Notification.idl
 #include "src/bin/corba/Notification.hh"

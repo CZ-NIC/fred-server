@@ -19,7 +19,7 @@
 #ifndef UTIL_HH_D98CD47F7B6A47699889AD58CD5A631A
 #define UTIL_HH_D98CD47F7B6A47699889AD58CD5A631A
 
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 #include <boost/optional.hpp>
 #include <string>

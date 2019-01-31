@@ -14,18 +14,18 @@
 #include "src/bin/corba/admin/filter_impl.hh"
 #include "src/bin/corba/mailer_manager.hh"
 
-#include "src/libfred/registry.hh"
-#include "src/libfred/invoicing/invoice.hh"
-#include "src/libfred/notify.hh"
-#include "src/libfred/mail.hh"
-#include "src/libfred/filter.hh"
-#include "src/libfred/requests/request_list.hh"
+#include "src/deprecated/libfred/registry.hh"
+#include "src/deprecated/libfred/invoicing/invoice.hh"
+#include "src/deprecated/libfred/notify.hh"
+#include "src/deprecated/libfred/mail.hh"
+#include "src/deprecated/libfred/filter.hh"
+#include "src/deprecated/libfred/requests/request_list.hh"
 
 #include "src/deprecated/util/log.hh"
 #include "src/deprecated/util/dbsql.hh"
 
-#include "src/util/log/logger.hh"
-#include "src/util/log/context.hh"
+#include "util/log/logger.hh"
+#include "util/log/context.hh"
 
 #include "src/deprecated/model/model_filters.hh"
 

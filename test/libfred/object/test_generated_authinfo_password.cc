@@ -18,8 +18,8 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "src/libfred/object/generated_authinfo_password.hh"
-#include "src/libfred/object/generated_authinfo_password_exception.hh"
+#include "libfred/object/generated_authinfo_password.hh"
+#include "libfred/object/generated_authinfo_password_exception.hh"
 
 BOOST_AUTO_TEST_SUITE(TestGeneratedAuthInfoPassword)
 

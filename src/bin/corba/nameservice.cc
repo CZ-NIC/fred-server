@@ -20,8 +20,8 @@
 #include <boost/lexical_cast.hpp>
 
 #include "src/bin/corba/nameservice.hh"
-#include "src/util/log/logger.hh"
-#include "src/util/log/context.hh"
+#include "util/log/logger.hh"
+#include "util/log/context.hh"
 
 void NameService::_connect()// throw (NOT_RUNNING)
 {
@@ -89,7 +89,7 @@ void NameService::bind(const std::string& name,
   try {
     Logging::Context ctx("nameservice");
 
-    LOGGER(PACKAGE).debug(boost::format("requested object bind: %1%/%2%")
+    LOGGER.debug(boost::format("requested object bind: %1%/%2%")
                                         % context
                                         % name);
 
@@ -140,7 +140,7 @@ void NameService::bind_process_object( const std::string& process_context_name,
     try {
       Logging::Context ctx("nameservice");
 
-      LOGGER(PACKAGE).debug(boost::format("requested object bind: %1%/%2%/%3%")
+      LOGGER.debug(boost::format("requested object bind: %1%/%2%/%3%")
                                       % context % process_context_name % object_name);
 
       //Fred
@@ -226,7 +226,7 @@ CORBA::Object_ptr NameService::resolve(const std::string& nsctx,
 
   Logging::Context ctx("nameservice");
 
-  LOGGER(PACKAGE).debug(boost::format("requested object resolve: %1%/%2%")
+  LOGGER.debug(boost::format("requested object resolve: %1%/%2%")
                                       % nsctx
                                       % name);
 
@@ -259,7 +259,7 @@ CORBA::Object_ptr NameService::resolve(const std::string& nsctx,
     for (unsigned i = 0; i < cname.length(); ++i) {
       cname_str += std::string(cname[i].id) + "(" + std::string(cname[i].kind) + ")" + (cname.length() != i + 1 ? "/" : "" );
     }
-    LOGGER(PACKAGE).error(boost::format("Context [%1%] not found.") % cname_str);
+    LOGGER.error(boost::format("Context [%1%] not found.") % cname_str);
     throw BAD_CONTEXT();
   }
 
@@ -285,7 +285,7 @@ CORBA::Object_ptr NameService::resolve_process_object(const std::string& root_co
 {
     Logging::Context ctx("nameservice");
 
-    LOGGER(PACKAGE).debug(boost::format("requested object resolve: %1%/%2%/%3%")
+    LOGGER.debug(boost::format("requested object resolve: %1%/%2%/%3%")
                                         % root_context
                                         % process_context
                                         % object_name);
@@ -321,7 +321,7 @@ CORBA::Object_ptr NameService::resolve_process_object(const std::string& root_co
       for (unsigned i = 0; i < cname.length(); ++i) {
         cname_str += std::string(cname[i].id) + "(" + std::string(cname[i].kind) + ")" + (cname.length() != i + 1 ? "/" : "" );
       }
-      LOGGER(PACKAGE).error(boost::format("Context [%1%] not found.") % cname_str);
+      LOGGER.error(boost::format("Context [%1%] not found.") % cname_str);
       throw BAD_CONTEXT();
     }
 

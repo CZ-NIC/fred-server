@@ -24,8 +24,8 @@
 #ifndef ADMINISTRATIVEBLOCKING_HH_148AC7F4CEE549DEB1E2489BBCC73B55
 #define ADMINISTRATIVEBLOCKING_HH_148AC7F4CEE549DEB1E2489BBCC73B55
 
-#include "src/libfred/object_state/get_blocking_status_desc_list.hh"
-#include "src/util/db/nullable.hh"
+#include "libfred/object_state/get_blocking_status_desc_list.hh"
+#include "util/db/nullable.hh"
 
 #include <list>
 #include <set>

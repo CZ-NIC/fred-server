@@ -19,8 +19,8 @@
 #ifndef STATUS_VALUE_HH_BBB7905E4E284A029AC4E0CB7FA94472
 #define STATUS_VALUE_HH_BBB7905E4E284A029AC4E0CB7FA94472
 
-#include "src/libfred/object/object_state.hh"
-#include "src/util/enum_conversion.hh"
+#include "libfred/object/object_state.hh"
+#include "util/enum_conversion.hh"
 
 #include <string>
 #include <stdexcept>

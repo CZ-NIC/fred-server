@@ -22,7 +22,7 @@
 #include "src/backend/epp/nsset/check_nsset_config_data.hh"
 #include "src/backend/epp/nsset/nsset_handle_registration_obstruction.hh"
 #include "src/backend/epp/session_data.hh"
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 #include <map>
 #include <set>

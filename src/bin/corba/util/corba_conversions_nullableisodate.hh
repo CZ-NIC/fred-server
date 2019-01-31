@@ -20,7 +20,7 @@
 #define CORBA_CONVERSIONS_NULLABLEISODATE_HH_B0312DBA49604F05BFC8F4879459192E
 
 #include "src/bin/corba/NullableIsoDate.hh"
-#include "src/util/db/nullable.hh"
+#include "util/db/nullable.hh"
 
 #include <boost/date_time/gregorian/gregorian_types.hpp>
 

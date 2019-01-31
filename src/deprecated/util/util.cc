@@ -30,11 +30,10 @@
 #include <boost/asio/ip/address.hpp>
 
 #include "src/deprecated/util/util.hh"
-#include "src/deprecated/util/log.hh"
-#include "src/util/log/logger.hh"
+#include "util/log/logger.hh"
 #include "src/bin/corba/epp/action.hh"
 
-#include "src/util/random_data_generator.hh"
+#include "util/random_data_generator.hh"
 
 RandomDataGenerator rdg;
 
@@ -59,73 +58,80 @@ void random_pass(
   str[i] = 0; // to end
 }
 
-bool validateIPV6(
-  const char *ipadd)
+bool validateIPV6(const char* ipadd)
 {
     boost::asio::ip::address_v6 addr;
-    try {
+    try
+    {
         addr = boost::asio::ip::address_v6::from_string(ipadd);
-    } catch(...) {
-        // syntax check failed
+    }
+    catch (...)
+    {
         return false;
     }
 
-    if(addr.is_unspecified()) {
-        return false;
-    }
-
-    if(addr.is_loopback()) {
-        return false;
-    }
-
-    if (addr.is_multicast()) {
+    if (addr.is_unspecified() ||
+        addr.is_loopback() ||
+        addr.is_multicast())
+    {
         return false;
     }
 
     // TODO for more
-
-  return true;
+    return true;
 }
 
-bool validateIPV4(
-  const char *ipadd)
+bool validateIPV4(const char* ipadd)
 {
   boost::asio::ip::address_v4 addr;
   boost::asio::ip::address_v4::bytes_type bytes;
   // syntax
-  try {
+  try
+  {
     addr = boost::asio::ip::address_v4::from_string(ipadd);
     bytes = addr.to_bytes();
-  } catch(...) {
+  }
+  catch (...)
+  {
     // syntax check failed
     return false;
   }
 
-  if (bytes[0] == 0 && bytes[1] == 0 && bytes[2] == 0 && bytes[3] == 0)
+  if ((bytes[0] == 0) && (bytes[1] == 0) && (bytes[2] == 0) && (bytes[3] == 0))
+  {
     return false;
-  if (bytes[0] == 1 && bytes[1] == 1 && bytes[2] == 1 && bytes[3] == 1)
+  }
+  //TODO: why is 1.1.1.1 invalid?
+  if ((bytes[0] == 1) && (bytes[1] == 1) && (bytes[2] == 1) && (bytes[3] == 1))
+  {
     return false;
-  if ( (bytes[0] | bytes[1] | bytes[2] | bytes[3]) > 255)
-    return false; // maximum
-
+  }
   // TODO - libboost1.46-dev in Ubuntu 12.04.4 LTS doesn't contain this method
   // if (addr.is_loopback()) {
-  if(bytes[0] == 127)
+  if (bytes[0] == 127)
+  {
     return false;
+  }
   if (bytes[0] == 10)
+  {
     return false;
-  if (bytes[0] == 172 && bytes[1] >= 16 && bytes[1] < 32)
+  }
+  if ((bytes[0] == 172) && (16 <= bytes[1]) && (bytes[1] < 32))
+  {
     return false;
-  if (bytes[0] == 192 && bytes[1] == 168)
+  }
+  if ((bytes[0] == 192) && (bytes[1] == 168))
+  {
     return false;
+  }
   if (addr.is_multicast())
+  {
     return false;
-
+  }
   return true;
 }
 
-int test_inet_addr(
-  const char *src)
+int test_inet_addr(const char *src)
 {
   struct sockaddr_in a4;
   struct sockaddr_in6 a6;
@@ -133,20 +139,24 @@ int test_inet_addr(
   if (inet_pton(AF_INET, src, &a4.sin_addr) == 0)
   // test IPV6
   {
-    if (inet_pton(AF_INET6, src, &a6.sin6_addr) )
-      if (validateIPV6(src) )
+    if (inet_pton(AF_INET6, src, &a6.sin6_addr))
+    {
+      if (validateIPV6(src))
+      {
         return IPV6;
+      }
+    }
     // TODO local address for ipv6
-  } else if (validateIPV4(src) )
+  }
+  else if (validateIPV4(src))
+  {
     return IPV4; // validate for local adres
-
-
+  }
   return 0;
 }
 
 // atoh function ascii to hexa
-int atoh(
-  const char *String)
+int atoh(const char *String)
 {
   int Value = 0, Digit;
   char c;
@@ -204,7 +214,7 @@ bool get_handle(
 
   len = strlen(handle);
 
-  LOG( LOG_DEBUG , "get_HANDLE from [%s] len %d" , handle , len );
+  LOG<Logging::Log::EventImportance::debug>( "get_HANDLE from [%s] len %d" , handle , len );
 
   // max a min lenght
   if (len > 1 && len <= 40) {
@@ -228,24 +238,24 @@ bool get_handle(
     switch (typ) {
       case 1:
         if (strncmp(HANDLE, "CID:", 4) == 0) {
-          LOG( LOG_DEBUG , "OK CONTACT HANDLE [%s] " , HANDLE );
+          LOG<Logging::Log::EventImportance::debug>( "OK CONTACT HANDLE [%s] " , HANDLE );
           return true;
         } else
           return false;
       case 2:
         if (strncmp(HANDLE, "NSSID:", 6) == 0) {
-          LOG( LOG_DEBUG , "OK NSSET HANDLE [%s] " , HANDLE );
+          LOG<Logging::Log::EventImportance::debug>( "OK NSSET HANDLE [%s] " , HANDLE );
           return true;
         } else
           return false;
       case 4:
         if (strncmp(HANDLE, "KEYID:", 6) == 0) {
-            LOG(LOG_DEBUG, "OK KEYSET HANDLE [%s] ", HANDLE);
+            LOG<Logging::Log::EventImportance::debug>( "OK KEYSET HANDLE [%s] ", HANDLE);
             return true;
         } else
             return false;
       default:
-        LOG( LOG_DEBUG , "OK HANDLE [%s] " , HANDLE );
+        LOG<Logging::Log::EventImportance::debug>( "OK HANDLE [%s] " , HANDLE );
         return true;
     }
 
@@ -285,11 +295,11 @@ bool TestDNSHost(
 
   len = strlen(fqdn);
 
-  LOG( LOG_DEBUG , "test DNSHost %s" , fqdn );
+  LOG<Logging::Log::EventImportance::debug>( "test DNSHost %s" , fqdn );
 
   // if dot on the end
   if (fqdn[len-1] == '.') {
-    LOG( LOG_DEBUG , "ERORR dots on end" );
+    LOG<Logging::Log::EventImportance::debug>( "ERORR dots on end" );
     return false;
   }
 
@@ -297,7 +307,7 @@ bool TestDNSHost(
     if (fqdn[i] == '.')
       break;
     else if (isalpha(fqdn[i]) == 0) {
-      LOG( LOG_DEBUG , "ERORR not tld" );
+      LOG<Logging::Log::EventImportance::debug>( "ERORR not tld" );
       return false;
     }
   }
@@ -319,7 +329,7 @@ bool TestDNSHost(
 
     // minimal one dot
     if (dot >= 1) {
-      LOG( LOG_DEBUG , "test OK dots %d" , dot );
+      LOG<Logging::Log::EventImportance::debug>( "test OK dots %d" , dot );
       return true;
     }
   }
@@ -334,7 +344,7 @@ bool TestInetAddress(
   int t;
 
   t = test_inet_addr(address);
-  LOG( LOG_DEBUG , "test InetAddress %s -> %d" , address , t );
+  LOG<Logging::Log::EventImportance::debug>( "test InetAddress %s -> %d" , address , t );
   if (t)
     return true;
   else
@@ -345,13 +355,13 @@ bool TestInetAddress(
 bool TestExDate(
   const char *curExDate, const char * ExDate)
 {
-  LOG( LOG_DEBUG , "test curExDate [%s] ExDate [%s]" , curExDate , ExDate );
+  LOG<Logging::Log::EventImportance::debug>( "test curExDate [%s] ExDate [%s]" , curExDate , ExDate );
 
   if (strcmp(curExDate, ExDate) == 0) {
-    LOG( LOG_DEBUG , "test OK" );
+    LOG<Logging::Log::EventImportance::debug>( "test OK" );
     return true;
   } else {
-    LOG( LOG_DEBUG , "test fail " );
+    LOG<Logging::Log::EventImportance::debug>( "test fail " );
     return false;
   }
 }
@@ -361,7 +371,7 @@ int TestPeriodyInterval(
   int period, int min, int max)
 {
   int mod;
-  LOG( LOG_DEBUG , "test periody interval perido %d min %d max %d" , period , min , max );
+  LOG<Logging::Log::EventImportance::debug>( "test periody interval perido %d min %d max %d" , period , min , max );
 
   // period must be in interval
   if (period > 0 && period <= max) {
@@ -405,7 +415,7 @@ long get_price(
 
   price=atol(str);
 
-  LOG( LOG_DEBUG , "get_price from string[%s] -> %ld hal" , priceStr , price );
+  LOG<Logging::Log::EventImportance::debug>( "get_price from string[%s] -> %ld hal" , priceStr , price );
 
   return price;
 }
@@ -430,7 +440,7 @@ time_t get_local_format_time_t(
   // convert local time
   t = mktime( &dt);
 
-  LOG( LOG_DEBUG , "get_local_time_t from [%s] = %ld" , string , t );
+  LOG<Logging::Log::EventImportance::debug>( "get_local_time_t from [%s] = %ld" , string , t );
   return t;
 }
 
@@ -461,7 +471,7 @@ time_t get_time_t(
     if (t < 0)
       return 0; // fix if  convert fault
 
-    LOG( LOG_DEBUG , "get_time_t from [%s] = %ld" , string , t );
+    LOG<Logging::Log::EventImportance::debug>( "get_time_t from [%s] = %ld" , string , t );
     return t;
   }
 
@@ -484,7 +494,7 @@ time_t get_utctime_from_localdate(
   dt.tm_year = year - 1900;
   dt.tm_isdst = -1; // negative if the information is not available ( test dayling saving time )
 
-  LOG( LOG_DEBUG , "tm_year  %d tm_mon  %d tm_mday %d hour %d min %d sec %d" , dt.tm_year , dt.tm_mon , dt.tm_mday , dt.tm_hour, dt.tm_min , dt.tm_sec );
+  LOG<Logging::Log::EventImportance::debug>( "tm_year  %d tm_mon  %d tm_mday %d hour %d min %d sec %d" , dt.tm_year , dt.tm_mon , dt.tm_mday , dt.tm_hour, dt.tm_min , dt.tm_sec );
   t = mktime( &dt);
 
   return t;

@@ -27,7 +27,7 @@
 #include <limits>
 
 #include "src/util/types/convert_str_base.hh"
-#include "src/util/base_exception.hh"
+#include "util/base_exception.hh"
 
 
 #define CONVERT_TEMPLATE_SPECIALIZATION(_type, _class) \

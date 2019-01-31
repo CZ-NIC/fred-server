@@ -20,7 +20,7 @@
 #define MOJEID_IMPL_DATA_CONVERSION_HH_3FFB13E7D2574A12916DF3E34D830D12
 
 #include "src/backend/mojeid/mojeid_impl_data.hh"
-#include "src/libfred/registrable_object/contact/info_contact_data.hh"
+#include "libfred/registrable_object/contact/info_contact_data.hh"
 
 namespace Fred {
 namespace Backend {

@@ -5,8 +5,8 @@
 #include <memory>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <boost/thread/thread.hpp>
-#include "src/util/log/logger.hh"
-#include "src/util/log/context.hh"
+#include "util/log/logger.hh"
+#include "util/log/context.hh"
 #include "src/util/corba_wrapper_decl.hh"
 
 
@@ -62,11 +62,11 @@ public:
                 boost::this_thread::sleep(scavenger_thread_interval_);
 
                 Logging::Context ctx(name_);
-                LOGGER(PACKAGE).debug("AutoGarbageList::scavenger: iteration started");
+                LOGGER.debug("AutoGarbageList::scavenger: iteration started");
                 {
                     boost::lock_guard<boost::mutex> lock(access_mutex_);
 
-                    LOGGER(PACKAGE).debug(boost::format("AutoGarbageList::scavenger: size=%1%") % data_.size());
+                    LOGGER.debug(boost::format("AutoGarbageList::scavenger: size=%1%") % data_.size());
                     typename value_type_ptr_list::iterator it = data_.begin();
                     while (it != data_.end())
                     {
@@ -77,14 +77,14 @@ public:
 
                         if ((*it)->is_closed())
                         {
-                            LOGGER(PACKAGE).debug(boost::format("AutoGarbageList::scavenger: erasing object (last_used=%1%)") % (*it)->get_last_used());
+                            LOGGER.debug(boost::format("AutoGarbageList::scavenger: erasing object (last_used=%1%)") % (*it)->get_last_used());
                             value_type_ptr del = *it;
                             it = data_.erase(it);
-                            LOGGER(PACKAGE).debug("AutoGarbageList::scavenger: object erased from list");
+                            LOGGER.debug("AutoGarbageList::scavenger: object erased from list");
                             /* corba object deactivation */
                             PortableServer::ObjectId_var id = CorbaContainer::get_instance()->root_poa->servant_to_id(del.get());
                             CorbaContainer::get_instance()->root_poa->deactivate_object(id);
-                            LOGGER(PACKAGE).debug("AutoGarbageList::scavenger: object deactivated");
+                            LOGGER.debug("AutoGarbageList::scavenger: object deactivated");
                         }
                         else
                         {
@@ -92,14 +92,14 @@ public:
                         }
                     }
                 }
-                LOGGER(PACKAGE).debug(boost::format("AutoGarbageList::scavenger: iteration finished"
+                LOGGER.debug(boost::format("AutoGarbageList::scavenger: iteration finished"
                             " (next at %1%)") % (boost::posix_time::second_clock::local_time() + scavenger_thread_interval_));
             }
             catch (std::exception &ex)
             {
                 try
                 {
-                    LOGGER(PACKAGE).error(std::string("AutoGarbageList::scavenger: iteration run failed (") + ex.what() + std::string(")"));
+                    LOGGER.error(std::string("AutoGarbageList::scavenger: iteration run failed (") + ex.what() + std::string(")"));
                 }
                 catch (...) { }
             }
@@ -107,7 +107,7 @@ public:
             {
                 try
                 {
-                    LOGGER(PACKAGE).error("AutoGarbageList::scavenger: iteration run failed");
+                    LOGGER.error("AutoGarbageList::scavenger: iteration run failed");
                 }
                 catch (...) { }
             }

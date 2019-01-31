@@ -4,7 +4,7 @@
 #include <boost/thread/thread.hpp>
 #include <src/bin/corba/EPP.hh>
 #include "src/util/corba_wrapper_decl.hh"
-#include "src/libfred/epp_corba_client.hh"
+#include "src/deprecated/libfred/epp_corba_client.hh"
 
 class EppCorbaClientImpl : public EppCorbaClient
 {

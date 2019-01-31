@@ -21,7 +21,7 @@
 #include "src/bin/corba/util/corba_conversions_nullable_types.hh"
 #include "src/bin/corba/util/corba_conversions_string.hh"
 
-#include "src/libfred/notify.hh"
+#include "src/deprecated/libfred/notify.hh"
 
 #include "src/backend/admin/notification/notification.hh"
 

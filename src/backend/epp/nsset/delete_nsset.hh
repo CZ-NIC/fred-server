@@ -22,7 +22,7 @@
 #include "src/backend/epp/notification_data.hh"
 #include "src/backend/epp/nsset/delete_nsset_config_data.hh"
 #include "src/backend/epp/session_data.hh"
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 #include <string>
 

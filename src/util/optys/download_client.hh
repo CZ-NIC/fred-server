@@ -31,8 +31,8 @@
 #include <stdexcept>
 
 
-#include "src/libfred/messages/messages_impl.hh"
-#include "src/util/db/nullable.hh"
+#include "src/deprecated/libfred/messages/messages_impl.hh"
+#include "util/db/nullable.hh"
 
 /**
  * Download data about letters from Optys.

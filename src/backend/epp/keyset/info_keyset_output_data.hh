@@ -22,7 +22,7 @@
 #include "src/backend/epp/keyset/dns_key.hh"
 #include "src/backend/epp/keyset/ds_record.hh"
 #include "src/backend/epp/keyset/status_value.hh"
-#include "src/util/db/nullable.hh"
+#include "util/db/nullable.hh"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/optional.hpp>

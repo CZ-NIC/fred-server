@@ -17,7 +17,7 @@
 #include "src/util/db/query/filter.hh"
 #include "src/util/db/query/simple_filter.hh"
 #include "src/util/db/query/query_old.hh"
-#include "src/util/types/data_types.hh"
+#include "util/types/data_types.hh"
 #include "src/util/db/query/sql_helper_objects.hh"
 #include "src/util/db/query/sql_operators.hh"
 #include "src/util/db/query/filter_it.hh"

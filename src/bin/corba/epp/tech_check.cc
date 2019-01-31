@@ -17,7 +17,7 @@
  */
 
 #include "src/bin/corba/epp/tech_check.hh"
-#include "src/util/log/logger.hh"
+#include "util/log/logger.hh"
 
 #include "src/deprecated/util/log.hh"
 
@@ -27,7 +27,7 @@ TechCheckManager::TechCheckManager(NameService *ns) : ns_ptr(ns)
   //   _resolveInit();
   // }
   // catch(...) {
-  //   LOG(WARNING_LOG, "tech_check_manager: can't connect to tech_check in initialization..."); 
+  //   LOG<WARNING_LOG>( "tech_check_manager: can't connect to tech_check in initialization..."); 
   // }
 }
 
@@ -65,13 +65,13 @@ TechCheckManager::_resolveInit()
     boost::mutex::scoped_lock scoped_lock(mutex);
     if (!CORBA::is_nil(tc))
       return;
-    LOGGER("tech_check").debug("resolving corba reference");
+    LOGGER.debug("resolving corba reference");
     tc = ccReg::TechCheck::_narrow(ns_ptr->resolve("TechCheck"));
   } 
   catch (...) { 
-    LOGGER("tech_check").debug("resolving of corba 'TechCheck' object failed");
+    LOGGER.debug("resolving of corba 'TechCheck' object failed");
     throw RESOLVE_FAILED(); 
   }
-  LOGGER("tech_check").debug("resolving of corba 'TechCheck' object ok");
+  LOGGER.debug("resolving of corba 'TechCheck' object ok");
 }
 

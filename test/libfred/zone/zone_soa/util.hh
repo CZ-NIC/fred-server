@@ -19,7 +19,7 @@
 #ifndef UTIL_HH_AFC28FFA02DD4579986093F1A58881A6
 #define UTIL_HH_AFC28FFA02DD4579986093F1A58881A6
 
-#include "src/libfred/zone/zone_soa/info_zone_soa_data.hh"
+#include "libfred/zone/zone_soa/info_zone_soa_data.hh"
 
 #include <string>
 

@@ -23,7 +23,7 @@
 
 #include "src/bin/corba/mailer_manager.hh"
 #include "src/deprecated/util/log.hh"
-#include "src/util/log/logger.hh"
+#include "util/log/logger.hh"
 
 MailerManager::MailerManager(NameService *ns) : ns_ptr(ns)
 {
@@ -31,7 +31,7 @@ MailerManager::MailerManager(NameService *ns) : ns_ptr(ns)
     _resolveInit();
   }
   catch(...) {
-    LOGGER("mailer").warning("can't connect to mailer in initialization...");
+    LOGGER.warning("can't connect to mailer in initialization...");
   }
 }
 
@@ -47,9 +47,9 @@ MailerManager::sendEmail(
   const std::string& reply_to
 )
 {
-  LOGGER("mailer").debug(boost::format("recipients = '%1%'") % to);
+  LOGGER.debug(boost::format("recipients = '%1%'") % to);
   if (to.empty() || to == "NULL ") {
-    LOGGER("mailer").error("recipients empty!? not sending");
+    LOGGER.error("recipients empty!? not sending");
     throw LibFred::Mailer::NOT_SEND();
   }
   // prepare header
@@ -68,27 +68,27 @@ MailerManager::sendEmail(
   for (i=params.begin(),j=0; i!=params.end(); i++,j++) {
     data[j].key = CORBA::string_dup(i->first.c_str());
     data[j].value =CORBA::string_dup(i->second.c_str());
-    LOGGER("mailer").debug(boost::format("param %1% '%2%'='%3%'") % j % (char*)data[j].key % (char*)data[j].value); 
+    LOGGER.debug(boost::format("param %1% '%2%'='%3%'") % j % (char*)data[j].key % (char*)data[j].value); 
 
   }
   // prepare handles
   ccReg::Lists handleList;
-  LOGGER("mailer").debug(boost::format("handleList length is %1%") % handles.size());
+  LOGGER.debug(boost::format("handleList length is %1%") % handles.size());
 
   handleList.length(handles.size());
   for (unsigned i=0; i<handles.size(); i++)
   {
     handleList[i] = CORBA::string_dup(handles[i].c_str());
-     LOGGER("mailer").debug(boost::format("handle '%1%'") % (char*)handleList[i]);
+     LOGGER.debug(boost::format("handle '%1%'") % (char*)handleList[i]);
 
   }
   ccReg::Attachment_seq attachments;
-  LOGGER("mailer").debug(boost::format("attachment length is %1%") % attach.size());
+  LOGGER.debug(boost::format("attachment length is %1%") % attach.size());
   attachments.length(attach.size());
   for (unsigned i=0; i<attach.size(); i++)
   {
     attachments[i] = attach[i];
-    LOGGER("mailer").debug(boost::format("attachment '%1%'") % attachments[i]);
+    LOGGER.debug(boost::format("attachment '%1%'") % attachments[i]);
 
   }
 
@@ -98,7 +98,7 @@ MailerManager::sendEmail(
   // call mailer
   // if (CORBA::is_nil(mailer)) throw LibFred::Mailer::NOT_SEND();
   try {
-    LOGGER("mailer").debug(boost::format("mailer->mailNotify mailType '%1%'") % mailTemplate.c_str());
+    LOGGER.debug(boost::format("mailer->mailNotify mailType '%1%'") % mailTemplate.c_str());
     _resolveInit();
     CORBA::Long id = mailer->mailNotify(
       mailTemplate.c_str(),header,data,handleList,attachments,prev,prevMsg
@@ -147,9 +147,9 @@ MailerManager::reload(MailerManager::Filter& f)
     // boost::mutex::scoped_lock scoped_lock(mutex);
     ccReg::MailTypeCodes_var mtc = mailer->getMailTypes();
     mailList.clear();
-    LOGGER("tracer").trace("[IN] MailerManager::reload(): before mailer->createSearchObject()");
+    LOGGER.trace("[IN] MailerManager::reload(): before mailer->createSearchObject()");
     ccReg::MailSearch_var ms = mailer->createSearchObject(mf);
-    LOGGER("tracer").trace("[IN] MailerManager::reload(): after mailer->createSearchObject()");
+    LOGGER.trace("[IN] MailerManager::reload(): after mailer->createSearchObject()");
     ccReg::MailList_var mls;
     do {
       mls = ms->getNext(LIST_CHUNK_SIZE);
@@ -201,16 +201,16 @@ MailerManager::_resolveInit()
   try {
     boost::mutex::scoped_lock scoped_lock(mutex);
     if (!CORBA::is_nil(mailer)) {
-      LOGGER("mailer").debug("mailer already resolved");
+      LOGGER.debug("mailer already resolved");
       return;
     }
-    LOGGER("mailer").debug("resolving corba reference");
+    LOGGER.debug("resolving corba reference");
     mailer = ccReg::Mailer::_narrow(ns_ptr->resolve("Mailer"));
  } catch (...) { 
-    LOGGER("mailer").error("resolving of corba 'Mailer' object failed");
+    LOGGER.error("resolving of corba 'Mailer' object failed");
     throw RESOLVE_FAILED(); 
   }
-  LOGGER("mailer").debug("resolving of corba 'Mailer' object ok");
+  LOGGER.debug("resolving of corba 'Mailer' object ok");
 }
 
 
@@ -220,7 +220,7 @@ MailerManager::_resolveInit()
 bool
 MailerManager::checkEmailList(std::string &_email_list) const 
 {
-  LOGGER("mailer").debug(boost::format("checking email list '%1%'") % _email_list);
+  LOGGER.debug(boost::format("checking email list '%1%'") % _email_list);
   using namespace boost;
   typedef tokenizer<char_separator<char> > token_list;
 
@@ -245,7 +245,7 @@ MailerManager::checkEmailList(std::string &_email_list) const
     _email_list += *address;
   }
 
-  LOGGER("mailer").debug(boost::format("check done; filtered email list '%1%'") % _email_list);
+  LOGGER.debug(boost::format("check done; filtered email list '%1%'") % _email_list);
   return !_email_list.empty();
 }
 

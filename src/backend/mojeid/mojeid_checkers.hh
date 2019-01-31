@@ -25,8 +25,8 @@
 #define MOJEID_CHECKERS_HH_717A66E63EE24C88BEE864D37E955CBA
 
 #include "src/backend/mojeid/checkers.hh"
-#include "src/libfred/object/object_states_info.hh"
-#include "src/libfred/registrable_object/contact/info_contact_data.hh"
+#include "libfred/object/object_states_info.hh"
+#include "libfred/registrable_object/contact/info_contact_data.hh"
 
 namespace Fred {
 namespace Backend {

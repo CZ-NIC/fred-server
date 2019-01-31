@@ -48,8 +48,8 @@
 #include "src/bin/corba/admin/user_impl.hh"
 #include "src/bin/corba/mailer_manager.hh"
 #include "src/bin/corba/file_manager_client.hh"
-#include "src/libfred/registry.hh"
-#include "src/libfred/requests/request_manager.hh"
+#include "src/deprecated/libfred/registry.hh"
+#include "src/deprecated/libfred/requests/request_manager.hh"
 #include "src/deprecated/util/dbsql.hh"
 #include "src/deprecated/model/model_filters.hh"
 

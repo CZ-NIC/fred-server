@@ -6,7 +6,7 @@
  *  conversions to and from CORBA mapping for string types
  */
 
-#include "src/util/db/nullable.hh"
+#include "util/db/nullable.hh"
 #include <omniORB4/CORBA.h>
 #include <string>
 

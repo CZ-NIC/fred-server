@@ -20,7 +20,7 @@
 #define AUTHINFO_DOMAIN_HH_F6ACE0BDD41845D0A3246E9D50E75DEB
 
 #include "src/backend/epp/session_data.hh"
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 #include <string>
 

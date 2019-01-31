@@ -25,7 +25,7 @@
 #include "src/backend/epp/keyset/delete_keyset.hh"
 #include "src/backend/epp/keyset/impl/limits.hh"
 #include "src/backend/epp/keyset/info_keyset.hh"
-#include "src/libfred/registrar/create_registrar.hh"
+#include "libfred/registrar/create_registrar.hh"
 
 #include <sstream>
 #include <limits>

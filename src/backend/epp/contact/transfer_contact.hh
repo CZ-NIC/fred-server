@@ -20,7 +20,7 @@
 #define TRANSFER_CONTACT_HH_89A0361AC01E4724B9631086D19BCC5E
 
 #include "src/backend/epp/contact/transfer_contact_localized.hh"
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 #include <string>
 

@@ -24,15 +24,15 @@
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
 #include "config.h"
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 #include "src/bin/cli/optys_get_undelivered.hh"
 #include "src/bin/cli/read_config_file.hh"
-#include "src/util/util.hh"
-#include "src/util/map_at.hh"
+#include "util/util.hh"
+#include "util/map_at.hh"
 #include "src/util/subprocess.hh"
-#include "src/util/printable.hh"
+#include "util/printable.hh"
 #include "src/util/optys/download_client.hh"
-#include "src/util/random_data_generator.hh"
+#include "util/random_data_generator.hh"
 #include "src/util/optys/handle_optys_mail_args.hh"
 #include "test/setup/fixtures.hh"
 

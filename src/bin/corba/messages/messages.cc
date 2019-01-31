@@ -82,7 +82,7 @@ CORBA::ULongLong Registry_Messages_i::saveLetterToSend(const char* contact_handl
 
     try
     {
-        LOGGER(PACKAGE).debug(boost::format(
+        LOGGER.debug(boost::format(
                   "Registry_Messages_i::saveLetterToSend"
                 " contact_handle: %1%")
             % contact_handle);
@@ -140,7 +140,7 @@ Registry::Messages::EnumList* Registry_Messages_i::getStatusList()
     Logging::Context ctx(server_name);
     ConnectionReleaser releaser;
 
-    LOGGER(PACKAGE).debug("Registry_Messages_i::getStatusList");
+    LOGGER.debug("Registry_Messages_i::getStatusList");
     try
     {
         LibFred::Messages::EnumList el = msgmgr_->getStatusList();
@@ -168,7 +168,7 @@ Registry::Messages::EnumList* Registry_Messages_i::getCommTypeList()
     Logging::Context ctx(server_name);
     ConnectionReleaser releaser;
 
-    LOGGER(PACKAGE).debug("Registry_Messages_i::getCommTypeList");
+    LOGGER.debug("Registry_Messages_i::getCommTypeList");
     try
     {
         LibFred::Messages::EnumList el = msgmgr_->getCommTypeList();
@@ -196,7 +196,7 @@ Registry::Messages::EnumList* Registry_Messages_i::getMessageTypeList()
     Logging::Context ctx(server_name);
     ConnectionReleaser releaser;
 
-    LOGGER(PACKAGE).debug("Registry_Messages_i::getMessageTypeList");
+    LOGGER.debug("Registry_Messages_i::getMessageTypeList");
     try
     {
         LibFred::Messages::EnumList el = msgmgr_->getMessageTypeList();

@@ -2,8 +2,8 @@
 #define SETTINGS_HH_2C2C96874AC44B308147B6B81E4DF6C2
 
 #include <map>
-#include "src/util/singleton.hh"
-#include "src/util/log/logger.hh"
+#include "util/singleton.hh"
+#include "util/log/logger.hh"
 
 class Settings_ {
 public:
@@ -11,7 +11,7 @@ public:
   }
   
   void set(const std::string& _name, const std::string& _value) {
-    LOGGER("db").info(boost::format("settings -- attribut `%1%' set to `%2%'") % _name % _value);
+    LOGGER.info(boost::format("settings -- attribut `%1%' set to `%2%'") % _name % _value);
     parameters_[_name] = _value;
   }
   

@@ -19,8 +19,8 @@
 #ifndef UTIL_HH_07EB9DDD81E745B199F551BBEB64141E
 #define UTIL_HH_07EB9DDD81E745B199F551BBEB64141E
 
-#include "src/libfred/db_settings.hh"
-#include "src/libfred/opcontext.hh"
+#include "libfred/db_settings.hh"
+#include "libfred/opcontext.hh"
 
 #include <string>
 

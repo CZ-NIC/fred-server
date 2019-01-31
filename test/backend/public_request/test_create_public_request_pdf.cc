@@ -21,9 +21,9 @@
 #include "src/backend/public_request/create_block_unblock_request.hh"
 #include "src/backend/public_request/create_public_request_pdf.hh"
 #include "src/backend/public_request/lock_request_type.hh"
-#include "src/libfred/documents.hh"
-#include "src/libfred/public_request/create_public_request.hh"
-#include "src/libfred/registrable_object/contact/info_contact_data.hh"
+#include "src/deprecated/libfred/documents.hh"
+#include "libfred/public_request/create_public_request.hh"
+#include "libfred/registrable_object/contact/info_contact_data.hh"
 
 #include "test/setup/fixtures_utils.hh"
 #include "test/setup/fixtures.hh"

@@ -18,9 +18,9 @@
 
 #include "src/backend/record_statement/impl/util.hh"
 
-#include "src/libfred/object/object_state.hh"
-#include "src/libfred/object/object_states_info.hh"
-#include "src/libfred/opcontext.hh"
+#include "libfred/object/object_state.hh"
+#include "libfred/object/object_states_info.hh"
+#include "libfred/opcontext.hh"
 
 namespace Fred {
 namespace Backend {

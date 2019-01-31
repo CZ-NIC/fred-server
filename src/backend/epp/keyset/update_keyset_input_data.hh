@@ -21,7 +21,7 @@
 
 #include "src/backend/epp/keyset/dns_key.hh"
 #include "src/backend/epp/keyset/ds_record.hh"
-#include "src/util/optional_value.hh"
+#include "util/optional_value.hh"
 
 #include <string>
 #include <vector>

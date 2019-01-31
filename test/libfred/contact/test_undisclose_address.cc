@@ -18,14 +18,14 @@
 
 #define BOOST_TEST_NO_MAIN
 
-#include "src/libfred/object_state/create_object_state_request_id.hh"
-#include "src/libfred/object_state/get_object_states.hh"
-#include "src/libfred/object_state/perform_object_state_request.hh"
-#include "src/libfred/registrable_object/contact/create_contact.hh"
-#include "src/libfred/registrable_object/contact/info_contact.hh"
-#include "src/libfred/registrar/info_registrar.hh"
-#include "src/libfred/registrar/create_registrar.hh"
-#include "src/libfred/registrable_object/contact/undisclose_address.hh"
+#include "libfred/object_state/create_object_state_request_id.hh"
+#include "libfred/object_state/get_object_states.hh"
+#include "libfred/object_state/perform_object_state_request.hh"
+#include "libfred/registrable_object/contact/create_contact.hh"
+#include "libfred/registrable_object/contact/info_contact.hh"
+#include "libfred/registrar/info_registrar.hh"
+#include "libfred/registrar/create_registrar.hh"
+#include "libfred/registrable_object/contact/undisclose_address.hh"
 #include "test/libfred/contact/fixture.hh"
 #include "test/setup/fixtures.hh"
 #include "test/setup/fixtures_utils.hh"

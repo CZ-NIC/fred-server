@@ -41,7 +41,7 @@ public:
 
   virtual bool isActive() const {
     TRACE("[CALL] Simple::isActive()");
-    LOGGER(PACKAGE).debug(boost::format("filter '%1%' is %2%") % getName()
+    LOGGER.debug(boost::format("filter '%1%' is %2%") % getName()
         % (active ? "active" : "not active"));
     return active;
   }

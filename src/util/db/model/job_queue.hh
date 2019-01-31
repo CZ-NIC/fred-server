@@ -24,13 +24,15 @@
 #ifndef JOB_QUEUE_HH_5939D4346CAC4B96A447F58E854A241A
 #define JOB_QUEUE_HH_5939D4346CAC4B96A447F58E854A241A
 
-#include <queue>
-#include <string>
+#include "src/deprecated/libfred/db_settings.hh"
+
+#include "util/db/database.hh"
+#include "util/log/logger.hh"
+
 #include <boost/format.hpp>
 
-#include "src/util/db/database.hh"
-#include "src/util/log/logger.hh"
-
+#include <queue>
+#include <string>
 
 namespace Model {
 

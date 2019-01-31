@@ -19,7 +19,7 @@
 #ifndef UTIL_HH_7C8A853ECD8048A0A591D2604479C2CE
 #define UTIL_HH_7C8A853ECD8048A0A591D2604479C2CE
 
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 namespace Fred {
 namespace Backend {

@@ -28,7 +28,7 @@
 //mock #include <libpq-fe.h>
 #include "src/util/db/mock/mock_result.hh"
 #include "src/util/db/statement.hh"
-#include "src/util/db/db_exceptions.hh"
+#include "util/db/db_exceptions.hh"
 
 namespace Database {
 
@@ -155,7 +155,7 @@ public:
 
     if (err) {
 #ifdef HAVE_LOGGER
-      LOGGER(PACKAGE).error(boost::format("error in escape function: %1%") % PQerrorMessage(psql_conn_));
+      LOGGER.error(boost::format("error in escape function: %1%") % PQerrorMessage(psql_conn_));
 #endif
     }
       return ret;
@@ -164,7 +164,7 @@ public:
   }
 
 
-  bool inTransaction() const {
+  bool is_in_transaction() const {
 	/*mock
     PGTransactionStatusType ts = PQtransactionStatus(psql_conn_);
     return ts == PQTRANS_INTRANS || ts == PQTRANS_INERROR;
@@ -172,11 +172,7 @@ public:
 	  return false;
   }
 
-  virtual inline void setConstraintExclusion(bool on = true) {
-  }
-
-  virtual inline void setQueryTimeout(unsigned t) {
-  }
+  virtual inline void setQueryTimeout(unsigned) { }
 
   /* HACK! HACK! HACK! */
   typedef MOCKconn* __conn_type__;

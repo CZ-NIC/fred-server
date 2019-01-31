@@ -22,7 +22,7 @@
 #include "src/backend/epp/keyset/info_keyset_config_data.hh"
 #include "src/backend/epp/keyset/info_keyset_output_data.hh"
 #include "src/backend/epp/session_data.hh"
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 #include <string>
 

@@ -25,8 +25,8 @@
 #include "src/backend/epp/domain/renew_domain_localized.hh"
 #include "src/backend/epp/epp_response_failure.hh"
 #include "src/backend/epp/epp_result_code.hh"
-#include "src/libfred/object/object_state.hh"
-#include "src/libfred/object_state/perform_object_state_request.hh"
+#include "libfred/object/object_state.hh"
+#include "libfred/object_state/perform_object_state_request.hh"
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>

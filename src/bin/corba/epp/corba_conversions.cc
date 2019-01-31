@@ -35,9 +35,9 @@
 #include "src/backend/epp/epp_result_code.hh"
 #include "src/backend/epp/epp_result_failure_localized.hh"
 
-#include "src/util/db/nullable.hh"
-#include "src/util/map_at.hh"
-#include "src/util/optional_value.hh"
+#include "util/db/nullable.hh"
+#include "util/map_at.hh"
+#include "util/optional_value.hh"
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>

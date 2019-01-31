@@ -21,7 +21,7 @@
 
 #include "src/backend/epp/epp_response_success_localized.hh"
 #include "src/backend/epp/keyset/keyset_handle_registration_obstruction.hh"
-#include "src/util/db/nullable.hh"
+#include "util/db/nullable.hh"
 
 #include <map>
 #include <string>

@@ -20,7 +20,7 @@
 #define GET_PERSONAL_ID_UNION_HH_7CBFA61B4054B6A9A1F59DC2D24B3D4C
 
 #include "src/backend/epp/contact/contact_ident.hh"
-#include "src/libfred/registrable_object/contact/info_contact_data.hh"
+#include "libfred/registrable_object/contact/info_contact_data.hh"
 
 namespace Epp {
 namespace Contact {

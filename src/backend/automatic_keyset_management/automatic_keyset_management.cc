@@ -36,30 +36,30 @@
 #include "src/backend/automatic_keyset_management/impl/logger_service_type.hh"
 #include "src/backend/automatic_keyset_management/impl/util.hh"
 #include "src/backend/epp/keyset/dns_key.hh"
-#include "src/libfred/registrable_object/contact/info_contact.hh"
-#include "src/libfred/registrable_object/domain/info_domain.hh"
-#include "src/libfred/registrable_object/domain/update_domain.hh"
-#include "src/libfred/registrable_object/keyset/create_keyset.hh"
-#include "src/libfred/registrable_object/keyset/info_keyset.hh"
-#include "src/libfred/registrable_object/keyset/keyset_dns_key.hh"
-#include "src/libfred/registrable_object/keyset/update_keyset.hh"
-#include "src/libfred/notifier/enqueue_notification.hh"
-#include "src/libfred/registrable_object/nsset/info_nsset.hh"
-#include "src/libfred/object/check_handle.hh"
-#include "src/libfred/object/get_id_of_registered.hh"
-#include "src/libfred/object/object_id_handle_pair.hh"
-#include "src/libfred/object/object_type.hh"
-#include "src/libfred/object/object_states_info.hh"
-#include "src/libfred/object_state/get_object_states.hh"
-#include "src/libfred/object_state/lock_object_state_request_lock.hh"
-#include "src/libfred/object_state/perform_object_state_request.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/poll/create_poll_message.hh"
-#include "src/libfred/poll/create_update_object_poll_message.hh"
-#include "src/libfred/registrar/info_registrar.hh"
-#include "src/util/log/context.hh"
-#include "src/util/random.hh"
-#include "src/util/util.hh"
+#include "libfred/registrable_object/contact/info_contact.hh"
+#include "libfred/registrable_object/domain/info_domain.hh"
+#include "libfred/registrable_object/domain/update_domain.hh"
+#include "libfred/registrable_object/keyset/create_keyset.hh"
+#include "libfred/registrable_object/keyset/info_keyset.hh"
+#include "libfred/registrable_object/keyset/keyset_dns_key.hh"
+#include "libfred/registrable_object/keyset/update_keyset.hh"
+#include "libfred/notifier/enqueue_notification.hh"
+#include "libfred/registrable_object/nsset/info_nsset.hh"
+#include "libfred/object/check_handle.hh"
+#include "libfred/object/get_id_of_registered.hh"
+#include "libfred/object/object_id_handle_pair.hh"
+#include "libfred/object/object_type.hh"
+#include "libfred/object/object_states_info.hh"
+#include "libfred/object_state/get_object_states.hh"
+#include "libfred/object_state/lock_object_state_request_lock.hh"
+#include "libfred/object_state/perform_object_state_request.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/poll/create_poll_message.hh"
+#include "libfred/poll/create_update_object_poll_message.hh"
+#include "libfred/registrar/info_registrar.hh"
+#include "util/log/context.hh"
+#include "util/random.hh"
+#include "util/util.hh"
 
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/format.hpp>
@@ -164,7 +164,7 @@ void check_configuration_of_automatically_managed_keyset_prefix(const std::strin
     if (handle_prefix.length() < Impl::automatically_managed_keyset_handle_prefix_length_min ||
         handle_prefix.length() > Impl::automatically_managed_keyset_handle_prefix_length_max)
     {
-        LOGGER(PACKAGE).debug("configuration error: automatically_managed_keyset_prefix configuration invalid");
+        LOGGER.debug("configuration error: automatically_managed_keyset_prefix configuration invalid");
         throw LibFred::AutomaticKeysetManagement::ConfigurationError();
     }
 }
@@ -290,7 +290,7 @@ ObjectIdHandlePair create_automatically_managed_keyset(
                     Util::vector_of<std::string>(automatically_managed_keyset_tech_contact))
                     .exec(ctx, logger_request_id, "UTC");
 
-    LOGGER(PACKAGE).debug(boost::str(boost::format("creation_time: %1% object_id: %2% history_id: %3%\n")
+    LOGGER.debug(boost::str(boost::format("creation_time: %1% object_id: %2% history_id: %3%\n")
                     % create_keyset_result.creation_time
                     % create_keyset_result.create_object_result.object_id
                     % create_keyset_result.create_object_result.history_id));
@@ -324,7 +324,7 @@ void link_automatically_managed_keyset_to_domain(
                     .set_logd_request_id(logger_request_id)
                     .exec(ctx);
 
-    LOGGER(PACKAGE).debug(boost::str(boost::format("domain_new_history_id: %1%\n")
+    LOGGER.debug(boost::str(boost::format("domain_new_history_id: %1%\n")
                     % domain_new_history_id));
 
     if (!_notifier_disabled)
@@ -375,7 +375,7 @@ void update_automatically_managed_keyset(
 {
     if (are_keysets_equal(new_keyset, info_keyset_data.dns_keys))
     {
-        LOGGER(PACKAGE).debug("new keyset same as current keyset, nothing to do");
+        LOGGER.debug("new keyset same as current keyset, nothing to do");
         // nothing to commit
         return;
     }
@@ -388,7 +388,7 @@ void update_automatically_managed_keyset(
     if (keyset_states.presents(LibFred::Object_State::server_update_prohibited) ||
         keyset_states.presents(LibFred::Object_State::delete_candidate))
     {
-        LOGGER(PACKAGE).debug("keyset state prohibits action");
+        LOGGER.debug("keyset state prohibits action");
         throw LibFred::AutomaticKeysetManagement::KeysetStatePolicyError();
     }
 
@@ -421,7 +421,7 @@ void update_automatically_managed_keyset(
                     .set_logd_request_id(logger_request_id)
                     .exec(ctx);
 
-    LOGGER(PACKAGE).debug(boost::str(boost::format("keyset_new_history_id: %1%\n")
+    LOGGER.debug(boost::str(boost::format("keyset_new_history_id: %1%\n")
                     % keyset_new_history_id));
 
     if (!notifier_disabled)
@@ -450,7 +450,7 @@ void unlink_automatically_managed_keyset(
             .set_logd_request_id(logger_request_id)
             .exec(ctx);
 
-    LOGGER(PACKAGE).debug(boost::str(boost::format("domain_new_history_id: %1%\n")
+    LOGGER.debug(boost::str(boost::format("domain_new_history_id: %1%\n")
                     % domain_new_history_id));
 
     if (!notifier_disabled)
@@ -502,7 +502,7 @@ AutomaticKeysetManagementImpl::AutomaticKeysetManagementImpl(
 
         if (!automatically_managed_keyset_registrar_is_system_registrar)
         {
-            LOGGER(PACKAGE).debug("configuration error: automatically_managed_keyset_registrar is not system registrar");
+            LOGGER.debug("configuration error: automatically_managed_keyset_registrar is not system registrar");
             throw LibFred::AutomaticKeysetManagement::ConfigurationError();
         }
     }
@@ -510,19 +510,19 @@ AutomaticKeysetManagementImpl::AutomaticKeysetManagementImpl(
     {
         if (e.is_set_unknown_registrar_handle())
         {
-            LOGGER(PACKAGE).error(std::string("registrar: '") + automatically_managed_keyset_registrar_ + "' not found");
+            LOGGER.error(std::string("registrar: '") + automatically_managed_keyset_registrar_ + "' not found");
             throw LibFred::AutomaticKeysetManagement::ConfigurationError();
         }
         throw;
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("unknown error");
+        LOGGER.error("unknown error");
         throw;
     }
 }
@@ -582,12 +582,12 @@ NameserversDomains AutomaticKeysetManagementImpl::get_nameservers_with_insecure_
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("unknown error");
+        LOGGER.error("unknown error");
         throw;
     }
 }
@@ -646,12 +646,12 @@ NameserversDomains AutomaticKeysetManagementImpl::get_nameservers_with_secure_au
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("unknown error");
+        LOGGER.error("unknown error");
         throw;
     }
 }
@@ -708,12 +708,12 @@ NameserversDomains AutomaticKeysetManagementImpl::get_nameservers_with_automatic
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("unknown error");
+        LOGGER.error("unknown error");
         throw;
     }
 }
@@ -729,7 +729,7 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_insec
     try
     {
         LibFred::OperationContextCreator ctx;
-        LOGGER(PACKAGE).debug(boost::str(boost::format("domain_id: %1% current_nsset: %2% new_keyset: %3%\n")
+        LOGGER.debug(boost::str(boost::format("domain_id: %1% current_nsset: %2% new_keyset: %3%\n")
                         % _domain_id
                         % _current_nsset.nameservers.size()
                         % _new_keyset.dns_keys.size()));
@@ -762,7 +762,7 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_insec
 
         if (!is_keyset_size_within_limits(_new_keyset))
         {
-            LOGGER(PACKAGE).debug("keyset invalid: incorrect number of dns_keys");
+            LOGGER.debug("keyset invalid: incorrect number of dns_keys");
             throw LibFred::AutomaticKeysetManagement::KeysetIsInvalid();
         }
 
@@ -773,7 +773,7 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_insec
         }
         else if (!has_valid_dnskeys(ctx, _new_keyset))
         {
-            LOGGER(PACKAGE).debug("keyset invalid: incorrect keys");
+            LOGGER.debug("keyset invalid: incorrect keys");
             throw LibFred::AutomaticKeysetManagement::KeysetIsInvalid();
         }
 
@@ -805,7 +805,7 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_insec
 
         if (!automatically_managed_keyset_registrar_is_system_registrar)
         {
-            LOGGER(PACKAGE).debug("configuration error: automatically_managed_keyset_registrar is not system registrar");
+            LOGGER.debug("configuration error: automatically_managed_keyset_registrar is not system registrar");
             throw LibFred::AutomaticKeysetManagement::ConfigurationError();
         }
 
@@ -815,7 +815,7 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_insec
         }
         catch (const ObjectNotFound&)
         {
-            LOGGER(PACKAGE).error(std::string("registrar: '") + automatically_managed_keyset_tech_contact_ + "' not found");
+            LOGGER.error(std::string("registrar: '") + automatically_managed_keyset_tech_contact_ + "' not found");
             throw LibFred::AutomaticKeysetManagement::ConfigurationError();
         }
 
@@ -867,7 +867,7 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_insec
     {
         if (e.is_set_unknown_registrar_handle())
         {
-            LOGGER(PACKAGE).error(std::string("registrar: '") + automatically_managed_keyset_registrar_ + "' not found");
+            LOGGER.error(std::string("registrar: '") + automatically_managed_keyset_registrar_ + "' not found");
             throw LibFred::AutomaticKeysetManagement::ConfigurationError();
         }
         throw;
@@ -877,32 +877,32 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_insec
         // general errors (possibly but not NECESSARILLY caused by input data) signalizing unknown/bigger problems have priority
         if (e.is_set_unknown_registrar_handle())
         {
-            LOGGER(PACKAGE).warning("unknown registrar handle");
+            LOGGER.warning("unknown registrar handle");
             throw ConfigurationError();
         }
         if (e.is_set_vector_of_already_set_dns_key())
         {
-            LOGGER(PACKAGE).warning("duplicate dns key");
+            LOGGER.warning("duplicate dns key");
         }
         if (e.is_set_vector_of_unknown_technical_contact_handle())
         {
-            LOGGER(PACKAGE).warning("unknown technical contact handle");
+            LOGGER.warning("unknown technical contact handle");
             throw ConfigurationError();
         }
         if (e.is_set_vector_of_already_set_technical_contact_handle())
         {
-            LOGGER(PACKAGE).warning("duplicate technical contact handle");
+            LOGGER.warning("duplicate technical contact handle");
         }
         throw;
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("unknown error");
+        LOGGER.error("unknown error");
         throw;
     }
 }
@@ -917,7 +917,7 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_secur
     try
     {
         LibFred::OperationContextCreator ctx;
-        LOGGER(PACKAGE).debug(boost::str(boost::format("domain_id: %1% new_keyset: %2%\n")
+        LOGGER.debug(boost::str(boost::format("domain_id: %1% new_keyset: %2%\n")
                         % _domain_id
                         % _new_keyset.dns_keys.size()));
 
@@ -952,14 +952,14 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_secur
 
         if (!is_keyset_size_within_limits(_new_keyset))
         {
-            LOGGER(PACKAGE).debug("keyset invalid: incorrect number of dns_keys");
+            LOGGER.debug("keyset invalid: incorrect number of dns_keys");
             throw LibFred::AutomaticKeysetManagement::KeysetIsInvalid();
         }
 
         const bool turn_dnssec_off = is_dnssec_turn_off_requested(_new_keyset);
         if (!turn_dnssec_off && !has_valid_dnskeys(ctx, _new_keyset))
         {
-            LOGGER(PACKAGE).debug("keyset invalid: incorrect keys");
+            LOGGER.debug("keyset invalid: incorrect keys");
             throw LibFred::AutomaticKeysetManagement::KeysetIsInvalid();
         }
 
@@ -983,7 +983,7 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_secur
 
         if (!automatically_managed_keyset_registrar_is_system_registrar)
         {
-            LOGGER(PACKAGE).debug("configuration error: automatically_managed_keyset_registrar is not system registrar");
+            LOGGER.debug("configuration error: automatically_managed_keyset_registrar is not system registrar");
             throw LibFred::AutomaticKeysetManagement::ConfigurationError();
         }
 
@@ -993,7 +993,7 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_secur
         }
         catch (const ObjectNotFound&)
         {
-            LOGGER(PACKAGE).error(std::string("registrar: '") + automatically_managed_keyset_tech_contact_ + "' not found");
+            LOGGER.error(std::string("registrar: '") + automatically_managed_keyset_tech_contact_ + "' not found");
             throw LibFred::AutomaticKeysetManagement::ConfigurationError();
         }
 
@@ -1070,7 +1070,7 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_secur
     {
         if (e.is_set_unknown_registrar_handle())
         {
-            LOGGER(PACKAGE).error(std::string("registrar: '") + automatically_managed_keyset_registrar_ + "' not found");
+            LOGGER.error(std::string("registrar: '") + automatically_managed_keyset_registrar_ + "' not found");
             throw LibFred::AutomaticKeysetManagement::ConfigurationError();
         }
         throw;
@@ -1080,32 +1080,32 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_secur
         // general errors (possibly but not NECESSARILLY caused by input data) signalizing unknown/bigger problems have priority
         if (e.is_set_unknown_registrar_handle())
         {
-            LOGGER(PACKAGE).warning("unknown registrar handle");
+            LOGGER.warning("unknown registrar handle");
             throw ConfigurationError();
         }
         if (e.is_set_vector_of_already_set_dns_key())
         {
-            LOGGER(PACKAGE).warning("duplicate dns key");
+            LOGGER.warning("duplicate dns key");
         }
         if (e.is_set_vector_of_unknown_technical_contact_handle())
         {
-            LOGGER(PACKAGE).warning("unknown technical contact handle");
+            LOGGER.warning("unknown technical contact handle");
             throw ConfigurationError();
         }
         if (e.is_set_vector_of_already_set_technical_contact_handle())
         {
-            LOGGER(PACKAGE).warning("duplicate technical contact handle");
+            LOGGER.warning("duplicate technical contact handle");
         }
         throw;
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("unknown error");
+        LOGGER.error("unknown error");
         throw;
     }
 }
@@ -1120,7 +1120,7 @@ void AutomaticKeysetManagementImpl::update_automatically_managed_keyset_of_domai
     try
     {
         LibFred::OperationContextCreator ctx;
-        LOGGER(PACKAGE).debug(boost::str(boost::format("domain_id: %1% new_keyset: %2%\n")
+        LOGGER.debug(boost::str(boost::format("domain_id: %1% new_keyset: %2%\n")
                         % _domain_id
                         % _new_keyset.dns_keys.size()));
 
@@ -1150,14 +1150,14 @@ void AutomaticKeysetManagementImpl::update_automatically_managed_keyset_of_domai
 
         if (!is_keyset_size_within_limits(_new_keyset))
         {
-            LOGGER(PACKAGE).debug("keyset invalid: incorrect number of dns_keys");
+            LOGGER.debug("keyset invalid: incorrect number of dns_keys");
             throw LibFred::AutomaticKeysetManagement::KeysetIsInvalid();
         }
 
         const bool turn_dnssec_off = is_dnssec_turn_off_requested(_new_keyset);
         if (!turn_dnssec_off && !has_valid_dnskeys(ctx, _new_keyset))
         {
-            LOGGER(PACKAGE).debug("keyset invalid: incorrect keys");
+            LOGGER.debug("keyset invalid: incorrect keys");
             throw LibFred::AutomaticKeysetManagement::KeysetIsInvalid();
         }
 
@@ -1169,7 +1169,7 @@ void AutomaticKeysetManagementImpl::update_automatically_managed_keyset_of_domai
 
         if (!automatically_managed_keyset_registrar_is_system_registrar)
         {
-            LOGGER(PACKAGE).debug("configuration error: automatically_managed_keyset_registrar is not system registrar");
+            LOGGER.debug("configuration error: automatically_managed_keyset_registrar is not system registrar");
             throw LibFred::AutomaticKeysetManagement::ConfigurationError();
         }
 
@@ -1269,7 +1269,7 @@ void AutomaticKeysetManagementImpl::update_automatically_managed_keyset_of_domai
     {
         if (e.is_set_unknown_registrar_handle())
         {
-            LOGGER(PACKAGE).error(std::string("registrar: '") + automatically_managed_keyset_registrar_ + "' not found");
+            LOGGER.error(std::string("registrar: '") + automatically_managed_keyset_registrar_ + "' not found");
             throw LibFred::AutomaticKeysetManagement::ConfigurationError();
         }
         throw;
@@ -1279,31 +1279,31 @@ void AutomaticKeysetManagementImpl::update_automatically_managed_keyset_of_domai
         // general errors (possibly but not NECESSARILLY caused by input data) signalizing unknown/bigger problems have priority
         if (e.is_set_unknown_keyset_handle())
         {
-            LOGGER(PACKAGE).warning("unknown keyset handle");
+            LOGGER.warning("unknown keyset handle");
         }
         if (e.is_set_unknown_registrar_handle())
         {
-            LOGGER(PACKAGE).warning("unknown registrar handle");
+            LOGGER.warning("unknown registrar handle");
             throw ConfigurationError();
         }
         if (e.is_set_vector_of_already_set_dns_key())
         {
-            LOGGER(PACKAGE).warning("duplicate dns key");
+            LOGGER.warning("duplicate dns key");
         }
         if (e.is_set_vector_of_unassigned_dns_key())
         {
-            LOGGER(PACKAGE).warning("unassigned dns key");
+            LOGGER.warning("unassigned dns key");
         }
         throw;
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("unknown error");
+        LOGGER.error("unknown error");
         throw;
     }
 }
@@ -1351,25 +1351,25 @@ EmailAddresses AutomaticKeysetManagementImpl::get_email_addresses_by_domain_id(
                         sql,
                         Database::query_param_list(_domain_id));
 
-        LOGGER(PACKAGE).debug(boost::str(boost::format("found %d email(s)") % db_result.size()));
+        LOGGER.debug(boost::str(boost::format("found %d email(s)") % db_result.size()));
 
         for (unsigned int idx = 0; idx < db_result.size(); ++idx)
         {
             const std::string email_address = static_cast<std::string>(db_result[idx]["email_address"]);
             email_addresses.insert(email_address);
-            LOGGER(PACKAGE).debug(std::string("email: ") + email_address);
+            LOGGER.debug(std::string("email: ") + email_address);
         }
 
         return email_addresses;
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("unknown error");
+        LOGGER.error("unknown error");
         throw;
     }
 }

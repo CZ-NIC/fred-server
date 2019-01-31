@@ -23,21 +23,21 @@
 
 #include "src/backend/admin_block/administrativeblocking.hh"
 
-#include "src/libfred/object_state/clear_admin_object_state_request_id.hh"
-#include "src/libfred/object_state/create_admin_object_block_request_id.hh"
-#include "src/libfred/object_state/create_admin_object_state_restore_request_id.hh"
-#include "src/libfred/object_state/get_blocking_status_desc_list.hh"
-#include "src/libfred/object_state/get_object_state_id_map.hh"
-#include "src/libfred/object_state/perform_object_state_request.hh"
-#include "src/libfred/poll/create_update_object_poll_message.hh"
-#include "src/libfred/registrable_object/contact/copy_contact.hh"
-#include "src/libfred/registrable_object/domain/create_domain_name_blacklist_id.hh"
-#include "src/libfred/registrable_object/domain/delete_domain.hh"
-#include "src/libfred/registrable_object/domain/info_domain.hh"
-#include "src/libfred/registrable_object/domain/update_domain.hh"
+#include "libfred/object_state/clear_admin_object_state_request_id.hh"
+#include "libfred/object_state/create_admin_object_block_request_id.hh"
+#include "libfred/object_state/create_admin_object_state_restore_request_id.hh"
+#include "libfred/object_state/get_blocking_status_desc_list.hh"
+#include "libfred/object_state/get_object_state_id_map.hh"
+#include "libfred/object_state/perform_object_state_request.hh"
+#include "libfred/poll/create_update_object_poll_message.hh"
+#include "libfred/registrable_object/contact/copy_contact.hh"
+#include "libfred/registrable_object/domain/create_domain_name_blacklist_id.hh"
+#include "libfred/registrable_object/domain/delete_domain.hh"
+#include "libfred/registrable_object/domain/info_domain.hh"
+#include "libfred/registrable_object/domain/update_domain.hh"
 
-#include "src/util/log/context.hh"
-#include "src/util/random.hh"
+#include "util/log/context.hh"
+#include "util/random.hh"
 
 #include <map>
 #include <memory>

@@ -19,8 +19,7 @@
 #include <sys/time.h>
 #include <time.h>
 
-#include "src/deprecated/util/log.hh"
-#include "src/util/log/logger.hh"
+#include "util/log/logger.hh"
 
 unsigned long long total_clock;
 unsigned long long time_clock;
@@ -40,22 +39,20 @@ unsigned long long get_time_clock()
   tc=tv.tv_sec;
   tc=tc * MICROSEC;
   tc= tc + tv.tv_usec;
-  // LOG( DEBUG_LOG , "TIMECLOCK get_time_clock %ld sec  %ld usec  return %lld " , tv.tv_sec , tv.tv_usec  , tc);
+  // LOG< DEBUG_LOG >( "TIMECLOCK get_time_clock %ld sec  %ld usec  return %lld " , tv.tv_sec , tv.tv_usec  , tc);
   return tc;
 }
 
 void timeclock_start()
 {
-  total_clock=0;
-  //LOG( DEBUG_LOG , "TIMECLOCK CLEAR ");
+  total_clock = 0;
+  //LOG< DEBUG_LOG >( "TIMECLOCK CLEAR ");
 }
 
 void timeclock_begin()
 {
-
-  //LOG( DEBUG_LOG , "TIMECLOCK START"  );
-  time_clock=get_time_clock();
-
+  //LOG< DEBUG_LOG >( "TIMECLOCK START"  );
+  time_clock = get_time_clock();
 }
 
 void timeclock_end()
@@ -64,13 +61,11 @@ void timeclock_end()
 
   total = get_time_clock() - time_clock;
   total_clock += total;
-  LOG( DEBUG_LOG , "TIMECLOCK  END  %lld (usec)" , total );
+  LOG<Logging::Log::EventImportance::debug>( "TIMECLOCK  END  %lld (usec)" , total );
 }
 
 void timeclock_quit()
 {
-
-  LOG( DEBUG_LOG , "TIMECLOCK TOTAL  %lld (sec) %lld (usec)" , total_clock / MICROSEC , total_clock % MICROSEC);
+  LOG<Logging::Log::EventImportance::debug>( "TIMECLOCK TOTAL  %lld (sec) %lld (usec)" , total_clock / MICROSEC , total_clock % MICROSEC);
   total_clock=0;
 }
-

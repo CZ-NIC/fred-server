@@ -20,7 +20,7 @@
 #define TRANSFER_DOMAIN_HH_3D3B7D9BD9F142AC8347A049ED72C916
 
 #include "src/backend/epp/domain/transfer_domain_localized.hh"
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 #include <string>
 

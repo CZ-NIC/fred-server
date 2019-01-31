@@ -17,48 +17,45 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <utility>
-
 #include "test/deprecated/test_conv.hh"
+#include "src/deprecated/libfred/db_settings.hh"
+
+#include <utility>
 
 BOOST_AUTO_TEST_SUITE(DbConversion)
 
 BOOST_AUTO_TEST_CASE( db_conversion_with_message )
 {
+    //current utc ptime
+    const boost::posix_time::ptime act_time = boost::posix_time::second_clock::universal_time();
+
+    boost::posix_time::ptime lact_time;
+
+    Database::Connection conn = Database::Manager::acquire();
+    const Database::Result res = conn.exec_params(
+            "SELECT $1 at time zone 'Europe/Prague'",
+            Database::query_param_list (act_time));
+    if (res.size() == 1)
     {
-        //current utc ptime
-        boost::posix_time::ptime act_time
-            = boost::posix_time::second_clock::universal_time();
-
-         boost::posix_time::ptime lact_time;
-
-        Database::Connection conn = Database::Manager::acquire();
-        Database::Result res = conn.exec_params(
-                "SELECT $1 at time zone 'Europe/Prague' "
-                , Database::query_param_list (act_time));
-        if (res.size() == 1)
-        {
-            lact_time = res[0][0];
-        }
-
-        std::ostringstream buf;
-        buf.imbue(std::locale(std::locale(""),new date_facet("%x")));
-        buf << lact_time.date();
-
-        BOOST_TEST_MESSAGE(
-        "\nact_time: " << act_time
-        << "\ndate: " << act_time.date()
-        << "\nltime: " << lact_time	
-        << "\nldate: " << buf.str()
-        //<< "\nldate cz: " << StrConvert<date>().to(lact_time.date())
-        << "\nl stringify not a date: " << stringify(boost::gregorian::date())
-        << "\n test: " << stringify( birthdate_from_string_to_date("  2009 -1- 15  "))
-        << "\n 151200: " << stringify(birthdate_from_string_to_date("  151200  "))
-        );
+        lact_time = res[0][0];
     }
+
+    std::ostringstream buf;
+    buf.imbue(std::locale(std::locale(""), new date_facet("%x")));
+    buf << lact_time.date();
+
+    BOOST_TEST_MESSAGE("\n"
+            "act_time: " << act_time << "\n"
+            "date: " << act_time.date() << "\n"
+            "ltime: " << lact_time << "\n"
+            "ldate: " << buf.str() << "\n"
+    //<< "ldate cz: " << StrConvert<date>().to(lact_time.date()) << "\n"
+            "l stringify not a date: " << stringify(boost::gregorian::date()) << "\n"
+            " test: " << stringify( birthdate_from_string_to_date("  2009 -1- 15  ")) << "\n"
+            " 151200: " << stringify(birthdate_from_string_to_date("  151200  ")));
 }
 
-BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END()//DbConversion
 
 BOOST_AUTO_TEST_SUITE(BirthDateConversion)
 
@@ -157,4 +154,4 @@ BOOST_AUTO_TEST_CASE( dd_mm_yy )
 
 }
 
-BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END()//BirthDateConversion

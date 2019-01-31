@@ -25,7 +25,7 @@
 #include "src/backend/epp/reason.hh"
 #include "src/backend/epp/param.hh"
 
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 #include <string>
 

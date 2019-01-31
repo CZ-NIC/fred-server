@@ -19,7 +19,7 @@
 #ifndef CREATE_DOMAIN_HH_09B61A4979AF4972874A0AAFF7875400
 #define CREATE_DOMAIN_HH_09B61A4979AF4972874A0AAFF7875400
 
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 #include "src/backend/epp/domain/create_domain_localized.hh"
 

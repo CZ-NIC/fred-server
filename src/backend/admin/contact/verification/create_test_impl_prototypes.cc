@@ -10,7 +10,7 @@
 #include "src/backend/admin/contact/verification/test_impl/test_phone_syntax.hh"
 #include "src/backend/admin/contact/verification/test_impl/test_send_letter.hh"
 
-#include "src/util/log/context.hh"
+#include "util/log/context.hh"
 
 
 namespace Fred {

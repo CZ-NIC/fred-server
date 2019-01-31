@@ -20,10 +20,10 @@
 #define FIXTURE_HH_A1194C149A024A81B9E68C00F3FC2193
 
 #include "src/backend/accounting/payment_data.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/registrar/create_registrar.hh"
-#include "src/libfred/registrar/info_registrar.hh"
-#include "src/libfred/registrar/info_registrar_data.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/registrar/create_registrar.hh"
+#include "libfred/registrar/info_registrar.hh"
+#include "libfred/registrar/info_registrar_data.hh"
 #include "src/util/types/money.hh"
 
 #include <boost/algorithm/string/case_conv.hpp>

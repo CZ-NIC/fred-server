@@ -8,7 +8,7 @@
 #include <boost/thread/mutex.hpp>
 
 #include "src/bin/corba/Mailer.hh"
-#include "src/libfred/mailer.hh"
+#include "libfred/mailer.hh"
 #include "src/bin/corba/nameservice.hh"
 
 using namespace boost::posix_time;

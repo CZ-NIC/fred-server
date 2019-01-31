@@ -27,8 +27,8 @@
 #include "src/backend/epp/domain/info_domain_localized.hh"
 
 #include "src/util/corba_conversion.hh"
-#include "src/util/db/nullable.hh"
-#include "src/util/optional_value.hh"
+#include "util/db/nullable.hh"
+#include "util/optional_value.hh"
 
 #include <boost/optional.hpp>
 

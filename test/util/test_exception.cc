@@ -36,12 +36,12 @@
 #include <boost/assign/list_of.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include "src/util/random_data_generator.hh"
+#include "util/random_data_generator.hh"
 #include "src/util/concurrent_queue.hh"
 
 #include "test/util/exception_test.hh"
 
-#include "src/util/decimal/decimal.hh"
+#include "util/decimal/decimal.hh"
 
 ExceptionTest& ExceptionTest::instance()
 {

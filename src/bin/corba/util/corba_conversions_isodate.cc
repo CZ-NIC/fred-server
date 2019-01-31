@@ -20,7 +20,7 @@
 
 #include "src/bin/corba/IsoDate.hh"
 #include "src/bin/corba/util/corba_conversions_string.hh"
-#include "src/util/db/nullable.hh"
+#include "util/db/nullable.hh"
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 

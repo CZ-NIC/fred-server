@@ -23,7 +23,7 @@
 #include "src/backend/automatic_keyset_management/impl/logger_request_result.hh"
 #include "src/backend/automatic_keyset_management/impl/logger_request_type.hh"
 #include "src/backend/automatic_keyset_management/impl/logger_service_type.hh"
-#include "src/libfred/logger_client.hh"
+#include "src/deprecated/libfred/logger_client.hh"
 
 #include <string>
 
@@ -48,7 +48,7 @@ public:
     {
         if (request_id_ == 0)
         {
-            LOGGER(PACKAGE).error("unable to log " + to_fred_logger_request_type_name<R>() + " request");
+            LOGGER.error("unable to log " + to_fred_logger_request_type_name<R>() + " request");
         }
     }
 

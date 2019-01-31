@@ -16,13 +16,13 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/libfred/registrar/group/create_registrar_group.hh"
-#include "src/libfred/registrar/group/cancel_registrar_group.hh"
-#include "src/libfred/registrar/group/exceptions.hh"
+#include "libfred/registrar/group/create_registrar_group.hh"
+#include "libfred/registrar/group/cancel_registrar_group.hh"
+#include "libfred/registrar/group/exceptions.hh"
 
-#include "src/libfred/db_settings.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/util/db/value.hh"
+#include "libfred/db_settings.hh"
+#include "libfred/opcontext.hh"
+#include "util/db/value.hh"
 #include "test/setup/fixtures.hh"
 #include "test/setup/fixtures_utils.hh"
 

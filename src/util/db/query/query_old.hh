@@ -11,10 +11,10 @@
 #include <boost/utility.hpp>
 #include <boost/format.hpp>
 
-#include "src/util/util.hh"
+#include "util/util.hh"
 #include "src/util/db/query/sql_helper_objects.hh"
 #include "src/util/db/statement.hh"
-#include "src/util/db/value.hh"
+#include "util/db/value.hh"
 
 
 namespace Database {

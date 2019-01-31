@@ -12,8 +12,8 @@
 
 #include "src/bin/corba/admin/session_impl.hh"
 #include "src/bin/corba/mailer_manager.hh"
-#include "src/libfred/registry.hh"
-#include "src/libfred/invoicing/invoice.hh"
+#include "src/deprecated/libfred/registry.hh"
+#include "src/deprecated/libfred/invoicing/invoice.hh"
 #include "src/deprecated/util/dbsql.hh"
 #include "src/deprecated/model/model_filters.hh"
 #include "src/bin/corba/admin/bankinginvoicing_impl.hh"

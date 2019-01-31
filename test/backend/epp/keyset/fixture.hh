@@ -26,7 +26,7 @@
 #include "src/backend/epp/keyset/info_keyset_config_data.hh"
 #include "src/backend/epp/keyset/transfer_keyset_config_data.hh"
 #include "src/backend/epp/keyset/update_keyset_config_data.hh"
-#include "src/libfred/registrable_object/keyset/handle_state.hh"
+#include "libfred/registrable_object/keyset/handle_state.hh"
 #include "test/backend/epp/contact/fixture.hh"
 #include "test/backend/epp/fixture.hh"
 #include "test/setup/fixtures.hh"

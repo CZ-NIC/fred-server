@@ -16,6 +16,48 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "src/util/setup_server_decl.hh"
+
+#include "src/util/cfg/handle_general_args.hh"
+#include "src/util/cfg/handle_server_args.hh"
+#include "src/util/cfg/handle_logging_args.hh"
+#include "src/util/cfg/handle_database_args.hh"
+#include "src/util/cfg/handle_corbanameservice_args.hh"
+#include "src/util/cfg/handle_registry_args.hh"
+#include "src/util/cfg/handle_rifd_args.hh"
+
+#include "libfred/opcontext.hh"
+#include "libfred/registrar/create_registrar.hh"
+#include "libfred/registrar/epp_auth/add_registrar_epp_auth.hh"
+#include "libfred/registrar/zone_access/add_registrar_zone_access.hh"
+
+#include "src/deprecated/libfred/invoicing/invoice.hh"
+
+#include "src/bin/corba/mailer_manager.hh"
+#include "src/util/time_clock.hh"
+#include "src/deprecated/libfred/credit.hh"
+#include "src/bin/corba/file_manager_client.hh"
+#include "src/deprecated/libfred/banking/bank_common.hh"
+#include "src/bin/corba/Admin.hh"
+#include "src/bin/corba/EPP.hh"
+#include "src/bin/corba/epp/epp_impl.hh"
+#include "src/util/types/money.hh"
+
+#include "util/decimal/decimal.hh"
+
+//not using UTF defined main
+#define BOOST_TEST_NO_MAIN
+
+#include "src/util/cfg/config_handler_decl.hh"
+
+#include <boost/test/unit_test.hpp>
+#include <boost/format.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time.hpp>
+#include <boost/assign/list_of.hpp>
+#include <boost/algorithm/string.hpp>
+
 #include <memory>
 #include <iostream>
 #include <string>
@@ -30,52 +72,10 @@
 #include <sys/time.h>
 #include <time.h>
 
-#include <boost/format.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/date_time.hpp>
-#include <boost/assign/list_of.hpp>
-#include <boost/algorithm/string.hpp>
-
-#include "src/util/setup_server_decl.hh"
-
-#include "src/util/cfg/handle_general_args.hh"
-#include "src/util/cfg/handle_server_args.hh"
-#include "src/util/cfg/handle_logging_args.hh"
-#include "src/util/cfg/handle_database_args.hh"
-#include "src/util/cfg/handle_corbanameservice_args.hh"
-#include "src/util/cfg/handle_registry_args.hh"
-#include "src/util/cfg/handle_rifd_args.hh"
-
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/registrar/create_registrar.hh"
-#include "src/libfred/registrar/epp_auth/add_registrar_epp_auth.hh"
-#include "src/libfred/registrar/zone_access/add_registrar_zone_access.hh"
-#include "src/libfred/invoicing/invoice.hh"
-#include "src/bin/corba/mailer_manager.hh"
-#include "src/util/time_clock.hh"
-#include "src/libfred/credit.hh"
-#include "src/bin/corba/file_manager_client.hh"
-#include "src/libfred/banking/bank_common.hh"
-#include "src/bin/corba/Admin.hh"
-#include "src/bin/corba/EPP.hh"
-#include "src/bin/corba/epp/epp_impl.hh"
-#include "src/util/types/money.hh"
-
-#include "src/util/decimal/decimal.hh"
-
-//not using UTF defined main
-#define BOOST_TEST_NO_MAIN
-
-#include "src/util/cfg/config_handler_decl.hh"
-#include <boost/test/unit_test.hpp>
-
 using namespace ::LibFred::Invoicing;
 
 class fixture_exception_handler
 {
-    std::string message_prefix;
-    bool rethrow;
 public:
     virtual ~fixture_exception_handler(){}
 
@@ -142,6 +142,9 @@ public:
             catch(...){ if(rethrow) throw; }
         }
     }//operator()
+private:
+    std::string message_prefix;
+    bool rethrow;
 };//class fixture_exception_handler
 
 struct db_conn_acquire_fixture
@@ -183,19 +186,18 @@ struct get_operation_price_result_fixture
     get_operation_price_result_fixture()
     try
     : operation_price_result(connp->exec(
-        "SELECT enum_operation.operation, price, quantity, zone.fqdn FROM price_list "
-        " join zone on price_list.zone_id = zone.id "
-        " join enum_operation on price_list.operation_id = enum_operation.id "
-        " WHERE valid_from < 'now()' "
-        " and ( valid_to is NULL or valid_to > 'now()' ) "
-        " order by valid_from desc "))
+        "SELECT enum_operation.operation, price, quantity, zone.fqdn "
+        "FROM price_list "
+        "JOIN zone on price_list.zone_id = zone.id "
+        "JOIN enum_operation on price_list.operation_id = enum_operation.id "
+        "WHERE valid_from < 'now()' AND (valid_to is NULL OR valid_to > 'now()') "
+        "ORDER BY valid_from DESC"))
 
     {}
     catch(...)
     {
         fixture_exception_handler("get_operation_price_result_fixture ctor exception", true)();
     }
-
 protected:
     ~get_operation_price_result_fixture()
     {}
@@ -288,7 +290,6 @@ struct create_zone_fixture
     {
         fixture_exception_handler("create_zone_fixture ctor exception", true)();
     }
-
 protected:
     ~create_zone_fixture()
     {}
@@ -298,7 +299,7 @@ struct zone_fixture
     : virtual db_conn_acquire_fixture
       , virtual create_zone_fixture
 {
-        Database::Result zone_result;
+    Database::Result zone_result;
 
     zone_fixture()
     try
@@ -319,12 +320,10 @@ struct zone_fixture
     {
         fixture_exception_handler("zone_fixture ctor exception", true)();
     }
-
 protected:
     ~zone_fixture()
     {}
 };
-
 
 struct operation_price_fixture
     : virtual db_conn_acquire_fixture
@@ -471,7 +470,6 @@ protected:
     }
 };
 
-
 struct try_insert_invoice_prefix_fixture
     : virtual zone_fixture
     , virtual invoice_manager_fixture
@@ -513,20 +511,16 @@ struct try_insert_invoice_prefix_fixture
             fixture_exception_handler("try_insert_invoice_prefix_fixture ctor exception", true)();
         }
     }
-
 protected:
     ~try_insert_invoice_prefix_fixture()
     {}
 };
 
-
 struct registrar_fixture
     : virtual db_conn_acquire_fixture
       , virtual zone_fixture
 {
-
     Database::Result registrar_result;
-
 
     unsigned long long create_test_registrar(const std::string& registrar_handle, bool vat = true)
     {
@@ -543,7 +537,6 @@ struct registrar_fixture
         ctx.commit_transaction();
         return id;
     }//create_test_registrar
-
 
     registrar_fixture()
     {
@@ -686,7 +679,6 @@ struct registrar_fixture
 
             }//for vat
 
-
             for(int in_zone = 0; in_zone < 2; ++in_zone)
             {
                 for(int vat = 0; vat < 2; ++vat )
@@ -768,7 +760,7 @@ struct create_deposit_invoice_fixture
         else
             throw std::runtime_error("count_dph error");
 
-        LOGGER(PACKAGE).debug (
+        LOGGER.debug (
             boost::format("count_dph price %1% vat_reverse %2% vat %3%")
             % price % vat_reverse % vat);
 
@@ -830,7 +822,7 @@ struct create_deposit_invoice_fixture
         Money vat =   price * vat_reverse;
         vat.round_half_up(2);
 
-       LOGGER(PACKAGE).debug (
+       LOGGER.debug (
            boost::format("count_dph price %1% vat_reverse %2% vat %3%")
            % price % vat_reverse % vat);
 
@@ -881,7 +873,6 @@ struct create_deposit_invoice_fixture
 
         return pay_vat ? count_dph(price,vat_reverse) : Money("0");
     }
-
 
     create_deposit_invoice_fixture()
     {
@@ -1259,7 +1250,6 @@ struct create_deposit_invoice_fixture
             fixture_exception_handler("create_deposit_invoice_fixture ctor exception", true)();
         }
 }
-
 protected:
     ~create_deposit_invoice_fixture()
     {}
@@ -1414,13 +1404,10 @@ struct create_geneppoperation_fixture
           fixture_exception_handler("create_geneppoperation_fixture ctor exception", true)();
       }
 }
-
 protected:
   ~create_geneppoperation_fixture()
   {}
 };
-
-
 
 struct Case_invoice_registrar1_Fixture
     : virtual db_conn_acquire_fixture
@@ -1450,7 +1437,6 @@ struct Case_invoice_registrar1_Fixture
 BOOST_AUTO_TEST_SUITE( TestInvoice2 )
 
 const std::string server_name = "test-invoice2";
-
 
 BOOST_FIXTURE_TEST_CASE( invoice_registrar1, Case_invoice_registrar1_Fixture )
 {

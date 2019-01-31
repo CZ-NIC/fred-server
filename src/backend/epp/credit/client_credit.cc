@@ -22,8 +22,8 @@
 #include "src/backend/epp/epp_result_failure.hh"
 #include "src/backend/epp/epp_result_code.hh"
 
-#include "src/libfred/registrar/get_registrar_zone_credit.hh"
-#include "src/libfred/registrar/info_registrar.hh"
+#include "libfred/registrar/get_registrar_zone_credit.hh"
+#include "libfred/registrar/info_registrar.hh"
 
 namespace Epp {
 namespace Credit {

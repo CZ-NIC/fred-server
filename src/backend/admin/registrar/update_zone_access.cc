@@ -17,12 +17,12 @@
  */
 
 #include "src/backend/admin/registrar/update_zone_access.hh"
-#include "src/libfred/registrar/zone_access/add_registrar_zone_access.hh"
-#include "src/libfred/registrar/zone_access/exceptions.hh"
-#include "src/libfred/registrar/zone_access/update_registrar_zone_access.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/util/log/context.hh"
-#include "src/util/log/logger.hh"
+#include "libfred/registrar/zone_access/add_registrar_zone_access.hh"
+#include "libfred/registrar/zone_access/exceptions.hh"
+#include "libfred/registrar/zone_access/update_registrar_zone_access.hh"
+#include "libfred/opcontext.hh"
+#include "util/log/context.hh"
+#include "util/log/logger.hh"
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/optional.hpp>
@@ -51,7 +51,7 @@ private:
 void update_zone_access(const LibFred::Registrar::ZoneAccess::RegistrarZoneAccesses& _zones)
 {
     LOGGING_CONTEXT(log_ctx);
-    LOGGER(PACKAGE).debug("Registrar handle: " + _zones.registrar_handle);
+    LOGGER.debug("Registrar handle: " + _zones.registrar_handle);
 
     LibFred::OperationContextCreator ctx;
     for (const auto& zone : _zones.zone_accesses)
@@ -69,7 +69,7 @@ void update_zone_access(const LibFred::Registrar::ZoneAccess::RegistrarZoneAcces
 
             if (zone.from_date.is_special() && zone.to_date.is_special())
             {
-                LOGGER(PACKAGE).info(operation_name + "No update data");
+                LOGGER.info(operation_name + "No update data");
                 throw ZoneAccessNoUpdateData();
             }
             boost::optional<boost::gregorian::date> from_date = boost::none;
@@ -86,12 +86,12 @@ void update_zone_access(const LibFred::Registrar::ZoneAccess::RegistrarZoneAcces
             }
             catch (const LibFred::Registrar::ZoneAccess::NonexistentZoneAccess& e)
             {
-                LOGGER(PACKAGE).warning(operation_name + e.what());
+                LOGGER.warning(operation_name + e.what());
                 throw NonexistentZoneAccess();
             }
             catch (const std::exception& e)
             {
-                LOGGER(PACKAGE).error(operation_name + e.what());
+                LOGGER.error(operation_name + e.what());
                 throw UpdateZoneAccessException();
             }
         }
@@ -105,7 +105,7 @@ void update_zone_access(const LibFred::Registrar::ZoneAccess::RegistrarZoneAcces
                     _zones.registrar_handle.empty();
             if (missing_params)
             {
-                LOGGER(PACKAGE).info(operation_name + ": Missing parameters - " +
+                LOGGER.info(operation_name + ": Missing parameters - " +
                                 (zone.from_date.is_special() ? "from_date " : "") +
                                 (zone.zone_fqdn.empty() ? "zone_fqdn " : "")  +
                                 (_zones.registrar_handle.empty() ? "registrar_handle " : ""));
@@ -121,17 +121,17 @@ void update_zone_access(const LibFred::Registrar::ZoneAccess::RegistrarZoneAcces
             }
             catch (const LibFred::Registrar::ZoneAccess::NonexistentRegistrar& e)
             {
-                LOGGER(PACKAGE).warning(operation_name + e.what());
+                LOGGER.warning(operation_name + e.what());
                 throw ZoneAccessNonexistentRegistrar();
             }
             catch (const LibFred::Registrar::ZoneAccess::NonexistentZone& e)
             {
-                LOGGER(PACKAGE).warning(operation_name + e.what());
+                LOGGER.warning(operation_name + e.what());
                 throw NonexistentZone();
             }
             catch (const std::exception& e)
             {
-                LOGGER(PACKAGE).error(operation_name + e.what());
+                LOGGER.error(operation_name + e.what());
                 throw UpdateZoneAccessException();
             }
         }

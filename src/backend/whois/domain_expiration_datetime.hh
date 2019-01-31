@@ -1,8 +1,8 @@
 #ifndef DOMAIN_EXPIRATION_DATETIME_HH_564FEC20D41643E9B256B3FAF736A818
 #define DOMAIN_EXPIRATION_DATETIME_HH_564FEC20D41643E9B256B3FAF736A818
 
-#include "src/libfred/opcontext.hh"
-#include "src/util/optional_value.hh"
+#include "libfred/opcontext.hh"
+#include "util/optional_value.hh"
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace Fred {

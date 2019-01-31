@@ -27,7 +27,7 @@
 #include "src/backend/epp/nsset/info_nsset_localized_output_data.hh"
 #include "src/backend/epp/nsset/nsset_handle_registration_obstruction_localized.hh"
 #include "src/deprecated/util/util.hh"
-#include "src/util/map_at.hh"
+#include "util/map_at.hh"
 
 #include <boost/asio.hpp>
 #include <boost/optional.hpp>

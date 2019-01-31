@@ -24,7 +24,7 @@
 #include "src/backend/epp/public_request/create_authinfo_request_registry_email.hh"
 #include "src/backend/public_request/exceptions.hh"
 #include "src/backend/public_request/object_type.hh"
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 #include <string>
 

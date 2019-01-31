@@ -21,7 +21,7 @@
 #include "src/backend/epp/epp_response_failure.hh"
 #include "src/backend/epp/epp_result_code.hh"
 #include "src/backend/epp/epp_result_failure.hh"
-#include "src/libfred/registrable_object/keyset/check_keyset.hh"
+#include "libfred/registrable_object/keyset/check_keyset.hh"
 
 namespace Epp {
 namespace Keyset {

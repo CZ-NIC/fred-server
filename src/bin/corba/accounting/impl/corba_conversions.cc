@@ -25,7 +25,7 @@
 #include "src/bin/corba/util/corba_conversions_isodatetime.hh"
 #include "src/bin/corba/util/corba_conversions_money.hh"
 #include "src/bin/corba/util/corba_conversions_string.hh"
-#include "src/util/log/logger.hh"
+#include "util/log/logger.hh"
 
 #include <string>
 
@@ -66,7 +66,7 @@ unwrap_Registry_Accounting_PaymentData(
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw InvalidPaymentData();
     }
 }
@@ -95,7 +95,7 @@ wrap_Backend_Accounting_PlaceAddress_to_Registry_Accounting_PlaceAddress(
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw InvalidPaymentData();
     }
 }
@@ -120,7 +120,7 @@ wrap_Backend_Accounting_Registrar_to_Registry_Accounting_Registrar(
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw InvalidPaymentData();
     }
 }

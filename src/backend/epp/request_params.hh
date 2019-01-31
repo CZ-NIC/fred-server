@@ -19,7 +19,7 @@
 #ifndef REQUEST_PARAMS_HH_98806E060ED8431C9014D6E0847B513E
 #define REQUEST_PARAMS_HH_98806E060ED8431C9014D6E0847B513E
 
-#include "src/util/util.hh"
+#include "util/util.hh"
 
 #include <boost/optional.hpp>
 

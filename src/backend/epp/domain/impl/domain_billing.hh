@@ -19,7 +19,7 @@
 #ifndef DOMAIN_BILLING_HH_10AD57BE03DA43C183FEF188BEA3D93D
 #define DOMAIN_BILLING_HH_10AD57BE03DA43C183FEF188BEA3D93D
 
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>

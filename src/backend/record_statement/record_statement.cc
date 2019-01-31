@@ -26,19 +26,19 @@
 #include "src/backend/buffer.hh"
 #include "src/backend/record_statement/impl/factory.hh"
 #include "src/backend/record_statement/impl/record_statement_xml.hh"
-#include "src/libfred/object/object_type.hh"
-#include "src/libfred/object_state/get_object_states.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/registrable_object/contact/info_contact.hh"
-#include "src/libfred/registrable_object/domain/info_domain.hh"
-#include "src/libfred/registrable_object/keyset/info_keyset.hh"
-#include "src/libfred/registrable_object/nsset/info_nsset.hh"
-#include "src/libfred/registrar/info_registrar.hh"
-#include "src/libfred/zone/zone.hh"
-#include "src/util/log/context.hh"
-#include "src/util/random.hh"
+#include "libfred/object/object_type.hh"
+#include "libfred/object_state/get_object_states.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/registrable_object/contact/info_contact.hh"
+#include "libfred/registrable_object/domain/info_domain.hh"
+#include "libfred/registrable_object/keyset/info_keyset.hh"
+#include "libfred/registrable_object/nsset/info_nsset.hh"
+#include "libfred/registrar/info_registrar.hh"
+#include "libfred/zone/zone.hh"
+#include "util/log/context.hh"
+#include "util/random.hh"
 #include "src/util/subprocess.hh"
-#include "src/util/util.hh"
+#include "util/util.hh"
 
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
@@ -124,22 +124,22 @@ Buffer RecordStatementImpl::domain_printout(
     }
     catch (const ObjectDeleteCandidate& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw;
     }
     catch (const ObjectNotFound& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw;
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("Unknown error");
+        LOGGER.error("Unknown error");
         throw;
     }
 }
@@ -158,22 +158,22 @@ Buffer RecordStatementImpl::nsset_printout(
     }
     catch (const ObjectDeleteCandidate& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw;
     }
     catch (const ObjectNotFound& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw;
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("Unknown error");
+        LOGGER.error("Unknown error");
         throw;
     }
 }
@@ -189,22 +189,22 @@ Buffer RecordStatementImpl::keyset_printout(
     }
     catch (const ObjectDeleteCandidate& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw;
     }
     catch (const ObjectNotFound& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw;
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("Unknown error");
+        LOGGER.error("Unknown error");
         throw;
     }
 }
@@ -221,22 +221,22 @@ Buffer RecordStatementImpl::contact_printout(
     }
     catch (const ObjectDeleteCandidate& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw;
     }
     catch (const ObjectNotFound& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw;
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("Unknown error");
+        LOGGER.error("Unknown error");
         throw;
     }
 }
@@ -256,17 +256,17 @@ Buffer RecordStatementImpl::historic_domain_printout(
     }
     catch (const ObjectNotFound& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw;
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("Unknown error");
+        LOGGER.error("Unknown error");
         throw;
     }
 }
@@ -283,17 +283,17 @@ Buffer RecordStatementImpl::historic_nsset_printout(
     }
     catch (const ObjectNotFound& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw;
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("Unknown error");
+        LOGGER.error("Unknown error");
         throw;
     }
 }
@@ -310,17 +310,17 @@ Buffer RecordStatementImpl::historic_keyset_printout(
     }
     catch (const ObjectNotFound& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw;
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("Unknown error");
+        LOGGER.error("Unknown error");
         throw;
     }
 }
@@ -337,17 +337,17 @@ Buffer RecordStatementImpl::historic_contact_printout(
     }
     catch (const ObjectNotFound& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw;
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("Unknown error");
+        LOGGER.error("Unknown error");
         throw;
     }
 }
@@ -364,22 +364,22 @@ void RecordStatementImpl::send_domain_printout(
     }
     catch (const ObjectDeleteCandidate& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw;
     }
     catch (const ObjectNotFound& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw;
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("Unknown error");
+        LOGGER.error("Unknown error");
         throw;
     }
 }
@@ -398,22 +398,22 @@ void RecordStatementImpl::send_nsset_printout(
     }
     catch (const ObjectDeleteCandidate& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw;
     }
     catch (const ObjectNotFound& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw;
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("Unknown error");
+        LOGGER.error("Unknown error");
         throw;
     }
 }
@@ -429,22 +429,22 @@ void RecordStatementImpl::send_keyset_printout(
     }
     catch (const ObjectDeleteCandidate& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw;
     }
     catch (const ObjectNotFound& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw;
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("Unknown error");
+        LOGGER.error("Unknown error");
         throw;
     }
 }
@@ -461,22 +461,22 @@ void RecordStatementImpl::send_contact_printout(
     }
     catch (const ObjectDeleteCandidate& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw;
     }
     catch (const ObjectNotFound& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw;
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("Unknown error");
+        LOGGER.error("Unknown error");
         throw;
     }
 }

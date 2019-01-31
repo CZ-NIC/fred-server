@@ -19,8 +19,8 @@
 #ifndef CREATE_CONTACT_DATA_FILTER_HH_6CF3D340D5D780F311B845C8C34088AE//date "+%s.%N"|md5sum|tr "[a-f]" "[A-F]"
 #define CREATE_CONTACT_DATA_FILTER_HH_6CF3D340D5D780F311B845C8C34088AE
 
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/registrable_object/contact/create_contact.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/registrable_object/contact/create_contact.hh"
 #include "src/backend/epp/contact/create_contact_input_data.hh"
 #include "src/backend/epp/session_data.hh"
 

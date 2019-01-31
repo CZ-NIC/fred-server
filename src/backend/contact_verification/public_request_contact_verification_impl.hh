@@ -1,8 +1,8 @@
 #ifndef PUBLIC_REQUEST_CONTACT_VERIFICATION_IMPL_HH_91F6DA6A61164878BE2AC425B01B71AA
 #define PUBLIC_REQUEST_CONTACT_VERIFICATION_IMPL_HH_91F6DA6A61164878BE2AC425B01B71AA
 
-#include "src/libfred/public_request/public_request.hh"
-#include "src/util/factory.hh"
+#include "src/deprecated/libfred/public_request/public_request.hh"
+#include "util/factory.hh"
 
 namespace Fred {
 namespace Backend {

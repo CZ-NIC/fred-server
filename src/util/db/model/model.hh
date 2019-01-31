@@ -44,7 +44,7 @@
 
 #include "config.h"
 #ifdef HAVE_LOGGER
-#include "src/util/log/logger.hh"
+#include "util/log/logger.hh"
 #endif
 
 using namespace boost::assign;
@@ -74,7 +74,7 @@ public:
       Field::PrimaryKey<_class, sequence_type> *pk = list.template getPrimaryKey<sequence_type>();
       if (pk && pk->getAttrs().isDefault() && pk->getField(_object).isChanged()) {
 #ifdef HAVE_LOGGER
-          LOGGER(PACKAGE).debug("PK is set; data was already inserted (insert aborted)");
+          LOGGER.debug("PK is set; data was already inserted (insert aborted)");
 #endif
           return;
       }
@@ -99,15 +99,15 @@ public:
 #ifdef HAVE_LOGGER 
     }
     catch (Model::Exception &_err) {
-      LOGGER(PACKAGE).alert(_err.what());
+      LOGGER.alert(_err.what());
       throw;
     }
     catch (Database::Exception &_err) {
-      LOGGER(PACKAGE).error(_err.what());
+      LOGGER.error(_err.what());
       throw;
     }
     catch (...) {
-      LOGGER(PACKAGE).info("Unknown error");
+      LOGGER.info("Unknown error");
       throw;
     }
 #endif
@@ -144,15 +144,15 @@ public:
 #ifdef HAVE_LOGGER
     }
     catch (Model::Exception &_err) {
-      LOGGER(PACKAGE).alert(_err.what());
+      LOGGER.alert(_err.what());
       throw;
     }
     catch (Database::Exception &_err) {
-      LOGGER(PACKAGE).error(_err.what());
+      LOGGER.error(_err.what());
       throw;
     }
     catch (...) {
-      LOGGER(PACKAGE).error("Unknown error");
+      LOGGER.error("Unknown error");
       throw;
     }
 #endif
@@ -174,15 +174,15 @@ public:
 #ifdef HAVE_LOGGER
     }
     catch (Model::Exception &_err) {
-      LOGGER(PACKAGE).error(_err.what());
+      LOGGER.error(_err.what());
       throw;
     }
     catch (Database::Exception &_err) {
-      LOGGER(PACKAGE).error(_err.what());
+      LOGGER.error(_err.what());
       throw;
     }
     catch (...) {
-      LOGGER(PACKAGE).error("Unknown error");
+      LOGGER.error("Unknown error");
       throw;
     }
 #endif
@@ -200,11 +200,11 @@ public:
       this->reloadByPrimaryKey_(_object);
     }
     catch (Database::NoDataFound &_err) {
-      LOGGER(PACKAGE).info(_err.what());
+      LOGGER.info(_err.what());
       throw;
     }
     catch (Database::Exception &_err) {
-      LOGGER(PACKAGE).error(_err.what());
+      LOGGER.error(_err.what());
       throw;
     }
   }
@@ -267,7 +267,7 @@ private:
     }
     catch (Model::Exception &_err) {
       /* PK is not a sequence, PK should be already set */
-      LOGGER(PACKAGE).debug(boost::format("PK is not a sequence type: %1%") % _err.what());
+      LOGGER.debug(boost::format("PK is not a sequence type: %1%") % _err.what());
     }
   }
 

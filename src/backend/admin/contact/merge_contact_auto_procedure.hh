@@ -7,11 +7,11 @@
  */
 
 #include "src/backend/admin/contact/merge_contact_reporting.hh"
-#include "src/libfred/registrable_object/contact/merge_contact_email_notification_data.hh"
-#include "src/libfred/registrable_object/contact/merge_contact_selection.hh"
-#include "src/libfred/logger_client.hh"
-#include "src/libfred/mailer.hh"
-#include "src/util/optional_value.hh"
+#include "libfred/registrable_object/contact/merge_contact_email_notification_data.hh"
+#include "libfred/registrable_object/contact/merge_contact_selection.hh"
+#include "src/deprecated/libfred/logger_client.hh"
+#include "libfred/mailer.hh"
+#include "util/optional_value.hh"
 
 #include <ostream>
 

@@ -19,9 +19,9 @@
 #ifndef DOMAIN_OUTPUT_HH_185F3D29A6954423AF5335D867A82AFD
 #define DOMAIN_OUTPUT_HH_185F3D29A6954423AF5335D867A82AFD
 
-#include "src/libfred/registrable_object/domain/info_domain_data.hh"
+#include "libfred/registrable_object/domain/info_domain_data.hh"
 #include "src/backend/epp/domain/info_domain.hh"
-#include "src/libfred/object_state/get_object_states.hh"
+#include "libfred/object_state/get_object_states.hh"
 
 #include <vector>
 

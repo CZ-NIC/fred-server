@@ -1,10 +1,10 @@
 #include "src/bin/corba/admin/public_request_mojeid.hh"
 
-#include "src/libfred/contact_verification/contact_verification_state.hh"
-#include "src/libfred/mailer.hh"
-#include "src/libfred/object_states.hh"
-#include "src/libfred/object_states.hh"
-#include "src/libfred/public_request/public_request_impl.hh"
+#include "src/deprecated/libfred/contact_verification/contact_verification_state.hh"
+#include "libfred/mailer.hh"
+#include "src/deprecated/libfred/object_states.hh"
+#include "src/deprecated/libfred/object_states.hh"
+#include "src/deprecated/libfred/public_request/public_request_impl.hh"
 #include "src/util/types/birthdate.hh"
 
 namespace CorbaConversion {
@@ -121,7 +121,7 @@ public:
 
     void invalidateAction()
     {
-        LOGGER(PACKAGE).debug(boost::format("invalidation request id=%1%") % this->getId());
+        LOGGER.debug(boost::format("invalidation request id=%1%") % this->getId());
         /* just send email - note that difference between succesfully
          * processed email and invalidated email is done
          * by setting status_ = PRS_INVALIDATED which is passed to email in
@@ -133,7 +133,7 @@ public:
 
     void processAction(bool _check)
     {
-        LOGGER(PACKAGE).debug(boost::format("processing validation request id=%1%") % this->getId());
+        LOGGER.debug(boost::format("processing validation request id=%1%") % this->getId());
 
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);

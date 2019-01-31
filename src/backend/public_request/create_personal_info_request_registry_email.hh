@@ -20,8 +20,8 @@
 #define CREATE_PERSONAL_INFO_REQUEST_REGISTRY_EMAIL_HH_C2C4E21E8D3841E895A1A20E286A659E
 
 #include "src/backend/public_request/object_type.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/util/optional_value.hh"
+#include "libfred/opcontext.hh"
+#include "util/optional_value.hh"
 
 #include <string>
 

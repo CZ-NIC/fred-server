@@ -16,16 +16,16 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/registrable_object/domain/check_domain.hh"
-#include "src/libfred/registrable_object/domain/create_domain.hh"
-#include "src/libfred/registrable_object/domain/create_domain_name_blacklist_id.hh"
-#include "src/libfred/registrable_object/domain/delete_domain.hh"
-#include "src/libfred/registrable_object/domain/info_domain.hh"
-#include "src/libfred/registrable_object/domain/info_domain_diff.hh"
-#include "src/libfred/registrable_object/domain/renew_domain.hh"
-#include "src/libfred/registrable_object/domain/update_domain.hh"
-#include "src/util/random_data_generator.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/registrable_object/domain/check_domain.hh"
+#include "libfred/registrable_object/domain/create_domain.hh"
+#include "libfred/registrable_object/domain/create_domain_name_blacklist_id.hh"
+#include "libfred/registrable_object/domain/delete_domain.hh"
+#include "libfred/registrable_object/domain/info_domain.hh"
+#include "libfred/registrable_object/domain/info_domain_diff.hh"
+#include "libfred/registrable_object/domain/renew_domain.hh"
+#include "libfred/registrable_object/domain/update_domain.hh"
+#include "util/random_data_generator.hh"
 #include "test/setup/fixtures.hh"
 
 #include <boost/test/unit_test.hpp>

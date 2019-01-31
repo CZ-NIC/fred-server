@@ -9,9 +9,9 @@
 #include "src/deprecated/model/registrar_filter.hh"
 #include "src/deprecated/model/object_state_filter.hh"
 
-#include "src/util/log/logger.hh"
+#include "util/log/logger.hh"
 #include "src/util/settings.hh"
-#include "src/util/types/convert_sql_base.hh"
+#include "util/types/convert_sql_base.hh"
 
 
 namespace Database {
@@ -82,7 +82,7 @@ public:
     Table *o = findTable("object_history");
 
     std::string history = (_settings ? _settings->get("filter.history") : "not_set");
-    LOGGER(PACKAGE).debug(boost::format("attribute `filter.history' is set to `%1%'") 
+    LOGGER.debug(boost::format("attribute `filter.history' is set to `%1%'") 
                                      % history);
     if (history == "off" || history == "not_set") {
       // addDeleteTime().setNULL();

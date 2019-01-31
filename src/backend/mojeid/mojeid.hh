@@ -27,8 +27,8 @@
 #include "src/backend/buffer.hh"
 #include "src/backend/mojeid/mojeid_checkers.hh"
 #include "src/backend/mojeid/mojeid_impl_data_conversion.hh"
-#include "src/libfred/messages/messages_impl.hh"
-#include "src/libfred/object/object_state.hh"
+#include "src/deprecated/libfred/messages/messages_impl.hh"
+#include "libfred/object/object_state.hh"
 
 #include <stdexcept>
 #include <vector>

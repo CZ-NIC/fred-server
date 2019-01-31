@@ -39,7 +39,7 @@
 #include <boost/function.hpp>
 
 #include "src/util/db/statement.hh"
-#include "src/util/db/value.hh"
+#include "util/db/value.hh"
 #include "src/util/db/query/query_common.hh"
 #include "src/util/db/query/query_old.hh"
 

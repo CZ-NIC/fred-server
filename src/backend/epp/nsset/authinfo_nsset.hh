@@ -20,7 +20,7 @@
 #define AUTHINFO_NSSET_HH_B4AAB152A95346139EE47913CD22228C
 
 #include "src/backend/epp/session_data.hh"
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 #include <string>
 

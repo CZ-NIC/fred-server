@@ -7,10 +7,10 @@
 #include <utility>
 
 #include "src/bin/corba/connection_releaser.hh"
-#include "src/libfred/db_settings.hh"
+#include "libfred/db_settings.hh"
 #include "src/util/corba_wrapper.hh"
-#include "src/util/log/context.hh"
-#include "src/util/log/logger.hh"
+#include "util/log/context.hh"
+#include "util/log/logger.hh"
 
 #include "src/util/setup_server.hh"
 
@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
                     !config_item.empty();
                     config_item = AccumulatedConfig::get_instance().pop_front())
             {
-                Logging::Manager::instance_ref().get(PACKAGE).debug(config_item);
+                Logging::Manager::instance_ref().debug(config_item);
             }
         }
 

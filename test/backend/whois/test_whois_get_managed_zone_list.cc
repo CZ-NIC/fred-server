@@ -1,8 +1,8 @@
 #include "test/backend/whois/fixture_common.hh"
 
 #include "src/backend/whois/zone_list.hh"
-#include "src/libfred/db_settings.hh"
-#include "src/util/random_data_generator.hh"
+#include "libfred/db_settings.hh"
+#include "util/random_data_generator.hh"
 
 BOOST_AUTO_TEST_SUITE(TestWhois)
 BOOST_AUTO_TEST_SUITE(get_managed_zone_list)

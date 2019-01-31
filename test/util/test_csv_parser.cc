@@ -18,10 +18,10 @@
 
 #include <sstream>
 
-#include "src/util/util.hh"
-#include "src/util/printable.hh"
+#include "util/util.hh"
+#include "util/printable.hh"
 #include "src/util/csv_parser.hh"
-#include "src/util/random_data_generator.hh"
+#include "util/random_data_generator.hh"
 
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN

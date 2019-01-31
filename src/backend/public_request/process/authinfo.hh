@@ -19,11 +19,11 @@
 #ifndef AUTHINFO_HH_F36A7EC6F242440990E2AB46C3F298BC
 #define AUTHINFO_HH_F36A7EC6F242440990E2AB46C3F298BC
 
-#include "src/libfred/mailer.hh"
+#include "libfred/mailer.hh"
 #include "src/bin/corba/mailer_manager.hh"
 #include "src/bin/corba/file_manager_client.hh"
-#include "src/libfred/file_transferer.hh"
-#include "src/libfred/public_request/public_request_type_iface.hh"
+#include "src/deprecated/libfred/file_transferer.hh"
+#include "libfred/public_request/public_request_type_iface.hh"
 
 namespace Fred {
 namespace Backend {

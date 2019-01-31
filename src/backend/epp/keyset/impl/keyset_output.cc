@@ -18,7 +18,7 @@
 
 #include "src/backend/epp/keyset/impl/keyset_output.hh"
 #include "src/backend/epp/keyset/status_value.hh"
-#include "src/libfred/registrable_object/keyset/info_keyset.hh"
+#include "libfred/registrable_object/keyset/info_keyset.hh"
 
 namespace Epp {
 namespace Keyset {

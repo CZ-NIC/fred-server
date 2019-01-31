@@ -25,7 +25,7 @@
 
 #include "src/bin/corba/admin/admin_impl.hh"
 #include "src/deprecated/util/dbsql.hh"
-#include "src/libfred/registry.hh"
+#include "src/deprecated/libfred/registry.hh"
 
 #include <boost/program_options.hpp>
 #include <fstream>

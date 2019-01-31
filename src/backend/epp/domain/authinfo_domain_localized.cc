@@ -24,7 +24,7 @@
 #include "src/backend/epp/epp_response_success.hh"
 #include "src/backend/epp/epp_response_success_localized.hh"
 #include "src/backend/epp/impl/action.hh"
-#include "src/util/log/context.hh"
+#include "util/log/context.hh"
 
 #include <boost/format.hpp>
 #include <boost/format/free_funcs.hpp>

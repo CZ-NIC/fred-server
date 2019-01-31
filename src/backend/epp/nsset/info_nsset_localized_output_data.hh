@@ -22,7 +22,7 @@
 #include "src/backend/epp/nsset/dns_host_output.hh"
 #include "src/backend/epp/object_states_localized.hh"
 #include "src/backend/epp/nsset/status_value.hh"
-#include "src/util/db/nullable.hh"
+#include "util/db/nullable.hh"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/optional.hpp>

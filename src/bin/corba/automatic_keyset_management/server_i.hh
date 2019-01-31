@@ -27,7 +27,7 @@
 #define SERVER_I_HH_CDE0FA6A11B2420DA0BEF6806B47CDB7
 
 #include "src/bin/corba/AutomaticKeysetManagement.hh"
-#include "src/libfred/logger_client.hh"
+#include "src/deprecated/libfred/logger_client.hh"
 
 #include <string>
 #include <set>

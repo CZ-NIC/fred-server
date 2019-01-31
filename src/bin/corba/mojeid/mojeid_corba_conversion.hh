@@ -30,7 +30,7 @@
 #include "src/bin/corba/MojeID.hh"
 #include "src/bin/corba/NullableIsoDate.hh"
 #include "src/util/corba_conversion.hh"
-#include "src/util/db/nullable.hh"
+#include "util/db/nullable.hh"
 
 namespace CorbaConversion {
 

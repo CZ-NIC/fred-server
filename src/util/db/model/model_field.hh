@@ -38,7 +38,7 @@
 #include "src/util/db/model/job_queue.hh"
 
 #include "src/util/db/query/query.hh"
-#include "src/util/db/value.hh"
+#include "util/db/value.hh"
 
 
 using namespace boost::posix_time;

@@ -37,9 +37,9 @@
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/handle_general_args.hh"
 
-#include "src/util/map_at.hh"
+#include "util/map_at.hh"
 #include "src/util/subprocess.hh"
-#include "src/util/printable.hh"
+#include "util/printable.hh"
 #include "src/util/optys/handle_optys_mail_args.hh"
 #include "src/util/optys/download_client.hh"
 

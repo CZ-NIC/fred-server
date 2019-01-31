@@ -16,14 +16,14 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/opexception.hh"
-#include "src/libfred/registrar/create_registrar.hh"
-#include "src/libfred/registrar/exceptions.hh"
-#include "src/libfred/registrar/info_registrar_data.hh"
-#include "src/libfred/registrar/info_registrar.hh"
-#include "src/libfred/registrar/update_registrar.hh"
-#include "src/util/random_data_generator.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/opexception.hh"
+#include "libfred/registrar/create_registrar.hh"
+#include "libfred/registrar/exceptions.hh"
+#include "libfred/registrar/info_registrar_data.hh"
+#include "libfred/registrar/info_registrar.hh"
+#include "libfred/registrar/update_registrar.hh"
+#include "util/random_data_generator.hh"
 #include "test/libfred/registrar/util.hh"
 #include "test/setup/fixtures.hh"
 

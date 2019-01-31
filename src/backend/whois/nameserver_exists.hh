@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 namespace Fred {
 namespace Backend {

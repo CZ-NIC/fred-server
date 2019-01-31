@@ -17,8 +17,8 @@
  */
 
 
-#include "src/libfred/poll/create_poll_message.hh"
-#include "src/libfred/poll/message_type.hh"
+#include "libfred/poll/create_poll_message.hh"
+#include "libfred/poll/message_type.hh"
 
 #include <boost/test/unit_test.hpp>
 

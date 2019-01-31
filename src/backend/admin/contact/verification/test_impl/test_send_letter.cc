@@ -19,16 +19,16 @@
 #include "src/backend/admin/contact/verification/test_impl/test_send_letter.hh"
 
 #include "src/backend/admin/contact/verification/test_impl/util.hh"
-#include "src/libfred/registrable_object/contact/check_contact.hh"
-#include "src/libfred/registrable_object/contact/copy_contact.hh"
-#include "src/libfred/registrable_object/contact/create_contact.hh"
-#include "src/libfred/registrable_object/contact/delete_contact.hh"
-#include "src/libfred/registrable_object/contact/info_contact.hh"
-#include "src/libfred/registrable_object/contact/info_contact_diff.hh"
-#include "src/libfred/registrable_object/contact/merge_contact.hh"
-#include "src/libfred/registrable_object/contact/update_contact.hh"
-#include "src/libfred/registrable_object/contact/verification/enum_test_status.hh"
-#include "src/util/util.hh"
+#include "libfred/registrable_object/contact/check_contact.hh"
+#include "libfred/registrable_object/contact/copy_contact.hh"
+#include "libfred/registrable_object/contact/create_contact.hh"
+#include "libfred/registrable_object/contact/delete_contact.hh"
+#include "libfred/registrable_object/contact/info_contact.hh"
+#include "libfred/registrable_object/contact/info_contact_diff.hh"
+#include "libfred/registrable_object/contact/merge_contact.hh"
+#include "libfred/registrable_object/contact/update_contact.hh"
+#include "libfred/registrable_object/contact/verification/enum_test_status.hh"
+#include "util/util.hh"
 
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>

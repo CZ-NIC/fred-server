@@ -20,7 +20,7 @@
 #define UPDATE_NSSET_INPUT_DATA_HH_B0E1C0624AD24C77A6BFA86F6A640FAC
 
 #include "src/backend/epp/nsset/dns_host_input.hh"
-#include "src/util/optional_value.hh"
+#include "util/optional_value.hh"
 
 #include <boost/optional.hpp>
 

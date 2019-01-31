@@ -19,7 +19,7 @@
 #ifndef FIXTURE_HH_4F069C0F72FF443BBE9FD1B658EC5B46
 #define FIXTURE_HH_4F069C0F72FF443BBE9FD1B658EC5B46
 
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 namespace Test {
 

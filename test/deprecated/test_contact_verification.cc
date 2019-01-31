@@ -38,7 +38,7 @@
 #include <boost/assign/list_of.hpp>
 
 #include "src/util/time_clock.hh"
-#include "src/util/random_data_generator.hh"
+#include "util/random_data_generator.hh"
 #include "src/util/concurrent_queue.hh"
 
 #include "src/backend/contact_verification/public_request_contact_verification_impl.hh"
@@ -62,12 +62,12 @@
 #include <utility>
 
 #include "src/bin/corba/mailer_manager.hh"
-#include "src/libfred/contact_verification/contact.hh"
-#include "src/libfred/object_states.hh"
+#include "src/deprecated/libfred/contact_verification/contact.hh"
+#include "src/deprecated/libfred/object_states.hh"
 #include "src/backend/contact_verification/contact_verification_impl.hh"
 #include "test/deprecated/checks.hh"
-#include "src/libfred/contact_verification/contact_verification_checkers.hh"
-#include "src/util/idn_utils.hh"
+#include "src/deprecated/libfred/contact_verification/contact_verification_checkers.hh"
+#include "util/idn_utils.hh"
 //test-contact-verification.cc
 
 BOOST_AUTO_TEST_SUITE(TestContactVerification_old)

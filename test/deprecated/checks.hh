@@ -21,9 +21,9 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "src/libfred/db_settings.hh"
+#include "libfred/db_settings.hh"
 #include "src/util/types/optional.hh"
-#include "src/libfred/contact_verification/contact.hh"
+#include "src/deprecated/libfred/contact_verification/contact.hh"
 
 ///check public request on contact, report args of the check, return public request id
 inline unsigned long long check_public_request_on_contact(::LibFred::Contact::Verification::Contact& fcvc

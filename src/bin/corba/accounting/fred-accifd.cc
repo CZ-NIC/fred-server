@@ -18,10 +18,12 @@
 
 #include "src/bin/corba/accounting/accounting_i.hh"
 #include "src/bin/corba/connection_releaser.hh"
-#include "src/libfred/db_settings.hh"
+#include "libfred/db_settings.hh"
 
-#include "src/libfred/banking/bank_manager.hh"
+#include "src/deprecated/libfred/banking/bank_manager.hh"
 #include "src/bin/cli/commonclient.hh"
+#include "src/bin/corba/file_manager_client.hh"
+#include "src/deprecated/libfred/file.hh"
 
 #include "src/util/cfg/config_handler.hh"
 #include "src/util/cfg/handle_database_args.hh"
@@ -29,8 +31,8 @@
 #include "src/util/cfg/handle_logging_args.hh"
 #include "src/util/cfg/handle_server_args.hh"
 #include "src/util/corba_wrapper.hh"
-#include "src/util/log/context.hh"
-#include "src/util/log/logger.hh"
+#include "util/log/context.hh"
+#include "util/log/logger.hh"
 #include "src/util/setup_server.hh"
 
 #include <boost/assign/list_of.hpp>

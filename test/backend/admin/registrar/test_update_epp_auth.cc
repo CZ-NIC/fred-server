@@ -17,9 +17,9 @@
  */
 
 #include "src/backend/admin/registrar/update_epp_auth.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/registrar/epp_auth/get_registrar_epp_auth.hh"
-#include "src/libfred/registrar/epp_auth/registrar_epp_auth_data.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/registrar/epp_auth/get_registrar_epp_auth.hh"
+#include "libfred/registrar/epp_auth/registrar_epp_auth_data.hh"
 #include "test/backend/admin/registrar/fixtures.hh"
 #include "test/libfred/registrar/epp_auth/util.hh"
 #include "test/setup/fixtures.hh"

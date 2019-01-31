@@ -3,7 +3,7 @@
 
 #include "tools/disclose_flags_updater/options.hh"
 #include "tools/disclose_flags_updater/disclose_settings.hh"
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 #include <vector>
 #include <utility>

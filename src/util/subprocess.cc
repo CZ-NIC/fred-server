@@ -4,7 +4,7 @@
 #ifndef HAVE_LOGGER
 #error HAVE_LOGGER is required!
 #endif
-#include "src/util/log/logger.hh"
+#include "util/log/logger.hh"
 
 #include <sys/select.h>
 #include <fcntl.h>
@@ -629,7 +629,7 @@ bool is_child_running(::pid_t _child_pid, int *_status)
     }
     const std::string err_msg = std::string("is_child_running() waitpid failure: ") + std::strerror(errno);
     try {
-        Logging::Manager::instance_ref().get(PACKAGE).error(err_msg);
+        Logging::Manager::instance_ref().error(err_msg);
     }
     catch (...) { }
     throw std::runtime_error(err_msg);
@@ -747,12 +747,12 @@ void cmd_process(
         {
             const std::string err_msg(std::strerror(errno));
             Logging::Manager::instance_ref()
-            .get(PACKAGE).error("cmd_process() execv failed: " + err_msg);
+            .error("cmd_process() execv failed: " + err_msg);
         }
         else
         {
             Logging::Manager::instance_ref()
-            .get(PACKAGE).error("cmd_process() execv should never return without error");
+            .error("cmd_process() execv should never return without error");
         }
     }
     catch (...) { }
@@ -1063,7 +1063,7 @@ void kill_child(::pid_t _child_pid)
         return;
     }
 
-    try { Logging::Manager::instance_ref().get(PACKAGE).debug("kill_child call"); } catch (...) { }
+    try { Logging::Manager::instance_ref().debug("kill_child call"); } catch (...) { }
 
     static const int kill_failure = -1;
     if (::kill(_child_pid, SIGKILL) == kill_failure)
@@ -1081,7 +1081,7 @@ void kill_child(::pid_t _child_pid)
         const std::string err_msg = std::string("kill_child kill() failure: ") + std::strerror(errno);
         try
         {
-            Logging::Manager::instance_ref().get(PACKAGE).error(err_msg);
+            Logging::Manager::instance_ref().error(err_msg);
         }
         catch (...) { }
         throw std::runtime_error(err_msg);
@@ -1106,7 +1106,7 @@ void kill_child(::pid_t _child_pid)
             const std::string err_msg("kill_child waitpid() failure: " + std::string(std::strerror(errno)));
             try
             {
-                Logging::Manager::instance_ref().get(PACKAGE).error(err_msg);
+                Logging::Manager::instance_ref().error(err_msg);
             }
             catch (...) { }
             throw std::runtime_error(err_msg);
@@ -1115,7 +1115,7 @@ void kill_child(::pid_t _child_pid)
     try
     {
         Logging::Manager::instance_ref()
-        .get(PACKAGE).debug("kill_child success: killed child done");
+        .debug("kill_child success: killed child done");
     }
     catch (...) { }
 }

@@ -19,10 +19,10 @@
 #include <boost/test/unit_test.hpp>
 #include <string>
 
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/opexception.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/opexception.hh"
 
-#include "src/util/random_data_generator.hh"
+#include "util/random_data_generator.hh"
 #include "test/setup/fixtures.hh"
 #include "test/libfred/util.hh"
 

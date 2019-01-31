@@ -22,7 +22,7 @@
 #include "src/backend/epp/keyset/create_keyset_config_data.hh"
 #include "src/backend/epp/keyset/create_keyset_input_data.hh"
 #include "src/backend/epp/session_data.hh"
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 

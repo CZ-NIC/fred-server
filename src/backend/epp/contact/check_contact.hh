@@ -22,7 +22,7 @@
 #include "src/backend/epp/contact/check_contact_config_data.hh"
 #include "src/backend/epp/contact/contact_handle_registration_obstruction.hh"
 #include "src/backend/epp/session_data.hh"
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 #include <map>
 #include <set>

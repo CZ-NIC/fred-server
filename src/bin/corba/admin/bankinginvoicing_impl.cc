@@ -3,9 +3,9 @@
 #include "src/bin/corba/admin/bankinginvoicing_impl.hh"
 
 #include "src/bin/corba/admin/common.hh"
-#include "src/util/log/logger.hh"
-#include "src/util/log/context.hh"
-#include "src/libfred/banking/bank_manager.hh"
+#include "util/log/logger.hh"
+#include "util/log/context.hh"
+#include "src/deprecated/libfred/banking/bank_manager.hh"
 
 #include "src/bin/corba/file_manager_client.hh"
 #include "src/bin/corba/connection_releaser.hh"

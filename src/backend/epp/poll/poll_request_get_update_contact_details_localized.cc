@@ -30,7 +30,7 @@
 #include "src/backend/epp/impl/action.hh"
 #include "src/backend/epp/localization.hh"
 #include "src/backend/epp/poll/poll_request_get_update_contact_details.hh"
-#include "src/util/log/context.hh"
+#include "util/log/context.hh"
 
 #include <boost/format.hpp>
 #include <boost/format/free_funcs.hpp>

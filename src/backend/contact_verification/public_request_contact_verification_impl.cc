@@ -1,16 +1,16 @@
 #include "src/backend/contact_verification/public_request_contact_verification_impl.hh"
-#include "src/libfred/contact_verification/contact.hh"
-#include "src/libfred/contact_verification/contact_conditional_identification_impl.hh"
-#include "src/libfred/contact_verification/contact_identification_impl.hh"
-#include "src/libfred/contact_verification/contact_verification_password.hh"
-#include "src/libfred/contact_verification/contact_verification_validators.hh"
-#include "src/libfred/object_states.hh"
-#include "src/libfred/public_request/public_request_impl.hh"
-#include "src/libfred/registrable_object/contact/undisclose_address.hh"
+#include "src/deprecated/libfred/contact_verification/contact.hh"
+#include "src/deprecated/libfred/contact_verification/contact_conditional_identification_impl.hh"
+#include "src/deprecated/libfred/contact_verification/contact_identification_impl.hh"
+#include "src/deprecated/libfred/contact_verification/contact_verification_password.hh"
+#include "src/deprecated/libfred/contact_verification/contact_verification_validators.hh"
+#include "src/deprecated/libfred/object_states.hh"
+#include "src/deprecated/libfred/public_request/public_request_impl.hh"
+#include "libfred/registrable_object/contact/undisclose_address.hh"
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/handle_registry_args.hh"
-#include "src/util/factory.hh"
-#include "src/util/map_at.hh"
+#include "util/factory.hh"
+#include "util/map_at.hh"
 #include "src/util/types/birthdate.hh"
 
 #include <stdexcept>
@@ -60,7 +60,7 @@ public:
 
     void processAction(bool _check)
     {
-        LOGGER(PACKAGE).debug(
+        LOGGER.debug(
                 boost::format("processing public request id=%1%")
                 % this->getId());
 
@@ -144,7 +144,7 @@ public:
 
     void processAction(bool _check)
     {
-        LOGGER(PACKAGE).debug(
+        LOGGER.debug(
                 boost::format("processing public request id=%1%")
                 % this->getId());
 

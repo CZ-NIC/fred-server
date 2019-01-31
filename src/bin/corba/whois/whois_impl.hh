@@ -19,13 +19,13 @@
 #ifndef WHOIS_IMPL_HH_83BEF5EF7B324EEDB301BC49529CD44A
 #define WHOIS_IMPL_HH_83BEF5EF7B324EEDB301BC49529CD44A
 
-#include <memory>
-#include <string>
+#include "src/bin/corba/Whois.hh"
 
-#include "src/libfred/registry.hh"
+#include "src/deprecated/libfred/registry.hh"
 //#include "src/deprecated/util/dbsql.hh"
 
-#include "src/bin/corba/Whois.hh"
+#include <memory>
+#include <string>
 
 class ccReg_Whois_i : public POA_ccReg::Whois,
   public PortableServer::RefCountServantBase
@@ -73,7 +73,6 @@ public:
   Registry::ObjectStatusDescSeq* getContactStatusDescList(const char *lang);
   Registry::ObjectStatusDescSeq* getNSSetStatusDescList(const char *lang);
   Registry::ObjectStatusDescSeq* getKeySetStatusDescList(const char *lang);
-
 };//class ccReg_Whois_i
 
-#endif
+#endif//WHOIS_IMPL_HH_83BEF5EF7B324EEDB301BC49529CD44A

@@ -18,8 +18,8 @@
 
 #include "src/backend/public_request/type/public_request_authinfo.hh"
 #include "src/backend/public_request/type/get_iface_of.hh"
-#include "src/libfred/public_request/public_request_status.hh"
-#include "src/libfred/public_request/public_request_on_status_action.hh"
+#include "libfred/public_request/public_request_status.hh"
+#include "libfred/public_request/public_request_on_status_action.hh"
 #include "src/backend/public_request/type/impl/implemented_by.hh"
 
 namespace Fred {

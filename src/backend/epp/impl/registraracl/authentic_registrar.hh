@@ -19,7 +19,8 @@
 #ifndef AUTHENTIC_REGISTRAR_HH_6357347039744A8094FD4FEEDD63D8CE
 #define AUTHENTIC_REGISTRAR_HH_6357347039744A8094FD4FEEDD63D8CE
 
-#include "src/libfred/db_settings.hh"
+#include "libfred/db_settings.hh"
+#include "src/deprecated/libfred/db_settings.hh"
 
 #include <exception>
 #include <string>
@@ -47,7 +48,7 @@ private:
     unsigned long long registrar_acl_id_;
 };
 
-} // namespace Epp::RegistrarAcl
-} // namespace Epp
+}//namespace Epp::RegistrarAcl
+}//namespace Epp
 
-#endif
+#endif//AUTHENTIC_REGISTRAR_HH_6357347039744A8094FD4FEEDD63D8CE

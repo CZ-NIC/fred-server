@@ -18,9 +18,9 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "src/libfred/object/registry_object_type.hh"
+#include "libfred/object/registry_object_type.hh"
 
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 #include "test/setup/fixtures.hh"
 

@@ -17,8 +17,8 @@
  */
 
 #include "src/backend/admin/domain/create_expired_domain.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/opexception.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/opexception.hh"
 #include "test/backend/admin/domain/fixtures.hh"
 #include "test/setup/fixtures.hh"
 

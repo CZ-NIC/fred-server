@@ -25,9 +25,9 @@
 #define CREATE_TEST_IMPL_PROTOTYPES_HH_9627A790EC304B26805677091D2BE100
 
 #include "src/backend/admin/contact/verification/test_impl/test_interface.hh"
-#include "src/libfred/documents.hh"
-#include "src/libfred/mailer.hh"
-#include "src/libfred/messages/messages_impl.hh"
+#include "src/deprecated/libfred/documents.hh"
+#include "libfred/mailer.hh"
+#include "src/deprecated/libfred/messages/messages_impl.hh"
 
 #include <map>
 #include <memory>

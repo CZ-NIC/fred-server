@@ -23,10 +23,10 @@
 #include "src/backend/epp/domain/info_domain_config_data.hh"
 #include "src/backend/epp/domain/status_value.hh"
 #include "src/backend/epp/session_data.hh"
-#include "src/libfred/registrable_object/domain/enum_validation_extension.hh"
-#include "src/libfred/object/object_state.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/util/db/nullable.hh"
+#include "libfred/registrable_object/domain/enum_validation_extension.hh"
+#include "libfred/object/object_state.hh"
+#include "libfred/opcontext.hh"
+#include "util/db/nullable.hh"
 
 #include <boost/date_time/gregorian/greg_date.hpp>
 #include <boost/date_time/posix_time/ptime.hpp>

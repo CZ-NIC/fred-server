@@ -21,8 +21,8 @@
 
 #include "src/backend/automatic_keyset_management/impl/logger_request_object_type.hh"
 #include "src/backend/automatic_keyset_management/impl/logger_request_property.hh"
-#include "src/libfred/logger_client.hh"
-#include "src/libfred/requests/request.hh"
+#include "src/deprecated/libfred/logger_client.hh"
+#include "src/deprecated/libfred/requests/request.hh"
 
 #include <string>
 

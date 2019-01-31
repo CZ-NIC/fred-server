@@ -14,11 +14,11 @@
 #include "src/backend/public_request/object_type.hh"
 #include "src/bin/corba/util/corba_conversions_buffer.hh"
 #include "src/bin/corba/util/corba_conversions_string.hh"
-#include "src/libfred/documents.hh"
-#include "src/libfred/mailer.hh"
-#include "src/libfred/public_request/create_public_request.hh"
+#include "src/deprecated/libfred/documents.hh"
+#include "libfred/mailer.hh"
+#include "libfred/public_request/create_public_request.hh"
 #include "src/util/corba_conversion.hh"
-#include "src/util/optional_value.hh"
+#include "util/optional_value.hh"
 
 #include <map>
 #include <stdexcept>
@@ -85,27 +85,27 @@ Server_i::~Server_i()
     }
     catch (const Fred::Backend::PublicRequest::NoContactEmail& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw Registry::PublicRequest::INVALID_EMAIL();
     }
     catch (const Fred::Backend::PublicRequest::ObjectNotFound& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw Registry::PublicRequest::OBJECT_NOT_FOUND();
     }
     catch (const Fred::Backend::PublicRequest::ObjectTransferProhibited& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw Registry::PublicRequest::OBJECT_TRANSFER_PROHIBITED();
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw Registry::PublicRequest::INTERNAL_SERVER_ERROR();
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("unexpected exception");
+        LOGGER.error("unexpected exception");
         throw Registry::PublicRequest::INTERNAL_SERVER_ERROR();
     }
 }
@@ -151,27 +151,27 @@ CORBA::ULongLong Server_i::create_authinfo_request_non_registry_email(
     }
     catch (const Fred::Backend::PublicRequest::ObjectNotFound& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw Registry::PublicRequest::OBJECT_NOT_FOUND();
     }
     catch (const Fred::Backend::PublicRequest::ObjectTransferProhibited& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw Registry::PublicRequest::OBJECT_TRANSFER_PROHIBITED();
     }
     catch (const Fred::Backend::PublicRequest::InvalidContactEmail& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw Registry::PublicRequest::INVALID_EMAIL();
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw Registry::PublicRequest::INTERNAL_SERVER_ERROR();
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("unexpected exception");
+        LOGGER.error("unexpected exception");
         throw Registry::PublicRequest::INTERNAL_SERVER_ERROR();
     }
 }
@@ -219,42 +219,42 @@ CORBA::ULongLong Server_i::create_block_unblock_request(
     }
     catch (const Fred::Backend::PublicRequest::ObjectNotFound& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw Registry::PublicRequest::OBJECT_NOT_FOUND();
     }
     catch (const Fred::Backend::PublicRequest::InvalidContactEmail& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw Registry::PublicRequest::INVALID_EMAIL();
     }
     catch (const Fred::Backend::PublicRequest::HasDifferentBlock& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw Registry::PublicRequest::HAS_DIFFERENT_BLOCK();
     }
     catch (const Fred::Backend::PublicRequest::ObjectAlreadyBlocked& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw Registry::PublicRequest::OBJECT_ALREADY_BLOCKED();
     }
     catch (const Fred::Backend::PublicRequest::ObjectNotBlocked& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw Registry::PublicRequest::OBJECT_NOT_BLOCKED();
     }
     catch (const Fred::Backend::PublicRequest::OperationProhibited& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw Registry::PublicRequest::OPERATION_PROHIBITED();
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw Registry::PublicRequest::INTERNAL_SERVER_ERROR();
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("unexpected exception");
+        LOGGER.error("unexpected exception");
         throw Registry::PublicRequest::INTERNAL_SERVER_ERROR();
     }
 }
@@ -275,22 +275,22 @@ CORBA::ULongLong Server_i::create_personal_info_request_registry_email(
     }
     catch (const Fred::Backend::PublicRequest::NoContactEmail& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw Registry::PublicRequest::INVALID_EMAIL();
     }
     catch (const Fred::Backend::PublicRequest::ObjectNotFound& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw Registry::PublicRequest::OBJECT_NOT_FOUND();
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw Registry::PublicRequest::INTERNAL_SERVER_ERROR();
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("create_personal_info_request_registry_email failed due to an unexpected exception");
+        LOGGER.error("create_personal_info_request_registry_email failed due to an unexpected exception");
         throw Registry::PublicRequest::INTERNAL_SERVER_ERROR();
     }
 }
@@ -316,22 +316,22 @@ CORBA::ULongLong Server_i::create_personal_info_request_non_registry_email(
     }
     catch (const Fred::Backend::PublicRequest::InvalidContactEmail& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw Registry::PublicRequest::INVALID_EMAIL();
     }
     catch (const Fred::Backend::PublicRequest::ObjectNotFound& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw Registry::PublicRequest::OBJECT_NOT_FOUND();
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw Registry::PublicRequest::INTERNAL_SERVER_ERROR();
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("create_personal_info_request_non_registry_email failed due to an unexpected exception");
+        LOGGER.error("create_personal_info_request_non_registry_email failed due to an unexpected exception");
         throw Registry::PublicRequest::INTERNAL_SERVER_ERROR();
     }
 }
@@ -370,22 +370,22 @@ Registry::Buffer* Server_i::create_public_request_pdf(
     }
     catch (const Fred::Backend::PublicRequest::ObjectNotFound& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw Registry::PublicRequest::OBJECT_NOT_FOUND();
     }
     catch (const Fred::Backend::PublicRequest::InvalidPublicRequestType& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw Registry::PublicRequest::INVALID_PUBLIC_REQUEST_TYPE();
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw Registry::PublicRequest::INTERNAL_SERVER_ERROR();
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("unexpected exception");
+        LOGGER.error("unexpected exception");
         throw Registry::PublicRequest::INTERNAL_SERVER_ERROR();
     }
 }

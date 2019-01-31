@@ -19,7 +19,7 @@
 #ifndef UTIL_HH_AFA4EF87EFA8413CA377F7DD8B97DA23
 #define UTIL_HH_AFA4EF87EFA8413CA377F7DD8B97DA23
 
-#include "src/libfred/zone/zone_ns/info_zone_ns_data.hh"
+#include "libfred/zone/zone_ns/info_zone_ns_data.hh"
 
 namespace Test {
 

@@ -16,12 +16,12 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/registrable_object/contact/create_contact.hh"
-#include "src/libfred/registrable_object/domain/create_domain.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/registrable_object/contact/create_contact.hh"
+#include "libfred/registrable_object/domain/create_domain.hh"
 
-#include "src/libfred/object/object_state.hh"
-#include "src/libfred/object/object_type.hh"
+#include "libfred/object/object_state.hh"
+#include "libfred/object/object_type.hh"
 
 #include "src/util/cfg/config_handler.hh"
 #include "src/util/cfg/command_selection_args.hh"

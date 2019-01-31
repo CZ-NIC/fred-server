@@ -19,7 +19,7 @@
 #ifndef UTIL_HH_2EE13D72AC394742A492372492CD6F20
 #define UTIL_HH_2EE13D72AC394742A492372492CD6F20
 
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 #include "test/setup/fixtures.hh"
 
 namespace Test {

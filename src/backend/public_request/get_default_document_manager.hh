@@ -19,7 +19,7 @@
 #ifndef GET_DEFAULT_DOCUMENT_MANAGER_HH_2CA35F58124F4C64AF71A45D2CAEA4FA
 #define GET_DEFAULT_DOCUMENT_MANAGER_HH_2CA35F58124F4C64AF71A45D2CAEA4FA
 
-#include "src/libfred/documents.hh"
+#include "src/deprecated/libfred/documents.hh"
 
 #include <memory>
 

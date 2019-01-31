@@ -2,8 +2,8 @@
 #define FILTER_SETTINGS_HH_508D6A19A9E741409FDDB40174738A0B
 
 #include <map>
-#include "src/util/singleton.hh"
-#include "src/util/log/logger.hh"
+#include "util/singleton.hh"
+#include "util/log/logger.hh"
 
 namespace Database {
 namespace Filters {
@@ -15,7 +15,7 @@ public:
   }
   
   void set(const std::string& _name, const std::string& _value) {
-    LOGGER(PACKAGE).info(boost::format("Filter settings -- attribut `%1%' set to `%2%'") % _name % _value);
+    LOGGER.info(boost::format("Filter settings -- attribut `%1%' set to `%2%'") % _name % _value);
     parameters_[_name] = _value;
   }
   

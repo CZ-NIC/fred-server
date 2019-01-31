@@ -25,8 +25,8 @@
 #include "test/setup/fixtures_utils.hh"
 #include "test/libfred/notifier/util.hh"
 
-#include "src/libfred/notifier/process_one_notification_request.hh"
-#include "src/libfred/notifier/enqueue_notification.hh"
+#include "libfred/notifier/process_one_notification_request.hh"
+#include "libfred/notifier/enqueue_notification.hh"
 
 #include "src/bin/corba/mailer_manager.hh"
 

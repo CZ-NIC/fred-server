@@ -19,9 +19,9 @@
 #ifndef NSSET_OUTPUT_HH_E733861A880745A8B2CA2681046834B8
 #define NSSET_OUTPUT_HH_E733861A880745A8B2CA2681046834B8
 
-#include "src/libfred/registrable_object/nsset/info_nsset_data.hh"
+#include "libfred/registrable_object/nsset/info_nsset_data.hh"
 #include "src/backend/epp/nsset/info_nsset.hh"
-#include "src/libfred/object_state/get_object_states.hh"
+#include "libfred/object_state/get_object_states.hh"
 
 namespace Epp {
 namespace Nsset {

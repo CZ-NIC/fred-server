@@ -25,11 +25,11 @@
 #define DELETE_ALL_HH_187A1478735E49EC93BEE97776D5CF35
 
 
-#include "src/libfred/opcontext.hh"
-#include "src/util/optional_value.hh"
+#include "libfred/opcontext.hh"
+#include "util/optional_value.hh"
 
 // legacy stuff
-#include "src/libfred/db_settings.hh"
+#include "libfred/db_settings.hh"
 
 #include <string>
 

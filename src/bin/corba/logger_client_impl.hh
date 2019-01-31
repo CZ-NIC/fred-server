@@ -6,7 +6,7 @@
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <src/bin/corba/Logger.hh>
 #include "src/util/corba_wrapper_decl.hh"
-#include "src/libfred/logger_client.hh"
+#include "src/deprecated/libfred/logger_client.hh"
 
 namespace LibFred {
 namespace Logger {

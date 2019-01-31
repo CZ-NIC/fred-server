@@ -20,7 +20,7 @@
 #define GET_ID_OF_REGISTERED_OBJECT_HH_04A7BCB82CDC47FCAE74FF62B5B6D8B4
 
 #include "src/backend/public_request/object_type.hh"
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 #include <string>
 

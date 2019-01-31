@@ -22,8 +22,8 @@
  */
 
 
-#include "src/libfred/registrable_object/contact/verification/list_checks.hh"
-#include "src/libfred/registrable_object/contact/verification/create_check.hh"
+#include "libfred/registrable_object/contact/verification/list_checks.hh"
+#include "libfred/registrable_object/contact/verification/create_check.hh"
 #include "test/libfred/contact/verification/setup_utils.hh"
 #include "test/setup/fixtures.hh"
 

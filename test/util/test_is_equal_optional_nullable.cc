@@ -24,7 +24,7 @@
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN
 
-#include "src/util/is_equal_optional_nullable.hh"
+#include "util/is_equal_optional_nullable.hh"
 #include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_SUITE(TestOptionalNullableComparison)

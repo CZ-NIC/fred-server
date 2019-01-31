@@ -22,10 +22,10 @@
  */
 
 
-#include "src/libfred/registrable_object/contact/verification/list_enum_objects.hh"
-#include "src/libfred/registrable_object/contact/verification/enum_test_status.hh"
-#include "src/libfred/registrable_object/contact/verification/enum_check_status.hh"
-#include "src/libfred/registrable_object/contact/verification/enum_testsuite_handle.hh"
+#include "libfred/registrable_object/contact/verification/list_enum_objects.hh"
+#include "libfred/registrable_object/contact/verification/enum_test_status.hh"
+#include "libfred/registrable_object/contact/verification/enum_check_status.hh"
+#include "src/deprecated/libfred/registrable_object/contact/verification/enum_testsuite_handle.hh"
 #include "test/libfred/contact/verification/setup_utils.hh"
 #include "test/setup/fixtures.hh"
 

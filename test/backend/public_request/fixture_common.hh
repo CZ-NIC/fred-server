@@ -1,7 +1,7 @@
 #ifndef FIXTURE_COMMON_HH_44EF6841264E4440A7EC39975EEC188E
 #define FIXTURE_COMMON_HH_44EF6841264E4440A7EC39975EEC188E
 
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 Database::Result get_db_public_request(
     const ::LibFred::OperationContext& ctx,

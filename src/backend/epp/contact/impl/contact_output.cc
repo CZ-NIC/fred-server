@@ -19,9 +19,9 @@
 #include "src/backend/epp/contact/impl/contact_output.hh"
 
 #include "src/backend/epp/contact/status_value.hh"
-#include "src/libfred/object/object_id_handle_pair.hh"
-#include "src/libfred/object/object_state.hh"
-#include "src/util/enum_conversion.hh"
+#include "libfred/object/object_id_handle_pair.hh"
+#include "libfred/object/object_state.hh"
+#include "util/enum_conversion.hh"
 
 #include <string>
 

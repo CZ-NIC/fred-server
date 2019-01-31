@@ -16,6 +16,35 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "src/util/setup_server_decl.hh"
+#include "src/util/time_clock.hh"
+
+#include "libfred/opcontext.hh"
+#include "libfred/registrar/create_registrar.hh"
+
+#include "src/util/cfg/handle_general_args.hh"
+#include "src/util/cfg/handle_server_args.hh"
+#include "src/util/cfg/handle_logging_args.hh"
+#include "src/util/cfg/handle_database_args.hh"
+#include "src/util/cfg/handle_threadgroup_args.hh"
+#include "src/util/cfg/handle_corbanameservice_args.hh"
+
+#include "src/bin/corba/whois/whois_impl.hh"
+
+//not using UTF defined main
+#define BOOST_TEST_NO_MAIN
+
+#include "src/util/cfg/config_handler_decl.hh"
+
+#include <boost/test/unit_test.hpp>
+#include <boost/format.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/thread.hpp>
+#include <boost/thread/barrier.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time.hpp>
+#include <boost/assign/list_of.hpp>
+
 #include <memory>
 #include <iostream>
 #include <string>
@@ -27,36 +56,6 @@
 #include <queue>
 #include <sys/time.h>
 #include <time.h>
-
-#include <boost/format.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/thread.hpp>
-#include <boost/thread/barrier.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/date_time.hpp>
-#include <boost/assign/list_of.hpp>
-
-#include "src/util/setup_server_decl.hh"
-#include "src/util/time_clock.hh"
-#include "src/libfred/registrar.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/registrar/create_registrar.hh"
-
-#include "src/util/cfg/handle_general_args.hh"
-#include "src/util/cfg/handle_server_args.hh"
-#include "src/util/cfg/handle_logging_args.hh"
-#include "src/util/cfg/handle_database_args.hh"
-#include "src/util/cfg/handle_threadgroup_args.hh"
-#include "src/util/cfg/handle_corbanameservice_args.hh"
-
-
-#include "src/bin/corba/whois/whois_impl.hh"
-
-//not using UTF defined main
-#define BOOST_TEST_NO_MAIN
-
-#include "src/util/cfg/config_handler_decl.hh"
-#include <boost/test/unit_test.hpp>
 #include <utility>
 
 BOOST_AUTO_TEST_SUITE(TestWhois)

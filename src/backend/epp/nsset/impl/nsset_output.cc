@@ -18,8 +18,8 @@
 
 #include "src/backend/epp/nsset/impl/nsset_output.hh"
 
-#include "src/libfred/registrable_object/nsset.hh"
-#include "src/libfred/registrable_object/nsset/info_nsset_data.hh"
+#include "src/deprecated/libfred/registrable_object/nsset.hh"
+#include "libfred/registrable_object/nsset/info_nsset_data.hh"
 #include "src/backend/epp/nsset/impl/nsset.hh"
 #include "src/backend/epp/nsset/status_value.hh"
 

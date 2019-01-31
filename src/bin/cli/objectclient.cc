@@ -19,17 +19,15 @@
 #include "src/bin/cli/objectclient.hh"
 
 #include "src/bin/cli/commonclient.hh"
-#include "src/libfred/registry.hh"
-#include "src/libfred/object_states.hh"
-#include "src/libfred/object_states.hh"
-#include "src/libfred/poll/create_state_messages.hh"
-#include "src/libfred/poll/create_low_credit_messages.hh"
-#include "src/libfred/poll/message_type_set.hh"
+#include "src/deprecated/libfred/registry.hh"
+#include "src/deprecated/libfred/object_states.hh"
+#include "src/deprecated/libfred/object_states.hh"
+#include "libfred/poll/create_state_messages.hh"
+#include "libfred/poll/create_low_credit_messages.hh"
+#include "libfred/poll/message_type_set.hh"
 #include "src/bin/cli/remove_delete_candidates.hh"
 
-#include "src/util/log/logger.hh"
-
-#include <stdexcept>
+#include "util/log/logger.hh"
 
 #include <omniORB4/CORBA.h>
 
@@ -37,6 +35,8 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/optional.hpp>
 #include <boost/lexical_cast.hpp>
+
+#include <stdexcept>
 
 namespace Admin {
 
@@ -135,7 +135,7 @@ ObjectClient::update_states()
     const unsigned long long id = object_update_states_params.object_id.is_value_set()
             ? object_update_states_params.object_id.get_value()
             : 0;
-    Logging::Manager::instance_ref().get(PACKAGE).debug(
+    Logging::Manager::instance_ref().debug(
             "regMan->updateObjectStates id: " + boost::lexical_cast<std::string>(id));
     regMan->updateObjectStates(id);
 }
@@ -144,7 +144,7 @@ ObjectClient::update_states()
 ObjectClient::DeleteObjectsResult
 ObjectClient::deleteObjects(const std::string& _of_given_types)
 {
-    LOGGER("tracer").trace("ObjectClient::deleteObjects");
+    LOGGER.trace("ObjectClient::deleteObjects");
     const auto object_types = construct_set_of_object_types_from_cli_options(_of_given_types);
     const boost::optional<unsigned> max_number_of_selected_candidates =
             delete_objects_params.object_delete_limit.is_value_set() &&
@@ -179,12 +179,12 @@ ObjectClient::deleteObjects(const std::string& _of_given_types)
     }
     catch (const std::exception& e)
     {
-        LOG(ERROR_LOG, "deleteObjects(): Exception caught: %s", e.what());
+        LOGGER.error("deleteObjects(): Exception caught: " + std::string(e.what()));
         return DeleteObjectsResult::failure;
     }
     catch (...)
     {
-        LOG(ERROR_LOG, "deleteObjects(): Unknown exception caught");
+        LOGGER.error("deleteObjects(): Unknown exception caught");
         return DeleteObjectsResult::failure;
     }
 }
@@ -214,11 +214,13 @@ ObjectClient::regular_procedure()
             }
             catch (const NameService::NOT_RUNNING&)
             {
-                LOG(ERROR_LOG, "regular_procedure(): resolve attempt %d of %d catching NOT_RUNNING", attempt, resolve_tries);
+                LOG<Logging::Log::EventImportance::err>(
+                    "regular_procedure(): resolve attempt %d of %d catching NOT_RUNNING", attempt, resolve_tries);
             }
             catch (const NameService::BAD_CONTEXT&)
             {
-                LOG(ERROR_LOG, "regular_procedure(): resolve attempt %d of %d catching BAD_CONTEXT", attempt, resolve_tries);
+                LOG<Logging::Log::EventImportance::err>(
+                    "regular_procedure(): resolve attempt %d of %d catching BAD_CONTEXT", attempt, resolve_tries);
             }
         }
         MailerManager mailMan(cc->getNS());
@@ -270,7 +272,7 @@ ObjectClient::regular_procedure()
             : std::string();
         if (this->deleteObjects(deleteTypes) != DeleteObjectsResult::success)
         {
-            LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): Error has occurred in deleteObject");
+            LOGGER.error("Admin::ObjectClient::regular_procedure(): Error has occurred in deleteObject");
             return;
         }
         const std::string notifyExcept = object_regular_procedure_params.notify_except_types.is_value_set()
@@ -287,27 +289,27 @@ ObjectClient::regular_procedure()
     }
     catch (const ccReg::Admin::SQL_ERROR&)
     {
-        LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): SQL_ERROR caught");
+        LOGGER.error("Admin::ObjectClient::regular_procedure(): SQL_ERROR caught");
     }
     catch (const NameService::NOT_RUNNING&)
     {
-        LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): NOT_RUNNING caught");
+        LOGGER.error("Admin::ObjectClient::regular_procedure(): NOT_RUNNING caught");
     }
     catch (const NameService::BAD_CONTEXT&)
     {
-        LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): BAD_CONTEXT caught");
+        LOGGER.error("Admin::ObjectClient::regular_procedure(): BAD_CONTEXT caught");
     }
     catch (const CORBA::Exception&)
     {
-        LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): CORBA exception caught");
+        LOGGER.error("Admin::ObjectClient::regular_procedure(): CORBA exception caught");
     }
     catch (const std::exception& e)
     {
-        LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): std::exception(%s) caught", e.what());
+        LOGGER.error("Admin::ObjectClient::regular_procedure(): std::exception(" + std::string(e.what()) + ") caught");
     }
     catch (...)
     {
-        LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): unknown exception caught");
+        LOGGER.error("Admin::ObjectClient::regular_procedure(): unknown exception caught");
     }
 }
 
@@ -321,34 +323,34 @@ ObjectClient::delete_candidates()
             : std::string();
         if (this->deleteObjects(deleteTypes) != DeleteObjectsResult::success)
         {
-            LOG(ERROR_LOG, "Admin::ObjectClient::delete_candidates(): Error has occurred in deleteObject");
+            LOGGER.error("Admin::ObjectClient::delete_candidates(): Error has occurred in deleteObject");
             return;
         }
     }
     catch (const ccReg::Admin::SQL_ERROR&)
     {
-        LOG(ERROR_LOG, "Admin::ObjectClient::delete_candidates(): SQL_ERROR caught");
+        LOGGER.error("Admin::ObjectClient::delete_candidates(): SQL_ERROR caught");
     }
     catch (const NameService::NOT_RUNNING&)
     {
-        LOG(ERROR_LOG, "Admin::ObjectClient::delete_candidates(): NOT_RUNNING caught");
+        LOGGER.error("Admin::ObjectClient::delete_candidates(): NOT_RUNNING caught");
     }
     catch (const NameService::BAD_CONTEXT&)
     {
-        LOG(ERROR_LOG, "Admin::ObjectClient::delete_candidates(): BAD_CONTEXT caught");
+        LOGGER.error("Admin::ObjectClient::delete_candidates(): BAD_CONTEXT caught");
     }
     catch (const CORBA::Exception&)
     {
-        LOG(ERROR_LOG, "Admin::ObjectClient::delete_candidates(): CORBA exception caught");
+        LOGGER.error("Admin::ObjectClient::delete_candidates(): CORBA exception caught");
     }
     catch (const std::exception& e)
     {
-        LOG(ERROR_LOG, "Admin::ObjectClient::delete_candidates(): std::exception(%s) caught", e.what());
+        LOGGER.error("Admin::ObjectClient::delete_candidates(): std::exception(" + std::string(e.what()) + ") caught");
     }
     catch (...)
     {
-        LOG(ERROR_LOG, "Admin::ObjectClient::delete_candidates(): unknown exception caught");
+        LOGGER.error("Admin::ObjectClient::delete_candidates(): unknown exception caught");
     }
 }
 
-} // namespace Admin
+}//namespace Admin

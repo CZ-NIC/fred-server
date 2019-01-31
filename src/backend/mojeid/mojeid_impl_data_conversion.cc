@@ -18,7 +18,7 @@
 
 #include "src/backend/mojeid/mojeid_impl_data_conversion.hh"
 #include "src/backend/mojeid/mojeid_impl_data.hh"
-#include "src/libfred/registrable_object/contact/ssntype.hh"
+#include "src/deprecated/libfred/registrable_object/contact/ssntype.hh"
 #include "src/util/types/birthdate.hh"
 #include <boost/algorithm/string/trim.hpp>
 

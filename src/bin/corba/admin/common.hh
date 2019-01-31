@@ -9,8 +9,8 @@
 #include <iomanip>
 #include "src/bin/corba/Admin.hh"
 
-#include "src/libfred/registry.hh"
-#include "src/libfred/invoicing/invoice.hh"
+#include "src/deprecated/libfred/registry.hh"
+#include "src/deprecated/libfred/invoicing/invoice.hh"
 #include "src/util/types/money.hh"
 
 using namespace boost::posix_time;

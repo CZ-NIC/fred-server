@@ -30,7 +30,7 @@
 #include <sstream>
 #include <iomanip>
 
-#include "src/util/types/convert_common.hh"
+#include "util/types/convert_common.hh"
 
 
 /**

@@ -2,15 +2,15 @@
 #include "src/backend/admin/contact/verification/contact_states/enum.hh"
 #include "src/backend/admin/contact/verification/related_records.hh"
 #include "src/backend/admin/contact/verification/resolve_check.hh"
-#include "src/libfred/object_state/create_object_state_request_id.hh"
-#include "src/libfred/object_state/perform_object_state_request.hh"
-#include "src/libfred/registrable_object/contact/info_contact.hh"
-#include "src/libfred/registrable_object/contact/verification/enum_check_status.hh"
-#include "src/libfred/registrable_object/contact/verification/enum_testsuite_handle.hh"
-#include "src/libfred/registrable_object/contact/verification/info_check.hh"
-#include "src/libfred/registrable_object/contact/verification/update_check.hh"
+#include "libfred/object_state/create_object_state_request_id.hh"
+#include "libfred/object_state/perform_object_state_request.hh"
+#include "libfred/registrable_object/contact/info_contact.hh"
+#include "libfred/registrable_object/contact/verification/enum_check_status.hh"
+#include "src/deprecated/libfred/registrable_object/contact/verification/enum_testsuite_handle.hh"
+#include "libfred/registrable_object/contact/verification/info_check.hh"
+#include "libfred/registrable_object/contact/verification/update_check.hh"
 
-#include "src/util/log/context.hh"
+#include "util/log/context.hh"
 
 #include <boost/assign/list_of.hpp>
 #include <boost/foreach.hpp>

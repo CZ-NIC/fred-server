@@ -27,10 +27,10 @@
 #include "src/backend/epp/object_states_localized.hh"
 #include "src/backend/epp/reason.hh"
 #include "src/backend/epp/session_lang.hh"
-#include "src/libfred/object_state/get_object_state_descriptions.hh"
-#include "src/util/enum_conversion.hh"
+#include "libfred/object_state/get_object_state_descriptions.hh"
+#include "util/enum_conversion.hh"
 
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 #include <map>
 #include <set>

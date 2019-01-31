@@ -39,10 +39,10 @@
 #include <boost/lexical_cast.hpp>
 
 
-#include "src/libfred/db_settings.hh"
-#include "src/util/log/logger.hh"
-#include "src/util/log/context.hh"
-#include "src/util/random_data_generator.hh"
+#include "libfred/db_settings.hh"
+#include "util/log/logger.hh"
+#include "util/log/context.hh"
+#include "util/random_data_generator.hh"
 #include "src/util/concurrent_queue.hh"
 
 #include "src/util/cfg/handle_general_args.hh"

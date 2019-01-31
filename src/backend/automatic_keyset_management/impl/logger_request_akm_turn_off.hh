@@ -20,8 +20,8 @@
 #define LOGGER_REQUEST_AKM_TURN_OFF_HH_F202EBBD883D4D4B9A3AE01D0334D496
 
 #include "src/backend/epp/keyset/dns_key.hh"
-#include "src/libfred/logger_client.hh"
-#include "src/libfred/object/object_id_handle_pair.hh"
+#include "src/deprecated/libfred/logger_client.hh"
+#include "libfred/object/object_id_handle_pair.hh"
 
 namespace LibFred {
 namespace AutomaticKeysetManagement {

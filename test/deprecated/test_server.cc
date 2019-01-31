@@ -148,10 +148,12 @@ BOOST_AUTO_TEST_CASE( test_exception )
 
 class ConstInit
 {
-    static const int cstr = 5;
 public:
-    const int get_cstr() {return cstr;}
-
+    static constexpr int get_cstr()
+    {
+        constexpr int cstr = 5;
+        return cstr;
+    }
 };
 
 BOOST_AUTO_TEST_CASE( test_const_member_init )

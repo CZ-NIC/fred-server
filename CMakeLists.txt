@@ -46,6 +46,10 @@ if(NOT VERSION)
 endif()
 set(TARBALL_FILE_NAME "${program_name}-${VERSION}")
 
+if(NOT TARGET fred-static::library)
+    add_subdirectory(external/lib/libfred EXCLUDE_FROM_ALL)
+endif()
+
 set_default(IDL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../idl/idl)
 
 set_default(PACKAGE ${program_name})
@@ -259,9 +263,10 @@ function(set_common_properties_on_targets)
             PUBLIC "-Wall"
             PUBLIC "-Wextra"
             PUBLIC "-Wno-unused-parameter"
-            PUBLIC "-fdiagnostics-color=auto")
+            PUBLIC "-fdiagnostics-color=always")
         target_include_directories(${target_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
         target_include_directories(${target_name} PUBLIC ${CMAKE_BINARY_DIR})
+        target_include_directories(${target_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/external/lib/libfred/src)
     endforeach()
 endfunction()
 
@@ -747,259 +752,81 @@ prepare_object_files(
     src/deprecated/util/pqsql.cc
     src/deprecated/util/timeclock.cc
     src/deprecated/util/util.cc
-    src/libfred/banking/bank_common.cc
-    src/libfred/banking/bank_manager.cc
-    src/libfred/banking/exceptions.cc
-    src/libfred/banking/get_bank_accounts.cc
-    src/libfred/blacklist.cc
-    src/libfred/common_diff.cc
-    src/libfred/common_impl.cc
-    src/libfred/common_impl_new.cc
-    src/libfred/contact_verification/cancel_contact_verification.cc
-    src/libfred/contact_verification/contact.cc
-    src/libfred/contact_verification/contact_conditional_identification_impl.cc
-    src/libfred/contact_verification/contact_identification_impl.cc
-    src/libfred/contact_verification/contact_verification_checkers.cc
-    src/libfred/contact_verification/contact_verification_password.cc
-    src/libfred/contact_verification/contact_verification_state.cc
-    src/libfred/contact_verification/contact_verification_validators.cc
-    src/libfred/credit.cc
-    src/libfred/documents.cc
-    src/libfred/file.cc
-    src/libfred/filter.cc
-    src/libfred/info_buffer.cc
-    src/libfred/invoicing/invoice.cc
-    src/libfred/mail.cc
-    src/libfred/messages/messages_impl.cc
-    src/libfred/notifier/enqueue_notification.cc
-    src/libfred/notifier/gather_email_data/gather_email_addresses.cc
-    src/libfred/notifier/gather_email_data/gather_email_content.cc
-    src/libfred/notifier/gather_email_data/objecttype_specific_impl/contact.cc
-    src/libfred/notifier/gather_email_data/objecttype_specific_impl/domain.cc
-    src/libfred/notifier/gather_email_data/objecttype_specific_impl/keyset.cc
-    src/libfred/notifier/gather_email_data/objecttype_specific_impl/nsset.cc
-    src/libfred/notifier/process_one_notification_request.cc
-    src/libfred/notify.cc
-    src/libfred/object/check_handle.cc
-    src/libfred/object/generate_authinfo_password.cc
-    src/libfred/object/generated_authinfo_password.cc
-    src/libfred/object/get_id_of_registered.cc
-    src/libfred/object_impl.cc
-    src/libfred/object/object.cc
-    src/libfred/object/object_id_handle_pair.cc
-    src/libfred/object/object_impl.cc
-    src/libfred/object_state/cancel_object_state_request_id.cc
-    src/libfred/object_state/clear_admin_object_state_request_id.cc
-    src/libfred/object_state/clear_object_state_request_id.cc
-    src/libfred/object_state/create_admin_object_block_request_id.cc
-    src/libfred/object_state/create_admin_object_state_restore_request_id.cc
-    src/libfred/object_state/create_object_state_request_id.cc
-    src/libfred/object_state/get_blocking_status_desc_list.cc
-    src/libfred/object_state/get_object_state_descriptions.cc
-    src/libfred/object_state/get_object_state_id_map.cc
-    src/libfred/object_state/get_object_states_by_history_id.cc
-    src/libfred/object_state/get_object_states.cc
-    src/libfred/object_state/lock_object_state_request_lock.cc
-    src/libfred/object_state/object_has_state.cc
-    src/libfred/object_state/perform_object_state_request.cc
-    src/libfred/object_states.cc
-    src/libfred/object/transfer_object.cc
-    src/libfred/opcontext.cc
-    src/libfred/poll/create_low_credit_messages.cc
-    src/libfred/poll/create_poll_message.cc
-    src/libfred/poll/create_request_fee_info_message.cc
-    src/libfred/poll/create_request_fee_info_messages.cc
-    src/libfred/poll/create_state_messages.cc
-    src/libfred/poll/create_update_object_poll_message.cc
-    src/libfred/poll/get_request_fee_message.cc
-    src/libfred/public_request/create_public_request_auth.cc
-    src/libfred/public_request/create_public_request.cc
-    src/libfred/public_request/get_opened_public_request.cc
-    src/libfred/public_request/info_public_request_auth.cc
-    src/libfred/public_request/info_public_request.cc
-    src/libfred/public_request/public_request_authinfo_impl.cc
-    src/libfred/public_request/public_request_block_impl.cc
-    src/libfred/public_request/public_request.cc
-    src/libfred/public_request/public_request_impl.cc
-    src/libfred/public_request/public_request_lock_guard.cc
-    src/libfred/public_request/public_request_object_lock_guard.cc
-    src/libfred/public_request/public_request_personal_info_impl.cc
-    src/libfred/public_request/update_public_request.cc
-    src/libfred/registrable_object/contact.cc
-    src/libfred/registrable_object/contact/check_contact.cc
-    src/libfred/registrable_object/contact/copy_contact.cc
-    src/libfred/registrable_object/contact/copy_history_impl.cc
-    src/libfred/registrable_object/contact/create_contact.cc
-    src/libfred/registrable_object/contact/delete_contact.cc
-    src/libfred/registrable_object/contact/find_contact_duplicates.cc
-    src/libfred/registrable_object/contact/info_contact.cc
-    src/libfred/registrable_object/contact/info_contact_data.cc
-    src/libfred/registrable_object/contact/info_contact_diff.cc
-    src/libfred/registrable_object/contact/info_contact_impl.cc
-    src/libfred/registrable_object/contact/info_contact_output.cc
-    src/libfred/registrable_object/contact/merge_contact.cc
-    src/libfred/registrable_object/contact/merge_contact_email_notification_data.cc
-    src/libfred/registrable_object/contact/merge_contact_selection.cc
-    src/libfred/registrable_object/contact/place_address.cc
-    src/libfred/registrable_object/contact/transfer_contact.cc
-    src/libfred/registrable_object/contact/undisclose_address.cc
-    src/libfred/registrable_object/contact/update_contact.cc
-    src/libfred/registrable_object/contact/util.cc
-    src/libfred/registrable_object/contact/verification/create_check.cc
-    src/libfred/registrable_object/contact/verification/create_test.cc
-    src/libfred/registrable_object/contact/verification/info_check.cc
-    src/libfred/registrable_object/contact/verification/list_checks.cc
-    src/libfred/registrable_object/contact/verification/list_enum_objects.cc
-    src/libfred/registrable_object/contact/verification/update_check.cc
-    src/libfred/registrable_object/contact/verification/update_test.cc
-    src/libfred/registrable_object/domain.cc
-    src/libfred/registrable_object/domain/check_domain.cc
-    src/libfred/registrable_object/domain/copy_history_impl.cc
-    src/libfred/registrable_object/domain/create_domain.cc
-    src/libfred/registrable_object/domain/create_domain_name_blacklist_id.cc
-    src/libfred/registrable_object/domain/delete_domain.cc
-    src/libfred/registrable_object/domain/domain.cc
-    src/libfred/registrable_object/domain/domain_name.cc
-    src/libfred/registrable_object/domain/info_domain.cc
-    src/libfred/registrable_object/domain/info_domain_data.cc
-    src/libfred/registrable_object/domain/info_domain_diff.cc
-    src/libfred/registrable_object/domain/info_domain_impl.cc
-    src/libfred/registrable_object/domain/info_domain_output.cc
-    src/libfred/registrable_object/domain/renew_domain.cc
-    src/libfred/registrable_object/domain/transfer_domain.cc
-    src/libfred/registrable_object/domain/update_domain.cc
-    src/libfred/registrable_object/keyset.cc
-    src/libfred/registrable_object/keyset/check_dns_key.cc
-    src/libfred/registrable_object/keyset/check_keyset.cc
-    src/libfred/registrable_object/keyset/copy_history_impl.cc
-    src/libfred/registrable_object/keyset/create_keyset.cc
-    src/libfred/registrable_object/keyset/delete_keyset.cc
-    src/libfred/registrable_object/keyset/info_keyset.cc
-    src/libfred/registrable_object/keyset/info_keyset_data.cc
-    src/libfred/registrable_object/keyset/info_keyset_diff.cc
-    src/libfred/registrable_object/keyset/info_keyset_impl.cc
-    src/libfred/registrable_object/keyset/info_keyset_output.cc
-    src/libfred/registrable_object/keyset/transfer_keyset.cc
-    src/libfred/registrable_object/keyset/update_keyset.cc
-    src/libfred/registrable_object/nsset.cc
-    src/libfred/registrable_object/nsset/check_nsset.cc
-    src/libfred/registrable_object/nsset/copy_history_impl.cc
-    src/libfred/registrable_object/nsset/create_nsset.cc
-    src/libfred/registrable_object/nsset/delete_nsset.cc
-    src/libfred/registrable_object/nsset/info_nsset.cc
-    src/libfred/registrable_object/nsset/info_nsset_data.cc
-    src/libfred/registrable_object/nsset/info_nsset_diff.cc
-    src/libfred/registrable_object/nsset/info_nsset_impl.cc
-    src/libfred/registrable_object/nsset/info_nsset_output.cc
-    src/libfred/registrable_object/nsset/transfer_nsset.cc
-    src/libfred/registrable_object/nsset/update_nsset.cc
-    src/libfred/registrar.cc
-    src/libfred/registrar/epp_auth/add_registrar_epp_auth.cc
-    src/libfred/registrar/epp_auth/clone_registrar_epp_auth.cc
-    src/libfred/registrar/epp_auth/delete_registrar_epp_auth.cc
-    src/libfred/registrar/epp_auth/get_registrar_epp_auth.cc
-    src/libfred/registrar/epp_auth/update_registrar_epp_auth.cc
-    src/libfred/registrar/epp_auth/exceptions.cc
-    src/libfred/registrar/certification/create_registrar_certification.cc
-    src/libfred/registrar/certification/get_registrar_certifications.cc
-    src/libfred/registrar/certification/update_registrar_certification.cc
-    src/libfred/registrar/check_registrar.cc
-    src/libfred/registrar/create_registrar.cc
-    src/libfred/registrar/get_registrar_handles.cc
-    src/libfred/registrar/get_registrar_zone_credit.cc
-    src/libfred/registrar/group/cancel_registrar_group.cc
-    src/libfred/registrar/group/create_registrar_group.cc
-    src/libfred/registrar/group/get_registrar_groups.cc
-    src/libfred/registrar/group/membership/create_registrar_group_membership.cc
-    src/libfred/registrar/group/membership/end_registrar_group_membership.cc
-    src/libfred/registrar/group/membership/info_group_membership_by_group.cc
-    src/libfred/registrar/group/membership/info_group_membership_by_registrar.cc
-    src/libfred/registrar/group/update_registrar_group.cc
-    src/libfred/registrar/info_registrar.cc
-    src/libfred/registrar/info_registrar_data.cc
-    src/libfred/registrar/info_registrar_diff.cc
-    src/libfred/registrar/info_registrar_impl.cc
-    src/libfred/registrar/info_registrar_output.cc
-    src/libfred/registrar/registrar_impl.cc
-    src/libfred/registrar/registrar_zone_access.cc
-    src/libfred/registrar/registrar_zone_credit.cc
-    src/libfred/registrar/update_registrar.cc
-    src/libfred/registrar/exceptions.cc
-    src/libfred/registrar/zone_credit.cc
-    src/libfred/registrar/zone_access/add_registrar_zone_access.cc
-    src/libfred/registrar/zone_access/exceptions.cc
-    src/libfred/registrar/zone_access/get_registrar_zone_access.cc
-    src/libfred/registrar/zone_access/update_registrar_zone_access.cc
-    src/libfred/registry.cc
-    src/libfred/reminder.cc
-    src/libfred/requests/model_request.cc
-    src/libfred/requests/model_request_property_name.cc
-    src/libfred/requests/model_session.cc
-    src/libfred/requests/request_cache.cc
-    src/libfred/requests/request_list.cc
-    src/libfred/requests/request_manager.cc
-    src/libfred/requests/request_property_name_cache.cc
-    src/libfred/requests/session_cache.cc
-    src/libfred/requests/session.cc
-    src/libfred/zone.cc
-    src/libfred/zone/create_zone.cc
-    src/libfred/zone/exceptions.cc
-    src/libfred/zone/info_zone.cc
-    src/libfred/zone/info_zone_data.cc
-    src/libfred/zone/zone_ns/create_zone_ns.cc
-    src/libfred/zone/zone_ns/exceptions.cc
-    src/libfred/zone/zone_ns/info_zone_ns.cc
-    src/libfred/zone/zone_ns/update_zone_ns.cc
-    src/libfred/zone/zone_ns/util.cc
-    src/libfred/zone/zone_soa/create_zone_soa.cc
-    src/libfred/zone/zone_soa/info_zone_soa.cc
-    src/libfred/zone/zone_soa/update_zone_soa.cc
-    src/libfred/zone/update_zone.cc
-    src/libfred/zone/util.cc
-    src/libfred/zone/zone.cc
+    src/deprecated/libfred/banking/bank_common.cc
+    src/deprecated/libfred/banking/bank_manager.cc
+    src/deprecated/libfred/banking/exceptions.cc
+    src/deprecated/libfred/banking/get_bank_accounts.cc
+    src/deprecated/libfred/blacklist.cc
+    src/deprecated/libfred/common_diff.cc
+    src/deprecated/libfred/common_impl.cc
+    src/deprecated/libfred/common_impl_new.cc
+    src/deprecated/libfred/contact_verification/cancel_contact_verification.cc
+    src/deprecated/libfred/contact_verification/contact.cc
+    src/deprecated/libfred/contact_verification/contact_conditional_identification_impl.cc
+    src/deprecated/libfred/contact_verification/contact_identification_impl.cc
+    src/deprecated/libfred/contact_verification/contact_verification_checkers.cc
+    src/deprecated/libfred/contact_verification/contact_verification_password.cc
+    src/deprecated/libfred/contact_verification/contact_verification_state.cc
+    src/deprecated/libfred/contact_verification/contact_verification_validators.cc
+    src/deprecated/libfred/credit.cc
+    src/deprecated/libfred/documents.cc
+    src/deprecated/libfred/file.cc
+    src/deprecated/libfred/filter.cc
+    src/deprecated/libfred/info_buffer.cc
+    src/deprecated/libfred/invoicing/invoice.cc
+    src/deprecated/libfred/mail.cc
+    src/deprecated/libfred/messages/messages_impl.cc
+    src/deprecated/libfred/notify.cc
+    src/deprecated/libfred/object_impl.cc
+    src/deprecated/libfred/object_states.cc
+    src/deprecated/libfred/poll/create_request_fee_info_messages.cc
+    src/deprecated/libfred/public_request/public_request_authinfo_impl.cc
+    src/deprecated/libfred/public_request/public_request_block_impl.cc
+    src/deprecated/libfred/public_request/public_request.cc
+    src/deprecated/libfred/public_request/public_request_impl.cc
+    src/deprecated/libfred/public_request/public_request_personal_info_impl.cc
+    src/deprecated/libfred/registrable_object/contact.cc
+    src/deprecated/libfred/registrable_object/contact/util.cc
+    src/deprecated/libfred/registrable_object/domain.cc
+    src/deprecated/libfred/registrable_object/keyset.cc
+    src/deprecated/libfred/registrable_object/nsset.cc
+    src/deprecated/libfred/registrar.cc
+    src/deprecated/libfred/registrar/registrar_impl.cc
+    src/deprecated/libfred/registry.cc
+    src/deprecated/libfred/reminder.cc
+    src/deprecated/libfred/requests/model_request.cc
+    src/deprecated/libfred/requests/model_request_property_name.cc
+    src/deprecated/libfred/requests/model_session.cc
+    src/deprecated/libfred/requests/request_cache.cc
+    src/deprecated/libfred/requests/request_list.cc
+    src/deprecated/libfred/requests/request_manager.cc
+    src/deprecated/libfred/requests/request_property_name_cache.cc
+    src/deprecated/libfred/requests/session_cache.cc
+    src/deprecated/libfred/requests/session.cc
+    src/deprecated/libfred/zone.cc
     src/util/cfg/handle_rifd_args.cc
+    src/util/cfg/handle_database_args.cc
     src/util/corba_conversion.cc
     src/util/csv_parser.cc
-    src/util/db/param_query_composition.cc
     src/util/db/query/compound_filter.cc
     src/util/db/query/filter.cc
     src/util/db/query/query_old.cc
     src/util/db/query/simple_filter.cc
     src/util/db/test-db.cc
     src/util/db/test-mockdb.cc
-    src/util/db/value.cc
     src/util/dummy_logger.cc
     src/util/hp/crc32.cc
     src/util/hp/hp.cc
     src/util/hp/hpmailbatchstate.cc
     src/util/hp/hpmail.cc
-    src/util/idn_utils.cc
-    src/util/log/context.cc
-    src/util/log/log.cc
-    src/util/log/logger.cc
-    src/util/log/log_types.cc
-    src/util/log/test-log.cc
     src/util/optys/download_client.cc
     src/util/optys/upload_client.cc
     src/util/output_indenter.cc
-    src/util/password_storage/base64.cc
-    src/util/password_storage.cc
-    src/util/password_storage/impl/check_equality.cc
-    src/util/password_storage/impl/pbkdf2.cc
-    src/util/password_storage/impl/plaintext.cc
-    src/util/printable.cc
-    src/util/random.cc
     src/util/subprocess.cc
     src/util/types/birthdate.cc
-    src/util/types/date.cc
-    src/util/types/date_interval.cc
-    src/util/types/datetime.cc
-    src/util/types/datetime_interval.cc
-    src/util/types/id.cc
     src/util/tz/europe/prague.cc
     src/util/tz/local_timestamp.cc
     src/util/tz/utc.cc
-    src/util/util.cc
     src/util/xmlgen.cc
     test/backend/accounting/main.cc
     test/backend/accounting/test_get_registrar_by_handle.cc
@@ -1014,6 +841,7 @@ prepare_object_files(
     test/backend/admin/contact/verification/test_fill_check_queue.cc
     test/backend/admin/contact/verification/test_related_records.cc
     test/backend/admin/contact/verification/test_resolve_check.cc
+    test/libfred/contact/verification/setup_utils.cc
     test/backend/admin/contact/verification/test_run_all_enqueued_checks.cc
     test/backend/admin/domain/main.cc
     test/backend/admin/domain/test_create_expired_domain.cc
@@ -1110,135 +938,7 @@ prepare_object_files(
     test/deprecated/test_registrar_group.cc
     test/deprecated/test_server.cc
     test/deprecated/test_whois.cc
-    test/libfred/contact/test_copy_contact.cc
-    test/libfred/contact/test_create_contact.cc
-    test/libfred/contact/test_delete_contact.cc
-    test/libfred/contact/test_info_contact.cc
-    test/libfred/contact/test_merge_contact.cc
-    test/libfred/contact/test_mojeid_checkers.cc
-    test/libfred/contact/test_transfer_contact.cc
-    test/libfred/contact/test_undisclose_address.cc
-    test/libfred/contact/test_update_contact.cc
-    test/libfred/contact/verification/setup_utils.cc
-    test/libfred/contact/verification/test_create_check.cc
-    test/libfred/contact/verification/test_create_test.cc
-    test/libfred/contact/verification/test_django_email_format_check.cc
-    test/libfred/contact/verification/test_info_check.cc
-    test/libfred/contact/verification/test_list_checks.cc
-    test/libfred/contact/verification/test_list_enum_objects.cc
-    test/libfred/contact/verification/test_update_check.cc
-    test/libfred/contact/verification/test_update_test.cc
-    test/libfred/domain/test_check_domain.cc
-    test/libfred/domain/test_create_domain.cc
-    test/libfred/domain/test_create_domain_name_blacklist_id.cc
-    test/libfred/domain/test_delete_domain.cc
-    test/libfred/domain/test_domain_name.cc
-    test/libfred/domain/test_info_domain.cc
-    test/libfred/domain/test_renew_domain.cc
-    test/libfred/domain/test_transfer_domain.cc
-    test/libfred/domain/test_update_domain.cc
-    test/libfred/keyset/test_delete_keyset.cc
-    test/libfred/keyset/test_info_keyset.cc
-    test/libfred/keyset/test_transfer_keyset.cc
-    test/libfred/keyset/test_update_keyset.cc
-    test/libfred/main.cc
-    test/libfred/notifier/test_enqueue_notification.cc
-    test/libfred/notifier/test_event_on_object_enum.cc
-    test/libfred/notifier/test_gather_email_addresses_contact_create.cc
-    test/libfred/notifier/test_gather_email_addresses_contact_delete.cc
-    test/libfred/notifier/test_gather_email_addresses_contact_transfer.cc
-    test/libfred/notifier/test_gather_email_addresses_contact_update.cc
-    test/libfred/notifier/test_gather_email_addresses_domain_create.cc
-    test/libfred/notifier/test_gather_email_addresses_domain_delete.cc
-    test/libfred/notifier/test_gather_email_addresses_domain_renew.cc
-    test/libfred/notifier/test_gather_email_addresses_domain_transfer.cc
-    test/libfred/notifier/test_gather_email_addresses_domain_update.cc
-    test/libfred/notifier/test_gather_email_addresses_keyset_create.cc
-    test/libfred/notifier/test_gather_email_addresses_keyset_delete.cc
-    test/libfred/notifier/test_gather_email_addresses_keyset_transfer.cc
-    test/libfred/notifier/test_gather_email_addresses_keyset_update.cc
-    test/libfred/notifier/test_gather_email_addresses_nsset_create.cc
-    test/libfred/notifier/test_gather_email_addresses_nsset_delete.cc
-    test/libfred/notifier/test_gather_email_addresses_nsset_transfer.cc
-    test/libfred/notifier/test_gather_email_addresses_nsset_update.cc
-    test/libfred/notifier/test_gather_email_content_contact_create.cc
-    test/libfred/notifier/test_gather_email_content_contact_delete.cc
-    test/libfred/notifier/test_gather_email_content_contact_transfer.cc
-    test/libfred/notifier/test_gather_email_content_contact_update.cc
-    test/libfred/notifier/test_gather_email_content_domain_create.cc
-    test/libfred/notifier/test_gather_email_content_domain_delete.cc
-    test/libfred/notifier/test_gather_email_content_domain_renew.cc
-    test/libfred/notifier/test_gather_email_content_domain_transfer.cc
-    test/libfred/notifier/test_gather_email_content_domain_update.cc
-    test/libfred/notifier/test_gather_email_content_keyset_create.cc
-    test/libfred/notifier/test_gather_email_content_keyset_delete.cc
-    test/libfred/notifier/test_gather_email_content_keyset_transfer.cc
-    test/libfred/notifier/test_gather_email_content_keyset_update.cc
-    test/libfred/notifier/test_gather_email_content_nsset_create.cc
-    test/libfred/notifier/test_gather_email_content_nsset_delete.cc
-    test/libfred/notifier/test_gather_email_content_nsset_transfer.cc
-    test/libfred/notifier/test_gather_email_content_nsset_update.cc
-    test/libfred/notifier/test_process_one_notification_request.cc
-    test/libfred/nsset/test_delete_nsset.cc
-    test/libfred/nsset/test_info_nsset.cc
-    test/libfred/nsset/test_transfer_nsset.cc
-    test/libfred/nsset/test_update_nsset.cc
-    test/libfred/object_state/test_cancel_object_state_request_id.cc
-    test/libfred/object_state/test_create_admin_object_block_request_id.cc
-    test/libfred/object_state/test_create_admin_object_state_restore_request_id.cc
-    test/libfred/object_state/test_create_object_state_request_id.cc
-    test/libfred/object_state/test_object_state.cc
-    test/libfred/object/test_generate_authinfo_password.cc
-    test/libfred/object/test_generated_authinfo_password.cc
-    test/libfred/object/test_registry_object_type.cc
-    test/libfred/object/test_transfer_object.cc
-    test/libfred/poll/test_create_delete_contact_poll_message.cc
-    test/libfred/poll/test_create_delete_domain_poll_message.cc
-    test/libfred/poll/test_create_state_messages.cc
-    test/libfred/poll/test_create_update_object_poll_message.cc
-    test/libfred/poll/test_get_request_fee_info_message.cc
-    test/libfred/public_request/test_create_public_request_auth.cc
-    test/libfred/public_request/test_create_public_request.cc
-    test/libfred/public_request/test_update_public_request.cc
-    test/libfred/registrar/epp_auth/test_add_registrar_epp_auth.cc
-    test/libfred/registrar/epp_auth/test_clone_registrar_epp_auth.cc
-    test/libfred/registrar/epp_auth/test_delete_registrar_epp_auth.cc
-    test/libfred/registrar/epp_auth/test_get_registrar_epp_auth.cc
-    test/libfred/registrar/epp_auth/test_update_registrar_epp_auth.cc
     test/libfred/registrar/epp_auth/util.cc
-    test/libfred/registrar/certification/test_create_registrar_certification.cc
-    test/libfred/registrar/certification/test_get_registrar_certifications.cc
-    test/libfred/registrar/certification/test_update_registrar_certification.cc
-    test/libfred/registrar/group/membership/test_create.cc
-    test/libfred/registrar/group/membership/test_end.cc
-    test/libfred/registrar/group/membership/test_info_by_group.cc
-    test/libfred/registrar/group/membership/test_info_by_registrar.cc
-    test/libfred/registrar/group/test_cancel.cc
-    test/libfred/registrar/group/test_create.cc
-    test/libfred/registrar/group/test_get.cc
-    test/libfred/registrar/group/test_update.cc
-    test/libfred/registrar/test_create_registrar.cc
-    test/libfred/registrar/test_get_registrar_zone_credit.cc
-    test/libfred/registrar/test_info_registrar.cc
-    test/libfred/registrar/test_registrar_zone_access.cc
-    test/libfred/registrar/test_update_registrar.cc
-    test/libfred/registrar/zone_access/test_add_zone_access.cc
-    test/libfred/registrar/zone_access/util.cc
-    test/libfred/registrar/zone_access/test_update_zone_access.cc
-    test/libfred/test_check_handle.cc
-    test/libfred/test_opexception.cc
-    test/libfred/zone/zone_ns/test_create_zone_ns.cc
-    test/libfred/zone/zone_ns/test_info_zone_ns.cc
-    test/libfred/zone/zone_ns/test_update_zone_ns.cc
-    test/libfred/zone/zone_ns/util.cc
-    test/libfred/zone/zone_soa/test_create_zone_soa.cc
-    test/libfred/zone/zone_soa/test_info_zone_soa.cc
-    test/libfred/zone/zone_soa/test_update_zone_soa.cc
-    test/libfred/zone/zone_soa/util.cc
-    test/libfred/zone/test_create_zone.cc
-    test/libfred/zone/test_info_zone.cc
-    test/libfred/zone/test_update_zone.cc
-    test/libfred/zone/util.cc
     test/setup/fixtures.cc
     test/setup/fixtures_utils.cc
     test/setup/tests_common.cc
@@ -1255,8 +955,6 @@ prepare_object_files(
     test/util/test_optional.cc
     test/util/test_optys.cc
     test/util/test_param_query.cc
-    test/util/test_password_storage.cc
-    test/util/test_password_storage_main.cc
     test/util/test_printable.cc
     test/util/test_shellcmd.cc
     tools/contact_migration/mojeid_contact_address_import.cc
@@ -1274,36 +972,19 @@ prepare_object_files(
 # end of prepare_object_files
 
 prepare_static_library(util
-    src/util/random.cc
-    src/util/util.cc
     src/util/output_indenter.cc
-    src/util/printable.cc
     src/util/csv_parser.cc
     src/util/xmlgen.cc
-    src/util/subprocess.cc
-    src/util/idn_utils.cc)
-
-prepare_static_library(log
-    src/util/log/logger.cc
-    src/util/log/log.cc
-    src/util/log/log_types.cc
-    src/util/log/context.cc)
+    src/util/subprocess.cc)
 
 prepare_static_library(types
-    src/util/types/date.cc
-    src/util/types/date_interval.cc
-    src/util/types/datetime.cc
-    src/util/types/datetime_interval.cc
-    src/util/types/id.cc
     src/util/types/birthdate.cc)
 
 prepare_static_library(db
     src/util/db/query/query_old.cc
     src/util/db/query/filter.cc
     src/util/db/query/compound_filter.cc
-    src/util/db/query/simple_filter.cc
-    src/util/db/param_query_composition.cc
-    src/util/db/value.cc)
+    src/util/db/query/simple_filter.cc)
 
 prepare_static_library(timezones
     src/util/tz/local_timestamp.cc
@@ -1354,193 +1035,34 @@ prepare_static_library(model
     src/deprecated/model/zone_soa_filter.cc
     src/deprecated/model/message_filter.cc)
 
-prepare_static_library(fred
-    src/libfred/registry.cc
-    src/libfred/common_impl.cc
-    src/libfred/object_impl.cc
-    src/libfred/common_impl_new.cc
-    src/libfred/registrable_object/domain.cc
-    src/libfred/registrable_object/contact.cc
-    src/libfred/registrable_object/nsset.cc
-    src/libfred/registrable_object/keyset.cc
-    src/libfred/registrar.cc
-    src/libfred/credit.cc
-    src/libfred/invoicing/invoice.cc
-    src/libfred/zone.cc
-    src/libfred/zone/zone_ns/create_zone_ns.cc
-    src/libfred/zone/zone_ns/exceptions.cc
-    src/libfred/zone/zone_ns/info_zone_ns.cc
-    src/libfred/zone/zone_ns/update_zone_ns.cc
-    src/libfred/zone/zone_ns/util.cc
-    src/libfred/blacklist.cc
-    src/libfred/documents.cc
-    src/libfred/info_buffer.cc
-    src/libfred/mail.cc
-    src/libfred/notify.cc
-    src/libfred/file.cc
-    src/libfred/filter.cc
-    src/libfred/object_states.cc
-    src/libfred/common_diff.cc
-    src/libfred/reminder.cc
-    src/libfred/opcontext.cc
-    src/libfred/registrable_object/contact/copy_contact.cc
-    src/libfred/registrable_object/domain/renew_domain.cc
-    src/libfred/registrable_object/domain/update_domain.cc
-    src/libfred/registrable_object/domain/info_domain_data.cc
-    src/libfred/registrable_object/domain/info_domain_diff.cc
-    src/libfred/registrable_object/domain/info_domain.cc
-    src/libfred/registrable_object/domain/info_domain_impl.cc
-    src/libfred/registrable_object/domain/info_domain_output.cc
-    src/libfred/registrable_object/domain/create_domain_name_blacklist_id.cc
-    src/libfred/registrable_object/domain/transfer_domain.cc
-    src/libfred/registrable_object/domain/domain.cc
-    src/libfred/registrable_object/nsset/update_nsset.cc
-    src/libfred/registrable_object/nsset/info_nsset.cc
-    src/libfred/registrable_object/nsset/info_nsset_data.cc
-    src/libfred/registrable_object/nsset/info_nsset_diff.cc
-    src/libfred/registrable_object/nsset/info_nsset_impl.cc
-    src/libfred/registrable_object/nsset/info_nsset_output.cc
-    src/libfred/registrable_object/keyset/update_keyset.cc
-    src/libfred/registrable_object/keyset/create_keyset.cc
-    src/libfred/registrable_object/keyset/info_keyset_data.cc
-    src/libfred/registrable_object/keyset/info_keyset_diff.cc
-    src/libfred/registrable_object/keyset/info_keyset.cc
-    src/libfred/registrable_object/keyset/info_keyset_impl.cc
-    src/libfred/registrable_object/keyset/info_keyset_output.cc
-    src/libfred/registrable_object/keyset/transfer_keyset.cc
-    src/libfred/registrable_object/contact/delete_contact.cc
-    src/libfred/registrable_object/contact/info_contact_data.cc
-    src/libfred/registrable_object/contact/info_contact_diff.cc
-    src/libfred/registrable_object/contact/info_contact.cc
-    src/libfred/registrable_object/contact/info_contact_impl.cc
-    src/libfred/registrable_object/contact/info_contact_output.cc
-    src/libfred/registrable_object/contact/place_address.cc
-    src/libfred/registrable_object/contact/transfer_contact.cc
-    src/libfred/registrable_object/contact/undisclose_address.cc
+prepare_static_library(fred-deprecated
+    src/deprecated/libfred/registry.cc
+    src/deprecated/libfred/common_impl.cc
+    src/deprecated/libfred/object_impl.cc
+    src/deprecated/libfred/common_impl_new.cc
+    src/deprecated/libfred/registrable_object/domain.cc
+    src/deprecated/libfred/registrable_object/contact.cc
+    src/deprecated/libfred/registrable_object/nsset.cc
+    src/deprecated/libfred/registrable_object/keyset.cc
+    src/deprecated/libfred/registrar.cc
+    src/deprecated/libfred/credit.cc
+    src/deprecated/libfred/invoicing/invoice.cc
+    src/deprecated/libfred/zone.cc
+    src/deprecated/libfred/blacklist.cc
+    src/deprecated/libfred/documents.cc
+    src/deprecated/libfred/info_buffer.cc
+    src/deprecated/libfred/mail.cc
+    src/deprecated/libfred/notify.cc
+    src/deprecated/libfred/file.cc
+    src/deprecated/libfred/filter.cc
+    src/deprecated/libfred/object_states.cc
+    src/deprecated/libfred/common_diff.cc
+    src/deprecated/libfred/reminder.cc
     src/backend/mojeid/checkers.cc
-    src/libfred/object/object.cc
-    src/libfred/object/object_impl.cc
-    src/libfred/object/generate_authinfo_password.cc
-    src/libfred/object/generated_authinfo_password.cc
-    src/libfred/object/get_id_of_registered.cc
-    src/libfred/object/transfer_object.cc
-    src/libfred/object/object.cc
-    src/libfred/poll/create_poll_message.cc
-    src/libfred/poll/create_update_object_poll_message.cc
-    src/libfred/poll/get_request_fee_message.cc
-    src/libfred/poll/create_request_fee_info_message.cc
-    src/libfred/poll/create_request_fee_info_messages.cc
-    src/libfred/poll/create_low_credit_messages.cc
-    src/libfred/poll/create_state_messages.cc
-    src/libfred/registrable_object/contact/copy_history_impl.cc
-    src/libfred/registrable_object/contact/merge_contact.cc
-    src/libfred/registrable_object/contact/create_contact.cc
-    src/libfred/registrable_object/contact/update_contact.cc
+    src/deprecated/libfred/poll/create_request_fee_info_messages.cc
     src/backend/admin/contact/verification/contact_states/delete_all.cc
-    src/libfred/registrable_object/nsset/create_nsset.cc
-    src/libfred/registrable_object/nsset/transfer_nsset.cc
-    src/libfred/registrable_object/domain/create_domain.cc
-    src/libfred/registrable_object/domain/copy_history_impl.cc
-    src/libfred/registrable_object/contact/merge_contact_selection.cc
-    src/libfred/registrable_object/contact/find_contact_duplicates.cc
-    src/libfred/registrable_object/contact/merge_contact_email_notification_data.cc
-    src/libfred/registrable_object/domain/delete_domain.cc
-    src/libfred/registrable_object/domain/domain_name.cc
-    src/libfred/zone/create_zone.cc
-    src/libfred/zone/exceptions.cc
-    src/libfred/zone/info_zone_data.cc
-    src/libfred/zone/info_zone.cc
-    src/libfred/zone/update_zone.cc
-    src/libfred/zone/util.cc
-    src/libfred/zone/zone.cc
-    src/libfred/zone/zone_soa/create_zone_soa.cc
-    src/libfred/zone/zone_soa/info_zone_soa.cc
-    src/libfred/zone/zone_soa/update_zone_soa.cc
-    src/libfred/registrable_object/contact/verification/create_check.cc
-    src/libfred/registrable_object/contact/verification/update_check.cc
-    src/libfred/registrable_object/contact/verification/info_check.cc
-    src/libfred/registrable_object/contact/verification/list_checks.cc
-    src/libfred/registrable_object/contact/verification/list_enum_objects.cc
-    src/libfred/registrable_object/contact/verification/create_test.cc
-    src/libfred/registrable_object/contact/verification/update_test.cc
-    src/libfred/registrable_object/domain/check_domain.cc
-    src/libfred/registrable_object/contact/check_contact.cc
-    src/libfred/registrable_object/nsset/check_nsset.cc
-    src/libfred/registrable_object/nsset/delete_nsset.cc
-    src/libfred/registrable_object/nsset/copy_history_impl.cc
-    src/libfred/registrable_object/keyset/check_keyset.cc
-    src/libfred/registrable_object/keyset/check_dns_key.cc
-    src/libfred/registrable_object/keyset/copy_history_impl.cc
-    src/libfred/object/check_handle.cc
-    src/libfred/object/transfer_object.cc
-    src/libfred/registrable_object/keyset/delete_keyset.cc
-    src/libfred/registrar/registrar_impl.cc
-    src/libfred/registrar/info_registrar.cc
-    src/libfred/registrar/info_registrar_data.cc
-    src/libfred/registrar/info_registrar_diff.cc
-    src/libfred/registrar/registrar_zone_access.cc
-    src/libfred/registrar/create_registrar.cc
-    src/libfred/registrar/update_registrar.cc
-    src/libfred/registrar/exceptions.cc
-    src/libfred/registrar/info_registrar_impl.cc
-    src/libfred/registrar/info_registrar_output.cc
-    src/libfred/registrar/get_registrar_handles.cc
-    src/libfred/registrar/check_registrar.cc
-    src/libfred/registrar/zone_credit.cc
-    src/libfred/registrar/registrar_zone_credit.cc
-    src/libfred/registrar/get_registrar_zone_credit.cc
-    src/libfred/registrar/group/membership/create_registrar_group_membership.cc
-    src/libfred/registrar/group/membership/end_registrar_group_membership.cc
-    src/libfred/registrar/group/membership/info_group_membership_by_group.cc
-    src/libfred/registrar/group/membership/info_group_membership_by_registrar.cc
-    src/libfred/object/object_id_handle_pair.cc
-    src/libfred/object_state/object_has_state.cc
-    src/libfred/object_state/lock_object_state_request_lock.cc
-    src/libfred/object_state/get_object_state_descriptions.cc
-    src/libfred/object_state/get_object_states.cc
-    src/libfred/object_state/get_object_states_by_history_id.cc
-    src/libfred/object_state/get_object_state_id_map.cc
-    src/libfred/object_state/get_blocking_status_desc_list.cc
-    src/libfred/object_state/perform_object_state_request.cc
-    src/libfred/object_state/cancel_object_state_request_id.cc
-    src/libfred/object_state/create_object_state_request_id.cc
-    src/libfred/object_state/create_admin_object_block_request_id.cc
-    src/libfred/object_state/create_admin_object_state_restore_request_id.cc
-    src/libfred/object_state/clear_admin_object_state_request_id.cc
-    src/libfred/object_state/clear_object_state_request_id.cc
-    src/libfred/object/object_id_handle_pair.cc
-    src/libfred/notifier/enqueue_notification.cc
-    src/libfred/notifier/gather_email_data/gather_email_addresses.cc
-    src/libfred/notifier/gather_email_data/gather_email_content.cc
-    src/libfred/notifier/gather_email_data/objecttype_specific_impl/contact.cc
-    src/libfred/notifier/gather_email_data/objecttype_specific_impl/domain.cc
-    src/libfred/notifier/gather_email_data/objecttype_specific_impl/keyset.cc
-    src/libfred/notifier/gather_email_data/objecttype_specific_impl/nsset.cc
-    src/libfred/notifier/process_one_notification_request.cc
-    src/libfred/registrar/group/create_registrar_group.cc
-    src/libfred/registrar/group/update_registrar_group.cc
-    src/libfred/registrar/group/cancel_registrar_group.cc
-    src/libfred/registrar/group/get_registrar_groups.cc
-    src/libfred/registrar/epp_auth/add_registrar_epp_auth.cc
-    src/libfred/registrar/epp_auth/clone_registrar_epp_auth.cc
-    src/libfred/registrar/epp_auth/delete_registrar_epp_auth.cc
-    src/libfred/registrar/epp_auth/get_registrar_epp_auth.cc
-    src/libfred/registrar/epp_auth/update_registrar_epp_auth.cc
-    src/libfred/registrar/epp_auth/exceptions.cc
-    src/libfred/registrar/certification/create_registrar_certification.cc
-    src/libfred/registrar/certification/update_registrar_certification.cc
-    src/libfred/registrar/certification/get_registrar_certifications.cc
-    src/libfred/registrar/zone_access/add_registrar_zone_access.cc
-    src/libfred/registrar/zone_access/exceptions.cc
-    src/libfred/registrar/zone_access/get_registrar_zone_access.cc
-    src/libfred/registrar/zone_access/update_registrar_zone_access.cc)
-
-prepare_static_library(password_storage
-    src/util/password_storage.cc
-    src/util/password_storage/base64.cc
-    src/util/password_storage/impl/pbkdf2.cc
-    src/util/password_storage/impl/plaintext.cc
-    src/util/password_storage/impl/check_equality.cc)
+    src/deprecated/libfred/registrar/registrar_impl.cc
+    src/util/cfg/handle_database_args.cc)
 
 prepare_static_library(authentic_registrar
     src/backend/epp/impl/registraracl/authentic_registrar.cc)
@@ -1565,49 +1087,41 @@ prepare_static_library(public_request
     src/backend/public_request/type/impl/public_request_block_unblock.cc
     src/backend/public_request/type/impl/public_request_personal_info.cc
     src/backend/public_request/util/send_joined_address_email.cc
-    src/libfred/public_request/create_public_request.cc
-    src/libfred/public_request/public_request.cc
-    src/libfred/public_request/public_request_authinfo_impl.cc
-    src/libfred/public_request/public_request_block_impl.cc
-    src/libfred/public_request/public_request_impl.cc
-    src/libfred/public_request/public_request_personal_info_impl.cc
-    src/libfred/public_request/create_public_request_auth.cc
-    src/libfred/public_request/public_request_lock_guard.cc
-    src/libfred/public_request/public_request_object_lock_guard.cc
-    src/libfred/public_request/update_public_request.cc
-    src/libfred/public_request/info_public_request.cc
-    src/libfred/public_request/info_public_request_auth.cc
-    src/libfred/public_request/get_opened_public_request.cc)
+    src/deprecated/libfred/public_request/public_request.cc
+    src/deprecated/libfred/public_request/public_request_authinfo_impl.cc
+    src/deprecated/libfred/public_request/public_request_block_impl.cc
+    src/deprecated/libfred/public_request/public_request_impl.cc
+    src/deprecated/libfred/public_request/public_request_personal_info_impl.cc)
 
 prepare_static_library(banking
-    src/libfred/banking/bank_common.cc
-    src/libfred/banking/bank_manager.cc
-    src/libfred/banking/exceptions.cc
-    src/libfred/banking/get_bank_accounts.cc)
+    src/deprecated/libfred/banking/bank_common.cc
+    src/deprecated/libfred/banking/bank_manager.cc
+    src/deprecated/libfred/banking/exceptions.cc
+    src/deprecated/libfred/banking/get_bank_accounts.cc)
 
 prepare_static_library(messages
-    src/libfred/messages/messages_impl.cc)
+    src/deprecated/libfred/messages/messages_impl.cc)
 
 prepare_static_library(requests
-    src/libfred/requests/model_request.cc
-    src/libfred/requests/model_session.cc
-    src/libfred/requests/model_request_property_name.cc
-    src/libfred/requests/session.cc
-    src/libfred/requests/request_list.cc
-    src/libfred/requests/request_manager.cc
-    src/libfred/requests/request_cache.cc
-    src/libfred/requests/request_property_name_cache.cc
-    src/libfred/requests/session_cache.cc)
+    src/deprecated/libfred/requests/model_request.cc
+    src/deprecated/libfred/requests/model_session.cc
+    src/deprecated/libfred/requests/model_request_property_name.cc
+    src/deprecated/libfred/requests/session.cc
+    src/deprecated/libfred/requests/request_list.cc
+    src/deprecated/libfred/requests/request_manager.cc
+    src/deprecated/libfred/requests/request_cache.cc
+    src/deprecated/libfred/requests/request_property_name_cache.cc
+    src/deprecated/libfred/requests/session_cache.cc)
 
 prepare_static_library(contact_verification
     src/backend/contact_verification/public_request_contact_verification_impl.cc
-    src/libfred/contact_verification/contact.cc
-    src/libfred/contact_verification/contact_verification_checkers.cc
-    src/libfred/contact_verification/contact_conditional_identification_impl.cc
-    src/libfred/contact_verification/contact_identification_impl.cc
-    src/libfred/contact_verification/contact_verification_state.cc
-    src/libfred/contact_verification/contact_verification_validators.cc
-    src/libfred/contact_verification/contact_verification_password.cc)
+    src/deprecated/libfred/contact_verification/contact.cc
+    src/deprecated/libfred/contact_verification/contact_verification_checkers.cc
+    src/deprecated/libfred/contact_verification/contact_conditional_identification_impl.cc
+    src/deprecated/libfred/contact_verification/contact_identification_impl.cc
+    src/deprecated/libfred/contact_verification/contact_verification_state.cc
+    src/deprecated/libfred/contact_verification/contact_verification_validators.cc
+    src/deprecated/libfred/contact_verification/contact_verification_password.cc)
 
 prepare_static_library(admin_contact_verification
     src/backend/admin/contact/verification/create_test_impl_prototypes.cc
@@ -1809,9 +1323,8 @@ prepare_static_library(whois2_impl
     src/backend/whois/whois.cc)
 
 prepare_static_library(epp_impl
-    src/libfred/contact_verification/cancel_contact_verification.cc
-    src/libfred/contact_verification/contact_verification_state.cc
-    src/libfred/registrable_object/domain/domain.cc
+    src/deprecated/libfred/contact_verification/cancel_contact_verification.cc
+    src/deprecated/libfred/contact_verification/contact_verification_state.cc
     src/bin/corba/epp/epp_session.cc
     src/bin/corba/epp/epp_impl.cc
     src/bin/corba/epp/contact/contact_corba_conversions.cc
@@ -1964,6 +1477,7 @@ prepare_static_library(corbanullableisodatetime
 
 prepare_static_library(handle_rifd_args
     src/util/cfg/handle_rifd_args.cc
+    src/util/cfg/handle_database_args.cc
     src/backend/epp/contact/config_data_filter.cc
     src/backend/epp/contact/impl/cznic/specific.cc
     src/backend/epp/contact/impl/set_unused/config.cc)
@@ -1983,9 +1497,7 @@ prepare_executable(fred-rifd
     src/util/corba_conversion.cc)
 target_link_libraries(fred-rifd
     epp_impl
-    password_storage
     authentic_registrar
-    password_storage
     admin_contact_verification
     corbaepp
     corbatechcheck
@@ -1994,16 +1506,16 @@ target_link_libraries(fred-rifd
     corbaisodatetime
     corba
     public_request
-    fred
+    fred-deprecated
     messages
     model
     timezones
     db
     types
-    log
     handle_rifd_args
     oldutils
-    util)
+    util
+    fred-static::library)
 target_link_external_libraries(fred-rifd
     boost_thread
     boost_random
@@ -2023,20 +1535,12 @@ target_link_external_libraries(fred-rifd
 # fred-adifd
 prepare_executable(fred-adifd
     src/bin/corba/admin_contact_verification/server_i.cc
-    src/libfred/registrable_object/contact/util.cc
+    src/deprecated/libfred/registrable_object/contact/util.cc
     src/bin/corba/fred-adifd.cc
     src/backend/mojeid/mojeid_public_request.cc
     src/bin/corba/admin/public_request_mojeid.cc
     src/backend/admin_block/administrativeblocking.cc
-    src/libfred/registrable_object/domain/create_domain_name_blacklist_id.cc
-    src/libfred/registrable_object/domain/update_domain.cc
-    src/libfred/registrable_object/contact/copy_contact.cc
-    src/libfred/registrable_object/contact/info_contact_data.cc
-    src/libfred/registrable_object/contact/info_contact.cc
-    src/libfred/registrable_object/contact/create_contact.cc
-    src/libfred/registrable_object/contact/place_address.cc
     src/backend/mojeid/checkers.cc
-    src/libfred/opcontext.cc
     src/bin/corba/nameservice.cc
     src/bin/corba/mailer_manager.cc
     src/bin/corba/admin_block/server_i.cc
@@ -2094,19 +1598,18 @@ target_link_libraries(fred-adifd
     db
     timezones
     filemanager
-    fred
-    log
+    fred-deprecated
     mailer
     messages
     model
     oldutils
-    password_storage
     public_request
     requests
     types
     util
     whois2_impl
-    whois_impl)
+    whois_impl
+    fred-static::library)
 target_link_external_libraries(fred-adifd
     boost_random
     boost_system
@@ -2164,15 +1667,14 @@ target_link_libraries(fred-pifd
     banking
     messages
     public_request
-    fred
+    fred-deprecated
     authentic_registrar
-    password_storage
     model
     db
     types
     oldutils
-    log
-    util)
+    util
+    fred-static::library)
 target_link_external_libraries(fred-pifd
     boost_random
     boost_thread
@@ -2203,14 +1705,14 @@ target_link_libraries(fred-logd
     corbafilters
     corbadatatypes
     corba
-    fred
+    fred-deprecated
     requests
     model
     db
     types
-    log
     util
-    oldutils)
+    oldutils
+    fred-static::library)
 target_link_external_libraries(fred-logd
     boost_system
     boost_regex
@@ -2231,16 +1733,17 @@ prepare_executable(fred-msgd
     src/bin/corba/messages/messages.cc
     src/bin/corba/file_manager_client.cc
     src/bin/corba/MessagesSK.cc
-    src/bin/corba/FileManagerSK.cc)
+    src/bin/corba/FileManagerSK.cc
+    src/util/cfg/handle_database_args.cc)
 target_link_libraries(fred-msgd
     messages
     model
-    log
     types
     db
     oldutils
     util
-    corbadatatypes)
+    corbadatatypes
+    fred-static::library)
 target_link_external_libraries(fred-msgd
     boost_thread
     boost_system
@@ -2268,7 +1771,7 @@ prepare_executable(fred-mifd
     src/bin/corba/MailerSK.cc)
 target_link_libraries(fred-mifd
     corbadatatypes
-    fred
+    fred-deprecated
     messages
     model
     corbabuffer
@@ -2281,10 +1784,10 @@ target_link_libraries(fred-mifd
     public_request
     timezones
     util
-    log
     types
     db
-    corba)
+    corba
+    fred-static::library)
 target_link_external_libraries(fred-mifd
     boost_random
     boost_system
@@ -2306,7 +1809,8 @@ prepare_executable(fred-mojeid-msgen
 target_link_libraries(fred-mojeid-msgen
     corbabuffer
     corbanullableisodate
-    corbaisodatetime)
+    corbaisodatetime
+    fred-static::library)
 target_link_external_libraries(fred-mojeid-msgen
     boost_program_options
     boost_date_time
@@ -2321,12 +1825,12 @@ prepare_executable(fred-dbifd
     src/bin/corba/domain_browser/fred-dbifd.cc)
 target_link_libraries(fred-dbifd
     corbadomainbrowser
-    fred
+    fred-deprecated
     corbautil
     timezones
     util
-    log
-    db)
+    db
+    fred-static::library)
 target_link_external_libraries(fred-dbifd
     boost_system
     boost_random
@@ -2356,7 +1860,7 @@ prepare_executable(fred-akmd
     src/bin/corba/automatic_keyset_management/fred-akmd.cc)
 target_link_libraries(fred-akmd
     corbaautomatickeysetmanagement
-    fred
+    fred-deprecated
     corbautil
     timezones
     corba
@@ -2366,8 +1870,8 @@ target_link_libraries(fred-akmd
     corbaregistry
     corbafilters
     util
-    log
-    db)
+    db
+    fred-static::library)
 target_link_external_libraries(fred-akmd
     omnidynamic4
     omniorb4
@@ -2393,10 +1897,9 @@ prepare_executable(fred-rsifd
     src/bin/corba/record_statement/record_statement_i.cc
     src/bin/corba/record_statement/fred-rsifd.cc)
 target_link_libraries(fred-rsifd
-    fred
+    fred-deprecated
     corbautil
     util
-    log
     db
     timezones
     corba
@@ -2406,7 +1909,8 @@ target_link_libraries(fred-rsifd
     corbabuffer
     corbaisodate
     corbaisodatetime
-    corbanullableisodate)
+    corbanullableisodate
+    fred-static::library)
 target_link_external_libraries(fred-rsifd
     omniorb4
     threads
@@ -2435,14 +1939,13 @@ target_link_libraries(fred-accifd
     corbaaccounting
     corbautil
     timezones
-    fred
-    log
+    fred-deprecated
     model
     db
     oldutils
-    password_storage
     types
-    util)
+    util
+    fred-static::library)
 target_link_external_libraries(fred-accifd
     boost_random
     boost_system
@@ -2486,16 +1989,12 @@ prepare_executable(fred-admin
     src/bin/cli/public_request_method.cc
     src/bin/cli/registrarclient.cc
     src/bin/cli/remove_delete_candidates.cc
-    src/libfred/object_state/cancel_object_state_request_id.cc
-    src/libfred/object_state/create_object_state_request_id.cc
-    src/libfred/object_state/get_object_state_id_map.cc
     src/util/optys/download_client.cc
     src/util/optys/upload_client.cc)
 target_link_libraries(fred-admin
     admin_contact_verification
-    fred
+    fred-deprecated
     authentic_registrar
-    password_storage
     model
     banking
     corba
@@ -2510,13 +2009,13 @@ target_link_libraries(fred-admin
     filemanager
     messages
     requests
-    log
     types
     db
     oldutils
     util
     hp
-    public_request)
+    public_request
+    fred-static::library)
 target_link_external_libraries(fred-admin
     boost_system
     boost_filesystem
@@ -2549,15 +2048,15 @@ prepare_executable(migrate_log
     tools/logd_migration/m_epp_parser.cc)
 target_link_libraries(migrate_log
     requests
-    fred
+    fred-deprecated
     model
     banking
     log_impl
-    log
     types
     db
     util
-    oldutils)
+    oldutils
+    fred-static::library)
 target_link_external_libraries(migrate_log
     boost_system
     boost_regex
@@ -2570,10 +2069,10 @@ target_link_external_libraries(migrate_log
 prepare_executable(mojeid_contact_address_import
     tools/contact_migration/mojeid_contact_address_import.cc)
 target_link_libraries(mojeid_contact_address_import
-    fred
-    log
+    fred-deprecated
     db
-    util)
+    util
+    fred-static::library)
 target_link_external_libraries(mojeid_contact_address_import
     boost_system
     boost_regex
@@ -2587,14 +2086,14 @@ target_link_external_libraries(mojeid_contact_address_import
 prepare_executable(mojeid_contact_ssn_fix
     tools/contact_migration/mojeid_contact_ssn_fix.cc)
 target_link_libraries(mojeid_contact_ssn_fix
-    fred
-    log
+    fred-deprecated
     db
     corbautil
     timezones
     corbaisodatetime
     corbanullableisodate
-    util)
+    util
+    fred-static::library)
 target_link_external_libraries(mojeid_contact_ssn_fix
     boost_system
     boost_thread
@@ -2613,10 +2112,10 @@ prepare_executable(fred-disclose-flag-updater
     tools/disclose_flags_updater/contact_search_query.cc
     tools/disclose_flags_updater/fred_disclose_flags_updater.cc)
 target_link_libraries(fred-disclose-flag-updater
-    fred
-    log
+    fred-deprecated
     db
-    util)
+    util
+    fred-static::library)
 target_link_external_libraries(fred-disclose-flag-updater
     postgres
     boost_regex
@@ -2635,8 +2134,8 @@ prepare_executable(crc32
 prepare_executable(test-mockdb
     src/util/db/test-mockdb.cc)
 target_link_libraries(test-mockdb
-    log
-    types)
+    types
+    fred-static::library)
 target_link_external_libraries(test-mockdb
     boost_thread
     boost_regex
@@ -2649,9 +2148,9 @@ prepare_executable(test-model
 target_link_libraries(test-model
     model
     banking
-    log
     types
-    db)
+    db
+    fred-static::library)
 target_link_external_libraries(test-model
     boost_system
     boost_regex
@@ -2659,23 +2158,13 @@ target_link_external_libraries(test-model
     boost_date_time
     postgres)
 
-# test-log
-prepare_executable(test-log
-    src/util/log/test-log.cc)
-target_link_libraries(test-log
-    log)
-target_link_external_libraries(test-log
-    boost_thread
-    boost_date_time
-    boost_system)
-
 # test-db
 prepare_executable(test-db
     src/util/db/test-db.cc)
 target_link_libraries(test-db
-    log
     types
-    db)
+    db
+    fred-static::library)
 target_link_external_libraries(test-db
     boost_thread
     boost_system
@@ -2695,7 +2184,7 @@ prepare_executable(test-admin-contact-automerge
     test/setup/fixtures.cc)
 target_link_libraries(test-admin-contact-automerge
     corbadatatypes
-    fred
+    fred-deprecated
     model
     corba
     corbaregistry
@@ -2704,13 +2193,13 @@ target_link_libraries(test-admin-contact-automerge
     corbadatatypes
     filemanager
     requests
-    log
     types
     db
     oldutils
     util
     timezones
-    handle_rifd_args)
+    handle_rifd_args
+    fred-static::library)
 target_link_external_libraries(test-admin-contact-automerge
     boost_system
     boost_thread
@@ -2737,12 +2226,12 @@ prepare_executable(test-admin-contact-verification
     test/setup/fixtures.cc)
 target_link_libraries(test-admin-contact-verification
     admin_contact_verification
-    fred
-    log
+    fred-deprecated
     db
     util
     timezones
-    handle_rifd_args)
+    handle_rifd_args
+    fred-static::library)
 target_link_external_libraries(test-admin-contact-verification
     boost_system
     boost_unit_test_framework
@@ -2762,11 +2251,11 @@ prepare_executable(test-admin-notification
 target_link_libraries(test-admin-notification
     admin_notification
     corba
-    fred
-    log
+    fred-deprecated
     db
     util
-    timezones)
+    timezones
+    fred-static::library)
 target_link_external_libraries(test-admin-notification
     boost_system
     boost_random
@@ -2798,7 +2287,7 @@ prepare_executable(test-automatic-keyset-management
     test/backend/automatic_keyset_management/test_automatic_keyset_management.cc)
 target_link_libraries(test-automatic-keyset-management
     corbaautomatickeysetmanagement
-    fred
+    fred-deprecated
     corbautil
     corba
     corbalogger
@@ -2807,9 +2296,9 @@ target_link_libraries(test-automatic-keyset-management
     corbaregistry
     corbafilters
     util
-    log
     db
-    timezones)
+    timezones
+    fred-static::library)
 target_link_external_libraries(test-automatic-keyset-management
     boost_system
     boost_thread
@@ -2828,28 +2317,17 @@ prepare_executable(test-blocking
     src/bin/corba/admin/filter_impl.cc
     test/setup/tests_common.cc
     src/backend/contact_verification/contact_verification_impl.cc
-    src/libfred/contact_verification/cancel_contact_verification.cc
-    src/libfred/contact_verification/contact_verification_state.cc
-    src/libfred/object_state/clear_admin_object_state_request_id.cc
-    src/libfred/object_state/clear_object_state_request_id.cc
-    src/libfred/object_state/create_object_state_request_id.cc
-    src/libfred/object_state/create_admin_object_block_request_id.cc
-    src/libfred/object_state/create_admin_object_state_restore_request_id.cc
-    src/libfred/object_state/cancel_object_state_request_id.cc
-    src/libfred/object_state/get_object_state_id_map.cc
-    src/libfred/object_state/get_blocking_status_desc_list.cc
-    src/libfred/registrable_object/domain/create_domain_name_blacklist_id.cc)
+    src/deprecated/libfred/contact_verification/cancel_contact_verification.cc
+    src/deprecated/libfred/contact_verification/contact_verification_state.cc)
 target_link_libraries(test-blocking
     contact_verification
     admin_impl
     epp_impl
-    password_storage
     corba
     whois_impl
     public_request
-    fred
+    fred-deprecated
     authentic_registrar
-    password_storage
     messages
     model
     db
@@ -2857,7 +2335,6 @@ target_link_libraries(test-blocking
     oldutils
     requests
     banking
-    log
     util
     handle_rifd_args
     corbamessages
@@ -2875,7 +2352,8 @@ target_link_libraries(test-blocking
     corbaregistry
     corbafilters
     corbadatatypes
-    mailer)
+    mailer
+    fred-static::library)
 target_link_external_libraries(test-blocking
     omniorb4
     threads
@@ -2912,10 +2390,10 @@ target_link_libraries(test-corba-conversion
     corbanullableisodatetime
     corbautil
     corbamojeid
-    fred
+    fred-deprecated
     util
-    log
-    timezones)
+    timezones
+    fred-static::library)
 target_link_external_libraries(test-corba-conversion
     postgres
     boost_system
@@ -2967,15 +2445,14 @@ prepare_executable(test-epp
     test/setup/fixtures.cc)
 target_link_libraries(test-epp
     epp_impl
-    fred
+    fred-deprecated
     timezones
-    password_storage
     authentic_registrar
     types
     db
-    log
     util
-    handle_rifd_args)
+    handle_rifd_args
+    fred-static::library)
 target_link_external_libraries(test-epp
     boost_system
     boost_unit_test_framework
@@ -3006,11 +2483,11 @@ prepare_executable(test-admin-domain
 target_link_libraries(test-admin-domain
     admin_notification
     corba
-    fred
-    log
+    fred-deprecated
     db
     util
-    timezones)
+    timezones
+    fred-static::library)
 target_link_external_libraries(test-admin-domain
     boost_system
     boost_unit_test_framework
@@ -3041,12 +2518,12 @@ target_link_libraries(test-admin-registrar
     corbafilters
     corbadatatypes
     fred
-    log
     db
-    password_storage
     util
     types
-    timezones)
+    timezones
+    fred-deprecated
+    fred-static::library)
 target_link_external_libraries(test-admin-registrar
     boost_system
     boost_unit_test_framework
@@ -3072,12 +2549,12 @@ target_link_libraries(test-admin-zone
     corba
     corbafilters
     corbadatatypes
-    fred
-    log
+    fred-deprecated
     db
     util
     types
-    timezones)
+    timezones
+    fred-static::library)
 target_link_external_libraries(test-admin-zone
     boost_system
     boost_unit_test_framework
@@ -3091,169 +2568,6 @@ target_link_external_libraries(test-admin-zone
     postgres
     libidn)
 
-# test-libfred
-prepare_executable(test-libfred
-    test/libfred/main.cc
-    test/libfred/registrar/test_registrar_zone_access.cc
-    test/libfred/registrar/test_get_registrar_zone_credit.cc
-    test/libfred/registrar/test_info_registrar.cc
-    test/libfred/registrar/test_create_registrar.cc
-    test/libfred/registrar/test_update_registrar.cc
-    test/libfred/registrar/group/test_create.cc
-    test/libfred/registrar/group/test_update.cc
-    test/libfred/registrar/group/test_cancel.cc
-    test/libfred/registrar/group/test_get.cc
-    test/libfred/registrar/group/membership/test_create.cc
-    test/libfred/registrar/group/membership/test_end.cc
-    test/libfred/registrar/group/membership/test_info_by_group.cc
-    test/libfred/registrar/group/membership/test_info_by_registrar.cc
-    test/libfred/contact/test_delete_contact.cc
-    test/libfred/contact/test_create_contact.cc
-    test/libfred/contact/test_info_contact.cc
-    test/libfred/contact/test_merge_contact.cc
-    test/libfred/contact/test_update_contact.cc
-    test/libfred/contact/test_copy_contact.cc
-    test/libfred/contact/test_transfer_contact.cc
-    test/libfred/contact/test_mojeid_checkers.cc
-    test/libfred/contact/test_undisclose_address.cc
-    src/util/types/birthdate.cc
-    test/libfred/domain/test_update_domain.cc
-    test/libfred/domain/test_renew_domain.cc
-    test/libfred/domain/test_info_domain.cc
-    test/libfred/domain/test_delete_domain.cc
-    test/libfred/domain/test_create_domain.cc
-    test/libfred/domain/test_check_domain.cc
-    test/libfred/domain/test_domain_name.cc
-    test/libfred/domain/test_create_domain_name_blacklist_id.cc
-    test/libfred/domain/test_transfer_domain.cc
-    test/libfred/keyset/test_delete_keyset.cc
-    test/libfred/keyset/test_info_keyset.cc
-    test/libfred/keyset/test_update_keyset.cc
-    test/libfred/keyset/test_transfer_keyset.cc
-    test/libfred/nsset/test_update_nsset.cc
-    test/libfred/nsset/test_delete_nsset.cc
-    test/libfred/nsset/test_info_nsset.cc
-    test/libfred/nsset/test_transfer_nsset.cc
-    test/libfred/public_request/test_create_public_request.cc
-    test/libfred/public_request/test_create_public_request_auth.cc
-    test/libfred/public_request/test_update_public_request.cc
-    test/libfred/contact/verification/setup_utils.cc
-    test/libfred/contact/verification/test_create_check.cc
-    test/libfred/contact/verification/test_update_check.cc
-    test/libfred/contact/verification/test_create_test.cc
-    test/libfred/contact/verification/test_update_test.cc
-    test/libfred/contact/verification/test_info_check.cc
-    test/libfred/contact/verification/test_list_checks.cc
-    test/libfred/contact/verification/test_list_enum_objects.cc
-    test/libfred/contact/verification/test_django_email_format_check.cc
-    test/libfred/poll/test_create_delete_contact_poll_message.cc
-    test/libfred/poll/test_create_delete_domain_poll_message.cc
-    test/libfred/poll/test_create_update_object_poll_message.cc
-    test/libfred/poll/test_get_request_fee_info_message.cc
-    test/libfred/poll/test_create_state_messages.cc
-    test/libfred/object/test_generate_authinfo_password.cc
-    test/libfred/object/test_generated_authinfo_password.cc
-    test/libfred/object/test_transfer_object.cc
-    test/libfred/object_state/test_object_state.cc
-    test/libfred/object_state/test_create_object_state_request_id.cc
-    test/libfred/object_state/test_create_admin_object_block_request_id.cc
-    test/libfred/object_state/test_create_admin_object_state_restore_request_id.cc
-    test/libfred/object_state/test_cancel_object_state_request_id.cc
-    test/libfred/object/test_registry_object_type.cc
-    test/libfred/notifier/test_enqueue_notification.cc
-    test/libfred/notifier/test_event_on_object_enum.cc
-    test/libfred/notifier/test_gather_email_addresses_contact_create.cc
-    test/libfred/notifier/test_gather_email_addresses_contact_transfer.cc
-    test/libfred/notifier/test_gather_email_addresses_contact_delete.cc
-    test/libfred/notifier/test_gather_email_addresses_contact_update.cc
-    test/libfred/notifier/test_gather_email_addresses_domain_create.cc
-    test/libfred/notifier/test_gather_email_addresses_domain_update.cc
-    test/libfred/notifier/test_gather_email_addresses_domain_transfer.cc
-    test/libfred/notifier/test_gather_email_addresses_domain_delete.cc
-    test/libfred/notifier/test_gather_email_addresses_domain_renew.cc
-    test/libfred/notifier/test_gather_email_addresses_keyset_create.cc
-    test/libfred/notifier/test_gather_email_addresses_keyset_update.cc
-    test/libfred/notifier/test_gather_email_addresses_keyset_transfer.cc
-    test/libfred/notifier/test_gather_email_addresses_keyset_delete.cc
-    test/libfred/notifier/test_gather_email_addresses_nsset_create.cc
-    test/libfred/notifier/test_gather_email_addresses_nsset_update.cc
-    test/libfred/notifier/test_gather_email_addresses_nsset_transfer.cc
-    test/libfred/notifier/test_gather_email_addresses_nsset_delete.cc
-    test/libfred/notifier/test_gather_email_content_contact_create.cc
-    test/libfred/notifier/test_gather_email_content_contact_delete.cc
-    test/libfred/notifier/test_gather_email_content_contact_transfer.cc
-    test/libfred/notifier/test_gather_email_content_contact_update.cc
-    test/libfred/notifier/test_gather_email_content_domain_create.cc
-    test/libfred/notifier/test_gather_email_content_domain_delete.cc
-    test/libfred/notifier/test_gather_email_content_domain_renew.cc
-    test/libfred/notifier/test_gather_email_content_domain_transfer.cc
-    test/libfred/notifier/test_gather_email_content_domain_update.cc
-    test/libfred/notifier/test_gather_email_content_keyset_create.cc
-    test/libfred/notifier/test_gather_email_content_keyset_delete.cc
-    test/libfred/notifier/test_gather_email_content_keyset_transfer.cc
-    test/libfred/notifier/test_gather_email_content_keyset_update.cc
-    test/libfred/notifier/test_gather_email_content_nsset_create.cc
-    test/libfred/notifier/test_gather_email_content_nsset_delete.cc
-    test/libfred/notifier/test_gather_email_content_nsset_transfer.cc
-    test/libfred/notifier/test_gather_email_content_nsset_update.cc
-    test/libfred/notifier/test_process_one_notification_request.cc
-    test/libfred/registrar/epp_auth/test_add_registrar_epp_auth.cc
-    test/libfred/registrar/epp_auth/test_clone_registrar_epp_auth.cc
-    test/libfred/registrar/epp_auth/test_delete_registrar_epp_auth.cc
-    test/libfred/registrar/epp_auth/test_get_registrar_epp_auth.cc
-    test/libfred/registrar/epp_auth/test_update_registrar_epp_auth.cc
-    test/libfred/registrar/epp_auth/util.cc
-    test/libfred/registrar/certification/test_create_registrar_certification.cc
-    test/libfred/registrar/certification/test_update_registrar_certification.cc
-    test/libfred/registrar/certification/test_get_registrar_certifications.cc
-    test/libfred/registrar/zone_access/test_add_zone_access.cc
-    test/libfred/registrar/zone_access/util.cc
-    test/libfred/registrar/zone_access/test_update_zone_access.cc
-    test/libfred/test_opexception.cc
-    test/libfred/test_check_handle.cc
-    test/libfred/zone/zone_ns/test_create_zone_ns.cc
-    test/libfred/zone/zone_ns/test_info_zone_ns.cc
-    test/libfred/zone/zone_ns/test_update_zone_ns.cc
-    test/libfred/zone/zone_ns/util.cc
-    test/libfred/zone/zone_soa/test_create_zone_soa.cc
-    test/libfred/zone/zone_soa/test_info_zone_soa.cc
-    test/libfred/zone/zone_soa/test_update_zone_soa.cc
-    test/libfred/zone/zone_soa/util.cc
-    test/libfred/zone/test_create_zone.cc
-    test/libfred/zone/test_info_zone.cc
-    test/libfred/zone/test_update_zone.cc
-    test/libfred/zone/util.cc
-    test/util/test_param_query.cc
-    test/setup/fixtures_utils.cc
-    test/setup/fixtures.cc
-    src/util/random.cc)
-target_link_libraries(test-libfred
-    fred
-    util
-    log
-    db
-    timezones
-    handle_rifd_args
-    corba
-    mailer
-    corbadatatypes
-    password_storage
-    public_request)
-target_link_external_libraries(test-libfred
-    postgres
-    boost_program_options
-    boost_regex
-    boost_date_time
-    boost_random
-    boost_thread
-    boost_system
-    boost_unit_test_framework
-    omniorb4
-    libidn
-    mpdec
-    threads
-    openssl)
-
 # test-optys
 prepare_executable(test-optys
     test/test_optys_main.cc
@@ -3263,11 +2577,11 @@ prepare_executable(test-optys
     test/setup/fixtures_utils.cc
     test/setup/fixtures.cc)
 target_link_libraries(test-optys
-    fred
+    fred-deprecated
     util
-    log
     types
-    timezones)
+    timezones
+    fred-static::library)
 target_link_external_libraries(test-optys
     postgres
     boost_unit_test_framework
@@ -3279,30 +2593,6 @@ target_link_external_libraries(test-optys
     boost_date_time
     boost_system
     threads)
-
-# test-password-storage
-prepare_executable(test-password-storage
-    test/util/test_password_storage.cc
-    test/util/test_password_storage_main.cc
-    test/setup/fixtures_utils.cc
-    test/setup/fixtures.cc)
-target_link_libraries(test-password-storage
-    fred
-    corbaisodatetime
-    corbanullableisodate
-    password_storage
-    util
-    log)
-target_link_external_libraries(test-password-storage
-    boost_random
-    boost_date_time
-    boost_system
-    boost_regex
-    boost_thread
-    boost_program_options
-    boost_unit_test_framework
-    postgres
-    openssl)
 
 # test-public-request
 prepare_executable(test-public-request
@@ -3317,16 +2607,16 @@ prepare_executable(test-public-request
     test/setup/fixtures_utils.cc)
 target_link_libraries(test-public-request
     public_request
-    fred
+    fred-deprecated
     corba
     mailer
     corbadatatypes
     requests
-    log
     db
     util
     timezones
-    handle_rifd_args)
+    handle_rifd_args
+    fred-static::library)
 target_link_external_libraries(test-public-request
     boost_regex
     boost_thread
@@ -3358,14 +2648,14 @@ target_link_libraries(test-record-statement
     corbabuffer
     corbaisodate
     corbaisodatetime
-    fred
+    fred-deprecated
     util
-    log
     db
     timezones
     corba
     mailer
-    corbadatatypes)
+    corbadatatypes
+    fred-static::library)
 target_link_external_libraries(test-record-statement
     boost_regex
     boost_thread
@@ -3398,14 +2688,13 @@ target_link_libraries(test-accounting
     corbaaccounting
     corbautil
     timezones
-    fred
-    log
+    fred-deprecated
     model
     db
     oldutils
-    password_storage
     types
-    util)
+    util
+    fred-static::library)
 target_link_external_libraries(test-accounting
     boost_random
     boost_system
@@ -3451,8 +2740,8 @@ prepare_executable(test-server
     test/util/test_nullable.cc
     test/util/test_optional.cc
     src/backend/contact_verification/contact_verification_impl.cc
-    src/libfred/contact_verification/cancel_contact_verification.cc
-    src/libfred/contact_verification/contact_verification_state.cc
+    src/deprecated/libfred/contact_verification/cancel_contact_verification.cc
+    src/deprecated/libfred/contact_verification/contact_verification_state.cc
     test/util/test_printable.cc
     test/util/test_csv_parser.cc
     src/util/optys/download_client.cc
@@ -3462,9 +2751,6 @@ prepare_executable(test-server
     src/backend/admin/contact/merge_contact_logger.cc
     src/backend/admin/contact/merge_contact_auto_procedure.cc
     src/backend/admin/contact/merge_contact_reporting.cc
-    src/libfred/object_state/create_object_state_request_id.cc
-    src/libfred/object_state/get_object_state_id_map.cc
-    src/libfred/object_state/cancel_object_state_request_id.cc
     src/backend/domain_browser/domain_browser.cc
     test/backend/domain_browser/test_domain_browser.cc
     test/setup/fixtures.cc)
@@ -3472,16 +2758,14 @@ target_link_libraries(test-server
     contact_verification
     admin_impl
     epp_impl
-    password_storage
     corba
     whois_impl
     public_request
     admin_contact_verification
     admin_notification
     admin_create_expired_domain
-    fred
+    fred-deprecated
     authentic_registrar
-    password_storage
     messages
     model
     timezones
@@ -3490,7 +2774,6 @@ target_link_libraries(test-server
     oldutils
     requests
     banking
-    log
     util
     handle_rifd_args
     corbamessages
@@ -3506,7 +2789,8 @@ target_link_libraries(test-server
     corbawhois
     corbaregistry
     corbafilters
-    corbadatatypes)
+    corbadatatypes
+    fred-static::library)
 target_link_external_libraries(test-server
     boost_system
     boost_serialization
@@ -3551,7 +2835,7 @@ prepare_executable(test-whois
 target_link_libraries(test-whois
     corbadatatypes
     whois2_impl
-    fred
+    fred-deprecated
     model
     corba
     corbaregistry
@@ -3562,13 +2846,13 @@ target_link_libraries(test-whois
     corbadatatypes
     filemanager
     requests
-    log
     types
     db
     oldutils
     util
     timezones
-    handle_rifd_args)
+    handle_rifd_args
+    fred-static::library)
 target_link_external_libraries(test-whois
     boost_regex
     boost_thread
@@ -3585,11 +2869,11 @@ target_link_external_libraries(test-whois
 prepare_executable(test-delete-objects-marked-as-delete-candidate
     test/test_delete_objects_marked_as_delete_candidate.cc)
 target_link_libraries(test-delete-objects-marked-as-delete-candidate
-    fred
-    log
+    fred-deprecated
     db
     oldutils
-    util)
+    util
+    fred-static::library)
 target_link_external_libraries(test-delete-objects-marked-as-delete-candidate
     boost_program_options
     boost_date_time
@@ -3638,9 +2922,7 @@ if(NOT DO_NOT_INSTALL_TESTS)
     install(TARGETS test-corba-conversion DESTINATION ${BINDIR})
     install(TARGETS test-epp DESTINATION ${BINDIR})
     install(TARGETS test-exception DESTINATION ${BINDIR})
-    install(TARGETS test-libfred DESTINATION ${BINDIR})
     install(TARGETS test-optys DESTINATION ${BINDIR})
-    install(TARGETS test-password-storage DESTINATION ${BINDIR})
     install(TARGETS test-public-request DESTINATION ${BINDIR})
     install(TARGETS test-record-statement DESTINATION ${BINDIR})
     install(TARGETS test-server DESTINATION ${BINDIR})

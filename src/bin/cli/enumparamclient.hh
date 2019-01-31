@@ -22,7 +22,7 @@
 #include <boost/program_options.hpp>
 #include <iostream>
 
-#include "src/libfred/registry.hh"
+#include "src/deprecated/libfred/registry.hh"
 
 #include "src/bin/corba/admin/admin_impl.hh"
 #include "src/bin/cli/baseclient.hh"

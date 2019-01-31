@@ -17,15 +17,15 @@
  */
 
 #include "src/backend/admin/registrar/update_epp_auth.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/registrar/epp_auth/add_registrar_epp_auth.hh"
-#include "src/libfred/registrar/epp_auth/clone_registrar_epp_auth.hh"
-#include "src/libfred/registrar/epp_auth/delete_registrar_epp_auth.hh"
-#include "src/libfred/registrar/epp_auth/exceptions.hh"
-#include "src/libfred/registrar/epp_auth/get_registrar_epp_auth.hh"
-#include "src/libfred/registrar/epp_auth/update_registrar_epp_auth.hh"
-#include "src/util/log/context.hh"
-#include "src/util/log/logger.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/registrar/epp_auth/add_registrar_epp_auth.hh"
+#include "libfred/registrar/epp_auth/clone_registrar_epp_auth.hh"
+#include "libfred/registrar/epp_auth/delete_registrar_epp_auth.hh"
+#include "libfred/registrar/epp_auth/exceptions.hh"
+#include "libfred/registrar/epp_auth/get_registrar_epp_auth.hh"
+#include "libfred/registrar/epp_auth/update_registrar_epp_auth.hh"
+#include "util/log/context.hh"
+#include "util/log/logger.hh"
 
 #include <set>
 #include <string>
@@ -56,7 +56,7 @@ unsigned long long add_epp_auth(const std::string& _registrar_handle,
         const std::string& _plain_password)
 {
     LOGGING_CONTEXT(log_ctx);
-    LOGGER(PACKAGE).debug("Registrar handle: " + _registrar_handle +
+    LOGGER.debug("Registrar handle: " + _registrar_handle +
                           ", certificate: " + _certificate_fingerprint +
                           ", password: " + _plain_password);
 
@@ -72,17 +72,17 @@ unsigned long long add_epp_auth(const std::string& _registrar_handle,
     }
     catch (const LibFred::Registrar::EppAuth::NonexistentRegistrar& e)
     {
-        LOGGER(PACKAGE).warning(e.what());
+        LOGGER.warning(e.what());
         throw EppAuthNonexistentRegistrar();
     }
     catch (const LibFred::Registrar::EppAuth::DuplicateCertificate& e)
     {
-        LOGGER(PACKAGE).warning(e.what());
+        LOGGER.warning(e.what());
         throw DuplicateCertificate();
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw AddEppAuthException();
     }
 }
@@ -90,7 +90,7 @@ unsigned long long add_epp_auth(const std::string& _registrar_handle,
 void update_epp_auth(const EppAuthData& _auth_data)
 {
     LOGGING_CONTEXT(log_ctx);
-    LOGGER(PACKAGE).debug("Registrar handle: " + _auth_data.registrar_handle);
+    LOGGER.debug("Registrar handle: " + _auth_data.registrar_handle);
 
     LibFred::OperationContextCreator ctx;
 
@@ -113,7 +113,7 @@ void update_epp_auth(const EppAuthData& _auth_data)
         std::stringstream debug_info;
         debug_info << "Registrar handle: " << _auth_data.registrar_handle << " auth_id: " << auth_id;
         debug_info << " password: " << password << " cert: " << certificate << " newcert: " << second_cert;
-        LOGGER(PACKAGE).debug(debug_info.str());
+        LOGGER.debug(debug_info.str());
 
         if (is_new_acl_record)
         {
@@ -122,7 +122,7 @@ void update_epp_auth(const EppAuthData& _auth_data)
             const bool has_mandatory_data = !password.empty() && !certificate.empty();
             if (!has_mandatory_data)
             {
-                LOGGER(PACKAGE).warning(operation_name + " Missing mandatory params: " +
+                LOGGER.warning(operation_name + " Missing mandatory params: " +
                         (password.empty()? "password ": "") + (certificate.empty()? "certificate": ""));
                 throw EppAuthMissingParameters();
             }
@@ -137,17 +137,17 @@ void update_epp_auth(const EppAuthData& _auth_data)
             }
             catch (const LibFred::Registrar::EppAuth::NonexistentRegistrar& e)
             {
-                LOGGER(PACKAGE).warning(operation_name + e.what());
+                LOGGER.warning(operation_name + e.what());
                 throw EppAuthNonexistentRegistrar();
             }
             catch (const LibFred::Registrar::EppAuth::DuplicateCertificate& e)
             {
-                LOGGER(PACKAGE).warning(operation_name + e.what());
+                LOGGER.warning(operation_name + e.what());
                 throw DuplicateCertificate();
             }
             catch (const std::exception& e)
             {
-                LOGGER(PACKAGE).error(operation_name + e.what());
+                LOGGER.error(operation_name + e.what());
                 throw UpdateEppAuthException();
             }
         }
@@ -157,7 +157,7 @@ void update_epp_auth(const EppAuthData& _auth_data)
             const bool has_mandatory_data = !password.empty() || !certificate.empty();
             if (!has_mandatory_data)
             {
-                LOGGER(PACKAGE).info(operation_name + "No data for update.");
+                LOGGER.info(operation_name + "No data for update.");
                 throw EppAuthNoUpdateData();
             }
             try
@@ -170,17 +170,17 @@ void update_epp_auth(const EppAuthData& _auth_data)
             }
             catch (const LibFred::Registrar::EppAuth::NonexistentRegistrarEppAuth& e)
             {
-                LOGGER(PACKAGE).warning(operation_name + e.what());
+                LOGGER.warning(operation_name + e.what());
                 throw NonexistentEppAuth();
             }
             catch (const LibFred::Registrar::EppAuth::DuplicateCertificate& e)
             {
-                LOGGER(PACKAGE).warning(operation_name + e.what());
+                LOGGER.warning(operation_name + e.what());
                 throw DuplicateCertificate();
             }
             catch (const std::exception& e)
             {
-                LOGGER(PACKAGE).error(operation_name + e.what());
+                LOGGER.error(operation_name + e.what());
                 throw UpdateEppAuthException();
             }
             auth_ids.erase(auth_id);
@@ -195,12 +195,12 @@ void update_epp_auth(const EppAuthData& _auth_data)
             }
             catch (const LibFred::Registrar::EppAuth::DuplicateCertificate& e)
             {
-                LOGGER(PACKAGE).warning(operation_name + e.what());
+                LOGGER.warning(operation_name + e.what());
                 throw DuplicateCertificate();
             }
             catch (const std::exception& e)
             {
-                LOGGER(PACKAGE).error(operation_name + e.what());
+                LOGGER.error(operation_name + e.what());
                 throw UpdateEppAuthException();
             }
         }
@@ -216,7 +216,7 @@ void update_epp_auth(const EppAuthData& _auth_data)
         }
         catch (const std::exception& e)
         {
-            LOGGER(PACKAGE).error(operation_name + e.what());
+            LOGGER.error(operation_name + e.what());
             throw UpdateEppAuthException();
         }
     }

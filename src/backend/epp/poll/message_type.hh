@@ -19,7 +19,7 @@
 #ifndef MESSAGE_TYPE_HH_1D39988A7F594B28BB40341AE7DB517B
 #define MESSAGE_TYPE_HH_1D39988A7F594B28BB40341AE7DB517B
 
-#include "src/util/enum_conversion.hh"
+#include "util/enum_conversion.hh"
 
 namespace Epp {
 namespace Poll {

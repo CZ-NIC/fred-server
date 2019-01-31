@@ -45,11 +45,11 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/assign/list_of.hpp>
 
-#include "src/libfred/db_settings.hh"
+#include "libfred/db_settings.hh"
 #include "src/util/corba_wrapper_decl.hh"
-#include "src/util/log/logger.hh"
-#include "src/util/log/context.hh"
-#include "src/util/random_data_generator.hh"
+#include "util/log/logger.hh"
+#include "util/log/context.hh"
+#include "util/random_data_generator.hh"
 
 #include "src/bin/corba/Messages.hh"
 

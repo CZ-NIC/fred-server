@@ -20,7 +20,7 @@
 #define AUTHINFO_CONTACT_HH_C9A78AFCF678442B8B7A41B0CFB24EFF
 
 #include "src/backend/epp/session_data.hh"
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 #include <string>
 

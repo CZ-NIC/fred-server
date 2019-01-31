@@ -1,129 +1,102 @@
+#include "src/deprecated/model/model_filters.hh"
+#include "util/log/logger.hh"
+#include "libfred/opcontext.hh"
+
+#include "src/deprecated/model/registrar_filter.hh"
+
+#include <boost/format.hpp>
+
+#include <cstdlib>
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <memory>
 #include <map>
-#include <boost/format.hpp>
 
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-
-#include "src/util/settings.hh"
-#include "src/deprecated/model/model_filters.hh"
-#include "src/util/db/database.hh"
-#include "src/util/log/logger.hh"
-
-#include "src/deprecated/model/registrar_filter.hh"
-
-namespace Database {
-  typedef Factory::Simple<PSQLConnection> ConnectionFactory;
-  typedef Manager_<ConnectionFactory>     Manager;
-
-  typedef Manager::connection_type        Connection;
-  typedef Manager::transaction_type       Transaction;
-  typedef Manager::result_type            Result;
-  typedef Manager::sequence_type          Sequence;
-  typedef Manager::row_type               Row;
-}
-
-
-using namespace Database;
-using namespace Database::Filters;
-
-Connection* init_connection() {
-	/*
-  // std::string conninfo = "host=localhost dbname=fred user=fred port=22345";
-  Manager db_manager(conninfo);
-  Connection *conn = db_manager.getConnection();
-	*/
-
-  Connection *conn;
-  try {
-  	conn = new Connection("host=localhost dbname=fred user=fred port=5432");
-  } catch (Database::Exception& ex) {
-	std::cout << "Error while connecting to the database " << ex.what() << std::endl;
-	return NULL;
-  }
-
-  return conn;
-}
-
-void exec_and_print(SelectQuery& _q, Union& _f) {
-  _f.serialize(_q);
-
-  std::string info_query_str = str(boost::format("%1% LIMIT %2%") % _q.str() % 1000);
-
-  std::cout << "\n" << "exec_and_print: " << info_query_str << "\n"
-  << std::endl;
-
-  std::unique_ptr<Connection> conn(init_connection());
-  if(conn.get() == NULL) return;
-  Result result = conn->exec(info_query_str);
-
-  for (Result::Iterator it = result.begin(); it != result.end(); ++it) {
-    Row row = *it;
-    for (Row::Iterator column = row.begin(); column != row.end(); ++column) {
-      std::cout << *column << " ";
+void init_connection()
+{
+    try
+    {
+        const std::string conn_info = "host=localhost dbname=fred user=fred port=5432";
+        Database::emplace_default_manager<Database::StandaloneManager>(conn_info);
     }
-    std::cout << std::endl;
-  }
-  std::cout << "(" << result.size() << " rows)" << std::endl << std::endl;
+    catch (const Database::Exception& e)
+    {
+        std::cout << "Error while connecting to the database " << e.what() << std::endl;
+    }
 }
 
-int main(int argc, char *argv[]) {
-  try {
+void exec_and_print(Database::SelectQuery& _q, Database::Filters::Union& _f)
+{
+    _f.serialize(_q);
 
-    Logging::Manager::instance_ref().get("db").addHandler(Logging::Log::LT_CONSOLE);
-    Logging::Manager::instance_ref().get("db").setLevel(Logging::Log::LL_DEBUG);
-    Logging::Manager::instance_ref().get("tracer").addHandler(Logging::Log::LT_CONSOLE);
-    Logging::Manager::instance_ref().get("tracer").setLevel(Logging::Log::LL_TRACE);
-    Logging::Manager::instance_ref().get(PACKAGE).addHandler(Logging::Log::LT_CONSOLE);
-    Logging::Manager::instance_ref().get(PACKAGE).setLevel(Logging::Log::LL_TRACE);
+    const std::string info_query_str = str(boost::format("%1% LIMIT %2%") % _q.str() % 1000);
 
-    //Zone Test
+    std::cout << "\n" << "exec_and_print: " << info_query_str << "\n" << std::endl;
 
-    bool at_least_one = false;
-    Database::Filters::Zone *zoneFilter;
-        zoneFilter = new Database::Filters::ZoneSoaImpl(true);
-      Database::Filters::Union *uf;
-      uf = new Database::Filters::Union();
-      uf->addFilter(zoneFilter);
+    init_connection();
+    LibFred::OperationContextCreator ctx;
+    const Database::Result result = ctx.get_conn().exec(info_query_str);
 
-      Database::SelectQuery info_query;
-                        std::unique_ptr<Database::Filters::Iterator> fit(uf->createIterator());
-                        for (fit->first(); !fit->isDone(); fit->next())
-                        {
-                          Database::Filters::Zone *zf =
-                              dynamic_cast<Database::Filters::Zone*>(fit->get());
-                          if (!zf)
-                            continue;
+    for (Database::Result::Iterator it = result.begin(); it != result.end(); ++it)
+    {
+        const Database::Row row = *it;
+        for (Database::Row::Iterator column = row.begin(); column != row.end(); ++column)
+        {
+            std::cout << *column << " ";
+        }
+        std::cout << std::endl;
+    }
+    std::cout << "(" << result.size() << " rows)" << std::endl << std::endl;
+}
 
-                          Database::SelectQuery *tmp = new Database::SelectQuery();
-                          tmp->select() << "z.id, z.fqdn, z.ex_period_min, z.ex_period_max"
-                            ", z.val_period, z.dots_max, z.enum_zone"
-                            ", zs.ttl, zs.hostmaster, zs.serial, zs.refresh, zs.update_retr"
-                            ", zs.expiry, zs.minimum, zs.ns_fqdn";
-                          tmp->from() << "zone z JOIN zone_soa zs ON z.id = zs.zone";
-                          tmp->order_by() << "z.id";
+int main(int argc, char* argv[])
+{
+    try
+    {
+        LOGGER.add_handler_of<Logging::Log::Device::console>(Logging::Log::EventImportance::debug);
 
-                          uf->addQuery(tmp);
-                          at_least_one = true;
-                        }//for fit
+        //Zone Test
+        bool at_least_one = false;
+        Database::Filters::Zone* const zoneFilter = new Database::Filters::ZoneSoaImpl(true);
+        Database::Filters::Union* const uf = new Database::Filters::Union();
+        uf->addFilter(zoneFilter);
 
-                        if (!at_least_one) {
-                          LOGGER(PACKAGE).error("wrong filter passed for reload ZoneList!");
-                          return 0;//return;
-                        }
+        Database::SelectQuery info_query;
+        std::unique_ptr<Database::Filters::Iterator> fit(uf->createIterator());
+        for (fit->first(); !fit->isDone(); fit->next())
+        {
+            Database::Filters::Zone* const zf =
+            dynamic_cast<Database::Filters::Zone*>(fit->get());
+            if (zf == nullptr)
+            {
+                continue;
+            }
+            Database::SelectQuery* const tmp = new Database::SelectQuery();
+            tmp->select() << "z.id, z.fqdn, z.ex_period_min, z.ex_period_max"
+            ", z.val_period, z.dots_max, z.enum_zone"
+            ", zs.ttl, zs.hostmaster, zs.serial, zs.refresh, zs.update_retr"
+            ", zs.expiry, zs.minimum, zs.ns_fqdn";
+            tmp->from() << "zone z JOIN zone_soa zs ON z.id = zs.zone";
+            tmp->order_by() << "z.id";
 
-                        /* manually add query part to order result by id
-                         * need for findIDSequence() */
-                        //uf.serialize(info_query);
-                        //std::string info_query_str = str(boost::format("%1% ORDER BY id LIMIT %2%") % info_query.str() % m_limit);
+            uf->addQuery(tmp);
+            at_least_one = true;
+        }
 
-                        exec_and_print(info_query, *uf);
-                            return 0;
+        if (!at_least_one)
+        {
+            LOGGER.error("wrong filter passed for reload ZoneList!");
+            return EXIT_SUCCESS;
+        }
 
+        /* manually add query part to order result by id
+        * need for findIDSequence() */
+        //uf.serialize(info_query);
+        //std::string info_query_str = str(boost::format("%1% ORDER BY id LIMIT %2%") % info_query.str() % m_limit);
 
+        exec_and_print(info_query, *uf);
+        return EXIT_SUCCESS;
 
       //Zone Test End
     /*
@@ -546,17 +519,19 @@ int main(int argc, char *argv[]) {
     */
 
 //#endif // #if 0
-  }
-  catch (Database::Exception& e) {
-    std::cout << e.what() << std::endl;
-  }
-  catch (std::exception& e) {
-    std::cout << e.what() << std::endl;
-  }
-  catch (...) {
-    std::cerr << "unknown exception catched" << std::endl;
-  }
+    }
+    catch (const Database::Exception& e)
+    {
+        std::cout << e.what() << std::endl;
+    }
+    catch (const std::exception& e)
+    {
+        std::cout << e.what() << std::endl;
+    }
+    catch (...)
+    {
+        std::cerr << "unknown exception catched" << std::endl;
+    }
 
-  return 1;
+    return EXIT_FAILURE;
 }
-

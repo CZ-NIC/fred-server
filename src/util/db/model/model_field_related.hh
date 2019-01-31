@@ -2,7 +2,7 @@
 #define MODEL_FIELD_RELATED_HH_C46334B7D5274481BF01CFDE8ADEAE90
 
 #include "src/util/db/model/model_field.hh"
-#include "src/util/log/logger.hh"
+#include "util/log/logger.hh"
 
 
 namespace Model {

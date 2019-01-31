@@ -1,7 +1,7 @@
 #include "tools/disclose_flags_updater/disclose_value.hh"
 #include "tools/disclose_flags_updater/worker.hh"
 #include "tools/disclose_flags_updater/thread_safe_output.hh"
-#include "src/libfred/registrable_object/contact/update_contact.hh"
+#include "libfred/registrable_object/contact/update_contact.hh"
 
 #include <thread>
 

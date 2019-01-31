@@ -1,7 +1,7 @@
 #include "test/backend/whois/fixture_common.hh"
 
-#include "src/libfred/db_settings.hh"
-#include "src/util/random_data_generator.hh"
+#include "libfred/db_settings.hh"
+#include "util/random_data_generator.hh"
 #include "src/backend/whois/registrar_certification.hh"
 
 BOOST_AUTO_TEST_SUITE(TestWhois)

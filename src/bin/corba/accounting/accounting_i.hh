@@ -22,8 +22,8 @@
 #include "src/bin/corba/Accounting.hh"
 #include "src/bin/corba/IsoDateTime.hh"
 #include "src/bin/corba/Registry.hh"
-#include "src/libfred/banking/bank_manager.hh"
-#include "src/libfred/documents.hh"
+#include "src/deprecated/libfred/banking/bank_manager.hh"
+#include "src/deprecated/libfred/documents.hh"
 
 #include <string>
 

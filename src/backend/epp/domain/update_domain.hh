@@ -24,9 +24,9 @@
 #include "src/backend/epp/domain/update_domain_config_data.hh"
 #include "src/backend/epp/domain/update_domain_input_data.hh"
 #include "src/backend/epp/session_data.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/util/db/nullable.hh"
-#include "src/util/optional_value.hh"
+#include "libfred/opcontext.hh"
+#include "util/db/nullable.hh"
+#include "util/optional_value.hh"
 
 #include <string>
 #include <vector>

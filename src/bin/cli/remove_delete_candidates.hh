@@ -19,7 +19,7 @@
 #ifndef REMOVE_DELETE_CANDIDATES_HH_59422E14C17140D59C681C1D74277797
 #define REMOVE_DELETE_CANDIDATES_HH_59422E14C17140D59C681C1D74277797
 
-#include "src/util/nonconvertible.hh"
+#include "util/nonconvertible.hh"
 
 #include <chrono>
 #include <set>

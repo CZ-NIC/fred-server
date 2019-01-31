@@ -28,20 +28,20 @@ ccReg_Messages_i::add()
     Database::Filters::Message *filter =
         new Database::Filters::MessageImpl(true);
     uf.addFilter(filter);
-    LOGGER(PACKAGE).debug(boost::format("ccReg_Messages_i::add uf.empty %1%")
+    LOGGER.debug(boost::format("ccReg_Messages_i::add uf.empty %1%")
 		% uf.empty());
     return it.addE(filter);
 
     }//try
     catch(std::exception& ex)
     {
-        LOGGER(PACKAGE).error(boost::format("ccReg_Messages_i::add ex: %1%")
+        LOGGER.error(boost::format("ccReg_Messages_i::add ex: %1%")
     		% ex.what());
         throw;
     }
     catch(...)
     {
-        LOGGER(PACKAGE).error("ccReg_Messages_i::add unknown exception");
+        LOGGER.error("ccReg_Messages_i::add unknown exception");
         throw;
     }
 }
@@ -62,20 +62,20 @@ ccReg_Messages_i::getColumnHeaders()
     COLHEAD(ch, 4, "Modification date", CT_OTHER);
     COLHEAD(ch, 5, "Attempt", CT_OTHER);
 
-    LOGGER(PACKAGE).debug(boost::format("ccReg_Messages_i::getColumnHeaders"
+    LOGGER.debug(boost::format("ccReg_Messages_i::getColumnHeaders"
     		" numColumns %1%")
 		% numColumns());
     return ch;
     }//try
     catch(std::exception& ex)
     {
-        LOGGER(PACKAGE).error(boost::format("ccReg_Messages_i::getColumnHeaders ex: %1%")
+        LOGGER.error(boost::format("ccReg_Messages_i::getColumnHeaders ex: %1%")
     		% ex.what());
         throw;
     }
     catch(...)
     {
-        LOGGER(PACKAGE).error("ccReg_Messages_i::getColumnHeaders unknown exception");
+        LOGGER.error("ccReg_Messages_i::getColumnHeaders unknown exception");
         throw;
     }
 }
@@ -93,13 +93,13 @@ ccReg_Messages_i::getRow(CORBA::UShort row)
     }
     catch(std::exception& ex)
     {
-    	LOGGER(PACKAGE).error("ccReg_Messages_i::getRow invalid row");
+    	LOGGER.error("ccReg_Messages_i::getRow invalid row");
         throw Registry::Table::INVALID_ROW();
     }
 
 	try
 	{
-    LOGGER(PACKAGE).debug(boost::format(
+    LOGGER.debug(boost::format(
     		"getRow %1%"
     		" MT_ID %2%"
     		" MT_CRDATE %3%"
@@ -133,13 +133,13 @@ ccReg_Messages_i::getRow(CORBA::UShort row)
     }//try
     catch(std::exception& ex)
     {
-        LOGGER(PACKAGE).error(boost::format("ccReg_Messages_i::getRow ex: %1%")
+        LOGGER.error(boost::format("ccReg_Messages_i::getRow ex: %1%")
     		% ex.what());
         throw Registry::Table::INVALID_ROW();
     }
     catch(...)
     {
-        LOGGER(PACKAGE).error("ccReg_Messages_i::getRow unknown exception");
+        LOGGER.error("ccReg_Messages_i::getRow unknown exception");
         throw Registry::Table::INVALID_ROW();
     }
 }
@@ -149,7 +149,7 @@ ccReg_Messages_i::numColumns()
 {
 	try
 	{
-    LOGGER(PACKAGE).debug(boost::format("ccReg_Messages_i::numColumns"
+    LOGGER.debug(boost::format("ccReg_Messages_i::numColumns"
     		" numColumns %1%")
 		% (LibFred::Messages::MessageMetaInfo::columns - 1));
 
@@ -157,13 +157,13 @@ ccReg_Messages_i::numColumns()
     }//try
     catch(std::exception& ex)
     {
-        LOGGER(PACKAGE).error(boost::format("ccReg_Messages_i::numColumns ex: %1%")
+        LOGGER.error(boost::format("ccReg_Messages_i::numColumns ex: %1%")
     		% ex.what());
         throw;
     }
     catch(...)
     {
-        LOGGER(PACKAGE).error("ccReg_Messages_i::numColumns unknown exception");
+        LOGGER.error("ccReg_Messages_i::numColumns unknown exception");
         throw;
     }
 
@@ -208,13 +208,13 @@ ccReg_Messages_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir)
     }//try
     catch(std::exception& ex)
     {
-        LOGGER(PACKAGE).error(boost::format("ccReg_Messages_i::sortByColumn ex: %1%")
+        LOGGER.error(boost::format("ccReg_Messages_i::sortByColumn ex: %1%")
     		% ex.what());
         throw;
     }
     catch(...)
     {
-        LOGGER(PACKAGE).error("ccReg_Messages_i::sortByColumn unknown exception");
+        LOGGER.error("ccReg_Messages_i::sortByColumn unknown exception");
         throw;
     }
 }
@@ -226,7 +226,7 @@ ccReg_Messages_i::getRowId(CORBA::UShort row)
 	{
     Logging::Context ctx(base_context_);
 
-    LOGGER(PACKAGE).debug(boost::format("ccReg_Messages_i::getRowId"
+    LOGGER.debug(boost::format("ccReg_Messages_i::getRowId"
     		" row %1% id %2%")
 		% row
 		% ml->get(row)->get_id());
@@ -235,13 +235,13 @@ ccReg_Messages_i::getRowId(CORBA::UShort row)
     }//try
     catch(std::exception& ex)
     {
-        LOGGER(PACKAGE).error(boost::format("ccReg_Messages_i::getRowId ex: %1%")
+        LOGGER.error(boost::format("ccReg_Messages_i::getRowId ex: %1%")
     		% ex.what());
         throw Registry::Table::INVALID_ROW();
     }
     catch(...)
     {
-        LOGGER(PACKAGE).error("ccReg_Messages_i::getRowId unknown exception");
+        LOGGER.error("ccReg_Messages_i::getRowId unknown exception");
         throw Registry::Table::INVALID_ROW();
     }
 }
@@ -258,7 +258,7 @@ ccReg_Messages_i::numRows()
 	try
 	{
     Logging::Context ctx(base_context_);
-    LOGGER(PACKAGE).debug(boost::format("ccReg_Messages_i::numRows"
+    LOGGER.debug(boost::format("ccReg_Messages_i::numRows"
     		" numRows %1%")
 		% ml->size()
 		);
@@ -266,13 +266,13 @@ ccReg_Messages_i::numRows()
     }//try
     catch(std::exception& ex)
     {
-        LOGGER(PACKAGE).error(boost::format("ccReg_Messages_i::numRows ex: %1%")
+        LOGGER.error(boost::format("ccReg_Messages_i::numRows ex: %1%")
     		% ex.what());
         throw;
     }
     catch(...)
     {
-        LOGGER(PACKAGE).error("ccReg_Messages_i::numRows unknown exception");
+        LOGGER.error("ccReg_Messages_i::numRows unknown exception");
         throw;
     }
 }
@@ -285,20 +285,20 @@ ccReg_Messages_i::reload_worker()
     Logging::Context ctx(base_context_);
     ConnectionReleaser releaser;
 
-    LOGGER(PACKAGE).debug("ccReg_Messages_i::reload");
+    LOGGER.debug("ccReg_Messages_i::reload");
     ml->setTimeout(query_timeout);
     ml->setLimit(limit_);
     ml->reload(uf);
     }//try
     catch(std::exception& ex)
     {
-        LOGGER(PACKAGE).error(boost::format("ccReg_Messages_i::reload ex: %1%")
+        LOGGER.error(boost::format("ccReg_Messages_i::reload ex: %1%")
     		% ex.what());
         throw;
     }
     catch(...)
     {
-        LOGGER(PACKAGE).error("ccReg_Messages_i::reload unknown exception");
+        LOGGER.error("ccReg_Messages_i::reload unknown exception");
         throw;
     }
 }
@@ -315,13 +315,13 @@ ccReg_Messages_i::clear()
     }//try
     catch(std::exception& ex)
     {
-        LOGGER(PACKAGE).error(boost::format("ccReg_Messages_i::clear ex: %1%")
+        LOGGER.error(boost::format("ccReg_Messages_i::clear ex: %1%")
     		% ex.what());
         throw;
     }
     catch(...)
     {
-        LOGGER(PACKAGE).error("ccReg_Messages_i::clear unknown exception");
+        LOGGER.error("ccReg_Messages_i::clear unknown exception");
         throw;
     }
 }
@@ -336,7 +336,7 @@ ccReg_Messages_i::resultSize()
 
     TRACE("[CALL] ccReg_Messages_i::resultSize()");
 
-    LOGGER(PACKAGE).debug(boost::format("ccReg_Messages_i::resultSize"
+    LOGGER.debug(boost::format("ccReg_Messages_i::resultSize"
     		" getRealCount %1%")
 		% ml->getRealCount(uf)
 		);
@@ -345,13 +345,13 @@ ccReg_Messages_i::resultSize()
     }//try
     catch(std::exception& ex)
     {
-        LOGGER(PACKAGE).error(boost::format("ccReg_Messages_i::resultSize ex: %1%")
+        LOGGER.error(boost::format("ccReg_Messages_i::resultSize ex: %1%")
     		% ex.what());
         throw;
     }
     catch(...)
     {
-        LOGGER(PACKAGE).error("ccReg_Messages_i::resultSize unknown exception");
+        LOGGER.error("ccReg_Messages_i::resultSize unknown exception");
         throw;
     }
 }
@@ -382,13 +382,13 @@ ccReg_Messages_i::loadFilter(ccReg::TID id)
     }//try
     catch(std::exception& ex)
     {
-        LOGGER(PACKAGE).error(boost::format("ccReg_Messages_i::loadFilter ex: %1%")
+        LOGGER.error(boost::format("ccReg_Messages_i::loadFilter ex: %1%")
     		% ex.what());
         throw;
     }
     catch(...)
     {
-        LOGGER(PACKAGE).error("ccReg_Messages_i::loadFilter unknown exception");
+        LOGGER.error("ccReg_Messages_i::loadFilter unknown exception");
         throw;
     }
 }
@@ -410,13 +410,13 @@ ccReg_Messages_i::saveFilter(const char *name)
     }//try
     catch(std::exception& ex)
     {
-        LOGGER(PACKAGE).error(boost::format("ccReg_Messages_i::saveFilter ex: %1%")
+        LOGGER.error(boost::format("ccReg_Messages_i::saveFilter ex: %1%")
     		% ex.what());
         throw;
     }
     catch(...)
     {
-        LOGGER(PACKAGE).error("ccReg_Messages_i::saveFilter unknown exception");
+        LOGGER.error("ccReg_Messages_i::saveFilter unknown exception");
         throw;
     }
 }
@@ -437,13 +437,13 @@ ccReg_Messages_i::findId(ccReg::TID id)
     }
 	catch(std::exception& ex)
 	{
-		LOGGER(PACKAGE).error(boost::format("ccReg_Messages_i::findId ex: %1%")
+		LOGGER.error(boost::format("ccReg_Messages_i::findId ex: %1%")
 			% ex.what());
 		throw;
 	}
 	catch(...)
 	{
-		LOGGER(PACKAGE).error("ccReg_Messages_i::findId unknown exception");
+		LOGGER.error("ccReg_Messages_i::findId unknown exception");
 		throw;
 	}
 }
@@ -455,7 +455,7 @@ ccReg_Messages_i::numRowsOverLimit()
 	try
 	{
     Logging::Context ctx(base_context_);
-    LOGGER(PACKAGE).debug(boost::format("ccReg_Messages_i::numRowsOverLimit"
+    LOGGER.debug(boost::format("ccReg_Messages_i::numRowsOverLimit"
         		" %1%")
     		% ml->isLimited()
     		);
@@ -463,13 +463,13 @@ ccReg_Messages_i::numRowsOverLimit()
     }//try
     catch(std::exception& ex)
     {
-        LOGGER(PACKAGE).error(boost::format("ccReg_Messages_i::numRowsOverLimit ex: %1%")
+        LOGGER.error(boost::format("ccReg_Messages_i::numRowsOverLimit ex: %1%")
     		% ex.what());
         throw;
     }
     catch(...)
     {
-        LOGGER(PACKAGE).error("ccReg_Messages_i::numRowsOverLimit unknown exception");
+        LOGGER.error("ccReg_Messages_i::numRowsOverLimit unknown exception");
         throw;
     }
 }

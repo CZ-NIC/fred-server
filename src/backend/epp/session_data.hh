@@ -21,7 +21,7 @@
 
 #include "src/backend/epp/session_lang.hh"
 
-#include "src/util/optional_value.hh"
+#include "util/optional_value.hh"
 
 #include <string>
 

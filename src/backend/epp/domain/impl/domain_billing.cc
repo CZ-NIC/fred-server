@@ -18,8 +18,8 @@
 
 #include "src/backend/epp/domain/impl/domain_billing.hh"
 #include "src/backend/epp/exception.hh"
-#include "src/libfred/zone/zone.hh"
-#include "src/util/decimal/decimal.hh"
+#include "libfred/zone/zone.hh"
+#include "util/decimal/decimal.hh"
 
 namespace Epp {
 namespace Domain {

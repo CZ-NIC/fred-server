@@ -19,8 +19,8 @@
 #ifndef UTIL_HH_768620FFC83747FE8C6479F25B1F4031
 #define UTIL_HH_768620FFC83747FE8C6479F25B1F4031
 
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/zone/info_zone_data.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/zone/info_zone_data.hh"
 #include "test/setup/fixtures.hh"
 
 namespace Test {

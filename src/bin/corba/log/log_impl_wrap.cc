@@ -230,7 +230,7 @@ Registry::PageTable_ptr ccReg_Log_i::createPageTable(const char *session_id)
         it = pagetables.find(session_id);
 
         if (it != pagetables.end()) {
-            LOGGER(PACKAGE).debug(boost::format("ccReg_Log_i: returning existing pagetable for client (session_id %1%) ") % session_id);
+            LOGGER.debug(boost::format("ccReg_Log_i: returning existing pagetable for client (session_id %1%) ") % session_id);
             return it->second->_this();
 
         } else {
@@ -243,7 +243,7 @@ Registry::PageTable_ptr ccReg_Log_i::createPageTable(const char *session_id)
             pagetables[session_id] = ret_ptr;
         }
 
-        LOGGER(PACKAGE).debug(boost::format("ccReg_Log_i: Returning a pagetable object (%1%) to a client (session %2%).") % ret % session_id);
+        LOGGER.debug(boost::format("ccReg_Log_i: Returning a pagetable object (%1%) to a client (session %2%).") % ret % session_id);
 
         return ret;
     } catch(...) {
@@ -269,9 +269,9 @@ void ccReg_Log_i::deletePageTable(const char* session_id)
         PortableServer::POA_ptr poa = this->_default_POA();
 
         if (it == pagetables.end()) {
-            LOGGER(PACKAGE).debug(boost::format("ccReg_Log_i: No pagetable found for session %1%, no action. ") % session_id);
+            LOGGER.debug(boost::format("ccReg_Log_i: No pagetable found for session %1%, no action. ") % session_id);
         } else {
-            LOGGER(PACKAGE).debug(boost::format("ccReg_Log_i: A pagetable found for session %1%, deleting. ") % session_id);
+            LOGGER.debug(boost::format("ccReg_Log_i: A pagetable found for session %1%, deleting. ") % session_id);
 
             poa->deactivate_object(*(poa->servant_to_id(it->second)));
 
@@ -295,7 +295,7 @@ ccReg::Logger::Detail*  ccReg_Log_i::getDetail(ccReg::TID _id)
         logd_ctx_init ctx;
         ConnectionReleaser releaser;
 
-        LOGGER(PACKAGE).debug(boost::format("constructing request filter for object id=%1% detail") % _id);
+        LOGGER.debug(boost::format("constructing request filter for object id=%1% detail") % _id);
 
         boost::mutex::scoped_lock slm (pagetables_mutex);
         std::unique_ptr<LibFred::Logger::List> request_list(back->createList());
@@ -316,14 +316,14 @@ ccReg::Logger::Detail*  ccReg_Log_i::getDetail(ccReg::TID _id)
         } catch(Database::Exception &ex) {
             std::string message = ex.what();
             if(message.find("statement timeout") != std::string::npos) {
-                LOGGER(PACKAGE).info("Statement timeout in request list.");
+                LOGGER.info("Statement timeout in request list.");
                 throw Registry::SqlQueryTimeout();
             }
             throw;
         }
 
         if(request_list->size() != 1) {
-            LOGGER(PACKAGE).info("throwing OBJECT_NOT_FOUND(): number of items found is not 1");
+            LOGGER.info("throwing OBJECT_NOT_FOUND(): number of items found is not 1");
             throw ccReg::Logger::OBJECT_NOT_FOUND();
         }
         return createRequestDetail(request_list->get(0));

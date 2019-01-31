@@ -38,11 +38,11 @@
 #include <boost/assign/list_of.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include "src/libfred/db_settings.hh"
+#include "libfred/db_settings.hh"
 #include "src/util/corba_wrapper.hh"
-#include "src/util/log/logger.hh"
-#include "src/util/log/context.hh"
-#include "src/util/random_data_generator.hh"
+#include "util/log/logger.hh"
+#include "util/log/context.hh"
+#include "util/random_data_generator.hh"
 #include "src/util/concurrent_queue.hh"
 
 #include "src/util/setup_server.hh"

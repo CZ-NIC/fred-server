@@ -28,37 +28,37 @@
 #include "src/backend/mojeid/mojeid_public_request.hh"
 #include "src/backend/mojeid/safe_data_storage.hh"
 #include "src/bin/corba/mojeid/mojeid_corba_conversion.hh"
-#include "src/libfred/documents.hh"
-#include "src/libfred/messages/messages_impl.hh"
-#include "src/libfred/notifier/enqueue_notification.hh"
-#include "src/libfred/object/object_states_info.hh"
-#include "src/libfred/object_state/cancel_object_state_request_id.hh"
-#include "src/libfred/object_state/create_object_state_request_id.hh"
-#include "src/libfred/object_state/perform_object_state_request.hh"
-#include "src/libfred/poll/create_poll_message.hh"
-#include "src/libfred/public_request/create_public_request.hh"
-#include "src/libfred/public_request/create_public_request_auth.hh"
-#include "src/libfred/public_request/get_opened_public_request.hh"
-#include "src/libfred/public_request/info_public_request_auth.hh"
-#include "src/libfred/public_request/public_request_lock_guard.hh"
-#include "src/libfred/public_request/public_request_status.hh"
-#include "src/libfred/public_request/update_public_request.hh"
-#include "src/libfred/registrable_object/contact/create_contact.hh"
-#include "src/libfred/registrable_object/contact/delete_contact.hh"
-#include "src/libfred/registrable_object/contact/info_contact.hh"
-#include "src/libfred/registrable_object/contact/info_contact_diff.hh"
-#include "src/libfred/registrable_object/contact/ssntype.hh"
-#include "src/libfred/registrable_object/contact/transfer_contact.hh"
-#include "src/libfred/registrable_object/contact/undisclose_address.hh"
-#include "src/libfred/registrable_object/contact/update_contact.hh"
-#include "src/libfred/registrar/info_registrar.hh"
-#include "src/libfred/registrar/check_registrar.hh"
+#include "src/deprecated/libfred/documents.hh"
+#include "src/deprecated/libfred/messages/messages_impl.hh"
+#include "libfred/notifier/enqueue_notification.hh"
+#include "libfred/object/object_states_info.hh"
+#include "libfred/object_state/cancel_object_state_request_id.hh"
+#include "libfred/object_state/create_object_state_request_id.hh"
+#include "libfred/object_state/perform_object_state_request.hh"
+#include "libfred/poll/create_poll_message.hh"
+#include "libfred/public_request/create_public_request.hh"
+#include "libfred/public_request/create_public_request_auth.hh"
+#include "libfred/public_request/get_opened_public_request.hh"
+#include "libfred/public_request/info_public_request_auth.hh"
+#include "libfred/public_request/public_request_lock_guard.hh"
+#include "libfred/public_request/public_request_status.hh"
+#include "libfred/public_request/update_public_request.hh"
+#include "libfred/registrable_object/contact/create_contact.hh"
+#include "libfred/registrable_object/contact/delete_contact.hh"
+#include "libfred/registrable_object/contact/info_contact.hh"
+#include "libfred/registrable_object/contact/info_contact_diff.hh"
+#include "src/deprecated/libfred/registrable_object/contact/ssntype.hh"
+#include "libfred/registrable_object/contact/transfer_contact.hh"
+#include "libfred/registrable_object/contact/undisclose_address.hh"
+#include "libfred/registrable_object/contact/update_contact.hh"
+#include "libfred/registrar/info_registrar.hh"
+#include "libfred/registrar/check_registrar.hh"
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/handle_corbanameservice_args.hh"
 #include "src/util/cfg/handle_mojeid_args.hh"
 #include "src/util/cfg/handle_registry_args.hh"
-#include "src/util/log/context.hh"
-#include "src/util/random.hh"
+#include "util/log/context.hh"
+#include "util/random.hh"
 #include "src/util/types/birthdate.hh"
 #include "src/util/xmlgen.hh"
 
@@ -822,12 +822,12 @@ void MojeIdImpl::get_unregistrable_contact_handles(
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        LOGGER.error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("request failed (unknown error)");
+        LOGGER.error("request failed (unknown error)");
         throw;
     }
 }
@@ -892,17 +892,17 @@ MojeIdImpl::ContactId MojeIdImpl::create_contact_prepare(
     }
     catch (const MojeIdImplData::RegistrationValidationResult& e)
     {
-        LOGGER(PACKAGE).info("request failed (incorrect input data)");
+        LOGGER.info("request failed (incorrect input data)");
         throw;
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        LOGGER.error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("request failed (unknown error)");
+        LOGGER.error("request failed (unknown error)");
         throw;
     }
 }
@@ -1007,42 +1007,42 @@ void MojeIdImpl::transfer_contact_prepare(
     }
     catch (const MojeIdImplData::AlreadyMojeidContact&)
     {
-        LOGGER(PACKAGE).info("request failed (incorrect input data - AlreadyMojeidContact)");
+        LOGGER.info("request failed (incorrect input data - AlreadyMojeidContact)");
         throw;
     }
     catch (const MojeIdImplData::ObjectAdminBlocked&)
     {
-        LOGGER(PACKAGE).info("request failed (incorrect input data - ObjectAdminBlocked)");
+        LOGGER.info("request failed (incorrect input data - ObjectAdminBlocked)");
         throw;
     }
     catch (const MojeIdImplData::ObjectUserBlocked&)
     {
-        LOGGER(PACKAGE).info("request failed (incorrect input data - ObjectUserBlocked)");
+        LOGGER.info("request failed (incorrect input data - ObjectUserBlocked)");
         throw;
     }
     catch (const MojeIdImplData::RegistrationValidationResult&)
     {
-        LOGGER(PACKAGE).info("request failed (incorrect input data - RegistrationValidationResult)");
+        LOGGER.info("request failed (incorrect input data - RegistrationValidationResult)");
         throw;
     }
     catch (const LibFred::InfoContactByHandle::Exception& e)
     {
         if (e.is_set_unknown_contact_handle())
         {
-            LOGGER(PACKAGE).info("request failed (incorrect input data)");
+            LOGGER.info("request failed (incorrect input data)");
             throw MojeIdImplData::ObjectDoesntExist();
         }
-        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        LOGGER.error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        LOGGER.error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("request failed (unknown error)");
+        LOGGER.error("request failed (unknown error)");
         throw;
     }
 }
@@ -1299,35 +1299,35 @@ void MojeIdImpl::update_contact_prepare(
     {
         if (e.is_set_unknown_object_id())
         {
-            LOGGER(PACKAGE).info("request failed (InfoContactById::Exception - unknown_object_id)");
+            LOGGER.info("request failed (InfoContactById::Exception - unknown_object_id)");
             throw MojeIdImplData::ObjectDoesntExist();
         }
-        LOGGER(PACKAGE).error("request failed (InfoContactById::Exception)");
+        LOGGER.error("request failed (InfoContactById::Exception)");
         throw;
     }
     catch (const MojeIdImplData::ObjectDoesntExist& e)
     {
-        LOGGER(PACKAGE).info("request failed (ObjectDoesntExist)");
+        LOGGER.info("request failed (ObjectDoesntExist)");
         throw;
     }
     catch (const MojeIdImplData::MessageLimitExceeded& e)
     {
-        LOGGER(PACKAGE).info(e.as_string());
+        LOGGER.info(e.as_string());
         throw;
     }
     catch (const MojeIdImplInternal::CheckUpdateContactPrepare& e)
     {
-        LOGGER(PACKAGE).info("request failed (CheckUpdateContactPrepare)");
+        LOGGER.info("request failed (CheckUpdateContactPrepare)");
         MojeIdImplInternal::raise(e);
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        LOGGER.error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("request failed (unknown error)");
+        LOGGER.error("request failed (unknown error)");
         throw;
     }
 }
@@ -1425,7 +1425,7 @@ MojeIdImplData::InfoContact MojeIdImpl::update_transfer_contact_prepare(
                         }
                         if (e.is_set_state_not_found())
                         {
-                            LOGGER(PACKAGE).info("unable clear state " + e.get_state_not_found());
+                            LOGGER.info("unable clear state " + e.get_state_not_found());
                         }
                         else
                         {
@@ -1497,50 +1497,50 @@ MojeIdImplData::InfoContact MojeIdImpl::update_transfer_contact_prepare(
         //check contact is registered, throw OBJECT_NOT_EXISTS if isn't
         if (e.is_set_unknown_contact_handle())
         {
-            LOGGER(PACKAGE).info("request failed (InfoContactByHandle::Exception) - unknown_contact_handle");
+            LOGGER.info("request failed (InfoContactByHandle::Exception) - unknown_contact_handle");
             throw MojeIdImplData::ObjectDoesntExist();
         }
-        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        LOGGER.error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
     catch (const MojeIdImplData::RegistrationValidationResult&)
     {
-        LOGGER(PACKAGE).info("request failed (RegistrationValidationResult)");
+        LOGGER.info("request failed (RegistrationValidationResult)");
         throw;
     }
     catch (const MojeIdImplData::AlreadyMojeidContact&)
     {
-        LOGGER(PACKAGE).info("request failed (AlreadyMojeidContact)");
+        LOGGER.info("request failed (AlreadyMojeidContact)");
         throw;
     }
     catch (const MojeIdImplData::ObjectAdminBlocked&)
     {
-        LOGGER(PACKAGE).info("request failed (ObjectAdminBlocked)");
+        LOGGER.info("request failed (ObjectAdminBlocked)");
         throw;
     }
     catch (const MojeIdImplData::ObjectUserBlocked&)
     {
-        LOGGER(PACKAGE).info("request failed (ObjectUserBlocked)");
+        LOGGER.info("request failed (ObjectUserBlocked)");
         throw;
     }
     catch (const MojeIdImplData::MessageLimitExceeded& e)
     {
-        LOGGER(PACKAGE).info(e.as_string());
+        LOGGER.info(e.as_string());
         throw;
     }
     catch (const MojeIdImplData::ObjectDoesntExist& e)
     {
-        LOGGER(PACKAGE).info("request failed (ObjectDoesntExist)");
+        LOGGER.info("request failed (ObjectDoesntExist)");
         throw;
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        LOGGER.error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("request failed (unknown error)");
+        LOGGER.error("request failed (unknown error)");
         throw;
     }
 }
@@ -1615,20 +1615,20 @@ void MojeIdImpl::info_contact(
     {
         if (e.is_set_unknown_contact_handle())
         {
-            LOGGER(PACKAGE).info("request failed (ObjectDoesntExist)");
+            LOGGER.info("request failed (ObjectDoesntExist)");
             throw MojeIdImplData::ObjectDoesntExist();
         }
-        LOGGER(PACKAGE).error("request failed (LibFred::InfoContactByHandle failure)");
+        LOGGER.error("request failed (LibFred::InfoContactByHandle failure)");
         throw;
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        LOGGER.error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("request failed (unknown error)");
+        LOGGER.error("request failed (unknown error)");
         throw;
     }
 }
@@ -1694,20 +1694,20 @@ void MojeIdImpl::get_contact_info_publish_flags(
     {
         if (e.is_set_unknown_object_id())
         {
-            LOGGER(PACKAGE).info("request failed (incorrect input data)");
+            LOGGER.info("request failed (incorrect input data)");
             throw MojeIdImplData::ObjectDoesntExist();
         }
-        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        LOGGER.error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        LOGGER.error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("request failed (unknown error)");
+        LOGGER.error("request failed (unknown error)");
         throw;
     }
 }
@@ -1884,57 +1884,57 @@ MojeIdImpl::ContactId MojeIdImpl::process_registration_request(
     }
     catch (const MojeIdImplData::IdentificationRequestDoesntExist&)
     {
-        LOGGER(PACKAGE).info("request failed (identification request doesn't exist)");
+        LOGGER.info("request failed (identification request doesn't exist)");
         throw;
     }
     catch (const MojeIdImplData::IdentificationFailed&)
     {
-        LOGGER(PACKAGE).info("request failed (identification failed)");
+        LOGGER.info("request failed (identification failed)");
         throw;
     }
     catch (const MojeIdImplData::ContactChanged&)
     {
-        LOGGER(PACKAGE).info("request failed (contact changed)");
+        LOGGER.info("request failed (contact changed)");
         throw;
     }
     catch (const MojeIdImplData::ProcessRegistrationValidationResult&)
     {
-        LOGGER(PACKAGE).info("request failed (incorrect data)");
+        LOGGER.info("request failed (incorrect data)");
         throw;
     }
     catch (const MojeIdImplData::IdentificationAlreadyProcessed&)
     {
-        LOGGER(PACKAGE).info("request failed (IdentificationAlreadyProcessed)");
+        LOGGER.info("request failed (IdentificationAlreadyProcessed)");
         throw;
     }
     catch (const LibFred::PublicRequestLockGuardByIdentification::Exception& e)
     {
         if (e.is_set_public_request_doesnt_exist())
         {
-            LOGGER(PACKAGE).info(boost::format("request failed (%1%)") % e.what());
+            LOGGER.info(boost::format("request failed (%1%)") % e.what());
             throw MojeIdImplData::IdentificationRequestDoesntExist();
         }
-        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        LOGGER.error(boost::format("request failed (%1%)") % e.what());
         throw std::runtime_error(e.what());
     }
     catch (const LibFred::InfoContactById::Exception& e)
     {
         if (e.is_set_unknown_object_id())
         {
-            LOGGER(PACKAGE).info(boost::format("request failed (%1%)") % e.what());
+            LOGGER.info(boost::format("request failed (%1%)") % e.what());
             throw MojeIdImplData::IdentificationFailed();
         }
-        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        LOGGER.error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        LOGGER.error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("request failed (unknown error)");
+        LOGGER.error("request failed (unknown error)");
         throw;
     }
 }
@@ -2030,32 +2030,32 @@ void MojeIdImpl::process_identification_request(
     }
     catch (const MojeIdImplData::IdentificationRequestDoesntExist&)
     {
-        LOGGER(PACKAGE).info("request failed (IdentificationRequestDoesntExist)");
+        LOGGER.info("request failed (IdentificationRequestDoesntExist)");
         throw;
     }
     catch (const MojeIdImplData::ObjectDoesntExist&)
     {
-        LOGGER(PACKAGE).info("request failed (ObjectDoesntExist)");
+        LOGGER.info("request failed (ObjectDoesntExist)");
         throw;
     }
     catch (const MojeIdImplData::IdentificationAlreadyProcessed&)
     {
-        LOGGER(PACKAGE).info("request failed (IdentificationAlreadyProcessed)");
+        LOGGER.info("request failed (IdentificationAlreadyProcessed)");
         throw;
     }
     catch (const MojeIdImplData::IdentificationFailed&)
     {
-        LOGGER(PACKAGE).info("request failed (IdentificationFailed)");
+        LOGGER.info("request failed (IdentificationFailed)");
         throw;
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        LOGGER.error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("request failed (unknown error)");
+        LOGGER.error("request failed (unknown error)");
         throw;
     }
 }
@@ -2070,12 +2070,12 @@ void MojeIdImpl::commit_prepared_transaction(const std::string& _trans_id) const
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        LOGGER.error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("request failed (unknown error)");
+        LOGGER.error("request failed (unknown error)");
         throw;
     }
 
@@ -2089,16 +2089,16 @@ void MojeIdImpl::commit_prepared_transaction(const std::string& _trans_id) const
     }
     catch (const prepare_transaction_data_not_found&)
     {
-        LOGGER(PACKAGE).info("no saved transaction data for " + _trans_id + " identifier)");
+        LOGGER.info("no saved transaction data for " + _trans_id + " identifier)");
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        LOGGER.error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("request failed (unknown error)");
+        LOGGER.error("request failed (unknown error)");
         throw;
     }
 
@@ -2112,12 +2112,12 @@ void MojeIdImpl::commit_prepared_transaction(const std::string& _trans_id) const
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        LOGGER.error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("request failed (unknown error)");
+        LOGGER.error("request failed (unknown error)");
         throw;
     }
 
@@ -2131,12 +2131,12 @@ void MojeIdImpl::commit_prepared_transaction(const std::string& _trans_id) const
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        LOGGER.error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("request failed (unknown error)");
+        LOGGER.error("request failed (unknown error)");
         throw;
     }
 }
@@ -2151,12 +2151,12 @@ void MojeIdImpl::rollback_prepared_transaction(const std::string& _trans_id) con
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        LOGGER.error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("request failed (unknown error)");
+        LOGGER.error("request failed (unknown error)");
         throw;
     }
     try
@@ -2165,7 +2165,7 @@ void MojeIdImpl::rollback_prepared_transaction(const std::string& _trans_id) con
     }
     catch (const prepare_transaction_data_not_found&)
     {
-        LOGGER(PACKAGE).info("no saved transaction data for " + _trans_id + " identifier)");
+        LOGGER.info("no saved transaction data for " + _trans_id + " identifier)");
     }
 }
 
@@ -2275,25 +2275,25 @@ Fred::Backend::Buffer MojeIdImpl::get_validation_pdf(ContactId _contact_id) cons
     {
         if (e.is_set_object_doesnt_exist())
         {
-            LOGGER(PACKAGE).info(boost::format("contact doesn't exist (%1%)") % e.what());
+            LOGGER.info(boost::format("contact doesn't exist (%1%)") % e.what());
             throw MojeIdImplData::ObjectDoesntExist();
         }
-        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        LOGGER.error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
     catch (const MojeIdImplData::ObjectDoesntExist&)
     {
-        LOGGER(PACKAGE).info("request doesn't exist (ObjectDoesntExist)");
+        LOGGER.info("request doesn't exist (ObjectDoesntExist)");
         throw;
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        LOGGER.error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("request failed (unknown error)");
+        LOGGER.error("request failed (unknown error)");
         throw;
     }
 } //MojeIdImpl::get_validation_pdf
@@ -2349,40 +2349,40 @@ void MojeIdImpl::create_validation_request(
     {
         if (e.is_set_object_doesnt_exist())
         {
-            LOGGER(PACKAGE).info(boost::format("contact doesn't exist (%1%)") % e.what());
+            LOGGER.info(boost::format("contact doesn't exist (%1%)") % e.what());
             throw MojeIdImplData::ObjectDoesntExist();
         }
-        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        LOGGER.error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
     catch (const MojeIdImplData::ObjectDoesntExist&)
     {
-        LOGGER(PACKAGE).info("contact doesn't exist (ObjectDoesntExist)");
+        LOGGER.info("contact doesn't exist (ObjectDoesntExist)");
         throw;
     }
     catch (const MojeIdImplData::ValidationRequestExists&)
     {
-        LOGGER(PACKAGE).info("unable to create new request (ValidationRequestExists)");
+        LOGGER.info("unable to create new request (ValidationRequestExists)");
         throw;
     }
     catch (const MojeIdImplData::ValidationAlreadyProcessed&)
     {
-        LOGGER(PACKAGE).info("contact already validated (ValidationAlreadyProcessed)");
+        LOGGER.info("contact already validated (ValidationAlreadyProcessed)");
         throw;
     }
     catch (const MojeIdImplData::CreateValidationRequestValidationResult&)
     {
-        LOGGER(PACKAGE).info("request failed (CreateValidationRequestValidationResult)");
+        LOGGER.info("request failed (CreateValidationRequestValidationResult)");
         throw;
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        LOGGER.error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("request failed (unknown error)");
+        LOGGER.error("request failed (unknown error)");
         throw;
     }
 }
@@ -2441,35 +2441,35 @@ void MojeIdImpl::validate_contact(
     {
         if (e.is_set_object_doesnt_exist())
         {
-            LOGGER(PACKAGE).info(boost::format("contact doesn't exist (%1%)") % e.what());
+            LOGGER.info(boost::format("contact doesn't exist (%1%)") % e.what());
             throw MojeIdImplData::ObjectDoesntExist();
         }
-        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        LOGGER.error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
     catch (const MojeIdImplData::ObjectDoesntExist&)
     {
-        LOGGER(PACKAGE).info("contact doesn't exist (ObjectDoesntExist)");
+        LOGGER.info("contact doesn't exist (ObjectDoesntExist)");
         throw;
     }
     catch (const MojeIdImplData::ValidationAlreadyProcessed&)
     {
-        LOGGER(PACKAGE).info("contact already validated (ValidationAlreadyProcessed)");
+        LOGGER.info("contact already validated (ValidationAlreadyProcessed)");
         throw;
     }
     catch (const MojeIdImplData::CreateValidationRequestValidationResult&)
     {
-        LOGGER(PACKAGE).info("request failed (CreateValidationRequestValidationResult)");
+        LOGGER.info("request failed (CreateValidationRequestValidationResult)");
         throw;
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        LOGGER.error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("request failed (unknown error)");
+        LOGGER.error("request failed (unknown error)");
         throw;
     }
 }
@@ -2571,7 +2571,7 @@ void MojeIdImpl::get_contacts_state_changes(
                 std::ostringstream msg;
                 msg << "contact " << data.contact_id << " hasn't "
                     << Conversion::Enums::to_db_handle(LibFred::Object_State::conditionally_identified_contact) << " state";
-                LOGGER(PACKAGE).error(msg.str());
+                LOGGER.error(msg.str());
                 continue;
             }
             add_state(rcontacts[idx][2], LibFred::Object_State::identified_contact, data);
@@ -2589,12 +2589,12 @@ void MojeIdImpl::get_contacts_state_changes(
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        LOGGER.error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("request failed (unknown error)");
+        LOGGER.error("request failed (unknown error)");
         throw;
     }
 }
@@ -2675,17 +2675,17 @@ void MojeIdImpl::get_contact_state(
     } //try
     catch (const MojeIdImplData::ObjectDoesntExist&)
     {
-        LOGGER(PACKAGE).info("ObjectDoesntExist");
+        LOGGER.info("ObjectDoesntExist");
         throw;
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        LOGGER.error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("request failed (unknown error)");
+        LOGGER.error("request failed (unknown error)");
         throw;
     }
 }
@@ -2772,25 +2772,25 @@ void MojeIdImpl::cancel_account_prepare(
     {
         if (e.is_set_object_doesnt_exist())
         {
-            LOGGER(PACKAGE).info(boost::format("contact doesn't exist (%1%)") % e.what());
+            LOGGER.info(boost::format("contact doesn't exist (%1%)") % e.what());
             throw MojeIdImplData::ObjectDoesntExist();
         }
-        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        LOGGER.error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
     catch (const MojeIdImplData::ObjectDoesntExist&)
     {
-        LOGGER(PACKAGE).info("contact doesn't exist (ObjectDoesntExist)");
+        LOGGER.info("contact doesn't exist (ObjectDoesntExist)");
         throw;
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        LOGGER.error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("request failed (unknown error)");
+        LOGGER.error("request failed (unknown error)");
         throw;
     }
 }
@@ -2892,37 +2892,37 @@ void MojeIdImpl::send_new_pin3(
     }
     catch (const MojeIdImplData::ObjectDoesntExist& e)
     {
-        LOGGER(PACKAGE).info("ObjectDoesntExist");
+        LOGGER.info("ObjectDoesntExist");
         throw;
     }
     catch (const MojeIdImplData::MessageLimitExceeded& e)
     {
-        LOGGER(PACKAGE).info(e.as_string());
+        LOGGER.info(e.as_string());
         throw;
     }
     catch (const LibFred::PublicRequestsOfObjectLockGuardByObjectId::Exception& e)
     {
         if (e.is_set_object_doesnt_exist())
         {
-            LOGGER(PACKAGE).info(e.what());
+            LOGGER.info(e.what());
             throw MojeIdImplData::ObjectDoesntExist();
         }
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw;
     }
     catch (const MojeIdImplData::IdentificationRequestDoesntExist&)
     {
-        LOGGER(PACKAGE).info("IdentificationRequestDoesntExist");
+        LOGGER.info("IdentificationRequestDoesntExist");
         throw;
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("unknown exception");
+        LOGGER.error("unknown exception");
         throw;
     }
 }
@@ -2957,22 +2957,22 @@ void MojeIdImpl::send_mojeid_card(
     }
     catch (const MojeIdImplData::ObjectDoesntExist&)
     {
-        LOGGER(PACKAGE).info("ObjectDoesntExist");
+        LOGGER.info("ObjectDoesntExist");
         throw;
     }
     catch (const MojeIdImplData::MessageLimitExceeded& e)
     {
-        LOGGER(PACKAGE).info(e.as_string());
+        LOGGER.info(e.as_string());
         throw;
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("unknown exception");
+        LOGGER.error("unknown exception");
         throw;
     }
 }
@@ -2992,12 +2992,12 @@ void MojeIdImpl::generate_sms_messages() const
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("unknown exception");
+        LOGGER.error("unknown exception");
         throw;
     }
 }
@@ -3015,12 +3015,12 @@ void MojeIdImpl::enable_sms_messages_generation(bool enable) const
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("unknown exception");
+        LOGGER.error("unknown exception");
         throw;
     }
 }
@@ -3041,12 +3041,12 @@ void MojeIdImpl::generate_letter_messages() const
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("unknown exception");
+        LOGGER.error("unknown exception");
         throw;
     }
 }
@@ -3064,12 +3064,12 @@ void MojeIdImpl::enable_letter_messages_generation(bool enable) const
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("unknown exception");
+        LOGGER.error("unknown exception");
         throw;
     }
 }
@@ -3094,12 +3094,12 @@ void MojeIdImpl::generate_email_messages() const
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("unknown exception");
+        LOGGER.error("unknown exception");
         throw;
     }
 }
@@ -3117,12 +3117,12 @@ void MojeIdImpl::enable_email_messages_generation(bool enable) const
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("unknown exception");
+        LOGGER.error("unknown exception");
         throw;
     }
 }

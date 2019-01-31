@@ -19,8 +19,8 @@
 #ifndef PUBLIC_REQUEST_AUTHINFO_HH_6A9E148ADE9D445C891AC330DC1E7634
 #define PUBLIC_REQUEST_AUTHINFO_HH_6A9E148ADE9D445C891AC330DC1E7634
 
-#include "src/libfred/public_request/public_request_type_iface.hh"
-#include "src/libfred/object/object_states_info.hh"
+#include "libfred/public_request/public_request_type_iface.hh"
+#include "libfred/object/object_states_info.hh"
 #include "src/backend/public_request/object_type.hh"
 
 #include <string>

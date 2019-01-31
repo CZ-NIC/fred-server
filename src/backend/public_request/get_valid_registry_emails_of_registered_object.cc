@@ -19,12 +19,12 @@
 #include "src/backend/public_request/get_valid_registry_emails_of_registered_object.hh"
 
 #include "src/backend/public_request/object_type.hh"
-#include "src/libfred/contact_verification/django_email_format.hh"
-#include "src/libfred/object/object_type.hh"
-#include "src/libfred/registrable_object/contact/info_contact.hh"
-#include "src/libfred/registrable_object/domain/info_domain.hh"
-#include "src/libfred/registrable_object/keyset/info_keyset.hh"
-#include "src/libfred/registrable_object/nsset/info_nsset.hh"
+#include "libfred/contact_verification/django_email_format.hh"
+#include "libfred/object/object_type.hh"
+#include "libfred/registrable_object/contact/info_contact.hh"
+#include "libfred/registrable_object/domain/info_domain.hh"
+#include "libfred/registrable_object/keyset/info_keyset.hh"
+#include "libfred/registrable_object/nsset/info_nsset.hh"
 
 namespace Fred {
 namespace Backend {

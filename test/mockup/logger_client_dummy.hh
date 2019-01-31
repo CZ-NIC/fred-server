@@ -5,7 +5,7 @@
 #include <map>
 #include <string>
 #include <boost/date_time/posix_time/ptime.hpp>
-#include "src/libfred/logger_client.hh"
+#include "src/deprecated/libfred/logger_client.hh"
 
 namespace LibFred {
 namespace Logger {

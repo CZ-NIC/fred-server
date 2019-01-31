@@ -22,8 +22,8 @@
 #include "src/backend/epp/keyset/check_keyset_config_data.hh"
 #include "src/backend/epp/keyset/keyset_handle_registration_obstruction.hh"
 #include "src/backend/epp/session_data.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/util/db/nullable.hh"
+#include "libfred/opcontext.hh"
+#include "util/db/nullable.hh"
 
 #include <map>
 #include <set>

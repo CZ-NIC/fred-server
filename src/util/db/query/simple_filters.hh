@@ -13,10 +13,11 @@
 #include <boost/date_time/c_local_time_adjustor.hpp>
 
 #include "src/util/db/query/simple_filter.hh"
-#include "src/util/log/logger.hh"
-#include "src/util/util.hh"
-#include "src/util/base_exception.hh"
-#include "src/util/types/convert_sql_db_types.hh"
+#include "src/util/types/null.hh"
+#include "util/log/logger.hh"
+#include "util/util.hh"
+#include "util/base_exception.hh"
+#include "util/types/convert_sql_db_types.hh"
 
 namespace Database {
 namespace Filters {
@@ -169,12 +170,12 @@ public:
     const DTp& t_value = value.getValue();
 
     if (value.isNull()) {
-      LOGGER(PACKAGE).trace("[IN] _BaseDTInterval::serialize(): value is 'NULL'");
+      LOGGER.trace("[IN] _BaseDTInterval::serialize(): value is 'NULL'");
       prep << getConjuction() << "( ";
       prep << column.str() << SQL_OP_IS << value;
       prep << " )";
     } else {
-      LOGGER(PACKAGE).trace(boost::format("[IN] _BaseDTInterval::serialize(): value is normal (special_flag='%1%')")
+      LOGGER.trace(boost::format("[IN] _BaseDTInterval::serialize(): value is normal (special_flag='%1%')")
           % t_value.getSpecial());
       
       std::string second_operator = (t_value.getSpecial() == INTERVAL ? SQL_OP_LE : SQL_OP_LT); 
@@ -268,7 +269,7 @@ public:
         && t_value.isSpecial() 
         && (t_value.getSpecial() != DAY && t_value.getSpecial() != INTERVAL)) {
       
-      LOGGER(PACKAGE).trace(boost::format("[IN] Interval<DateTime>::serialize(): value is special (special_flag='%1%')")
+      LOGGER.trace(boost::format("[IN] Interval<DateTime>::serialize(): value is special (special_flag='%1%')")
           % t_value.getSpecial());
       
       std::string time = (boost::format("'%1% Europe/Prague'::timestamp")
@@ -304,12 +305,12 @@ public:
     else {
       /* notice: took from parent class and added time conversion */
       if (value.isNull()) {
-        LOGGER(PACKAGE).trace("[IN] _BaseDTInterval::serialize(): value is 'NULL'");
+        LOGGER.trace("[IN] _BaseDTInterval::serialize(): value is 'NULL'");
         prep << getConjuction() << "( ";
         prep << column.str() << SQL_OP_IS << value;
         prep << " )";
       } else {
-        LOGGER(PACKAGE).trace(boost::format("[IN] _BaseDTInterval::serialize(): value is normal (special_flag='%1%')")
+        LOGGER.trace(boost::format("[IN] _BaseDTInterval::serialize(): value is normal (special_flag='%1%')")
             % t_value.getSpecial());
         
         std::string second_operator = (t_value.getSpecial() == INTERVAL ? SQL_OP_LE : SQL_OP_LT); 
@@ -377,7 +378,7 @@ public:
         && t_value.isSpecial() 
         && (t_value.getSpecial() != DAY && t_value.getSpecial() != INTERVAL)) {
       
-      LOGGER(PACKAGE).trace(boost::format("[IN] Interval<Date>::serialize(): value is special (special_flag='%1%')")
+      LOGGER.trace(boost::format("[IN] Interval<Date>::serialize(): value is special (special_flag='%1%')")
           % t_value.getSpecial());
       
       std::stringstream beg, end;

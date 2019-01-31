@@ -21,8 +21,8 @@
  */
 
 #include "src/backend/admin/notification/notification.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/opexception.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/opexception.hh"
 #include "test/backend/admin/notification/fixtures.hh"
 #include "test/setup/fixtures.hh"
 

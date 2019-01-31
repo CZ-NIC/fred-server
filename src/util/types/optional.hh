@@ -24,144 +24,136 @@
 #ifndef OPTIONAL_HH_42E8981D4545409A9C808870CB70787F
 #define OPTIONAL_HH_42E8981D4545409A9C808870CB70787F
 
-#include <algorithm>
 #include <string>
-#include <boost/asio.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
-
 
 /**
  * \class OptionalType
  * \brief optional type template
  * TYPE has to be constructible, copyable and assignable
  */
-template <typename TYPE > class OptionalType
+template <typename T>
+class OptionalType
 {
 public:
-    typedef  TYPE TypeOfValue;
-private:
-    TYPE value_;
-    bool is_value_set_;
-public:
+    using TypeOfValue = T;
     OptionalType()
-    : value_()
-    , is_value_set_(false)
-    {}//ctor
-    OptionalType(const TYPE& value)
-    : value_(value)
-    , is_value_set_(true)
-    {}//init
-    OptionalType(OptionalType const & rhs)
-    : value_(rhs.value_)
-    , is_value_set_(rhs.is_value_set_)
-    {}//copy
-    OptionalType& operator=(OptionalType const & rhs)
+        : value_(),
+          is_value_set_(false)
+    { }
+    OptionalType(const T& value)
+        : value_(value),
+          is_value_set_(true)
+    { }
+    OptionalType(const OptionalType& rhs)
+        : value_(rhs.value_),
+          is_value_set_(rhs.is_value_set_)
+    { }
+    OptionalType& operator=(const OptionalType& rhs)
     {
         if (this != &rhs)
         {
-            value_=rhs.value_;
+            value_ = rhs.value_;
             is_value_set_ = rhs.is_value_set_;
         }
         return *this;
-    }//assignment
+    }
 
     //getters
-    TYPE get_value() const { return value_; }
-    bool is_value_set() const { return is_value_set_; }
+    T get_value()const { return value_; }
+    bool is_value_set()const { return is_value_set_; }
 
     // conversion is possible but explicit using look more readable
     operator bool () const { return is_value_set_; }
-    operator const TYPE& () const { return value_; }
-};//OptionalType
+    operator const T&() const { return value_; }
+private:
+    T value_;
+    bool is_value_set_;
+};
 
-template <> class OptionalType <boost::gregorian::date>
+template <>
+class OptionalType <boost::gregorian::date>
 {
 public:
-    typedef  boost::gregorian::date TypeOfValue;
-private:
-    boost::gregorian::date value_;
-    bool is_value_set_;
-public:
+    using TypeOfValue = boost::gregorian::date;
     OptionalType()
-    : value_()
-    , is_value_set_(false)
-    {}//ctor
+        : value_(),
+          is_value_set_(false)
+    { }
     OptionalType(const boost::gregorian::date& value)
-    : value_(value)
-    , is_value_set_(true)
-    {}//init
+        : value_(value),
+          is_value_set_(true)
+    { }
     OptionalType(const std::string& value)
-        : value_(boost::gregorian::from_string(value))
-        , is_value_set_(true)
-        {}//init
-    OptionalType(OptionalType const & rhs)
-    : value_(rhs.value_)
-    , is_value_set_(rhs.is_value_set_)
-    {}//copy
-    OptionalType& operator=(OptionalType const & rhs)
+        : value_(boost::gregorian::from_string(value)),
+          is_value_set_(true)
+    { }
+    OptionalType(const OptionalType& rhs)
+        : value_(rhs.value_),
+          is_value_set_(rhs.is_value_set_)
+    { }
+    OptionalType& operator=(const OptionalType& rhs)
     {
         if (this != &rhs)
         {
-            value_=rhs.value_;
+            value_ = rhs.value_;
             is_value_set_ = rhs.is_value_set_;
         }
         return *this;
-    }//assignment
+    }
 
-    //getters
     boost::gregorian::date get_value() const { return value_; }
     bool is_value_set() const { return is_value_set_; }
 
     // conversion is possible but explicit using look more readable
     operator bool () const { return is_value_set_; }
-    operator const boost::gregorian::date& () const { return value_; }
-};//OptionalType
+    operator const boost::gregorian::date&() const { return value_; }
+private:
+    boost::gregorian::date value_;
+    bool is_value_set_;
+};
 
-
-template <> class OptionalType <boost::posix_time::ptime>
+template <>
+class OptionalType <boost::posix_time::ptime>
 {
 public:
-    typedef  boost::posix_time::ptime TypeOfValue;
-private:
-    boost::posix_time::ptime value_;
-    bool is_value_set_;
-public:
+    using TypeOfValue = boost::posix_time::ptime;
     OptionalType()
-    : value_()
-    , is_value_set_(false)
-    {}//ctor
+        : value_(),
+          is_value_set_(false)
+    { }
     OptionalType(const boost::posix_time::ptime& value)
-    : value_(value)
-    , is_value_set_(true)
-    {}//init
+        : value_(value),
+          is_value_set_(true)
+    { }
     OptionalType(const std::string& value)
-        : value_(boost::posix_time::time_from_string(value))
-        , is_value_set_(true)
-        {}//init
-    OptionalType(OptionalType const & rhs)
-    : value_(rhs.value_)
-    , is_value_set_(rhs.is_value_set_)
-    {}//copy
-    OptionalType& operator=(OptionalType const & rhs)
+        : value_(boost::posix_time::time_from_string(value)),
+          is_value_set_(true)
+    { }
+    OptionalType(const OptionalType& rhs)
+        : value_(rhs.value_),
+          is_value_set_(rhs.is_value_set_)
+    { }
+    OptionalType& operator=(const OptionalType& rhs)
     {
         if (this != &rhs)
         {
-            value_=rhs.value_;
+            value_ = rhs.value_;
             is_value_set_ = rhs.is_value_set_;
         }
         return *this;
-    }//assignment
+    }
 
-    //getters
     boost::posix_time::ptime get_value() const { return value_; }
     bool is_value_set() const { return is_value_set_; }
 
-    // conversion is possible but explicit using look more readable
-    operator bool () const { return is_value_set_; }
-    operator const boost::posix_time::ptime& () const { return value_; }
-};//OptionalType
-
+    operator bool() const { return is_value_set_; }
+    operator const boost::posix_time::ptime&() const { return value_; }
+private:
+    boost::posix_time::ptime value_;
+    bool is_value_set_;
+};
 
 typedef OptionalType<std::string> optional_string;
 typedef OptionalType<unsigned long long> optional_id;
@@ -174,68 +166,55 @@ typedef OptionalType<double> optional_double;
 typedef OptionalType<boost::gregorian::date> optional_date;
 typedef OptionalType<boost::posix_time::ptime> optional_ptime;
 
-//save ARG into VALUE
+//save ARG into T
 //boost program options notifier callback
-//VALUE have to be constructible from ARG
-//and constructed VALUE have to be assignable
-template <typename VALUE>
+//T have to be constructible from ARG
+//and constructed T have to be assignable
+template <typename T>
 class save_arg
 {
-    VALUE& val_;
 public:
     //ctor taking reference to variable where arg value will be stored
-    save_arg(VALUE& val) : val_(val) {}
+    save_arg(T& val) : val_(val) {}
 
     template <typename ARG>
     void operator()(const ARG& arg)//assign value
     {
         //std::cout << "notify_arg: " << arg << std::endl;
-        val_=VALUE(arg);
+        val_ = T(arg);
     }
+private:
+    T& val_;
 };
 
 template <>
 class save_arg<boost::gregorian::date>
 {
-    boost::gregorian::date& val_;
 public:
     //ctor taking reference to variable where arg value will be stored
     save_arg(boost::gregorian::date& val) : val_(val) {}
 
     void operator()(const std::string& arg)//assign value
     {
-        //std::cout << "notify_arg: " << arg << std::endl;
-        val_=boost::gregorian::from_string(arg);
+        val_ = boost::gregorian::from_string(arg);
     }
+private:
+    boost::gregorian::date& val_;
 };
 
 template <>
 class save_arg<boost::posix_time::ptime>
 {
-    boost::posix_time::ptime& val_;
 public:
     //ctor taking reference to variable where arg value will be stored
     save_arg(boost::posix_time::ptime& val) : val_(val) {}
 
-    void operator()(const std::string& arg)//assign value
+    void operator()(const std::string& arg)
     {
-        //std::cout << "notify_arg: " << arg << std::endl;
-        val_=boost::posix_time::time_from_string(arg);
+        val_ = boost::posix_time::time_from_string(arg);
     }
-};
-
-template <>
-class save_arg<std::vector<boost::asio::ip::address> >
-{
-    std::vector<boost::asio::ip::address>& val_;
-public:
-    save_arg(std::vector<boost::asio::ip::address>& val) : val_(val) {}
-
-    void operator()(const std::vector<std::string>& arg)
-    {
-        std::for_each(arg.begin(), arg.end(),
-                [this](const std::string& s) { val_.push_back(boost::asio::ip::address::from_string(s)); });
-    }
+private:
+    boost::posix_time::ptime& val_;
 };
 
 typedef save_arg<optional_string> save_optional_string;
@@ -248,41 +227,41 @@ typedef save_arg<optional_double> save_optional_double;
 typedef save_arg<optional_date> save_optional_date;
 typedef save_arg<optional_ptime> save_optional_ptime;
 
-//for VALUEs and ARGs like std::vector or compatible
-template <typename VALUE> class insert_arg
+//for Ts and ARGs like std::vector or compatible
+template <typename T>
+class insert_arg
 {
-    VALUE& val_;
 public:
     //ctor taking reference to variable where arg value will be stored
-    insert_arg(VALUE& val) : val_(val) {}
+    insert_arg(T& val) : val_(val) {}
 
     template <typename ARG>
     void operator()(const ARG& arg)//assign value
     {
         val_.insert(val_.end(), arg.begin(), arg.end());
     }
-};//template <typename VALUE> class insert_arg
+private:
+    T& val_;
+};
 
-
-//save ARG into VALUE using ARG::to_string()
+//save ARG into T using ARG::to_string()
 //boost program options notifier callback
-//VALUE have to be constructible from ARG::to_string() return type
-//and constructed VALUE have to be assignable
-template <typename VALUE>
+//T have to be constructible from ARG::to_string() return type
+//and constructed T have to be assignable
+template <typename T>
 class save_arg_using_to_string
 {
-    VALUE& val_;
 public:
     //ctor taking reference to variable where arg value will be stored
-    save_arg_using_to_string(VALUE& val) : val_(val) {}
+    save_arg_using_to_string(T& val) : val_(val) {}
 
     template <typename ARG>
     void operator()(const ARG& arg)//assign value
     {
-        val_=VALUE(arg.to_string());
+        val_ = T(arg.to_string());
     }
+private:
+    T& val_;
 };
 
-
-#endif //OPTIONAL_H_
-
+#endif//OPTIONAL_HH_42E8981D4545409A9C808870CB70787F

@@ -26,10 +26,10 @@
 #include <map>
 #include <boost/lexical_cast.hpp>
 
-#include "src/util/util.hh"
-#include "src/util/printable.hh"
-#include "src/util/map_at.hh"
-#include "src/libfred/opcontext.hh"
+#include "util/util.hh"
+#include "util/printable.hh"
+#include "util/map_at.hh"
+#include "libfred/opcontext.hh"
 #include "test/setup/fixtures.hh"
 
 #include "test/libfred/contact/test_merge_contact_fixture.hh"

@@ -6,7 +6,7 @@
 
 #include "src/bin/corba/FileManager.hh"
 #include "src/bin/corba/nameservice.hh"
-#include "src/libfred/file_transferer.hh"
+#include "src/deprecated/libfred/file_transferer.hh"
 
 
 class FileManagerClient : public LibFred::File::Transferer

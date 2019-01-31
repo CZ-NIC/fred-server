@@ -15,9 +15,9 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "src/libfred/registrar/epp_auth/exceptions.hh"
-#include "src/libfred/registrar/epp_auth/update_registrar_epp_auth.hh"
-#include "src/util/random_data_generator.hh"
+#include "libfred/registrar/epp_auth/exceptions.hh"
+#include "libfred/registrar/epp_auth/update_registrar_epp_auth.hh"
+#include "util/random_data_generator.hh"
 #include "test/libfred/registrar/epp_auth/util.hh"
 #include "test/libfred/util.hh"
 #include "test/setup/fixtures.hh"

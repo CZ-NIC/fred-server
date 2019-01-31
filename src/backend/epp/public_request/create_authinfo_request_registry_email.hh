@@ -20,8 +20,8 @@
 #define CREATE_AUTHINFO_REQUEST_REGISTRY_EMAIL_HH_E22CB50FF8D84815ACE87616441DA7BA
 
 #include "src/backend/public_request/object_type.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/util/optional_value.hh"
+#include "libfred/opcontext.hh"
+#include "util/optional_value.hh"
 
 #include <string>
 

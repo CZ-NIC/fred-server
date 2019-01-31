@@ -17,11 +17,11 @@
  */
 
 #include "src/backend/mojeid/checkers.hh"
-#include "src/libfred/registrable_object/contact/create_contact.hh"
-#include "src/libfred/registrable_object/contact/info_contact.hh"
-#include "src/libfred/registrable_object/contact/ssntype.hh"
+#include "libfred/registrable_object/contact/create_contact.hh"
+#include "libfred/registrable_object/contact/info_contact.hh"
+#include "src/deprecated/libfred/registrable_object/contact/ssntype.hh"
 #include "test/setup/fixtures.hh"
-#include "src/util/idn_utils.hh"
+#include "util/idn_utils.hh"
 #include "test/libfred/enum_to_db_handle_conversion.hh"
 
 #include <boost/test/unit_test.hpp>

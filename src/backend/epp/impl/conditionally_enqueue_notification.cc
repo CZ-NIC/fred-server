@@ -20,9 +20,9 @@
 
 #include "src/backend/epp/notification_data.hh"
 #include "src/backend/epp/session_data.hh"
-#include "src/libfred/notifier/enqueue_notification.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/registrar/info_registrar.hh"
+#include "libfred/notifier/enqueue_notification.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/registrar/info_registrar.hh"
 
 namespace Epp {
 

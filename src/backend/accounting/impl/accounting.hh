@@ -25,7 +25,7 @@
 #include "src/backend/accounting/registrar.hh"
 #include "src/backend/accounting/registrar_reference.hh"
 #include "src/backend/credit.hh"
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 #include <string>
 #include <vector>

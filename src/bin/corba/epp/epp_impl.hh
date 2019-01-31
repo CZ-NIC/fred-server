@@ -24,7 +24,7 @@
 #include "src/bin/corba/epp/epp_session.hh"
 #include "src/bin/corba/mailer_manager.hh"
 #include "src/deprecated/util/dbsql.hh"
-#include "src/libfred/registry.hh"
+#include "src/deprecated/libfred/registry.hh"
 
 #include "src/bin/corba/EPP.hh"
 

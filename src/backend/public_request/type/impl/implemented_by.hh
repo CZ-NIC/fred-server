@@ -19,7 +19,7 @@
 #ifndef IMPLEMENTED_BY_HH_CEE815BC12D247A297FBBE6E96897259
 #define IMPLEMENTED_BY_HH_CEE815BC12D247A297FBBE6E96897259
 
-#include "src/libfred/public_request/public_request_type_iface.hh"
+#include "libfred/public_request/public_request_type_iface.hh"
 
 #include <string>
 

@@ -26,10 +26,10 @@
 
 #include "src/backend/admin/contact/verification/exceptions.hh"
 
-#include "src/libfred/registrable_object/contact/verification/create_check.hh"
+#include "libfred/registrable_object/contact/verification/create_check.hh"
 
-#include "src/libfred/opcontext.hh"
-#include "src/util/optional_value.hh"
+#include "libfred/opcontext.hh"
+#include "util/optional_value.hh"
 
 namespace Fred {
 namespace Backend {

@@ -17,7 +17,7 @@
  */
 
 #include "src/backend/epp/domain/check_domain.hh"
-#include "src/libfred/registrable_object/domain/domain.hh"
+#include "libfred/registrable_object/domain/domain.hh"
 #include "test/backend/epp/fixture.hh"
 #include "test/backend/epp/domain/fixture.hh"
 #include "test/backend/epp/util.hh"

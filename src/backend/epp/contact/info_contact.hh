@@ -26,8 +26,8 @@
 #include "src/backend/epp/contact/status_value.hh"
 #include "src/backend/epp/session_data.hh"
 #include "src/backend/epp/session_lang.hh"
-#include "src/libfred/registrable_object/contact/info_contact_data.hh"
-#include "src/libfred/opcontext.hh"
+#include "libfred/registrable_object/contact/info_contact_data.hh"
+#include "libfred/opcontext.hh"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/optional.hpp>

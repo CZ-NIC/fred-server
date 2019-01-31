@@ -25,7 +25,7 @@
 #include "src/bin/corba/admin/admin_impl.hh"
 #include "src/deprecated/util/dbsql.hh"
 #include "src/bin/cli/baseclient.hh"
-#include "src/libfred/db_settings.hh"
+#include "libfred/db_settings.hh"
 
 #include "src/bin/cli/contact_params.hh"
 

@@ -20,7 +20,7 @@
 #define GET_VALID_REGISTRY_EMAILS_OF_REGISTERED_OBJECT_HH_368F424059874406A9FA167E52DC3804
 
 #include "src/backend/public_request/object_type.hh"
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 #include <set>
 #include <string>

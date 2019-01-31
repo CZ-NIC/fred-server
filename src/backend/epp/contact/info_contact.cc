@@ -26,11 +26,11 @@
 #include "src/backend/epp/epp_result_failure.hh"
 #include "src/backend/epp/exception.hh"
 #include "src/backend/epp/impl/util.hh"
-#include "src/libfred/registrable_object/contact.hh"
-#include "src/libfred/registrable_object/contact/info_contact.hh"
-#include "src/libfred/object_state/get_object_states.hh"
-#include "src/libfred/registrar.hh"
-#include "src/libfred/registrar/info_registrar.hh"
+#include "src/deprecated/libfred/registrable_object/contact.hh"
+#include "libfred/registrable_object/contact/info_contact.hh"
+#include "libfred/object_state/get_object_states.hh"
+#include "src/deprecated/libfred/registrar.hh"
+#include "libfred/registrar/info_registrar.hh"
 
 #include <boost/foreach.hpp>
 

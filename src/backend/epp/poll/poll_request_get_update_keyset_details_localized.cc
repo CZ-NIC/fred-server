@@ -28,7 +28,7 @@
 #include "src/backend/epp/epp_result_failure.hh"
 #include "src/backend/epp/epp_result_success.hh"
 #include "src/backend/epp/localization.hh"
-#include "src/util/log/context.hh"
+#include "util/log/context.hh"
 
 #include <boost/format.hpp>
 #include <boost/format/free_funcs.hpp>

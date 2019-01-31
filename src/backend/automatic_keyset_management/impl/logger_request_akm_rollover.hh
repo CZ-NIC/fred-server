@@ -26,9 +26,9 @@
 #include "src/backend/automatic_keyset_management/impl/logger_request_property.hh"
 #include "src/backend/automatic_keyset_management/impl/util.hh"
 #include "src/backend/epp/keyset/dns_key.hh"
-#include "src/libfred/registrable_object/keyset/keyset_dns_key.hh"
-#include "src/libfred/logger_client.hh"
-#include "src/libfred/object/object_id_handle_pair.hh"
+#include "libfred/registrable_object/keyset/keyset_dns_key.hh"
+#include "src/deprecated/libfred/logger_client.hh"
+#include "libfred/object/object_id_handle_pair.hh"
 
 namespace LibFred {
 namespace AutomaticKeysetManagement {
