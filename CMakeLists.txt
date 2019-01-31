@@ -2944,9 +2944,16 @@ endif()
 
 if(EXISTS ${CMAKE_SOURCE_DIR}/.git AND GIT_PROGRAM)
     if(NOT TARGET dist)
+        add_custom_target(dist_libfred
+            COMMAND ${GIT_PROGRAM} archive --format=tar --prefix=${TARBALL_FILE_NAME}/external/lib/libfred/ HEAD > ../../../.libfred.tar
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/external/lib/libfred)
         add_custom_target(dist
-            COMMAND ${GIT_PROGRAM} archive --format=tar.gz --prefix=${TARBALL_FILE_NAME}/ HEAD -o ${CMAKE_BINARY_DIR}/${TARBALL_FILE_NAME}.tar.gz
+            COMMAND ${GIT_PROGRAM} archive --format=tar --prefix=${TARBALL_FILE_NAME}/ HEAD > .${TARBALL_FILE_NAME}.tar
+            COMMAND tar --concatenate --file=.${TARBALL_FILE_NAME}.tar .libfred.tar
+            COMMAND cat .${TARBALL_FILE_NAME}.tar | gzip > ${CMAKE_BINARY_DIR}/${TARBALL_FILE_NAME}.tar.gz
+            COMMAND rm .${TARBALL_FILE_NAME}.tar .libfred.tar
             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+        add_dependencies(dist dist_libfred)
     endif()
 
     if(DEFINED ENV{DISTCHECK_CMAKE_FLAGS})
