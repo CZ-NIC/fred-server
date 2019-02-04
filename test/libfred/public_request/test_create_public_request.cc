@@ -16,12 +16,12 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/libfred/public_request/create_public_request.hh"
-#include "src/libfred/public_request/public_request_status.hh"
-#include "src/libfred/public_request/public_request_type_iface.hh"
-#include "src/libfred/registrable_object/contact/create_contact.hh"
+#include "libfred/public_request/create_public_request.hh"
+#include "libfred/public_request/public_request_status.hh"
+#include "libfred/public_request/public_request_type_iface.hh"
+#include "libfred/registrable_object/contact/create_contact.hh"
 
-#include "src/util/random_data_generator.hh"
+#include "util/random_data_generator.hh"
 #include "test/setup/fixtures.hh"
 #include "test/setup/fixtures_utils.hh"
 #include "test/libfred/util.hh"

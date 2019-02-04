@@ -20,8 +20,8 @@
 #define UPDATE_DOMAIN_INPUT_DATA_HH_20735D14D1A54D8293D414DDFE019687
 
 #include "src/backend/epp/domain/domain_enum_validation.hh"
-#include "src/util/db/nullable.hh"
-#include "src/util/optional_value.hh"
+#include "util/db/nullable.hh"
+#include "util/optional_value.hh"
 
 #include <boost/optional.hpp>
 

@@ -16,47 +16,47 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <string>
-#include <utility>
-#include <vector>
-#include <map>
+#include "libfred/registrable_object/domain/info_domain.hh"
+#include "libfred/registrable_object/domain/create_domain.hh"
+#include "libfred/registrable_object/domain/update_domain.hh"
+#include "libfred/registrable_object/keyset/info_keyset.hh"
+#include "libfred/registrable_object/keyset/create_keyset.hh"
+#include "libfred/registrable_object/keyset/update_keyset.hh"
+#include "libfred/registrable_object/nsset/info_nsset.hh"
+#include "libfred/registrable_object/nsset/create_nsset.hh"
+#include "libfred/registrable_object/nsset/update_nsset.hh"
+#include "libfred/registrable_object/contact/create_contact.hh"
+#include "libfred/registrable_object/contact/info_contact.hh"
+#include "libfred/registrable_object/contact/update_contact.hh"
+#include "src/deprecated/libfred/object_state/object_state_name.hh"
+#include "libfred/object_state/object_has_state.hh"
+#include "libfred/object_state/create_object_state_request_id.hh"
+#include "libfred/object_state/cancel_object_state_request_id.hh"
+#include "libfred/object_state/perform_object_state_request.hh"
+#include "libfred/object_state/lock_object_state_request_lock.hh"
 
-#include <boost/lexical_cast.hpp>
+#include "libfred/registrar/create_registrar.hh"
+#include "libfred/registrar/info_registrar.hh"
+#include "libfred/registrar/info_registrar_diff.hh"
+#include "libfred/registrar/info_registrar_impl.hh"
+#include "libfred/opexception.hh"
+#include "libfred/opcontext.hh"
+#include "util/util.hh"
+#include "util/map_at.hh"
 
-#include "src/libfred/registrable_object/domain/info_domain.hh"
-#include "src/libfred/registrable_object/domain/create_domain.hh"
-#include "src/libfred/registrable_object/domain/update_domain.hh"
-#include "src/libfred/registrable_object/keyset/info_keyset.hh"
-#include "src/libfred/registrable_object/keyset/create_keyset.hh"
-#include "src/libfred/registrable_object/keyset/update_keyset.hh"
-#include "src/libfred/registrable_object/nsset/info_nsset.hh"
-#include "src/libfred/registrable_object/nsset/create_nsset.hh"
-#include "src/libfred/registrable_object/nsset/update_nsset.hh"
-#include "src/libfred/registrable_object/contact/create_contact.hh"
-#include "src/libfred/registrable_object/contact/info_contact.hh"
-#include "src/libfred/registrable_object/contact/update_contact.hh"
-#include "src/libfred/object_state/object_state_name.hh"
-#include "src/libfred/object_state/object_has_state.hh"
-#include "src/libfred/object_state/create_object_state_request_id.hh"
-#include "src/libfred/object_state/cancel_object_state_request_id.hh"
-#include "src/libfred/object_state/perform_object_state_request.hh"
-#include "src/libfred/object_state/lock_object_state_request_lock.hh"
-
-#include "src/libfred/registrar/create_registrar.hh"
-#include "src/libfred/registrar/info_registrar.hh"
-#include "src/libfred/registrar/info_registrar_diff.hh"
-#include "src/libfred/registrar/info_registrar_impl.hh"
-#include "src/libfred/opexception.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/util/util.hh"
-#include "src/util/map_at.hh"
-
-#include "src/util/random_data_generator.hh"
+#include "util/random_data_generator.hh"
 
 #include "src/util/cfg/handle_mojeid_args.hh"
 #include "src/util/cfg/handle_domainbrowser_args.hh"
 
 #include "src/backend/domain_browser/domain_browser.hh"
+
+#include <boost/lexical_cast.hpp>
+
+#include <string>
+#include <utility>
+#include <vector>
+#include <map>
 
 /**
  *  @file
@@ -1420,8 +1420,8 @@ BOOST_FIXTURE_TEST_CASE(set_registrant_domain_object_block_status, set_registran
         Fred::Backend::DomainBrowser::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
     {
         ::LibFred::OperationContextCreator ctx;
-        BOOST_CHECK(::LibFred::ObjectHasState(domain_info.info_domain_data.id, ::LibFred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
-        BOOST_CHECK(::LibFred::ObjectHasState(domain_info.info_domain_data.id, ::LibFred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+        BOOST_CHECK(::LibFred::ObjectHasState(domain_info.info_domain_data.id, ::LibFred::Object_State::server_transfer_prohibited).exec(ctx));
+        BOOST_CHECK(::LibFred::ObjectHasState(domain_info.info_domain_data.id, ::LibFred::Object_State::server_update_prohibited).exec(ctx));
     }
 
     impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
@@ -1430,8 +1430,8 @@ BOOST_FIXTURE_TEST_CASE(set_registrant_domain_object_block_status, set_registran
 
     {
         ::LibFred::OperationContextCreator ctx;
-        BOOST_CHECK(!LibFred::ObjectHasState(domain_info.info_domain_data.id, ::LibFred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
-        BOOST_CHECK(!LibFred::ObjectHasState(domain_info.info_domain_data.id, ::LibFred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+        BOOST_CHECK(!LibFred::ObjectHasState(domain_info.info_domain_data.id, ::LibFred::Object_State::server_transfer_prohibited).exec(ctx));
+        BOOST_CHECK(!LibFred::ObjectHasState(domain_info.info_domain_data.id, ::LibFred::Object_State::server_update_prohibited).exec(ctx));
     }
 }
 
@@ -1460,8 +1460,8 @@ BOOST_FIXTURE_TEST_CASE(set_registrant_domain_object_block_status_transfer, set_
 
     {
         ::LibFred::OperationContextCreator ctx;
-        BOOST_CHECK(::LibFred::ObjectHasState(domain_info.info_domain_data.id, ::LibFred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
-        BOOST_CHECK(!LibFred::ObjectHasState(domain_info.info_domain_data.id, ::LibFred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+        BOOST_CHECK(::LibFred::ObjectHasState(domain_info.info_domain_data.id, ::LibFred::Object_State::server_transfer_prohibited).exec(ctx));
+        BOOST_CHECK(!LibFred::ObjectHasState(domain_info.info_domain_data.id, ::LibFred::Object_State::server_update_prohibited).exec(ctx));
     }
 
     impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
@@ -1470,8 +1470,8 @@ BOOST_FIXTURE_TEST_CASE(set_registrant_domain_object_block_status_transfer, set_
 
     {
         ::LibFred::OperationContextCreator ctx;
-        BOOST_CHECK(!LibFred::ObjectHasState(domain_info.info_domain_data.id, ::LibFred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
-        BOOST_CHECK(!LibFred::ObjectHasState(domain_info.info_domain_data.id, ::LibFred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+        BOOST_CHECK(!LibFred::ObjectHasState(domain_info.info_domain_data.id, ::LibFred::Object_State::server_transfer_prohibited).exec(ctx));
+        BOOST_CHECK(!LibFred::ObjectHasState(domain_info.info_domain_data.id, ::LibFred::Object_State::server_update_prohibited).exec(ctx));
     }
 }
 
@@ -1534,8 +1534,8 @@ BOOST_FIXTURE_TEST_CASE(set_admin_domain_object_block_status, set_admin_domain_o
 
     {
         ::LibFred::OperationContextCreator ctx;
-        BOOST_CHECK(::LibFred::ObjectHasState(domain_info.info_domain_data.id, ::LibFred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
-        BOOST_CHECK(::LibFred::ObjectHasState(domain_info.info_domain_data.id, ::LibFred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+        BOOST_CHECK(::LibFred::ObjectHasState(domain_info.info_domain_data.id, ::LibFred::Object_State::server_transfer_prohibited).exec(ctx));
+        BOOST_CHECK(::LibFred::ObjectHasState(domain_info.info_domain_data.id, ::LibFred::Object_State::server_update_prohibited).exec(ctx));
     }
 
     impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
@@ -1544,8 +1544,8 @@ BOOST_FIXTURE_TEST_CASE(set_admin_domain_object_block_status, set_admin_domain_o
 
     {
         ::LibFred::OperationContextCreator ctx;
-        BOOST_CHECK(!LibFred::ObjectHasState(domain_info.info_domain_data.id, ::LibFred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
-        BOOST_CHECK(!LibFred::ObjectHasState(domain_info.info_domain_data.id, ::LibFred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+        BOOST_CHECK(!LibFred::ObjectHasState(domain_info.info_domain_data.id, ::LibFred::Object_State::server_transfer_prohibited).exec(ctx));
+        BOOST_CHECK(!LibFred::ObjectHasState(domain_info.info_domain_data.id, ::LibFred::Object_State::server_update_prohibited).exec(ctx));
     }
 }
 
@@ -1574,8 +1574,8 @@ BOOST_FIXTURE_TEST_CASE(set_admin_domain_object_block_status_transfer, set_admin
 
     {
         ::LibFred::OperationContextCreator ctx;
-        BOOST_CHECK(::LibFred::ObjectHasState(domain_info.info_domain_data.id, ::LibFred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
-        BOOST_CHECK(!LibFred::ObjectHasState(domain_info.info_domain_data.id, ::LibFred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+        BOOST_CHECK(::LibFred::ObjectHasState(domain_info.info_domain_data.id, ::LibFred::Object_State::server_transfer_prohibited).exec(ctx));
+        BOOST_CHECK(!LibFred::ObjectHasState(domain_info.info_domain_data.id, ::LibFred::Object_State::server_update_prohibited).exec(ctx));
     }
 
     impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
@@ -1584,8 +1584,8 @@ BOOST_FIXTURE_TEST_CASE(set_admin_domain_object_block_status_transfer, set_admin
 
     {
         ::LibFred::OperationContextCreator ctx;
-        BOOST_CHECK(!LibFred::ObjectHasState(domain_info.info_domain_data.id, ::LibFred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
-        BOOST_CHECK(!LibFred::ObjectHasState(domain_info.info_domain_data.id, ::LibFred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+        BOOST_CHECK(!LibFred::ObjectHasState(domain_info.info_domain_data.id, ::LibFred::Object_State::server_transfer_prohibited).exec(ctx));
+        BOOST_CHECK(!LibFred::ObjectHasState(domain_info.info_domain_data.id, ::LibFred::Object_State::server_update_prohibited).exec(ctx));
     }
 }
 
@@ -1650,8 +1650,8 @@ BOOST_FIXTURE_TEST_CASE(set_admin_nsset_object_block_status, set_admin_nsset_obj
 
     {
         ::LibFred::OperationContextCreator ctx;
-        BOOST_CHECK(::LibFred::ObjectHasState(nsset_info.info_nsset_data.id, ::LibFred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
-        BOOST_CHECK(::LibFred::ObjectHasState(nsset_info.info_nsset_data.id, ::LibFred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+        BOOST_CHECK(::LibFred::ObjectHasState(nsset_info.info_nsset_data.id, ::LibFred::Object_State::server_transfer_prohibited).exec(ctx));
+        BOOST_CHECK(::LibFred::ObjectHasState(nsset_info.info_nsset_data.id, ::LibFred::Object_State::server_update_prohibited).exec(ctx));
     }
 
     impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
@@ -1660,8 +1660,8 @@ BOOST_FIXTURE_TEST_CASE(set_admin_nsset_object_block_status, set_admin_nsset_obj
 
     {
         ::LibFred::OperationContextCreator ctx;
-        BOOST_CHECK(!LibFred::ObjectHasState(nsset_info.info_nsset_data.id, ::LibFred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
-        BOOST_CHECK(!LibFred::ObjectHasState(nsset_info.info_nsset_data.id, ::LibFred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+        BOOST_CHECK(!LibFred::ObjectHasState(nsset_info.info_nsset_data.id, ::LibFred::Object_State::server_transfer_prohibited).exec(ctx));
+        BOOST_CHECK(!LibFred::ObjectHasState(nsset_info.info_nsset_data.id, ::LibFred::Object_State::server_update_prohibited).exec(ctx));
     }
 }
 
@@ -1689,8 +1689,8 @@ BOOST_FIXTURE_TEST_CASE(set_admin_nsset_object_block_status_transfer, set_admin_
 
     {
         ::LibFred::OperationContextCreator ctx;
-        BOOST_CHECK(::LibFred::ObjectHasState(nsset_info.info_nsset_data.id, ::LibFred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
-        BOOST_CHECK(!LibFred::ObjectHasState(nsset_info.info_nsset_data.id, ::LibFred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+        BOOST_CHECK(::LibFred::ObjectHasState(nsset_info.info_nsset_data.id, ::LibFred::Object_State::server_transfer_prohibited).exec(ctx));
+        BOOST_CHECK(!LibFred::ObjectHasState(nsset_info.info_nsset_data.id, ::LibFred::Object_State::server_update_prohibited).exec(ctx));
     }
 
     impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
@@ -1699,8 +1699,8 @@ BOOST_FIXTURE_TEST_CASE(set_admin_nsset_object_block_status_transfer, set_admin_
 
     {
         ::LibFred::OperationContextCreator ctx;
-        BOOST_CHECK(!LibFred::ObjectHasState(nsset_info.info_nsset_data.id, ::LibFred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
-        BOOST_CHECK(!LibFred::ObjectHasState(nsset_info.info_nsset_data.id, ::LibFred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+        BOOST_CHECK(!LibFred::ObjectHasState(nsset_info.info_nsset_data.id, ::LibFred::Object_State::server_transfer_prohibited).exec(ctx));
+        BOOST_CHECK(!LibFred::ObjectHasState(nsset_info.info_nsset_data.id, ::LibFred::Object_State::server_update_prohibited).exec(ctx));
     }
 }
 
@@ -1758,8 +1758,8 @@ BOOST_FIXTURE_TEST_CASE(set_admin_keyset_object_block_status, set_admin_keyset_o
 
     {
         ::LibFred::OperationContextCreator ctx;
-        BOOST_CHECK(::LibFred::ObjectHasState(keyset_info.info_keyset_data.id, ::LibFred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
-        BOOST_CHECK(::LibFred::ObjectHasState(keyset_info.info_keyset_data.id, ::LibFred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+        BOOST_CHECK(::LibFred::ObjectHasState(keyset_info.info_keyset_data.id, ::LibFred::Object_State::server_transfer_prohibited).exec(ctx));
+        BOOST_CHECK(::LibFred::ObjectHasState(keyset_info.info_keyset_data.id, ::LibFred::Object_State::server_update_prohibited).exec(ctx));
     }
 
     impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
@@ -1768,8 +1768,8 @@ BOOST_FIXTURE_TEST_CASE(set_admin_keyset_object_block_status, set_admin_keyset_o
 
     {
         ::LibFred::OperationContextCreator ctx;
-        BOOST_CHECK(!LibFred::ObjectHasState(keyset_info.info_keyset_data.id, ::LibFred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
-        BOOST_CHECK(!LibFred::ObjectHasState(keyset_info.info_keyset_data.id, ::LibFred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+        BOOST_CHECK(!LibFred::ObjectHasState(keyset_info.info_keyset_data.id, ::LibFred::Object_State::server_transfer_prohibited).exec(ctx));
+        BOOST_CHECK(!LibFred::ObjectHasState(keyset_info.info_keyset_data.id, ::LibFred::Object_State::server_update_prohibited).exec(ctx));
     }
 }
 
@@ -1797,8 +1797,8 @@ BOOST_FIXTURE_TEST_CASE(set_admin_keyset_object_block_status_transfer, set_admin
 
     {
         ::LibFred::OperationContextCreator ctx;
-        BOOST_CHECK(::LibFred::ObjectHasState(keyset_info.info_keyset_data.id, ::LibFred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
-        BOOST_CHECK(!LibFred::ObjectHasState(keyset_info.info_keyset_data.id, ::LibFred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+        BOOST_CHECK(::LibFred::ObjectHasState(keyset_info.info_keyset_data.id, ::LibFred::Object_State::server_transfer_prohibited).exec(ctx));
+        BOOST_CHECK(!LibFred::ObjectHasState(keyset_info.info_keyset_data.id, ::LibFred::Object_State::server_update_prohibited).exec(ctx));
     }
 
     impl.setObjectBlockStatus(user_contact_info.info_contact_data.id,
@@ -1807,8 +1807,8 @@ BOOST_FIXTURE_TEST_CASE(set_admin_keyset_object_block_status_transfer, set_admin
 
     {
         ::LibFred::OperationContextCreator ctx;
-        BOOST_CHECK(!LibFred::ObjectHasState(keyset_info.info_keyset_data.id, ::LibFred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
-        BOOST_CHECK(!LibFred::ObjectHasState(keyset_info.info_keyset_data.id, ::LibFred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
+        BOOST_CHECK(!LibFred::ObjectHasState(keyset_info.info_keyset_data.id, ::LibFred::Object_State::server_transfer_prohibited).exec(ctx));
+        BOOST_CHECK(!LibFred::ObjectHasState(keyset_info.info_keyset_data.id, ::LibFred::Object_State::server_update_prohibited).exec(ctx));
     }
 }
 
@@ -2006,7 +2006,7 @@ BOOST_FIXTURE_TEST_CASE(set_object_block_blocked_object, set_object_block_blocke
 
     {
         ::LibFred::OperationContextCreator ctx;
-        if(!LibFred::ObjectHasState(nsset_info.info_nsset_data.id, ::LibFred::ObjectState::SERVER_BLOCKED).exec(ctx))
+        if(!LibFred::ObjectHasState(nsset_info.info_nsset_data.id, ::LibFred::Object_State::server_blocked).exec(ctx))
         {
             ctx.get_conn().exec_params(
                 "INSERT INTO object_state_request (object_id, state_id)"

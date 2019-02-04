@@ -19,7 +19,7 @@
 #ifndef UTIL_HH_DD3EDFB0F2864035BAA88C1F84FFA378
 #define UTIL_HH_DD3EDFB0F2864035BAA88C1F84FFA378
 
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 #include <boost/date_time/gregorian/gregorian_types.hpp>
 #include <string>

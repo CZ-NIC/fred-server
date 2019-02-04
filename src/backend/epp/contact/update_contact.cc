@@ -26,13 +26,13 @@
 #include "src/backend/epp/epp_result_failure.hh"
 #include "src/backend/epp/exception.hh"
 #include "src/backend/epp/impl/util.hh"
-#include "src/libfred/object/object_states_info.hh"
-#include "src/libfred/object_state/lock_object_state_request_lock.hh"
-#include "src/libfred/object_state/perform_object_state_request.hh"
-#include "src/libfred/registrable_object/contact/check_contact.hh"
-#include "src/libfred/registrable_object/contact/info_contact.hh"
-#include "src/libfred/registrable_object/contact/update_contact.hh"
-#include "src/libfred/registrar/info_registrar.hh"
+#include "libfred/object/object_states_info.hh"
+#include "libfred/object_state/lock_object_state_request_lock.hh"
+#include "libfred/object_state/perform_object_state_request.hh"
+#include "libfred/registrable_object/contact/check_contact.hh"
+#include "libfred/registrable_object/contact/info_contact.hh"
+#include "libfred/registrable_object/contact/update_contact.hh"
+#include "libfred/registrar/info_registrar.hh"
 
 #include <boost/mpl/assert.hpp>
 #include <boost/variant.hpp>

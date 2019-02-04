@@ -17,7 +17,7 @@
  */
 
 #include "src/backend/admin/registrar/create_registrar.hh"
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 #include "test/backend/admin/registrar/fixtures.hh"
 #include "test/setup/fixtures.hh"
 

@@ -25,9 +25,9 @@
 #include "test/setup/fixtures_utils.hh"
 #include "test/libfred/notifier/util.hh"
 
-#include "src/libfred/notifier/gather_email_data/gather_email_addresses.hh"
-#include "src/libfred/registrable_object/domain/info_domain.hh"
-#include "src/libfred/registrable_object/domain/transfer_domain.hh"
+#include "libfred/notifier/gather_email_data/gather_email_addresses.hh"
+#include "libfred/registrable_object/domain/info_domain.hh"
+#include "libfred/registrable_object/domain/transfer_domain.hh"
 
 #include <boost/foreach.hpp>
 

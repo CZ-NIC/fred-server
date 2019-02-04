@@ -17,10 +17,10 @@
  */
 
 #include "src/backend/admin/registrar/create_registrar.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/registrar/create_registrar.hh"
-#include "src/util/log/context.hh"
-#include "src/util/log/logger.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/registrar/create_registrar.hh"
+#include "util/log/context.hh"
+#include "util/log/logger.hh"
 
 namespace Admin {
 namespace Registrar {
@@ -75,7 +75,7 @@ unsigned long long create_registrar(const std::string& _handle,
                 boost::optional<bool> _vat_payer)
 {
     LOGGING_CONTEXT(log_ctx);
-    LOGGER(PACKAGE).debug("Registrar handle: " + _handle);
+    LOGGER.debug("Registrar handle: " + _handle);
     const std::string operation_name = "LibFred::CreateRegistrar()";
 
     LibFred::OperationContextCreator ctx;
@@ -168,15 +168,15 @@ unsigned long long create_registrar(const std::string& _handle,
     {
         if (e.is_set_invalid_registrar_handle())
         {
-            LOGGER(PACKAGE).warning(operation_name + e.what());
+            LOGGER.warning(operation_name + e.what());
             throw RegistrarAlreadyExists();
         }
-        LOGGER(PACKAGE).error(operation_name + e.what());
+        LOGGER.error(operation_name + e.what());
         throw CreateRegistrarException();
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(operation_name + e.what());
+        LOGGER.error(operation_name + e.what());
         throw CreateRegistrarException();
     }
     throw CreateRegistrarException();

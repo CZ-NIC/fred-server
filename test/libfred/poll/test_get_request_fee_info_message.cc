@@ -16,11 +16,11 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/libfred/poll/create_request_fee_info_message.hh"
-#include "src/libfred/poll/get_request_fee_message.hh"
+#include "libfred/poll/create_request_fee_info_message.hh"
+#include "libfred/poll/get_request_fee_message.hh"
 #include "test/setup/fixtures.hh"
 #include "test/setup/fixtures_utils.hh"
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 #include <boost/test/unit_test.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>

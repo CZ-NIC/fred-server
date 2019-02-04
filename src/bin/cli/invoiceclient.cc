@@ -19,8 +19,8 @@
 #include <math.h>
 #include "src/bin/cli/commonclient.hh"
 #include "src/bin/cli/invoiceclient.hh"
-#include "src/libfred/credit.hh"
-#include "src/libfred/invoicing/invoice.hh"
+#include "src/deprecated/libfred/credit.hh"
+#include "src/deprecated/libfred/invoicing/invoice.hh"
 #include "src/util/types/money.hh"
 namespace Admin {
 
@@ -449,7 +449,7 @@ InvoiceClient::billing()
         invoicedate = boost::posix_time::microsec_clock::local_time();
     }
 
-    LOGGER(PACKAGE).debug ( boost::format("InvoiceClient::billing"
+    LOGGER.debug ( boost::format("InvoiceClient::billing"
             " zonename %1%  registrarname %2% taxdate %3%  todate (not included) %4% invoicedate %5%")
     % zone_name % registrar_name
     % boost::gregorian::to_simple_string(taxdate)

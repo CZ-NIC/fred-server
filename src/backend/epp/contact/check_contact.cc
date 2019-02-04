@@ -22,7 +22,7 @@
 #include "src/backend/epp/epp_response_failure.hh"
 #include "src/backend/epp/epp_result_code.hh"
 #include "src/backend/epp/epp_result_failure.hh"
-#include "src/libfred/registrable_object/contact/check_contact.hh"
+#include "libfred/registrable_object/contact/check_contact.hh"
 
 #include <boost/foreach.hpp>
 

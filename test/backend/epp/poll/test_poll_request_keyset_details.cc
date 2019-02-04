@@ -19,15 +19,15 @@
 #include "test/backend/epp/poll/fixture.hh"
 #include "test/setup/fixtures_utils.hh"
 #include "test/backend/epp/util.hh"
-#include "src/libfred/poll/create_update_object_poll_message.hh"
-#include "src/libfred/poll/create_poll_message.hh"
+#include "libfred/poll/create_update_object_poll_message.hh"
+#include "libfred/poll/create_poll_message.hh"
 #include "src/backend/epp/poll/poll_request_get_update_keyset_details.hh"
 #include "src/backend/epp/epp_response_failure.hh"
 #include "src/backend/epp/epp_result_failure.hh"
 #include "src/backend/epp/epp_result_code.hh"
 #include "src/util/tz/utc.hh"
 #include "src/util/tz/get_psql_handle_of.hh"
-#include "src/util/optional_value.hh"
+#include "util/optional_value.hh"
 
 #include <boost/test/unit_test.hpp>
 

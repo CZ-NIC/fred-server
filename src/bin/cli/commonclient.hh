@@ -28,8 +28,8 @@
 #include <boost/lexical_cast.hpp>
 
 #include "src/bin/corba/nameservice.hh"
-#include "src/util/types/datetime_interval.hh"
-#include "src/util/types/date_interval.hh"
+#include "util/types/datetime_interval.hh"
+#include "util/types/date_interval.hh"
 #include "src/deprecated/util/dbsql.hh"
 
 #include "src/bin/corba/EPP.hh"

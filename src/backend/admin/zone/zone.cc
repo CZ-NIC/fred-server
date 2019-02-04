@@ -17,11 +17,11 @@
  */
 
 #include "src/backend/admin/zone/zone.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/zone/create_zone.hh"
-#include "src/libfred/zone/exceptions.hh"
-#include "src/libfred/zone/zone_ns/create_zone_ns.hh"
-#include "src/libfred/zone/zone_soa/create_zone_soa.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/zone/create_zone.hh"
+#include "libfred/zone/exceptions.hh"
+#include "libfred/zone/zone_ns/create_zone_ns.hh"
+#include "libfred/zone/zone_soa/create_zone_soa.hh"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/asio.hpp>

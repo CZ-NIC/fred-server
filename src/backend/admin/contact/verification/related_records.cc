@@ -1,9 +1,9 @@
 #include "src/backend/admin/contact/verification/related_records.hh"
 
-#include "src/libfred/registrable_object/contact/info_contact.hh"
-#include "src/libfred/registrable_object/contact/verification/info_check.hh"
+#include "libfred/registrable_object/contact/info_contact.hh"
+#include "libfred/registrable_object/contact/verification/info_check.hh"
 
-#include "src/libfred/object_state/perform_object_state_request.hh"
+#include "libfred/object_state/perform_object_state_request.hh"
 
 #include <boost/assign/list_of.hpp>
 

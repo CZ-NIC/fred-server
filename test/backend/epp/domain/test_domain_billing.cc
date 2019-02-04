@@ -18,7 +18,7 @@
 
 #include "src/backend/epp/domain/impl/domain_billing.hh"
 #include "test/backend/epp/domain/fixture.hh"
-#include "src/util/decimal/decimal.hh"
+#include "util/decimal/decimal.hh"
 
 #include <vector>
 #include <string>

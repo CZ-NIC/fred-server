@@ -18,7 +18,7 @@
 
 #include <boost/test/unit_test.hpp>
 #include <set>
-#include "src/libfred/object/generate_authinfo_password.hh"
+#include "libfred/object/generate_authinfo_password.hh"
 
 BOOST_AUTO_TEST_SUITE(TestGenerateAuthInfoPassword)
 

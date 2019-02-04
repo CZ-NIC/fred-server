@@ -18,7 +18,7 @@
 
 #include "src/backend/epp/impl/registraracl/authentic_registrar.hh"
 
-#include "src/util/password_storage.hh"
+#include "util/password_storage.hh"
 
 #include <stdexcept>
 

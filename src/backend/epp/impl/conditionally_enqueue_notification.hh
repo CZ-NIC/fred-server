@@ -23,7 +23,7 @@
 
 #include "src/backend/epp/notification_data.hh"
 #include "src/backend/epp/session_data.hh"
-#include "src/libfred/notifier/event_on_object_enum.hh"
+#include "libfred/notifier/event_on_object_enum.hh"
 
 namespace Epp {
 

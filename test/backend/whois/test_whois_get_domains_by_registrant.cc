@@ -1,9 +1,9 @@
 #include "test/backend/whois/fixture_common.hh"
 
 #include "src/backend/whois/domain_expiration_datetime.hh"
-#include "src/libfred/object_state/perform_object_state_request.hh"
-#include "src/libfred/registrable_object/domain/update_domain.hh"
-#include "src/libfred/registrable_object/domain/transfer_domain.hh"
+#include "libfred/object_state/perform_object_state_request.hh"
+#include "libfred/registrable_object/domain/update_domain.hh"
+#include "libfred/registrable_object/domain/transfer_domain.hh"
 
 BOOST_AUTO_TEST_SUITE(TestWhois)
 BOOST_AUTO_TEST_SUITE(get_domains_by_registrant)

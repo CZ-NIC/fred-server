@@ -19,7 +19,7 @@
 #ifndef GET_IFACE_OF_HH_972243A2C8E74C318556B97643052155
 #define GET_IFACE_OF_HH_972243A2C8E74C318556B97643052155
 
-#include "src/libfred/public_request/public_request_type_iface.hh"
+#include "libfred/public_request/public_request_type_iface.hh"
 
 namespace Fred {
 namespace Backend {

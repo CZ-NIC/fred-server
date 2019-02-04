@@ -18,8 +18,8 @@
 
 #include "src/deprecated/util/dbsql.hh"
 #include "src/deprecated/util/util.hh"
-#include "src/deprecated/util/log.hh"
-#include "src/util/log/logger.hh"
+#include "src/util/db/manager_tss.hh"
+#include "util/log/logger.hh"
 #include "src/bin/corba/epp/action.hh"
 
 #include <cstdio>
@@ -31,9 +31,9 @@
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 
-// for invoice  type 
+// for invoice  type
 #define INVOICE_FA  1 // normal invoice
-#define INVOICE_ZAL 0 // advance invoice 
+#define INVOICE_ZAL 0 // advance invoice
 
 DB::DB()
     : memHandle(NULL),
@@ -46,8 +46,8 @@ DB::DB()
 }
 
 /* HACK! HACK! HACK! */
-DB::DB(Database::Connection &_conn)
-    : PQ(_conn.__getConn__()),
+DB::DB(Database::Connection& _conn)
+    : PQ(Database::TerribleHack::get_internal_psql_connection(_conn)),
       memHandle(NULL),
       svrTRID(NULL),
       sqlBuffer(NULL),
@@ -64,7 +64,7 @@ DB::~DB()
     {
         try
         {
-            LOG(NOTICE_LOG , "delete sqlBuffer");
+            LOG<Logging::Log::EventImportance::notice >( "delete sqlBuffer");
             delete[] sqlBuffer;
         }
         catch (...) { }
@@ -74,7 +74,7 @@ DB::~DB()
     {
         try
         {
-            LOG(NOTICE_LOG , "delete svrTRID");
+            LOG<Logging::Log::EventImportance::notice >( "delete svrTRID");
             delete[] svrTRID;
         }
         catch (...) { }
@@ -84,14 +84,14 @@ DB::~DB()
     {
         try
         {
-            LOG(NOTICE_LOG , "delete memHandle");
+            LOG<Logging::Log::EventImportance::notice >( "delete memHandle");
             delete[] memHandle;
         }
         catch (...) { }
     }
 }
 
-// action 
+// action
 bool DB::BeginAction(
   unsigned long long clientID, int action, const char *clTRID, const char *xml,
   unsigned long long requestID
@@ -107,7 +107,7 @@ bool DB::BeginAction(
           MAX_SVTID - 1
       );
 
-      LOG( SQL_LOG , "Make svrTRID: %s" , svrTRID );
+      LOG<Logging::Log::EventImportance::debug>( "Make svrTRID: %s" , svrTRID );
   }
 
   enum_action = action;
@@ -118,7 +118,7 @@ bool DB::BeginAction(
 const char * DB::EndAction(
   int response)
 {
-    LOG( SQL_LOG , "EndAction svrTRID: %s" , svrTRID );
+    LOG<Logging::Log::EventImportance::debug>( "EndAction svrTRID: %s" , svrTRID );
     return svrTRID;
 
 }
@@ -175,7 +175,7 @@ int DB::GetNSSetHosts(
 
   if (ExecSelect(sqlString) ) {
     num = GetSelectRows();
-    LOG( SQL_LOG , "nsset %d num %d" , nssetID , num );
+    LOG<Logging::Log::EventImportance::debug>( "nsset %d num %d" , nssetID , num );
     FreeSelect();
   }
 
@@ -183,7 +183,7 @@ int DB::GetNSSetHosts(
 }
 
 // get number of dsrecords associated to keyset
-int 
+int
 DB::GetKeySetDSRecords(int keysetID)
 {
     char sqlString[128];
@@ -193,14 +193,14 @@ DB::GetKeySetDSRecords(int keysetID)
 
     if (ExecSelect(sqlString)) {
         num = GetSelectRows();
-        LOG(SQL_LOG, "keyset id(%d) has %d dsrecord(s)", keysetID, num);
+        LOG<Logging::Log::EventImportance::debug>( "keyset id(%d) has %d dsrecord(s)", keysetID, num);
         FreeSelect();
     }
 
     return num;
 }
 // get id of dsrecord
-int 
+int
 DB::GetDSRecordId(
         int keysetId,
         int keyTag,
@@ -224,7 +224,7 @@ DB::GetDSRecordId(
     if (ExecSelect(query.str().c_str())) {
         id = atoi(GetFieldValue(0, 0));
         if (id != 0) {
-            LOG(SQL_LOG, "Found dsrecord id(%d) with same values", id);
+            LOG<Logging::Log::EventImportance::debug>( "Found dsrecord id(%d) with same values", id);
         }
         FreeSelect();
     }
@@ -232,7 +232,7 @@ DB::GetDSRecordId(
 }
 
 // get id of dsrecord, dont care about keyset id
-int 
+int
 DB::GetDSRecordId(
         int keyTag,
         int alg,
@@ -254,7 +254,7 @@ DB::GetDSRecordId(
     if (ExecSelect(query.str().c_str())) {
         id = atoi(GetFieldValue(0, 0));
         if (id != 0) {
-            LOG(SQL_LOG, "Found dsrecord id(%d) with same values", id);
+            LOG<Logging::Log::EventImportance::debug>( "Found dsrecord id(%d) with same values", id);
         }
         FreeSelect();
     }
@@ -271,7 +271,7 @@ DB::GetKeySetDNSKeys(int keysetId)
     query << "SELECT id FROM dnskey WHERE keysetid=" << keysetId << ";";
     if (ExecSelect(query.str().c_str())) {
         ret = GetSelectRows();
-        LOG(SQL_LOG, "Keyset id(%d) has %d dnskey(s)",
+        LOG<Logging::Log::EventImportance::debug>( "Keyset id(%d) has %d dnskey(s)",
                 keysetId, ret);
         FreeSelect();
     }
@@ -301,7 +301,7 @@ DB::GetDNSKeyId(
         if (GetSelectRows() > 0) {
             id = atoi(GetFieldValue(0, 0));
             if (id != 0) {
-                LOG(SQL_LOG, "Found dnskey id(%d) with same values", id);
+                LOG<Logging::Log::EventImportance::debug>( "Found dnskey id(%d) with same values", id);
             }
         }
         FreeSelect();
@@ -328,7 +328,7 @@ DB::GetDNSKeyId(
     if (ExecSelect(query.str().c_str())) {
         id = atoi(GetFieldValue(0, 0));
         if (id != 0) {
-            LOG(SQL_LOG, "Found dnskey id(%d) with same values", id);
+            LOG<Logging::Log::EventImportance::debug>( "Found dnskey id(%d) with same values", id);
         }
         FreeSelect();
     }
@@ -381,7 +381,7 @@ int DB::GetNSSetID(
   const char *handle)
 {
   char HANDLE[64];
-  // to upper case and test 
+  // to upper case and test
   if (get_NSSETHANDLE(HANDLE, handle) == false)
     return -1;
   else
@@ -405,13 +405,13 @@ int DB::GetObjectID(
   char sqlString[512];
   int id=0;
 
-  snprintf( sqlString, sizeof(sqlString), 
+  snprintf( sqlString, sizeof(sqlString),
       "SELECT object.id FROM object_registry , object WHERE object_registry.type=%d AND object_registry.id=object.id AND object_registry.name=\'%s\';",
       type, name);
   if (ExecSelect(sqlString) ) {
     if (GetSelectRows() == 1) {
       id = atoi(GetFieldValue( 0, 0) );
-      LOG( SQL_LOG , "GetObjectID   name=\'%s\'  -> ID %d" , name , id );
+      LOG<Logging::Log::EventImportance::debug>( "GetObjectID   name=\'%s\'  -> ID %d" , name , id );
     }
 
     FreeSelect();
@@ -432,7 +432,7 @@ int DB::GetNSSetContacts(
 
   if (ExecSelect(sqlString) ) {
     num = GetSelectRows();
-    LOG( SQL_LOG , " nsset_contact_map  num %d" , num );
+    LOG<Logging::Log::EventImportance::debug>( " nsset_contact_map  num %d" , num );
     FreeSelect();
   }
 
@@ -450,7 +450,7 @@ DB::GetKeySetContacts(int keysetid)
 
     if (ExecSelect(sqlString)) {
         num = GetSelectRows();
-        LOG(SQL_LOG, " keyset_contact_map num %d", num);
+        LOG<Logging::Log::EventImportance::debug>( " keyset_contact_map num %d", num);
         FreeSelect();
     }
 
@@ -461,7 +461,7 @@ DB::GetKeySetContacts(int keysetid)
 bool DB::SaveObjectDelete(
   int id)
 {
-  LOG( SQL_LOG , "set delete objectID %d" , id );
+  LOG<Logging::Log::EventImportance::debug>( "set delete objectID %d" , id );
   UPDATE("object_registry");
   SET("ErDate", "now");
   WHEREID(id);
@@ -471,7 +471,7 @@ bool DB::SaveObjectDelete(
 bool DB::SaveObjectCreate(
   int id)
 {
-  LOG( SQL_LOG , "set create histyoryID for object ID %d historyID %d" , id , historyID);
+  LOG<Logging::Log::EventImportance::debug>( "set create histyoryID for object ID %d historyID %d" , id , historyID);
   if (historyID) {
     UPDATE("object_registry");
     SET("crhistoryid", historyID);
@@ -505,7 +505,7 @@ DB::TestKeySetHandleHistory(const char *handle, int days)
     return TestObjectHistory(handle, days);
 }
 
-// test protected period 
+// test protected period
 bool DB::TestObjectHistory(
   const char * name, int days)
 {
@@ -516,7 +516,7 @@ bool DB::TestObjectHistory(
 
    if( days > 0 )
    {
-   // it doesn't depend if lowercase or uppercase 
+   // it doesn't depend if lowercase or uppercase
    snprintf( sqlString , "SELECT count( id ) FROM object_delete  WHERE name ILIKE \'%s\' and  deltime  > current_timestamp - interval\'%d days\';"  , name , days );
 
    if( ExecSelect( sqlString ) )
@@ -527,7 +527,7 @@ bool DB::TestObjectHistory(
    }
 
    return ret;
-   } else 
+   } else
    */
   return false;
 
@@ -576,7 +576,7 @@ int DB::CreateObject(
   char pass[PASS_LEN+1];
 
   if (strlen(authInfoPw) == 0) {
-    random_pass(pass); // autogenerate password if not set 
+    random_pass(pass); // autogenerate password if not set
     VVALUE(pass);
   } else
     VALUE(authInfoPw);
@@ -587,7 +587,7 @@ int DB::CreateObject(
     return 0;
 }
 
-// return  true if is system registrar 
+// return  true if is system registrar
 bool DB::GetRegistrarSystem(
   int regID)
 {
@@ -604,9 +604,9 @@ bool DB::GetRegistrarSystem(
   }
 
   if (ret)
-    LOG( SQL_LOG , "GetRegistrarSystem TRUE" );
+    LOG<Logging::Log::EventImportance::debug>( "GetRegistrarSystem TRUE" );
   else
-    LOG( SQL_LOG , "GetRegistrarSystem FALSE");
+    LOG<Logging::Log::EventImportance::debug>( "GetRegistrarSystem FALSE");
 
   return ret;
 }
@@ -625,7 +625,7 @@ bool DB::TestRegistrarZone(
 
   std::string today = boost::gregorian::to_iso_extended_string(boost::gregorian::day_clock::local_day());
 
-  snprintf( sqlString, sizeof(sqlString), 
+  snprintf( sqlString, sizeof(sqlString),
       "SELECT  id  FROM  registrarinvoice  WHERE registrarid=%d and zone=%d and fromdate <= '%s' and (todate >= '%s' or todate is null);",
       regID, zone, today.c_str(), today.c_str());
 
@@ -682,9 +682,9 @@ bool DB::TestValExDate(
   // actual local date based on the timezone
   get_rfc3339_timestamp(time(NULL) , currentDate, MAX_DATE+1, true);
 
-  if (id) // if ValExDate already exist and updated 
+  if (id) // if ValExDate already exist and updated
   {
-    // copy current Exdate during update 
+    // copy current Exdate during update
     strncpy(exDate, GetDomainValExDate(id), MAX_DATE) ;
     exDate[MAX_DATE] = '\0';
 
@@ -692,7 +692,7 @@ bool DB::TestValExDate(
     // test if the ExDate is lager then actual date and less or equal to protected period (interval days)
 
     // OS:
-    //    sql << "SELECT date_gt(date('" << exDate << "'), date('" << currentDate "')) AND " 
+    //    sql << "SELECT date_gt(date('" << exDate << "'), date('" << currentDate "')) AND "
     //        << "date_le(date('" << exDate << "'), date(date('" << currentDate << "') + interval '"
     //        << interval << " days')) as test;";
 
@@ -791,14 +791,14 @@ int DB::GetHostID(
   if (ExecSelect(sql.str().c_str()) ) {
     if (GetSelectRows() == 1) {
       hostID = atoi(GetFieldValue( 0, 0) );
-      LOG( SQL_LOG , "CheckHost fqdn=\'%s\' nssetid=%d  -> hostID %d" , fqdn , nssetID , hostID );
+      LOG<Logging::Log::EventImportance::debug>( "CheckHost fqdn=\'%s\' nssetid=%d  -> hostID %d" , fqdn , nssetID , hostID );
     }
 
     FreeSelect();
   }
 
   if (hostID == 0)
-    LOG( SQL_LOG , "Host fqdn=\'%s\' not found" , fqdn );
+    LOG<Logging::Log::EventImportance::debug>( "Host fqdn=\'%s\' not found" , fqdn );
   return hostID;
 }
 
@@ -860,7 +860,7 @@ bool DB::TestContactRelations(
   if (count > 0)
     return true;
 
-  snprintf(sqlString, sizeof(sqlString), 
+  snprintf(sqlString, sizeof(sqlString),
           "SELECT count(keysetID) from KEYSET_CONTACT_MAP WHERE contactid=%d;", id);
   if (ExecSelect(sqlString)) {
       count = atoi(GetFieldValue(0, 0));
@@ -870,7 +870,7 @@ bool DB::TestContactRelations(
   if (count > 0)
     return true;
 
-  snprintf(sqlString, sizeof(sqlString), 
+  snprintf(sqlString, sizeof(sqlString),
       "SELECT count( domainID)  from DOMAIN_CONTACT_MAP WHERE contactid=%d;",
       id);
   if (ExecSelect(sqlString) ) {
@@ -885,7 +885,7 @@ bool DB::TestContactRelations(
     return false;
 }
 
-// compare authinfopw 
+// compare authinfopw
 bool DB::AuthTable(
   const char *table, const char *auth, int id)
 {
@@ -917,13 +917,13 @@ int DB::GetClientDomainRegistrant(
   int regID=0;
   char sqlString[128];
 
-  snprintf(sqlString, sizeof(sqlString), 
+  snprintf(sqlString, sizeof(sqlString),
       "SELECT  clID FROM DOMAIN WHERE Registrant=%d AND clID=%d", contactID,
       clID);
   if (ExecSelect(sqlString) ) {
     if (GetSelectRows() > 0) {
       regID = atoi(GetFieldValue( 0, 0) );
-      LOG( SQL_LOG , "Get ClientDomainRegistrant  contactID \'%d\' -> regID %d" , contactID , regID );
+      LOG<Logging::Log::EventImportance::debug>( "Get ClientDomainRegistrant  contactID \'%d\' -> regID %d" , contactID , regID );
       FreeSelect();
     }
   }
@@ -944,22 +944,22 @@ const char * DB::GetValueFromTable(
         << " WHERE " << fname << " = '" << Escape2(value) << "'";
 
   if (ExecSelect(query.str().c_str()) ) {
-    if (GetSelectRows() == 1) // if selected only one record 
+    if (GetSelectRows() == 1) // if selected only one record
     {
       size = GetValueLength( 0, 0);
 
       if (memHandle) {
         delete[] memHandle;
-        LOG( SQL_LOG , "re-alloc memHandle");
+        LOG<Logging::Log::EventImportance::debug>( "re-alloc memHandle");
         memHandle = new char[size+1];
       } else {
-        LOG( SQL_LOG , "alloc memHandle");
+        LOG<Logging::Log::EventImportance::debug>( "alloc memHandle");
         memHandle = new char[size+1];
       }
 
       strncpy(memHandle, GetFieldValue( 0, 0), size + 1);
       memHandle[size] = '\0';
-      LOG( SQL_LOG , "GetValueFromTable \'%s\' field %s  value  %s ->  %s" , table , fname , value , memHandle );
+      LOG<Logging::Log::EventImportance::debug>( "GetValueFromTable \'%s\' field %s  value  %s ->  %s" , table , fname , value , memHandle );
       FreeSelect();
       return memHandle;
     } else {
@@ -1003,7 +1003,7 @@ bool DB::DeleteFromTable(
 {
   char sqlString[128];
 
-  LOG( SQL_LOG , "DeleteFromTable %s fname %s id -> %d" , table , fname , id );
+  LOG<Logging::Log::EventImportance::debug>( "DeleteFromTable %s fname %s id -> %d" , table , fname , id );
 
   snprintf(sqlString, sizeof(sqlString), "DELETE FROM %s  WHERE %s=%d;", table, fname, id);
   return ExecSQL(sqlString);
@@ -1015,9 +1015,9 @@ bool DB::DeleteFromTableMap(
 {
   char sqlString[128];
 
-  LOG( SQL_LOG , "DeleteFrom  %s_contact_map  id  %d contactID %d" , map ,id , contactid );
+  LOG<Logging::Log::EventImportance::debug>( "DeleteFrom  %s_contact_map  id  %d contactID %d" , map ,id , contactid );
 
-  snprintf(sqlString, sizeof(sqlString), 
+  snprintf(sqlString, sizeof(sqlString),
       "DELETE FROM %s_contact_map WHERE  %sid=%d AND contactid=%d;", map, map,
       id, contactid);
 
@@ -1034,7 +1034,7 @@ int DB::GetSequenceID(
 
   if (ExecSelect(sqlString) ) {
     id = atoi(GetFieldValue( 0, 0) );
-    LOG( SQL_LOG , "GetSequence \'%s\' -> ID %d" , sequence , id );
+    LOG<Logging::Log::EventImportance::debug>( "GetSequence \'%s\' -> ID %d" , sequence , id );
     FreeSelect();
   }
 
@@ -1045,7 +1045,7 @@ bool DB::SaveNSSetHistory(
   int id, unsigned long long request_id)
 {
 
-  //  save to history 
+  //  save to history
   if (MakeHistory(id, request_id) ) {
 
     if (SaveHistory("NSSET", "id", id) )
@@ -1118,7 +1118,7 @@ bool DB::DeleteDomainObject(
   int id)
 {
   if (DeleteFromTable("domain_contact_map", "domainID", id) ) { // admin-c
-    if (DeleteFromTable("enumval", "domainID", id) ) { // enumval extension 
+    if (DeleteFromTable("enumval", "domainID", id) ) { // enumval extension
       if (DeleteFromTable("DOMAIN", "id", id) ) {
         if (DeleteFromTable("OBJECT", "id", id) ) {
           return true;
@@ -1163,19 +1163,19 @@ int DB::MakeHistory(
 {
   char sqlString[128];
 
-    LOG( SQL_LOG , "MakeHistory requestID -> %llu " ,
+    LOG<Logging::Log::EventImportance::debug>( "MakeHistory requestID -> %llu " ,
             requestID);
     historyID = GetSequenceID("HISTORY");
     if (historyID) {
-      LOG( SQL_LOG , "MakeHistory requestID -> %llu " , requestID);
+      LOG<Logging::Log::EventImportance::debug>( "MakeHistory requestID -> %llu " , requestID);
       snprintf(sqlString, sizeof(sqlString),
           "INSERT INTO HISTORY ( id , request_id ) VALUES ( %d  , %llu );",
           historyID, requestID);
       if (ExecSQL(sqlString) ) {
-        if (SaveHistory("OBJECT", "id", objectID) ) // save object table to history 
+        if (SaveHistory("OBJECT", "id", objectID) ) // save object table to history
         {
-          LOG( SQL_LOG , "Update objectID  %d -> historyID %d " , objectID , historyID );
-          snprintf(sqlString, sizeof(sqlString), 
+          LOG<Logging::Log::EventImportance::debug>( "Update objectID  %d -> historyID %d " , objectID , historyID );
+          snprintf(sqlString, sizeof(sqlString),
               "UPDATE OBJECT_registry set historyID=%d WHERE id=%d;",
               historyID, objectID);
           if (ExecSQL(sqlString) )
@@ -1197,7 +1197,7 @@ bool DB::SaveHistory(
 
 
   if (historyID) {
-    LOG( SQL_LOG , "SaveHistory historyID - > %d" , historyID );
+    LOG<Logging::Log::EventImportance::debug>( "SaveHistory historyID - > %d" , historyID );
     if (SELECTONE(table, fname, id) ) {
       for (row = 0; row < GetSelectRows() ; row ++) {
         // insert to the history table
@@ -1221,7 +1221,7 @@ bool DB::SaveHistory(
         if (EXEC() == false) {
           ret = false;
           break;
-        } // if error 
+        } // if error
 
       }
 
@@ -1230,17 +1230,17 @@ bool DB::SaveHistory(
 
   }
 
-  // default 
+  // default
 
   return ret;
 }
 
-// update object table client of object (registrar) and authInfo 
+// update object table client of object (registrar) and authInfo
 bool DB::ObjectUpdate(
   int id, int regID, const char *authInfo)
 {
   UPDATE("OBJECT");
-  SSET("UpDate", "now"); // now 
+  SSET("UpDate", "now"); // now
   SET("UpID", regID);
   SET("AuthInfoPw", authInfo);
   WHEREID(id);
@@ -1309,7 +1309,7 @@ void DB::SQLCatUpper(
   SQLCatLW(str, true);
 }
 
-// convert to lower or upper 
+// convert to lower or upper
 void DB::SQLCatLW(
   const char *str, bool lw)
 {
@@ -1329,11 +1329,11 @@ void DB::SQLCatLW(
     sqlBuffer[length+len] = 0;
   }
 
-  LOG( SQL_LOG , "DB::SQLCatLW lw %d str[%s] sqlBuffer[%s]" , lw , str , sqlBuffer );
+  LOG<Logging::Log::EventImportance::debug>( "DB::SQLCatLW lw %d str[%s] sqlBuffer[%s]" , lw , str , sqlBuffer );
 
 }
 
-// escape string 
+// escape string
 void DB::SQLCatEscape(
   const char * value)
 {
@@ -1343,13 +1343,13 @@ void DB::SQLCatEscape(
   length = strlen(value);
 
   if (length) {
-    // increase buffer for escape string 
-    // LOG( SQL_LOG , "alloc escape string length  %d" , length*2 );
+    // increase buffer for escape string
+    // LOG<Logging::Log::EventImportance::debug>( "alloc escape string length  %d" , length*2 );
     str = new char[length*2];
     // DB escape funkce
     Escape(str, value, length) ;
     SQLCat(str);
-    // LOG( SQL_LOG , "free  escape string" );
+    // LOG<Logging::Log::EventImportance::debug>( "free  escape string" );
     delete[] str;
   }
 
@@ -1371,7 +1371,7 @@ void DB::SSET(
 {
   SETS(fname, value, false);
 }
-// with escape 
+// with escape
 void DB::SET(
   const char *fname, const char * value)
 {
@@ -1391,7 +1391,7 @@ void DB::SETS(
     //   if( strcmp( value  , NULL_STRING ) ==  0 || value[0] == 0x8 ) // set up NULL value for NULL string from IDL
 
     // if( null )
-    // NULL back based on backslash 
+    // NULL back based on backslash
     if (value[0] == 0x8) // meanwhile use with mod_eppd hack at sign \b
     {
       SQLCat("NULL");
@@ -1460,11 +1460,11 @@ void DB::SET(
   SQLCat(" ,");
 }
 
-// set  t or f 
+// set  t or f
 void DB::SETBOOL(
   const char *fname, char c)
 {
-  // one as  true zero like false  false -1 not change 
+  // one as  true zero like false  false -1 not change
   if (c == 't' || c == 'f' || c == 'T' || c == 'F') {
     SQLCat("  ");
     SQLCat(fname);
@@ -1485,7 +1485,7 @@ void DB::WHERE(
 {
   if (SQLTestEnd(',') || SQLTestEnd(';'))
   {
-    SQLDelEnd(); //  delete last char 
+    SQLDelEnd(); //  delete last char
 
     SQLCat(" WHERE ");
     SQLCat(fname);
@@ -1504,7 +1504,7 @@ void DB::OPERATOR(
 {
   if (SQLTestEnd(',') || SQLTestEnd(';'))
   {
-    SQLDelEnd(); //   delete last char 
+    SQLDelEnd(); //   delete last char
     SQLCat("  ");
     SQLCat(op); // op  AND OR LIKE
     SQLCat(" ");
@@ -1542,7 +1542,7 @@ void DB::WHERE(
   WHERE(fname, numStr);
 }
 
-// INSERT INTO history 
+// INSERT INTO history
 void DB::INSERTHISTORY(
   const char * table)
 {
@@ -1684,7 +1684,7 @@ void DB::VVALUE(
 void DB::VALUE(
   const char * value)
 {
-  // use ESCAPE 
+  // use ESCAPE
   VALUES(value, true, true, 0);
 }
 
@@ -1726,24 +1726,24 @@ void DB::VALPRICE(
   long price)
 {
   char priceStr[16];
-  // currency in penny 
+  // currency in penny
   snprintf(priceStr, sizeof(priceStr), "%ld.%02ld", price /100, price %100);
   VALUES(priceStr, false, false, 0); // without ESC
 }
 bool DB::EXEC()
 {
   bool ret;
-  // run SQL 
+  // run SQL
   ret = ExecSQL(sqlBuffer);
 
-  // free mem 
+  // free mem
   delete[] sqlBuffer;
   sqlBuffer = NULL;
   // return if success of failed
   return ret;
 }
 
-// select functions 
+// select functions
 bool DB::SELECT()
 {
   bool ret;
@@ -1751,14 +1751,14 @@ bool DB::SELECT()
   // run SQL query
   ret = ExecSelect(sqlBuffer);
 
-  // free mem 
+  // free mem
   delete[] sqlBuffer;
   sqlBuffer = NULL;
   //  return if success of failed
   return ret;
 }
 
-// SQL SELECT functions 
+// SQL SELECT functions
 void DB::SELECTFROM(
   const char *fname, const char * table)
 {
@@ -1777,7 +1777,7 @@ void DB::SELECTFROM(
 bool DB::SELECTONE(
   const char * table, const char *fname, const char *value)
 {
-  LOG( SQL_LOG , "SELECTONE  table %s fname %s values %s" , table , fname , value );
+  LOG<Logging::Log::EventImportance::debug>( "SELECTONE  table %s fname %s values %s" , table , fname , value );
   SELECTFROM("", table);
   WHERE(fname, value);
   return SELECT();

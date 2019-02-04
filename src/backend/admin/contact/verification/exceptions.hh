@@ -24,7 +24,7 @@
 #ifndef EXCEPTIONS_HH_22A4F0F06AE44C44936D609957771BA9
 #define EXCEPTIONS_HH_22A4F0F06AE44C44936D609957771BA9
 
-#include "src/libfred/opexception.hh"
+#include "libfred/opexception.hh"
 
 namespace Fred {
 namespace Backend {

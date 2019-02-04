@@ -21,8 +21,8 @@
 
 #include "src/backend/epp/keyset/transfer_keyset_config_data.hh"
 #include "src/backend/epp/session_data.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/util/optional_value.hh"
+#include "libfred/opcontext.hh"
+#include "util/optional_value.hh"
 
 #include <string>
 

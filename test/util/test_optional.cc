@@ -16,7 +16,7 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/util/optional_value.hh"
+#include "util/optional_value.hh"
 
 #include <sstream>
 #include <stdexcept>

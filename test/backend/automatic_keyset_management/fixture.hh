@@ -21,8 +21,8 @@
 
 #include "test/setup/fixtures.hh"
 #include "test/setup/fixtures_utils.hh"
-#include "src/libfred/object_state/get_object_states.hh"
-#include "src/libfred/documents.hh"
+#include "libfred/object_state/get_object_states.hh"
+#include "src/deprecated/libfred/documents.hh"
 
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/handle_general_args.hh"

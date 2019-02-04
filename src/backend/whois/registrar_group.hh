@@ -1,7 +1,7 @@
 #ifndef REGISTRAR_GROUP_HH_4D341FA239FE4B10ACDD71E65142B2C1
 #define REGISTRAR_GROUP_HH_4D341FA239FE4B10ACDD71E65142B2C1
 
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 #include <map>
 #include <string>

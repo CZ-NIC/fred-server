@@ -19,7 +19,7 @@
 #ifndef POLL_REQUEST_GET_UPDATE_NSSET_DETAILS_HH_438C18BE41FC4A35B378A6B240F5C025
 #define POLL_REQUEST_GET_UPDATE_NSSET_DETAILS_HH_438C18BE41FC4A35B378A6B240F5C025
 
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 #include "src/backend/epp/nsset/info_nsset.hh"
 
 namespace Epp {

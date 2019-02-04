@@ -20,7 +20,7 @@
 #define UPDATE_KEYSET_HH_38CC1B22FCC84934A2D28948B489EC1E
 
 #include "src/backend/epp/keyset/update_keyset_input_data.hh"
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 #include "src/backend/epp/keyset/update_keyset_config_data.hh"
 #include "src/backend/epp/session_data.hh"
 

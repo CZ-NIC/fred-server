@@ -19,7 +19,7 @@
 #ifndef UPDATE_ZONE_ACCESS_HH_591ADEA30B6E4414BF384D90719DDB63
 #define UPDATE_ZONE_ACCESS_HH_591ADEA30B6E4414BF384D90719DDB63
 
-#include "src/libfred/registrar/zone_access/registrar_zone_access_type.hh"
+#include "libfred/registrar/zone_access/registrar_zone_access_type.hh"
 
 #include <exception>
 #include <string>

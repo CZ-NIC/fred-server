@@ -27,8 +27,8 @@
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/corba_wrapper_decl.hh"
 
-void setup_logging(CfgArgs * cfg_instance_ptr);
-void run_server(CfgArgs * cfg_instance_ptr , CorbaContainer* corba_instance_ptr );
+void setup_logging(CfgArgs* cfg_instance_ptr);
+void run_server(CfgArgs* cfg_instance_ptr , CorbaContainer* corba_instance_ptr);
 void corba_init();
 
 #endif

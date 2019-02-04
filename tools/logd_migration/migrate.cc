@@ -3,66 +3,60 @@
  *
  *  Created on: Jan 23, 2009
  *      Author: jvicenik
- * 
+ *
  * is_monitoring flag
  *
  */
 
+#include "tools/logd_migration/migrate.hh"
+
+//#include "conf/manager.h"
+
+#include "util/log/logger.hh"
+
+#include "util/util.hh"
+#include "src/deprecated/libfred/requests/request_manager.hh"
+
+#include "tools/logd_migration/m_epp_parser.hh"
 
 #include <string>
 #include <signal.h>
 
-#include "tools/logd_migration/migrate.hh"
+const int COMMIT_INTERVAL = 1000;
 
-
-
-//#include "conf/manager.h"
-
-#include "src/deprecated/util/log.hh"
-
-
-#include "src/util/util.hh"
-#include "src/libfred/requests/request_manager.hh"
-
-#include "tools/logd_migration/m_epp_parser.hh"
-
-using namespace Database;
-
-static const int COMMIT_INTERVAL = 1000;
-
-static const char * EPP_SCHEMA = "/home/jvicenik/devel/fred_svn/fred/build/root/share/fred-mod-eppd/schemas/all.xsd";
-static const std::string CONNECTION_STRING = "host=localhost port=22345 dbname=fred user=fred password=password connect_timeout=2";
+const char* const EPP_SCHEMA = "/home/jvicenik/devel/fred_svn/fred/build/root/share/fred-mod-eppd/schemas/all.xsd";
+const std::string CONNECTION_STRING = "host=localhost port=22345 dbname=fred user=fred password=password connect_timeout=2";
 
 /** length of date at the begining of an input line, input format is: date|xml */
-static const int INPUT_DATE_LENGTH = 26;
-static const int INPUT_ID_LENGTH   = 22;
-static const int INPUT_MON_LENGTH = 1;
-static const std::string LOG_FILENAME = "log_migration_log.txt";
+const int INPUT_DATE_LENGTH = 26;
+const int INPUT_ID_LENGTH   = 22;
+const int INPUT_MON_LENGTH = 1;
+const char* const LOG_FILENAME = "log_migration_log.txt";
 
-pool_subst *mem_pool;
+pool_subst* mem_pool = nullptr;
 
-/** EPP service_id code; according to service_id table 
+/** EPP service_id code; according to service_id table
  */
 const int LC_EPP = 3;
 
 void logger(boost::format &fmt)
 {
 #ifdef HAVE_LOGGER
-    LOGGER("fred-server").error(fmt);
+    LOGGER.error(fmt);
 #endif
 }
 
 void logger(std::string &str)
 {
 #ifdef HAVE_LOGGER
-    LOGGER("fred-server").error(str);
+    LOGGER.error(str);
 #endif
 }
 
 void logger(const char *str)
 {
 #ifdef HAVE_LOGGER
-    LOGGER("fred-server").error(str);
+    LOGGER.error(str);
 #endif
 }
 
@@ -78,18 +72,17 @@ int main()
 {
     int trans_count;
     epp_red_command_type cmd_type;
-    epp_command_data *cdata; /* command data structure */
+    epp_command_data* cdata = nullptr; /* command data structure */
     parser_status pstat;
     std::string line, rawline;
-    void *schema;
+    void* schema = nullptr;
     clock_t time1, time2, time3, t_parser=0, t_logcomm=0, t_backend=0;
 
-    try {
+    try
+    {
         Database::Manager::init(new Database::ConnectionFactory(CONNECTION_STRING));
 
         LibFred::Logger::ManagerImpl serv;
-
-        cdata = NULL;
 
         // TODO -  check if the file EPP_SCHEMA exists (or better, create some config file for this thing with all the variables which are used
         schema = epp_parser_init(EPP_SCHEMA);
@@ -99,9 +92,8 @@ int main()
         signal(6, signal_handler);
 
         // setup loggin via LOGGER
-        Logging::Manager::instance_ref().get(PACKAGE).addHandler(Logging::Log::LT_FILE, std::string(LOG_FILENAME));
-        Logging::Manager::instance_ref().get(PACKAGE).setLevel(Logging::Log::LL_TRACE);
-        LOGGER(PACKAGE).info("Logging initialized for migration");
+        LOGGER.add_handler_of<Logging::Log::Device::file>(LOG_FILENAME, Logging::Log::EventImportance::trace);
+        LOGGER.info("Logging initialized for migration");
 
         // TODO is this safe?
         Connection serv_conn = serv.get_connection();
@@ -115,7 +107,8 @@ int main()
         mem_pool = new pool_subst();
 
         trans_count = 0;
-        while (std::getline(std::cin, line)) {
+        while (std::getline(std::cin, line))
+        {
             //size_t i;
             char *end = NULL;
             pool_manager man(mem_pool);
@@ -156,8 +149,10 @@ int main()
             // count << (int)pstat << endl;
 
             // test if the failure is serious enough to close connection
-            if (pstat > PARSER_HELLO) {
-                switch (pstat) {
+            if (pstat > PARSER_HELLO)
+            {
+                switch (pstat)
+                {
                     case PARSER_NOT_XML:
                         logger("Request is not XML");
                         continue;
@@ -208,11 +203,12 @@ int main()
         free(schema);
         // if the transaction wasn't commited in the previous command
     }
-    catch (std::exception &_e) {
-        std::cerr << "error occured (" << _e.what() << ")" << std::endl;
+    catch (const std::exception& e)
+    {
+        std::cerr << "error occured (" << e.what() << ")" << std::endl;
     }
-    catch (...) {
+    catch (...)
+    {
         std::cerr << "error occured" << std::endl;
     }
 }
-

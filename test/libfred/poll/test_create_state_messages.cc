@@ -16,11 +16,11 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/libfred/poll/create_state_messages.hh"
-#include "src/libfred/opcontext.hh"
+#include "libfred/poll/create_state_messages.hh"
+#include "libfred/opcontext.hh"
 #include "test/setup/fixtures.hh"
 #include "test/setup/fixtures_utils.hh"
-#include "src/libfred/poll/message_type_set.hh"
+#include "libfred/poll/message_type_set.hh"
 
 #include <boost/test/unit_test.hpp>
 #include <boost/optional.hpp>

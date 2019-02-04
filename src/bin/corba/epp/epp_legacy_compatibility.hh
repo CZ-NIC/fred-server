@@ -25,7 +25,7 @@
 
 #include "src/backend/epp/session_lang.hh"
 #include "src/bin/corba/epp/epp_session.hh"
-#include "src/util/optional_value.hh"
+#include "util/optional_value.hh"
 
 namespace Legacy {
 

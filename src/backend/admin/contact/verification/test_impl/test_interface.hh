@@ -24,16 +24,16 @@
 #ifndef TEST_INTERFACE_HH_A08924E6431F4104B6BCBAE4FCD18BA7
 #define TEST_INTERFACE_HH_A08924E6431F4104B6BCBAE4FCD18BA7
 
-#include "src/libfred/registrable_object/contact/check_contact.hh"
-#include "src/libfred/registrable_object/contact/copy_contact.hh"
-#include "src/libfred/registrable_object/contact/create_contact.hh"
-#include "src/libfred/registrable_object/contact/delete_contact.hh"
-#include "src/libfred/registrable_object/contact/info_contact.hh"
-#include "src/libfred/registrable_object/contact/info_contact_diff.hh"
-#include "src/libfred/registrable_object/contact/merge_contact.hh"
-#include "src/libfred/registrable_object/contact/update_contact.hh"
-#include "src/util/factory.hh"
-#include "src/util/optional_value.hh"
+#include "libfred/registrable_object/contact/check_contact.hh"
+#include "libfred/registrable_object/contact/copy_contact.hh"
+#include "libfred/registrable_object/contact/create_contact.hh"
+#include "libfred/registrable_object/contact/delete_contact.hh"
+#include "libfred/registrable_object/contact/info_contact.hh"
+#include "libfred/registrable_object/contact/info_contact_diff.hh"
+#include "libfred/registrable_object/contact/merge_contact.hh"
+#include "libfred/registrable_object/contact/update_contact.hh"
+#include "util/factory.hh"
+#include "util/optional_value.hh"
 
 #include <boost/lexical_cast.hpp>
 #include <boost/tuple/tuple.hpp>

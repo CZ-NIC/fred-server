@@ -25,8 +25,8 @@
 
 #include "test/setup/fixtures.hh"
 #include "test/setup/fixtures_utils.hh"
-#include "src/libfred/object_state/get_object_states.hh"
-#include "src/libfred/documents.hh"
+#include "libfred/object_state/get_object_states.hh"
+#include "src/deprecated/libfred/documents.hh"
 #include "src/bin/corba/mailer_manager.hh"
 
 #include "src/util/corba_wrapper_decl.hh"

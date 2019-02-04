@@ -20,7 +20,7 @@
 #define CORBA_CONVERSIONS_NULLABLEISODATETIME_HH_972092698C2F48D389B060B63B9DBA31
 
 #include "src/bin/corba/NullableIsoDateTime.hh"
-#include "src/util/db/nullable.hh"
+#include "util/db/nullable.hh"
 
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 

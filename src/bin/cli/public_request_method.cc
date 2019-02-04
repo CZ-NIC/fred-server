@@ -25,11 +25,11 @@
 #include "src/backend/public_request/type/public_request_block_unblock.hh"
 #include "src/backend/public_request/type/public_request_personal_info.hh"
 #include "src/bin/cli/public_request_method.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/public_request/public_request_on_status_action.hh"
-#include "src/libfred/public_request/public_request_status.hh"
-#include "src/libfred/registry.hh"
-#include "src/util/db/query_param.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/public_request/public_request_on_status_action.hh"
+#include "libfred/public_request/public_request_status.hh"
+#include "src/deprecated/libfred/registry.hh"
+#include "util/db/query_param.hh"
 
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/algorithm/copy.hpp>

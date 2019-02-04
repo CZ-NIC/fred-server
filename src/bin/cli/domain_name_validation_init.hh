@@ -29,11 +29,11 @@
 #include "src/bin/cli/handle_adminclientselection_args.hh"
 
 #include "src/bin/cli/domain_name_validation_params.hh"
-#include "src/util/log/context.hh"
-#include "src/util/factory.hh"
-#include "src/util/factory_check.hh"
+#include "util/log/context.hh"
+#include "util/factory.hh"
+#include "util/factory_check.hh"
 
-#include "src/libfred/registrable_object/domain/domain_name.hh"
+#include "libfred/registrable_object/domain/domain_name.hh"
 
 
 /**

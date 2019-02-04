@@ -25,7 +25,7 @@
 #include "test/setup/fixtures_utils.hh"
 #include "test/libfred/notifier/util.hh"
 
-#include "src/libfred/notifier/event_on_object_enum.hh"
+#include "libfred/notifier/event_on_object_enum.hh"
 
 BOOST_AUTO_TEST_SUITE(TestNotifier)
 BOOST_AUTO_TEST_SUITE(EventOnObjectEnum)

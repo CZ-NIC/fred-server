@@ -1537,8 +1537,25 @@ public:
     }//handle
 };//class HandleAdminClientRegistrarListArgsGrp
 
-//bool zone_ns_add_;
-   //ZoneNsAddArgs zone_ns_add_params_;
+template <>
+class save_arg<std::vector<boost::asio::ip::address>>
+{
+public:
+    //ctor taking reference to variable where arg value will be stored
+    save_arg(std::vector<boost::asio::ip::address>& val) : val_(val) {}
+
+    void operator()(const std::vector<std::string>& arg)
+    {
+        val_.clear();
+        val_.reserve(arg.size());
+        for (const auto& str_addr : arg)
+        {
+            val_.push_back(boost::asio::ip::address::from_string(str_addr));
+        }
+    }
+private:
+    std::vector<boost::asio::ip::address>& val_;
+};
 
 /**
  * \class HandleAdminClientZoneNsAddArgsGrp
@@ -1547,7 +1564,6 @@ public:
 class HandleAdminClientZoneNsAddArgsGrp : public HandleCommandGrpArgs
 {
 public:
-    ZoneNsAddArgs params;
     CommandDescription get_command_option()
     {
         return CommandDescription("zone_ns_add");
@@ -1570,18 +1586,18 @@ public:
                 "nameserver fqdn")
             ("addr", boost::program_options
                 ::value<Checked::ip_addresses>()->multitoken()
-                ->notifier(save_arg<std::vector<boost::asio::ip::address> >(params.addrs)),
+                ->notifier(save_arg<std::vector<boost::asio::ip::address>>(params.addrs)),
                 "nameserver addresses");
         return cfg_opts;
-    }//get_options_description
-    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
-            , std::size_t option_group_index)
+    }
+    std::size_t handle(int argc, char* argv[], FakedArgs& fa, std::size_t option_group_index)
     {
         boost::program_options::variables_map vm;
         handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
-    }//handle
-};//class HandleAdminClientZoneNsAddArgsGrp
+    }
+    ZoneNsAddArgs params;
+};
 
 /**
  * \class HandleAdminClientRegistrarAclAddArgsGrp

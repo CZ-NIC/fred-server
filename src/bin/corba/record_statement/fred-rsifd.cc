@@ -25,8 +25,8 @@
 #include "src/bin/corba/connection_releaser.hh"
 #include "src/bin/corba/mailer_manager.hh"
 #include "src/bin/corba/record_statement/record_statement_i.hh"
-#include "src/libfred/db_settings.hh"
-#include "src/libfred/documents.hh"
+#include "libfred/db_settings.hh"
+#include "src/deprecated/libfred/documents.hh"
 
 #include "src/util/cfg/config_handler.hh"
 #include "src/util/cfg/handle_corbanameservice_args.hh"
@@ -37,8 +37,8 @@
 #include "src/util/cfg/handle_server_args.hh"
 
 #include "src/util/corba_wrapper.hh"
-#include "src/util/log/context.hh"
-#include "src/util/log/logger.hh"
+#include "util/log/context.hh"
+#include "util/log/logger.hh"
 #include "src/util/setup_server.hh"
 
 #include <boost/assign/list_of.hpp>

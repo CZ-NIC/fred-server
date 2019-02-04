@@ -24,7 +24,7 @@
 #ifndef FILL_CHECK_QUEUE_HH_88570337F2644563AFEF9EC8D1B778C9
 #define FILL_CHECK_QUEUE_HH_88570337F2644563AFEF9EC8D1B778C9
 
-#include "src/util/optional_value.hh"
+#include "util/optional_value.hh"
 
 #include <set>
 #include <string>

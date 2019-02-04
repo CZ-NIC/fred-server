@@ -18,11 +18,11 @@
 
 #include "src/backend/epp/domain/impl/domain_output.hh"
 
-#include "src/util/db/nullable.hh"
-#include "src/libfred/object/object_id_handle_pair.hh"
-#include "src/libfred/object/object_state.hh"
+#include "util/db/nullable.hh"
+#include "libfred/object/object_id_handle_pair.hh"
+#include "libfred/object/object_state.hh"
 #include "src/backend/epp/domain/status_value.hh"
-#include "src/util/enum_conversion.hh"
+#include "util/enum_conversion.hh"
 
 #include <string>
 

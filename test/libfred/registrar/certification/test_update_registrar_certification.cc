@@ -16,13 +16,13 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/libfred/registrar/certification/create_registrar_certification.hh"
-#include "src/libfred/registrar/certification/update_registrar_certification.hh"
-#include "src/libfred/registrar/certification/exceptions.hh"
+#include "libfred/registrar/certification/create_registrar_certification.hh"
+#include "libfred/registrar/certification/update_registrar_certification.hh"
+#include "libfred/registrar/certification/exceptions.hh"
 
 #include "test/setup/fixtures.hh"
 #include "test/setup/fixtures_utils.hh"
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/test/unit_test.hpp>

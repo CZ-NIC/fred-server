@@ -17,8 +17,8 @@
  */
 
 #include "src/backend/admin/zone/zone.hh"
-#include "src/libfred/zone/exceptions.hh"
-#include "src/libfred/zone/zone_ns/util.hh"
+#include "libfred/zone/exceptions.hh"
+#include "libfred/zone/zone_ns/util.hh"
 #include "test/backend/admin/zone/fixtures.hh"
 #include "test/setup/fixtures.hh"
 

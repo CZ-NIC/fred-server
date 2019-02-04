@@ -24,9 +24,9 @@
 #include "src/backend/epp/reason.hh"
 #include "src/backend/epp/nsset/dns_host_input.hh"
 #include "src/backend/epp/nsset/dns_host_output.hh"
-#include "src/libfred/registrable_object/nsset/nsset_dns_host.hh"
-#include "src/libfred/opexception.hh"
-#include "src/libfred/zone/zone.hh"
+#include "libfred/registrable_object/nsset/nsset_dns_host.hh"
+#include "libfred/opexception.hh"
+#include "libfred/zone/zone.hh"
 
 #include <boost/asio/ip/address.hpp>
 #include <boost/numeric/conversion/cast.hpp>

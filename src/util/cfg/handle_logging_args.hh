@@ -17,23 +17,23 @@
  */
 
 /**
- *  @handle_logging_args.h
+ *  @handle_logging_args.hh
  *  logging configuration
  */
 
 #ifndef HANDLE_LOGGING_ARGS_HH_431EDB4A1D714CE3BD4948CB99DFA42C
 #define HANDLE_LOGGING_ARGS_HH_431EDB4A1D714CE3BD4948CB99DFA42C
 
-#include <iostream>
-#include <exception>
-#include <string>
-#include <vector>
-
-#include <boost/program_options.hpp>
-
 #include "src/util/cfg/faked_args.hh"
 #include "src/util/cfg/handle_args.hh"
 
+#include <boost/program_options.hpp>
+
+#include <iostream>
+#include <memory>
+#include <exception>
+#include <string>
+#include <vector>
 
 /**
  * \class HandleLoggingArgs
@@ -42,13 +42,6 @@
 class HandleLoggingArgs : public HandleArgs
 {
 public:
-
-    unsigned log_type;
-    unsigned log_level;
-    std::string log_file;
-    unsigned log_syslog_facility;
-    bool log_config_dump;
-
     std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
@@ -85,6 +78,11 @@ public:
         log_syslog_facility = vm["log.syslog_facility"].as<unsigned>();
         log_config_dump = vm["log.config_dump"].as<bool>();
     }//handle
+    unsigned log_type;
+    unsigned log_level;
+    std::string log_file;
+    unsigned log_syslog_facility;
+    bool log_config_dump;
 };
 
 /**

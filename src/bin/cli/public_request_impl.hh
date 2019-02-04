@@ -27,11 +27,11 @@
 #include "src/bin/cli/handle_adminclientselection_args.hh"
 #include "src/bin/cli/public_request_method.hh"
 #include "src/util/cfg/handle_corbanameservice_args.hh"
-#include "src/util/log/context.hh"
+#include "util/log/context.hh"
 #include "src/bin/corba/mailer_manager.hh"
 #include "src/bin/corba/file_manager_client.hh"
-#include "src/libfred/mailer.hh"
-#include "src/libfred/file_transferer.hh"
+#include "libfred/mailer.hh"
+#include "src/deprecated/libfred/file_transferer.hh"
 
 #include <memory>
 

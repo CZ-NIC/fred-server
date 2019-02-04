@@ -2,7 +2,7 @@
 #define FIXTURE_COMMON_HH_23091B98FDF94EE3B83A72ED232CDF75
 
 #include "src/backend/whois/whois.hh"
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 #include "test/setup/fixtures.hh"
 #include "test/setup/fixtures_utils.hh"
 

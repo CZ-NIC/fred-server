@@ -21,14 +21,14 @@
  *  corba server implementation of registry notification
  */
 
-#include "src/libfred/registrable_object/domain/info_domain.hh"
-#include "src/libfred/object_state/get_object_states.hh"
-#include "src/libfred/object/object_state.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/contact_verification/django_email_format.hh"
+#include "libfred/registrable_object/domain/info_domain.hh"
+#include "libfred/object_state/get_object_states.hh"
+#include "libfred/object/object_state.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/contact_verification/django_email_format.hh"
 
-#include "src/util/db/query_param.hh"
-#include "src/util/idn_utils.hh"
+#include "util/db/query_param.hh"
+#include "util/idn_utils.hh"
 
 #include "src/backend/admin/notification/notification.hh"
 

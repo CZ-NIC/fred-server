@@ -39,7 +39,7 @@
 
 #include "src/util/setup_server_decl.hh"
 #include "src/util/time_clock.hh"
-#include "src/util/random_data_generator.hh"
+#include "util/random_data_generator.hh"
 #include "src/util/concurrent_queue.hh"
 
 

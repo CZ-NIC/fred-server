@@ -17,9 +17,9 @@
  */
 
 #include "src/backend/admin/contact/verification/test_impl/test_email_exists.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/registrable_object/contact/info_contact.hh"
-#include "src/libfred/registrable_object/contact/verification/enum_test_status.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/registrable_object/contact/info_contact.hh"
+#include "libfred/registrable_object/contact/verification/enum_test_status.hh"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/scoped_array.hpp>

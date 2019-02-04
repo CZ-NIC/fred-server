@@ -30,9 +30,9 @@
 #include "src/backend/epp/notification_data.hh"
 #include "src/backend/epp/session_data.hh"
 #include "src/backend/epp/keyset/info_keyset.hh"
-#include "src/libfred/registrable_object/keyset/info_keyset.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/util/log/context.hh"
+#include "libfred/registrable_object/keyset/info_keyset.hh"
+#include "libfred/opcontext.hh"
+#include "util/log/context.hh"
 
 #include <boost/format.hpp>
 #include <boost/format/free_funcs.hpp>

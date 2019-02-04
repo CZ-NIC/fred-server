@@ -20,19 +20,19 @@
 #define FIXTURES_HH_14EC41658E8F443DA4B9635BB3A07470
 
 
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/registrable_object/domain/create_domain.hh"
-#include "src/libfred/registrable_object/domain/info_domain.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/registrable_object/domain/create_domain.hh"
+#include "libfred/registrable_object/domain/info_domain.hh"
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/handle_corbanameservice_args.hh"
 #include "src/util/cfg/handle_createexpireddomain_args.hh"
 #include "src/util/corba_wrapper_decl.hh"
-#include "src/util/random_data_generator.hh"
+#include "util/random_data_generator.hh"
 #include "test/mockup/logger_client_dummy.hh"
 #include "test/setup/fixtures.hh"
 #include "test/setup/fixtures_utils.hh"
 
-#include "src/libfred/object_state/perform_object_state_request.hh"
+#include "libfred/object_state/perform_object_state_request.hh"
 
 #include <map>
 #include <set>

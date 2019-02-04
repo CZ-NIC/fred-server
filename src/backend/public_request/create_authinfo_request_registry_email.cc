@@ -25,14 +25,14 @@
 #include "src/backend/public_request/lock_request_type.hh"
 #include "src/backend/public_request/type/get_iface_of.hh"
 #include "src/backend/public_request/type/public_request_authinfo.hh"
-#include "src/libfred/object/get_id_of_registered.hh"
-#include "src/libfred/object/object_states_info.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/public_request/create_public_request.hh"
-#include "src/libfred/public_request/public_request_lock_guard.hh"
-#include "src/libfred/public_request/update_public_request.hh"
-#include "src/util/log/context.hh"
-#include "src/util/optional_value.hh"
+#include "libfred/object/get_id_of_registered.hh"
+#include "libfred/object/object_states_info.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/public_request/create_public_request.hh"
+#include "libfred/public_request/public_request_lock_guard.hh"
+#include "libfred/public_request/update_public_request.hh"
+#include "util/log/context.hh"
+#include "util/optional_value.hh"
 
 #include <algorithm>
 
@@ -95,27 +95,27 @@ unsigned long long create_authinfo_request_registry_email(
     }
     catch (const LibFred::UnknownObject& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw ObjectNotFound();
     }
     catch (const ObjectTransferProhibited& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw;
     }
     catch (const NoContactEmail& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw;
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("create_authinfo_request (registry) failed due to an unknown exception");
+        LOGGER.error("create_authinfo_request (registry) failed due to an unknown exception");
         throw;
     }
 }

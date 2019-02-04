@@ -1,8 +1,8 @@
 #ifndef PUBLIC_REQUEST_MOJEID_HH_B49E93ABF36F4D18A0E3190E6351A5AA
 #define PUBLIC_REQUEST_MOJEID_HH_B49E93ABF36F4D18A0E3190E6351A5AA
 
-#include "src/libfred/public_request/public_request.hh"
-#include "src/util/factory.hh"
+#include "src/deprecated/libfred/public_request/public_request.hh"
+#include "util/factory.hh"
 
 namespace CorbaConversion {
 namespace Admin {

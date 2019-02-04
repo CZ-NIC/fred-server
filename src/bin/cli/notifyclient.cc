@@ -36,7 +36,7 @@
 
 #include "src/bin/cli/commonclient.hh"
 #include "src/bin/cli/notifyclient.hh"
-#include "src/libfred/info_buffer.hh"
+#include "src/deprecated/libfred/info_buffer.hh"
 
 #include "src/util/cfg/faked_args.hh"
 #include "src/util/cfg/handle_args.hh"
@@ -44,17 +44,17 @@
 #include "src/util/cfg/handle_general_args.hh"
 #include "src/util/hp/handle_hpmail_args.hh"
 
-#include "src/util/map_at.hh"
+#include "util/map_at.hh"
 #include "src/util/subprocess.hh"
-#include "src/util/printable.hh"
+#include "util/printable.hh"
 #include "src/util/optys/handle_optys_mail_args.hh"
 #include "src/util/optys/upload_client.hh"
 #include "src/util/optys/download_client.hh"
 
 
-#include "src/libfred/db_settings.hh"
+#include "libfred/db_settings.hh"
 
-#include "src/libfred/notifier/process_one_notification_request.hh"
+#include "libfred/notifier/process_one_notification_request.hh"
 
 using namespace Database;
 
@@ -196,23 +196,23 @@ void NotifyClient::sms_send()
     {
         if(proc_letters.empty())
         {
-            LOGGER(PACKAGE).debug("NotifyClient::send_letters_impl: proc_letters is empty");
+            LOGGER.debug("NotifyClient::send_letters_impl: proc_letters is empty");
             return;
         }
         else
         {
-            LOGGER(PACKAGE).debug(std::string(
+            LOGGER.debug(std::string(
                 "NotifyClient::send_letters_impl: proc_letters size: ")
             + boost::lexical_cast<std::string>(proc_letters.size()));
         }
 
         try
         {
-            LOGGER(PACKAGE).info(
+            LOGGER.info(
                 "NotifyClient::send_letters_impl: init postservice upload");
             HPMail::set(hpmail_config);
 
-            LOGGER(PACKAGE).debug(boost::format("using login batch id: %1%") % std::string(hpmail_config.at("hp_login_batch_id")));
+            LOGGER.debug(boost::format("using login batch id: %1%") % std::string(hpmail_config.at("hp_login_batch_id")));
 
             for(unsigned i=0;i<proc_letters.size();i++)
             {
@@ -223,7 +223,7 @@ void NotifyClient::sms_send()
                 fileman->download(mp.file_id, smail.data);
 
                 const LibFred::Messages::PostalAddress &mp_a = mp.postal_address;
-                LOGGER(PACKAGE).debug(boost::format("NotifyClient::send_letters_impl: adding file (id=%1%) to batch, recipient is %2%")
+                LOGGER.debug(boost::format("NotifyClient::send_letters_impl: adding file (id=%1%) to batch, recipient is %2%")
                         % mp.file_id % boost::algorithm::join_if(boost::assign::list_of(mp_a.name)(mp_a.org)(mp_a.street1)(mp_a.street2)
                             (mp_a.street3)(mp_a.city)(mp_a.state)(mp_a.country), ", ", string_not_empty));
                 /* [](const std::string &i){ return !i.empty(); } */
@@ -236,13 +236,13 @@ void NotifyClient::sms_send()
             std::string msg = str(boost::format(
                 "NotifyClient::send_letters_impl: error occured (%1%)")
                 % ex.what());
-            LOGGER(PACKAGE).error(msg);
+            LOGGER.error(msg);
             std::cerr << msg << std::endl;
             new_status = "send_failed"; // set error status in database
         }
         catch (...) {
             std::string msg = "NotifyClient::send_letters_impl: unknown error occured";
-            LOGGER(PACKAGE).error(msg);
+            LOGGER.error(msg);
             std::cerr << msg << std::endl;
             new_status = "send_failed"; // set error status in database
         }
@@ -342,17 +342,17 @@ void NotifyClient::sms_send()
         DomesticForeignLetterBatcher batcher = std::for_each(proc_letters.begin(), proc_letters.end(),
                 DomesticForeignLetterBatcher(domestic_country_name));
 
-        LOGGER(PACKAGE).debug(boost::format("destination country letter distribution: domestic=%1% foreign=%2%")
+        LOGGER.debug(boost::format("destination country letter distribution: domestic=%1% foreign=%2%")
                 % batcher.get_domestic_letters().size() % batcher.get_foreign_letters().size());
 
-        LOGGER(PACKAGE).debug("sending domestic letters");
+        LOGGER.debug("sending domestic letters");
         hpmail_config["hp_login_batch_id"] = default_batch_id + hpmail_config["hp_login_batch_id_suffix_domestic_letters"];
         std::string new_status = "sent";
         send_letters_impl(fileman.get(), hpmail_config, batcher.get_domestic_letters(), new_status, batch_id);
         messages_manager->set_letter_status(batcher.get_domestic_letters(), new_status, batch_id,
                 comm_type, service_handle, max_attempts_limit);
 
-        LOGGER(PACKAGE).debug("sending foreign letters");
+        LOGGER.debug("sending foreign letters");
         hpmail_config["hp_login_batch_id"] = default_batch_id + hpmail_config["hp_login_batch_id_suffix_foreign_letters"];
         new_status = "sent";
         send_letters_impl(fileman.get(), hpmail_config, batcher.get_foreign_letters(), new_status, batch_id);
@@ -364,7 +364,7 @@ void NotifyClient::sms_send()
      {
         if(hpmail_config["hp_login_registered_letter_batch_id"].empty())
         {
-            LOGGER(PACKAGE).info(
+            LOGGER.info(
                     "NotifyClient::sendLetters: not sending registered letters");
             return;
         }
@@ -373,7 +373,7 @@ void NotifyClient::sms_send()
         std::string comm_type = "registered_letter";
         std::string service_handle = "POSTSERVIS";
 
-        LOGGER(PACKAGE).debug(std::string(
+        LOGGER.debug(std::string(
                 "NotifyClient::sendLetters: hp_login_registered_letter_batch_id ")
                 + hpmail_config["hp_login_registered_letter_batch_id"]);
 
@@ -387,17 +387,17 @@ void NotifyClient::sms_send()
         DomesticForeignLetterBatcher batcher = std::for_each(proc_reg_letters.begin(), proc_reg_letters.end(),
                 DomesticForeignLetterBatcher(domestic_country_name));
 
-        LOGGER(PACKAGE).debug(boost::format("destination country registered letter distribution: domestic=%1% foreign=%2%")
+        LOGGER.debug(boost::format("destination country registered letter distribution: domestic=%1% foreign=%2%")
                 % batcher.get_domestic_letters().size() % batcher.get_foreign_letters().size());
 
-        LOGGER(PACKAGE).debug("sending domestic registered letters");
+        LOGGER.debug("sending domestic registered letters");
         hpmail_config["hp_login_batch_id"] = default_batch_id + hpmail_config["hp_login_batch_id_suffix_domestic_letters"];
         std::string new_status = "sent";
         send_letters_impl(fileman.get(), hpmail_config, batcher.get_domestic_letters(), new_status, batch_id);
         messages_manager->set_letter_status(batcher.get_domestic_letters(), new_status, batch_id,
                 comm_type, service_handle, max_attempts_limit);
 
-        LOGGER(PACKAGE).debug("sending foreign registered letters");
+        LOGGER.debug("sending foreign registered letters");
         hpmail_config["hp_login_batch_id"] = default_batch_id + hpmail_config["hp_login_batch_id_suffix_foreign_letters"];
         new_status = "sent";
         send_letters_impl(fileman.get(), hpmail_config, batcher.get_foreign_letters(), new_status, batch_id);
@@ -418,7 +418,7 @@ void NotifyClient::sms_send()
       std::string service_handle = "MOBILEM";
       LibFred::Messages::SmsProcInfo proc_sms = messages_manager->load_sms_to_send(0, service_handle, 3);
       if(proc_sms.empty()) return;
-      LOGGER(PACKAGE).info("sms sending");
+      LOGGER.info("sms sending");
 
       for(unsigned i=0;i<proc_sms.size();i++)
       {
@@ -431,27 +431,27 @@ void NotifyClient::sms_send()
                   + " " + param_quote_by + mp.content + param_quote_by;
               if(system(command_with_params.c_str()))
               {
-                  LOGGER(PACKAGE).error(
+                  LOGGER.error(
                           std::string("NotifyClient::sendSMS error command: ")
                               + command_with_params + "failed.");
                   new_status = "send_failed"; // set error status
               }//if failed
               else
               {
-                  LOGGER(PACKAGE).info(
+                  LOGGER.info(
                           std::string("NotifyClient::sendSMS command: ")
                               + command_with_params + " OK");
               }//if ok
           }//try
           catch (std::exception& ex) {
               std::string msg = str(boost::format("error occured (%1%)") % ex.what());
-              LOGGER(PACKAGE).error(msg);
+              LOGGER.error(msg);
               std::cerr << msg << std::endl;
               new_status = "send_failed"; // set error status in database
           }
           catch (...) {
               std::string msg = "unknown error occured";
-              LOGGER(PACKAGE).error(msg);
+              LOGGER.error(msg);
               std::cerr << msg << std::endl;
               new_status = "send_failed"; // set error status in database
           }
@@ -473,7 +473,7 @@ void NotifyClient::sms_send()
       HPCfgMap hpmail_config = read_config_file<HandleHPMailArgs>(conf_file,
               CfgArgGroups::instance()->get_handler_ptr_by_type<HandleLoggingArgsGrp>()->get_log_config_dump());
 
-      LOGGER(PACKAGE).debug(boost::format("File to send %1% ") % filename);
+      LOGGER.debug(boost::format("File to send %1% ") % filename);
 
       std::ifstream infile(filename.c_str());
 
@@ -536,7 +536,7 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
           std::string err_msg(strerror(errno));
           std::string msg("chdir error : ");
           Logging::Manager::instance_ref()
-              .get(PACKAGE).error(msg+err_msg);
+              .error(msg+err_msg);
           throw std::runtime_error(msg+err_msg);
         }
 
@@ -575,7 +575,7 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
 
           if (proc_reg_letters.size() == 0)
           {
-              Logging::Manager::instance_ref().get(PACKAGE).debug("no registered letters found");
+              Logging::Manager::instance_ref().debug("no registered letters found");
 
               //get email from cfg
               std::string email = params.email;
@@ -635,7 +635,7 @@ void notify_registered_letters_manual_send_impl(const std::string& nameservice_h
             }
             catch (std::exception &ex)
             {
-                LOGGER(PACKAGE).error(boost::format("filemanager download: '%1%' error processing letter_id: %2% file_id: %3%") % ex.what()
+                LOGGER.error(boost::format("filemanager download: '%1%' error processing letter_id: %2% file_id: %3%") % ex.what()
                         % proc_reg_letters[i].letter_id % proc_reg_letters[i].file_id );
                 fm_failed_reg_letters.push_back(proc_reg_letters[i]);//save failed letter
                 proc_reg_letters.erase(proc_reg_letters.begin()+i);
@@ -1056,7 +1056,7 @@ void send_object_event_notification_emails_impl(std::shared_ptr<LibFred::Mailer:
             /* avoid loop by comitting the transaction and thus removing the problematic notification request */
             ctx.commit_transaction();
 
-            LOGGER(PACKAGE).error(
+            LOGGER.error(
                 "send_object_event_notification_emails_impl: failed to send letter "
                     "event: "                   + to_db_handle( e.failed_request_data.event.get_event() )   + " " +
                     "object_type: "             + to_db_handle( e.failed_request_data.event.get_type() )    + " " +
@@ -1071,7 +1071,7 @@ void send_object_event_notification_emails_impl(std::shared_ptr<LibFred::Mailer:
             throw std::runtime_error("send_object_event_notification_emails_impl: failed to send letter ");
 
         } catch(const Notification::FailedToLockRequest& e) {
-            LOGGER(PACKAGE).error(
+            LOGGER.error(
                 "unable to get data from notification queue - another process is running"
             );
 

@@ -9,10 +9,10 @@
 #include <boost/serialization/string.hpp>
 
 #include "src/util/db/query/query_old.hh"
-#include "src/util/types/data_types.hh"
+#include "util/types/data_types.hh"
 #include "src/util/db/query/sql_helper_objects.hh"
 #include "src/util/db/query/sql_operators.hh"
-#include "src/util/log/logger.hh"
+#include "util/log/logger.hh"
 
 #include "src/util/settings.hh"
 //#include "visitor.h"

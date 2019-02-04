@@ -19,8 +19,8 @@
 #ifndef BLOCK_UNBLOCK_HH_FC176C0453EF424088B10AC225C96498
 #define BLOCK_UNBLOCK_HH_FC176C0453EF424088B10AC225C96498
 
-#include "src/libfred/mailer.hh"
-#include "src/libfred/public_request/public_request_type_iface.hh"
+#include "libfred/mailer.hh"
+#include "libfred/public_request/public_request_type_iface.hh"
 
 namespace Fred {
 namespace Backend {

@@ -29,7 +29,7 @@
 #include <boost/date_time/gregorian/gregorian.hpp>
 
 #include "src/util/types/convert_str_base.hh"
-#include "src/util/base_exception.hh"
+#include "util/base_exception.hh"
 
 using namespace boost::posix_time;
 using namespace boost::gregorian;

@@ -16,7 +16,7 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/util/db/nullable.hh"
+#include "util/db/nullable.hh"
 
 #include <sstream>
 #include <stdexcept>

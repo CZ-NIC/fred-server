@@ -21,7 +21,7 @@
 #include "src/backend/epp/epp_response_failure.hh"
 #include "src/backend/epp/epp_result_code.hh"
 #include "src/backend/epp/epp_result_failure.hh"
-#include "src/util/db/param_query_composition.hh"
+#include "util/db/param_query_composition.hh"
 
 #include <cstddef>
 #include <stdexcept>

@@ -16,11 +16,11 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/libfred/registrar/create_registrar.hh"
-#include "src/libfred/registrar/zone_access/add_registrar_zone_access.hh"
-#include "src/libfred/registrar/zone_access/exceptions.hh"
-#include "src/libfred/zone/create_zone.hh"
-#include "src/util/random_data_generator.hh"
+#include "libfred/registrar/create_registrar.hh"
+#include "libfred/registrar/zone_access/add_registrar_zone_access.hh"
+#include "libfred/registrar/zone_access/exceptions.hh"
+#include "libfred/zone/create_zone.hh"
+#include "util/random_data_generator.hh"
 #include "test/libfred/registrar/util.hh"
 #include "test/libfred/registrar/zone_access/util.hh"
 #include "test/setup/fixtures.hh"

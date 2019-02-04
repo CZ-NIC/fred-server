@@ -26,11 +26,11 @@
 #include "src/backend/epp/exception.hh"
 #include "src/backend/epp/reason.hh"
 #include "src/backend/epp/impl/util.hh"
-#include "src/libfred/registrable_object/contact/check_contact.hh"
-#include "src/libfred/registrable_object/contact/create_contact.hh"
-#include "src/libfred/registrable_object/contact/info_contact.hh"
-#include "src/libfred/registrar/info_registrar.hh"
-#include "src/util/optional_value.hh"
+#include "libfred/registrable_object/contact/check_contact.hh"
+#include "libfred/registrable_object/contact/create_contact.hh"
+#include "libfred/registrable_object/contact/info_contact.hh"
+#include "libfred/registrar/info_registrar.hh"
+#include "util/optional_value.hh"
 
 #include <boost/optional.hpp>
 

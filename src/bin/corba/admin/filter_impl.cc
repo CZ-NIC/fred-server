@@ -9,11 +9,12 @@
 #include "src/bin/corba/admin/filter_impl.hh"
 #include "src/deprecated/util/log.hh"
 #include "src/deprecated/util/dbsql.hh"
-#include "src/libfred/notify.hh"
-#include "src/libfred/filter.hh"
+#include "src/deprecated/libfred/notify.hh"
+#include "src/deprecated/libfred/filter.hh"
 #include "src/bin/corba/mailer_manager.hh"
 
-#include "src/util/log/logger.hh"
+#include "src/util/types/null.hh"
+#include "util/log/logger.hh"
 
 class FilterBaseImpl : virtual public POA_ccReg::Filters::Base {
 protected:

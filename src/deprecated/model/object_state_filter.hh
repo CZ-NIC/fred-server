@@ -41,7 +41,7 @@ public:
 
   void serialize(SelectQuery& _sq, const Settings *_settings) {
     std::string history = (_settings ? _settings->get("filter.history") : "not_set");
-    LOGGER(PACKAGE).debug(boost::format("attribute `filter.history' is set to `%1%'")
+    LOGGER.debug(boost::format("attribute `filter.history' is set to `%1%'")
                                      % history);
     if (history == "off" || history == "not_set") {
       addValidTo().setNULL();

@@ -25,7 +25,7 @@
 #include "src/backend/epp/notification_data.hh"
 #include "src/backend/epp/session_data.hh"
 #include "src/backend/epp/session_lang.hh"
-#include "src/libfred/notifier/process_one_notification_request.hh"
+#include "libfred/notifier/process_one_notification_request.hh"
 
 #include <boost/test/unit_test.hpp>
 

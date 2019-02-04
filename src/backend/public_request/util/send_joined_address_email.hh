@@ -19,7 +19,7 @@
 #ifndef SEND_JOINED_ADDRESS_EMAIL_HH_AE7242E0D3EE4527ADDE0B27DE242FE7
 #define SEND_JOINED_ADDRESS_EMAIL_HH_AE7242E0D3EE4527ADDE0B27DE242FE7
 
-#include "src/libfred/mailer.hh"
+#include "libfred/mailer.hh"
 
 #include <memory>
 #include <string>

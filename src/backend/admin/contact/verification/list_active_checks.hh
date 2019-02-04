@@ -24,17 +24,17 @@
 #ifndef LIST_ACTIVE_CHECKS_HH_B5E8B3E8E6FD445D9E6DEB4EBDFEBACB
 #define LIST_ACTIVE_CHECKS_HH_B5E8B3E8E6FD445D9E6DEB4EBDFEBACB
 
-#include "src/libfred/registrable_object/contact/verification/create_check.hh"
-#include "src/libfred/registrable_object/contact/verification/create_test.hh"
-#include "src/libfred/registrable_object/contact/verification/enum_check_status.hh"
-#include "src/libfred/registrable_object/contact/verification/enum_test_status.hh"
-#include "src/libfred/registrable_object/contact/verification/enum_testsuite_handle.hh"
-#include "src/libfred/registrable_object/contact/verification/exceptions.hh"
-#include "src/libfred/registrable_object/contact/verification/info_check.hh"
-#include "src/libfred/registrable_object/contact/verification/list_checks.hh"
-#include "src/libfred/registrable_object/contact/verification/list_enum_objects.hh"
-#include "src/libfred/registrable_object/contact/verification/update_check.hh"
-#include "src/libfred/registrable_object/contact/verification/update_test.hh"
+#include "libfred/registrable_object/contact/verification/create_check.hh"
+#include "libfred/registrable_object/contact/verification/create_test.hh"
+#include "libfred/registrable_object/contact/verification/enum_check_status.hh"
+#include "libfred/registrable_object/contact/verification/enum_test_status.hh"
+#include "src/deprecated/libfred/registrable_object/contact/verification/enum_testsuite_handle.hh"
+#include "libfred/registrable_object/contact/verification/exceptions.hh"
+#include "libfred/registrable_object/contact/verification/info_check.hh"
+#include "libfred/registrable_object/contact/verification/list_checks.hh"
+#include "libfred/registrable_object/contact/verification/list_enum_objects.hh"
+#include "libfred/registrable_object/contact/verification/update_check.hh"
+#include "libfred/registrable_object/contact/verification/update_test.hh"
 #include "src/util/tz/get_psql_handle_of.hh"
 #include "src/util/tz/utc.hh"
 

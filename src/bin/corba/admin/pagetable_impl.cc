@@ -4,7 +4,7 @@
 #include "src/bin/corba/Admin.hh"
 
 #include "src/bin/corba/admin/pagetable_impl.hh"
-#include "src/util/log/logger.hh"
+#include "util/log/logger.hh"
 
 ccReg_PageTable_i::ccReg_PageTable_i()
   : aPageSize(10), aPage(0), filterType(), sorted_by_(-1), sorted_dir_(false), query_timeout(DEFAULT_QUERY_TIMEOUT),

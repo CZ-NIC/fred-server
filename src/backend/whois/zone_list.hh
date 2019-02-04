@@ -1,7 +1,7 @@
 #ifndef ZONE_LIST_HH_60F796AB501E4A08A32279D6D14F17B7
 #define ZONE_LIST_HH_60F796AB501E4A08A32279D6D14F17B7
 
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 #include <string>
 #include <vector>

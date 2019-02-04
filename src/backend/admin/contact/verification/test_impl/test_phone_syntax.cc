@@ -18,15 +18,15 @@
 
 #include "src/backend/admin/contact/verification/test_impl/test_phone_syntax.hh"
 
-#include "src/libfred/registrable_object/contact/check_contact.hh"
-#include "src/libfred/registrable_object/contact/copy_contact.hh"
-#include "src/libfred/registrable_object/contact/create_contact.hh"
-#include "src/libfred/registrable_object/contact/delete_contact.hh"
-#include "src/libfred/registrable_object/contact/info_contact.hh"
-#include "src/libfred/registrable_object/contact/info_contact_diff.hh"
-#include "src/libfred/registrable_object/contact/merge_contact.hh"
-#include "src/libfred/registrable_object/contact/update_contact.hh"
-#include "src/libfred/registrable_object/contact/verification/enum_test_status.hh"
+#include "libfred/registrable_object/contact/check_contact.hh"
+#include "libfred/registrable_object/contact/copy_contact.hh"
+#include "libfred/registrable_object/contact/create_contact.hh"
+#include "libfred/registrable_object/contact/delete_contact.hh"
+#include "libfred/registrable_object/contact/info_contact.hh"
+#include "libfred/registrable_object/contact/info_contact_diff.hh"
+#include "libfred/registrable_object/contact/merge_contact.hh"
+#include "libfred/registrable_object/contact/update_contact.hh"
+#include "libfred/registrable_object/contact/verification/enum_test_status.hh"
 
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>

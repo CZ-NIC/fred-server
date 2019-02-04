@@ -2,8 +2,8 @@
 #define CORBA_CONVERSIONS_NULLABLE_TYPES_HH_B09E37E52D7B440DA9714F6AE9769442
 
 #include "src/bin/corba/NullableTypes.hh"
-#include "src/util/db/nullable.hh"
-#include "src/util/optional_value.hh"
+#include "util/db/nullable.hh"
+#include "util/optional_value.hh"
 
 /**
  *  @file

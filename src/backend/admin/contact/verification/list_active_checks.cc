@@ -1,6 +1,6 @@
 #include "src/backend/admin/contact/verification/list_active_checks.hh"
 
-#include "src/util/log/context.hh"
+#include "util/log/context.hh"
 
 #include <boost/assign/list_of.hpp>
 

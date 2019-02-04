@@ -2,12 +2,12 @@
 
 #include "src/backend/whois/zone_list.hh"
 #include "src/backend/whois/domain_expiration_datetime.hh"
-#include "src/libfred/registrable_object/domain/create_domain.hh"
-#include "src/libfred/registrable_object/domain/info_domain.hh"
-#include "src/libfred/registrable_object/domain/update_domain.hh"
-#include "src/libfred/registrable_object/domain/transfer_domain.hh"
-#include "src/libfred/object_state/perform_object_state_request.hh"
-#include "src/util/optional_value.hh"
+#include "libfred/registrable_object/domain/create_domain.hh"
+#include "libfred/registrable_object/domain/info_domain.hh"
+#include "libfred/registrable_object/domain/update_domain.hh"
+#include "libfred/registrable_object/domain/transfer_domain.hh"
+#include "libfred/object_state/perform_object_state_request.hh"
+#include "util/optional_value.hh"
 
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <boost/foreach.hpp>

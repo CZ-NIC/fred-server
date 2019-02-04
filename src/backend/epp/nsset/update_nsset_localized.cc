@@ -30,7 +30,7 @@
 #include "src/backend/epp/nsset/update_nsset_config_data.hh"
 #include "src/backend/epp/nsset/update_nsset_input_data.hh"
 #include "src/backend/epp/nsset/update_nsset.hh"
-#include "src/util/log/context.hh"
+#include "util/log/context.hh"
 
 #include <boost/format.hpp>
 #include <boost/format/free_funcs.hpp>

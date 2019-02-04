@@ -31,9 +31,8 @@
 #include "src/deprecated/util/timeclock.hh" // for time profiler
 #include "src/deprecated/util/pqsql.hh"
 
-#include "src/deprecated/util/log.hh" // logger via syslog
-#include "src/util/log/logger.hh"
-// constructor 
+#include "util/log/logger.hh"
+
 PQ::PQ()
 {
 #ifdef TIMECLOCK
@@ -42,7 +41,6 @@ PQ::PQ()
   result = NULL;
 }
 
-// destructor
 PQ::~PQ()
 {
 #ifdef TIMECLOCK
@@ -59,26 +57,25 @@ static void noActionNoticeReceiver(
 bool PQ::OpenDatabase(
   const char *conninfo)
 {
-
-  LOG( NOTICE_LOG , "PQ: connectdb  %s" , conninfo);
+  LOG<Logging::Log::EventImportance::notice>( "PQ: connectdb  %s" , conninfo);
   result = NULL;
   connection = PQconnectdb(conninfo);
 
   // Check to see that the backend connection was successfully made 
   if (PQstatus(connection) != CONNECTION_OK) {
-    LOG( ALERT_LOG , "Connection to database failed: %s",
+    LOG<Logging::Log::EventImportance::alert>( "Connection to database failed: %s",
         PQerrorMessage(connection));
     PQfinish(connection);
     connection = NULL;
     return false;
   } else {
-    LOG( NOTICE_LOG , "Database connection OK user %s host %s port %s DB %s" ,
+    LOG<Logging::Log::EventImportance::notice>( "Database connection OK user %s host %s port %s DB %s" ,
         PQuser(connection), PQhost(connection),
         PQport(connection), PQdb(connection));
 
 #ifdef ENCODING
     SetEncoding( ENCODING );
-    LOG( NOTICE_LOG , "Database set client encoding %s" , ENCODING );
+    LOG<Logging::Log::EventImportance::notice>( "Database set client encoding %s" , ENCODING );
 #endif 
 
     // according to http://www.postgresql.org/docs/8.1/interactive/libpq-notice-processing.html
@@ -114,7 +111,7 @@ const char * PQ::GetFieldValueName(
   col = PQfnumber(result, fname);
 
   if (col == -1) {
-    LOG( WARNING_LOG , "UNKNOW FieldName: %s" , fname );
+    LOG<Logging::Log::EventImportance::warning>( "UNKNOW FieldName: %s" , fname );
     return "";
   } else
     return GetFieldValue(row, col);
@@ -153,14 +150,14 @@ const char * PQ::GetFieldValue(
   if (row < nRows && col < nCols) {
 
     if (PQgetisnull(result, row, col) ) {
-      //LOG( SQL_LOG , "RETURN [%d,%d] NULL" , row, col );
+      //LOG<Logging::Log::EventImportance::debug>( "RETURN [%d,%d] NULL" , row, col );
       return "";
     } else {
-      //LOG( SQL_LOG , "RETURN [%d,%d] , %s" , row , col , PQgetvalue(result, row, col ) );
+      //LOG<Logging::Log::EventImportance::debug>( "RETURN [%d,%d] , %s" , row , col , PQgetvalue(result, row, col ) );
       return PQgetvalue(result, row, col);
     }
   } else {
-    LOG( ERROR_LOG , "NOT FOUND return NULL" );
+    LOG<Logging::Log::EventImportance::err>( "NOT FOUND return NULL" );
     return "";
   }
 }
@@ -200,14 +197,14 @@ bool PQ::ExecSelect(
   timeclock_begin();
 #endif
 
-  LOG( SQL_LOG , "SELECT: [%s]" , sqlString );
+  LOG<Logging::Log::EventImportance::debug>( "SELECT: [%s]" , sqlString );
 
   FreeSelect();
   result = PQexec(connection, sqlString);
 
   if (PQresultStatus(result) != PGRES_TUPLES_OK) {
-    LOG( ERROR_LOG , "SELECT [%s]failed: %s", sqlString , PQerrorMessage(connection));
-    LOG( ERROR_LOG , "SQL ERROR: %s" , PQresultErrorMessage(result) );
+    LOG<Logging::Log::EventImportance::err>( "SELECT [%s]failed: %s", sqlString , PQerrorMessage(connection));
+    LOG<Logging::Log::EventImportance::err>( "SQL ERROR: %s" , PQresultErrorMessage(result) );
     FreeSelect();
     return false;
   }
@@ -215,7 +212,7 @@ bool PQ::ExecSelect(
   nRows = PQntuples(result);
   nCols = PQnfields(result);
 
-  LOG( SQL_LOG , "result number of rows (tuples) %d and nfields %d" , nRows , nCols );
+  LOG<Logging::Log::EventImportance::debug>( "result number of rows (tuples) %d and nfields %d" , nRows , nCols );
 
 #ifdef TIMECLOCK
   timeclock_end();
@@ -227,7 +224,7 @@ bool PQ::ExecSelect(
 // free memory after SELECT and clear result 
 void PQ::FreeSelect()
 {
-  LOG( SQL_LOG , "Free  select" );
+  LOG<Logging::Log::EventImportance::debug>( "Free  select" );
   if(result != NULL) {
       PQclear(result);
       result = NULL;
@@ -236,7 +233,7 @@ void PQ::FreeSelect()
 
 void PQ::Disconnect()
 {
-  LOG( NOTICE_LOG , "PQ: finish");
+  LOG<Logging::Log::EventImportance::notice>( "PQ: finish");
   if(connection != NULL) {
       PQfinish(connection);
       connection = NULL;
@@ -261,7 +258,7 @@ bool PQ::Escape(
 
   len = PQescapeString(str, String, length);
 
-  LOG( SQL_LOG , "escape len  %d [%s]" , (int ) len , str );
+  LOG<Logging::Log::EventImportance::debug>( "escape len  %d [%s]" , (int ) len , str );
 
   return true;
 }
@@ -276,28 +273,28 @@ bool PQ::ExecSQL(
     timeclock_begin();
 #endif
 
-    LOG( SQL_LOG , "EXECSQL: [%s]" , sqlString );
+    LOG<Logging::Log::EventImportance::debug>( "EXECSQL: [%s]" , sqlString );
     res = PQexec(connection, sqlString);
 
-    LOG( SQL_LOG , "result:  %s %s" , PQresStatus( PQresultStatus(res) ) ,PQcmdStatus( res ) );
+    LOG<Logging::Log::EventImportance::debug>( "result:  %s %s" , PQresStatus( PQresultStatus(res) ) ,PQcmdStatus( res ) );
 #ifdef TIMECLOCK
     timeclock_end();
 #endif
 
     if (PQresultStatus(res) == PGRES_COMMAND_OK) {
-      LOG( SQL_LOG , "PQcmdTuples: %s" , PQcmdTuples( res) );
+      LOG<Logging::Log::EventImportance::debug>( "PQcmdTuples: %s" , PQcmdTuples( res) );
       PQclear(res);
       res = NULL;
       return true;
     } else {
-      LOG( ERROR_LOG , "EXECSQL: SQL ERROR: %s" , PQresultErrorMessage(res) );
+      LOG<Logging::Log::EventImportance::err>( "EXECSQL: SQL ERROR: %s" , PQresultErrorMessage(res) );
       PQclear(res);
       res = NULL;
       return false;
     }
 
   } else {
-    LOG( SQL_LOG , "EXECSQL:  empty string return OK" );
+    LOG<Logging::Log::EventImportance::debug>( "EXECSQL:  empty string return OK" );
     return true;
   }
 

@@ -21,10 +21,10 @@
  *  implementation of registrar interface
  */
 
-#include "src/libfred/db_settings.hh"
+#include "libfred/db_settings.hh"
 #include "src/util/corba_wrapper.hh"
-#include "src/util/log/logger.hh"
-#include "src/util/log/context.hh"
+#include "util/log/logger.hh"
+#include "util/log/context.hh"
 #include "src/bin/corba/connection_releaser.hh"
 #include "src/util/setup_server.hh"
 
@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
             for (std::string config_item = AccumulatedConfig::get_instance().pop_front();
                 !config_item.empty(); config_item = AccumulatedConfig::get_instance().pop_front())
             {
-                Logging::Manager::instance_ref().get(PACKAGE).debug(config_item);
+                Logging::Manager::instance_ref().debug(config_item);
             }
         }
 
@@ -126,14 +126,14 @@ int main(int argc, char *argv[])
                 rifd_args_ptr->rifd_contact_data_filter);
 
         // create session use values from config
-        LOGGER(PACKAGE).info(boost::format(
+        LOGGER.info(boost::format(
                 "sessions max: %1%; timeout: %2%")
                 % rifd_args_ptr->rifd_session_max
                 % rifd_args_ptr->rifd_session_timeout);
 
         ccReg::timestamp_var ts;
         char* const version = myccReg_EPP_i->version(ts);
-        LOGGER(PACKAGE).info(boost::format("RIFD server version: %1% (%2%)")
+        LOGGER.info(boost::format("RIFD server version: %1% (%2%)")
                                               % version
                                               % ts);
         CORBA::string_free(version);
@@ -141,14 +141,14 @@ int main(int argc, char *argv[])
         // load error messages to memory
         if (myccReg_EPP_i->LoadErrorMessages() <= 0)
         {
-            LOGGER(PACKAGE).alert("database error: load error messages");
+            LOGGER.alert("database error: load error messages");
             std::exit(-6);
         }
 
         // load reason messages to memory
         if (myccReg_EPP_i->LoadReasonMessages() <= 0)
         {
-            LOGGER(PACKAGE).alert("database error: load reason messages" );
+            LOGGER.alert("database error: load reason messages" );
             std::exit(-7);
         }
 

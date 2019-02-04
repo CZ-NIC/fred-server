@@ -20,8 +20,8 @@
 #define DNS_HOST_INPUT_HH_A3F8D3477B9140BBA679D6745244ADD8
 
 #include "src/backend/epp/session_lang.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/util/db/nullable.hh"
+#include "libfred/opcontext.hh"
+#include "util/db/nullable.hh"
 
 #include <boost/asio/ip/address.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>

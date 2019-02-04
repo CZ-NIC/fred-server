@@ -26,9 +26,9 @@
 #include "src/bin/corba/util/corba_conversions_int.hh"
 #include "src/bin/corba/util/corba_conversions_string.hh"
 #include "src/util/corba_conversion.hh"
-#include "src/util/db/nullable.hh"
-#include "src/util/map_at.hh"
-#include "src/util/optional_value.hh"
+#include "util/db/nullable.hh"
+#include "util/map_at.hh"
+#include "util/optional_value.hh"
 
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/optional.hpp>

@@ -1,12 +1,12 @@
 #include "src/backend/admin/contact/verification/fill_check_queue.hh"
 
 #include "src/backend/admin/contact/verification/enqueue_check.hh"
-#include "src/libfred/object_state/object_state_name.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/registrable_object/contact/verification/enum_check_status.hh"
-#include "src/libfred/registrable_object/contact/verification/enum_testsuite_handle.hh"
-#include "src/libfred/registrable_object/contact/verification/info_check.hh"
-#include "src/util/log/context.hh"
+#include "src/deprecated/libfred/object_state/object_state_name.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/registrable_object/contact/verification/enum_check_status.hh"
+#include "src/deprecated/libfred/registrable_object/contact/verification/enum_testsuite_handle.hh"
+#include "libfred/registrable_object/contact/verification/info_check.hh"
+#include "util/log/context.hh"
 
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/algorithm/string/join.hpp>

@@ -19,7 +19,7 @@
 #ifndef UTIL_HH_270858D21B734FB1A4609A25EB96AAA9
 #define UTIL_HH_270858D21B734FB1A4609A25EB96AAA9
 
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 #include "test/setup/fixtures.hh"
 
 #include <boost/test/test_tools.hpp>

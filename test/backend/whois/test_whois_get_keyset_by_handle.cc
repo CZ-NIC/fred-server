@@ -1,6 +1,6 @@
 #include "test/backend/whois/fixture_common.hh"
 
-#include "src/libfred/registrable_object/keyset/keyset_dns_key.hh"
+#include "libfred/registrable_object/keyset/keyset_dns_key.hh"
 
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 

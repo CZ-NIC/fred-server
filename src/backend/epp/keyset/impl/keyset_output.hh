@@ -19,9 +19,9 @@
 #ifndef KEYSET_OUTPUT_HH_9A6DDDEE23EE40D2A15877A699B5EE90
 #define KEYSET_OUTPUT_HH_9A6DDDEE23EE40D2A15877A699B5EE90
 
-#include "src/libfred/registrable_object/keyset/info_keyset_data.hh"
+#include "libfred/registrable_object/keyset/info_keyset_data.hh"
 #include "src/backend/epp/keyset/info_keyset_output_data.hh"
-#include "src/libfred/object_state/get_object_states.hh"
+#include "libfred/object_state/get_object_states.hh"
 
 #include <vector>
 

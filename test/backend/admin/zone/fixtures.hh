@@ -19,10 +19,10 @@
 #ifndef FIXTURES_HH_174ECEF52C4A4397958E5FC02ED3817F
 #define FIXTURES_HH_174ECEF52C4A4397958E5FC02ED3817F
 
-#include "src/libfred/object_state/perform_object_state_request.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/zone/create_zone.hh"
-#include "src/util/random_data_generator.hh"
+#include "libfred/object_state/perform_object_state_request.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/zone/create_zone.hh"
+#include "util/random_data_generator.hh"
 #include "test/setup/fixtures.hh"
 #include "test/setup/fixtures_utils.hh"
 

@@ -19,7 +19,7 @@
 #include "src/backend/epp/contact/impl/cznic/update_contact_data_filter.hh"
 #include "src/backend/epp/contact/util.hh"
 
-#include "src/libfred/object/object_states_info.hh"
+#include "libfred/object/object_states_info.hh"
 
 #include <stdexcept>
 #include <type_traits>

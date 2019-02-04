@@ -20,8 +20,8 @@
 #define POLL_REQUEST_LOCALIZED_HH_D06712522E9B4963A7287274A85A2F9D
 
 #include "src/backend/epp/session_lang.hh"
-#include "src/util/decimal/decimal.hh"
-#include "src/libfred/opcontext.hh"
+#include "util/decimal/decimal.hh"
+#include "libfred/opcontext.hh"
 #include "src/backend/epp/epp_response_success_localized.hh"
 #include "src/backend/epp/poll/poll_request.hh"
 

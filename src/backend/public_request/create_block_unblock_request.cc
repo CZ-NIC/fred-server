@@ -22,14 +22,14 @@
 #include "src/backend/public_request/get_id_of_registered_object.hh"
 #include "src/backend/public_request/type/get_iface_of.hh"
 #include "src/backend/public_request/type/public_request_block_unblock.hh"
-#include "src/libfred/object/get_id_of_registered.hh"
-#include "src/libfred/object/object_states_info.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/public_request/create_public_request.hh"
-#include "src/libfred/public_request/public_request_lock_guard.hh"
-#include "src/libfred/public_request/update_public_request.hh"
-#include "src/util/log/context.hh"
-#include "src/util/optional_value.hh"
+#include "libfred/object/get_id_of_registered.hh"
+#include "libfred/object/object_states_info.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/public_request/create_public_request.hh"
+#include "libfred/public_request/public_request_lock_guard.hh"
+#include "libfred/public_request/update_public_request.hh"
+#include "util/log/context.hh"
+#include "util/optional_value.hh"
 
 namespace Fred {
 namespace Backend {
@@ -149,47 +149,47 @@ unsigned long long create_block_unblock_request(
     }
     catch (const LibFred::UnknownObject& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw ObjectNotFound();
     }
     catch (const OperationProhibited& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw;
     }
     catch (const ObjectAlreadyBlocked& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw;
     }
     catch (const ObjectNotBlocked& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw;
     }
     catch (const HasDifferentBlock& e)
     {
-        LOGGER(PACKAGE).info(e.what());
+        LOGGER.info(e.what());
         throw;
     }
     catch (const LibFred::CreatePublicRequest::Exception& e)
     {
         if (e.is_set_wrong_email())
         {
-            LOGGER(PACKAGE).info(boost::diagnostic_information(e));
+            LOGGER.info(boost::diagnostic_information(e));
             throw InvalidContactEmail();
         }
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw;
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER.error(e.what());
         throw;
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("Unknown error");
+        LOGGER.error("Unknown error");
         throw;
     }
 }

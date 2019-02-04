@@ -19,7 +19,7 @@
 #ifndef DOMAIN_ENUM_VALIDATION_HH_DCB9A66C2D764A84863FBFAA5ADB7651
 #define DOMAIN_ENUM_VALIDATION_HH_DCB9A66C2D764A84863FBFAA5ADB7651
 
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <stdexcept>
 

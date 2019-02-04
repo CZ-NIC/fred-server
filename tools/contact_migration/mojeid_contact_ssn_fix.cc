@@ -1,8 +1,9 @@
-#include <iostream>
-#include "src/libfred/db_settings.hh"
-#include "src/libfred/registrable_object/contact/update_contact.hh"
+#include "libfred/db_settings.hh"
+#include "libfred/registrable_object/contact/update_contact.hh"
 #include "src/util/csv_parser.hh"
 
+#include <cstdlib>
+#include <iostream>
 
 int main(int argc, char *argv[])
 {
@@ -19,7 +20,7 @@ int main(int argc, char *argv[])
         const std::string registrar_handle(argv[3]);
         const std::string file_name(argv[4]);
 
-        Database::Manager::init(new Database::ConnectionFactory(conn_info));
+        Database::emplace_default_manager<Database::StandaloneManager>(conn_info);
 
         std::ifstream input_file_stream;
         input_file_stream.open(file_name.c_str(), std::ios::in);
@@ -105,9 +106,11 @@ int main(int argc, char *argv[])
             }
         }
         ctx.commit_transaction();
+        return EXIT_SUCCESS;
     }
-    catch (const std::exception &_e)
+    catch (const std::exception& e)
     {
-        std::cerr << "Error: " << _e.what() << std::endl;
+        std::cerr << "Error: " << e.what() << std::endl;
+        return EXIT_SUCCESS;
     }
 }

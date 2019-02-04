@@ -34,7 +34,7 @@
 #include "src/backend/epp/notification_data.hh"
 #include "src/backend/epp/impl/util.hh"
 
-#include "src/util/log/context.hh"
+#include "util/log/context.hh"
 
 #include <boost/format/free_funcs.hpp>
 

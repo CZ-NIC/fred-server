@@ -41,18 +41,18 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/bind.hpp>
 
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 #include "src/util/subprocess.hh"
-#include "src/util/printable.hh"
-#include "src/util/util.hh"
+#include "util/printable.hh"
+#include "util/util.hh"
 
 #include "src/util/csv_parser.hh"
 
 #include "config.h"
 
 #ifdef HAVE_LOGGER
-#include "src/util/log/logger.hh"
+#include "util/log/logger.hh"
 #endif
 
 #include "src/util/optys/download_client.hh"
@@ -248,7 +248,7 @@
         enum { COMMAND_LIFETIME_MAX = 3600 };// 3600s = 1hour
         do
         {
-            LOGGER(PACKAGE).debug("download_command: rsync");
+            LOGGER.debug("download_command: rsync");
             const SubProcessOutput output = download_command.run_with_path(COMMAND_LIFETIME_MAX);
             if (!output.stderr.empty() || !output.succeeded())
             {
@@ -272,7 +272,7 @@
             const std::string remote_command = "rm -f " + remote_data_dir_ +  "/" + (*ci);
             const std::string local_command = "ssh \"" + ssh_account + "\" \"" + remote_command + "\"";
 
-            LOGGER(PACKAGE).debug("remove_downloaded_file_command: " + local_command);
+            LOGGER.debug("remove_downloaded_file_command: " + local_command);
 
             const SubProcessOutput output = Cmd::Executable("ssh")(ssh_account)(remote_command)
                                                 .run_with_path(COMMAND_LIFETIME_MAX);

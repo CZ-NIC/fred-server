@@ -19,9 +19,9 @@
 #ifndef CONTACT_OUTPUT_HH_423C3E44464D4CB2AF91BA42D101450F
 #define CONTACT_OUTPUT_HH_423C3E44464D4CB2AF91BA42D101450F
 
-#include "src/libfred/registrable_object/contact/info_contact_data.hh"
+#include "libfred/registrable_object/contact/info_contact_data.hh"
 #include "src/backend/epp/contact/info_contact.hh"
-#include "src/libfred/object_state/get_object_states.hh"
+#include "libfred/object_state/get_object_states.hh"
 
 #include <vector>
 

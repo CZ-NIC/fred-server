@@ -19,7 +19,7 @@
 #ifndef MOJEID_IMPL_DATA_HH_6021A798220F424AAA6327B3E2F0C458
 #define MOJEID_IMPL_DATA_HH_6021A798220F424AAA6327B3E2F0C458
 
-#include "src/util/db/nullable.hh"
+#include "util/db/nullable.hh"
 #include <sstream>
 
 namespace Fred {

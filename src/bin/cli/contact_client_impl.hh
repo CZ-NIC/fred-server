@@ -41,16 +41,16 @@
 #include "src/bin/cli/contactclient.hh"
 #include "src/bin/cli/handle_adminclientselection_args.hh"
 #include "src/bin/corba/logger_client_impl.hh"
-#include "src/libfred/documents.hh"
-#include "src/libfred/mailer.hh"
-#include "src/libfred/messages/messages_impl.hh"
-#include "src/libfred/registrar/get_registrar_handles.hh"
-#include "src/libfred/reminder.hh"
+#include "src/deprecated/libfred/documents.hh"
+#include "libfred/mailer.hh"
+#include "src/deprecated/libfred/messages/messages_impl.hh"
+#include "libfred/registrar/get_registrar_handles.hh"
+#include "src/deprecated/libfred/reminder.hh"
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/handle_corbanameservice_args.hh"
 #include "src/util/cfg/handle_database_args.hh"
 #include "src/util/cfg/handle_registry_args.hh"
-#include "src/util/log/context.hh"
+#include "util/log/context.hh"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>

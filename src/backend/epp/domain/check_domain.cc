@@ -22,12 +22,12 @@
 #include "src/backend/epp/epp_response_failure.hh"
 #include "src/backend/epp/epp_result_code.hh"
 #include "src/backend/epp/epp_result_failure.hh"
-#include "src/libfred/registrable_object/domain/check_domain.hh"
-#include "src/libfred/registrable_object/domain/domain.hh"
-#include "src/libfred/registrable_object/domain/domain_name.hh"
-#include "src/libfred/object/object_type.hh"
-#include "src/libfred/registrar/info_registrar.hh"
-#include "src/util/idn_utils.hh"
+#include "libfred/registrable_object/domain/check_domain.hh"
+#include "libfred/registrable_object/domain/domain.hh"
+#include "libfred/registrable_object/domain/domain_name.hh"
+#include "libfred/object/object_type.hh"
+#include "libfred/registrar/info_registrar.hh"
+#include "util/idn_utils.hh"
 
 #include <boost/foreach.hpp>
 

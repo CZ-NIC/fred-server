@@ -4,7 +4,7 @@
 #include "src/bin/corba/Admin.hh"
 
 #include "src/bin/corba/nameservice.hh"
-#include "src/libfred/invoicing/invoice.hh"
+#include "src/deprecated/libfred/invoicing/invoice.hh"
 
 #include <string>
 

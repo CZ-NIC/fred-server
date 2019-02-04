@@ -1,65 +1,55 @@
-#include <iostream>
-#include <vector>
-#include <algorithm>
+#include "util/log/logger.hh"
+#include "util/log/context.hh"
 
-#include "src/util/log/logger.hh"
-#include "src/util/log/context.hh"
+#include "util/db/database.hh"
+#include "util/types/datetime.hh"
 
-#include "src/util/db/database.hh"
-#include "src/util/types/datetime.hh"
+#include "src/deprecated/libfred/db_settings.hh"
 
 #include <boost/thread/thread.hpp>
 #include <boost/bind.hpp>
 
-namespace Database {
-  typedef Factory::Simple<PSQLConnection> ConnectionFactory;
-  typedef Manager_<ConnectionFactory>     Manager;
+#include <cstdlib>
+#include <iostream>
+#include <vector>
+#include <algorithm>
 
-  typedef Manager::connection_type        Connection;
-  typedef Manager::transaction_type       Transaction;
-  typedef Manager::result_type            Result;
-  typedef Manager::sequence_type          Sequence;
-  typedef Manager::row_type               Row;
-}
-
-
-struct TestPooler {
-public:
-  TestPooler(Database::Manager *p, int i) : pool_(p), id_(i) { }
-  void operator()() {
+struct TestPooler
+{
+  TestPooler(int i) : id_(i) { }
+  void operator()()
+  {
     Logging::Context ctx(str(boost::format("threadid-%1%") % id_));
 
-    try {
-    std::unique_ptr<Database::Connection> c(pool_->acquire());
-    c->exec("SELECT * FROM object_registry");
+    try
+    {
+        Database::Manager::acquire().exec("SELECT * FROM object_registry");
     }
-    catch(...) {
-      LOGGER(PACKAGE).error("no free connection");
+    catch (...)
+    {
+      LOGGER.error("no free connection");
     }
   }
 
-  Database::Manager *pool_;
   int id_;
 };
 
+int main()
+{
+  try
+  {
+    LOGGER.add_handler_of<Logging::Log::Device::console>(Logging::Log::EventImportance::trace);
 
-int main() {
-  try {
-    using namespace Database;
-
-    Logging::Manager::instance_ref().get(PACKAGE).addHandler(Logging::Log::LT_CONSOLE); 
-    Logging::Manager::instance_ref().get(PACKAGE).setLevel(Logging::Log::LL_TRACE);
-
-    Database::Manager *pool = new Database::Manager(new ConnectionFactory("host=localhost dbname=fred user=fred"));
+    Database::Manager::init(new Database::Factory::Simple<Database::PSQLConnection>(
+            std::string("host=localhost dbname=fred user=fred")));
 
     boost::thread_group tg;
-    for (unsigned i = 0; i < 50; ++i) {
-      TestPooler tp(pool, i);
+    for (unsigned i = 0; i < 50; ++i)
+    {
+      TestPooler tp(i);
       tg.create_thread(tp);
     }
     tg.join_all();
-
-    delete pool;
 
     //  try {
     //    Connection *c = pool.acquire();
@@ -129,13 +119,17 @@ int main() {
     //    std::cout << *it3 << std::endl;
     //  }
 
-    return 0;
+    return EXIT_SUCCESS;
   }
-  catch (std::exception &_e) {
-    std::cerr << "error - exception occured! (" << _e.what() << ")" << std::endl;
+  catch (const std::exception& e)
+  {
+    std::cerr << "error - exception occured! (" << e.what() << ")" << std::endl;
+    return EXIT_SUCCESS;
   }
-  catch (...) {
+  catch (...)
+  {
     std::cerr << "error - exception occured!" << std::endl;
+    return EXIT_SUCCESS;
   }
 }
 

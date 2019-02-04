@@ -78,6 +78,8 @@ docker:server:centos:
     - if [ -e pr-version/devel/$CI_BUILD_REF_NAME.conf ]; then IDL_BRANCH=$(python -c "import json;obj=json.loads(open('pr-version/devel/${CI_BUILD_REF_NAME}.conf').read());print obj.get('idl',{}).get('revision', 'master')"); else IDL_BRANCH="master"; fi
     # get idl repository and checkout corresponding branch
     - git clone git@gitlab.office.nic.cz:fred/idl.git --single-branch --depth 1 --branch $IDL_BRANCH
+    - git submodule sync --recursive
+    - git submodule update --init --recursive
 
 build:ubuntu:amd64:
   <<: *ubuntu_16_04

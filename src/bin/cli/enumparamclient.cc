@@ -18,7 +18,7 @@
 
 #include "src/bin/cli/commonclient.hh"
 #include "src/bin/cli/enumparamclient.hh"
-#include "src/libfred/db_settings.hh"
+#include "libfred/db_settings.hh"
 
 #include <string>
 #include <vector>

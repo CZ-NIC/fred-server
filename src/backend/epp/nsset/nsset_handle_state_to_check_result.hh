@@ -22,9 +22,9 @@
 #include <stdexcept>
 
 #include "src/backend/epp/nsset/nsset_handle_registration_obstruction.hh"
-#include "src/libfred/registrable_object/nsset/handle_state.hh"
+#include "libfred/registrable_object/nsset/handle_state.hh"
 
-#include "src/util/db/nullable.hh"
+#include "util/db/nullable.hh"
 
 namespace Epp {
 namespace Nsset {

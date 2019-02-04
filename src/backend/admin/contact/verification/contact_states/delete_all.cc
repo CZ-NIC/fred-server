@@ -1,9 +1,10 @@
 #include "src/backend/admin/contact/verification/contact_states/delete_all.hh"
 #include "src/backend/admin/contact/verification/contact_states/enum.hh"
-#include "src/libfred/object_state/cancel_object_state_request_id.hh"
+#include "src/deprecated/libfred/db_settings.hh"
+#include "libfred/object_state/cancel_object_state_request_id.hh"
 
 // legacy
-#include "src/libfred/object_states.hh"
+#include "src/deprecated/libfred/object_states.hh"
 
 #include <boost/foreach.hpp>
 

@@ -24,7 +24,7 @@
 #include "src/backend/epp/nsset/create_nsset_localized_response.hh"
 #include "src/backend/epp/notification_data.hh"
 #include "src/backend/epp/session_data.hh"
-#include "src/util/optional_value.hh"
+#include "util/optional_value.hh"
 
 namespace Epp {
 namespace Nsset {

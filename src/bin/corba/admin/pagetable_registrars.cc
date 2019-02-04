@@ -36,8 +36,8 @@ ccReg_Registrars_i::reload_worker() {
 
   rza.reload();
 
-  LOGGER(PACKAGE).debug(boost::format("ccReg_Registrars_i::reload_worker() rl-size(): %1%") % rl->size());
-  LOGGER(PACKAGE).debug(boost::format("ccReg_Registrars_i::reload_worker() zl-size(): %1%") % zl->size());
+  LOGGER.debug(boost::format("ccReg_Registrars_i::reload_worker() rl-size(): %1%") % rl->size());
+  LOGGER.debug(boost::format("ccReg_Registrars_i::reload_worker() zl-size(): %1%") % zl->size());
 
   TRACE("[CALL] void ccReg_Registrars_i::reload_worker() end");
 }
@@ -135,7 +135,7 @@ ccReg_Registrars_i::getRow(CORBA::UShort row)
   }//try
   catch(...)
   {
-      LOGGER(PACKAGE).error("ccReg_Registrars_i::getRow error");
+      LOGGER.error("ccReg_Registrars_i::getRow error");
       throw Registry::Table::INVALID_ROW();
   }
 }
@@ -195,7 +195,7 @@ ccReg_Registrars_i::getRowId(CORBA::UShort row)
     }//try
     catch(...)
     {
-        LOGGER(PACKAGE).error("ccReg_Registrars_i::getRowId error");
+        LOGGER.error("ccReg_Registrars_i::getRowId error");
         throw Registry::Table::INVALID_ROW();
     }
 }

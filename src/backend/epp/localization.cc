@@ -22,7 +22,7 @@
 #include "src/backend/epp/exception.hh"
 #include "src/backend/epp/impl/util.hh"
 #include "src/backend/epp/session_lang.hh"
-#include "src/libfred/db_settings.hh"
+#include "libfred/db_settings.hh"
 
 #include <boost/algorithm/string/join.hpp>
 #include <boost/lexical_cast.hpp>

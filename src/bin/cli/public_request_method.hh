@@ -21,11 +21,11 @@
 #define PUBLIC_REQUEST_METHOD_HH_51FA81CF886A4AADB94A936FCA6123D0
 
 #include "src/deprecated/util/dbsql.hh"
-#include "src/libfred/db_settings.hh"
+#include "libfred/db_settings.hh"
 #include "src/bin/corba/mailer_manager.hh"
 #include "src/bin/corba/file_manager_client.hh"
-#include "src/libfred/mailer.hh"
-#include "src/libfred/file_transferer.hh"
+#include "libfred/mailer.hh"
+#include "src/deprecated/libfred/file_transferer.hh"
 #include "src/bin/cli/public_request_params.hh"
 
 #include <boost/program_options.hpp>

@@ -3,7 +3,7 @@
 #include <boost/utility.hpp>
 
 #include "src/deprecated/model/union_filter.hh"
-#include "src/util/log/logger.hh"
+#include "util/log/logger.hh"
 
 namespace Database {
 namespace Filters {
@@ -17,7 +17,7 @@ void Union::serialize(Database::SelectQuery& _q) {
   if (filter_list.size() > query_list.size()) {
       boost::format msg = boost::format("assert(filter_list.size() > query_list.size());  %1% <! %2%")
         % filter_list.size() % query_list.size();
-    LOGGER(PACKAGE).error(msg);
+    LOGGER.error(msg);
     throw std::runtime_error(msg.str());
   }
 

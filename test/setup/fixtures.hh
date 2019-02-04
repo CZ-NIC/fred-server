@@ -8,7 +8,7 @@
 
 #include <string>
 #include "src/util/cfg/handle_args.hh"
-#include "src/libfred/db_settings.hh"
+#include "libfred/db_settings.hh"
 
 /**
  * @file fixtures for data isolation in tests

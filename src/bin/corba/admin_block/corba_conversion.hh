@@ -4,8 +4,8 @@
 #include "src/backend/admin_block/administrativeblocking.hh"
 #include "src/bin/corba/AdministrativeBlocking.hh"
 #include "src/bin/corba/common_wrappers.hh"
-#include "src/libfred/object_state/get_blocking_status_desc_list.hh"
-#include "src/util/db/nullable.hh"
+#include "libfred/object_state/get_blocking_status_desc_list.hh"
+#include "util/db/nullable.hh"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>

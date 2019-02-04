@@ -28,7 +28,7 @@
 #include "src/util/cfg/handle_corbanameservice_args.hh"
 #include "src/util/cfg/handle_createexpireddomain_args.hh"
 #include "src/bin/cli/handle_adminclientselection_args.hh"
-#include "src/util/log/context.hh"
+#include "util/log/context.hh"
 #include "src/bin/cli/domainclient.hh"
 #include "src/bin/corba/logger_client_impl.hh"
 #include "src/backend/admin/domain/create_expired_domain.hh"

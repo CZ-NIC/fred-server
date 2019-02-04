@@ -6,12 +6,12 @@
 #include <map>
 
 
-#include "src/util/db/transaction.hh"
+#include "util/db/transaction.hh"
 
-#include "src/libfred/requests/request.hh"
+#include "src/deprecated/libfred/requests/request.hh"
 
 
-#include "src/util/types/id.hh"
+#include "util/types/id.hh"
 
 // needed becase of pool_subst
 #include "tools/logd_migration/m_epp_parser.hh"

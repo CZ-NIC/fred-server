@@ -19,7 +19,7 @@
 #ifndef POLL_REQUEST_GET_UPDATE_KEYSET_DETAILS_HH_C0DB9B2BCE0043E2825A69494B3331FE
 #define POLL_REQUEST_GET_UPDATE_KEYSET_DETAILS_HH_C0DB9B2BCE0043E2825A69494B3331FE
 
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 #include "src/backend/epp/keyset/info_keyset_output_data.hh"
 
 namespace Epp {

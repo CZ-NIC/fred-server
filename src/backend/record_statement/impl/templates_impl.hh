@@ -24,9 +24,9 @@
 #include "src/backend/record_statement/impl/factory.hh"
 #include "src/backend/record_statement/impl/record_statement_xml.hh"
 #include "src/backend/record_statement/impl/util.hh"
-#include "src/libfred/object/get_id_of_registered.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/zone/zone.hh"
+#include "libfred/object/get_id_of_registered.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/zone/zone.hh"
 #include "src/util/tz/utc.hh"
 
 #include <boost/algorithm/string/join.hpp>

@@ -22,7 +22,7 @@
 #include "src/backend/epp/nsset/update_nsset_config_data.hh"
 #include "src/backend/epp/nsset/update_nsset_input_data.hh"
 #include "src/backend/epp/session_data.hh"
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 namespace Epp {
 namespace Nsset {

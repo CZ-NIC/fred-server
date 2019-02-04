@@ -30,8 +30,8 @@
 #include <boost/iostreams/stream.hpp>
 #include <boost/iostreams/device/null.hpp>
 
-#include "src/util/printable.hh"
-#include "src/util/db/query_param.hh"
+#include "util/printable.hh"
+#include "util/db/query_param.hh"
 #include "src/util/cfg/handle_corbanameservice_args.hh"
 
 
@@ -41,17 +41,17 @@
 #include "src/util/cfg/config_handler_decl.hh"
 #include <boost/test/unit_test.hpp>
 #include <utility>
-#include "src/util/log/logger.hh"
+#include "util/log/logger.hh"
 #include "src/util/corba_wrapper_decl.hh"
 #include "src/bin/corba/mailer_manager.hh"
 #include "src/backend/admin/contact/merge_contact_auto_procedure.hh"
 #include "test/mockup/logger_client_dummy.hh"
 
-#include "src/libfred/registrable_object/contact/create_contact.hh"
-#include "src/libfred/object/object_states_info.hh"
-#include "src/libfred/object_state/get_object_states.hh"
-#include "src/libfred/registrar/create_registrar.hh"
-#include "src/libfred/registrar/info_registrar.hh"
+#include "libfred/registrable_object/contact/create_contact.hh"
+#include "libfred/object/object_states_info.hh"
+#include "libfred/object_state/get_object_states.hh"
+#include "libfred/registrar/create_registrar.hh"
+#include "libfred/registrar/info_registrar.hh"
 
 #include "test/libfred/contact/util.hh"
 #include "test/libfred/contact/fixture.hh"

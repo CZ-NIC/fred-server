@@ -16,13 +16,13 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/libfred/registrar/certification/create_registrar_certification.hh"
-#include "src/libfred/registrar/certification/get_registrar_certifications.hh"
-#include "src/libfred/registrar/certification/exceptions.hh"
-#include "src/libfred/registrar/certification/registrar_certification_type.hh"
+#include "libfred/registrar/certification/create_registrar_certification.hh"
+#include "libfred/registrar/certification/get_registrar_certifications.hh"
+#include "libfred/registrar/certification/exceptions.hh"
+#include "libfred/registrar/certification/registrar_certification_type.hh"
 
-#include "src/libfred/db_settings.hh"
-#include "src/libfred/opcontext.hh"
+#include "libfred/db_settings.hh"
+#include "libfred/opcontext.hh"
 #include "test/setup/fixtures.hh"
 #include "test/setup/fixtures_utils.hh"
 

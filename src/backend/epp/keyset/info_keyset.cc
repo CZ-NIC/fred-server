@@ -23,8 +23,8 @@
 #include "src/backend/epp/epp_result_code.hh"
 #include "src/backend/epp/epp_result_failure.hh"
 #include "src/backend/epp/exception.hh"
-#include "src/libfred/registrable_object/keyset/info_keyset.hh"
-#include "src/libfred/registrar/info_registrar.hh"
+#include "libfred/registrable_object/keyset/info_keyset.hh"
+#include "libfred/registrar/info_registrar.hh"
 
 #include <string>
 

@@ -5,8 +5,8 @@
 #include "src/bin/corba/ContactVerification.hh"
 #include "src/bin/corba/common_wrappers.hh"
 
-#include "src/libfred/contact_verification/contact.hh"
-#include "src/libfred/contact_verification/contact_verification_validators.hh"
+#include "src/deprecated/libfred/contact_verification/contact.hh"
+#include "src/deprecated/libfred/contact_verification/contact_verification_validators.hh"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>

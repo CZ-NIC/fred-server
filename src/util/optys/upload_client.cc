@@ -40,7 +40,7 @@
 #include <libssh/libssh.h>
 
 #include "src/util/subprocess.hh"
-#include "src/util/printable.hh"
+#include "util/printable.hh"
 #include <minizip/zip.h>
 
 
@@ -411,7 +411,7 @@
                 }
                 catch (std::exception &ex)
                 {
-                    LOGGER(PACKAGE).error(boost::format("filemanager download: '%1%' error processing letter_id: %2% file_id: %3%") % ex.what()
+                    LOGGER.error(boost::format("filemanager download: '%1%' error processing letter_id: %2% file_id: %3%") % ex.what()
                          % letters[i].letter_id % letters[i].file_id );
                     failed_letters_by_batch_id_[batch_id].push_back(letters[i]);//save failed letter
                     continue;

@@ -20,10 +20,10 @@
 
 #include "src/bin/cli/commonclient.hh"
 #include "src/bin/cli/pollclient.hh"
-#include "src/libfred/poll/create_state_messages.hh"
-#include "src/libfred/poll/create_request_fee_info_messages.hh"
+#include "libfred/poll/create_state_messages.hh"
+#include "src/deprecated/libfred/poll/create_request_fee_info_messages.hh"
 #include "src/bin/corba/logger_client_impl.hh"
-#include "src/libfred/poll/message_type_set.hh"
+#include "libfred/poll/message_type_set.hh"
 
 #include "src/util/cfg/faked_args.hh"
 #include "src/util/cfg/handle_corbanameservice_args.hh"

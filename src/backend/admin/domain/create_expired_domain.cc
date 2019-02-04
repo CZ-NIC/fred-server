@@ -18,13 +18,13 @@
 
 #include "create_expired_domain.hh"
 
-#include "src/libfred/object_state/perform_object_state_request.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/registrable_object/domain/domain.hh"
-#include "src/libfred/registrable_object/domain/create_domain.hh"
-#include "src/libfred/registrable_object/domain/delete_domain.hh"
-#include "src/libfred/registrar/info_registrar.hh"
-#include "src/libfred/zone/zone.hh"
+#include "libfred/object_state/perform_object_state_request.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/registrable_object/domain/domain.hh"
+#include "libfred/registrable_object/domain/create_domain.hh"
+#include "libfred/registrable_object/domain/delete_domain.hh"
+#include "libfred/registrar/info_registrar.hh"
+#include "libfred/zone/zone.hh"
 
 #include <boost/optional.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
@@ -203,5 +203,5 @@ logger_create_expired_domain_close(
     }
 }
 
-} // namespace Domain;
-} // namespace Admin;
+}//namespace Admin::Domain
+}//namespace Admin

@@ -26,9 +26,9 @@
 
 #include "src/backend/admin/contact/verification/exceptions.hh"
 
-#include "src/libfred/opcontext.hh"
-#include "src/util/db/nullable.hh"
-#include "src/util/optional_value.hh"
+#include "libfred/opcontext.hh"
+#include "util/db/nullable.hh"
+#include "util/optional_value.hh"
 #include "src/util/tz/get_psql_handle_of.hh"
 #include "src/util/tz/utc.hh"
 

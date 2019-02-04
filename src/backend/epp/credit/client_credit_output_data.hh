@@ -19,8 +19,8 @@
 #ifndef CLIENT_CREDIT_OUTPUT_DATA_HH_7429FE6C91A644908969207D2F47B555
 #define CLIENT_CREDIT_OUTPUT_DATA_HH_7429FE6C91A644908969207D2F47B555
 
-#include "src/libfred/opcontext.hh"
-#include "src/util/decimal/decimal.hh"
+#include "libfred/opcontext.hh"
+#include "util/decimal/decimal.hh"
 
 #include <set>
 #include <string>

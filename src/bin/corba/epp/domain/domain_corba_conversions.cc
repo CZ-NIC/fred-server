@@ -24,9 +24,9 @@
 #include "src/bin/corba/util/corba_conversions_string.hh"
 #include "src/backend/epp/domain/check_domain_localized.hh"
 #include "src/backend/epp/domain/domain_registration_obstruction.hh"
-#include "src/util/db/nullable.hh"
-#include "src/util/map_at.hh"
-#include "src/util/optional_value.hh"
+#include "util/db/nullable.hh"
+#include "util/map_at.hh"
+#include "util/optional_value.hh"
 
 #include <boost/optional.hpp>
 

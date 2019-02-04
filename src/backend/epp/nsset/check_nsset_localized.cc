@@ -27,9 +27,9 @@
 #include "src/backend/epp/impl/util.hh"
 #include "src/backend/epp/nsset/check_nsset.hh"
 #include "src/backend/epp/nsset/nsset_handle_registration_obstruction.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/util/db/nullable.hh"
-#include "src/util/log/context.hh"
+#include "libfred/opcontext.hh"
+#include "util/db/nullable.hh"
+#include "util/log/context.hh"
 
 #include <boost/format.hpp>
 #include <boost/format/free_funcs.hpp>

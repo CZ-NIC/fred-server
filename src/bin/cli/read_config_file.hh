@@ -26,12 +26,12 @@
 
 #include "src/util/cfg/faked_args.hh"
 #include "src/util/cfg/handle_args.hh"
-#include "src/util/log/context.hh"
+#include "util/log/context.hh"
 
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/handle_logging_args.hh"
 #include "src/util/cfg/handle_general_args.hh"
-#include "src/util/log/logger.hh"
+#include "util/log/logger.hh"
 
 namespace Admin {
 
@@ -70,7 +70,7 @@ std::map<std::string, std::string> read_config_file(
         for (std::string config_item = AccumulatedConfig::get_instance().pop_front();
              !config_item.empty(); config_item = AccumulatedConfig::get_instance().pop_front())
         {
-            Logging::Manager::instance_ref().get(PACKAGE).debug(config_item);
+            Logging::Manager::instance_ref().debug(config_item);
         }
     }
 

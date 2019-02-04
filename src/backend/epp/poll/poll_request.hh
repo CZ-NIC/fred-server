@@ -20,8 +20,8 @@
 #define POLL_REQUEST_HH_D457514F0F9D48279E6263633651BD9C
 
 #include "src/backend/epp/session_lang.hh"
-#include "src/util/decimal/decimal.hh"
-#include "src/libfred/opcontext.hh"
+#include "util/decimal/decimal.hh"
+#include "libfred/opcontext.hh"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>

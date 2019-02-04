@@ -19,8 +19,8 @@
 #ifndef CONNECTION_RELEASER_HH_62CC5FC394E342D9B51CA77E1D213618
 #define CONNECTION_RELEASER_HH_62CC5FC394E342D9B51CA77E1D213618
 
-#include "src/libfred/db_settings.hh"
-#include "src/util/log/logger.hh"
+#include "src/deprecated/libfred/db_settings.hh"
+#include "util/log/logger.hh"
 
 /*
  * Class for auto release connection from thread local storage to manager
@@ -31,17 +31,17 @@
 
 class ConnectionReleaser
 {
-    public:
-        ConnectionReleaser()
-        {
-            LOGGER(PACKAGE).debug("CONNECTION RELEASER constructor");
-        }
+public:
+    ConnectionReleaser()
+    {
+        LOGGER.debug("CONNECTION RELEASER constructor");
+    }
 
-        ~ConnectionReleaser()
-        {
-            Database::Manager::release();
-            LOGGER(PACKAGE).debug("CONNECTION RELEASER destructor");
-        }
+    ~ConnectionReleaser()
+    {
+        Database::Manager::release();
+        LOGGER.debug("CONNECTION RELEASER destructor");
+    }
 };
 
 

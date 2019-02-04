@@ -27,7 +27,7 @@
 #include "src/backend/epp/epp_response_failure.hh"
 #include "src/backend/epp/epp_result_code.hh"
 #include "src/backend/epp/nsset/update_nsset.hh"
-#include "src/util/map_at.hh"
+#include "util/map_at.hh"
 
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/assign/list_of.hpp>

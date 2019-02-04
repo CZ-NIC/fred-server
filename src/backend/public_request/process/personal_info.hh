@@ -19,11 +19,11 @@
 #ifndef PERSONAL_INFO_HH_9CC977C4F3F344748AB821941D44B2F7
 #define PERSONAL_INFO_HH_9CC977C4F3F344748AB821941D44B2F7
 
-#include "src/libfred/mailer.hh"
+#include "libfred/mailer.hh"
 #include "src/bin/corba/mailer_manager.hh"
 #include "src/bin/corba/file_manager_client.hh"
-#include "src/libfred/file_transferer.hh"
-#include "src/libfred/public_request/public_request_type_iface.hh"
+#include "src/deprecated/libfred/file_transferer.hh"
+#include "libfred/public_request/public_request_type_iface.hh"
 
 namespace Fred {
 namespace Backend {

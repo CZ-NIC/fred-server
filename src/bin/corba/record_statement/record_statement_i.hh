@@ -30,8 +30,8 @@
 #include "src/bin/corba/IsoDateTime.hh"
 #include "src/bin/corba/RecordStatement.hh"
 
-#include "src/libfred/documents.hh"
-#include "src/libfred/mailer.hh"
+#include "src/deprecated/libfred/documents.hh"
+#include "libfred/mailer.hh"
 
 #include <string>
 

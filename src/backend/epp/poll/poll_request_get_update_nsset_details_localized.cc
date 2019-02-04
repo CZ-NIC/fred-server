@@ -19,7 +19,7 @@
 #include "src/backend/epp/poll/poll_request_get_update_nsset_details_localized.hh"
 #include "src/backend/epp/poll/poll_request_get_update_nsset_details.hh"
 #include "src/backend/epp/nsset/info_nsset.hh"
-#include "src/libfred/registrable_object/nsset/info_nsset.hh"
+#include "libfred/registrable_object/nsset/info_nsset.hh"
 #include "src/backend/epp/impl/action.hh"
 #include "src/backend/epp/localization.hh"
 #include "src/backend/epp/epp_response_failure.hh"
@@ -29,7 +29,7 @@
 #include "src/backend/epp/epp_result_code.hh"
 #include "src/backend/epp/epp_result_failure.hh"
 #include "src/backend/epp/epp_result_success.hh"
-#include "src/util/log/context.hh"
+#include "util/log/context.hh"
 
 #include <boost/format.hpp>
 #include <boost/format/free_funcs.hpp>

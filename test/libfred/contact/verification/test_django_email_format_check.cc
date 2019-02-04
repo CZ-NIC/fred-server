@@ -22,7 +22,7 @@
  *  test of django 1.6.9. email format checker
  */
 
-#include "src/libfred/contact_verification/django_email_format.hh"
+#include "libfred/contact_verification/django_email_format.hh"
 
 #include <string>
 #include <boost/test/unit_test.hpp>

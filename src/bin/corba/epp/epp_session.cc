@@ -1,9 +1,10 @@
 #include "src/bin/corba/epp/epp_session.hh"
-#include "src/libfred/db_settings.hh"
+#include "libfred/db_settings.hh"
+#include "src/deprecated/libfred/db_settings.hh"
 
 // logger
-#include "src/util/log/logger.hh"
-#include "src/util/log/context.hh"
+#include "util/log/logger.hh"
+#include "util/log/context.hh"
 #include "src/deprecated/util/log.hh"
 
 #include <boost/thread/thread.hpp>
@@ -44,14 +45,14 @@ unsigned long long EppSessionContainer::login_session(int regId, int lang)
     if(s_found != sessions.end()) {
         std::string msg("login ID collision");
 
-        LOGGER(PACKAGE).error(msg);
+        LOGGER.error(msg);
         throw std::runtime_error(msg);
     }
 
     /// fill sessions
     Session new_session(regId, lang, (long long) time(NULL));
 
-    LOGGER(PACKAGE).debug( boost::format("Session with clientID %1% for registrarID %2%, lang %3% created, timestamp %4%") % loginId % regId % lang % new_session.timestamp );
+    LOGGER.debug( boost::format("Session with clientID %1% for registrarID %2%, lang %3% created, timestamp %4%") % loginId % regId % lang % new_session.timestamp );
 
     sessions[loginId] = new_session;
 
@@ -77,7 +78,7 @@ void EppSessionContainer::logout_session(unsigned long long loginId)
 void EppSessionContainer::destroy_all_registrar_sessions(long regId)
 {
 
-    LOGGER(PACKAGE).notice( boost::format("Destroying all session for registrar ID %1% ") % regId );
+    LOGGER.notice( boost::format("Destroying all session for registrar ID %1% ") % regId );
 
     boost::mutex::scoped_lock lock(session_mutex);
 
@@ -88,7 +89,7 @@ void EppSessionContainer::destroy_all_registrar_sessions(long regId)
         std::map<unsigned long long, Session>::iterator it_next = it;
         it_next++;
         if(it->second.registrarID == regId) {
-            LOGGER(PACKAGE).notice( boost::format("Disconnecting session clientID %1%, registrar %2% ")
+            LOGGER.notice( boost::format("Disconnecting session clientID %1%, registrar %2% ")
                                               % it->first % regId );
 
             logout_session_worker(it->first);
@@ -100,7 +101,7 @@ void EppSessionContainer::destroy_all_registrar_sessions(long regId)
 
     if (found != registrar_session_count.end()) {
         if(found->second != 0) {
-            LOGGER(PACKAGE).error( boost::format("ERROR: all registrar's sessions destroyed but session count still reads %1%") % found->second );
+            LOGGER.error( boost::format("ERROR: all registrar's sessions destroyed but session count still reads %1%") % found->second );
         }
     }
 }
@@ -113,14 +114,14 @@ int EppSessionContainer::get_registrar_id(unsigned long long loginId)
 
     const bool found = (session_ptr != sessions.end());
     if (!found) {
-        LOGGER(PACKAGE).debug(boost::format("get_registrar_id: Session with loginId %1% doesn't exist") % loginId );
+        LOGGER.debug(boost::format("get_registrar_id: Session with loginId %1% doesn't exist") % loginId );
         // throw std::runtime_error("Invalid loginId");
         return 0;
     }
 
     const unsigned long long registrar_id = session_ptr->second.registrarID;
 
-    LOGGER(PACKAGE).debug(boost::format("get_registrar_id: loginID %1% has regID %2%") % loginId % registrar_id);
+    LOGGER.debug(boost::format("get_registrar_id: loginID %1% has regID %2%") % loginId % registrar_id);
 
     update_timestamp(loginId);
 
@@ -134,12 +135,12 @@ int EppSessionContainer::get_registrar_lang(unsigned long long loginId)
     std::map<unsigned long long, Session>::iterator found = sessions.find(loginId);
 
     if(found == sessions.end()) {
-        LOGGER(PACKAGE).debug( boost::format("get_registrar_lang: Invalid loginId %1% ") % loginId );
+        LOGGER.debug( boost::format("get_registrar_lang: Invalid loginId %1% ") % loginId );
         /// throw std::runtime_error("Invalid loginId");
         return 0;
     }
 
-    LOGGER(PACKAGE).debug( boost::format("get_registrar_lang: loginID %1% has lang %2%") % loginId % found->second.language );
+    LOGGER.debug( boost::format("get_registrar_lang: loginID %1% has lang %2%") % loginId % found->second.language );
 
     return found->second.language;
 }
@@ -151,13 +152,13 @@ void EppSessionContainer::update_timestamp(unsigned long long loginId)
     std::map<unsigned long long, Session>::iterator found = sessions.find(loginId);
 
     if(found == sessions.end()) {
-        LOGGER(PACKAGE).error( boost::format ("update_timestamp: Session with loginId %1% not found") % loginId);
+        LOGGER.error( boost::format ("update_timestamp: Session with loginId %1% not found") % loginId);
         throw std::runtime_error("loginId not found.");
     }
 
     found->second.timestamp = time(NULL);
 
-    LOGGER(PACKAGE).debug( boost::format("Timestamp for loginId %1% updated to %2%") % loginId % found->second.timestamp);
+    LOGGER.debug( boost::format("Timestamp for loginId %1% updated to %2%") % loginId % found->second.timestamp);
 }
 
 // session_mutex must already be acquired
@@ -167,7 +168,7 @@ void EppSessionContainer::logout_session_worker(unsigned long long loginId)
     std::map<unsigned long long, Session>::iterator found = sessions.find(loginId);
 
     if(found == sessions.end()) {
-        LOGGER(PACKAGE).warning( boost::format("logout_session_worker: loginID %1% not found") % loginId );
+        LOGGER.warning( boost::format("logout_session_worker: loginID %1% not found") % loginId );
         // not considered a serious error, not throwing
         return;
     }
@@ -184,7 +185,7 @@ void EppSessionContainer::logout_session_worker(unsigned long long loginId)
 
     if(reg_sessions_count == 0) {
         std::string msg("Internal error - number of registrar sessions inconsistent");
-        LOGGER(PACKAGE).error(msg);
+        LOGGER.error(msg);
         throw std::runtime_error(msg);
     }
 
@@ -192,8 +193,7 @@ void EppSessionContainer::logout_session_worker(unsigned long long loginId)
     //this operation is nothrow thus we already have the strong guarantee
     sessions.erase(found);
 
-    LOGGER(PACKAGE).debug( boost::format("logout_session_worker: loginId %1% logged out, actual number of all sessions: %2%") % loginId % sessions.size() );
-
+    LOGGER.debug( boost::format("logout_session_worker: loginId %1% logged out, actual number of all sessions: %2%") % loginId % sessions.size() );
 }
 
 // session_mutex must already be acquired
@@ -208,7 +208,7 @@ void EppSessionContainer::garbage_session_internal()
         std::map<unsigned long long, Session>::iterator it_next = it;
         it_next++;
         if (it->second.timestamp + session_timeout_sec < current_timestamp) {
-            LOGGER(PACKAGE).debug( boost::format("garbage session: loginId %1% with timestamp %2%, clock %3%, timeout %4%")
+            LOGGER.debug( boost::format("garbage session: loginId %1% with timestamp %2%, clock %3%, timeout %4%")
                                 % it->first % it->second.timestamp % current_timestamp % session_timeout_sec );
 
             logout_session_worker(it->first);
@@ -216,5 +216,4 @@ void EppSessionContainer::garbage_session_internal()
         }
         it = it_next;
     }
-
 }

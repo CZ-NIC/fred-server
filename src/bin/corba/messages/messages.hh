@@ -24,7 +24,7 @@
 #ifndef MESSAGES_HH_AEA9DFD63E13458CA49AAAF0DF076EA0
 #define MESSAGES_HH_AEA9DFD63E13458CA49AAAF0DF076EA0
 
-#include "src/libfred/messages/messages_impl.hh"
+#include "src/deprecated/libfred/messages/messages_impl.hh"
 
 #include <memory>
 #include <iostream>
@@ -46,8 +46,8 @@
 #include <boost/date_time.hpp>
 #include <boost/assign/list_of.hpp>
 
-#include "src/util/log/logger.hh"
-#include "src/util/log/context.hh"
+#include "util/log/logger.hh"
+#include "util/log/context.hh"
 #include "src/bin/corba/connection_releaser.hh"
 
 

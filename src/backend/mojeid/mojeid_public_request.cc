@@ -1,7 +1,7 @@
 #include "src/backend/mojeid/mojeid_public_request.hh"
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/handle_mojeid_args.hh"
-#include "src/util/random.hh"
+#include "util/random.hh"
 
 #include <utility>
 

@@ -24,11 +24,11 @@
 #include "src/backend/epp/epp_response_failure.hh"
 #include "src/backend/epp/session_data.hh"
 
-#include "src/libfred/registrable_object/keyset/create_keyset.hh"
-#include "src/libfred/object_state/create_object_state_request_id.hh"
-#include "src/libfred/object_state/get_object_states.hh"
-#include "src/libfred/object_state/perform_object_state_request.hh"
-#include "src/libfred/opcontext.hh"
+#include "libfred/registrable_object/keyset/create_keyset.hh"
+#include "libfred/object_state/create_object_state_request_id.hh"
+#include "libfred/object_state/get_object_states.hh"
+#include "libfred/object_state/perform_object_state_request.hh"
+#include "libfred/opcontext.hh"
 
 #include <boost/algorithm/string.hpp>
 

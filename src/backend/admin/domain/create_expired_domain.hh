@@ -19,9 +19,9 @@
 #ifndef CREATE_EXPIRED_DOMAIN_HH_04C50993A8B54BE18AD42AFC55B6985C
 #define CREATE_EXPIRED_DOMAIN_HH_04C50993A8B54BE18AD42AFC55B6985C
 
-#include "src/libfred/logger_client.hh"
-#include "src/libfred/object/object_type.hh"
-#include "src/libfred/object/get_id_of_registered.hh"
+#include "src/deprecated/libfred/logger_client.hh"
+#include "libfred/object/object_type.hh"
+#include "libfred/object/get_id_of_registered.hh"
 
 namespace Admin {
 namespace Domain {

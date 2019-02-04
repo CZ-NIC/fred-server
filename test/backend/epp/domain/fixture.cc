@@ -17,7 +17,7 @@
  */
 
 #include "test/backend/epp/domain/fixture.hh"
-#include "src/libfred/object/object_id_handle_pair.hh"
+#include "libfred/object/object_id_handle_pair.hh"
 
 #include <string>
 #include <vector>

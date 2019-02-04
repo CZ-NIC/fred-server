@@ -3,7 +3,7 @@
 
 #include "src/bin/corba/Logger.hh"
 
-#include "src/libfred/requests/request_manager.hh"
+#include "src/deprecated/libfred/requests/request_manager.hh"
 #include "src/bin/corba/admin/usertype_conv.hh"
 #include "src/bin/corba/admin/pagetable_logger.hh"
 #include "src/bin/corba/admin/common.hh"

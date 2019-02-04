@@ -16,6 +16,39 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "test/deprecated/test_common_registry.hh"
+
+#include "src/bin/corba/file_manager_client.hh"
+#include "src/bin/corba/Admin.hh"
+
+#include "src/util/setup_server_decl.hh"
+#include "src/util/cfg/handle_general_args.hh"
+#include "src/util/cfg/handle_server_args.hh"
+#include "src/util/cfg/handle_logging_args.hh"
+#include "src/util/types/money.hh"
+#include "src/util/time_clock.hh"
+
+#include "src/deprecated/libfred/credit.hh"
+#include "src/deprecated/libfred/banking/bank_common.hh"
+#include "src/deprecated/libfred/exceptions.hh"
+#include "src/deprecated/libfred/invoicing/invoice.hh"
+
+#include "test/setup/test_common_threaded.hh"
+
+//not using UTF defined main
+#define BOOST_TEST_NO_MAIN
+
+#include "test/deprecated/test_invoice_common.hh"
+#include "src/util/cfg/config_handler_decl.hh"
+
+#include <boost/test/unit_test.hpp>
+#include <boost/format.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time.hpp>
+#include <boost/assign/list_of.hpp>
+#include <boost/algorithm/string.hpp>
+
 #include <memory>
 #include <iostream>
 #include <string>
@@ -30,42 +63,6 @@
 #include <sys/time.h>
 #include <time.h>
 
-#include <boost/format.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/date_time.hpp>
-#include <boost/assign/list_of.hpp>
-#include <boost/algorithm/string.hpp>
-
-#include "test/deprecated/test_common_registry.hh"
-
-#include "src/util/setup_server_decl.hh"
-
-#include "src/util/cfg/handle_general_args.hh"
-#include "src/util/cfg/handle_server_args.hh"
-#include "src/util/cfg/handle_logging_args.hh"
-
-
-#include "src/util/types/money.hh"
-#include "src/libfred/invoicing/invoice.hh"
-
-#include "src/util/time_clock.hh"
-#include "src/libfred/credit.hh"
-#include "src/bin/corba/file_manager_client.hh"
-#include "src/libfred/banking/bank_common.hh"
-#include "src/libfred/exceptions.hh"
-
-#include "src/bin/corba/Admin.hh"
-
-#include "test/setup/test_common_threaded.hh"
-
-//not using UTF defined main
-#define BOOST_TEST_NO_MAIN
-
-#include "test/deprecated/test_invoice_common.hh"
-#include "src/util/cfg/config_handler_decl.hh"
-#include <boost/test/unit_test.hpp>
-
 BOOST_AUTO_TEST_SUITE(TestInvoice)
 
 using namespace ::LibFred::Invoicing;
@@ -79,8 +76,6 @@ struct registrar_credit_item
   std::string price;
   Database::Date taxdate;
 };
-
-
 
 void create2Invoices(::LibFred::Invoicing::Manager *man, Database::Date taxdate, Database::ID zone_id, Database::ID reg_id, Money amount)
 {
@@ -163,23 +158,20 @@ BOOST_AUTO_TEST_CASE( insertInvoicePrefix_nozone )
             , year*10000 + 1000//prefix
             ))
             , std::exception, check_std_exception_out_of_range);
-
-
 }//insertInvoicePrefix
-
 
 BOOST_AUTO_TEST_CASE( insertInvoicePrefix )
 {
     //db
     Database::Connection conn = Database::Manager::acquire();
-    
+
     unsigned long long zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
 
     //manager
     std::unique_ptr<::LibFred::Invoicing::Manager> invMan(::LibFred::Invoicing::Manager::create());
 
     int year = boost::gregorian::day_clock::universal_day().year()+20;
-    
+
     conn.exec_params("delete from invoice_prefix where year = $1::bigint", Database::query_param_list(year));
 
     BOOST_CHECK(
@@ -233,10 +225,9 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_nozone )
                 , boost::posix_time::ptime(taxdate)
                 , out_credit)//price
     , std::exception, check_std_exception_invoice_prefix);
-    
+
     }
 }//BOOST_AUTO_TEST_CASE( createDepositInvoice_nozone )
-
 
 BOOST_AUTO_TEST_CASE( createDepositInvoice_novat_noprefix )
 {
@@ -286,7 +277,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
     unsigned long long registrar_inv_id = registrar->getId();
     std::string registrar_handle = registrar->getHandle();
 
-    LOGGER(PACKAGE).debug ( boost::format("createDepositInvoice test registrar_id %1%")
+    LOGGER.debug ( boost::format("createDepositInvoice test registrar_id %1%")
                % registrar_inv_id);
 
 
@@ -443,7 +434,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
     if(test_get_credit_by_zone.compare(test_credit_str) != 0)
     {
         /*
-        std::cout << "test_get_credit_by_zone: " << test_get_credit_by_zone 
+        std::cout << "test_get_credit_by_zone: " << test_get_credit_by_zone
 	    << " test_credit_str: " << test_credit_str << std::endl;
 	    */
     }
@@ -465,11 +456,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
         */
     }
     BOOST_CHECK((std::string(corba_credit.in()).compare(test_credit_str) == 0));
-
-
 }//BOOST_AUTO_TEST_CASE( createDepositInvoice )
-
-
 
 BOOST_AUTO_TEST_CASE( createDepositInvoice_credit_note )
 {
@@ -484,7 +471,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_credit_note )
     std::string registrar_handle = registrar->getHandle();
     unsigned long long registrar_inv_id = registrar->getId();
 
-    LOGGER(PACKAGE).debug ( boost::format("createDepositInvoice test registrar_handle %1% registrar_inv_id %2%")
+    LOGGER.debug ( boost::format("createDepositInvoice test registrar_handle %1% registrar_inv_id %2%")
                % registrar_handle % registrar_inv_id);
 
 
@@ -517,7 +504,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_credit_note )
     try_insert_invoice_prefix();
 
     unsigned long long invoiceid = 0;
-    
+
     unsigned long long credit_note_id = 0;
 
     for (int year = 2000; year < boost::gregorian::day_clock::universal_day().year() + 10 ; ++year)
@@ -643,7 +630,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_credit_note )
     if(test_get_credit_by_zone.compare(test_credit_str) != 0)
     {
         /*
-        std::cout << "test_get_credit_by_zone: " << test_get_credit_by_zone 
+        std::cout << "test_get_credit_by_zone: " << test_get_credit_by_zone
 	    << " test_credit_str: " << test_credit_str << std::endl;
 	    */
     }
@@ -665,11 +652,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_credit_note )
         */
     }
     BOOST_CHECK((std::string(corba_credit.in()).compare(test_credit_str) == 0));
-
-
 }//BOOST_AUTO_TEST_CASE( createDepositInvoice_credit_note )
-
-
 
 BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
 {
@@ -919,7 +902,7 @@ void testChargeEval(const ResultTestCharge &res)
     BOOST_REQUIRE_MESSAGE(res_or.size() == 1, "Expecting uniquer record in object_registry... ");
     unsigned object_id = res_or[0][0];
 
-    
+
     Database::Result res_ior = conn.exec_params(
     "SELECT quantity, date_to, operation_id, ((crdate AT TIME ZONE 'UTC') AT TIME ZONE 'Europe/Prague')::date FROM invoice_operation WHERE object_id = $1::integer "
                                                     "AND registrar_id = $2::integer "
@@ -936,7 +919,7 @@ void testChargeEval(const ResultTestCharge &res)
         for (int i=0; i<2; i++) {
             int  operation        = (int) res_ior[i][2];
 
-            // units number is only saved when renewing 
+            // units number is only saved when renewing
             // this is simplified - it depends also on data in price list - it's true only of base_period == 0
             // which is now the case for 'create' operation
             if (operation == INVOICING_DomainRenew) {
@@ -951,7 +934,7 @@ void testChargeEval(const ResultTestCharge &res)
     }
 }
 
-void testCreateDomainWrap(ccReg_EPP_i *epp_backend, Database::Date exdate, unsigned reg_units, unsigned operation, 
+void testCreateDomainWrap(ccReg_EPP_i *epp_backend, Database::Date exdate, unsigned reg_units, unsigned operation,
         Database::ID registrar_id, unsigned number, unsigned clientId, Database::ID zone_id)
 {
     Money c1 = get_credit (registrar_id, zone_id);
@@ -973,7 +956,7 @@ BOOST_AUTO_TEST_CASE( chargeDomainNoCredit )
 {
     Database::ID zone_cz_id = get_zone_cz_id();
 
-    ::LibFred::Registrar::Registrar::AutoPtr reg = createTestRegistrarClass(); 
+    ::LibFred::Registrar::Registrar::AutoPtr reg = createTestRegistrarClass();
 
     std::unique_ptr<ccReg_EPP_i> b = create_epp_backend_object();
     unsigned clid = epp_backend_login(b.get(), reg->getHandle());
@@ -994,7 +977,6 @@ BOOST_AUTO_TEST_CASE( chargeDomainNoCredit )
 void testChargeInsuffCredit(::LibFred::Invoicing::Manager *invMan, unsigned reg_units, unsigned op,
         Database::ID zone_id)
 {
-
     ::LibFred::Registrar::Registrar::AutoPtr reg = createTestRegistrarClass();
 
     unsigned act_year = boost::gregorian::day_clock::universal_day().year();
@@ -1082,7 +1064,7 @@ BOOST_AUTO_TEST_CASE( chargeDomain )
 
     ::LibFred::Registrar::Registrar::AutoPtr registrar = createTestRegistrarClass();
 
-    // add credit 
+    // add credit
     Money amount = std::string("20000.00");
     unsigned act_year = boost::gregorian::day_clock::universal_day().year();
     //manager
@@ -1225,7 +1207,6 @@ BOOST_AUTO_TEST_CASE( chargeDomain2Invoices )
     testCharge2InvoicesWorker(zone_enum_id, operation, period,
             Database::Date(act_year,1,1), Database::Date(act_year + 5, 4, 30), amount2, true);
             */
-
 }
 
 BOOST_AUTO_TEST_CASE( chargeDomain2InvoicesNotSuff )
@@ -1245,7 +1226,6 @@ BOOST_AUTO_TEST_CASE( chargeDomain2InvoicesNotSuff )
     testCharge2InvoicesWorker(zone_cz_id, operation, period,
             Database::Date(act_year,1,1), Database::Date(act_year + 5, 4, 30), amount, false);
 
-
 // The same for ENUM
  /*
     Decimal op_price_enum = getOperationPrice(operation, zone_enum_id, period);
@@ -1255,7 +1235,6 @@ BOOST_AUTO_TEST_CASE( chargeDomain2InvoicesNotSuff )
             Database::Date(act_year,1,1), Database::Date(act_year + 5, 4, 30), amount2, false);
     */
 }
-
 
 BOOST_AUTO_TEST_CASE( chargeDomain2InvoicesNoCred )
 {
@@ -1287,47 +1266,39 @@ BOOST_AUTO_TEST_CASE( chargeDomain2InvoicesNoCred )
 
     testCharge2InvoicesWorker(zone_enum_id, operation, period,
             Database::Date(act_year,1,1), Database::Date(act_year + 5, 4, 30), Money("0"), false);
-
 }
-
-
-
-
 
 class TestCreateDomainDirectThreadedWorker : public ThreadedTestWorker<ResultTestCharge, ChargeTestParams>
 {
 public:
     typedef ThreadedTestWorker<ResultTestCharge, ChargeTestParams>::ThreadedTestResultQueue queue_type;
 
-    TestCreateDomainDirectThreadedWorker(unsigned number
-             , boost::barrier* sb
-             , std::size_t thread_group_divisor
-             , queue_type* result_queue
-             , ChargeTestParams params
-                    )
+    TestCreateDomainDirectThreadedWorker(
+            unsigned number,
+            boost::barrier* sb,
+            std::size_t thread_group_divisor,
+            queue_type* result_queue, ChargeTestParams params)
         : ThreadedTestWorker<ResultTestCharge, ChargeTestParams>(number, sb, thread_group_divisor, result_queue, params)
-            { }
+    { }
     // this shouldn't throw
-    ResultTestCharge run(const ChargeTestParams &p) {
+    ResultTestCharge run(const ChargeTestParams &p)
+    {
        unsigned act_year = boost::gregorian::day_clock::universal_day().year();
 
        Database::Date exdate(act_year + 1, 1, 1);
 
-       ResultTestCharge ret = testCreateDomainDirectWorker(p.epp_backend, exdate
-               , 1, INVOICING_DomainCreate, p.regid,   number_, p.clientId, p.zone_id );
+       ResultTestCharge ret = testCreateDomainDirectWorker(p.epp_backend, exdate,
+               1, INVOICING_DomainCreate, p.regid, number_, p.clientId, p.zone_id);
 
        // copy all the parametres to Result
        ret.number = number_;
 
        return ret;
     }
-
 };
-
 
 BOOST_AUTO_TEST_CASE(createDomainDirectThreaded)
 {
-    
      std::unique_ptr<ccReg_EPP_i> epp = create_epp_backend_object();
 
      std::string time_string(TimeStamp::microsec());
@@ -1346,11 +1317,8 @@ BOOST_AUTO_TEST_CASE(createDomainDirectThreaded)
      Money amount ("90000.00");
      unsigned act_year = boost::gregorian::day_clock::universal_day().year();
 
-
-
      Database::Connection conn = Database::Manager::acquire();
      Database::ID zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
-
 
      // Database::ID zone_enum_id = conn.exec("select id from zone where fqdn='0.2.4.e164.arpa'")[0][0];
      std::unique_ptr<::LibFred::Invoicing::Manager> invMan(::LibFred::Invoicing::Manager::create());
@@ -1365,8 +1333,6 @@ BOOST_AUTO_TEST_CASE(createDomainDirectThreaded)
      BOOST_CHECK_EQUAL(invoiceid != 0,true);
      ::LibFred::Credit::add_credit_to_invoice( registrar_inv_id,  zone_cz_id, out_credit, invoiceid);
 
-
-
     // CHECK CREDIT before
     Money credit_before, credit_after;
 
@@ -1377,7 +1343,6 @@ BOOST_AUTO_TEST_CASE(createDomainDirectThreaded)
     } else {
         BOOST_FAIL("Couldn't count registrar credit ");
     }
-
 
 //  ----------- test itself
     ChargeTestParams params;
@@ -1401,7 +1366,7 @@ BOOST_AUTO_TEST_CASE(createDomainDirectThreaded)
         BOOST_FAIL("Couldn't count registrar credit ");
     }
 
-    // if(operation == INVOICING_DomainCreate) 
+    // if(operation == INVOICING_DomainCreate)
     Money counted_price =
             getOperationPrice(INVOICING_DomainRenew, zone_cz_id, 1)
             + getOperationPrice(INVOICING_DomainCreate, zone_cz_id, 1);
@@ -1459,9 +1424,6 @@ BOOST_AUTO_TEST_CASE(testCreateDomainEPPNoCORBA)
 
      createCzDomain(registrar->getId(), registrar_handle);
 }
-
-
-
 
 BOOST_AUTO_TEST_CASE(make_debt)
 {
@@ -1611,8 +1573,6 @@ LibFred::Credit::add_credit_to_invoice( registrar_inv_id,  zone_cz_id, out_credi
 }
 */
 
-
-
 bool default_charge_request_fee(::LibFred::Invoicing::Manager *manager, Database::ID reg_id)
 {
     boost::gregorian::date local_today = boost::gregorian::day_clock::local_day();
@@ -1698,8 +1658,6 @@ BOOST_AUTO_TEST_CASE(test_charge_request_missing_poll)
 
     Money after = get_credit(reg_id, zone_cz_id);
     BOOST_REQUIRE_MESSAGE(before == after, "Credit before and after unsuccessful operation has to match");
-
 }
 
-BOOST_AUTO_TEST_SUITE_END();//TestInvoice
-
+BOOST_AUTO_TEST_SUITE_END()//TestInvoice

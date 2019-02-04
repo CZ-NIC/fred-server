@@ -36,11 +36,11 @@
 #include "src/backend/epp/contact/impl/get_update_contact_data_filter.hh"
 #include "src/backend/epp/contact/impl/cznic/specific.hh"
 #include "src/backend/epp/session_data.hh"
-#include "src/libfred/object_state/create_object_state_request_id.hh"
-#include "src/libfred/object_state/get_object_states.hh"
-#include "src/libfred/object_state/perform_object_state_request.hh"
-#include "src/util/optional_value.hh"
-#include "src/util/db/nullable.hh"
+#include "libfred/object_state/create_object_state_request_id.hh"
+#include "libfred/object_state/get_object_states.hh"
+#include "libfred/object_state/perform_object_state_request.hh"
+#include "util/optional_value.hh"
+#include "util/db/nullable.hh"
 
 namespace Test {
 namespace Backend {

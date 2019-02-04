@@ -23,26 +23,26 @@
 
 #include "src/backend/domain_browser/domain_browser.hh"
 
-#include "src/libfred/object/object_impl.hh"
-#include "src/libfred/object_state/cancel_object_state_request_id.hh"
-#include "src/libfred/object_state/create_object_state_request_id.hh"
-#include "src/libfred/object_state/get_object_state_descriptions.hh"
-#include "src/libfred/object_state/get_object_states.hh"
-#include "src/libfred/object_state/object_has_state.hh"
-#include "src/libfred/object_state/object_state_name.hh"
-#include "src/libfred/object_state/perform_object_state_request.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/registrable_object/contact/info_contact.hh"
-#include "src/libfred/registrable_object/contact/merge_contact.hh"
-#include "src/libfred/registrable_object/contact/update_contact.hh"
-#include "src/libfred/registrable_object/domain/info_domain.hh"
-#include "src/libfred/registrable_object/keyset/info_keyset.hh"
-#include "src/libfred/registrable_object/nsset/info_nsset.hh"
-#include "src/libfred/registrar/info_registrar.hh"
-#include "src/util/log/context.hh"
-#include "src/util/map_at.hh"
-#include "src/util/random.hh"
-#include "src/util/util.hh"
+#include "libfred/object/object_impl.hh"
+#include "libfred/object_state/cancel_object_state_request_id.hh"
+#include "libfred/object_state/create_object_state_request_id.hh"
+#include "libfred/object_state/get_object_state_descriptions.hh"
+#include "libfred/object_state/get_object_states.hh"
+#include "libfred/object_state/object_has_state.hh"
+#include "src/deprecated/libfred/object_state/object_state_name.hh"
+#include "libfred/object_state/perform_object_state_request.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/registrable_object/contact/info_contact.hh"
+#include "libfred/registrable_object/contact/merge_contact.hh"
+#include "libfred/registrable_object/contact/update_contact.hh"
+#include "libfred/registrable_object/domain/info_domain.hh"
+#include "libfred/registrable_object/keyset/info_keyset.hh"
+#include "libfred/registrable_object/nsset/info_nsset.hh"
+#include "libfred/registrar/info_registrar.hh"
+#include "util/log/context.hh"
+#include "util/map_at.hh"
+#include "util/random.hh"
+#include "util/util.hh"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
@@ -187,7 +187,7 @@ LibFred::InfoContactOutput check_user_contact_id(
 
     if (!LibFred::ObjectHasState(
                 user_contact_id,
-                LibFred::ObjectState::MOJEID_CONTACT).exec(ctx))
+                LibFred::Object_State::mojeid_contact).exec(ctx))
     {
         throw EXCEPTION();
     }
@@ -959,18 +959,18 @@ bool DomainBrowser::setContactDiscloseFlags(
 
         if (!(LibFred::ObjectHasState(
                       user_contact_id,
-                      LibFred::ObjectState::IDENTIFIED_CONTACT).exec(ctx)
+                      ::LibFred::Object_State::identified_contact).exec(ctx)
               ||
               LibFred::ObjectHasState(
                       user_contact_id,
-                      LibFred::ObjectState::VALIDATED_CONTACT).exec(ctx)))
+                      ::LibFred::Object_State::validated_contact).exec(ctx)))
         {
             throw AccessDenied();
         }
 
         if (LibFred::ObjectHasState(
                     user_contact_id,
-                    LibFred::ObjectState::SERVER_BLOCKED).exec(ctx))
+                    LibFred::Object_State::server_blocked).exec(ctx))
         {
             throw ObjectBlocked();
         }
@@ -1070,18 +1070,18 @@ bool DomainBrowser::setContactAuthInfo(
 
         if (!(LibFred::ObjectHasState(
                       contact_id,
-                      LibFred::ObjectState::IDENTIFIED_CONTACT).exec(ctx)
+                      ::LibFred::Object_State::identified_contact).exec(ctx)
               ||
               LibFred::ObjectHasState(
                       contact_id,
-                      LibFred::ObjectState::VALIDATED_CONTACT).exec(ctx)))
+                      ::LibFred::Object_State::validated_contact).exec(ctx)))
         {
             throw AccessDenied();
         }
 
         if (LibFred::ObjectHasState(
                     contact_id,
-                    LibFred::ObjectState::SERVER_BLOCKED).exec(ctx))
+                    LibFred::Object_State::server_blocked).exec(ctx))
         {
             throw ObjectBlocked();
         }
@@ -1123,7 +1123,7 @@ bool DomainBrowser::setObjectBlockStatus(
 
         if (!LibFred::ObjectHasState(
                     user_contact_id,
-                    LibFred::ObjectState::VALIDATED_CONTACT).exec(ctx))
+                    ::LibFred::Object_State::validated_contact).exec(ctx))
         {
             throw AccessDenied();
         }
@@ -1236,7 +1236,7 @@ bool DomainBrowser::setObjectBlockStatus(
             LibFred::OperationContextCreator ctx_per_object;
             if (LibFred::ObjectHasState(
                         ci->first,
-                        LibFred::ObjectState::SERVER_BLOCKED).exec(ctx_per_object)) // object administratively blocked
+                        LibFred::Object_State::server_blocked).exec(ctx_per_object)) // object administratively blocked
             {
                 blocked_objects.push_back(ci->second);
                 continue;
@@ -1245,7 +1245,7 @@ bool DomainBrowser::setObjectBlockStatus(
             if ((block_type == UNBLOCK_TRANSFER)
                 && LibFred::ObjectHasState(
                         ci->first,
-                        LibFred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx_per_object)) // forbidden partial unblocking
+                        LibFred::Object_State::server_update_prohibited).exec(ctx_per_object)) // forbidden partial unblocking
             {
                 blocked_objects.push_back(ci->second);
                 continue;
@@ -1255,7 +1255,7 @@ bool DomainBrowser::setObjectBlockStatus(
             {
                 if (!LibFred::ObjectHasState(
                             ci->first,
-                            LibFred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx_per_object))
+                            LibFred::Object_State::server_transfer_prohibited).exec(ctx_per_object))
                 {
                     LibFred::CreateObjectStateRequestId(
                             ci->first,
@@ -1268,7 +1268,7 @@ bool DomainBrowser::setObjectBlockStatus(
             {
                 if (!LibFred::ObjectHasState(
                             ci->first,
-                            LibFred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx_per_object))
+                            LibFred::Object_State::server_update_prohibited).exec(ctx_per_object))
                 {
                     LibFred::CreateObjectStateRequestId(
                             ci->first,
@@ -1281,7 +1281,7 @@ bool DomainBrowser::setObjectBlockStatus(
             {
                 if (LibFred::ObjectHasState(
                             ci->first,
-                            LibFred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx_per_object))
+                            LibFred::Object_State::server_transfer_prohibited).exec(ctx_per_object))
                 {
                     LibFred::CancelObjectStateRequestId(
                             ci->first,
@@ -1294,7 +1294,7 @@ bool DomainBrowser::setObjectBlockStatus(
             {
                 if (LibFred::ObjectHasState(
                             ci->first,
-                            LibFred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx_per_object))
+                            LibFred::Object_State::server_update_prohibited).exec(ctx_per_object))
                 {
                     LibFred::CancelObjectStateRequestId(
                             ci->first,
@@ -1846,7 +1846,7 @@ struct MergeContactDiffContacts
 
         if (LibFred::ObjectHasState(
                     dst_contact_id,
-                    LibFred::ObjectState::SERVER_BLOCKED).exec(ctx))
+                    LibFred::Object_State::server_blocked).exec(ctx))
         {
             BOOST_THROW_EXCEPTION(
                     LibFred::MergeContact::Exception().set_dst_contact_invalid(src_contact_handle));
@@ -1856,13 +1856,13 @@ struct MergeContactDiffContacts
 
         if (LibFred::ObjectHasState(
                     src_contact_id,
-                    LibFred::ObjectState::MOJEID_CONTACT).exec(ctx)
+                    LibFred::Object_State::mojeid_contact).exec(ctx)
             || LibFred::ObjectHasState(
                     src_contact_id,
-                    LibFred::ObjectState::SERVER_BLOCKED).exec(ctx)
+                    LibFred::Object_State::server_blocked).exec(ctx)
             || LibFred::ObjectHasState(
                     src_contact_id,
-                    LibFred::ObjectState::SERVER_DELETE_PROHIBITED).exec(ctx))
+                    LibFred::Object_State::server_delete_prohibited).exec(ctx))
         {
             BOOST_THROW_EXCEPTION(
                     LibFred::MergeContact::Exception().set_src_contact_invalid(src_contact_handle));
@@ -2070,14 +2070,14 @@ void DomainBrowser::setContactPreferenceForDomainExpirationLetters(
 
         if (!send_expiration_letters && !LibFred::ObjectHasState(
                     contact_id,
-                    LibFred::ObjectState::VALIDATED_CONTACT).exec(ctx))
+                    ::LibFred::Object_State::validated_contact).exec(ctx))
         {
             throw AccessDenied();
         }
 
         if (LibFred::ObjectHasState(
                     contact_id,
-                    LibFred::ObjectState::SERVER_BLOCKED).exec(ctx))
+                    LibFred::Object_State::server_blocked).exec(ctx))
         {
             throw ObjectBlocked();
         }
@@ -2095,6 +2095,6 @@ void DomainBrowser::setContactPreferenceForDomainExpirationLetters(
     }
 }
 
-} // namespace Fred::Backend::DomainBrowser
-} // namespace Fred::Backend
-} // namespace Fred
+}//namespace Fred::Backend::DomainBrowser
+}//namespace Fred::Backend
+}//namespace Fred

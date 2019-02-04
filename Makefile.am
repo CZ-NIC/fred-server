@@ -161,28 +161,20 @@ endif
 
 
 noinst_HEADERS = \
-		src/util/util.hh \
-		src/util/singleton.hh \
 		src/util/time_clock.hh \
 		src/util/settings.hh \
 		src/util/file_lock.hh \
-		src/util/base_exception.hh \
-		src/util/random.hh \
 		src/util/concurrent_queue.hh \
 		src/util/concurrent_set.hh \
-		src/util/random_data_generator.hh \
 		src/util/corba_wrapper.hh \
 		src/util/subprocess.hh \
-		src/util/string_split.hh \
 		src/util/corba_wrapper_decl.hh \
-		src/util/map_at.hh \
 		src/util/setup_server.hh \
 		src/util/setup_server_decl.hh \
 		src/util/cfg/config_handler.hh \
 		src/util/cfg/faked_args.hh \
 		src/util/cfg/handle_args.hh \
 		src/util/cfg/handle_corbanameservice_args.hh \
-		src/util/decimal/decimal.hh \
 		src/util/cfg/handle_database_args.hh \
 		src/util/cfg/handle_general_args.hh \
 		src/util/cfg/handle_server_args.hh \
@@ -205,19 +197,12 @@ noinst_HEADERS = \
 		src/util/cfg/handle_tests_args.hh \
 		src/util/optys/handle_optys_mail_args.hh \
 		src/util/cfg/handle_akmd_args.hh \
-		src/util/types/optional.hh \
 		src/util/types/optional_from_program_options.hh \
 		src/util/types/money.hh \
 		src/util/xmlgen.hh \
 		test/util/exception_test.hh \
-		src/util/factory.hh \
-		src/util/factory_check.hh \
-		src/util/map_get.hh \
-		src/util/uuid.hh \
 		src/bin/corba/common_wrappers.hh \
 		src/bin/corba/contact_verification/corba_conversion.hh \
-		src/util/optional_value.hh \
-		src/util/is_equal_optional_nullable.hh \
 		src/util/output_indenter.hh \
 		src/bin/corba/util/corba_conversions_buffer.hh \
 		src/bin/corba/util/corba_conversions_nullable_types.hh \
@@ -230,11 +215,10 @@ noinst_HEADERS = \
 		src/bin/corba/util/corba_conversions_nullableisodatetime.hh \
 		src/bin/corba/automatic_keyset_management/corba_conversions.cc \
 		src/bin/corba/automatic_keyset_management/corba_conversions.hh \
-		src/util/is_equal_optional_nullable.hh \
 		test/libfred/util.hh \
 		test/libfred/enum_to_db_handle_conversion.hh \
 		test/mockup/logger_client_dummy.hh \
-		src/libfred/registrable_object/contact/verification/enum_testsuite_handle.hh \
+		src/deprecated/libfred/registrable_object/contact/verification/enum_testsuite_handle.hh \
 		src/libfred/registrable_object/contact/verification/enum_check_status.hh \
 		src/libfred/registrable_object/contact/verification/enum_test_status.hh \
 		src/libfred/registrable_object/contact/verification/exceptions.hh \
@@ -259,9 +243,8 @@ noinst_HEADERS = \
 		src/libfred/notifier/util/string_list_utils.hh \
 		test/libfred/notifier/fixture_data.hh \
 		test/libfred/notifier/util.hh \
-		src/util/enum_conversion.hh \
 		src/libfred/registrable_object/contact/handle_state.hh \
-		src/libfred/registrable_object/contact/ssntype.hh \
+		src/deprecated/libfred/registrable_object/contact/ssntype.hh \
 		src/libfred/exception.hh \
 		test/util/corba_conversion_test.idl \
 		src/libfred/object/object_type.hh \
@@ -336,14 +319,13 @@ noinst_HEADERS = \
 		src/backend/accounting/payment_invoices.hh \
 		src/backend/accounting/registrar.hh \
 		src/backend/accounting/registrar_reference.hh \
-		src/libfred/banking/invoice_reference.hh \
-		src/libfred/banking/payment_data.hh \
-		src/libfred/banking/payment_invoices.hh
+		src/deprecated/libfred/banking/invoice_reference.hh \
+		src/deprecated/libfred/banking/payment_data.hh \
+		src/deprecated/libfred/banking/payment_invoices.hh
 
 noinst_LIBRARIES = \
 		src/util/libutil.a \
 		src/util/libpassword_storage.a \
-		src/util/log/liblog.a \
 		src/util/types/libtypes.a \
 		src/util/db/libdb.a \
 		src/util/tz/libtimezones.a \
@@ -403,7 +385,6 @@ noinst_LIBRARIES = \
 
 
 noinst_PROGRAMS = \
-		src/util/log/test-log \
 		src/util/db/test-db \
 		src/util/db/test-mockdb \
 		src/util/hp/crc32 \
@@ -433,86 +414,24 @@ sbin_PROGRAMS = \
 # util/libutil.a
 #
 src_util_libutil_a_SOURCES = \
-		src/util/random.cc \
-		src/util/util.cc \
 		src/util/output_indenter.cc \
-		src/util/printable.hh \
-		src/util/printable.cc \
 		src/util/csv_parser.hh \
 		src/util/csv_parser.cc \
 		src/util/xmlgen.cc \
 		src/util/subprocess.cc \
-		src/util/idn_utils.hh \
-		src/util/idn_utils.cc \
 		src/util/nonconvertible.hh
 #
 # util/libutil.a
 
 
-# util/log/liblog.a
-#
-src_util_log_liblog_a_SOURCES = \
-		src/util/log/logger.cc \
-		src/util/log/log.cc \
-		src/util/log/log_types.cc \
-		src/util/log/context.cc \
-		src/util/log/log.hh \
-		src/util/log/log_types.hh \
-		src/util/log/logger.hh \
-		src/util/log/context.hh
-#
-# util/log/liblog.a
-
-
-# util/log/test-log
-#
-src_util_log_test_log_SOURCES = \
-		src/util/log/test-log.cc \
-		$(UTIL_LOG_SRC)
-
-src_util_log_test_log_CPPFLAGS = \
-		$(AM_CPPFLAGS)
-
-src_util_log_test_log_LDFLAGS = \
-		$(BOOST_LDFLAGS) \
-		$(AM_LDFLAGS)
-
-src_util_log_test_log_LDADD = \
-		src/util/log/liblog.a \
-		$(BOOST_DATE_TIME_LIB) \
-		$(BOOST_THREAD_LIB) \
-		$(BOOST_SYSTEM_LIB)
-#
-# util/log/test-log
-
-
 # util/types/libtypes.a
 #
 src_util_types_libtypes_a_SOURCES = \
-		src/util/types/date.cc \
-		src/util/types/date.hh \
-		src/util/types/date_interval.cc \
-		src/util/types/date_interval.hh \
-		src/util/types/datetime.cc \
-		src/util/types/datetime.hh \
-		src/util/types/datetime_interval.cc \
-		src/util/types/datetime_interval.hh \
-		src/util/types/datetime_common.hh \
-		src/util/types/common.hh \
-		src/util/types/id.cc \
-		src/util/types/id.hh \
 		src/util/types/null.hh \
-		src/util/types/data_types.hh \
-		src/util/types/convert_common.hh \
 		src/util/types/convert_str_base.hh \
 		src/util/types/convert_str_pod.hh \
 		src/util/types/convert_str_boost_datetime.hh \
-		src/util/types/convert_sql_base.hh \
-		src/util/types/convert_sql_pod.hh \
-		src/util/types/convert_sql_boost_datetime.hh \
-		src/util/types/convert_sql_db_types.hh \
 		src/util/types/stringify.hh \
-		src/util/types/sqlize.hh \
 		src/util/types/birthdate.cc \
 		src/util/types/birthdate.hh
 #
@@ -537,8 +456,6 @@ src_util_db_libdb_a_SOURCES = \
 		src/util/db/query/sql_helper_objects.hh \
 		src/util/db/query/filter_it.hh \
 		src/util/db/query/sql_operators.hh \
-		src/util/db/psql/psql_connection.hh \
-		src/util/db/psql/psql_result.hh \
 		src/util/db/model/field.hh \
 		src/util/db/model/job_queue.hh \
 		src/util/db/model/mem_ptr.hh \
@@ -548,22 +465,9 @@ src_util_db_libdb_a_SOURCES = \
 		src/util/db/model/model_field_list.hh \
 		src/util/db/model/model_field_macros.hh \
 		src/util/db/model/model.hh \
-		src/util/db/connection_factory.hh \
-		src/util/db/transaction.hh \
-		src/util/db/connection.hh \
-		src/util/db/query_param.hh \
-		src/util/db/param_query_composition.hh \
-		src/util/db/param_query_composition.cc \
-		src/util/db/result.hh \
-		src/util/db/row.hh \
-		src/util/db/value.hh \
-		src/util/db/value.cc \
 		src/util/db/statement.hh \
 		src/util/db/sequence.hh \
-		src/util/db/manager.hh \
 		src/util/db/manager_tss.hh \
-		src/util/db/db_exceptions.hh \
-		src/util/db/database.hh \
 		src/util/db/manager_old_db.hh
 #
 # util/db/libdb.a
@@ -609,7 +513,6 @@ src_util_db_test_db_LDFLAGS = \
 		$(AM_LDFLAGS)
 
 src_util_db_test_db_LDADD = \
-		src/util/log/liblog.a \
 		src/util/types/libtypes.a \
 		src/util/db/libdb.a \
 		$(BOOST_DATE_TIME_LIB) \
@@ -650,17 +553,9 @@ UTIL_MOCKDB_SRC = \
 		src/util/db/model/model_field_list.hh \
 		src/util/db/model/model_field_macros.hh \
 		src/util/db/model/model.hh \
-		src/util/db/connection_factory.hh \
-		src/util/db/transaction.hh \
-		src/util/db/connection.hh \
-		src/util/db/result.hh \
-		src/util/db/row.hh \
-		src/util/db/value.hh \
 		src/util/db/statement.hh \
 		src/util/db/sequence.hh \
-		src/util/db/manager.hh \
 		src/util/db/manager_tss.hh \
-		src/util/db/db_exceptions.hh \
 		src/util/db/manager_old_db.hh
 
 
@@ -673,7 +568,6 @@ src_util_db_test_mockdb_LDFLAGS = \
 		$(AM_LDFLAGS)
 
 src_util_db_test_mockdb_LDADD = \
-		src/util/log/liblog.a \
 		src/util/types/libtypes.a \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_THREAD_LIB) \
@@ -803,7 +697,6 @@ src_deprecated_model_test_model_LDFLAGS = \
 src_deprecated_model_test_model_LDADD = \
 		src/deprecated/model/libmodel.a \
 		src/libfred/banking/libbanking.a \
-		src/util/log/liblog.a \
 		src/util/types/libtypes.a \
 		src/util/db/libdb.a \
 		$(BOOST_DATE_TIME_LIB) \
@@ -819,34 +712,38 @@ src_deprecated_model_test_model_LDADD = \
 # src/libfred/libfred.a
 #
 src_libfred_libfred_a_SOURCES = \
-		src/libfred/registry.cc \
-		src/libfred/registry.hh \
+		src/deprecated/libfred/registry.cc \
+		src/deprecated/libfred/registry.hh \
 		src/libfred/db_settings.hh \
-		src/libfred/common_new.hh \
-		src/libfred/common_object.hh \
-		src/libfred/common_impl.cc \
-		src/libfred/common_impl.hh \
-		src/libfred/object.hh \
-		src/libfred/object_impl.cc \
-		src/libfred/object_impl.hh \
-		src/libfred/common_impl_new.cc \
-		src/libfred/common_impl_new.hh \
-		src/libfred/registrable_object/domain.cc \
-		src/libfred/registrable_object/domain.hh \
-		src/libfred/registrable_object/contact.cc \
-		src/libfred/registrable_object/contact.hh \
-		src/libfred/registrable_object/nsset.cc \
-		src/libfred/registrable_object/nsset.hh \
-		src/libfred/registrable_object/keyset.cc \
-		src/libfred/registrable_object/keyset.hh \
-		src/libfred/registrar.cc \
-		src/libfred/registrar.hh \
-		src/libfred/credit.cc \
-		src/libfred/credit.hh \
-		src/libfred/invoicing/invoice.cc \
-		src/libfred/invoicing/invoice.hh \
-		src/libfred/zone.cc \
-		src/libfred/zone.hh \
+		src/deprecated/libfred/common_new.hh \
+		src/deprecated/libfred/common_object.hh \
+		src/deprecated/libfred/common_impl.cc \
+		src/deprecated/libfred/common_impl.hh \
+		src/deprecated/libfred/object.hh \
+		src/deprecated/libfred/object_impl.cc \
+		src/deprecated/libfred/object_impl.hh \
+		src/deprecated/libfred/common_impl_new.cc \
+		src/deprecated/libfred/common_impl_new.hh \
+		src/deprecated/libfred/model_registrar_acl.cc \
+		src/deprecated/libfred/model_registrar_acl.hh \
+		src/deprecated/libfred/model_registrar.cc \
+		src/deprecated/libfred/model_registrar.hh \
+		src/deprecated/libfred/registrable_object/domain.cc \
+		src/deprecated/libfred/registrable_object/domain.hh \
+		src/deprecated/libfred/registrable_object/contact.cc \
+		src/deprecated/libfred/registrable_object/contact.hh \
+		src/deprecated/libfred/registrable_object/nsset.cc \
+		src/deprecated/libfred/registrable_object/nsset.hh \
+		src/deprecated/libfred/registrable_object/keyset.cc \
+		src/deprecated/libfred/registrable_object/keyset.hh \
+		src/deprecated/libfred/registrar.cc \
+		src/deprecated/libfred/registrar.hh \
+		src/deprecated/libfred/credit.cc \
+		src/deprecated/libfred/credit.hh \
+		src/deprecated/libfred/invoicing/invoice.cc \
+		src/deprecated/libfred/invoicing/invoice.hh \
+		src/deprecated/libfred/zone.cc \
+		src/deprecated/libfred/zone.hh \
 		src/libfred/zone/zone_ns/create_zone_ns.cc \
 		src/libfred/zone/zone_ns/create_zone_ns.hh \
 		src/libfred/zone/zone_ns/exceptions.cc \
@@ -858,34 +755,34 @@ src_libfred_libfred_a_SOURCES = \
 		src/libfred/zone/zone_ns/update_zone_ns.hh \
 		src/libfred/zone/zone_ns/util.cc \
 		src/libfred/zone/zone_ns/util.hh \
-		src/libfred/blacklist.cc \
-		src/libfred/blacklist.hh \
-		src/libfred/documents.cc \
-		src/libfred/documents.hh \
-		src/libfred/info_buffer.cc \
-		src/libfred/info_buffer.hh \
-		src/libfred/mail.cc \
-		src/libfred/mail.hh \
-		src/libfred/notify.hh \
-		src/libfred/notify.cc \
-		src/libfred/logger_client.hh \
-		src/libfred/epp_corba_client.hh \
-		src/libfred/file_transferer.hh \
-		src/libfred/file.cc \
-		src/libfred/file.hh \
-		src/libfred/filter.cc \
-		src/libfred/filter.hh \
+		src/deprecated/libfred/blacklist.cc \
+		src/deprecated/libfred/blacklist.hh \
+		src/deprecated/libfred/documents.cc \
+		src/deprecated/libfred/documents.hh \
+		src/deprecated/libfred/info_buffer.cc \
+		src/deprecated/libfred/info_buffer.hh \
+		src/deprecated/libfred/mail.cc \
+		src/deprecated/libfred/mail.hh \
+		src/deprecated/libfred/notify.hh \
+		src/deprecated/libfred/notify.cc \
+		src/deprecated/libfred/logger_client.hh \
+		src/deprecated/libfred/epp_corba_client.hh \
+		src/deprecated/libfred/file_transferer.hh \
+		src/deprecated/libfred/file.cc \
+		src/deprecated/libfred/file.hh \
+		src/deprecated/libfred/filter.cc \
+		src/deprecated/libfred/filter.hh \
 		src/libfred/mailer.hh \
-		src/libfred/sql.hh \
-		src/libfred/exceptions.hh \
+		src/deprecated/libfred/sql.hh \
+		src/deprecated/libfred/exceptions.hh \
 		src/libfred/types.hh \
-		src/libfred/obj_types.hh \
-		src/libfred/object_states.cc \
-		src/libfred/object_states.hh \
-		src/libfred/common_diff.cc \
-		src/libfred/common_diff.hh \
-		src/libfred/reminder.cc \
-		src/libfred/reminder.hh \
+		src/deprecated/libfred/obj_types.hh \
+		src/deprecated/libfred/object_states.cc \
+		src/deprecated/libfred/object_states.hh \
+		src/deprecated/libfred/common_diff.cc \
+		src/deprecated/libfred/common_diff.hh \
+		src/deprecated/libfred/reminder.cc \
+		src/deprecated/libfred/reminder.hh \
 		src/libfred/opcontext.cc \
 		src/libfred/opcontext.hh \
 		src/libfred/registrable_object/contact/copy_contact.hh \
@@ -986,8 +883,8 @@ src_libfred_libfred_a_SOURCES = \
 		src/libfred/poll/get_request_fee_message.cc \
 		src/libfred/poll/create_request_fee_info_message.hh \
 		src/libfred/poll/create_request_fee_info_message.cc \
-		src/libfred/poll/create_request_fee_info_messages.hh \
-		src/libfred/poll/create_request_fee_info_messages.cc \
+		src/deprecated/libfred/poll/create_request_fee_info_messages.hh \
+		src/deprecated/libfred/poll/create_request_fee_info_messages.cc \
 		src/libfred/poll/create_low_credit_messages.hh \
 		src/libfred/poll/create_low_credit_messages.cc \
 		src/libfred/poll/create_state_messages.hh \
@@ -1083,7 +980,7 @@ src_libfred_libfred_a_SOURCES = \
 		src/libfred/registrable_object/keyset/delete_keyset.cc \
 		src/libfred/registrable_object/keyset/delete_keyset.hh \
 		src/libfred/registrar/registrar_impl.hh \
-		src/libfred/registrar/registrar_impl.cc \
+		src/deprecated/libfred/registrar/registrar_impl.cc \
 		src/libfred/registrar/info_registrar.cc \
 		src/libfred/registrar/info_registrar.hh \
 		src/libfred/registrar/info_registrar_data.cc \
@@ -1161,7 +1058,7 @@ src_libfred_libfred_a_SOURCES = \
 		src/libfred/registrar/zone_access/update_registrar_zone_access.cc \
 		src/libfred/object/object_id_handle_pair.hh \
 		src/libfred/object/object_id_handle_pair.cc \
-		src/libfred/object_state/object_state_name.hh \
+		src/deprecated/libfred/object_state/object_state_name.hh \
 		src/libfred/object_state/object_has_state.hh \
 		src/libfred/object_state/object_has_state.cc \
 		src/libfred/object_state/lock_object_state_request_lock.hh \
@@ -1288,22 +1185,22 @@ src_libfred_public_request_libpublic_request_a_SOURCES = \
 		src/libfred/public_request/get_opened_public_request.cc \
 		src/libfred/public_request/info_public_request.cc \
 		src/libfred/public_request/info_public_request_auth.cc \
-		src/libfred/public_request/public_request.cc \
-		src/libfred/public_request/public_request.hh \
+		src/deprecated/libfred/public_request/public_request.cc \
+		src/deprecated/libfred/public_request/public_request.hh \
 		src/libfred/public_request/public_request_auth_type_iface.hh \
-		src/libfred/public_request/public_request_authinfo_impl.cc \
-		src/libfred/public_request/public_request_authinfo_impl.hh \
-		src/libfred/public_request/public_request_block_impl.cc \
-		src/libfred/public_request/public_request_block_impl.hh \
-		src/libfred/public_request/public_request_impl.cc \
-		src/libfred/public_request/public_request_impl.hh \
+		src/deprecated/libfred/public_request/public_request_authinfo_impl.cc \
+		src/deprecated/libfred/public_request/public_request_authinfo_impl.hh \
+		src/deprecated/libfred/public_request/public_request_block_impl.cc \
+		src/deprecated/libfred/public_request/public_request_block_impl.hh \
+		src/deprecated/libfred/public_request/public_request_impl.cc \
+		src/deprecated/libfred/public_request/public_request_impl.hh \
 		src/libfred/public_request/public_request_lock_guard.cc \
 		src/libfred/public_request/public_request_lock_guard.hh \
 		src/libfred/public_request/public_request_object_lock_guard.cc \
 		src/libfred/public_request/public_request_object_lock_guard.hh \
 		src/libfred/public_request/public_request_on_status_action.hh \
-		src/libfred/public_request/public_request_personal_info_impl.cc \
-		src/libfred/public_request/public_request_personal_info_impl.hh \
+		src/deprecated/libfred/public_request/public_request_personal_info_impl.cc \
+		src/deprecated/libfred/public_request/public_request_personal_info_impl.hh \
 		src/libfred/public_request/public_request_type_iface.hh \
 		src/libfred/public_request/update_public_request.cc \
 		src/libfred/public_request/update_public_request.hh
@@ -1314,17 +1211,17 @@ src_libfred_public_request_libpublic_request_a_SOURCES = \
 # src/libfred/banking/libbanking.a
 #
 src_libfred_banking_libbanking_a_SOURCES = \
-		src/libfred/banking/exceptions.cc \
-		src/libfred/banking/exceptions.hh \
-		src/libfred/banking/bank_common.cc \
-		src/libfred/banking/bank_common.hh \
-		src/libfred/banking/bank_manager.cc \
-		src/libfred/banking/bank_manager.hh \
-		src/libfred/banking/get_bank_accounts.cc \
-		src/libfred/banking/get_bank_accounts.hh \
-		src/libfred/banking/invoice_reference.hh \
-		src/libfred/banking/payment_data.hh \
-		src/libfred/banking/payment_invoices.hh
+		src/deprecated/libfred/banking/exceptions.cc \
+		src/deprecated/libfred/banking/exceptions.hh \
+		src/deprecated/libfred/banking/bank_common.cc \
+		src/deprecated/libfred/banking/bank_common.hh \
+		src/deprecated/libfred/banking/bank_manager.cc \
+		src/deprecated/libfred/banking/bank_manager.hh \
+		src/deprecated/libfred/banking/get_bank_accounts.cc \
+		src/deprecated/libfred/banking/get_bank_accounts.hh \
+		src/deprecated/libfred/banking/invoice_reference.hh \
+		src/deprecated/libfred/banking/payment_data.hh \
+		src/deprecated/libfred/banking/payment_invoices.hh
 #
 # src/libfred/banking/libbanking.a
 
@@ -1332,8 +1229,8 @@ src_libfred_banking_libbanking_a_SOURCES = \
 # src/libfred/messages/libmessages.a
 #
 src_libfred_messages_libmessages_a_SOURCES = \
-		src/libfred/messages/messages_impl.cc \
-		src/libfred/messages/messages_impl.hh
+		src/deprecated/libfred/messages/messages_impl.cc \
+		src/deprecated/libfred/messages/messages_impl.hh
 #
 # src/libfred/messages/libmessages.a
 
@@ -1341,26 +1238,26 @@ src_libfred_messages_libmessages_a_SOURCES = \
 # src/libfred/requests/librequests.a
 #
 src_libfred_requests_librequests_a_SOURCES = \
-		src/libfred/requests/model_request_property_name.hh \
-		src/libfred/requests/model_request.cc \
-		src/libfred/requests/model_session.cc \
-		src/libfred/requests/model_request.hh \
-		src/libfred/requests/model_session.hh \
-		src/libfred/requests/model_request_property_name.cc \
-		src/libfred/requests/session.hh \
-		src/libfred/requests/session.cc \
-		src/libfred/requests/request.hh \
-		src/libfred/requests/request_impl.hh \
-		src/libfred/requests/request_list.hh \
-		src/libfred/requests/request_list.cc \
-		src/libfred/requests/request_manager.hh \
-		src/libfred/requests/request_manager.cc \
-		src/libfred/requests/request_cache.hh \
-		src/libfred/requests/request_cache.cc \
-		src/libfred/requests/request_property_name_cache.hh \
-		src/libfred/requests/request_property_name_cache.cc \
-		src/libfred/requests/session_cache.hh \
-		src/libfred/requests/session_cache.cc
+		src/deprecated/libfred/requests/model_request_property_name.hh \
+		src/deprecated/libfred/requests/model_request.cc \
+		src/deprecated/libfred/requests/model_session.cc \
+		src/deprecated/libfred/requests/model_request.hh \
+		src/deprecated/libfred/requests/model_session.hh \
+		src/deprecated/libfred/requests/model_request_property_name.cc \
+		src/deprecated/libfred/requests/session.hh \
+		src/deprecated/libfred/requests/session.cc \
+		src/deprecated/libfred/requests/request.hh \
+		src/deprecated/libfred/requests/request_impl.hh \
+		src/deprecated/libfred/requests/request_list.hh \
+		src/deprecated/libfred/requests/request_list.cc \
+		src/deprecated/libfred/requests/request_manager.hh \
+		src/deprecated/libfred/requests/request_manager.cc \
+		src/deprecated/libfred/requests/request_cache.hh \
+		src/deprecated/libfred/requests/request_cache.cc \
+		src/deprecated/libfred/requests/request_property_name_cache.hh \
+		src/deprecated/libfred/requests/request_property_name_cache.cc \
+		src/deprecated/libfred/requests/session_cache.hh \
+		src/deprecated/libfred/requests/session_cache.cc
 #
 # src/libfred/requests/librequests.a
 
@@ -1370,23 +1267,22 @@ src_libfred_requests_librequests_a_SOURCES = \
 src_libfred_contact_verification_libcontact_verification_a_SOURCES = \
 		src/backend/contact_verification/public_request_contact_verification_impl.cc \
 		src/backend/contact_verification/public_request_contact_verification_impl.hh \
-		src/util/db/nullable.hh \
-		src/libfred/contact_verification/contact.hh \
-		src/libfred/contact_verification/contact.cc \
+		src/deprecated/libfred/contact_verification/contact.hh \
+		src/deprecated/libfred/contact_verification/contact.cc \
 		src/libfred/contact_verification/django_email_format.hh \
-		src/libfred/contact_verification/contact_verification_checkers.hh \
-		src/libfred/contact_verification/contact_verification_checkers.cc \
-		src/libfred/contact_verification/contact_conditional_identification_impl.cc \
-		src/libfred/contact_verification/contact_conditional_identification_impl.hh \
-		src/libfred/contact_verification/contact_identification_impl.cc \
-		src/libfred/contact_verification/contact_identification_impl.hh \
-		src/libfred/contact_verification/contact_verification_state.cc \
-		src/libfred/contact_verification/contact_verification_state.hh \
-		src/libfred/contact_verification/contact_verification_validators.cc \
-		src/libfred/contact_verification/contact_verification_validators.hh \
-		src/libfred/contact_verification/contact_verification_password.cc \
-		src/libfred/contact_verification/contact_verification_password.hh \
-		src/libfred/contact_verification/contact_validator.hh
+		src/deprecated/libfred/contact_verification/contact_verification_checkers.hh \
+		src/deprecated/libfred/contact_verification/contact_verification_checkers.cc \
+		src/deprecated/libfred/contact_verification/contact_conditional_identification_impl.cc \
+		src/deprecated/libfred/contact_verification/contact_conditional_identification_impl.hh \
+		src/deprecated/libfred/contact_verification/contact_identification_impl.cc \
+		src/deprecated/libfred/contact_verification/contact_identification_impl.hh \
+		src/deprecated/libfred/contact_verification/contact_verification_state.cc \
+		src/deprecated/libfred/contact_verification/contact_verification_state.hh \
+		src/deprecated/libfred/contact_verification/contact_verification_validators.cc \
+		src/deprecated/libfred/contact_verification/contact_verification_validators.hh \
+		src/deprecated/libfred/contact_verification/contact_verification_password.cc \
+		src/deprecated/libfred/contact_verification/contact_verification_password.hh \
+		src/deprecated/libfred/contact_verification/contact_validator.hh
 
 #
 # src/libfred/contact_verification/libcontact_verification.a
@@ -1874,9 +1770,9 @@ src_bin_corba_whois_libwhois2_impl_a_SOURCES = \
 # src/bin/corba/epp/libepp_impl.a
 #
 src_bin_corba_epp_libepp_impl_a_SOURCES = \
-		src/libfred/contact_verification/cancel_contact_verification.cc \
-		src/libfred/contact_verification/cancel_contact_verification.hh \
-		src/libfred/contact_verification/contact_verification_state.cc \
+		src/deprecated/libfred/contact_verification/cancel_contact_verification.cc \
+		src/deprecated/libfred/contact_verification/cancel_contact_verification.hh \
+		src/deprecated/libfred/contact_verification/contact_verification_state.cc \
 		src/libfred/registrable_object/domain/domain.hh \
 		src/libfred/registrable_object/domain/domain.cc \
 		src/bin/corba/epp/epp_session.hh \
@@ -2240,7 +2136,6 @@ src_bin_corba_fred_rifd_LDADD = \
 		src/util/tz/libtimezones.a \
 		src/util/db/libdb.a \
 		src/util/types/libtypes.a \
-		src/util/log/liblog.a \
 		src/util/cfg/libhandle_rifd_args.a \
 		src/deprecated/util/liboldutils.a \
 		src/util/libutil.a \
@@ -2266,8 +2161,8 @@ src_bin_corba_fred_rifd_LDADD = \
 src_bin_corba_fred_adifd_SOURCES = \
 		src/bin/corba/admin_contact_verification/server_i.hh \
 		src/bin/corba/admin_contact_verification/server_i.cc \
-		src/libfred/registrable_object/contact/util.hh \
-		src/libfred/registrable_object/contact/util.cc \
+		src/deprecated/libfred/registrable_object/contact/util.hh \
+		src/deprecated/libfred/registrable_object/contact/util.cc \
 		src/bin/corba/fred-adifd.cc \
 		src/backend/mojeid/mojeid_public_request.cc \
 		src/bin/corba/admin/public_request_mojeid.hh \
@@ -2379,7 +2274,6 @@ src_bin_corba_fred_adifd_LDADD = \
 		src/util/db/libdb.a \
 		src/util/tz/libtimezones.a \
 		src/util/types/libtypes.a \
-		src/util/log/liblog.a \
 		src/deprecated/util/liboldutils.a \
 		src/util/libutil.a \
 		-lmpdec -lm -lrt -lresolv \
@@ -2454,7 +2348,6 @@ src_bin_corba_fred_pifd_LDADD = \
 		src/util/types/libtypes.a \
 		src/util/tz/libtimezones.a \
 		src/deprecated/util/liboldutils.a \
-		src/util/log/liblog.a \
 		src/util/libutil.a \
 		-lmpdec -lm -lrt \
 		$(LIBCRYPTO_LIBS) \
@@ -2494,7 +2387,6 @@ src_bin_corba_fred_logd_LDADD = \
 		src/deprecated/model/libmodel.a \
 		src/util/db/libdb.a \
 		src/util/types/libtypes.a \
-		src/util/log/liblog.a \
 		src/util/libutil.a \
 		src/deprecated/util/liboldutils.a \
 		-lmpdec -lm -lrt \
@@ -2536,7 +2428,6 @@ src_bin_corba_messages_fred_msgd_LDFLAGS = \
 src_bin_corba_messages_fred_msgd_LDADD = \
 		src/libfred/messages/libmessages.a \
 		src/deprecated/model/libmodel.a \
-		src/util/log/liblog.a \
 		src/util/types/libtypes.a \
 		src/util/db/libdb.a \
 		src/deprecated/util/liboldutils.a \
@@ -2588,7 +2479,6 @@ src_bin_corba_mojeid_fred_mifd_LDADD = \
 		src/libfred/contact_verification/libcontact_verification.a \
 		src/libfred/public_request/libpublic_request.a \
 		src/util/libutil.a \
-		src/util/log/liblog.a \
 		src/util/types/libtypes.a \
 		src/util/db/libdb.a \
 		src/deprecated/util/liboldutils.a \
@@ -2658,7 +2548,6 @@ src_bin_corba_domain_browser_fred_dbifd_LDADD = \
 		src/bin/corba/util/libcorbautil.a \
 		src/bin/corba/libcorbaisodatetime.a \
 		src/util/libutil.a \
-		src/util/log/liblog.a \
 		src/util/db/libdb.a \
 		src/util/tz/libtimezones.a \
 		-lmpdec -lm -lrt \
@@ -2730,7 +2619,6 @@ src_bin_corba_automatic_keyset_management_fred_akmd_LDADD = \
 		src/bin/corba/libcorbaregistry.a \
 		src/bin/corba/libcorbafilters.a \
 		src/util/libutil.a \
-		src/util/log/liblog.a \
 		src/util/db/libdb.a \
 		src/util/tz/libtimezones.a \
 		-lmpdec -lm -lrt \
@@ -2780,7 +2668,6 @@ src_bin_corba_record_statement_fred_rsifd_LDADD = \
 		src/libfred/libfred.a \
 		src/bin/corba/util/libcorbautil.a \
 		src/util/libutil.a \
-		src/util/log/liblog.a \
 		src/util/db/libdb.a \
 		src/util/tz/libtimezones.a \
 		-lmpdec -lm -lrt \
@@ -2841,7 +2728,6 @@ src_bin_corba_accounting_fred_accifd_LDADD = \
 		src/bin/corba/util/libcorbautil.a \
 		src/util/libutil.a \
 		src/util/types/libtypes.a \
-		src/util/log/liblog.a \
 		src/util/db/libdb.a \
 		src/util/tz/libtimezones.a \
 		-lmpdec -lm -lrt \
@@ -2982,7 +2868,6 @@ src_bin_cli_fred_admin_LDADD = \
 		src/bin/corba/libfilemanager.a \
 		src/libfred/messages/libmessages.a \
 		src/libfred/requests/librequests.a \
-		src/util/log/liblog.a \
 		src/util/types/libtypes.a \
 		src/util/db/libdb.a \
 		src/deprecated/util/liboldutils.a \
@@ -3017,7 +2902,6 @@ test_test_delete_objects_marked_as_delete_candidate_LDFLAGS = \
 
 test_test_delete_objects_marked_as_delete_candidate_LDADD = \
 		src/libfred/libfred.a \
-		src/util/log/liblog.a \
 		src/util/db/libdb.a \
 		src/deprecated/util/liboldutils.a \
 		src/util/libutil.a \
@@ -3059,7 +2943,6 @@ tools_disclose_flags_updater_fred_disclose_flags_updater_LDFLAGS = \
 
 tools_disclose_flags_updater_fred_disclose_flags_updater_LDADD = \
 		src/libfred/libfred.a \
-		src/util/log/liblog.a \
 		src/util/db/libdb.a \
 		src/util/libutil.a \
 		$(POSTGRESQL_LIB) \
@@ -3095,7 +2978,6 @@ tools_logd_migration_migrate_log_LDADD = \
 		src/deprecated/model/libmodel.a \
 		src/libfred/banking/libbanking.a \
 		src/bin/corba/log/liblog_impl.a \
-		src/util/log/liblog.a \
 		src/util/types/libtypes.a \
 		src/util/db/libdb.a \
 		src/util/libutil.a \
@@ -3125,7 +3007,6 @@ tools_contact_migration_mojeid_contact_address_import_LDFLAGS = \
 
 tools_contact_migration_mojeid_contact_address_import_LDADD = \
 		src/libfred/libfred.a \
-		src/util/log/liblog.a \
 		src/util/db/libdb.a \
 		src/util/libutil.a \
 		$(BOOST_DATE_TIME_LIB) \
@@ -3148,7 +3029,6 @@ tools_contact_migration_mojeid_contact_ssn_fix_LDFLAGS = \
 
 tools_contact_migration_mojeid_contact_ssn_fix_LDADD = \
 		src/libfred/libfred.a \
-		src/util/log/liblog.a \
 		src/util/db/libdb.a \
 		src/util/libutil.a \
 		src/bin/corba/util/libcorbautil.a \
@@ -3215,7 +3095,6 @@ test_backend_test_admin_contact_verification_LDFLAGS = \
 test_backend_test_admin_contact_verification_LDADD = \
 		src/backend/admin/contact/verification/libadmin_contact_verification.a \
 		src/libfred/libfred.a \
-		src/util/log/liblog.a \
 		src/util/db/libdb.a \
 		src/util/libutil.a \
 		src/util/tz/libtimezones.a \
@@ -3269,7 +3148,6 @@ test_backend_test_admin_contact_automerge_LDADD = \
 		src/bin/corba/libcorbadatatypes.a \
 		src/bin/corba/libfilemanager.a \
 		src/libfred/requests/librequests.a \
-		src/util/log/liblog.a \
 		src/util/types/libtypes.a \
 		src/util/db/libdb.a \
 		src/deprecated/util/liboldutils.a \
@@ -3310,7 +3188,6 @@ test_backend_test_admin_notification_LDADD = \
 		src/backend/admin/notification/libadmin_notification.a \
 		src/bin/corba/libcorba.a \
 		src/libfred/libfred.a \
-		src/util/log/liblog.a \
 		src/util/db/libdb.a \
 		src/util/libutil.a \
 		src/util/tz/libtimezones.a \
@@ -3356,7 +3233,6 @@ test_backend_test_admin_domain_LDADD = \
 		src/bin/corba/libfilemanager.a \
 		src/libfred/libfred.a \
 		src/libfred/requests/librequests.a \
-		src/util/log/liblog.a \
 		src/util/db/libdb.a \
 		src/util/libutil.a \
 		src/util/types/libtypes.a \
@@ -3398,7 +3274,6 @@ test_backend_test_admin_zone_LDADD = \
 		src/bin/corba/libcorbafilters.a \
 		src/bin/corba/libcorbadatatypes.a \
 		src/libfred/libfred.a \
-		src/util/log/liblog.a \
 		src/util/db/libdb.a \
 		src/util/libutil.a \
 		src/util/types/libtypes.a \
@@ -3476,7 +3351,6 @@ test_backend_test_epp_LDADD = \
 		src/backend/epp/impl/registraracl/libauthentic_registrar.a \
 		src/util/types/libtypes.a \
 		src/util/db/libdb.a \
-		src/util/log/liblog.a \
 		src/util/libutil.a \
 		src/util/cfg/libhandle_rifd_args.a \
 		$(LIBCRYPTO_LIBS) \
@@ -3539,7 +3413,6 @@ test_backend_test_whois_LDADD = \
 		src/bin/corba/libcorbanullableisodate.a \
 		src/bin/corba/libcorbanullableisodatetime.a \
 		src/libfred/requests/librequests.a \
-		src/util/log/liblog.a \
 		src/util/types/libtypes.a \
 		src/util/db/libdb.a \
 		src/deprecated/util/liboldutils.a \
@@ -3600,9 +3473,9 @@ test_test_server_SOURCES = \
 		test/util/test_optional.cc \
 		src/backend/contact_verification/contact_verification_impl.cc \
 		src/backend/contact_verification/contact_verification_impl.hh \
-		src/libfred/contact_verification/cancel_contact_verification.cc \
-		src/libfred/contact_verification/cancel_contact_verification.hh \
-		src/libfred/contact_verification/contact_verification_state.cc \
+		src/deprecated/libfred/contact_verification/cancel_contact_verification.cc \
+		src/deprecated/libfred/contact_verification/cancel_contact_verification.hh \
+		src/deprecated/libfred/contact_verification/contact_verification_state.cc \
 		test/deprecated/checks.hh \
 		test/util/test_printable.cc \
 		test/util/test_csv_parser.cc \
@@ -3661,7 +3534,6 @@ test_test_server_LDADD = \
 		src/deprecated/util/liboldutils.a \
 		src/libfred/requests/librequests.a \
 		src/libfred/banking/libbanking.a \
-		src/util/log/liblog.a \
 		src/util/libutil.a \
 		src/util/cfg/libhandle_rifd_args.a \
 		src/bin/corba/libcorbamessages.a \
@@ -3726,7 +3598,6 @@ test_backend_test_public_request_LDADD = \
 		src/bin/corba/libmailer.a \
 		src/bin/corba/libcorbadatatypes.a \
 		src/libfred/requests/librequests.a \
-		src/util/log/liblog.a \
 		src/util/db/libdb.a \
 		src/util/libutil.a \
 		src/util/tz/libtimezones.a \
@@ -3757,9 +3628,9 @@ test_test_blocking_SOURCES = \
 		test/setup/tests_common.hh \
 		src/backend/contact_verification/contact_verification_impl.cc \
 		src/backend/contact_verification/contact_verification_impl.hh \
-		src/libfred/contact_verification/cancel_contact_verification.cc \
-		src/libfred/contact_verification/cancel_contact_verification.hh \
-		src/libfred/contact_verification/contact_verification_state.cc \
+		src/deprecated/libfred/contact_verification/cancel_contact_verification.cc \
+		src/deprecated/libfred/contact_verification/cancel_contact_verification.hh \
+		src/deprecated/libfred/contact_verification/contact_verification_state.cc \
 		src/libfred/object_state/clear_admin_object_state_request_id.cc \
 		src/libfred/object_state/clear_object_state_request_id.cc \
 		src/libfred/object_state/create_object_state_request_id.cc \
@@ -3795,7 +3666,6 @@ test_test_blocking_LDADD = \
 		src/deprecated/util/liboldutils.a \
 		src/libfred/requests/librequests.a \
 		src/libfred/banking/libbanking.a \
-		src/util/log/liblog.a \
 		src/util/libutil.a \
 		src/util/cfg/libhandle_rifd_args.a \
 		src/bin/corba/libcorbamessages.a \
@@ -3977,8 +3847,6 @@ test_test_libfred_SOURCES = \
 		test/setup/fixtures_utils.cc \
 		test/setup/fixtures.hh \
 		test/setup/fixtures.cc \
-		src/util/random.hh \
-		src/util/random.cc
 
 
 test_test_libfred_LDFLAGS = \
@@ -3990,7 +3858,6 @@ test_test_libfred_LDADD = \
 		src/libfred/libfred.a \
 		src/util/libpassword_storage.a \
 		src/util/libutil.a \
-		src/util/log/liblog.a \
 		src/util/db/libdb.a \
 		src/util/tz/libtimezones.a \
 		src/util/cfg/libhandle_rifd_args.a \
@@ -4039,7 +3906,6 @@ test_test_optys_LDFLAGS = \
 test_test_optys_LDADD = \
 		src/libfred/libfred.a \
 		src/util/libutil.a \
-		src/util/log/liblog.a \
 		src/util/types/libtypes.a \
 		src/util/tz/libtimezones.a \
 		-lmpdec -lm -lrt \
@@ -4094,7 +3960,6 @@ test_test_corba_conversion_LDADD = \
 		src/bin/corba/util/libcorbautil.a \
 		src/libfred/libfred.a \
 		src/util/libutil.a \
-		src/util/log/liblog.a \
 		src/util/tz/libtimezones.a \
 		-lmpdec -lm -lrt \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
@@ -4166,7 +4031,6 @@ test_backend_test_automatic_keyset_management_LDADD = \
 		src/bin/corba/libcorbaregistry.a \
 		src/bin/corba/libcorbafilters.a \
 		src/util/libutil.a \
-		src/util/log/liblog.a \
 		src/util/db/libdb.a \
 		src/util/tz/libtimezones.a \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
@@ -4217,7 +4081,6 @@ test_backend_test_record_statement_LDFLAGS = \
 test_backend_test_record_statement_LDADD = \
 		src/libfred/libfred.a \
 		src/util/libutil.a \
-		src/util/log/liblog.a \
 		src/util/db/libdb.a \
 		src/util/tz/libtimezones.a \
 		-lmpdec -lm -lrt \
@@ -4326,7 +4189,6 @@ test_test_password_storage_LDADD = \
 		src/bin/corba/libcorbanullableisodate.a \
 		src/util/libpassword_storage.a \
 		src/util/libutil.a \
-		src/util/log/liblog.a \
 		-lmpdec -lm -lrt \
 		$(LIBCRYPTO_LIBS) \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \

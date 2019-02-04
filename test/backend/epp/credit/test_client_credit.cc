@@ -18,11 +18,11 @@
 
 #include "src/backend/epp/credit/client_credit.hh"
 
-#include "src/libfred/registrar/create_registrar.hh"
-#include "src/libfred/opexception.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/util/util.hh"
-#include "src/util/random_data_generator.hh"
+#include "libfred/registrar/create_registrar.hh"
+#include "libfred/opexception.hh"
+#include "libfred/opcontext.hh"
+#include "util/util.hh"
+#include "util/random_data_generator.hh"
 
 #include "test/setup/fixtures.hh"
 #include "test/backend/epp/util.hh"

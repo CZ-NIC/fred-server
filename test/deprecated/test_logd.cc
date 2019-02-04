@@ -14,9 +14,9 @@
 
 #include "src/util/time_clock.hh"
 
-#include "src/libfred/requests/request_impl.hh"
-#include "src/libfred/requests/request.hh"
-#include "src/libfred/requests/request_manager.hh"
+#include "src/deprecated/libfred/requests/request_impl.hh"
+#include "src/deprecated/libfred/requests/request.hh"
+#include "src/deprecated/libfred/requests/request_manager.hh"
 
 #include "src/util/corba_wrapper_decl.hh"
 #include "src/bin/corba/Logger.hh"

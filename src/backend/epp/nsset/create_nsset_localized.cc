@@ -27,7 +27,7 @@
 #include "src/backend/epp/notification_data.hh"
 #include "src/backend/epp/session_data.hh"
 #include "src/backend/epp/nsset/create_nsset.hh"
-#include "src/util/log/context.hh"
+#include "util/log/context.hh"
 
 #include <boost/format.hpp>
 #include <boost/format/free_funcs.hpp>

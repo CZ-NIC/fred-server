@@ -13,14 +13,14 @@
 */
 
 #include "src/util/db/query/base_filters.hh"
-#include "src/util/types/convert_sql_base.hh" 
+#include "util/types/convert_sql_base.hh" 
 /*
 #include "src/deprecated/model/model_filters.hh"
 
 #include "src/deprecated/model/registrar_filter.hh"
 #include "src/deprecated/model/object_state_filter.hh"
 
-#include "src/util/log/logger.hh"
+#include "util/log/logger.hh"
 #include "src/util/settings.hh"
 #include "types/conversions.h"
 */

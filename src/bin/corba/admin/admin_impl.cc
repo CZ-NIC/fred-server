@@ -33,26 +33,26 @@
 #include "src/bin/corba/admin/admin_impl.hh"
 #include "src/deprecated/util/log.hh"
 #include "src/deprecated/util/dbsql.hh"
-#include "src/libfred/registry.hh"
-#include "src/libfred/notify.hh"
+#include "src/deprecated/libfred/registry.hh"
+#include "src/deprecated/libfred/notify.hh"
 #include "src/bin/corba/mailer_manager.hh"
-#include "src/libfred/messages/messages_impl.hh"
-#include "src/libfred/object_states.hh"
-#include "src/libfred/poll/get_request_fee_message.hh"
-#include "src/libfred/banking/get_bank_accounts.hh"
-#include "src/libfred/banking/payment_data.hh"
-#include "src/libfred/public_request/public_request_authinfo_impl.hh"
-#include "src/libfred/public_request/public_request_block_impl.hh"
-#include "src/libfred/public_request/public_request_personal_info_impl.hh"
-#include "src/libfred/public_request/create_public_request.hh"
-#include "src/libfred/registrable_object/contact/undisclose_address.hh"
-#include "src/libfred/registrar/info_registrar.hh"
+#include "src/deprecated/libfred/messages/messages_impl.hh"
+#include "src/deprecated/libfred/object_states.hh"
+#include "libfred/poll/get_request_fee_message.hh"
+#include "src/deprecated/libfred/banking/get_bank_accounts.hh"
+#include "src/deprecated/libfred/banking/payment_data.hh"
+#include "src/deprecated/libfred/public_request/public_request_authinfo_impl.hh"
+#include "src/deprecated/libfred/public_request/public_request_block_impl.hh"
+#include "src/deprecated/libfred/public_request/public_request_personal_info_impl.hh"
+#include "libfred/public_request/create_public_request.hh"
+#include "libfred/registrable_object/contact/undisclose_address.hh"
+#include "libfred/registrar/info_registrar.hh"
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/handle_registry_args.hh"
-#include "src/util/factory_check.hh"
-#include "src/util/log/logger.hh"
-#include "src/util/log/context.hh"
-#include "src/util/random.hh"
+#include "util/factory_check.hh"
+#include "util/log/logger.hh"
+#include "util/log/context.hh"
+#include "util/random.hh"
 #include "src/bin/corba/connection_releaser.hh"
 #include "src/bin/corba/epp_corba_client_impl.hh"
 #include "src/bin/corba/util/corba_conversions_string.hh"
@@ -158,7 +158,7 @@ ccReg_Admin_i::~ccReg_Admin_i() {
     std::string session_id = it->first;
     delete it->second;
     m_session_list.erase(it++);
-    LOGGER(PACKAGE).debug(boost::format("session '%1%' destroyed") % session_id);
+    LOGGER.debug(boost::format("session '%1%' destroyed") % session_id);
   }
 
   TRACE("Admin object completely destroyed.");
@@ -213,11 +213,11 @@ void ccReg_Admin_i::garbageSession() {
   Logging::Context ctx(server_name_);
   Logging::Context ctx2("session-garbage");
 
-  LOGGER(PACKAGE).debug("thread started...");
+  LOGGER.debug("thread started...");
 
   boost::mutex::scoped_lock scoped_lock(m_session_list_mutex);
   while (session_garbage_active_) {
-    LOGGER(PACKAGE).debug("procedure sleeped");
+    LOGGER.debug("procedure sleeped");
 
     boost::xtime sleep_time;
 #if BOOST_VERSION >= 105000
@@ -228,7 +228,7 @@ void ccReg_Admin_i::garbageSession() {
     sleep_time.sec += adifd_session_garbage_;
     cond_.timed_wait(scoped_lock, sleep_time);
 
-    LOGGER(PACKAGE).debug("procedure invoked");
+    LOGGER.debug("procedure invoked");
 
     SessionListType::iterator it = m_session_list.begin();
     while (it != m_session_list.end()) {
@@ -236,7 +236,7 @@ void ccReg_Admin_i::garbageSession() {
         std::string session_id = it->first;
         delete it->second;
         m_session_list.erase(it++);
-        LOGGER(PACKAGE).debug(boost::format("session '%1%' deleted -- remains '%2%'")
+        LOGGER.debug(boost::format("session '%1%' deleted -- remains '%2%'")
             % session_id % m_session_list.size());
       }
       else {
@@ -244,7 +244,7 @@ void ccReg_Admin_i::garbageSession() {
       }
     }
   }
-  LOGGER(PACKAGE).debug("thread stopped");
+  LOGGER.debug("thread stopped");
 }
 
 void ccReg_Admin_i::authenticateUser(const char* _username,
@@ -269,12 +269,12 @@ char* ccReg_Admin_i::createSession(const char* username) {
   boost::mutex::scoped_lock scoped_lock(m_session_list_mutex);
   unsigned sess_max = adifd_session_max_;
   if (sess_max && m_session_list.size() == sess_max) {
-    LOGGER(PACKAGE).info(boost::format("session limit (max=%1%) exceeded") % sess_max);
+    LOGGER.info(boost::format("session limit (max=%1%) exceeded") % sess_max);
 
     SessionListType::iterator it        = m_session_list.begin();
     SessionListType::iterator it_oldest = m_session_list.begin();
     for (; it != m_session_list.end(); ++it) {
-      LOGGER(PACKAGE).debug(boost::format("session %1% - last activity at %2%")
+      LOGGER.debug(boost::format("session %1% - last activity at %2%")
                                           % it->second->getId()
                                           % it->second->getLastActivity());
       if (it_oldest->second->getLastActivity() > it->second->getLastActivity()) {
@@ -282,7 +282,7 @@ char* ccReg_Admin_i::createSession(const char* username) {
       }
     }
 
-    LOGGER(PACKAGE).info(boost::format("destroying oldest session -- %1% (last activity at %2%)")
+    LOGGER.info(boost::format("destroying oldest session -- %1% (last activity at %2%)")
                                        % it_oldest->second->getId()
                                        % it_oldest->second->getLastActivity());
     delete it_oldest->second;
@@ -305,7 +305,7 @@ char* ccReg_Admin_i::createSession(const char* username) {
   m_session_list[session_id] = session;
 
 
-  LOGGER(PACKAGE).notice(boost::format("admin session '%1%' created -- total number of sessions is '%2%'")
+  LOGGER.notice(boost::format("admin session '%1%' created -- total number of sessions is '%2%'")
       % session_id % m_session_list.size());
 
   return CORBA::string_dup(session_id.c_str());
@@ -320,7 +320,7 @@ void ccReg_Admin_i::destroySession(const char* _session_id) {
   boost::mutex::scoped_lock scoped_lock(m_session_list_mutex);
   SessionListType::iterator it = m_session_list.find(_session_id);
   if (it == m_session_list.end()) {
-    LOGGER(PACKAGE).debug(boost::format("session '%1%' not found -- already destroyed")
+    LOGGER.debug(boost::format("session '%1%' not found -- already destroyed")
         % _session_id);
     return;
   }
@@ -341,7 +341,7 @@ ccReg::Session_ptr ccReg_Admin_i::getSession(const char* _session_id)
   boost::mutex::scoped_lock scoped_lock(m_session_list_mutex);
   SessionListType::const_iterator it = m_session_list.find(_session_id);
   if (it == m_session_list.end()) {
-    LOGGER(PACKAGE).debug(boost::format("session '%1%' not found -- deleted due to timout")
+    LOGGER.debug(boost::format("session '%1%' not found -- deleted due to timout")
         % _session_id);
     throw ccReg::Admin::ObjectNotFound();
   }
@@ -399,7 +399,7 @@ ccReg::RegistrarList* ccReg_Admin_i::getRegistrars()
     unionFilter->addFilter( new Database::Filters::RegistrarImpl(true) );
     rl->reload(*unionFilter.get());
 
-    LOG( NOTICE_LOG, "getRegistrars: num -> %d", rl->size() );
+    LOG<Logging::Log::EventImportance::notice>( "getRegistrars: num -> %d", rl->size() );
     ccReg::RegistrarList* reglist = new ccReg::RegistrarList;
     reglist->length(rl->size());
     for (unsigned i=0; i<rl->size(); i++)
@@ -416,7 +416,7 @@ ccReg::AdminRegistrar* ccReg_Admin_i::getRegistrarById(ccReg::TID id)
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
-  LOG( NOTICE_LOG, "getRegistarByHandle: id -> %lld", (unsigned long long)id );
+  LOG<Logging::Log::EventImportance::notice>( "getRegistarByHandle: id -> %lld", (unsigned long long)id );
   if (!id) throw ccReg::Admin::ObjectNotFound();
 
   try {
@@ -543,7 +543,7 @@ Registry::ObjectStatusDescSeq *ccReg_Admin_i::getObjectStatusDescList(const char
         const Registry::ObjectStatusDescSeq* optr = &(o.in());
         if(optr == 0)
         {
-            LOGGER(PACKAGE).error("ccReg_Admin_i::getObjectStatusDescList error new Registry::ObjectStatusDescSeq failed ");
+            LOGGER.error("ccReg_Admin_i::getObjectStatusDescList error new Registry::ObjectStatusDescSeq failed ");
             throw ccReg::Admin::InternalServerError();
         }
 
@@ -553,7 +553,7 @@ Registry::ObjectStatusDescSeq *ccReg_Admin_i::getObjectStatusDescList(const char
         const LibFred::StatusDesc *sd = registry_manager_->getStatusDescByIdx(i);
         if(sd == 0)
         {
-            LOGGER(PACKAGE).error((std::string(
+            LOGGER.error((std::string(
                     "ccReg_Admin_i::getObjectStatusDescList error registry_manager_->getStatusDescByIdx(i) i: "
                     +boost::lexical_cast<std::string>(i))).c_str());
             throw ccReg::Admin::InternalServerError();
@@ -567,12 +567,12 @@ Registry::ObjectStatusDescSeq *ccReg_Admin_i::getObjectStatusDescList(const char
     catch(const std::exception& ex)
     {
         std::string msg = std::string("ccReg_Admin_i::getObjectStatusDescList ex: ")+ex.what();
-        LOGGER(PACKAGE).error(msg.c_str());
+        LOGGER.error(msg.c_str());
         throw ccReg::Admin::InternalServerError();
     }
     catch(...)
     {
-        LOGGER(PACKAGE).error("ccReg_Admin_i::getObjectStatusDescList error ");
+        LOGGER.error("ccReg_Admin_i::getObjectStatusDescList error ");
         throw ccReg::Admin::InternalServerError();
     }
 }
@@ -679,11 +679,11 @@ bool ccReg_Admin_i::setInZoneStatus(ccReg::TID domainId)
             );
         tx.commit();
     } catch (std::exception& ex) {
-        LOGGER(PACKAGE).error("setInZoneStatus: an error has occured");
-        LOGGER(PACKAGE).error(ex.what());
+        LOGGER.error("setInZoneStatus: an error has occured");
+        LOGGER.error(ex.what());
         return false;
     } catch (...) {
-        LOGGER(PACKAGE).error("setInZoneStatus: an error has occured");
+        LOGGER.error("setInZoneStatus: an error has occured");
         return false;
     }
     return true;
@@ -740,7 +740,7 @@ ccReg::TID ccReg_Admin_i::createPublicRequest(Registry::PublicRequest::Type _typ
     REQUEST_TYPE_CORBA2DB_CASE(PRT_UNBLOCK_TRANSFER_EMAIL_PIF)
     REQUEST_TYPE_CORBA2DB_CASE(PRT_UNBLOCK_TRANSFER_POST_PIF)
     default:
-      LOGGER(PACKAGE).error(boost::format("can't create new public request - unknown request type (%1%)")
+      LOGGER.error(boost::format("can't create new public request - unknown request type (%1%)")
                                           % _type);
       throw ccReg::Admin::INVALID_INPUT();
   }
@@ -842,13 +842,13 @@ void ccReg_Admin_i::processPublicRequest(ccReg::TID id, CORBA::Boolean invalid)
   }
   catch (const std::exception& e)
   {
-      LOGGER(PACKAGE).info(
+      LOGGER.info(
               boost::format("processing validation request id=%1%: async disclose address of contact with id %2%: %3%")
               % id % object_id % e.what());
   }
   catch (...)
   {
-      LOGGER(PACKAGE).info(
+      LOGGER.info(
               boost::format("processing validation request id=%1%: async disclose address of contact with id %2%: unknown error")
               % id % object_id);
   }
@@ -889,7 +889,7 @@ ccReg::Admin::Buffer* ccReg_Admin_i::getPublicRequestPDF(ccReg::TID id,
     CORBA::Octet *b = ccReg::Admin::Buffer::allocbuf(size);
     memcpy(b,outstr.str().c_str(),size);
     ccReg::Admin::Buffer* output = new ccReg::Admin::Buffer(size, size, b, 1);
-    LOGGER(PACKAGE).info(boost::format("Retrieved pdf file for request id=%1% lang='%2%'") %
+    LOGGER.info(boost::format("Retrieved pdf file for request id=%1% lang='%2%'") %
                          id % lang);
     return output;
   }
@@ -936,44 +936,44 @@ ccReg::TID ccReg_Admin_i::resendPin3Letter(ccReg::TID publicRequestId)
             Database::query_param_list(publicRequestId)
         );
         if (res.size() <= 0) {
-            LOGGER(PACKAGE).error(boost::format("publicRequestId: %1% not found") % publicRequestId);
+            LOGGER.error(boost::format("publicRequestId: %1% not found") % publicRequestId);
             throw ccReg::Admin::ObjectNotFound();
         }
         const std::string typeOfRequest = static_cast< std::string >(res[0][0]);
         if ((typeOfRequest != "mojeid_contact_identification") &&
             (typeOfRequest != "contact_identification")) {
-            LOGGER(PACKAGE).error(boost::format("publicRequestId: %1% of %2% type is not PIN3 request")
+            LOGGER.error(boost::format("publicRequestId: %1% of %2% type is not PIN3 request")
                 % publicRequestId
                 % typeOfRequest);
             throw ccReg::Admin::ObjectNotFound();
         }
         const std::string requestStatus = static_cast< std::string >(res[0][1]);
         if (requestStatus != Conversion::Enums::to_db_handle(LibFred::PublicRequest::Status::opened)) {
-            LOGGER(PACKAGE).error(
+            LOGGER.error(
                 boost::format("publicRequestId: %1% in %2% state is not new PIN3 request")
                 % publicRequestId
                 % requestStatus);
             throw ccReg::Admin::ObjectNotFound();
         }
         if (static_cast< bool >(res[0][2])) {
-            LOGGER(PACKAGE).error(boost::format("publicRequestId: %1% doesn't have message")
+            LOGGER.error(boost::format("publicRequestId: %1% doesn't have message")
                 % publicRequestId);
             throw ccReg::Admin::ObjectNotFound();
         }
         if (res[0][3].isnull()) {
-            LOGGER(PACKAGE).error(
+            LOGGER.error(
                 boost::format("publicRequestId: %1% doesn't have message_archive_id")
                 % publicRequestId);
             throw ccReg::Admin::ObjectNotFound();
         }
         if (res[0][4].isnull()) {
-            LOGGER(PACKAGE).error(
+            LOGGER.error(
                 boost::format("message_archive_id: %1% doesn't exists")
                 % static_cast< ccReg::TID >(res[0][3]));
             throw ccReg::Admin::ObjectNotFound();
         }
         if (!static_cast<bool>(res[0][5])) {
-            LOGGER(PACKAGE).warning(boost::format("letter id=%1% has copy prohibited status")
+            LOGGER.warning(boost::format("letter id=%1% has copy prohibited status")
                     % static_cast<unsigned long long>(res[0][3]));
             throw LibFred::Messages::MessageCopyProhibited();
         }
@@ -1003,20 +1003,20 @@ ccReg::TID ccReg_Admin_i::resendPin3Letter(ccReg::TID publicRequestId)
         throw ccReg::Admin::InternalServerError();
     }
     catch (Database::NoDataFound &ex) {
-        LOGGER(PACKAGE).error(boost::format("Database::NoDataFound: %1%") % ex.what());
+        LOGGER.error(boost::format("Database::NoDataFound: %1%") % ex.what());
         throw ccReg::Admin::ObjectNotFound();
     }
     catch (LibFred::Messages::MessageCopyProhibited &ex)
     {
-        LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
+        LOGGER.error(boost::format("%1%") % ex.what());
         throw ccReg::Admin::MessageCopyProhibited();
     }
     catch (Database::Exception &ex) {
-        LOGGER(PACKAGE).error(boost::format("Database problem: %1%") % ex.what());
+        LOGGER.error(boost::format("Database problem: %1%") % ex.what());
         throw ccReg::Admin::InternalServerError();
     }
     catch (std::exception &ex) {
-        LOGGER(PACKAGE).error(boost::format("Internal error: %1%") % ex.what());
+        LOGGER.error(boost::format("Internal error: %1%") % ex.what());
         throw ccReg::Admin::InternalServerError();
     }
     catch (...) {
@@ -1055,38 +1055,38 @@ ccReg::TID ccReg_Admin_i::resendPin2SMS(ccReg::TID publicRequestId)
             Database::query_param_list(publicRequestId)
         );
         if (res.size() <= 0) {
-            LOGGER(PACKAGE).error(boost::format("publicRequestId: %1% not found") % publicRequestId);
+            LOGGER.error(boost::format("publicRequestId: %1% not found") % publicRequestId);
             throw ccReg::Admin::ObjectNotFound();
         }
         const std::string typeOfRequest = static_cast< std::string >(res[0][0]);
         if ((typeOfRequest != "mojeid_contact_conditional_identification") &&
             (typeOfRequest != Fred::Backend::ContactVerification::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION)) {
-            LOGGER(PACKAGE).error(boost::format("publicRequestId: %1% of %2% type is not PIN2 request")
+            LOGGER.error(boost::format("publicRequestId: %1% of %2% type is not PIN2 request")
                 % publicRequestId
                 % typeOfRequest);
             throw ccReg::Admin::ObjectNotFound();
         }
         const std::string requestStatus = static_cast< std::string >(res[0][1]);
         if (requestStatus != Conversion::Enums::to_db_handle(LibFred::PublicRequest::Status::opened)) {
-            LOGGER(PACKAGE).error(
+            LOGGER.error(
                 boost::format("publicRequestId: %1% in %2% state is not new PIN2 request")
                 % publicRequestId
                 % requestStatus);
             throw ccReg::Admin::ObjectNotFound();
         }
         if (static_cast< bool >(res[0][2])) {
-            LOGGER(PACKAGE).error(boost::format("publicRequestId: %1% doesn't have message")
+            LOGGER.error(boost::format("publicRequestId: %1% doesn't have message")
                 % publicRequestId);
             throw ccReg::Admin::ObjectNotFound();
         }
         if (res[0][3].isnull()) {
-            LOGGER(PACKAGE).error(
+            LOGGER.error(
                 boost::format("publicRequestId: %1% doesn't have message_archive_id")
                 % publicRequestId);
             throw ccReg::Admin::ObjectNotFound();
         }
         if (res[0][4].isnull()) {
-            LOGGER(PACKAGE).error(
+            LOGGER.error(
                 boost::format("message_archive_id: %1% doesn't exists")
                 % static_cast< ccReg::TID >(res[0][3]));
             throw ccReg::Admin::ObjectNotFound();
@@ -1116,15 +1116,15 @@ ccReg::TID ccReg_Admin_i::resendPin2SMS(ccReg::TID publicRequestId)
         throw ccReg::Admin::InternalServerError();
     }
     catch (Database::NoDataFound &ex) {
-        LOGGER(PACKAGE).error(boost::format("Database::NoDataFound: %1%") % ex.what());
+        LOGGER.error(boost::format("Database::NoDataFound: %1%") % ex.what());
         throw ccReg::Admin::ObjectNotFound();
     }
     catch (Database::Exception &ex) {
-        LOGGER(PACKAGE).error(boost::format("Database problem: %1%") % ex.what());
+        LOGGER.error(boost::format("Database problem: %1%") % ex.what());
         throw ccReg::Admin::InternalServerError();
     }
     catch (std::exception &ex) {
-        LOGGER(PACKAGE).error(boost::format("Internal error: %1%") % ex.what());
+        LOGGER.error(boost::format("Internal error: %1%") % ex.what());
         throw ccReg::Admin::InternalServerError();
     }
     catch (...) {
@@ -1202,11 +1202,11 @@ std::string ccReg_Admin_i::_createQueryForEnumDomainsByRegistrant(const std::str
     return static_cast<unsigned long long>(count_result[0][0]);
   }
   catch (Database::Exception &ex) {
-      LOGGER(PACKAGE).error(boost::format("Database problem: %1%") % ex.what());
+      LOGGER.error(boost::format("Database problem: %1%") % ex.what());
       throw ccReg::Admin::InternalServerError();
   }
   catch (std::exception &ex) {
-    LOGGER(PACKAGE).error(boost::format("Internal error: %1%") % ex.what());
+    LOGGER.error(boost::format("Internal error: %1%") % ex.what());
     throw ccReg::Admin::InternalServerError();
 
   }
@@ -1264,11 +1264,11 @@ ccReg::EnumDictList* ccReg_Admin_i::getEnumDomainsByRegistrant(const char* name,
     return data._retn();
   }
   catch (Database::Exception &ex) {
-      LOGGER(PACKAGE).error(boost::format("Database problem: %1%") % ex.what());
+      LOGGER.error(boost::format("Database problem: %1%") % ex.what());
       throw ccReg::Admin::InternalServerError();
   }
   catch (std::exception &ex) {
-    LOGGER(PACKAGE).error(boost::format("Internal error: %1%") % ex.what());
+    LOGGER.error(boost::format("Internal error: %1%") % ex.what());
     throw ccReg::Admin::InternalServerError();
 
   }
@@ -1326,11 +1326,11 @@ ccReg::EnumDictList* ccReg_Admin_i::getEnumDomainsRecentEntries(::CORBA::Long co
     return data._retn();
   }
   catch (Database::Exception &ex) {
-      LOGGER(PACKAGE).error(boost::format("Database problem: %1%") % ex.what());
+      LOGGER.error(boost::format("Database problem: %1%") % ex.what());
       throw ccReg::Admin::InternalServerError();
   }
   catch (std::exception &ex) {
-    LOGGER(PACKAGE).error(boost::format("Internal error: %1%") % ex.what());
+    LOGGER.error(boost::format("Internal error: %1%") % ex.what());
     throw ccReg::Admin::InternalServerError();
 
   }
@@ -1385,12 +1385,12 @@ ccReg::TID Registry_Registrar_Certification_Manager_i::createCertification(
     }//try
     catch(const std::exception & ex)
     {
-        LOGGER(PACKAGE).debug(boost::format("exception: %1%") % ex.what());
+        LOGGER.debug(boost::format("exception: %1%") % ex.what());
         throw Registry::Registrar::InvalidValue(CORBA::string_dup(ex.what()));
     }//catch std ex
     catch(...)
     {
-        LOGGER(PACKAGE).debug("exception");
+        LOGGER.debug("exception");
         throw Registry::Registrar::InternalServerError();
     }//catch all
 }//createCertification
@@ -1414,12 +1414,12 @@ void Registry_Registrar_Certification_Manager_i::shortenCertification(
     }//try
     catch(const std::exception & ex)
     {
-        LOGGER(PACKAGE).debug(boost::format("exception: %1%") % ex.what());
+        LOGGER.debug(boost::format("exception: %1%") % ex.what());
         throw Registry::Registrar::InvalidValue(CORBA::string_dup(ex.what()));
     }//catch std ex
     catch(...)
     {
-        LOGGER(PACKAGE).debug("exception");
+        LOGGER.debug("exception");
         throw Registry::Registrar::InternalServerError();
     }//catch all
 }//shortenCertification
@@ -1450,12 +1450,12 @@ void Registry_Registrar_Certification_Manager_i::updateCertification(
     }//try
     catch(const std::exception & ex)
     {
-        LOGGER(PACKAGE).debug(boost::format("exception: %1%") % ex.what());
+        LOGGER.debug(boost::format("exception: %1%") % ex.what());
         throw Registry::Registrar::InvalidValue(CORBA::string_dup(ex.what()));
     }//catch std ex
     catch(...)
     {
-        LOGGER(PACKAGE).debug("exception");
+        LOGGER.debug("exception");
         throw Registry::Registrar::InternalServerError();
     }//catch all
 }//updateCertification
@@ -1493,12 +1493,12 @@ Registry_Registrar_Certification_Manager_i::getCertificationsByRegistrar(
     }//try
     catch(const std::exception & ex)
     {
-        LOGGER(PACKAGE).debug(boost::format("exception: %1%") % ex.what());
+        LOGGER.debug(boost::format("exception: %1%") % ex.what());
         throw Registry::Registrar::InvalidValue(CORBA::string_dup(ex.what()));
     }//catch std ex
     catch(...)
     {
-        LOGGER(PACKAGE).debug("exception");
+        LOGGER.debug("exception");
         throw Registry::Registrar::InternalServerError();
     }//catch all
 }//getCertificationsByRegistrar
@@ -1523,12 +1523,12 @@ ccReg::TID Registry_Registrar_Group_Manager_i::createGroup(const char* name)
     }//try
     catch(const std::exception & ex)
     {
-        LOGGER(PACKAGE).debug(boost::format("exception: %1%") % ex.what());
+        LOGGER.debug(boost::format("exception: %1%") % ex.what());
         throw Registry::Registrar::InvalidValue(CORBA::string_dup(ex.what()));
     }//catch std ex
     catch(...)
     {
-        LOGGER(PACKAGE).debug("exception");
+        LOGGER.debug("exception");
         throw Registry::Registrar::InternalServerError();
     }//catch all
 }//createGroup
@@ -1548,12 +1548,12 @@ void Registry_Registrar_Group_Manager_i::deleteGroup(ccReg::TID group_id)
     }//try
     catch(const std::exception & ex)
     {
-        LOGGER(PACKAGE).debug(boost::format("exception: %1%") % ex.what());
+        LOGGER.debug(boost::format("exception: %1%") % ex.what());
         throw Registry::Registrar::InvalidValue(CORBA::string_dup(ex.what()));
     }//catch std ex
     catch(...)
     {
-        LOGGER(PACKAGE).debug("exception");
+        LOGGER.debug("exception");
         throw Registry::Registrar::InternalServerError();
     }//catch all
 }//deleteGroup
@@ -1575,12 +1575,12 @@ void Registry_Registrar_Group_Manager_i::updateGroup(
     }//try
     catch(const std::exception & ex)
     {
-        LOGGER(PACKAGE).debug(boost::format("exception: %1%") % ex.what());
+        LOGGER.debug(boost::format("exception: %1%") % ex.what());
         throw Registry::Registrar::InvalidValue(CORBA::string_dup(ex.what()));
     }//catch std ex
     catch(...)
     {
-        LOGGER(PACKAGE).debug("exception");
+        LOGGER.debug("exception");
         throw Registry::Registrar::InternalServerError();
     }//catch all
 }//updateGroup
@@ -1606,12 +1606,12 @@ ccReg::TID Registry_Registrar_Group_Manager_i::addRegistrarToGroup(
     }//try
     catch(const std::exception & ex)
     {
-        LOGGER(PACKAGE).debug(boost::format("exception: %1%") % ex.what());
+        LOGGER.debug(boost::format("exception: %1%") % ex.what());
         throw Registry::Registrar::InvalidValue(CORBA::string_dup(ex.what()));
     }//catch std ex
     catch(...)
     {
-        LOGGER(PACKAGE).debug("exception");
+        LOGGER.debug("exception");
         throw Registry::Registrar::InternalServerError();
     }//catch all
 }//addRegistrarToGroup
@@ -1635,12 +1635,12 @@ void Registry_Registrar_Group_Manager_i::removeRegistrarFromGroup(
     }//try
     catch(const std::exception & ex)
     {
-        LOGGER(PACKAGE).debug(boost::format("exception: %1%") % ex.what());
+        LOGGER.debug(boost::format("exception: %1%") % ex.what());
         throw Registry::Registrar::InvalidValue(CORBA::string_dup(ex.what()));
     }//catch std ex
     catch(...)
     {
-        LOGGER(PACKAGE).debug("exception");
+        LOGGER.debug("exception");
         throw Registry::Registrar::InternalServerError();
     }//catch all
 }
@@ -1675,12 +1675,12 @@ Registry_Registrar_Group_Manager_i::getGroups()
     }//try
     catch(const std::exception & ex)
     {
-        LOGGER(PACKAGE).debug(boost::format("exception: %1%") % ex.what());
+        LOGGER.debug(boost::format("exception: %1%") % ex.what());
         throw;// Registry::Registrar::InvalidValue(CORBA::string_dup(ex.what()));
     }//catch std ex
     catch(...)
     {
-        LOGGER(PACKAGE).debug("exception");
+        LOGGER.debug("exception");
         throw Registry::Registrar::InternalServerError();
     }//catch all
 }//getGroups
@@ -1718,12 +1718,12 @@ Registry_Registrar_Group_Manager_i::getMembershipsByRegistar(
     }//try
     catch(const std::exception & ex)
     {
-        LOGGER(PACKAGE).debug(boost::format("exception: %1%") % ex.what());
+        LOGGER.debug(boost::format("exception: %1%") % ex.what());
         throw Registry::Registrar::InvalidValue(CORBA::string_dup(ex.what()));
     }//catch std ex
     catch(...)
     {
-        LOGGER(PACKAGE).debug("exception");
+        LOGGER.debug("exception");
         throw Registry::Registrar::InternalServerError();
     }//catch all
 }//getMembershipsByRegistar
@@ -1759,12 +1759,12 @@ Registry_Registrar_Group_Manager_i::getMembershipsByGroup(ccReg::TID group_id)
     }//try
     catch(const std::exception & ex)
     {
-        LOGGER(PACKAGE).debug(boost::format("exception: %1%") % ex.what());
+        LOGGER.debug(boost::format("exception: %1%") % ex.what());
         throw Registry::Registrar::InvalidValue(CORBA::string_dup(ex.what()));
     }//catch std ex
     catch(...)
     {
-        LOGGER(PACKAGE).debug("exception");
+        LOGGER.debug("exception");
         throw Registry::Registrar::InternalServerError();
     }//catch all
 }//getMembershipsByGroup
@@ -1775,7 +1775,7 @@ ccReg::EnumList* ccReg_Admin_i::getBankAccounts()
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
-  LOGGER(PACKAGE).debug("ccReg_Admin_i::getBankAccounts");
+  LOGGER.debug("ccReg_Admin_i::getBankAccounts");
   try
   {
       LibFred::Banking::EnumList el = LibFred::Banking::getBankAccounts();
@@ -1851,10 +1851,10 @@ bool ccReg_Admin_i::isRegistrarBlocked(ccReg::TID reg_id)
     } catch (LibFred::NOT_FOUND &) {
         throw ccReg::Admin::ObjectNotFound();
     } catch (std::exception &ex) {
-        LOGGER(PACKAGE).error(ex.what());
+        LOGGER.error(ex.what());
         throw ccReg::Admin::InternalServerError();
     } catch (...) {
-        LOGGER(PACKAGE).error("unknown error in isRegistrarBlocked");
+        LOGGER.error("unknown error in isRegistrarBlocked");
         throw ccReg::Admin::InternalServerError();
     }
 
@@ -1878,10 +1878,10 @@ bool ccReg_Admin_i::blockRegistrar(ccReg::TID reg_id)
     } catch (LibFred::NOT_FOUND &) {
         throw ccReg::Admin::ObjectNotFound();
     } catch (std::exception &ex) {
-        LOGGER(PACKAGE).error(ex.what());
+        LOGGER.error(ex.what());
         throw ccReg::Admin::InternalServerError();
     } catch (...) {
-        LOGGER(PACKAGE).error("unknown error in blockRegistrar");
+        LOGGER.error("unknown error in blockRegistrar");
         throw ccReg::Admin::InternalServerError();
     }
 
@@ -1905,10 +1905,10 @@ void ccReg_Admin_i::unblockRegistrar(ccReg::TID reg_id, ccReg::TID request_id)
     } catch (LibFred::NOT_BLOCKED &) {
         throw ccReg::Admin::ObjectNotBlocked();
     } catch (std::exception &ex) {
-        LOGGER(PACKAGE).error(ex.what());
+        LOGGER.error(ex.what());
         throw ccReg::Admin::InternalServerError();
     } catch (...) {
-        LOGGER(PACKAGE).error("unknown error in unblockRegistrar");
+        LOGGER.error("unknown error in unblockRegistrar");
         throw ccReg::Admin::InternalServerError();
     }
 }
@@ -1949,10 +1949,10 @@ ccReg::ULLSeq* ccReg_Admin_i::getSummaryOfExpiredDomains(const char *registrar_h
     } catch (LibFred::NOT_FOUND &) {
         throw ccReg::Admin::ObjectNotFound();
     } catch (std::exception &ex) {
-        LOGGER(PACKAGE).error(ex.what());
+        LOGGER.error(ex.what());
         throw ccReg::Admin::InternalServerError();
     } catch (...) {
-        LOGGER(PACKAGE).error("unknown exception in getSummaryOfExpiredDomains");
+        LOGGER.error("unknown exception in getSummaryOfExpiredDomains");
         throw ccReg::Admin::InternalServerError();
     }
 }

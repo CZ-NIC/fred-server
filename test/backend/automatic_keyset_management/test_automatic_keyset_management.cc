@@ -21,7 +21,7 @@
 
 #include "src/backend/automatic_keyset_management/automatic_keyset_management.hh"
 
-#include "src/libfred/object_state/get_object_states.hh"
+#include "libfred/object_state/get_object_states.hh"
 
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/algorithm/string/join.hpp>

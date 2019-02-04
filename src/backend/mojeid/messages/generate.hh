@@ -24,13 +24,13 @@
 #ifndef GENERATE_HH_01DB2767767C4522BF6CA4CFBABEEC17
 #define GENERATE_HH_01DB2767767C4522BF6CA4CFBABEEC17
 
-#include "src/libfred/documents.hh"
-#include "src/libfred/mailer.hh"
-#include "src/libfred/messages/messages_impl.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/public_request/public_request_lock_guard.hh"
-#include "src/libfred/public_request/public_request_object_lock_guard.hh"
-#include "src/util/optional_value.hh"
+#include "src/deprecated/libfred/documents.hh"
+#include "libfred/mailer.hh"
+#include "src/deprecated/libfred/messages/messages_impl.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/public_request/public_request_lock_guard.hh"
+#include "libfred/public_request/public_request_object_lock_guard.hh"
+#include "util/optional_value.hh"
 
 #include <boost/noncopyable.hpp>
 

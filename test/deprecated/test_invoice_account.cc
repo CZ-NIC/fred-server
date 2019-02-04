@@ -32,23 +32,23 @@
 
 #include "test/deprecated/test_common_registry.hh"
 #include "src/util/types/money.hh"
-#include "src/libfred/invoicing/invoice.hh"
-#include "src/libfred/registrable_object/domain/create_domain.hh"
-#include "src/libfred/registrable_object/domain/info_domain.hh"
-#include "src/libfred/registrable_object/contact/create_contact.hh"
-#include "src/libfred/registrable_object/nsset/create_nsset.hh"
+#include "src/deprecated/libfred/invoicing/invoice.hh"
+#include "libfred/registrable_object/domain/create_domain.hh"
+#include "libfred/registrable_object/domain/info_domain.hh"
+#include "libfred/registrable_object/contact/create_contact.hh"
+#include "libfred/registrable_object/nsset/create_nsset.hh"
 
 #include "test/deprecated/test_invoice_common.hh"
 
 #include <boost/test/unit_test.hpp>
 
 #include "src/util/time_clock.hh"
-#include "src/libfred/credit.hh"
+#include "src/deprecated/libfred/credit.hh"
 #include "src/bin/corba/file_manager_client.hh"
 
 #include "src/util/corba_wrapper_decl.hh"
 
-#include "src/libfred/banking/bank_common.hh"
+#include "src/deprecated/libfred/banking/bank_common.hh"
 
 
 using namespace ::LibFred::Invoicing;
@@ -188,20 +188,20 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request1 )
     }
     catch(CORBA::TRANSIENT&)
     {
-        Logging::Manager::instance_ref().get(PACKAGE).error("Caught exception CORBA::TRANSIENT -- unable to contact the server." );
+        Logging::Manager::instance_ref().error("Caught exception CORBA::TRANSIENT -- unable to contact the server." );
         std::cerr << "Caught exception CORBA::TRANSIENT -- unable to contact the "
              << "server." << std::endl;
         throw;
     }
     catch(CORBA::SystemException& ex)
     {
-        Logging::Manager::instance_ref().get(PACKAGE).error(std::string("Caught CORBA::SystemException: ")+ex._name() );
+        Logging::Manager::instance_ref().error(std::string("Caught CORBA::SystemException: ")+ex._name() );
         std::cerr << "Caught CORBA::SystemException" << ex._name() << std::endl;
         throw;
     }
     catch(CORBA::Exception& ex)
     {
-        Logging::Manager::instance_ref().get(PACKAGE).error(std::string("Caught CORBA::Exception: ")+ex._name() );
+        Logging::Manager::instance_ref().error(std::string("Caught CORBA::Exception: ")+ex._name() );
         std::cerr << "Caught CORBA::Exception: " << ex._name() << std::endl;
         throw;
     }
@@ -211,7 +211,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request1 )
                         + std::string("  file: ") + std::string(fe.file())
                         + std::string("  line: ") + boost::lexical_cast<std::string>(fe.line())
                         + std::string("  mesg: ") + std::string(fe.errmsg());
-        Logging::Manager::instance_ref().get(PACKAGE).error(errmsg);
+        Logging::Manager::instance_ref().error(errmsg);
         std::cerr << errmsg  << std::endl;
         throw;
     }
@@ -562,20 +562,20 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request2 )
     }
     catch(CORBA::TRANSIENT&)
     {
-        Logging::Manager::instance_ref().get(PACKAGE).error("Caught exception CORBA::TRANSIENT -- unable to contact the server." );
+        Logging::Manager::instance_ref().error("Caught exception CORBA::TRANSIENT -- unable to contact the server." );
         std::cerr << "Caught exception CORBA::TRANSIENT -- unable to contact the "
              << "server." << std::endl;
         throw;
     }
     catch(CORBA::SystemException& ex)
     {
-        Logging::Manager::instance_ref().get(PACKAGE).error(std::string("Caught CORBA::SystemException: ")+ex._name() );
+        Logging::Manager::instance_ref().error(std::string("Caught CORBA::SystemException: ")+ex._name() );
         std::cerr << "Caught CORBA::SystemException" << ex._name() << std::endl;
         throw;
     }
     catch(CORBA::Exception& ex)
     {
-        Logging::Manager::instance_ref().get(PACKAGE).error(std::string("Caught CORBA::Exception: ")+ex._name() );
+        Logging::Manager::instance_ref().error(std::string("Caught CORBA::Exception: ")+ex._name() );
         std::cerr << "Caught CORBA::Exception: " << ex._name() << std::endl;
         throw;
     }
@@ -585,7 +585,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request2 )
                         + std::string("  file: ") + std::string(fe.file())
                         + std::string("  line: ") + boost::lexical_cast<std::string>(fe.line())
                         + std::string("  mesg: ") + std::string(fe.errmsg());
-        Logging::Manager::instance_ref().get(PACKAGE).error(errmsg);
+        Logging::Manager::instance_ref().error(errmsg);
         std::cerr << errmsg  << std::endl;
         throw;
     }
@@ -835,20 +835,20 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
     }
     catch(CORBA::TRANSIENT&)
     {
-        Logging::Manager::instance_ref().get(PACKAGE).error("Caught exception CORBA::TRANSIENT -- unable to contact the server." );
+        Logging::Manager::instance_ref().error("Caught exception CORBA::TRANSIENT -- unable to contact the server." );
         std::cerr << "Caught exception CORBA::TRANSIENT -- unable to contact the "
              << "server." << std::endl;
         throw;
     }
     catch(CORBA::SystemException& ex)
     {
-        Logging::Manager::instance_ref().get(PACKAGE).error(std::string("Caught CORBA::SystemException: ")+ex._name() );
+        Logging::Manager::instance_ref().error(std::string("Caught CORBA::SystemException: ")+ex._name() );
         std::cerr << "Caught CORBA::SystemException" << ex._name() << std::endl;
         throw;
     }
     catch(CORBA::Exception& ex)
     {
-        Logging::Manager::instance_ref().get(PACKAGE).error(std::string("Caught CORBA::Exception: ")+ex._name() );
+        Logging::Manager::instance_ref().error(std::string("Caught CORBA::Exception: ")+ex._name() );
         std::cerr << "Caught CORBA::Exception: " << ex._name() << std::endl;
         throw;
     }
@@ -858,7 +858,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
                         + std::string("  file: ") + std::string(fe.file())
                         + std::string("  line: ") + boost::lexical_cast<std::string>(fe.line())
                         + std::string("  mesg: ") + std::string(fe.errmsg());
-        Logging::Manager::instance_ref().get(PACKAGE).error(errmsg);
+        Logging::Manager::instance_ref().error(errmsg);
         std::cerr << errmsg  << std::endl;
         throw;
     }

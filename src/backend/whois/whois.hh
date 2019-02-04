@@ -24,11 +24,11 @@
 #ifndef WHOIS_HH_C352E6E1DED044AAAE6EC8B2EF5DCA30
 #define WHOIS_HH_C352E6E1DED044AAAE6EC8B2EF5DCA30
 
-#include "src/libfred/object_state/get_object_states.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/registrable_object/domain/info_domain_output.hh"
-#include "src/libfred/registrable_object/nsset/info_nsset_output.hh"
-#include "src/util/db/nullable.hh"
+#include "libfred/object_state/get_object_states.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/registrable_object/domain/info_domain_output.hh"
+#include "libfred/registrable_object/nsset/info_nsset_output.hh"
+#include "util/db/nullable.hh"
 
 #include <boost/asio/ip/address.hpp>
 #include <boost/date_time/gregorian/greg_date.hpp>

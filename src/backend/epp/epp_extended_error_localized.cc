@@ -20,7 +20,7 @@
 #include "src/backend/epp/epp_extended_error.hh"
 #include "src/backend/epp/session_lang.hh"
 #include "src/backend/epp/localization.hh"
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 #include "src/backend/epp/reason.hh"
 #include "src/backend/epp/param.hh"

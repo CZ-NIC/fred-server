@@ -25,7 +25,7 @@
 
 #include "src/backend/epp/update_operation.hh"
 
-#include "src/util/db/nullable.hh"
+#include "util/db/nullable.hh"
 
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/optional.hpp>

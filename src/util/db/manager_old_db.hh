@@ -2,7 +2,7 @@
 #define MANAGER_OLD_DB_HH_566862C4B8BB45898EB728CDA6A0A2A0
 
 #include "src/deprecated/util/dbsql.hh"
-#include "src/libfred/db_settings.hh"
+#include "libfred/db_settings.hh"
 
 namespace Database {
 

@@ -25,24 +25,24 @@
 #include "src/backend/accounting/registrar.hh"
 #include "src/backend/accounting/registrar_reference.hh"
 #include "src/backend/credit.hh"
-#include "src/libfred/banking/bank_manager.hh"
-#include "src/libfred/banking/payment_invoices.hh"
-#include "src/libfred/banking/exceptions.hh"
-#include "src/libfred/object/object_type.hh"
-#include "src/libfred/object_state/get_object_states.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/registrable_object/contact/info_contact.hh"
-#include "src/libfred/registrable_object/domain/info_domain.hh"
-#include "src/libfred/registrable_object/keyset/info_keyset.hh"
-#include "src/libfred/registrable_object/nsset/info_nsset.hh"
-#include "src/libfred/registrar/info_registrar.hh"
-#include "src/libfred/zone/exceptions.hh"
-#include "src/libfred/zone/info_zone.hh"
-#include "src/libfred/zone/info_zone_data.hh"
-#include "src/util/log/context.hh"
-#include "src/util/random.hh"
+#include "src/deprecated/libfred/banking/bank_manager.hh"
+#include "src/deprecated/libfred/banking/payment_invoices.hh"
+#include "src/deprecated/libfred/banking/exceptions.hh"
+#include "libfred/object/object_type.hh"
+#include "libfred/object_state/get_object_states.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/registrable_object/contact/info_contact.hh"
+#include "libfred/registrable_object/domain/info_domain.hh"
+#include "libfred/registrable_object/keyset/info_keyset.hh"
+#include "libfred/registrable_object/nsset/info_nsset.hh"
+#include "libfred/registrar/info_registrar.hh"
+#include "libfred/zone/exceptions.hh"
+#include "libfred/zone/info_zone.hh"
+#include "libfred/zone/info_zone_data.hh"
+#include "util/log/context.hh"
+#include "util/random.hh"
 #include "src/util/subprocess.hh"
-#include "src/util/util.hh"
+#include "util/util.hh"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>
@@ -289,7 +289,7 @@ std::string get_zone_by_payment(
         const PaymentData& _payment_data)
 {
 
-    LOGGER(PACKAGE).info(_payment_data.account_number);
+    LOGGER.info(_payment_data.account_number);
     const BankAccount bank_account = BankAccount::from_string(_payment_data.account_number);
 
     const Database::Result dbres = _ctx.get_conn().exec_params(

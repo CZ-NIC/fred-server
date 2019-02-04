@@ -1,7 +1,7 @@
 #ifndef CONTACT_VERIFICATION_IMPL_HH_6E3C9F031A0B4D018EE2DB4613E5D82B
 #define CONTACT_VERIFICATION_IMPL_HH_6E3C9F031A0B4D018EE2DB4613E5D82B
 
-#include "src/libfred/mailer.hh"
+#include "libfred/mailer.hh"
 #include "src/util/cfg/handle_registry_args.hh"
 
 #include <memory>

@@ -1,10 +1,10 @@
 #include "test/backend/whois/fixture_common.hh"
 
 #include "src/backend/whois/domain_expiration_datetime.hh"
-#include "src/libfred/object_state/perform_object_state_request.hh"
-#include "src/libfred/registrable_object/domain/update_domain.hh"
-#include "src/libfred/registrable_object/domain/transfer_domain.hh"
-#include "src/util/util.hh"
+#include "libfred/object_state/perform_object_state_request.hh"
+#include "libfred/registrable_object/domain/update_domain.hh"
+#include "libfred/registrable_object/domain/transfer_domain.hh"
+#include "util/util.hh"
 
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 

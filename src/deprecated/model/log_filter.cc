@@ -1,4 +1,6 @@
 #include "src/deprecated/model/log_filter.hh"
+#include "src/util/types/null.hh"
+
 namespace Database { 
 
 namespace Filters {

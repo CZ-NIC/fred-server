@@ -16,6 +16,28 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
+#include "test/deprecated/test_common_registry.hh"
+
+#include "src/util/time_clock.hh"
+#include "src/deprecated/libfred/credit.hh"
+#include "src/bin/corba/file_manager_client.hh"
+
+#include "src/deprecated/libfred/banking/bank_common.hh"
+#include "src/deprecated/libfred/exceptions.hh"
+
+#include "libfred/opcontext.hh"
+#include "libfred/poll/create_request_fee_info_message.hh"
+#include "libfred/registrar/create_registrar.hh"
+#include "libfred/registrar/epp_auth/add_registrar_epp_auth.hh"
+#include "libfred/registrar/zone_access/add_registrar_zone_access.hh"
+
+#include <boost/format.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/assign/list_of.hpp>
+#include <boost/algorithm/string.hpp>
+
 #include <memory>
 #include <iostream>
 #include <algorithm>
@@ -27,30 +49,6 @@
 #include <queue>
 #include <sys/time.h>
 #include <time.h>
-
-
-#include "test/deprecated/test_common_registry.hh"
-
-
-#include <boost/format.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/assign/list_of.hpp>
-#include <boost/algorithm/string.hpp>
-
-
-#include "src/util/time_clock.hh"
-#include "src/libfred/credit.hh"
-#include "src/bin/corba/file_manager_client.hh"
-#include "src/libfred/banking/bank_common.hh"
-#include "src/libfred/exceptions.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/poll/create_request_fee_info_message.hh"
-#include "src/libfred/registrar/create_registrar.hh"
-#include "src/libfred/registrar/epp_auth/add_registrar_epp_auth.hh"
-#include "src/libfred/registrar/zone_access/add_registrar_zone_access.hh"
-
-
 
 
 // TODO use it where it's needed
@@ -306,5 +304,3 @@ void insert_poll_request_fee(Database::ID reg_id,
                                             "Europe/Prague").exec(ctx);
     ctx.commit_transaction();
 }
-
-

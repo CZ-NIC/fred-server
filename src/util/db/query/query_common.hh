@@ -2,7 +2,7 @@
 #define QUERY_COMMON_HH_C7A6FB4DAB204F0B80BD616E68DFC420
 
 #include <string>
-#include "src/util/db/value.hh"
+#include "util/db/value.hh"
 
 namespace Database {
 namespace Internal {

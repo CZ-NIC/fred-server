@@ -23,7 +23,7 @@
 #ifndef UTIL_HH_1946C028CFD1459D9A3D10E559FDC6CE
 #define UTIL_HH_1946C028CFD1459D9A3D10E559FDC6CE
 
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 #include "test/setup/fixtures_utils.hh"
 
 #include <utility>

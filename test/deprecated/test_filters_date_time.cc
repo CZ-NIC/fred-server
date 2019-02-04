@@ -3,7 +3,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include "src/util/db/query/base_filters.hh"
-#include "src/util/types/convert_sql_base.hh"
+#include "util/types/convert_sql_base.hh"
 #include "src/deprecated/model/log_filter.hh"
 
 

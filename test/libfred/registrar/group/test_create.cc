@@ -16,11 +16,11 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/libfred/registrar/group/create_registrar_group.hh"
-#include "src/libfred/registrar/group/exceptions.hh"
+#include "libfred/registrar/group/create_registrar_group.hh"
+#include "libfred/registrar/group/exceptions.hh"
 
-#include "src/libfred/db_settings.hh"
-#include "src/libfred/opcontext.hh"
+#include "libfred/db_settings.hh"
+#include "libfred/opcontext.hh"
 #include "test/setup/fixtures.hh"
 
 #include <boost/test/unit_test.hpp>

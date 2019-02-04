@@ -17,17 +17,17 @@
  */
 
 #include "src/bin/cli/remove_delete_candidates.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/db_settings.hh"
-#include "src/libfred/object/object_state.hh"
-#include "src/libfred/registrable_object/contact/delete_contact.hh"
-#include "src/libfred/registrable_object/domain/delete_domain.hh"
-#include "src/libfred/registrable_object/keyset/delete_keyset.hh"
-#include "src/libfred/registrable_object/nsset/delete_nsset.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/db_settings.hh"
+#include "libfred/object/object_state.hh"
+#include "libfred/registrable_object/contact/delete_contact.hh"
+#include "libfred/registrable_object/domain/delete_domain.hh"
+#include "libfred/registrable_object/keyset/delete_keyset.hh"
+#include "libfred/registrable_object/nsset/delete_nsset.hh"
 
-#include "src/util/enum_conversion.hh"
-#include "src/util/random.hh"
-#include "src/util/log/context.hh"
+#include "util/enum_conversion.hh"
+#include "util/random.hh"
+#include "util/log/context.hh"
 
 #include <algorithm>
 #include <chrono>
@@ -597,7 +597,7 @@ void delete_objects_marked_as_delete_candidate(
         }
         catch (const NotFound<ObjectType::contact>& e)
         {
-            LOGGER(PACKAGE).error(boost::format("delete contact failed (%1%)") % e.what());
+            LOGGER.error(boost::format("delete contact failed (%1%)") % e.what());
             const unsigned idx_of_deleted_contact = idx_of_deleted_object - (domains.size() + nssets.size() + keysets.size());
             std::cerr << "delete contact " << contacts[idx_of_deleted_contact].contact_handle.get_value() << " "
                          "(contact_id:" << contacts[idx_of_deleted_contact].contact_id.get_value() << ") "
@@ -605,11 +605,11 @@ void delete_objects_marked_as_delete_candidate(
         }
         catch (const NotExist<ObjectType::contact>& e)
         {
-            LOGGER(PACKAGE).info(boost::format("delete contact failed (%1%)") % e.what());
+            LOGGER.info(boost::format("delete contact failed (%1%)") % e.what());
         }
         catch (const NotFound<ObjectType::domain>& e)
         {
-            LOGGER(PACKAGE).error(boost::format("delete domain failed (%1%)") % e.what());
+            LOGGER.error(boost::format("delete domain failed (%1%)") % e.what());
             const unsigned idx_of_deleted_domain = idx_of_deleted_object;
             std::cerr << "delete domain " << domains[idx_of_deleted_domain].domain_fqdn.get_value() << " "
                          "(domain_id:" << domains[idx_of_deleted_domain].domain_id.get_value() << ", "
@@ -618,11 +618,11 @@ void delete_objects_marked_as_delete_candidate(
         }
         catch (const NotExist<ObjectType::domain>& e)
         {
-            LOGGER(PACKAGE).info(boost::format("delete domain failed (%1%)") % e.what());
+            LOGGER.info(boost::format("delete domain failed (%1%)") % e.what());
         }
         catch (const NotFound<ObjectType::keyset>& e)
         {
-            LOGGER(PACKAGE).error(boost::format("delete keyset failed (%1%)") % e.what());
+            LOGGER.error(boost::format("delete keyset failed (%1%)") % e.what());
             const unsigned idx_of_deleted_keyset = idx_of_deleted_object - (domains.size() + nssets.size());
             std::cerr << "delete keyset " << keysets[idx_of_deleted_keyset].keyset_handle.get_value() << " "
                          "(keyset_id:" << keysets[idx_of_deleted_keyset].keyset_id.get_value() << ") "
@@ -630,11 +630,11 @@ void delete_objects_marked_as_delete_candidate(
         }
         catch (const NotExist<ObjectType::keyset>& e)
         {
-            LOGGER(PACKAGE).info(boost::format("delete keyset failed (%1%)") % e.what());
+            LOGGER.info(boost::format("delete keyset failed (%1%)") % e.what());
         }
         catch (const NotFound<ObjectType::nsset>& e)
         {
-            LOGGER(PACKAGE).error(boost::format("delete nsset failed (%1%)") % e.what());
+            LOGGER.error(boost::format("delete nsset failed (%1%)") % e.what());
             const unsigned idx_of_deleted_nsset = idx_of_deleted_object - domains.size();
             std::cerr << "delete nsset " << nssets[idx_of_deleted_nsset].nsset_handle.get_value() << " "
                          "(nsset_id:" << nssets[idx_of_deleted_nsset].nsset_id.get_value() << ") "
@@ -642,11 +642,11 @@ void delete_objects_marked_as_delete_candidate(
         }
         catch (const NotExist<ObjectType::nsset>& e)
         {
-            LOGGER(PACKAGE).info(boost::format("delete nsset failed (%1%)") % e.what());
+            LOGGER.info(boost::format("delete nsset failed (%1%)") % e.what());
         }
         catch (const LibFred::DeleteContactById::Exception& e)
         {
-            LOGGER(PACKAGE).error(boost::format("delete contact failed (%1%)") % e.what());
+            LOGGER.error(boost::format("delete contact failed (%1%)") % e.what());
             const unsigned idx_of_deleted_contact = idx_of_deleted_object - (domains.size() + nssets.size() + keysets.size());
             std::cerr << "delete contact " << contacts[idx_of_deleted_contact].contact_handle.get_value() << " "
                          "(contact_id:" << contacts[idx_of_deleted_contact].contact_id.get_value() << ") "
@@ -654,7 +654,7 @@ void delete_objects_marked_as_delete_candidate(
         }
         catch (const LibFred::DeleteDomainById::Exception& e)
         {
-            LOGGER(PACKAGE).error(boost::format("delete domain failed (%1%)") % e.what());
+            LOGGER.error(boost::format("delete domain failed (%1%)") % e.what());
             const unsigned idx_of_deleted_domain = idx_of_deleted_object;
             std::cerr << "delete domain " << domains[idx_of_deleted_domain].domain_fqdn.get_value() << " "
                          "(domain_id:" << domains[idx_of_deleted_domain].domain_id.get_value() << ", "
@@ -663,7 +663,7 @@ void delete_objects_marked_as_delete_candidate(
         }
         catch (const LibFred::DeleteKeysetById::Exception& e)
         {
-            LOGGER(PACKAGE).error(boost::format("delete keyset failed (%1%)") % e.what());
+            LOGGER.error(boost::format("delete keyset failed (%1%)") % e.what());
             const unsigned idx_of_deleted_keyset = idx_of_deleted_object - (domains.size() + nssets.size());
             std::cerr << "delete keyset " << keysets[idx_of_deleted_keyset].keyset_handle.get_value() << " "
                          "(keyset_id:" << keysets[idx_of_deleted_keyset].keyset_id.get_value() << ") "
@@ -671,7 +671,7 @@ void delete_objects_marked_as_delete_candidate(
         }
         catch (const LibFred::DeleteNssetById::Exception& e)
         {
-            LOGGER(PACKAGE).error(boost::format("delete nsset failed (%1%)") % e.what());
+            LOGGER.error(boost::format("delete nsset failed (%1%)") % e.what());
             const unsigned idx_of_deleted_nsset = idx_of_deleted_object - domains.size();
             std::cerr << "delete nsset " << nssets[idx_of_deleted_nsset].nsset_handle.get_value() << " "
                          "(nsset_id:" << nssets[idx_of_deleted_nsset].nsset_id.get_value() << ") "
@@ -679,11 +679,11 @@ void delete_objects_marked_as_delete_candidate(
         }
         catch (const std::exception& e)
         {
-            LOGGER(PACKAGE).error(boost::format("operation failed (%1%)") % e.what());
+            LOGGER.error(boost::format("operation failed (%1%)") % e.what());
         }
         catch (...)
         {
-            LOGGER(PACKAGE).error("unexpected exception");
+            LOGGER.error("unexpected exception");
         }
         ++idx_of_deleted_object;
     }

@@ -1,5 +1,5 @@
 #include "test/backend/public_request/fixture_common.hh"
-#include "src/libfred/db_settings.hh"
+#include "libfred/db_settings.hh"
 
 Database::Result get_db_public_request(
     const ::LibFred::OperationContext& ctx,

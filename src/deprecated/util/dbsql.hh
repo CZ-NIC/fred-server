@@ -1,11 +1,11 @@
 #ifndef DBSQL_HH_1EE7FA4B5D8E4144AEFA46DDDE716764
 #define DBSQL_HH_1EE7FA4B5D8E4144AEFA46DDDE716764
 
-#include "src/libfred/db_settings.hh"
+#include "src/deprecated/libfred/db_settings.hh"
 
 #include "src/deprecated/util/util.hh"
 #include "src/deprecated/util/pqsql.hh"
-#include "src/libfred/types.hh"
+#include "libfred/types.hh"
 
 #include <cstdlib>
 #include <memory>

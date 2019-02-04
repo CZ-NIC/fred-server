@@ -17,7 +17,7 @@
  */
 
 #include "src/backend/epp/keyset/dns_key.hh"
-#include "src/libfred/registrable_object/keyset/check_dns_key.hh"
+#include "libfred/registrable_object/keyset/check_dns_key.hh"
 
 namespace Epp {
 namespace Keyset {

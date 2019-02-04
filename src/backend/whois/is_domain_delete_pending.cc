@@ -51,7 +51,7 @@ bool is_domain_delete_pending(const std::string& _fqdn, LibFred::OperationContex
 
     if (result.size() > 0)
     {
-        LOGGER(PACKAGE).debug(
+        LOGGER.debug(
                 boost::format("delete pending check for fqdn %1% selected id=%2%") % static_cast<std::string>(result[0][0]) % static_cast<std::string>(result[0][1]));
 
         Database::Result check = _ctx.get_conn().exec_params(
@@ -70,7 +70,7 @@ bool is_domain_delete_pending(const std::string& _fqdn, LibFred::OperationContex
 
         if (check.size() > 0)
         {
-            LOGGER(PACKAGE).debug(
+            LOGGER.debug(
                     boost::format("delete pending check found newer domain %1% with id=%2%") % static_cast<std::string>(check[0][0]) % static_cast<std::string>(check[0][1]));
 
             return false;

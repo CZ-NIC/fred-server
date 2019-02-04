@@ -30,7 +30,7 @@
 
 #include <boost/function.hpp>
 
-#include "src/util/util.hh"
+#include "util/util.hh"
 namespace Util
 {
 typedef boost::function<void (std::string&, unsigned)> XmlIndentingCallback;

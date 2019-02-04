@@ -19,7 +19,7 @@
 #ifndef POLL_REQUEST_GET_UPDATE_DOMAIN_DETAILS_HH_E2E18DD99B3A4FD3B9AE6E5DDFAB2DB8
 #define POLL_REQUEST_GET_UPDATE_DOMAIN_DETAILS_HH_E2E18DD99B3A4FD3B9AE6E5DDFAB2DB8
 
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 #include "src/backend/epp/domain/info_domain.hh"
 

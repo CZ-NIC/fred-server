@@ -31,10 +31,10 @@
 #include "src/backend/epp/localization.hh"
 #include "src/backend/epp/notification_data.hh"
 #include "src/backend/epp/session_data.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/registrar/info_registrar.hh"
-#include "src/util/decimal/decimal.hh"
-#include "src/util/log/context.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/registrar/info_registrar.hh"
+#include "util/decimal/decimal.hh"
+#include "util/log/context.hh"
 
 #include <boost/format.hpp>
 #include <boost/format/free_funcs.hpp>

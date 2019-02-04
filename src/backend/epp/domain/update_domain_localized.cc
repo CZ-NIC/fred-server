@@ -34,10 +34,10 @@
 #include "src/backend/epp/notification_data.hh"
 #include "src/backend/epp/session_data.hh"
 #include "src/backend/epp/impl/util.hh"
-#include "src/libfred/registrable_object/domain/enum_validation_extension.hh"
-#include "src/util/db/nullable.hh"
-#include "src/util/log/context.hh"
-#include "src/util/optional_value.hh"
+#include "libfred/registrable_object/domain/enum_validation_extension.hh"
+#include "util/db/nullable.hh"
+#include "util/log/context.hh"
+#include "util/optional_value.hh"
 
 #include <boost/format.hpp>
 #include <boost/format/free_funcs.hpp>

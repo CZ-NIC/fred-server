@@ -2,8 +2,8 @@
 #include <boost/thread.hpp>
 #include <boost/thread/barrier.hpp>
 
-#include "src/util/random.hh"
-#include "src/libfred/requests/session_cache.hh"
+#include "util/random.hh"
+#include "src/deprecated/libfred/requests/session_cache.hh"
 #include "test/setup/tests_common.hh"
 
 using namespace ::LibFred::Logger;

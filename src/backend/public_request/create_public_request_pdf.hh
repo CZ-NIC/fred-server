@@ -22,9 +22,9 @@
 #include "src/backend/buffer.hh"
 #include "src/backend/public_request/language.hh"
 #include "src/backend/public_request/object_type.hh"
-#include "src/libfred/documents.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/util/optional_value.hh"
+#include "src/deprecated/libfred/documents.hh"
+#include "libfred/opcontext.hh"
+#include "util/optional_value.hh"
 
 #include <string>
 

@@ -22,8 +22,8 @@
 #include "src/backend/epp/keyset/info_keyset_output_data.hh"
 #include "src/backend/epp/keyset/status_value.hh"
 #include "src/backend/epp/object_states_localized.hh"
-#include "src/libfred/object/object_state.hh"
-#include "src/util/db/nullable.hh"
+#include "libfred/object/object_state.hh"
+#include "util/db/nullable.hh"
 
 #include <boost/optional.hpp>
 

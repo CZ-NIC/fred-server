@@ -19,7 +19,7 @@
 #include "src/bin/corba/epp/poll/poll_corba_conversions.hh"
 #include "src/bin/corba/util/corba_conversions_int.hh"
 #include "src/bin/corba/epp/corba_conversions.hh"
-#include "src/util/util.hh"
+#include "util/util.hh"
 
 #include <boost/variant.hpp>
 

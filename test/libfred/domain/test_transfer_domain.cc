@@ -19,9 +19,9 @@
 #include <boost/test/unit_test.hpp>
 #include <string>
 
-#include "src/libfred/registrable_object/domain/transfer_domain.hh"
-#include "src/libfred/object/transfer_object_exception.hh"
-#include "src/libfred/exception.hh"
+#include "libfred/registrable_object/domain/transfer_domain.hh"
+#include "libfred/object/transfer_object_exception.hh"
+#include "libfred/exception.hh"
 
 #include "test/setup/fixtures.hh"
 #include "test/setup/fixtures_utils.hh"

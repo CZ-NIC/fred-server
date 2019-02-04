@@ -19,7 +19,7 @@
 #ifndef DNS_KEY_HH_F64DF3F171154311BBCDDAC817805FF9
 #define DNS_KEY_HH_F64DF3F171154311BBCDDAC817805FF9
 
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 #include <algorithm>
 #include <ctype.h>

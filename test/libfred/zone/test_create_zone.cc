@@ -15,11 +15,11 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/opexception.hh"
-#include "src/libfred/zone/create_zone.hh"
-#include "src/libfred/zone/exceptions.hh"
-#include "src/util/random_data_generator.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/opexception.hh"
+#include "libfred/zone/create_zone.hh"
+#include "libfred/zone/exceptions.hh"
+#include "util/random_data_generator.hh"
 #include "test/libfred/zone/util.hh"
 #include "test/setup/fixtures.hh"
 

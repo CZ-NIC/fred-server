@@ -3,7 +3,7 @@
 
 #include <memory>
 #include "src/bin/corba/Admin.hh"
-#include "src/libfred/requests/request.hh"
+#include "src/deprecated/libfred/requests/request.hh"
 
 inline std::unique_ptr<LibFred::Logger::ObjectReferences> convert_obj_references(const ccReg::ObjectReferences &r)
 {

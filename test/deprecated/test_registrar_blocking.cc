@@ -1,13 +1,10 @@
-#include <boost/test/unit_test.hpp>
-#include <iostream>
-#include <utility>
 #include "src/util/time_clock.hh"
 
-#include "src/libfred/db_settings.hh"
+#include "libfred/db_settings.hh"
 #include "src/deprecated/util/dbsql.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/registrar.hh"
-#include "src/libfred/registrar/create_registrar.hh"
+#include "src/deprecated/libfred/registrar.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/registrar/create_registrar.hh"
 
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/handle_general_args.hh"
@@ -17,6 +14,10 @@
 #include "src/bin/corba/epp_corba_client_impl.hh"
 #include "test/deprecated/test_invoice_common.hh"
 
+#include <boost/test/unit_test.hpp>
+
+#include <iostream>
+#include <utility>
 
 // TODO: this should also be used in invoice test
 Database::ID create_registrar(::LibFred::Registrar::Manager *regMan)
@@ -58,10 +59,9 @@ BOOST_AUTO_TEST_SUITE(TestRegistrarBlocking)
 
 BOOST_AUTO_TEST_CASE( test_block_registrar )
 {
-     DBSharedPtr m_db;
-     Database::Connection conn = Database::Manager::acquire();
-     m_db.reset(new DB(conn));
-
+    DBSharedPtr m_db;
+    Database::Connection conn = Database::Manager::acquire();
+    m_db.reset(new DB(conn));
 
     std::unique_ptr<::LibFred::Registrar::Manager> regMan(
             ::LibFred::Registrar::Manager::create(m_db));
@@ -77,7 +77,6 @@ BOOST_AUTO_TEST_CASE( test_block_registrar )
     // regMan->blockRegistrar(1, epp_cli.get());
 
     regMan->blockRegistrar(registrar_id, epp_cli.get() );
-
 }
 
 BOOST_AUTO_TEST_CASE( test_is_registrar_blocked )
@@ -102,7 +101,6 @@ BOOST_AUTO_TEST_CASE(test_unblock_registrar)
     regman->unblockRegistrar(reg_id, 767);
 
     BOOST_REQUIRE(!regman->isRegistrarBlocked(reg_id));
-
 }
 
 BOOST_AUTO_TEST_CASE( test_double_unlock_registrar)
@@ -117,7 +115,6 @@ BOOST_AUTO_TEST_CASE( test_double_unlock_registrar)
     regman->unblockRegistrar(reg_id, 777);
 
     BOOST_REQUIRE_THROW(regman->unblockRegistrar(reg_id, 787),  ::LibFred::NOT_BLOCKED);
-
 }
 
 BOOST_AUTO_TEST_CASE( test_block_again)
@@ -133,7 +130,6 @@ BOOST_AUTO_TEST_CASE( test_block_again)
     regman->unblockRegistrar(reg_id, 777);
 
     BOOST_REQUIRE(regman->blockRegistrar(reg_id, epp_cli.get()) == false);
-
 }
 
 BOOST_AUTO_TEST_CASE( test_block_again_no_special_values_used_in_interval_definition )
@@ -154,7 +150,6 @@ BOOST_AUTO_TEST_CASE( test_block_again_no_special_values_used_in_interval_defini
             Database::query_param_list(registrar_id));
 
     BOOST_REQUIRE(regman->blockRegistrar(registrar_id, epp_cli.get()));
-
 }
 
 /// might not work shortly (couple of minutes) after begining of a month
@@ -178,8 +173,6 @@ BOOST_AUTO_TEST_CASE( test_block_last_year_interference )
             Database::query_param_list(registrar_id));
 
     BOOST_REQUIRE(regman->blockRegistrar(registrar_id, epp_cli.get()));
-
 }
 
-
-BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END()//TestRegistrarBlocking

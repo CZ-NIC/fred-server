@@ -20,7 +20,7 @@
 
 #include "src/bin/cli/commonclient.hh"
 #include "src/bin/cli/domainclient.hh"
-#include "src/libfred/registry.hh"
+#include "src/deprecated/libfred/registry.hh"
 #include "src/util/corba_wrapper_decl.hh"
 #include "src/util/cfg/faked_args.hh"
 #include "src/util/cfg/config_handler_decl.hh"

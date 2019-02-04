@@ -20,13 +20,13 @@
 #include <utility>
 #include <iostream>
 
-#include "src/libfred/registrar/create_registrar.hh"
-#include "src/libfred/registrar/info_registrar.hh"
-#include "src/libfred/registrar/info_registrar_diff.hh"
-#include "src/libfred/opexception.hh"
-#include "src/util/util.hh"
+#include "libfred/registrar/create_registrar.hh"
+#include "libfred/registrar/info_registrar.hh"
+#include "libfred/registrar/info_registrar_diff.hh"
+#include "libfred/opexception.hh"
+#include "util/util.hh"
 
-#include "src/util/random_data_generator.hh"
+#include "util/random_data_generator.hh"
 
 /**
  *  @file

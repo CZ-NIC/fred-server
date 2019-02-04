@@ -17,8 +17,10 @@
  */
 
 #include "src/backend/admin/zone/zone.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/zone/exceptions.hh"
+
+#include "libfred/opcontext.hh"
+#include "libfred/zone/exceptions.hh"
+
 #include "test/backend/admin/zone/fixtures.hh"
 #include "test/setup/fixtures.hh"
 
@@ -32,17 +34,17 @@ BOOST_AUTO_TEST_SUITE(Admin)
 BOOST_AUTO_TEST_SUITE(Zone)
 BOOST_AUTO_TEST_SUITE(TestAdminAddZone)
 
-std::size_t exists_zone(const std::string& _fqdn)
+std::size_t get_number_of_zones(const std::string& _fqdn)
 {
     ::LibFred::OperationContextCreator ctx;
-    const Database::Result db_result = ctx.get_conn().exec_params(
+    return ctx.get_conn().exec_params(
             // clang-format off
-            "SELECT 1 FROM zone AS z "
-            "INNER JOIN zone_soa AS zs ON (zs.zone = z.id) "
-            "WHERE z.fqdn = $1::text ",
+            "SELECT 1 "
+            "FROM zone AS z "
+            "JOIN zone_soa AS zs ON zs.zone=z.id "
+            "WHERE z.fqdn=$1::TEXT",
             // clang-format on
-            Database::query_param_list(_fqdn));
-    return db_result.size();
+            Database::query_param_list(_fqdn)).size();
 }
 
 BOOST_FIXTURE_TEST_CASE(set_already_existing_zone, SupplyFixtureCtx<HasExistingZone>)
@@ -75,7 +77,7 @@ BOOST_FIXTURE_TEST_CASE(set_enum_zone, SupplyFixtureCtx<HasEnumZone>)
             update_retr,
             expiry,
             minimum);
-    BOOST_CHECK_EQUAL(exists_zone(zone.fqdn), 1);
+    BOOST_CHECK_EQUAL(get_number_of_zones(zone.fqdn), 1);
 }
 
 BOOST_FIXTURE_TEST_CASE(set_non_enum_zone, SupplyFixtureCtx<HasNonEnumZone>)
@@ -91,12 +93,12 @@ BOOST_FIXTURE_TEST_CASE(set_non_enum_zone, SupplyFixtureCtx<HasNonEnumZone>)
             update_retr,
             expiry,
             minimum);
-    BOOST_CHECK_EQUAL(exists_zone(zone.fqdn), 1);
+    BOOST_CHECK_EQUAL(get_number_of_zones(zone.fqdn), 1);
 }
 
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END()//Backend/Admin/Zone/TestAdminAddZone
+BOOST_AUTO_TEST_SUITE_END()//Backend/Admin/Zone
+BOOST_AUTO_TEST_SUITE_END()//Backend/Admin
+BOOST_AUTO_TEST_SUITE_END()//Backend
 
 } // namespace Test

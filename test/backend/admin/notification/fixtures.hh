@@ -24,13 +24,13 @@
 #ifndef FIXTURES_HH_68A62721C00840268108B7F7893798D1
 #define FIXTURES_HH_68A62721C00840268108B7F7893798D1
 
-#include "src/libfred/registrable_object/domain/create_domain.hh"
-#include "src/libfred/registrable_object/domain/info_domain.hh"
-#include "src/libfred/object_state/perform_object_state_request.hh"
-#include "src/libfred/opcontext.hh"
+#include "libfred/registrable_object/domain/create_domain.hh"
+#include "libfred/registrable_object/domain/info_domain.hh"
+#include "libfred/object_state/perform_object_state_request.hh"
+#include "libfred/opcontext.hh"
 #include "test/setup/fixtures.hh"
 #include "test/setup/fixtures_utils.hh"
-#include "src/util/random_data_generator.hh"
+#include "util/random_data_generator.hh"
 
 #include <map>
 #include <set>

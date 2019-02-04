@@ -1,10 +1,10 @@
 #include "src/backend/admin/contact/merge_contact_auto_procedure.hh"
 #include "src/backend/admin/contact/merge_contact.hh"
 #include "src/backend/admin/contact/merge_contact_reporting.hh"
-#include "src/libfred/registrable_object/contact/find_contact_duplicates.hh"
-#include "src/libfred/registrable_object/contact/merge_contact_email_notification_data.hh"
-#include "src/libfred/registrable_object/contact/merge_contact.hh"
-#include "src/util/util.hh"
+#include "libfred/registrable_object/contact/find_contact_duplicates.hh"
+#include "libfred/registrable_object/contact/merge_contact_email_notification_data.hh"
+#include "libfred/registrable_object/contact/merge_contact.hh"
+#include "util/util.hh"
 
 #include <boost/algorithm/string/join.hpp>
 #include <boost/assign/list_of.hpp>

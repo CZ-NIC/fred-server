@@ -1,6 +1,6 @@
 #include "test/backend/whois/fixture_common.hh"
 
-#include "src/libfred/object_state/get_object_state_descriptions.hh"
+#include "libfred/object_state/get_object_state_descriptions.hh"
 
 #include <boost/foreach.hpp>
 #include <boost/mpl/list.hpp>

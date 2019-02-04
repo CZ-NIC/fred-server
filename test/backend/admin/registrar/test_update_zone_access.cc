@@ -17,8 +17,8 @@
  */
 
 #include "src/backend/admin/registrar/update_zone_access.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/registrar/zone_access/get_registrar_zone_access.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/registrar/zone_access/get_registrar_zone_access.hh"
 #include "test/backend/admin/registrar/fixtures.hh"
 #include "test/setup/fixtures.hh"
 

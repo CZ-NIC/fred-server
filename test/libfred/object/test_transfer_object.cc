@@ -18,9 +18,9 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "src/libfred/object/generated_authinfo_password.hh"
-#include "src/libfred/object/transfer_object.hh"
-#include "src/libfred/object/transfer_object_exception.hh"
+#include "libfred/object/generated_authinfo_password.hh"
+#include "libfred/object/transfer_object.hh"
+#include "libfred/object/transfer_object_exception.hh"
 
 #include "test/setup/fixtures.hh"
 #include "test/libfred/util.hh"

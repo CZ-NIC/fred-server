@@ -42,12 +42,12 @@
 #include <boost/assign/list_of.hpp>
 
 #include "src/util/corba_wrapper_decl.hh"
-#include "src/util/log/logger.hh"
-#include "src/util/log/context.hh"
+#include "util/log/logger.hh"
+#include "util/log/context.hh"
 
-#include "src/util/random_data_generator.hh"
+#include "util/random_data_generator.hh"
 #include "src/util/concurrent_queue.hh"
-#include "src/util/types/common.hh"
+#include "util/types/common.hh"
 
 #include "src/util/cfg/handle_general_args.hh"
 #include "src/util/cfg/handle_corbanameservice_args.hh"

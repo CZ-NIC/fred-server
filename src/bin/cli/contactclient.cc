@@ -18,7 +18,7 @@
 
 #include "src/bin/cli/commonclient.hh"
 #include "src/bin/cli/contactclient.hh"
-#include "src/libfred/registry.hh"
+#include "src/deprecated/libfred/registry.hh"
 
 namespace Admin {
 

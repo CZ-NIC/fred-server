@@ -29,12 +29,12 @@
 #include <string>
 #include <vector>
 
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/registrable_object/contact/place_address.hh"
-#include "src/libfred/registrable_object/domain/enum_validation_extension.hh"
-#include "src/libfred/registrable_object/nsset/nsset_dns_host.hh"
-#include "src/util/db/nullable.hh"
-#include "src/util/optional_value.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/registrable_object/contact/place_address.hh"
+#include "libfred/registrable_object/domain/enum_validation_extension.hh"
+#include "libfred/registrable_object/nsset/nsset_dns_host.hh"
+#include "util/db/nullable.hh"
+#include "util/optional_value.hh"
 
 namespace Fred {
 namespace Backend {

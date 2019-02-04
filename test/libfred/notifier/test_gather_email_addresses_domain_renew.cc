@@ -25,7 +25,7 @@
 #include "test/setup/fixtures_utils.hh"
 #include "test/libfred/notifier/util.hh"
 
-#include "src/libfred/notifier/gather_email_data/gather_email_addresses.hh"
+#include "libfred/notifier/gather_email_data/gather_email_addresses.hh"
 
 
 BOOST_AUTO_TEST_SUITE(TestNotifier)

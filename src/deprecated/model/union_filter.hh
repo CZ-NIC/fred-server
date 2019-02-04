@@ -32,7 +32,7 @@
 #include "src/deprecated/model/zone_filter.hh"
 #include "src/deprecated/model/message_filter.hh"
 
-#include "src/util/log/logger.hh"
+#include "util/log/logger.hh"
 
 #include <memory>
 

@@ -1,7 +1,7 @@
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/handle_corbanameservice_args.hh"
 #include "src/bin/cli/handle_adminclientselection_args.hh"
-#include "src/util/log/context.hh"
+#include "util/log/context.hh"
 #include "src/bin/corba/epp_corba_client_impl.hh"
 #include "src/bin/cli/regblock_client_impl.hh"
 

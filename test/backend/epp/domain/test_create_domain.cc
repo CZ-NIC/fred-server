@@ -24,8 +24,8 @@
 #include "src/backend/epp/domain/create_domain_localized.hh"
 #include "src/backend/epp/epp_response_failure.hh"
 #include "src/backend/epp/epp_result_code.hh"
-#include "src/libfred/object/generate_authinfo_password.hh"
-#include "src/libfred/object/object_id_handle_pair.hh"
+#include "libfred/object/generate_authinfo_password.hh"
+#include "libfred/object/object_id_handle_pair.hh"
 
 #include <algorithm>
 #include <boost/foreach.hpp>

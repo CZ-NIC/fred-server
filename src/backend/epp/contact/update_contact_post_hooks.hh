@@ -19,8 +19,8 @@
 #ifndef UPDATE_CONTACT_POST_HOOKS_HH_7A988A82D9694D1DA4BC92199D6D9641
 #define UPDATE_CONTACT_POST_HOOKS_HH_7A988A82D9694D1DA4BC92199D6D9641
 
-#include "src/libfred/opcontext.hh"
-#include "src/util/optional_value.hh"
+#include "libfred/opcontext.hh"
+#include "util/optional_value.hh"
 
 #include <string>
 

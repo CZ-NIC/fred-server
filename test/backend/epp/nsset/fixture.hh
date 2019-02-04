@@ -23,10 +23,10 @@
 #include "test/backend/epp/util.hh"
 #include "test/setup/fixtures.hh"
 
-#include "src/libfred/object_state/create_object_state_request_id.hh"
-#include "src/libfred/object_state/get_object_states.hh"
-#include "src/libfred/object_state/perform_object_state_request.hh"
-#include "src/libfred/registrable_object/contact/create_contact.hh"
+#include "libfred/object_state/create_object_state_request_id.hh"
+#include "libfred/object_state/get_object_states.hh"
+#include "libfred/object_state/perform_object_state_request.hh"
+#include "libfred/registrable_object/contact/create_contact.hh"
 
 #include "src/backend/epp/nsset/check_nsset_config_data.hh"
 #include "src/backend/epp/nsset/create_nsset_config_data.hh"

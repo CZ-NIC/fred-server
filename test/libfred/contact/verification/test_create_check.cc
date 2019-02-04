@@ -25,13 +25,13 @@
 #include <utility>
 #include <string>
 
-#include "src/libfred/registrable_object/contact/verification/create_check.hh"
-#include "src/libfred/registrable_object/contact/verification/info_check.hh"
-#include "src/libfred/registrable_object/contact/verification/enum_check_status.hh"
-#include "src/libfred/registrable_object/contact/create_contact.hh"
-#include "src/libfred/db_settings.hh"
-#include "src/util/db/nullable.hh"
-#include "src/util/random_data_generator.hh"
+#include "libfred/registrable_object/contact/verification/create_check.hh"
+#include "libfred/registrable_object/contact/verification/info_check.hh"
+#include "libfred/registrable_object/contact/verification/enum_check_status.hh"
+#include "libfred/registrable_object/contact/create_contact.hh"
+#include "libfred/db_settings.hh"
+#include "util/db/nullable.hh"
+#include "util/random_data_generator.hh"
 
 #include "test/libfred/contact/verification/setup_utils.hh"
 #include "test/setup/fixtures.hh"

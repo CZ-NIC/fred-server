@@ -1,7 +1,7 @@
 #ifndef DUMMY_LOGGER_HH_199D82323F4A45628341FBA89D30E936
 #define DUMMY_LOGGER_HH_199D82323F4A45628341FBA89D30E936
 
-#include "src/libfred/logger_client.hh"
+#include "src/deprecated/libfred/logger_client.hh"
 
 namespace LibFred {
 namespace Logger {

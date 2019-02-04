@@ -20,7 +20,7 @@
 #define AUTHINFO_KEYSET_HH_F15799316B5844B19EFB4A5E5CADB80E
 
 #include "src/backend/epp/session_data.hh"
-#include "src/libfred/opcontext.hh"
+#include "libfred/opcontext.hh"
 
 #include <string>
 

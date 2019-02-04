@@ -31,8 +31,8 @@
 #include <stdexcept>
 
 
-#include "src/libfred/messages/messages_impl.hh"
-#include "src/libfred/file.hh"
+#include "src/deprecated/libfred/messages/messages_impl.hh"
+#include "src/deprecated/libfred/file.hh"
 
 
 class ScpUploadException : public std::runtime_error

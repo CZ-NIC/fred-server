@@ -35,7 +35,7 @@
 #include "src/util/cfg/handle_corbanameservice_args.hh"
 #include "src/util/cfg/handle_sms_args.hh"
 #include "src/bin/cli/handle_adminclientselection_args.hh"
-#include "src/util/log/context.hh"
+#include "util/log/context.hh"
 #include "src/bin/cli/notifyclient.hh"
 #include "src/bin/cli/commonclient.hh"
 #include "src/bin/corba/file_manager_client.hh"

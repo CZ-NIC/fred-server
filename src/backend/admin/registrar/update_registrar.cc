@@ -17,11 +17,11 @@
  */
 
 #include "src/backend/admin/registrar/update_registrar.hh"
-#include "src/libfred/opcontext.hh"
-#include "src/libfred/registrar/exceptions.hh"
-#include "src/libfred/registrar/update_registrar.hh"
-#include "src/util/log/context.hh"
-#include "src/util/log/logger.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/registrar/exceptions.hh"
+#include "libfred/registrar/update_registrar.hh"
+#include "util/log/context.hh"
+#include "util/log/logger.hh"
 
 namespace Admin {
 namespace Registrar {
@@ -81,7 +81,7 @@ unsigned long long update_registrar(const std::string& _handle,
                 boost::optional<bool> _vat_payer)
 {
     LOGGING_CONTEXT(log_ctx);
-    LOGGER(PACKAGE).debug("Registrar handle: " + _handle);
+    LOGGER.debug("Registrar handle: " + _handle);
     const std::string operation_name = "LibFred::Registrar::UpdateRegistrar()";
 
     LibFred::OperationContextCreator ctx;
@@ -114,17 +114,17 @@ unsigned long long update_registrar(const std::string& _handle,
     }
     catch (const ::LibFred::Registrar::NoUpdateData& e)
     {
-        LOGGER(PACKAGE).info(operation_name + e.what());
+        LOGGER.info(operation_name + e.what());
         throw UpdateRegistrarNoUpdateData();
     }
     catch (const ::LibFred::Registrar::NonExistentRegistrar& e)
     {
-        LOGGER(PACKAGE).warning(operation_name + e.what());
+        LOGGER.warning(operation_name + e.what());
         throw UpdateRegistrarNonexistent();
     }
     catch (const std::exception& e)
     {
-        LOGGER(PACKAGE).error(operation_name + e.what());
+        LOGGER.error(operation_name + e.what());
         throw UpdateRegistrarException();
     }
     throw UpdateRegistrarException();

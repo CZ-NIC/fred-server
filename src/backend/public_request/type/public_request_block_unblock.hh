@@ -19,7 +19,7 @@
 #ifndef PUBLIC_REQUEST_BLOCKUNBLOCK_HH_53EF83ABD342468AB0B386243FC06F33
 #define PUBLIC_REQUEST_BLOCKUNBLOCK_HH_53EF83ABD342468AB0B386243FC06F33
 
-#include "src/libfred/public_request/public_request_type_iface.hh"
+#include "libfred/public_request/public_request_type_iface.hh"
 #include "src/backend/public_request/confirmed_by.hh"
 
 namespace Fred {

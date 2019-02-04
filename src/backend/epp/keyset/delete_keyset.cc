@@ -23,13 +23,13 @@
 #include "src/backend/epp/epp_result_failure.hh"
 #include "src/backend/epp/exception.hh"
 #include "src/backend/epp/keyset/status_value.hh"
-#include "src/libfred/registrable_object/keyset/delete_keyset.hh"
-#include "src/libfred/registrable_object/keyset/info_keyset.hh"
-#include "src/libfred/object/object_state.hh"
-#include "src/libfred/object_state/get_object_states.hh"
-#include "src/libfred/object_state/lock_object_state_request_lock.hh"
-#include "src/libfred/object_state/perform_object_state_request.hh"
-#include "src/libfred/registrar/info_registrar.hh"
+#include "libfred/registrable_object/keyset/delete_keyset.hh"
+#include "libfred/registrable_object/keyset/info_keyset.hh"
+#include "libfred/object/object_state.hh"
+#include "libfred/object_state/get_object_states.hh"
+#include "libfred/object_state/lock_object_state_request_lock.hh"
+#include "libfred/object_state/perform_object_state_request.hh"
+#include "libfred/registrar/info_registrar.hh"
 
 #include <string>
 #include <vector>

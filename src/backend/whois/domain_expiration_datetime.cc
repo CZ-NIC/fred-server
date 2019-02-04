@@ -1,6 +1,6 @@
 #include "src/backend/whois/domain_expiration_datetime.hh"
-#include "src/libfred/object_state/get_object_states.hh"
-#include "src/libfred/object_state/object_state_name.hh"
+#include "libfred/object_state/get_object_states.hh"
+#include "src/deprecated/libfred/object_state/object_state_name.hh"
 
 namespace Fred {
 namespace Backend {
