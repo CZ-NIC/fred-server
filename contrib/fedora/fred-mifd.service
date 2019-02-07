@@ -1,0 +1,22 @@
+[Unit]
+Description=FRED MojeID backend daemon
+Documentation=https://fred.nic.cz/documentation/html/AdminManual/index.html
+After=network.target fred-logd.service
+ConditionPathExists=!/etc/fred/shutdown
+RequiresMountsFor=/usr/sbin /etc/fred
+
+[Service]
+User=fred
+WorkingDirectory=/
+StandardOutput=null
+StandardError=null
+ExecStart=/usr/sbin/fred-mifd -ORBendPoint giop:tcp::2227 -ORBnativeCharCodeSet UTF-8 --config /etc/fred/fred-mifd.conf
+KillMode=process
+LimitRSS=524288
+Restart=on-failure
+RuntimeDirectory=fred
+
+[Install]
+WantedBy=multi-user.target
+
+

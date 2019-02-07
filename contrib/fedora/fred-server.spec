@@ -7,8 +7,9 @@ License:        GPL
 URL:            http://fred.nic.cz
 Source0:        %{name}-%{version}.tar.gz
 Source1:        idl-%{idl_branch}.tar.gz
+Requires(pre):  /usr/sbin/useradd, /usr/bin/getent
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-%(%{__id_u} -n)
-BuildRequires:  git, omniORB-devel, boost-devel, postgresql-devel, gcc-c++, libxml2-devel, libcurl-devel, libidn-devel, mpdecimal-devel, libssh-devel, minizip-devel, openssl-devel
+BuildRequires:  git, omniORB-devel, boost-devel, postgresql-devel, gcc-c++, libxml2-devel, libcurl-devel, libidn-devel, mpdecimal-devel, libssh-devel, minizip-devel, openssl-devel, systemd
 %if 0%{?centos}
 BuildRequires: centos-release-scl, devtoolset-7, devtoolset-7-build, llvm-toolset-7-cmake, llvm-toolset-7-build
 %else
@@ -39,6 +40,17 @@ clients.
 %install
 rm -rf ${RPM_BUILD_ROOT}
 %make_install
+mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/fred/
+grep ExecStart contrib/fedora/*.service | grep -h -o 'fred-[^/]*\.conf' | while read FILE; do ln -s %{_sysconfdir}/fred/server.conf $RPM_BUILD_ROOT/%{_sysconfdir}/fred/$FILE; done
+mkdir -p $RPM_BUILD_ROOT/%{_unitdir}
+install contrib/fedora/*.service $RPM_BUILD_ROOT/%{_unitdir}
+
+%pre
+/usr/bin/getent passwd fred || /usr/sbin/useradd -r -d /etc/fred -s /bin/bash fred
+
+%post
+test -f /var/log/fred.log  || touch /var/log/fred.log
+chown fred /var/log/fred.log
 
 %clean
 rm -rf ${RPM_BUILD_ROOT}
@@ -49,3 +61,4 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_sysconfdir}/init.d/*
 %{_sbindir}/*
 %{_docdir}/fred-server/*
+%{_unitdir}/*
