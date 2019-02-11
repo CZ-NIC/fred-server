@@ -1,0 +1,22 @@
+[Unit]
+Description=FRED logging daemon
+Documentation=https://fred.nic.cz/documentation/html/AdminManual/index.html
+After=network.target
+ConditionPathExists=!/etc/fred/shutdown
+RequiresMountsFor=/usr/sbin /etc/fred
+
+[Service]
+User=fred
+WorkingDirectory=/
+StandardOutput=null
+StandardError=null
+ExecStart=/usr/sbin/fred-logd -ORBendPoint giop:tcp::2226 -ORBnativeCharCodeSet UTF-8 --config /etc/fred/fred-logd.conf
+KillMode=process
+LimitRSS=524288
+Restart=on-failure
+RuntimeDirectory=fred
+
+[Install]
+WantedBy=multi-user.target
+
+
