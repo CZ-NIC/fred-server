@@ -1,3 +1,7 @@
+2019-02-11 (2.38.2)
+
+  * Add systemd services for fedora packages
+
 2019-01-15 (2.38.1)
 
   * Fix accounting (fred-accifd) - getting registrar by payment data (invalid data and logging)
