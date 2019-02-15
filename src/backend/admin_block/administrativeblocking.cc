@@ -23,11 +23,14 @@
 
 #include "src/backend/admin_block/administrativeblocking.hh"
 
+#include "libfred/object/object_state.hh"
+#include "libfred/object/object_type.hh"
 #include "libfred/object_state/clear_admin_object_state_request_id.hh"
 #include "libfred/object_state/create_admin_object_block_request_id.hh"
 #include "libfred/object_state/create_admin_object_state_restore_request_id.hh"
 #include "libfred/object_state/get_blocking_status_desc_list.hh"
 #include "libfred/object_state/get_object_state_id_map.hh"
+#include "libfred/object_state/object_has_state.hh"
 #include "libfred/object_state/perform_object_state_request.hh"
 #include "libfred/poll/create_update_object_poll_message.hh"
 #include "libfred/registrable_object/contact/copy_contact.hh"
@@ -37,10 +40,13 @@
 #include "libfred/registrable_object/domain/update_domain.hh"
 
 #include "util/log/context.hh"
+//#include "util/log/logger.hh"
+//#include "util/log/log.hh"
 #include "util/random.hh"
 
 #include <map>
 #include <memory>
+#include <ostream>
 
 namespace {
 
@@ -380,6 +386,94 @@ DomainIdHandle& get_domain_handle(
     throw e;
 }
 
+IdlDomainIdList get_blocked_domains_by_owner(LibFred::OperationContext& _ctx,
+        const LibFred::ObjectId& _owner_id)
+{
+    IdlDomainIdList blocked_domain_list;
+    const std::string type_of_object = Conversion::Enums::to_db_handle(LibFred::Object_Type::contact);
+    const std::string type_of_state = Conversion::Enums::to_db_handle(LibFred::Object_State::server_blocked);
+    Database::Result db_res = _ctx.get_conn().exec_params(
+            // clang-format off
+            "SELECT d.id "
+            "FROM domain d "
+            "JOIN object_registry obr ON obr.id = d.registrant AND obr.type = get_object_type_id($1::text) "
+            "JOIN object_state os ON os.object_id = d.id "
+            "JOIN enum_object_states eos ON (eos.id = os.state_id AND eos.name = $2::text) "
+            "WHERE obr.erdate IS NULL "
+            "AND os.valid_to IS NULL "
+            "AND obr.id=$3::integer ",
+            // clang-format on
+            Database::query_param_list(type_of_object)(type_of_state)(_owner_id));
+
+    for (unsigned i = 0; i < db_res.size(); ++i)
+    {
+        blocked_domain_list.insert(static_cast<unsigned long long>(db_res[i][0]));
+    }
+    return blocked_domain_list;
+}
+
+void administrative_unblock_contact(
+        LibFred::OperationContext& _ctx,
+        const LibFred::ObjectId _contact_id,
+        const std::string& _reason,
+        unsigned long long _log_req_id,
+        bool _create_copy_contact_allowed = false)
+{
+    const bool blocked_contact = LibFred::ObjectHasState(_contact_id, LibFred::Object_State::server_blocked)
+            .exec(_ctx);
+    if (!blocked_contact)
+    {
+        return;
+    }
+    const IdlDomainIdList blocked_domain_ids = get_blocked_domains_by_owner(_ctx, _contact_id);
+    if (blocked_domain_ids.size() > 0)
+    {
+        if (_create_copy_contact_allowed)
+        {
+            LOGGER.debug("Contact has some blocked domain - create copy of contact");
+            DomainIdOwnerId domain_id_owner_id;
+            OwnerIdOwnerCopy owner_id_owner_copy;
+            bool is_sys_registrar;
+            const std::string sys_registrar = get_sys_registrar(_ctx, is_sys_registrar);
+
+            copy_domain_owners(sys_registrar,
+                    blocked_domain_ids,
+                    domain_id_owner_id,
+                    owner_id_owner_copy,
+                    _log_req_id,
+                    _ctx);
+
+            DomainIdHandle blocked_domains;
+            get_domain_handle(blocked_domain_ids, blocked_domains, _ctx);
+            for (const auto domain : blocked_domains)
+            {
+                const unsigned long long origin_owner_id = domain_id_owner_id[domain.first];
+                const std::string new_owner_handle = owner_id_owner_copy[origin_owner_id].new_owner_handle;
+                std::ostringstream debug_info;
+                debug_info << "Update domain " << domain.second << " - set new owner: " << new_owner_handle;
+
+                LibFred::UpdateDomain update_domain(domain.second, sys_registrar);
+                update_domain.set_registrant(new_owner_handle);
+                if (_log_req_id > 0)
+                {
+                    update_domain.set_logd_request_id(_log_req_id);
+                }
+                LOGGER.debug(debug_info.str());
+                update_domain.exec(_ctx);
+            }
+        }
+        else
+        {
+            LOGGER.debug("Unblock contact is not possible - contact has some blocked domain");
+            return;
+        }
+    }
+    LibFred::CreateAdminObjectStateRestoreRequestId create_object_state_restore_request(_contact_id, _reason, _log_req_id);
+    create_object_state_restore_request.exec(_ctx);
+    LOGGER.debug("Contact was unblocked.");
+    return;
+}
+
 } // namespace Fred::Backend::Whois::{anonymous}
 
 IdlOwnerChangeList BlockingImpl::blockDomainsId(
@@ -651,38 +745,39 @@ void BlockingImpl::restorePreAdministrativeBlockStatesId(
     {
         LibFred::OperationContextCreator ctx;
         DomainIdHandle domain_id_handle;
-        get_domain_handle(_domain_list, domain_id_handle, ctx);
+        std::set<unsigned long long> owners;
         bool is_sys_registrar;
-        std::string sys_registrar; // FIXME use optional<std::string>
-        for (IdlDomainIdList::const_iterator pDomainId = _domain_list.begin(); pDomainId != _domain_list.end(); ++pDomainId)
+        const std::string sys_registrar = get_sys_registrar(ctx, is_sys_registrar);
+        const boost::gregorian::date today(boost::gregorian::day_clock::universal_day());
+        const bool new_owner_is_set = !(_new_owner.isnull() || _new_owner.get_value().empty());
+
+        get_domain_handle(_domain_list, domain_id_handle, ctx);
+
+        for (const auto object_id : _domain_list)
         {
-            const LibFred::ObjectId object_id = *pDomainId;
+            const unsigned long long owner_id =
+                    LibFred::InfoDomainById(object_id).exec(ctx).info_domain_data.registrant.id;
+            owners.insert(owner_id);
             try
             {
-                LibFred::CreateAdminObjectStateRestoreRequestId create_object_state_restore_request(object_id, _reason, _log_req_id);
-                create_object_state_restore_request.exec(ctx);
                 const std::string fqdn = get_object_handle(ctx, object_id);
+                LOGGER.debug("Restore previous state of domain: " + fqdn);
+                LibFred::CreateAdminObjectStateRestoreRequestId create_object_state_restore_request(
+                        object_id,
+                        _reason,
+                        _log_req_id);
+                create_object_state_restore_request.exec(ctx);
 
-                if (sys_registrar.empty())
-                {
-                    sys_registrar = get_sys_registrar(ctx, is_sys_registrar);
-                }
-
-                const boost::gregorian::date expiration_date = LibFred::InfoDomainByFqdn(fqdn).exec(ctx).info_domain_data.expiration_date;
-
-                const boost::gregorian::date today(boost::gregorian::day_clock::universal_day());
+                const boost::gregorian::date expiration_date =
+                        LibFred::InfoDomainByFqdn(fqdn).exec(ctx).info_domain_data.expiration_date;
                 const bool set_expire_today = expiration_date < today;
-                const bool new_owner_is_set = !(_new_owner.isnull() || _new_owner.get_value().empty());
                 if (new_owner_is_set || set_expire_today)
                 {
-                    if (sys_registrar.empty())
-                    {
-                        sys_registrar = get_sys_registrar(ctx, is_sys_registrar);
-                    }
                     if (!is_sys_registrar)
                     {
                         EX_INTERNAL_SERVER_ERROR e;
                         e.what = "system registrar not found";
+                        LOGGER.error(e.what);
                         throw e;
                     }
                     LibFred::UpdateDomain update_domain(fqdn, sys_registrar);
@@ -736,6 +831,22 @@ void BlockingImpl::restorePreAdministrativeBlockStatesId(
         {
             throw domain_id_not_blocked;
         }
+        const bool create_copy_contact_allowed = !new_owner_is_set;
+        for (const auto owner_id : owners)
+        {
+            std::ostringstream debug_info;
+            debug_info << "Restore previous state of contact: " << owner_id;
+            LOGGER.debug(debug_info.str());
+            try
+            {
+                administrative_unblock_contact(ctx, owner_id, _reason, _log_req_id, create_copy_contact_allowed);
+                LibFred::PerformObjectStateRequest(owner_id).exec(ctx);
+            }
+            catch (const std::exception& e)
+            {
+                throw;
+            }
+        }
         ctx.commit_transaction();
     }
     catch (const EX_DOMAIN_ID_NOT_FOUND&)
@@ -754,6 +865,7 @@ void BlockingImpl::restorePreAdministrativeBlockStatesId(
     {
         EX_INTERNAL_SERVER_ERROR ex;
         ex.what = e.what();
+        LOGGER.error(e.what());
         throw ex;
     }
 }
@@ -877,32 +989,28 @@ void BlockingImpl::unblockDomainsId(
     {
         LibFred::OperationContextCreator ctx;
         DomainIdHandle domain_id_handle;
+        std::set<unsigned long long> owners;
         get_domain_handle(_domain_list, domain_id_handle, ctx);
         bool is_sys_registrar;
-        std::string sys_registrar;
-        for (IdlDomainIdList::const_iterator pDomainId = _domain_list.begin(); pDomainId != _domain_list.end(); ++pDomainId)
+        std::string sys_registrar = get_sys_registrar(ctx, is_sys_registrar);
+        const bool set_new_owner = !_new_owner.isnull() && !_new_owner.get_value().empty();
+        for (const auto object_id : _domain_list)
         {
-            const LibFred::ObjectId object_id = *pDomainId;
+            const unsigned long long owner_id =
+                    LibFred::InfoDomainById(object_id).exec(ctx).info_domain_data.registrant.id;
+            owners.insert(owner_id);
             try
             {
                 LibFred::ClearAdminObjectStateRequestId(object_id, _reason).exec(ctx);
                 const std::string fqdn = get_object_handle(ctx, object_id);
 
-                if (sys_registrar.empty())
-                {
-                    sys_registrar = get_sys_registrar(ctx, is_sys_registrar);
-                }
-                const LibFred::InfoDomainData info_domain_data = LibFred::InfoDomainByFqdn(fqdn).exec(ctx).info_domain_data;
+                const LibFred::InfoDomainData info_domain_data =
+                        LibFred::InfoDomainByFqdn(fqdn).exec(ctx).info_domain_data;
 
                 const boost::gregorian::date today(boost::gregorian::day_clock::universal_day());
                 const bool set_expire_today = info_domain_data.expiration_date < today;
-                const bool set_new_owner = !_new_owner.isnull() && !_new_owner.get_value().empty();
                 if (_remove_admin_c || set_new_owner || set_expire_today)
                 {
-                    if (sys_registrar.empty())
-                    {
-                        sys_registrar = get_sys_registrar(ctx, is_sys_registrar);
-                    }
                     if (!is_sys_registrar)
                     {
                         EX_INTERNAL_SERVER_ERROR e;
@@ -924,11 +1032,9 @@ void BlockingImpl::unblockDomainsId(
                     }
                     if (_remove_admin_c)
                     {
-                        for (std::vector<LibFred::ObjectIdHandlePair>::const_iterator pAdmin = info_domain_data.admin_contacts.begin();
-                                pAdmin != info_domain_data.admin_contacts.end();
-                                ++pAdmin)
+                        for (const auto admin_contact : info_domain_data.admin_contacts)
                         {
-                            update_domain.rem_admin_contact(pAdmin->handle);
+                            update_domain.rem_admin_contact(admin_contact.handle);
                         }
                     }
                     //domain expiration has to be set before update_object_states invocation
@@ -989,6 +1095,22 @@ void BlockingImpl::unblockDomainsId(
         if (!domain_id_not_blocked.what.empty())
         {
             throw domain_id_not_blocked;
+        }
+        const bool create_copy_contact_allowed = !set_new_owner;
+        for (const auto owner_id : owners)
+        {
+            std::ostringstream debug_info;
+            debug_info << "Restore previous state of contact: " << owner_id;
+            LOGGER.debug(debug_info.str());
+            try
+            {
+                administrative_unblock_contact(ctx, owner_id, _reason, _log_req_id, create_copy_contact_allowed);
+                LibFred::PerformObjectStateRequest(owner_id).exec(ctx);
+            }
+            catch (const std::exception& e)
+            {
+                throw;
+            }
         }
         ctx.commit_transaction();
     }
