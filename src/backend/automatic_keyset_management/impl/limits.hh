@@ -23,7 +23,8 @@
 
 #include <cstddef>
 
-namespace LibFred {
+namespace Fred {
+namespace Backend {
 namespace AutomaticKeysetManagement {
 namespace Impl {
 
@@ -51,8 +52,9 @@ BOOST_STATIC_ASSERT(automatically_managed_keyset_handle_suffix_length_min >= 0);
 BOOST_STATIC_ASSERT(automatically_managed_keyset_handle_prefix_length_min + automatically_managed_keyset_handle_suffix_length_min <= automatically_managed_keyset_handle_length);
 BOOST_STATIC_ASSERT(automatically_managed_keyset_handle_prefix_length_max >= automatically_managed_keyset_handle_prefix_length_min);
 
-} // namespace LibFred::AutomaticKeysetManagement::Impl
-} // namespace LibFred::AutomaticKeysetManagement
-} // namespace LibFred
+} // namespace Fred::Backend::AutomaticKeysetManagement::Impl
+} // namespace Fred::Backend::AutomaticKeysetManagement
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

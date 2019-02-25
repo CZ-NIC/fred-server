@@ -19,11 +19,16 @@
 #ifndef LOGGER_REQUEST_AKM_TURN_OFF_HH_F202EBBD883D4D4B9A3AE01D0334D496
 #define LOGGER_REQUEST_AKM_TURN_OFF_HH_F202EBBD883D4D4B9A3AE01D0334D496
 
+#include "src/backend/automatic_keyset_management/impl/domain_reference.hh"
+#include "src/backend/automatic_keyset_management/impl/keyset_reference.hh"
+#include "src/backend/automatic_keyset_management/impl/logger_request.hh"
+#include "src/backend/automatic_keyset_management/impl/logger_request_data.hh"
 #include "src/backend/epp/keyset/dns_key.hh"
 #include "src/deprecated/libfred/logger_client.hh"
 #include "libfred/object/object_id_handle_pair.hh"
 
-namespace LibFred {
+namespace Fred {
+namespace Backend {
 namespace AutomaticKeysetManagement {
 namespace Impl {
 
@@ -32,24 +37,24 @@ class LoggerRequestAkmTurnOff
 public:
     LoggerRequestAkmTurnOff(
             LibFred::Logger::LoggerClient& _logger_client,
-            const ObjectIdHandlePair& _domain)
+            const DomainReference& _domain)
         : logger_request_(
                   _logger_client,
                   LoggerRequestData()
                           .add<LoggerRequestObjectType::domain>(_domain.id)
-                          .add<LoggerRequestProperty::name>(_domain.handle))
+                          .add<LoggerRequestProperty::name>(_domain.fqdn))
     {
     }
 
     void close_on_success(
-            const ObjectIdHandlePair& _domain,
-            const ObjectIdHandlePair& _keyset) const
+            const DomainReference& _domain,
+            const KeysetReference& _keyset) const
     {
         LoggerRequestData logger_request_data;
 
         logger_request_data.add<LoggerRequestObjectType::keyset>(_keyset.id);
 
-        logger_request_data.add<LoggerRequestProperty::name>(_domain.handle);
+        logger_request_data.add<LoggerRequestProperty::name>(_domain.fqdn);
         logger_request_data.add<LoggerRequestProperty::keyset>(_keyset.handle);
 
         logger_request_.close_on_success(logger_request_data);
@@ -70,8 +75,9 @@ private:
     LoggerRequest<LoggerRequestType::akm_turn_off, LoggerServiceType::admin> logger_request_;
 };
 
-} // namespace LibFred::AutomaticKeysetManagement::Impl
-} // namespace LibFred::AutomaticKeysetManagement
-} // namespace LibFred
+} // namespace Fred::Backend::AutomaticKeysetManagement::Impl
+} // namespace Fred::Backend::AutomaticKeysetManagement
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

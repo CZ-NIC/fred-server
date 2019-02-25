@@ -24,66 +24,59 @@
 
 #include <string>
 
-namespace LibFred {
-namespace Corba {
-namespace AutomaticKeysetManagement {
+namespace CorbaConversions {
 
-Registry::AutomaticKeysetManagement::DomainSeq_var wrap_Domains(const LibFred::AutomaticKeysetManagement::Domains& domains)
+Registry::AutomaticKeysetManagement::DomainSeq_var wrap_Domains(const Fred::Backend::AutomaticKeysetManagement::Domains& domains)
 {
     Registry::AutomaticKeysetManagement::DomainSeq_var result(new Registry::AutomaticKeysetManagement::DomainSeq());
     result->length(domains.size());
 
     CORBA::ULong i = 0;
-    for (LibFred::AutomaticKeysetManagement::Domains::const_iterator domain = domains.begin();
-         domain != domains.end();
-         ++domain, ++i)
+    for (const auto& domain : domains)
     {
-        LibFred::Corba::wrap_int(domain->id, result[i].id);
-        result[i].fqdn = LibFred::Corba::wrap_string_to_corba_string(domain->fqdn);
+        LibFred::Corba::wrap_int(domain.id, result[i].id);
+        result[i].fqdn = LibFred::Corba::wrap_string_to_corba_string(domain.fqdn);
+        ++i;
     }
 
     return result;
 }
 
 Registry::AutomaticKeysetManagement::NameserverDomainsSeq_var wrap_NameserversDomains(
-        const LibFred::AutomaticKeysetManagement::NameserversDomains& nameservers_domains)
+        const Fred::Backend::AutomaticKeysetManagement::NameserversDomains& nameservers_domains)
 {
     Registry::AutomaticKeysetManagement::NameserverDomainsSeq_var result(new Registry::AutomaticKeysetManagement::NameserverDomainsSeq());
     result->length(nameservers_domains.size());
 
     CORBA::ULong i = 0;
-    for (LibFred::AutomaticKeysetManagement::NameserversDomains::const_iterator nameserver_domains =
-             nameservers_domains.begin();
-         nameserver_domains != nameservers_domains.end();
-         ++nameserver_domains, ++i)
+    for (const auto& nameserver_domains : nameservers_domains)
     {
-        result[i].nameserver = LibFred::Corba::wrap_string_to_corba_string(nameserver_domains->first);
-        result[i].nameserver_domains = wrap_Domains(nameserver_domains->second);
+        result[i].nameserver = LibFred::Corba::wrap_string_to_corba_string(nameserver_domains.first);
+        result[i].nameserver_domains = wrap_Domains(nameserver_domains.second);
+        ++i;
     }
 
     return result;
 }
 
-Registry::AutomaticKeysetManagement::EmailAddressSeq_var wrap_EmailAddresses(const LibFred::AutomaticKeysetManagement::EmailAddresses& email_addresses)
+Registry::AutomaticKeysetManagement::EmailAddressSeq_var wrap_EmailAddresses(const Fred::Backend::AutomaticKeysetManagement::EmailAddresses& email_addresses)
 {
     Registry::AutomaticKeysetManagement::EmailAddressSeq_var result(new Registry::AutomaticKeysetManagement::EmailAddressSeq());
     result->length(email_addresses.size());
 
     CORBA::ULong i = 0;
-    for (LibFred::AutomaticKeysetManagement::EmailAddresses::const_iterator email_address =
-             email_addresses.begin();
-         email_address != email_addresses.end();
-         ++email_address, ++i)
+    for (const auto& email_address : email_addresses)
     {
-        result[i] = LibFred::Corba::wrap_string_to_corba_string(*email_address);
+        result[i] = LibFred::Corba::wrap_string_to_corba_string(email_address);
+        ++i;
     }
 
     return result;
 }
 
-LibFred::AutomaticKeysetManagement::Nsset unwrap_Nsset(const Registry::AutomaticKeysetManagement::Nsset& nsset)
+Fred::Backend::AutomaticKeysetManagement::Nsset unwrap_Nsset(const Registry::AutomaticKeysetManagement::Nsset& nsset)
 {
-    LibFred::AutomaticKeysetManagement::Nsset result;
+    Fred::Backend::AutomaticKeysetManagement::Nsset result;
     for (CORBA::ULong i = 0; i < nsset.nameservers.length(); ++i)
     {
         result.nameservers.insert(LibFred::Corba::unwrap_string_from_const_char_ptr(nsset.nameservers[i]));
@@ -91,7 +84,7 @@ LibFred::AutomaticKeysetManagement::Nsset unwrap_Nsset(const Registry::Automatic
     return result;
 }
 
-LibFred::AutomaticKeysetManagement::DnsKey unwrap_DnsKey(const Registry::AutomaticKeysetManagement::DnsKey& dns_key)
+Fred::Backend::AutomaticKeysetManagement::DnsKey unwrap_DnsKey(const Registry::AutomaticKeysetManagement::DnsKey& dns_key)
 {
     unsigned short flags;
     LibFred::Corba::unwrap_int(dns_key.flags, flags);
@@ -101,16 +94,16 @@ LibFred::AutomaticKeysetManagement::DnsKey unwrap_DnsKey(const Registry::Automat
     LibFred::Corba::unwrap_int(dns_key.alg, alg);
     const std::string key = LibFred::Corba::unwrap_string(dns_key.public_key);
 
-    return LibFred::AutomaticKeysetManagement::DnsKey(
+    return Fred::Backend::AutomaticKeysetManagement::DnsKey(
             flags,
             protocol,
             alg,
             key);
 }
 
-LibFred::AutomaticKeysetManagement::DnsKeys unwrap_DnsKeys(const Registry::AutomaticKeysetManagement::DnsKeySeq& dns_key_seq)
+Fred::Backend::AutomaticKeysetManagement::DnsKeys unwrap_DnsKeys(const Registry::AutomaticKeysetManagement::DnsKeySeq& dns_key_seq)
 {
-    LibFred::AutomaticKeysetManagement::DnsKeys result;
+    Fred::Backend::AutomaticKeysetManagement::DnsKeys result;
     for (CORBA::ULong i = 0; i < dns_key_seq.length(); ++i)
     {
         result.insert(unwrap_DnsKey(dns_key_seq[i]));
@@ -118,13 +111,11 @@ LibFred::AutomaticKeysetManagement::DnsKeys unwrap_DnsKeys(const Registry::Autom
     return result;
 }
 
-LibFred::AutomaticKeysetManagement::Keyset unwrap_Keyset(const Registry::AutomaticKeysetManagement::Keyset& keyset)
+Fred::Backend::AutomaticKeysetManagement::Keyset unwrap_Keyset(const Registry::AutomaticKeysetManagement::Keyset& keyset)
 {
-    LibFred::AutomaticKeysetManagement::Keyset result;
+    Fred::Backend::AutomaticKeysetManagement::Keyset result;
     result.dns_keys = unwrap_DnsKeys(keyset.dns_keys);
     return result;
 }
 
-} // namespace LibFred::Corba::AutomaticKeysetManagement
-} // namespace LibFred::Corba
-} // namespace Corba
+} // namespace CorbaConversions

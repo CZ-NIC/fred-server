@@ -1,12 +1,11 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2019  CZ.NIC, z.s.p.o.
  *
  * This file is part of FRED.
  *
  * FRED is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * the Free Software Foundation, version 2 of the License.
  *
  * FRED is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -14,24 +13,31 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
+ * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef KEYSET_HH_A8A67E66692040148C32B954A28423F7
-#define KEYSET_HH_A8A67E66692040148C32B954A28423F7
 
-#include "src/backend/automatic_keyset_management/dns_key.hh"
+#ifndef DOMAIN_REFERENCE_HH_75D9E0A988B54377930E9C9E0E4D0CE2
+#define DOMAIN_REFERENCE_HH_75D9E0A988B54377930E9C9E0E4D0CE2
+
+#include <string>
 
 namespace Fred {
 namespace Backend {
 namespace AutomaticKeysetManagement {
+namespace Impl {
 
-typedef std::set<DnsKey> DnsKeys;
-
-struct Keyset
+struct DomainReference
 {
-    DnsKeys dns_keys;
+    DomainReference(const unsigned long long _id, const std::string& _fqdn)
+        : id(_id), fqdn(_fqdn)
+    {
+    }
+
+    unsigned long long id;
+    std::string fqdn;
 };
 
+} // namespace Fred::Backend::AutomaticKeysetManagement::Impl
 } // namespace Fred::Backend::AutomaticKeysetManagement
 } // namespace Fred::Backend
 } // namespace Fred

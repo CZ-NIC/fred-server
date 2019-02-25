@@ -18,7 +18,8 @@
  */
 #include "src/backend/automatic_keyset_management/impl/logger_request_data.hh"
 
-namespace LibFred {
+namespace Fred {
+namespace Backend {
 namespace AutomaticKeysetManagement {
 namespace Impl {
 
@@ -26,7 +27,7 @@ template <>
 LoggerRequestData& LoggerRequestData::add<LoggerRequestObjectType::keyset>(unsigned long long _value)
 {
     object_references_.push_back(
-            Logger::ObjectReference(
+            LibFred::Logger::ObjectReference(
                     to_fred_logger_request_object_type_name<LoggerRequestObjectType::keyset>(),
                     _value));
     return *this;
@@ -36,7 +37,7 @@ template <>
 LoggerRequestData& LoggerRequestData::add<LoggerRequestObjectType::domain>(unsigned long long _value)
 {
     object_references_.push_back(
-            Logger::ObjectReference(
+            LibFred::Logger::ObjectReference(
                     to_fred_logger_request_object_type_name<LoggerRequestObjectType::domain>(),
                     _value));
     return *this;
@@ -95,6 +96,7 @@ LoggerRequestData& LoggerRequestData::add<LoggerRequestProperty::op_tr_id>(unsig
     return *this;
 }
 
-} // namespace LibFred::AutomaticKeysetManagement::Impl
-} // namespace LibFred::AutomaticKeysetManagement
-} // namespace LibFred
+} // namespace Fred::Backend::AutomaticKeysetManagement::Impl
+} // namespace Fred::Backend::AutomaticKeysetManagement
+} // namespace Fred::Backend
+} // namespace Fred

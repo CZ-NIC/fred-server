@@ -22,7 +22,8 @@
 #include <set>
 #include <string>
 
-namespace LibFred {
+namespace Fred {
+namespace Backend {
 namespace AutomaticKeysetManagement {
 
 typedef std::set<std::string> Nameservers;
@@ -32,7 +33,8 @@ struct Nsset
     Nameservers nameservers;
 };
 
-} // namespace LibFred::AutomaticKeysetManagement
-} // namespace LibFred
+} // namespace Fred::Backend::AutomaticKeysetManagement
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

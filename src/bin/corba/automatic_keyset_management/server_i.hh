@@ -32,13 +32,15 @@
 #include <string>
 #include <set>
 
-namespace LibFred {
+namespace Fred {
+namespace Backend {
 namespace AutomaticKeysetManagement {
 
 class AutomaticKeysetManagementImpl; // PIMPL class
 
-} // namespace LibFred::AutomaticKeysetManagement
-} // namespace LibFred
+} // namespace Fred::Backend::AutomaticKeysetManagement
+} // namespace Fred::AutomaticKeysetManagement
+} // namespace Fred
 
 namespace Registry {
 namespace AutomaticKeysetManagement {
@@ -82,7 +84,7 @@ private:
     // destructor non-public
     virtual ~Server_i();
     // do not copy
-    const std::shared_ptr<LibFred::AutomaticKeysetManagement::AutomaticKeysetManagementImpl> impl_;
+    const std::shared_ptr<Fred::Backend::AutomaticKeysetManagement::AutomaticKeysetManagementImpl> impl_;
     Server_i(const Server_i&);//no body
     Server_i& operator= (const Server_i&);//no body
 };

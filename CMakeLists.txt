@@ -623,6 +623,7 @@ prepare_object_files(
     src/bin/corba/AdminSK.cc
     src/bin/corba/admin/user_impl.cc
     src/bin/corba/AutomaticKeysetManagementDynSK.cc
+    src/bin/corba/automatic_keyset_management/corba_conversions.cc
     src/bin/corba/automatic_keyset_management/fred-akmd.cc
     src/bin/corba/automatic_keyset_management/server_i.cc
     src/bin/corba/AutomaticKeysetManagementSK.cc
@@ -1862,6 +1863,7 @@ prepare_executable(fred-akmd
     src/backend/automatic_keyset_management/impl/logger_request_property.cc
     src/backend/automatic_keyset_management/impl/logger_request_type.cc
     src/backend/automatic_keyset_management/impl/util.cc
+    src/bin/corba/automatic_keyset_management/corba_conversions.cc
     src/bin/corba/automatic_keyset_management/server_i.cc
     src/bin/corba/automatic_keyset_management/fred-akmd.cc)
 target_link_libraries(fred-akmd

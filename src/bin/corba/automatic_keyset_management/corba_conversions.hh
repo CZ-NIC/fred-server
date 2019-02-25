@@ -22,25 +22,23 @@
 #include "src/backend/automatic_keyset_management/automatic_keyset_management.hh"
 #include "src/bin/corba/AutomaticKeysetManagement.hh"
 
-namespace LibFred {
-namespace Corba {
+namespace CorbaConversions {
 
-Registry::AutomaticKeysetManagement::DomainSeq_var wrap_Domains(const LibFred::AutomaticKeysetManagement::Domains& domains);
+Registry::AutomaticKeysetManagement::DomainSeq_var wrap_Domains(const Fred::Backend::AutomaticKeysetManagement::Domains& domains);
 
 Registry::AutomaticKeysetManagement::NameserverDomainsSeq_var wrap_NameserversDomains(
-        const LibFred::AutomaticKeysetManagement::NameserversDomains& nameservers_domains);
+        const Fred::Backend::AutomaticKeysetManagement::NameserversDomains& nameservers_domains);
 
-Registry::AutomaticKeysetManagement::EmailAddressSeq_var wrap_EmailAddresses(const LibFred::AutomaticKeysetManagement::EmailAddresses& email_addresses);
+Registry::AutomaticKeysetManagement::EmailAddressSeq_var wrap_EmailAddresses(const Fred::Backend::AutomaticKeysetManagement::EmailAddresses& email_addresses);
 
-LibFred::AutomaticKeysetManagement::Nsset unwrap_Nsset(const Registry::AutomaticKeysetManagement::Nsset& nsset);
+Fred::Backend::AutomaticKeysetManagement::Nsset unwrap_Nsset(const Registry::AutomaticKeysetManagement::Nsset& nsset);
 
-LibFred::AutomaticKeysetManagement::DnsKey unwrap_DnsKey(const Registry::AutomaticKeysetManagement::DnsKey& dns_key);
+Fred::Backend::AutomaticKeysetManagement::DnsKey unwrap_DnsKey(const Registry::AutomaticKeysetManagement::DnsKey& dns_key);
 
-LibFred::AutomaticKeysetManagement::DnsKeys unwrap_DnsKeys(const Registry::AutomaticKeysetManagement::DnsKeySeq& dns_key_seq);
+Fred::Backend::AutomaticKeysetManagement::DnsKeys unwrap_DnsKeys(const Registry::AutomaticKeysetManagement::DnsKeySeq& dns_key_seq);
 
-LibFred::AutomaticKeysetManagement::Keyset unwrap_Keyset(const Registry::AutomaticKeysetManagement::Keyset& keyset);
+Fred::Backend::AutomaticKeysetManagement::Keyset unwrap_Keyset(const Registry::AutomaticKeysetManagement::Keyset& keyset);
 
-} // namespace LibFred::Corba
-} // namespace Corba
+} // namespace CorbaConversions
 
 #endif

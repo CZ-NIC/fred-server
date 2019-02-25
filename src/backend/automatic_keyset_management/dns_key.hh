@@ -22,7 +22,8 @@
 #include <set>
 #include <string>
 
-namespace LibFred {
+namespace Fred {
+namespace Backend {
 namespace AutomaticKeysetManagement {
 
 struct DnsKey
@@ -51,7 +52,8 @@ struct DnsKey
 
 std::string to_string(const DnsKey& dnskey);
 
-} // namespace LibFred::AutomaticKeysetManagement
-} // namespace LibFred
+} // namespace Fred::Backend::AutomaticKeysetManagement
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif
