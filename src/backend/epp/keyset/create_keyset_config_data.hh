@@ -1,11 +1,12 @@
 /*
- * Copyright (C) 2017  CZ.NIC, z.s.p.o.
+ * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
  * FRED is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, version 2 of the License.
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * FRED is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,9 +14,8 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
+ * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 #ifndef CREATE_KEYSET_CONFIG_DATA_HH_0C7F4A6A2C8B47E3A7C6EED78B5D7325
 #define CREATE_KEYSET_CONFIG_DATA_HH_0C7F4A6A2C8B47E3A7C6EED78B5D7325
 
