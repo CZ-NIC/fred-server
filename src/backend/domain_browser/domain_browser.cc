@@ -646,12 +646,9 @@ DomainDetail DomainBrowser::getDomainDetail(
 
         bool set_authinfo = detail.is_owner;
         detail.admins.reserve(domain_info.info_domain_data.admin_contacts.size());
-        for (std::vector<LibFred::ObjectIdHandlePair>::const_iterator ci =
-                 domain_info.info_domain_data.admin_contacts.begin();
-             ci != domain_info.info_domain_data.admin_contacts.end();
-             ++ci)
+        for (const auto& admin_contact : domain_info.info_domain_data.admin_contacts)
         {
-            LibFred::InfoContactOutput admin_contact_info = LibFred::InfoContactById(ci->id).exec(
+            LibFred::InfoContactOutput admin_contact_info = LibFred::InfoContactById(admin_contact.id).exec(
                     ctx,
                     output_timezone);
 
@@ -767,11 +764,9 @@ NssetDetail DomainBrowser::getNssetDetail(
         detail.is_owner = false;
 
         detail.admins.reserve(nsset_info.info_nsset_data.tech_contacts.size());
-        for (std::vector<LibFred::ObjectIdHandlePair>::const_iterator ci =
-                 nsset_info.info_nsset_data.tech_contacts.begin();
-             ci != nsset_info.info_nsset_data.tech_contacts.end(); ++ci)
+        for (const auto& tech_contact : nsset_info.info_nsset_data.tech_contacts)
         {
-            LibFred::InfoContactOutput tech_contact_info = LibFred::InfoContactById(ci->id).exec(
+            LibFred::InfoContactOutput tech_contact_info = LibFred::InfoContactById(tech_contact.id).exec(
                     ctx,
                     output_timezone);
 
@@ -888,11 +883,9 @@ KeysetDetail DomainBrowser::getKeysetDetail(
         detail.is_owner = false;
 
         detail.admins.reserve(keyset_info.info_keyset_data.tech_contacts.size());
-        for (std::vector<LibFred::ObjectIdHandlePair>::const_iterator ci =
-                 keyset_info.info_keyset_data.tech_contacts.begin();
-             ci != keyset_info.info_keyset_data.tech_contacts.end(); ++ci)
+        for (const auto& tech_contact : keyset_info.info_keyset_data.tech_contacts)
         {
-            LibFred::InfoContactOutput tech_contact_info = LibFred::InfoContactById(ci->id).exec(
+            LibFred::InfoContactOutput tech_contact_info = LibFred::InfoContactById(tech_contact.id).exec(
                     ctx,
                     output_timezone);
 

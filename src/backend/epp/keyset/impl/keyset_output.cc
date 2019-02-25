@@ -19,6 +19,7 @@
 #include "src/backend/epp/keyset/impl/keyset_output.hh"
 #include "src/backend/epp/keyset/status_value.hh"
 #include "libfred/registrable_object/keyset/info_keyset.hh"
+#include "libfred/registrable_object/keyset/keyset_reference.hh"
 
 namespace Epp {
 namespace Keyset {
@@ -69,11 +70,9 @@ InfoKeysetOutputData get_info_keyset_output(
         }
     }
     {
-        typedef std::vector<LibFred::ObjectIdHandlePair> FredObjectIdHandle;
-        for (FredObjectIdHandle::const_iterator tech_contact = _data.tech_contacts.begin();
-             tech_contact != _data.tech_contacts.end(); ++tech_contact)
+        for (const auto& tech_contact : _data.tech_contacts)
         {
-            ret.tech_contacts.insert(tech_contact->handle);
+            ret.tech_contacts.insert(tech_contact.handle);
         }
     }
     return ret;

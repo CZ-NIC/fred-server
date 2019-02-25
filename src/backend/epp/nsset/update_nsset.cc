@@ -139,7 +139,7 @@ unsigned long long update_nsset(
         }
 
         std::set<std::string> nsset_tech_c_handles;
-        BOOST_FOREACH(const LibFred::ObjectIdHandlePair & tech_c_element, nsset_data_before_update.tech_contacts)
+        for (const auto& tech_c_element : nsset_data_before_update.tech_contacts)
         {
             nsset_tech_c_handles.insert(boost::algorithm::to_upper_copy(tech_c_element.handle));
         }

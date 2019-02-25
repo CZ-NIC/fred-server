@@ -72,7 +72,7 @@ InfoDomainOutputData get_info_domain_output(
     const bool authinfopw_has_to_be_hidden = !_info_is_for_sponsoring_registrar;
     ret.authinfopw = authinfopw_has_to_be_hidden ? boost::optional<std::string>() : _data.authinfopw;
 
-    for (std::vector<LibFred::ObjectIdHandlePair>::const_iterator object_id_handle_pair =
+    for (std::vector<LibFred::RegistrableObject::Contact::ContactReference>::const_iterator object_id_handle_pair =
              _data.admin_contacts.begin();
          object_id_handle_pair != _data.admin_contacts.end();
          ++object_id_handle_pair)

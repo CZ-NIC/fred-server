@@ -383,9 +383,9 @@ static Whois::NSSet make_nsset_from_info_data(const LibFred::InfoNssetData& ind,
         nss.nservers.push_back(Whois::NameServer(dns_host.get_fqdn(), dns_host.get_inet_addr()));
     }
     nss.sponsoring_registrar = ind.sponsoring_registrar_handle;
-    BOOST_FOREACH(LibFred::ObjectIdHandlePair id_handle_pair, ind.tech_contacts)
+    for (const auto& tech_contact : ind.tech_contacts)
     {
-        nss.tech_contacts.push_back(id_handle_pair.handle);
+        nss.tech_contacts.push_back(tech_contact.handle);
     }
     const std::vector<LibFred::ObjectStateData> v_osd = LibFred::GetObjectStates(ind.id).exec(ctx);
     nss.statuses.reserve(v_osd.size());
@@ -596,9 +596,9 @@ Whois::KeySet Server_impl::get_keyset_by_handle(const std::string& handle)
                 }
             }
 
-            BOOST_FOREACH(LibFred::ObjectIdHandlePair it, ikd.tech_contacts)
+            for (const auto& tech_contact : ikd.tech_contacts)
             {
-                ks.tech_contacts.push_back(it.handle);
+                ks.tech_contacts.push_back(tech_contact.handle);
             }
             return ks;
         }
@@ -680,9 +680,9 @@ KeySetSeq Server_impl::get_keysets_by_tech_c(const std::string& handle, unsigned
             }
 
             keyset.tech_contacts.reserve(info_keyset_data.tech_contacts.size());
-            BOOST_FOREACH(LibFred::ObjectIdHandlePair it_oihp, info_keyset_data.tech_contacts)
+            for (const auto& tech_contact : info_keyset_data.tech_contacts)
             {
-                keyset.tech_contacts.push_back(it_oihp.handle);
+                keyset.tech_contacts.push_back(tech_contact.handle);
             }
             ks_seq.content.push_back(keyset);
         }
@@ -702,9 +702,9 @@ static Whois::Domain make_domain_from_info_data(
 {
     Whois::Domain result;
     result.admin_contacts.reserve(idd.admin_contacts.size());
-    BOOST_FOREACH(LibFred::ObjectIdHandlePair it, idd.admin_contacts)
+    for (const auto& admin_contact : idd.admin_contacts)
     {
-        result.admin_contacts.push_back(it.handle);
+        result.admin_contacts.push_back(admin_contact.handle);
     }
     result.changed              = idd.update_time;
     result.expire               = idd.expiration_date;

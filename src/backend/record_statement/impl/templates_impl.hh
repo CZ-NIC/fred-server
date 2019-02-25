@@ -317,12 +317,10 @@ XmlWithData domain_printout_xml_with_data(
     std::vector<LibFred::InfoContactOutput> info_admin_contact_output;
     info_admin_contact_output.reserve(info_domain_output.info_domain_data.admin_contacts.size());
 
-    for (std::vector<LibFred::ObjectIdHandlePair>::const_iterator itr =
-            info_domain_output.info_domain_data.admin_contacts.begin();
-         itr != info_domain_output.info_domain_data.admin_contacts.end(); ++itr)
+    for (const auto& itr : info_domain_output.info_domain_data.admin_contacts)
     {
         info_admin_contact_output.push_back(
-                LibFred::InfoContactByHandle(itr->handle).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()));
+                LibFred::InfoContactByHandle(itr.handle).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()));
     }
 
     const boost::optional<std::string> nsset_handle =
@@ -641,13 +639,11 @@ Buffer ImplementationWithin<T>::historic_domain_printout(
 
     std::vector<LibFred::InfoContactOutput> info_admin_contact_output;
 
-    for (std::vector<LibFred::ObjectIdHandlePair>::const_iterator itr =
-                 info_domain_output.info_domain_data.admin_contacts.begin();
-         itr != info_domain_output.info_domain_data.admin_contacts.end(); ++itr)
+    for (const auto& itr : info_domain_output.info_domain_data.admin_contacts)
     {
         info_admin_contact_output.push_back(
                 LibFred::InfoContactHistoryByHistoryid(get_history_id_internal_of<LibFred::Object_Type::contact>(
-                        itr->handle, _valid_at, _ctx))
+                        itr.handle, _valid_at, _ctx))
                 .exec(_ctx, Tz::get_psql_handle_of<Tz::UTC>()));
     }
 

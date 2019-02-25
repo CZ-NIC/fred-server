@@ -130,14 +130,13 @@ struct CompareIgnoringCase
 
 typedef std::set<std::string, CompareIgnoringCase> Handles;
 
-Handles get_tech_contact_handles(const std::vector<LibFred::ObjectIdHandlePair>& _id_handles)
+Handles get_tech_contact_handles(const std::vector<LibFred::RegistrableObject::Contact::ContactReference>& _id_handles)
 {
-
-    typedef std::vector<LibFred::ObjectIdHandlePair> IdHandlePairs;
-
     Handles result;
-    for (IdHandlePairs::const_iterator id_handle_ptr = _id_handles.begin();
-         id_handle_ptr != _id_handles.end(); ++id_handle_ptr)
+    for (std::vector<LibFred::RegistrableObject::Contact::ContactReference>::const_iterator id_handle_ptr =
+                    _id_handles.begin();
+            id_handle_ptr != _id_handles.end();
+            ++id_handle_ptr)
     {
         result.insert(id_handle_ptr->handle);
     }
