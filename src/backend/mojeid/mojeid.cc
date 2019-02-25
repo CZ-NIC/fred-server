@@ -2816,7 +2816,7 @@ void MojeIdImpl::send_new_pin3(
         {
             throw MojeIdImplData::ObjectDoesntExist();
         }
-        bool has_identification_request = false;
+
         try
         {
             const Fred::Backend::MojeId::PublicRequest::ContactIdentification type;
@@ -2830,7 +2830,6 @@ void MojeIdImpl::send_new_pin3(
                 update_public_request_op.set_reason("new pin3 generated");
                 update_public_request_op.set_registrar_id(ctx, mojeid_registrar_.handle());
                 update_public_request_op.exec(locked_request, type.iface(), get_optional_log_request_id(_log_request_id));
-                has_identification_request = true;
             }
         }
         catch (const LibFred::GetOpenedPublicRequest::Exception& e)
@@ -2864,11 +2863,6 @@ void MojeIdImpl::send_new_pin3(
             {
                 throw;
             }
-        }
-
-        if (!has_identification_request && !has_reidentification_request)
-        {
-            throw MojeIdImplData::IdentificationRequestDoesntExist();
         }
 
         const HandleMojeIdArgs* const server_conf_ptr = CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIdArgs>();
