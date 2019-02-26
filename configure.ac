@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT([fred-server], [2.38.2])
+AC_INIT([fred-server], [2.38.3])
 AC_CONFIG_SRCDIR(src/bin/corba/fred-rifd.cc)
 AC_CONFIG_HEADER([config.h])
 AC_CONFIG_MACRO_DIR([m4])

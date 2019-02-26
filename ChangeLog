@@ -1,3 +1,7 @@
+2019-02-26 (2.38.3)
+
+  * Fix mojeid method for sending new pin3 (always create new request)
+
 2019-02-11 (2.38.2)
 
   * Add systemd services for fedora packages
