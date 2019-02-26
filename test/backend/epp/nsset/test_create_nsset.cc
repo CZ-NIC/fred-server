@@ -150,9 +150,9 @@ bool dnshostdata_dnshost_predicate (const ::Epp::Nsset::DnsHostInput& dnshostdat
         && std::equal(dnshostdata.inet_addr.begin(), dnshostdata.inet_addr.end(), tmp.begin(), boost_asio_ip_address_predicate));
 }
 
-bool handle_oidhpair_predicate (const std::string& handle, const ::LibFred::ObjectIdHandlePair& pair)
+bool handle_contact_reference_predicate (const std::string& handle, const ::LibFred::RegistrableObject::Contact::ContactReference& contact_reference)
 {
-  return (handle == pair.handle);
+  return (handle == contact_reference.handle);
 }
 
 void check_equal(const ::Epp::Nsset::CreateNssetInputData& create_data, const ::Epp::Nsset::CreateNssetConfigData& config_data, const ::LibFred::InfoNssetData& info_data)
@@ -166,7 +166,7 @@ void check_equal(const ::Epp::Nsset::CreateNssetInputData& create_data, const ::
 
     BOOST_CHECK_EQUAL(create_data.tech_contacts.size(), info_data.tech_contacts.size());
     BOOST_CHECK(std::equal (create_data.tech_contacts.begin(), create_data.tech_contacts.end(),
-            info_data.tech_contacts.begin(), handle_oidhpair_predicate));
+            info_data.tech_contacts.begin(), handle_contact_reference_predicate));
 
     BOOST_CHECK_EQUAL( create_data.tech_check_level ? *create_data.tech_check_level : boost::numeric_cast<short>(config_data.default_tech_check_level), info_data.tech_check_level.get_value_or_default());
 }

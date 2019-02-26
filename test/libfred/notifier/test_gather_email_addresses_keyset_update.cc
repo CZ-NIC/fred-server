@@ -27,8 +27,6 @@
 
 #include "libfred/notifier/gather_email_data/gather_email_addresses.hh"
 
-#include <boost/foreach.hpp>
-
 
 BOOST_AUTO_TEST_SUITE(TestNotifier)
 BOOST_AUTO_TEST_SUITE(GatherEmailAddresses)
@@ -156,10 +154,8 @@ struct has_updated_keyset_followed_by_future_changes {
         ::LibFred::UpdateKeyset future_update(_handle, _registrar_handle);
         future_update.add_tech_contact(different_tech_c_handle);
 
-        BOOST_FOREACH(
-            const ::LibFred::ObjectIdHandlePair& a_c,
-            ::LibFred::InfoKeysetByHandle(_handle).exec(_ctx).info_keyset_data.tech_contacts
-        ) {
+        for (const auto& a_c : ::LibFred::InfoKeysetByHandle(_handle).exec(_ctx).info_keyset_data.tech_contacts)
+        {
             future_update.rem_tech_contact(a_c.handle);
         }
 

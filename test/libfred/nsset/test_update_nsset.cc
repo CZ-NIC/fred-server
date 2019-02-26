@@ -485,8 +485,10 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     info_data_7_with_changes.info_nsset_data.tech_contacts.erase(std::remove(
             info_data_7_with_changes.info_nsset_data.tech_contacts.begin(),
             info_data_7_with_changes.info_nsset_data.tech_contacts.end(),
-        ::LibFred::ObjectIdHandlePair(admin_contact3_info.info_contact_data.id,admin_contact3_info.info_contact_data.handle)
-    ));
+            ::LibFred::RegistrableObject::Contact::ContactReference(
+                    admin_contact3_info.info_contact_data.id,
+                    admin_contact3_info.info_contact_data.handle,
+                    ::LibFred::RegistrableObject::make_uuid_of< ::LibFred::Object_Type::contact>("f7399259-bc9d-41b5-8984-4f4b714ed3f0")));
 
     //check changes made by last update
     BOOST_CHECK(info_data_7_with_changes == info_data_8);
@@ -529,7 +531,10 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
 
     //add tech contact
     info_data_8_with_changes.info_nsset_data.tech_contacts.push_back(
-        ::LibFred::ObjectIdHandlePair(admin_contact3_info.info_contact_data.id,admin_contact3_info.info_contact_data.handle));
+            ::LibFred::RegistrableObject::Contact::ContactReference(
+                    admin_contact3_info.info_contact_data.id,
+                    admin_contact3_info.info_contact_data.handle,
+                    ::LibFred::RegistrableObject::make_uuid_of< ::LibFred::Object_Type::contact>("ccbad583-696b-426d-b482-d3617a1a6d67")));
 
     //check changes made by last update
     BOOST_CHECK(info_data_8_with_changes == info_data_9);

@@ -413,7 +413,7 @@ BOOST_FIXTURE_TEST_CASE(ok, supply_ctx<HasDataForUpdateDomain>)
     BOOST_CHECK_EQUAL(domain_data_after_update.authinfopw, authinfopw_chg_);
 
     std::vector<std::string> domain_data_after_update_admin_contacts =
-            vector_of_Fred_ObjectIdHandlePair_to_vector_of_string(domain_data_after_update.admin_contacts);
+            vector_of_Fred_RegistrableObject_Contact_ContactReference_to_vector_of_string(domain_data_after_update.admin_contacts);
     BOOST_CHECK_EQUAL_COLLECTIONS(
         domain_data_after_update_admin_contacts.begin(),
         domain_data_after_update_admin_contacts.end(),

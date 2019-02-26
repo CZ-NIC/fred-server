@@ -38,14 +38,13 @@ namespace Test {
 
 namespace {
 
-std::set<std::string> vector_of_Fred_ObjectIdHandlePair_to_set_of_string(const std::vector<::LibFred::ObjectIdHandlePair>& admin_contacts) {
+std::set<std::string> vector_of_Fred_RegistrableObject_Contact_ContactReference_to_set_of_string(
+        const std::vector<::LibFred::RegistrableObject::Contact::ContactReference>& admin_contacts)
+{
     std::set<std::string> admin;
-    for (
-        std::vector<::LibFred::ObjectIdHandlePair>::const_iterator object_id_handle_pair = admin_contacts.begin();
-        object_id_handle_pair != admin_contacts.end();
-        ++object_id_handle_pair
-    ) {
-        admin.insert(object_id_handle_pair->handle);
+    for (const auto& object_id_handle_pair : admin_contacts)
+    {
+        admin.insert(object_id_handle_pair.handle);
     }
     return admin;
 }
@@ -75,7 +74,8 @@ void check_equal(
     BOOST_REQUIRE(_info_domain_output_data.authinfopw);
     BOOST_CHECK_EQUAL(*_info_domain_output_data.authinfopw, _info_domain_data.authinfopw);
 
-    std::set<std::string> info_domain_data_admin_contacts = vector_of_Fred_ObjectIdHandlePair_to_set_of_string(_info_domain_data.admin_contacts);
+    std::set<std::string> info_domain_data_admin_contacts =
+            vector_of_Fred_RegistrableObject_Contact_ContactReference_to_set_of_string(_info_domain_data.admin_contacts);
     BOOST_CHECK_EQUAL_COLLECTIONS(
         _info_domain_output_data.admin.begin(),
         _info_domain_output_data.admin.end(),

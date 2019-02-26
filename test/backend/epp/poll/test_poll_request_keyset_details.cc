@@ -66,11 +66,9 @@ void check_equal(
 
     std::set<std::string> tech_contacts = output_data.tech_contacts;
     BOOST_CHECK_EQUAL(tech_contacts.size(), keyset_data.tech_contacts.size());
-    for (std::vector<::LibFred::ObjectIdHandlePair>::const_iterator tech_contact_itr = keyset_data.tech_contacts.begin();
-         tech_contact_itr != keyset_data.tech_contacts.end();
-         ++tech_contact_itr)
+    for (const auto& tech_contact_itr : keyset_data.tech_contacts)
     {
-        tech_contacts.erase(tech_contact_itr->handle);
+        tech_contacts.erase(tech_contact_itr.handle);
     }
 
     BOOST_CHECK_EQUAL(tech_contacts.size(), 0);

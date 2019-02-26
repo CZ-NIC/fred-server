@@ -29,7 +29,6 @@
 #include "libfred/notifier/gather_email_data/gather_email_content.hh"
 
 #include <boost/assign/list_of.hpp>
-#include <boost/foreach.hpp>
 #include <boost/algorithm/string/join.hpp>
 
 
@@ -159,9 +158,9 @@ BOOST_FIXTURE_TEST_CASE(test_big_update_from_empty_data, has_nsset_big_update<ha
     etalon["changes.nsset.check_level.new"]   = boost::lexical_cast<std::string>( new_nsset_data.tech_check_level.get_value() );
 
     struct extract {
-        static std::set<std::string> handles(const std::vector<::LibFred::ObjectIdHandlePair>& _in) {
+        static std::set<std::string> handles(const std::vector<::LibFred::RegistrableObject::Contact::ContactReference>& _in) {
             std::set<std::string> result;
-            BOOST_FOREACH(const ::LibFred::ObjectIdHandlePair& elem, _in) {
+            for (const ::LibFred::RegistrableObject::Contact::ContactReference& elem : _in) {
                 result.insert(elem.handle);
             }
             return result;
@@ -209,9 +208,9 @@ BOOST_FIXTURE_TEST_CASE(test_big_update_from_full_data, has_nsset_big_update<has
     etalon["changes.nsset.check_level.new"]   = boost::lexical_cast<std::string>( new_nsset_data.tech_check_level.get_value() );
 
     struct extract {
-        static std::set<std::string> handles(const std::vector<::LibFred::ObjectIdHandlePair>& _in) {
+        static std::set<std::string> handles(const std::vector<::LibFred::RegistrableObject::Contact::ContactReference>& _in) {
             std::set<std::string> result;
-            BOOST_FOREACH(const ::LibFred::ObjectIdHandlePair& elem, _in) {
+            for (const ::LibFred::RegistrableObject::Contact::ContactReference& elem : _in) {
                 result.insert(elem.handle);
             }
             return result;

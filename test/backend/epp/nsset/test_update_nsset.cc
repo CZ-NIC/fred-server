@@ -268,9 +268,9 @@ void check_after_update_data(const ::Epp::Nsset::UpdateNssetInputData& update_da
         //tech contacts after update converted sorted
         std::vector<std::string> info_tech_contacts;
         info_tech_contacts.reserve(info_data.tech_contacts.size());
-        BOOST_FOREACH(const ::LibFred::ObjectIdHandlePair& tc, info_data.tech_contacts)
+        BOOST_FOREACH(const auto& tech_contact, info_data.tech_contacts)
         {
-            info_tech_contacts.push_back(tc.handle);
+            info_tech_contacts.push_back(tech_contact.handle);
         }
         std::sort(info_tech_contacts.begin(), info_tech_contacts.end());
 

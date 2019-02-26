@@ -75,7 +75,7 @@ BOOST_FIXTURE_TEST_CASE(get_keyset_by_handle, get_keyset_by_handle_fixture)
         }
         BOOST_CHECK(key_found);
     }
-    BOOST_FOREACH(const LibFred::ObjectIdHandlePair& it, keyset.tech_contacts)
+    for (const auto& it : keyset.tech_contacts)
     {
         BOOST_CHECK(ks.tech_contacts.end() !=
                 std::find(ks.tech_contacts.begin(), ks.tech_contacts.end(), it.handle));

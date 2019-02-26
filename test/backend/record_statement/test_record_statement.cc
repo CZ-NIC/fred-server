@@ -60,11 +60,10 @@ BOOST_FIXTURE_TEST_CASE(domain_printout_xml, Test::domain_fixture)
         const ::LibFred::InfoRegistrarOutput info_sponsoring_registrar_output = ::LibFred::InfoRegistrarByHandle(
                 info_domain_output.info_domain_data.sponsoring_registrar_handle).exec(ctx, "UTC");
 
-        for (std::vector<::LibFred::ObjectIdHandlePair>::const_iterator itr = info_domain_output.info_domain_data.admin_contacts.begin();
-             itr != info_domain_output.info_domain_data.admin_contacts.end(); ++itr)
+        for (const auto& admin_contact : info_domain_output.info_domain_data.admin_contacts)
         {
             info_admin_contact_output.push_back(
-                ::LibFred::InfoContactByHandle(itr->handle).exec(ctx, "UTC"));
+                ::LibFred::InfoContactByHandle(admin_contact.handle).exec(ctx, "UTC"));
         }
 
         const boost::optional<std::string> nsset_handle = info_domain_output.info_domain_data.nsset.isnull()

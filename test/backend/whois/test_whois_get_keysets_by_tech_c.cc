@@ -98,7 +98,7 @@ BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c, get_keysets_by_tech_c_fixture)
             }
             BOOST_CHECK(key_found);
         }
-        BOOST_FOREACH(const LibFred::ObjectIdHandlePair& oit, found.tech_contacts)
+        BOOST_FOREACH(const LibFred::RegistrableObject::Contact::ContactReference& oit, found.tech_contacts)
         {
             BOOST_CHECK(it.tech_contacts.end() !=
                     std::find(it.tech_contacts.begin(), it.tech_contacts.end(), oit.handle));
@@ -129,7 +129,7 @@ BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c_limit_exceeded, get_keysets_by_tec
             bool key_found = false;
             BOOST_FOREACH(const Fred::Backend::Whois::DNSKey& dit, it.dns_keys)
             {
-                if(kit.get_key() == dit.public_key)
+                if (kit.get_key() == dit.public_key)
                 {
                     key_found = true;
                     BOOST_CHECK(dit.alg == kit.get_alg());
@@ -139,10 +139,10 @@ BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c_limit_exceeded, get_keysets_by_tec
             }
             BOOST_CHECK(key_found);
         }
-        BOOST_FOREACH(const LibFred::ObjectIdHandlePair& oit, found.tech_contacts)
+        BOOST_FOREACH(const auto& tech_contact, found.tech_contacts)
         {
             BOOST_CHECK(it.tech_contacts.end() !=
-                    std::find(it.tech_contacts.begin(), it.tech_contacts.end(), oit.handle));
+                    std::find(it.tech_contacts.begin(), it.tech_contacts.end(), tech_contact.handle));
         }
         BOOST_CHECK(it.tech_contacts.size() == found.tech_contacts.size());
     }

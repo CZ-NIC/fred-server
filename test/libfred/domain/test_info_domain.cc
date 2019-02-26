@@ -166,9 +166,21 @@ struct test_domain_fixture : public Test::instantiate_db_template
         //expected output data
         test_info_domain_output.info_domain_data.roid = static_cast<std::string>(id_res[0]["test_fqdn_roid"]);
         test_info_domain_output.info_domain_data.fqdn = test_fqdn;
-        test_info_domain_output.info_domain_data.registrant = ::LibFred::ObjectIdHandlePair(static_cast<unsigned long long>(id_res[0]["registrant_contact_handle_id"]), registrant_contact_handle);
-        test_info_domain_output.info_domain_data.nsset = ::LibFred::ObjectIdHandlePair(static_cast<unsigned long long>(id_res[0]["test_nsset_handle_id"]),test_nsset_handle);
-        test_info_domain_output.info_domain_data.keyset = ::LibFred::ObjectIdHandlePair(static_cast<unsigned long long>(id_res[0]["test_keyset_handle_id"]),test_keyset_handle);
+        test_info_domain_output.info_domain_data.registrant =
+                ::LibFred::RegistrableObject::Contact::ContactReference(
+                        static_cast<unsigned long long>(id_res[0]["registrant_contact_handle_id"]),
+                        registrant_contact_handle,
+                        ::LibFred::RegistrableObject::make_uuid_of<::LibFred::Object_Type::contact>("5fc6ae45-10ec-4992-9d6b-e0c54f0aa1b0"));
+        test_info_domain_output.info_domain_data.nsset =
+                ::LibFred::RegistrableObject::Nsset::NssetReference(
+                        static_cast<unsigned long long>(id_res[0]["test_nsset_handle_id"]),
+                        test_nsset_handle,
+                        ::LibFred::RegistrableObject::make_uuid_of<::LibFred::Object_Type::nsset>("698af9f5-717a-4237-983d-a199feb6f06e"));
+        test_info_domain_output.info_domain_data.keyset =
+                ::LibFred::RegistrableObject::Keyset::KeysetReference(
+                        static_cast<unsigned long long>(id_res[0]["test_keyset_handle_id"]),
+                        test_keyset_handle,
+                        ::LibFred::RegistrableObject::make_uuid_of<::LibFred::Object_Type::keyset>("ab205b46-6650-4512-88b7-7046cb818508"));
         test_info_domain_output.info_domain_data.sponsoring_registrar_handle = registrar_handle;
         test_info_domain_output.info_domain_data.create_registrar_handle = registrar_handle;
         test_info_domain_output.info_domain_data.update_registrar_handle = Nullable<std::string>();
@@ -177,8 +189,12 @@ struct test_domain_fixture : public Test::instantiate_db_template
         test_info_domain_output.info_domain_data.transfer_time = Nullable<boost::posix_time::ptime>();
         test_info_domain_output.info_domain_data.expiration_date = boost::gregorian::from_simple_string("2012-06-30");
         test_info_domain_output.info_domain_data.authinfopw = "testauthinfo1";
-        test_info_domain_output.info_domain_data.admin_contacts = Util::vector_of<::LibFred::ObjectIdHandlePair>
-            (::LibFred::ObjectIdHandlePair(static_cast<unsigned long long>(id_res[0]["admin_contact1_handle_id"]),admin_contact1_handle));
+        test_info_domain_output.info_domain_data.admin_contacts =
+                Util::vector_of< ::LibFred::RegistrableObject::Contact::ContactReference()>(
+                        ::LibFred::RegistrableObject::Contact::ContactReference(
+                                static_cast<unsigned long long>(id_res[0]["admin_contact1_handle_id"]),
+                                admin_contact1_handle,
+                                ::LibFred::RegistrableObject::make_uuid_of<::LibFred::Object_Type::contact>("664fa44f-b74e-4e67-8437-e30422d146c0")); 
         test_info_domain_output.info_domain_data.enum_domain_validation = Nullable<::LibFred::ENUMValidationExtension>();
         test_info_domain_output.info_domain_data.delete_time = Nullable<boost::posix_time::ptime>();
         test_info_domain_output.info_domain_data.crhistoryid = static_cast<unsigned long long>(id_res[0]["test_fqdn_crhistoryid"]);

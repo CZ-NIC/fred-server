@@ -154,10 +154,8 @@ struct has_updated_nsset_followed_by_future_changes {
         ::LibFred::UpdateNsset future_update(_handle, _registrar_handle);
         future_update.add_tech_contact(different_tech_c_handle);
 
-        BOOST_FOREACH(
-            const ::LibFred::ObjectIdHandlePair& a_c,
-            ::LibFred::InfoNssetByHandle(_handle).exec(_ctx).info_nsset_data.tech_contacts
-        ) {
+        for (const auto& a_c : ::LibFred::InfoNssetByHandle(_handle).exec(_ctx).info_nsset_data.tech_contacts)
+        {
             future_update.rem_tech_contact(a_c.handle);
         }
 

@@ -28,7 +28,6 @@
 
 #include "libfred/notifier/gather_email_data/gather_email_content.hh"
 
-#include <boost/foreach.hpp>
 #include <boost/algorithm/string/join.hpp>
 
 
@@ -166,7 +165,7 @@ BOOST_FIXTURE_TEST_CASE(test_big_update_from_empty_data, has_empty_domain_big_up
     std::string admin_c_list;
     {
         std::vector<std::string> admin_contact_handles;
-        BOOST_FOREACH(const ::LibFred::ObjectIdHandlePair& a_c, new_domain_data.admin_contacts) {
+        for (const auto& a_c : new_domain_data.admin_contacts) {
             admin_contact_handles.push_back(a_c.handle);
         }
         std::sort( admin_contact_handles.begin(), admin_contact_handles.end() );
@@ -307,7 +306,7 @@ BOOST_FIXTURE_TEST_CASE(test_big_update_from_full_data, has_full_domain_big_upda
         std::string new_admin_c_list;
 
         std::vector<std::string> admin_contact_handles;
-        BOOST_FOREACH(const ::LibFred::ObjectIdHandlePair& a_c, new_domain_data.admin_contacts) {
+        for (const auto& a_c : new_domain_data.admin_contacts) {
             admin_contact_handles.push_back(a_c.handle);
         }
         std::sort( admin_contact_handles.begin(), admin_contact_handles.end() );
@@ -319,7 +318,7 @@ BOOST_FIXTURE_TEST_CASE(test_big_update_from_full_data, has_full_domain_big_upda
         std::string newest_admin_c_list;
 
         std::vector<std::string> admin_contact_handles;
-        BOOST_FOREACH(const ::LibFred::ObjectIdHandlePair& a_c, newest_domain_data.admin_contacts) {
+        for (const auto& a_c : newest_domain_data.admin_contacts) {
             admin_contact_handles.push_back(a_c.handle);
         }
         std::sort( admin_contact_handles.begin(), admin_contact_handles.end() );
