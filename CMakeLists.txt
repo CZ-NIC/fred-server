@@ -857,6 +857,8 @@ prepare_object_files(
     test/backend/admin/zone/test_add_zone_ns.cc
     test/backend/admin_block/main.cc
     test/backend/admin_block/test_block_domains.cc
+    test/backend/admin_block/test_restore_prev_state_of_domains.cc
+    test/backend/admin_block/test_unblock_domains.cc
     test/backend/admin_block/util.cc
     test/backend/automatic_keyset_management/main.cc
     test/backend/automatic_keyset_management/test_automatic_keyset_management.cc
@@ -2575,6 +2577,8 @@ prepare_executable(test-admin-block
     src/backend/admin_block/administrativeblocking.cc
     test/backend/admin_block/main.cc
     test/backend/admin_block/test_block_domains.cc
+    test/backend/admin_block/test_restore_prev_state_of_domains.cc
+    test/backend/admin_block/test_unblock_domains.cc
     test/backend/admin_block/util.cc
     test/setup/fixtures.cc
     test/setup/fixtures_utils.cc)

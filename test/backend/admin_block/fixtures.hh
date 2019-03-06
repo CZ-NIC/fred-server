@@ -300,6 +300,58 @@ struct HasNoDomainForUnblock : StatusList
     }
 };
 
+struct HasOneUnblockedDomain : HasOneDomain
+{
+    NewContact new_owner;
+    bool remove_admin_c;
+
+    HasOneUnblockedDomain(LibFred::OperationContext& _ctx)
+            : HasOneDomain(_ctx),
+              new_owner(_ctx),
+              remove_admin_c(false)
+    {
+    }
+};
+
+struct HasOneBlockedDomain : HasOneDomain
+{
+    NewContact new_owner;
+    bool remove_admin_c;
+
+    HasOneBlockedDomain(LibFred::OperationContext& _ctx)
+            : HasOneDomain(_ctx),
+              new_owner(_ctx),
+              remove_admin_c(false)
+    {
+    }
+};
+
+struct HasMoreBlockedDomains : HasMoreDomains
+{
+    NewContact new_owner;
+    bool remove_admin_c;
+
+    HasMoreBlockedDomains(LibFred::OperationContext& _ctx)
+            : HasMoreDomains(_ctx),
+              new_owner(_ctx),
+              remove_admin_c(true)
+    {
+    }
+};
+
+struct HasMoreOwnersMoreBlockedDomains : HasMoreOwnersMoreDomains
+{
+    NewContact new_owner;
+    bool remove_admin_c;
+
+    HasMoreOwnersMoreBlockedDomains(LibFred::OperationContext& _ctx)
+            : HasMoreOwnersMoreDomains(_ctx),
+              new_owner(_ctx),
+              remove_admin_c(true)
+    {
+    }
+};
+
 } // namespace Test::Backend::AdminBlock
 } // namespace Test::Backend
 } // namespace Test
