@@ -109,7 +109,7 @@ set_default(ACCIFDPORT 2232)
 set_default(NSPORT 2809)
 set_default(DBPORT 5432)
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_BINARY_DIR}/config.h)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_BINARY_DIR}/config.h)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config/hpmail.conf.in ${CMAKE_BINARY_DIR}/config/hpmail.conf)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config/optysmail.conf.in ${CMAKE_BINARY_DIR}/config/optysmail.conf)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config/server.conf.in ${CMAKE_BINARY_DIR}/config/server.conf)
