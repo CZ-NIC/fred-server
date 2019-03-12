@@ -1324,15 +1324,16 @@ public:
             const unsigned long long id = CreateRegistrarCertification(
                     _registrar_id,
                     _valid_from,
-                    _valid_until,
                     _classification,
-                    _eval_file_id).exec(ctx);
+                    _eval_file_id)
+                    .set_valid_until(_valid_until.get())
+                    .exec(ctx);
             ctx.commit_transaction();
             return id;
         }
         catch (...)
         {
-            LOGGER.error("createRegistrarCertification: an error has occurred");
+            LOGGER.warning("createRegistrarCertification: an error has occurred");
             throw;
         }
     }
@@ -1351,11 +1352,13 @@ public:
 
             OperationContextCreator ctx;
             const Database::Result res = ctx.get_conn().exec_params(
+                    // format-clang off
                     "SELECT id FROM registrar WHERE handle = UPPER($1::text)",
+                    // format-clang on
                     Database::query_param_list(_registrar_handle));
             if ((res.size() > 0) && (res[0].size() > 0))
             {
-                registrar_id = res[0][0];
+                registrar_id = static_cast<unsigned long long>(res[0][0]);
             }
             else
             {
@@ -1366,7 +1369,7 @@ public:
         }
         catch (...)
         {
-            LOGGER.error("createRegistrarCertification: an error has occurred");
+            LOGGER.warning("createRegistrarCertification: an error has occurred");
             throw;
         }
     }
@@ -1383,7 +1386,7 @@ public:
         }
         catch (...)
         {
-            LOGGER.error("shortenRegistrarCertification: an error has occurred");
+            LOGGER.warning("shortenRegistrarCertification: an error has occurred");
             throw;
         }
     }
@@ -1399,7 +1402,7 @@ public:
         }
         catch (...)
         {
-            LOGGER.error("updateRegistrarCertification: an error has occurred");
+            LOGGER.warning("updateRegistrarCertification: an error has occurred");
             throw;
         }
     }
@@ -1409,7 +1412,8 @@ public:
     {
         OperationContextCreator ctx;
         std::vector<CertificationData> result;
-        const std::vector<RegistrarCertification> registrar_certifications = GetRegistrarCertifications(_registrar_id).exec(ctx);
+        const std::vector<RegistrarCertification> registrar_certifications =
+                GetRegistrarCertifications(_registrar_id).exec(ctx);
         result.reserve(registrar_certifications.size());
         for (const auto& certification : registrar_certifications)
         {
