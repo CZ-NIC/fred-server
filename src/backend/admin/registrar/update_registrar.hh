@@ -41,6 +41,11 @@ struct UpdateRegistrarNoUpdateData : std::exception
     const char* what() const noexcept override;
 };
 
+struct UpdateRegistrarInvalidCountryCode : std::exception
+{
+    const char* what() const noexcept override;
+};
+
 unsigned long long update_registrar(const std::string& _handle,
                 const boost::optional<std::string>& _name,
                 const boost::optional<std::string>& _organization,

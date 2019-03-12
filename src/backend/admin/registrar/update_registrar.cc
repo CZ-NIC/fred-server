@@ -59,6 +59,11 @@ const char* UpdateRegistrarNoUpdateData::what() const noexcept
     return "No data for update registrar.";
 }
 
+const char* UpdateRegistrarInvalidCountryCode::what() const noexcept
+{
+    return "Failed to update registrar due to invalid country code.";
+}
+
 unsigned long long update_registrar(const std::string& _handle,
                 const boost::optional<std::string>& _name,
                 const boost::optional<std::string>& _organization,
@@ -121,6 +126,11 @@ unsigned long long update_registrar(const std::string& _handle,
     {
         LOGGER.warning(operation_name + e.what());
         throw UpdateRegistrarNonexistent();
+    }
+    catch (const ::LibFred::Registrar::UnknownCountryCode& e)
+    {
+        LOGGER.warning(operation_name + e.what());
+        throw UpdateRegistrarInvalidCountryCode();
     }
     catch (const std::exception& e)
     {
