@@ -468,10 +468,8 @@ private:
             // create advance invoice for rest amount after paying possible debt (account invoice)
             if (payment_price_rest > Money("0"))
             {
-                //Database::Date account_date = _payment->getAccountDate();
-
-                const boost::posix_time::ptime local_current_timestamp = boost::posix_time::microsec_clock::local_time();
-                const boost::gregorian::date tax_date = local_current_timestamp.date();
+                const auto tax_date = _payment.date;
+                const auto local_current_timestamp = boost::posix_time::microsec_clock::local_time();
 
                 Money out_credit;
 
