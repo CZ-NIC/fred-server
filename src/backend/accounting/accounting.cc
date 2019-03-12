@@ -23,6 +23,8 @@
 #include "src/backend/accounting/impl/exceptions.hh"
 #include "util/log/context.hh"
 
+#include <boost/date_time/gregorian/gregorian_types.hpp>
+
 namespace Fred {
 namespace Backend {
 namespace Accounting {
@@ -187,6 +189,7 @@ PaymentInvoices import_payment(
 
 PaymentInvoices import_payment_by_registrar_handle(
         const PaymentData& _payment_data,
+        const boost::gregorian::date& _tax_date,
         const std::string& _registrar_handle)
 {
     LOGGING_CONTEXT(log_ctx);
@@ -194,6 +197,7 @@ PaymentInvoices import_payment_by_registrar_handle(
     {
         return Impl::import_payment_by_registrar_handle(
                 _payment_data,
+                _tax_date,
                 _registrar_handle);
     }
     catch (const Impl::RegistrarNotFound& e)
@@ -210,6 +214,11 @@ PaymentInvoices import_payment_by_registrar_handle(
     {
         LOGGER.info(e.what());
         throw InvalidPaymentData();
+    }
+    catch (const Impl::InvalidTaxDate& e)
+    {
+        LOGGER.info(e.what());
+        throw InvalidTaxDate();
     }
     catch (const Impl::PaymentAlreadyProcessed& e)
     {

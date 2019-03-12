@@ -48,6 +48,11 @@ const char* InvalidPaymentData::what() const noexcept
     return "invalid payment data";
 }
 
+const char* InvalidTaxDate::what() const noexcept
+{
+    return "tax_date must be valid date and no more than 15 days before invoice_date";
+}
+
 const char* PaymentAlreadyProcessed::what() const noexcept
 {
     return "payment already processed";

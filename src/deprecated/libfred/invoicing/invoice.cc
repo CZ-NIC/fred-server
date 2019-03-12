@@ -19,6 +19,7 @@
 #include "src/deprecated/util/dbsql.hh"
 #include "src/deprecated/libfred/common_impl.hh"
 #include "src/deprecated/libfred/documents.hh"
+#include "src/deprecated/libfred/invoicing/exceptions.hh"
 #include "src/deprecated/libfred/invoicing/invoice.hh"
 #include "libfred/poll/get_request_fee_message.hh"
 #include "util/log/context.hh"
@@ -395,15 +396,11 @@ unsigned long long  createDepositInvoice(boost::gregorian::date tax_date, unsign
         )
 {
 
-    if(tax_date.is_special()) throw std::runtime_error("createDepositInvoice: invalid taxdate");
-
-    if ((invoice_date.date() - tax_date) > boost::gregorian::days(15) )
+    if (tax_date.is_special() ||
+       (invoice_date.date() - tax_date > boost::gregorian::days(15)))
     {
-        throw std::runtime_error(
-            "createDepositInvoice: invoice_date is more than"
-            " 15 days later than tax_date");
+        throw InvalidTaxDate();
     }
-
 
     Database::Connection conn = Database::Manager::acquire();
 

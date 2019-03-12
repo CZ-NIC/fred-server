@@ -27,6 +27,8 @@
 #include "src/backend/credit.hh"
 #include "libfred/opcontext.hh"
 
+#include <boost/date_time/gregorian/gregorian_types.hpp>
+
 #include <string>
 #include <vector>
 
@@ -52,6 +54,7 @@ PaymentInvoices import_payment(
 
 PaymentInvoices import_payment_by_registrar_handle(
         const PaymentData& _payment_data,
+        const boost::gregorian::date& _tax_date,
         const std::string& _registrar_handle);
 
 std::vector<RegistrarReference> get_registrar_references(

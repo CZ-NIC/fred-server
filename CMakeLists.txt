@@ -780,6 +780,7 @@ prepare_object_files(
     src/deprecated/libfred/file.cc
     src/deprecated/libfred/filter.cc
     src/deprecated/libfred/info_buffer.cc
+    src/deprecated/libfred/invoicing/exceptions.cc
     src/deprecated/libfred/invoicing/invoice.cc
     src/deprecated/libfred/mail.cc
     src/deprecated/libfred/messages/messages_impl.cc
@@ -1058,6 +1059,7 @@ prepare_static_library(fred-deprecated
     src/deprecated/libfred/registrable_object/keyset.cc
     src/deprecated/libfred/registrar.cc
     src/deprecated/libfred/credit.cc
+    src/deprecated/libfred/invoicing/exceptions.cc
     src/deprecated/libfred/invoicing/invoice.cc
     src/deprecated/libfred/zone.cc
     src/deprecated/libfred/blacklist.cc

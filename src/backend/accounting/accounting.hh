@@ -49,6 +49,7 @@ PaymentInvoices import_payment(
 
 PaymentInvoices import_payment_by_registrar_handle(
         const PaymentData& _payment_data,
+        const boost::gregorian::date& _tax_date,
         const std::string& _registrar_handle);
 
 std::vector<RegistrarReference> get_registrar_references();
