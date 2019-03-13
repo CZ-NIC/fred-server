@@ -165,7 +165,8 @@ public:
             const boost::gregorian::date _date,
             const std::string& _memo,
             const boost::posix_time::ptime _creation_time,
-            const boost::optional<std::string>& _registrar_handle)
+            const boost::optional<std::string>& _registrar_handle,
+            const boost::optional<boost::gregorian::date>& _tax_date)
     {
         TRACE("[CALL] LibFred::Banking::Manager::importPayment(...)");
         Logging::Context ctx("bank payment import");
@@ -218,7 +219,7 @@ public:
                             ? get_registrar_id_by_handle(*_registrar_handle)
                             : get_registrar_id_by_payment(payment);
 
-            const auto invoice_references = processPayment(payment, registrar_id);
+            const auto invoice_references = processPayment(payment, registrar_id, _tax_date);
 
             tx.commit();
 
@@ -343,7 +344,7 @@ private:
 
         //add credit
         unsigned long long registrar_credit_transaction_id =
-        LibFred::Credit::add_credit_to_invoice( registrar_id,  zone_id, price, invoice_id);
+                LibFred::Credit::add_credit_to_invoice(registrar_id, zone_id, price, invoice_id);
 
         //insert_bank_payment_registrar_credit_transaction_map
         conn.exec_params(
@@ -361,7 +362,8 @@ private:
 
     PaymentInvoices processPayment(
             PaymentData& _payment,
-            unsigned long long _registrar_id)
+            unsigned long long _registrar_id,
+            const boost::optional<boost::gregorian::date>& _tax_date)
     {
         Logging::Context ctx("payment processing");
         try
@@ -468,7 +470,7 @@ private:
             // create advance invoice for rest amount after paying possible debt (account invoice)
             if (payment_price_rest > Money("0"))
             {
-                const auto tax_date = _payment.date;
+                const auto tax_date = _tax_date.get_value_or(_payment.date);
                 const auto local_current_timestamp = boost::posix_time::microsec_clock::local_time();
 
                 Money out_credit;
@@ -490,13 +492,13 @@ private:
                                 InvoiceType::advance,
                                 out_credit);
             }
-            LOGGER.info(boost::format("payment paired with registrar (id=%1%) ") % _registrar_id );
+            LOGGER.info(boost::format("payment paired with registrar (id=%1%) ") % _registrar_id);
 
             transaction.commit();
 
             return payment_invoices;
         }
-        catch (std::exception &e)
+        catch (std::exception& e)
         {
             LOGGER.info(boost::str(boost::format("processing payment failed: %1%") % e.what()));
             throw;

@@ -1501,6 +1501,8 @@ prepare_static_library(corbaaccounting
     src/bin/corba/IsoDateDynSK.cc
     src/bin/corba/IsoDateTimeSK.cc
     src/bin/corba/IsoDateTimeDynSK.cc
+    src/bin/corba/NullableIsoDateSK.cc
+    src/bin/corba/NullableIsoDateDynSK.cc
     src/bin/corba/AccountingSK.cc
     src/bin/corba/AccountingDynSK.cc)
 

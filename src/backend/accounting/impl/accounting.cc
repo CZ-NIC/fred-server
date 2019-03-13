@@ -393,7 +393,8 @@ PaymentInvoices import_payment(
                         _payment_data.date,
                         _payment_data.memo,
                         _payment_data.creation_time,
-                        no_registrar_handle);
+                        no_registrar_handle,
+                        boost::none);
 
         return convert_vector_of_LibFred_Baking_InvoiceReference_to_Fred_Backend_Accounting_PaymentInvoices(
                 payment_invoices);
@@ -422,7 +423,7 @@ PaymentInvoices import_payment(
 
 PaymentInvoices import_payment_by_registrar_handle(
         const PaymentData& _payment_data,
-        const boost::gregorian::date& _tax_date,
+        const boost::optional<boost::gregorian::date>& _tax_date,
         const std::string& _registrar_handle)
 {
     const BankAccount bank_account = BankAccount::from_string(_payment_data.account_number);
@@ -446,7 +447,8 @@ PaymentInvoices import_payment_by_registrar_handle(
                         _payment_data.date,
                         _payment_data.memo,
                         _payment_data.creation_time,
-                        _registrar_handle);
+                        _registrar_handle,
+                        _tax_date);
 
         return convert_vector_of_LibFred_Baking_InvoiceReference_to_Fred_Backend_Accounting_PaymentInvoices(
                 payment_invoices);

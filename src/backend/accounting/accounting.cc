@@ -23,8 +23,6 @@
 #include "src/backend/accounting/impl/exceptions.hh"
 #include "util/log/context.hh"
 
-#include <boost/date_time/gregorian/gregorian_types.hpp>
-
 namespace Fred {
 namespace Backend {
 namespace Accounting {
@@ -189,7 +187,7 @@ PaymentInvoices import_payment(
 
 PaymentInvoices import_payment_by_registrar_handle(
         const PaymentData& _payment_data,
-        const boost::gregorian::date& _tax_date,
+        const boost::optional<boost::gregorian::date>& _tax_date,
         const std::string& _registrar_handle)
 {
     LOGGING_CONTEXT(log_ctx);

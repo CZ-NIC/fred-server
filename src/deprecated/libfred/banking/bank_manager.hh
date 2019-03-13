@@ -38,11 +38,10 @@ public:
     static Manager *create();
 
     virtual void addBankAccount(
-            const std::string &_account_number,
-            const std::string &_bank_code,
-            const std::string &_zone,
-            const std::string &_account_name) //throw (std::runtime_error)
-                = 0;
+            const std::string& _account_number,
+            const std::string& _bank_code,
+            const std::string& _zone,
+            const std::string& _account_name) = 0;
 
     virtual PaymentInvoices importPayment(
             const std::string& _uuid,
@@ -59,8 +58,8 @@ public:
             const boost::gregorian::date _date,
             const std::string& _memo,
             const boost::posix_time::ptime _creation_time,
-            const boost::optional<std::string>& _registrar_handle)
-                = 0;
+            const boost::optional<std::string>& _registrar_handle,
+            const boost::optional<boost::gregorian::date>& _tax_date) = 0;
 
 }; // class Manager
 
