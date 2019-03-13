@@ -33,6 +33,7 @@
 #include "src/util/cfg/handle_database_args.hh"
 #include "src/util/cfg/handle_logging_args.hh"
 #include "src/util/cfg/handle_server_args.hh"
+#include "src/util/cfg/handle_registry_args.hh"
 #include "src/util/cfg/handle_tests_args.hh"
 
 #include <boost/assign/list_of.hpp>
@@ -50,6 +51,7 @@ struct handle_command_line_args
                 (HandleArgsPtr(new HandleTestsArgs(CONFIG_FILE)))
                 (HandleArgsPtr(new HandleServerArgs))
                 (HandleArgsPtr(new HandleDatabaseArgs))
+                (HandleArgsPtr(new HandleRegistryArgs))
                 (HandleArgsPtr(new HandleAdminDatabaseArgs)).convert_to_container<HandlerPtrVector>())
     {
         namespace boost_args_ns = boost::unit_test::framework;
@@ -59,7 +61,6 @@ struct handle_command_line_args
                 boost_args_ns::master_test_suite().argv).copy_onlynospaces_args();
     }
 };
-
 
 }//namespace Test
 
