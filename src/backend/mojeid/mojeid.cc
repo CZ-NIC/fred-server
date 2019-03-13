@@ -27,9 +27,13 @@
 #include "src/backend/mojeid/mojeid_impl_internal.hh"
 #include "src/backend/mojeid/mojeid_public_request.hh"
 #include "src/backend/mojeid/safe_data_storage.hh"
+
 #include "src/bin/corba/mojeid/mojeid_corba_conversion.hh"
+
 #include "src/deprecated/libfred/documents.hh"
 #include "src/deprecated/libfred/messages/messages_impl.hh"
+#include "src/deprecated/libfred/registrable_object/contact/ssntype.hh"
+
 #include "libfred/notifier/enqueue_notification.hh"
 #include "libfred/object/object_states_info.hh"
 #include "libfred/object_state/cancel_object_state_request_id.hh"
@@ -47,18 +51,20 @@
 #include "libfred/registrable_object/contact/delete_contact.hh"
 #include "libfred/registrable_object/contact/info_contact.hh"
 #include "libfred/registrable_object/contact/info_contact_diff.hh"
-#include "src/deprecated/libfred/registrable_object/contact/ssntype.hh"
 #include "libfred/registrable_object/contact/transfer_contact.hh"
 #include "libfred/registrable_object/contact/undisclose_address.hh"
 #include "libfred/registrable_object/contact/update_contact.hh"
 #include "libfred/registrar/info_registrar.hh"
 #include "libfred/registrar/check_registrar.hh"
+
+#include "util/case_insensitive.hh"
+#include "util/random.hh"
+#include "util/log/context.hh"
+
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/handle_corbanameservice_args.hh"
 #include "src/util/cfg/handle_mojeid_args.hh"
 #include "src/util/cfg/handle_registry_args.hh"
-#include "util/log/context.hh"
-#include "util/random.hh"
 #include "src/util/types/birthdate.hh"
 #include "src/util/xmlgen.hh"
 
@@ -345,6 +351,22 @@ bool differs(const T& a, const T& b)
     return a != b;
 }
 
+template <typename C>
+bool case_insensitive_differs(C&& db_conn, const std::string& a, const std::string& b)
+{
+    return (a != b) &&
+           (Util::CaseInsensitive::compare(std::forward<C>(db_conn), a, b) !=
+            Util::CaseInsensitive::ComparisonResult::equal);
+}
+
+template <typename C, template <typename> class O>
+bool case_insensitive_differs(C&& db_conn, const O<std::string>& a, const O<std::string>& b)
+{
+    const auto lhs = a.get_value_or_default();
+    const auto rhs = b.get_value_or_default();
+    return case_insensitive_differs(std::forward<C>(db_conn), lhs, rhs);
+}
+
 Nullable<boost::gregorian::date> convert_as_birthdate(const Nullable<std::string>& _birth_date)
 {
     if (!_birth_date.isnull())
@@ -354,9 +376,10 @@ Nullable<boost::gregorian::date> convert_as_birthdate(const Nullable<std::string
     return Nullable<boost::gregorian::date>();
 }
 
-bool validated_data_changed(const LibFred::InfoContactData& _c1, const LibFred::InfoContactData& _c2)
+template <typename C>
+bool validated_data_changed(C&& db_conn, const LibFred::InfoContactData& _c1, const LibFred::InfoContactData& _c2)
 {
-    if (differs(_c1.name, _c2.name))
+    if (case_insensitive_differs(std::forward<C>(db_conn), _c1.name, _c2.name))
     {
         return true;
     }
@@ -369,12 +392,12 @@ bool validated_data_changed(const LibFred::InfoContactData& _c1, const LibFred::
     const LibFred::InfoContactData::Address a1 = _c1.get_permanent_address();
     const LibFred::InfoContactData::Address a2 = _c2.get_permanent_address();
     if (differs(a1.street1, a2.street1) ||
-            differs(a1.street2, a2.street2) ||
-            differs(a1.street3, a2.street3) ||
-            differs(a1.city, a2.city) ||
-            differs(a1.stateorprovince, a2.stateorprovince) ||
-            differs(a1.country, a2.country) ||
-            differs(a1.postalcode, a2.postalcode))
+        differs(a1.street2, a2.street2) ||
+        differs(a1.street3, a2.street3) ||
+        differs(a1.city, a2.city) ||
+        differs(a1.stateorprovince, a2.stateorprovince) ||
+        differs(a1.country, a2.country) ||
+        differs(a1.postalcode, a2.postalcode))
     {
         return true;
     }
@@ -736,35 +759,35 @@ template <MessageType::Enum MT, CommType::Enum CT>
     return result.size();
 }
 
-bool identified_data_changed(const LibFred::InfoContactData& _c1, const LibFred::InfoContactData& _c2)
+template <typename C>
+bool identified_data_changed(C&& db_conn, const LibFred::InfoContactData& _c1, const LibFred::InfoContactData& _c2)
 {
-    if (differs(_c1.name, _c2.name))
+    if (case_insensitive_differs(std::forward<C>(db_conn), _c1.name, _c2.name))
     {
         return true;
     }
 
     const LibFred::InfoContactData::Address a1 = _c1.get_address<LibFred::ContactAddressType::MAILING>();
     const LibFred::InfoContactData::Address a2 = _c2.get_address<LibFred::ContactAddressType::MAILING>();
-    if (differs(a1.name, a2.name))
+    if (case_insensitive_differs(std::forward<C>(db_conn), a1.name, a2.name))
     {
         const std::string name1 = a1.name.isset() ? a1.name.get_value() : _c1.name.get_value_or_default();
         const std::string name2 = a2.name.isset() ? a2.name.get_value() : _c2.name.get_value_or_default();
-        if (differs(name1, name2))
+        if (case_insensitive_differs(std::forward<C>(db_conn), name1, name2))
         {
             return true;
         }
     }
     if (differs(a1.street1, a2.street1) ||
-            differs(a1.street2, a2.street2) ||
-            differs(a1.street3, a2.street3) ||
-            differs(a1.city, a2.city) ||
-            differs(a1.stateorprovince, a2.stateorprovince) ||
-            differs(a1.country, a2.country) ||
-            differs(a1.postalcode, a2.postalcode))
+        differs(a1.street2, a2.street2) ||
+        differs(a1.street3, a2.street3) ||
+        differs(a1.city, a2.city) ||
+        differs(a1.stateorprovince, a2.stateorprovince) ||
+        differs(a1.country, a2.country) ||
+        differs(a1.postalcode, a2.postalcode))
     {
         return true;
     }
-
     return false;
 }
 
@@ -1154,16 +1177,18 @@ void MojeIdImpl::update_contact_prepare(
         }
         const LibFred::InfoContactData current_data = LibFred::InfoContactById(new_data.id).exec(ctx).info_contact_data;
         const LibFred::InfoContactDiff data_changes = LibFred::diff_contact_data(current_data, new_data);
-        if (!(data_changes.name.isset() ||
-                    data_changes.organization.isset() ||
-                    data_changes.vat.isset() ||
-                    data_changes.personal_id.isset() ||
-                    data_changes.place.isset() ||
-                    data_changes.addresses.isset() ||
-                    data_changes.email.isset() ||
-                    data_changes.notifyemail.isset() ||
-                    data_changes.telephone.isset() ||
-                    data_changes.fax.isset()))
+        const bool name_changed = data_changes.name.isset() &&
+                                  case_insensitive_differs(ctx.get_conn(), current_data.name, new_data.name);
+        if (!(name_changed ||
+              data_changes.organization.isset() ||
+              data_changes.vat.isset() ||
+              data_changes.personal_id.isset() ||
+              data_changes.place.isset() ||
+              data_changes.addresses.isset() ||
+              data_changes.email.isset() ||
+              data_changes.notifyemail.isset() ||
+              data_changes.telephone.isset() ||
+              data_changes.fax.isset()))
         {
             ctx.commit_transaction();
             return;
@@ -1173,13 +1198,13 @@ void MojeIdImpl::update_contact_prepare(
         bool drop_validation = false;
         if (states.presents(LibFred::Object_State::validated_contact))
         {
-            drop_validation = validated_data_changed(current_data, new_data);
+            drop_validation = validated_data_changed(ctx.get_conn(), current_data, new_data);
             if (drop_validation)
             {
                 to_cancel.insert(Conversion::Enums::to_db_handle(LibFred::Object_State::validated_contact));
             }
         }
-        const bool drop_identification = identified_data_changed(current_data, new_data);
+        const bool drop_identification = identified_data_changed(ctx.get_conn(), current_data, new_data);
         if (drop_identification || differs(current_data.email, new_data.email))
         {
             cancel_message_sending<MessageType::mojeid_card, CommType::letter>(ctx, new_data.id);
@@ -1244,7 +1269,7 @@ void MojeIdImpl::update_contact_prepare(
                                               states.presents(LibFred::Object_State::contact_passed_manual_verification);
         if (manual_verification_done)
         {
-            const bool cancel_manual_verification = data_changes.name.isset() ||
+            const bool cancel_manual_verification = name_changed ||
                                                     data_changes.organization.isset() ||
                                                     data_changes.personal_id.isset() ||
                                                     data_changes.place.isset() ||
@@ -1368,13 +1393,13 @@ MojeIdImplData::InfoContact MojeIdImpl::update_transfer_contact_prepare(
             {
                 const LibFred::InfoContactData& c1 = current_data;
                 const LibFred::InfoContactData& c2 = new_data;
-                drop_identification = c1.name.get_value_or_default() != c2.name.get_value_or_default();
+                drop_identification = case_insensitive_differs(ctx.get_conn(), c1.name, c2.name);
                 if (!drop_identification)
                 {
                     const LibFred::InfoContactData::Address a1 = c1.get_address<LibFred::ContactAddressType::MAILING>();
                     const LibFred::InfoContactData::Address a2 = c2.get_address<LibFred::ContactAddressType::MAILING>();
                     drop_identification =
-                            (a1.name.get_value_or_default() != a2.name.get_value_or_default()) ||
+                            case_insensitive_differs(ctx.get_conn(), a1.name, a2.name) ||
                             (a1.organization.get_value_or_default() != a2.organization.get_value_or_default()) ||
                             (a1.company_name.get_value_or_default() != a2.company_name.get_value_or_default()) ||
                             (a1.street1 != a2.street1) ||
