@@ -151,7 +151,7 @@ private:
 void update_contact_post_hooks(
         LibFred::OperationContext& _ctx,
         const std::string& _contact_handle,
-        const Optional<unsigned long long>& _logd_requst_id,
+        const Optional<unsigned long long>& _logd_request_id,
         const bool _epp_update_contact_enqueue_check)
 {
     DbSavepoint savepoint(_ctx, "before_update_contact_post_hooks");
@@ -180,7 +180,7 @@ void update_contact_post_hooks(
                         _ctx,
                         contact_id,
                         LibFred::TestsuiteHandle::AUTOMATIC,
-                        _logd_requst_id);
+                        _logd_request_id);
             }
         }
 
