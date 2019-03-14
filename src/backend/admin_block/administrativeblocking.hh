@@ -167,10 +167,7 @@ struct EX_NEW_OWNER_DOES_NOT_EXISTS
 class BlockingImpl
 {
 public:
-    BlockingImpl(const std::string& _server_name)
-        : server_name_(_server_name)
-    {
-    }
+    BlockingImpl(const std::string& _server_name);
 
     virtual ~BlockingImpl()
     {
@@ -232,6 +229,7 @@ public:
 
 private:
     std::string server_name_;
+    std::string system_registrar_;
 };
 
 } // namespace Fred::Backend::AdministrativeBlocking
