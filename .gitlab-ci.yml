@@ -1,6 +1,6 @@
 stages:
   - image
-  - licensing
+  - analysis
   - build
 
 .image: &image
@@ -120,7 +120,7 @@ licensing:
   <<: *ubuntu_16_04
   variables:
     SRC_DIR: /usr/local/env
-  stage: licensing
+  stage: analysis
   before_script:
     - echo "\$SRC_DIR=$SRC_DIR"
     - echo "\$HOME=$HOME"
