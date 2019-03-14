@@ -1801,17 +1801,17 @@ target_link_external_libraries(fred-mifd
     threads
     libidn)
 
-# fred-mojeid-msgen
-prepare_executable(fred-mojeid-msgen
+# fred-mojeid-msggen
+prepare_executable(fred-mojeid-msggen
     src/bin/corba/mojeid/service_name.cc
     src/bin/corba/mojeid/messages/client.cc
     src/bin/corba/MojeIDSK.cc)
-target_link_libraries(fred-mojeid-msgen
+target_link_libraries(fred-mojeid-msggen
     corbabuffer
     corbanullableisodate
     corbaisodatetime
     fred-static::library)
-target_link_external_libraries(fred-mojeid-msgen
+target_link_external_libraries(fred-mojeid-msggen
     boost_program_options
     boost_date_time
     omniorb4
@@ -2103,20 +2103,20 @@ target_link_external_libraries(mojeid_contact_ssn_fix
     postgres
     threads)
 
-# fred-disclose-flag-updater
-prepare_executable(fred-disclose-flag-updater
+# fred-disclose-flags-updater
+prepare_executable(fred-disclose-flags-updater
     tools/disclose_flags_updater/thread_safe_output.cc
     tools/disclose_flags_updater/worker.cc
     tools/disclose_flags_updater/disclose_value.cc
     tools/disclose_flags_updater/disclose_settings.cc
     tools/disclose_flags_updater/contact_search_query.cc
     tools/disclose_flags_updater/fred_disclose_flags_updater.cc)
-target_link_libraries(fred-disclose-flag-updater
+target_link_libraries(fred-disclose-flags-updater
     fred-deprecated
     db
     util
     fred-static::library)
-target_link_external_libraries(fred-disclose-flag-updater
+target_link_external_libraries(fred-disclose-flags-updater
     postgres
     boost_regex
     boost_date_time
@@ -2896,7 +2896,7 @@ install(TARGETS fred-akmd DESTINATION ${SBINDIR})
 install(TARGETS fred-dbifd DESTINATION ${SBINDIR})
 install(TARGETS fred-logd DESTINATION ${SBINDIR})
 install(TARGETS fred-mifd DESTINATION ${SBINDIR})
-install(TARGETS fred-mojeid-msgen DESTINATION ${SBINDIR})
+install(TARGETS fred-mojeid-msggen DESTINATION ${SBINDIR})
 install(TARGETS fred-msgd DESTINATION ${SBINDIR})
 install(TARGETS fred-pifd DESTINATION ${SBINDIR})
 install(TARGETS fred-rifd DESTINATION ${SBINDIR})
@@ -2904,7 +2904,7 @@ install(TARGETS fred-rsifd DESTINATION ${SBINDIR})
 install(TARGETS migrate_log DESTINATION ${SBINDIR})
 install(TARGETS mojeid_contact_address_import DESTINATION ${SBINDIR})
 install(TARGETS mojeid_contact_ssn_fix DESTINATION ${SBINDIR})
-install(TARGETS fred-disclose-flag-updater DESTINATION ${SBINDIR})
+install(TARGETS fred-disclose-flags-updater DESTINATION ${SBINDIR})
 
 install(DIRECTORY ${CMAKE_BINARY_DIR}/config/ DESTINATION etc/fred FILES_MATCHING PATTERN "*.conf")
 install(DIRECTORY ${CMAKE_BINARY_DIR}/init-scripts/ DESTINATION etc/init.d FILES_MATCHING PATTERN "fred-server"
