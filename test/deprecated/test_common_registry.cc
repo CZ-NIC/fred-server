@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "test/deprecated/test_common_registry.hh"
 
 #include "src/util/time_clock.hh"
@@ -66,9 +67,10 @@ LibFred::Registrar::Registrar::AutoPtr createTestRegistrarClass()
     ::LibFred::Registrar::Manager::AutoPtr regMan
              = ::LibFred::Registrar::Manager::create(DBSharedPtr());
     ::LibFred::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
+    static unsigned long long var_symbol = 5556660000;
 
-    registrar->setName(registrar_handle+"_Name");
-    registrar->setOrganization(registrar_handle+"_Organization");
+    registrar->setName(registrar_handle + "_Name");
+    registrar->setOrganization(registrar_handle + "_Organization");
     registrar->setCity("Brno");
     registrar->setStreet1("Street 1");
     registrar->setStreet2("Street 2");
@@ -80,13 +82,13 @@ LibFred::Registrar::Registrar::AutoPtr createTestRegistrarClass()
     registrar->setPostalCode("11150");
     registrar->setProvince("noprovince");
     registrar->setTelephone("+420.987654");
-    registrar->setVarSymb("555666");
+    registrar->setVarSymb(std::to_string(var_symbol++));
     registrar->setURL("http://ucho.cz");
 
     registrar->setHandle(registrar_handle);//REGISTRAR_ADD_HANDLE_NAME
     registrar->setCountry("CZ");//REGISTRAR_COUNTRY_NAME
     registrar->setVat(true);
-    ::LibFred::Registrar::ACL* registrar_acl = registrar->newACL();
+    ::LibFred::Registrar::ACL* const registrar_acl = registrar->newACL();
     registrar_acl->setCertificateMD5("");
     registrar_acl->set_password("");
 
