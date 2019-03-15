@@ -855,6 +855,11 @@ prepare_object_files(
     test/backend/admin/zone/main.cc
     test/backend/admin/zone/test_add_zone.cc
     test/backend/admin/zone/test_add_zone_ns.cc
+    test/backend/admin_block/main.cc
+    test/backend/admin_block/test_block_domains.cc
+    test/backend/admin_block/test_restore_prev_state_of_domains.cc
+    test/backend/admin_block/test_unblock_domains.cc
+    test/backend/admin_block/util.cc
     test/backend/automatic_keyset_management/main.cc
     test/backend/automatic_keyset_management/test_automatic_keyset_management.cc
     test/backend/domain_browser/test_domain_browser.cc
@@ -2568,6 +2573,38 @@ target_link_external_libraries(test-admin-zone
     postgres
     libidn)
 
+prepare_executable(test-admin-block
+    src/backend/admin_block/administrativeblocking.cc
+    test/backend/admin_block/main.cc
+    test/backend/admin_block/test_block_domains.cc
+    test/backend/admin_block/test_restore_prev_state_of_domains.cc
+    test/backend/admin_block/test_unblock_domains.cc
+    test/backend/admin_block/util.cc
+    test/setup/fixtures.cc
+    test/setup/fixtures_utils.cc)
+target_link_libraries(test-admin-block
+    corba
+    corbafilters
+    corbadatatypes
+    fred-deprecated
+    db
+    util
+    types
+    timezones
+    fred-static::library)
+target_link_external_libraries(test-admin-block
+    boost_system
+    boost_unit_test_framework
+    boost_program_options
+    boost_date_time
+    boost_regex
+    boost_random
+    omniorb4
+    boost_thread
+    threads
+    postgres
+    libidn)
+
 # test-optys
 prepare_executable(test-optys
     test/test_optys_main.cc
@@ -2930,6 +2967,7 @@ if(NOT DO_NOT_INSTALL_TESTS)
     install(TARGETS test-admin-domain DESTINATION ${BINDIR})
     install(TARGETS test-admin-registrar DESTINATION ${BINDIR})
     install(TARGETS test-admin-zone DESTINATION ${BINDIR})
+    install(TARGETS test-admin-block DESTINATION ${BINDIR})
     install(TARGETS test-delete-objects-marked-as-delete-candidate DESTINATION ${BINDIR})
 endif()
 
