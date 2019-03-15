@@ -429,7 +429,9 @@ void administrative_unblock_contact(
         return;
     }
 
-    LOGGER.debug("Unblock contact: " + _contact_id);
+    std::ostringstream debug_info;
+    debug_info << "Unblock contact: " << _contact_id;
+    LOGGER.debug(debug_info.str());
     const IdlDomainIdList blocked_domain_ids = get_blocked_domains_by_owner(_ctx, _contact_id);
     if (blocked_domain_ids.size() > 0)
     {
@@ -468,8 +470,8 @@ void administrative_unblock_contact(
             const std::string new_owner_handle = owner_id_owner_copy[_contact_id].new_owner_handle;
             for (const auto domain : blocked_domains)
             {
-                std::ostringstream debug_info;
-                debug_info << "Update domain " << domain.second << " - set new owner: " << new_owner_handle;
+                std::ostringstream update_info;
+                update_info << "Update domain " << domain.second << " - set new owner: " << new_owner_handle;
 
                 LibFred::UpdateDomain update_domain(domain.second, _system_registrar);
                 update_domain.set_registrant(new_owner_handle);
@@ -477,7 +479,7 @@ void administrative_unblock_contact(
                 {
                     update_domain.set_logd_request_id(_log_req_id);
                 }
-                LOGGER.debug(debug_info.str());
+                LOGGER.debug(update_info.str());
                 update_domain.exec(_ctx);
             }
         }

@@ -31,7 +31,6 @@
 
 #include "src/util/cfg/handle_args.hh"
 #include "src/util/cfg/handle_database_args.hh"
-#include "src/util/cfg/handle_logging_args.hh"
 #include "src/util/cfg/handle_server_args.hh"
 #include "src/util/cfg/handle_registry_args.hh"
 #include "src/util/cfg/handle_tests_args.hh"
