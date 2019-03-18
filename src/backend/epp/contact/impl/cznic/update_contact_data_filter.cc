@@ -21,6 +21,8 @@
 
 #include "libfred/object/object_states_info.hh"
 
+#include "util/case_insensitive.hh"
+
 #include <stdexcept>
 #include <type_traits>
 
@@ -152,6 +154,29 @@ bool is_fake_change_operation(const Deletable<std::string>& op, const Nullable<s
     throw std::runtime_error("unknown update operation");
 }
 
+bool is_fake_case_insensitive_change_operation(const Deletable<std::string>& op, const Nullable<std::string>& value)
+{
+    if (op == UpdateOperation::Action::no_operation)
+    {
+        return true;
+    }
+    if (op == UpdateOperation::Action::delete_value)
+    {
+        return value.isnull() || trim(value.get_value()).empty();
+    }
+    if (op == UpdateOperation::Action::set_value)
+    {
+        const auto trimmed_new_value = trim(*op);
+        const auto trimmed_old_value = value.isnull() ? std::string() : trim(value.get_value());
+        if (trimmed_new_value == trimmed_old_value)
+        {
+            return true;
+        }
+        return Util::case_insensitive_equal_to()(trimmed_new_value, trimmed_old_value);
+    }
+    throw std::runtime_error("unknown update operation");
+}
+
 bool is_fake_change_operation(const Deletable<std::string>& op, const Optional<std::string>& value)
 {
     if (op == UpdateOperation::Action::no_operation)
@@ -263,7 +288,7 @@ bool is_sufficient_authenticity_level_to_private_address(
     if (change_planned)
     {
         const bool change_is_fake_only =
-                is_fake_change_operation(change.name, old_data.name) &&
+                is_fake_case_insensitive_change_operation(change.name, old_data.name) &&
                 is_fake_change_operation(change.organization, old_data.organization) &&
                 is_fake_change_operation(change.address, old_data.place) &&
                 is_fake_change_operation(change.telephone, old_data.telephone) &&

@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/epp/contact/update_contact_post_hooks.hh"
 
 #include "src/backend/admin/contact/verification/contact_states/delete_all.hh"
@@ -30,11 +31,14 @@
 #include "src/backend/admin/contact/verification/resolve_check.hh"
 #include "src/backend/admin/contact/verification/run_all_enqueued_checks.hh"
 #include "src/backend/admin/contact/verification/update_tests.hh"
+
 #include "libfred/object/object_state.hh"
 #include "libfred/object/object_type.hh"
+
 #include "libfred/object_state/cancel_object_state_request_id.hh"
 #include "libfred/object_state/lock_object_state_request_lock.hh"
 #include "libfred/object_state/perform_object_state_request.hh"
+
 #include "libfred/registrable_object/contact/check_contact.hh"
 #include "libfred/registrable_object/contact/copy_contact.hh"
 #include "libfred/registrable_object/contact/create_contact.hh"
@@ -61,7 +65,7 @@ void conditionally_cancel_contact_verification_states(
             // clang-format off
             "SELECT (COALESCE(ch1.email,'')!=COALESCE(ch2.email,'')) OR "
                    "(COALESCE(ch1.telephone,'')!=COALESCE(ch2.telephone,'')) OR "
-                   "(COALESCE(ch1.name,'')!=COALESCE(ch2.name,'')) OR "
+                   "(UPPER(COALESCE(ch1.name,''))!=UPPER(COALESCE(ch2.name,''))) OR "
                    "(COALESCE(ch1.organization,'')!=COALESCE(ch2.organization,'')) OR "
                    "(COALESCE(ch1.street1,'')!=COALESCE(ch2.street1,'')) OR "
                    "(COALESCE(ch1.street2,'')!=COALESCE(ch2.street2,'')) OR "
@@ -92,10 +96,9 @@ void conditionally_cancel_contact_verification_states(
         {
             LibFred::StatusList states_to_cancel;
             states_to_cancel.insert(
-                    Conversion::Enums::to_db_handle(
-                            LibFred::Object_State::
-                            conditionally_identified_contact));
-            states_to_cancel.insert(Conversion::Enums::to_db_handle(LibFred::Object_State::identified_contact));
+                    Conversion::Enums::to_db_handle(LibFred::Object_State::conditionally_identified_contact));
+            states_to_cancel.insert(
+                    Conversion::Enums::to_db_handle(LibFred::Object_State::identified_contact));
             LibFred::CancelObjectStateRequestId(
                     _contact_id,
                     states_to_cancel).exec(_ctx);
@@ -111,12 +114,9 @@ void conditionally_cancel_contact_verification_states(
     }
 }
 
-
 class DbSavepoint
 {
 public:
-
-
     DbSavepoint(
             LibFred::OperationContext& _ctx,
             const std::string& _name)
@@ -125,7 +125,6 @@ public:
     {
         ctx_.get_conn().exec("SAVEPOINT " + name_);
     }
-
 
     ~DbSavepoint()
     {
@@ -142,7 +141,6 @@ public:
         ctx_.get_conn().exec("ROLLBACK TO " + name_);
         return *this;
     }
-
 private:
     LibFred::OperationContext& ctx_;
     const std::string name_;
@@ -153,7 +151,7 @@ private:
 void update_contact_post_hooks(
         LibFred::OperationContext& _ctx,
         const std::string& _contact_handle,
-        const Optional<unsigned long long>& _logd_requst_id,
+        const Optional<unsigned long long>& _logd_request_id,
         const bool _epp_update_contact_enqueue_check)
 {
     DbSavepoint savepoint(_ctx, "before_update_contact_post_hooks");
@@ -182,7 +180,7 @@ void update_contact_post_hooks(
                         _ctx,
                         contact_id,
                         LibFred::TestsuiteHandle::AUTOMATIC,
-                        _logd_requst_id);
+                        _logd_request_id);
             }
         }
 
@@ -195,7 +193,6 @@ void update_contact_post_hooks(
         throw;
     }
 }
-
 
 } // namespace Epp::Contact
 } // namespace Epp
