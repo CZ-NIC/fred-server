@@ -130,15 +130,12 @@ struct CompareIgnoringCase
 
 typedef std::set<std::string, CompareIgnoringCase> Handles;
 
-Handles get_tech_contact_handles(const std::vector<LibFred::RegistrableObject::Contact::ContactReference>& _id_handles)
+Handles get_handles_of_tech_contacts(const std::vector<LibFred::RegistrableObject::Contact::ContactReference>& _tech_contacts)
 {
     Handles result;
-    for (std::vector<LibFred::RegistrableObject::Contact::ContactReference>::const_iterator id_handle_ptr =
-                    _id_handles.begin();
-            id_handle_ptr != _id_handles.end();
-            ++id_handle_ptr)
+    for (const auto& tech_contact : _tech_contacts)
     {
-        result.insert(id_handle_ptr->handle);
+        result.insert(tech_contact.handle);
     }
     return result;
 }
@@ -189,7 +186,7 @@ Success check_tech_contacts(
         check_result = false;
     }
 
-    const Handles current_tech_contacts = get_tech_contact_handles(_keyset_data.tech_contacts);
+    const Handles current_tech_contacts = get_handles_of_tech_contacts(_keyset_data.tech_contacts);
 
     if (current_tech_contacts.size() < _tech_contacts_rem.size())
     {
