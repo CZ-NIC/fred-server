@@ -77,6 +77,7 @@
 #include <boost/mpl/set.hpp>
 
 #include <algorithm>
+#include <functional>
 #include <iomanip>
 #include <map>
 #include <utility>
@@ -332,39 +333,42 @@ private:
 
 } // namespace Fred::Backend::MojeId::check_limits
 
-template <typename T>
-bool differs(const Nullable<T>& a, const Nullable<T>& b)
+template <typename T, typename C>
+bool does_it_differ(const T& a, const T& b, C&& equal_to)
 {
-    return a.get_value_or_default() != b.get_value_or_default();
+    return !std::forward<C>(equal_to)(a, b);
 }
 
-template <typename T>
-bool differs(const Optional<T>& a, const Optional<T>& b)
+template <typename T, typename C>
+bool does_it_differ(const Nullable<T>& a, const Nullable<T>& b, C&& equal_to)
+{
+    return (a.isnull() != b.isnull()) ||
+           (a.isnull() && does_it_differ(a.get_value(), b.get_value(), std::forward<C>(equal_to)));
+}
+
+template <typename T, typename C>
+bool does_it_differ(const Optional<T>& a, const Optional<T>& b, C&& equal_to)
 {
     return (a.isset() != b.isset()) ||
-           (a.isset() && (a.get_value() != b.get_value()));
+           (a.isset() && does_it_differ(a.get_value(), b.get_value(), std::forward<C>(equal_to)));
 }
 
 template <typename T>
-bool differs(const T& a, const T& b)
+bool does_it_differ(const T& a, const T& b)
 {
-    return a != b;
+    return does_it_differ(a, b, std::equal_to<void>());
 }
 
-template <typename C>
-bool case_insensitive_differs(C&& db_conn, const std::string& a, const std::string& b)
+template <typename T>
+bool does_it_differ(const Nullable<T>& a, const Nullable<T>& b)
 {
-    return (a != b) &&
-           (Util::CaseInsensitive::compare(std::forward<C>(db_conn), a, b) !=
-            Util::CaseInsensitive::ComparisonResult::equal);
+    return does_it_differ(a, b, std::equal_to<void>());
 }
 
-template <typename C, template <typename> class O>
-bool case_insensitive_differs(C&& db_conn, const O<std::string>& a, const O<std::string>& b)
+template <typename T>
+bool does_it_differ(const Optional<T>& a, const Optional<T>& b)
 {
-    const auto lhs = a.get_value_or_default();
-    const auto rhs = b.get_value_or_default();
-    return case_insensitive_differs(std::forward<C>(db_conn), lhs, rhs);
+    return does_it_differ(a, b, std::equal_to<void>());
 }
 
 Nullable<boost::gregorian::date> convert_as_birthdate(const Nullable<std::string>& _birth_date)
@@ -379,35 +383,35 @@ Nullable<boost::gregorian::date> convert_as_birthdate(const Nullable<std::string
 template <typename C>
 bool validated_data_changed(C&& db_conn, const LibFred::InfoContactData& _c1, const LibFred::InfoContactData& _c2)
 {
-    if (case_insensitive_differs(std::forward<C>(db_conn), _c1.name, _c2.name))
+    if (does_it_differ(_c1.name, _c2.name, ::Util::case_insensitive_equal_to(std::forward<C>(db_conn))))
     {
         return true;
     }
 
-    if (differs(_c1.organization, _c2.organization))
+    if (does_it_differ(_c1.organization, _c2.organization, typename std::template equal_to<void>()))
     {
         return true;
     }
 
     const LibFred::InfoContactData::Address a1 = _c1.get_permanent_address();
     const LibFred::InfoContactData::Address a2 = _c2.get_permanent_address();
-    if (differs(a1.street1, a2.street1) ||
-        differs(a1.street2, a2.street2) ||
-        differs(a1.street3, a2.street3) ||
-        differs(a1.city, a2.city) ||
-        differs(a1.stateorprovince, a2.stateorprovince) ||
-        differs(a1.country, a2.country) ||
-        differs(a1.postalcode, a2.postalcode))
+    if (does_it_differ(a1.street1, a2.street1) ||
+        does_it_differ(a1.street2, a2.street2) ||
+        does_it_differ(a1.street3, a2.street3) ||
+        does_it_differ(a1.city, a2.city) ||
+        does_it_differ(a1.stateorprovince, a2.stateorprovince) ||
+        does_it_differ(a1.country, a2.country) ||
+        does_it_differ(a1.postalcode, a2.postalcode))
     {
         return true;
     }
 
-    if (differs(_c1.ssntype, _c2.ssntype))
+    if (does_it_differ(_c1.ssntype, _c2.ssntype))
     {
         return true;
     }
 
-    if (differs(_c1.ssn, _c2.ssn))
+    if (does_it_differ(_c1.ssn, _c2.ssn))
     {
         if (_c1.ssntype.get_value_or_default() != Conversion::Enums::to_db_handle(LibFred::SSNType::birthday))
         {
@@ -415,7 +419,7 @@ bool validated_data_changed(C&& db_conn, const LibFred::InfoContactData& _c1, co
         }
         const Nullable<boost::gregorian::date> bd1 = convert_as_birthdate(_c1.ssn);
         const Nullable<boost::gregorian::date> bd2 = convert_as_birthdate(_c2.ssn);
-        if (differs(bd1, bd2))
+        if (does_it_differ(bd1, bd2))
         {
             return true;
         }
@@ -762,29 +766,29 @@ template <MessageType::Enum MT, CommType::Enum CT>
 template <typename C>
 bool identified_data_changed(C&& db_conn, const LibFred::InfoContactData& _c1, const LibFred::InfoContactData& _c2)
 {
-    if (case_insensitive_differs(std::forward<C>(db_conn), _c1.name, _c2.name))
+    if (does_it_differ(_c1.name, _c2.name, Util::case_insensitive_equal_to(std::forward<C>(db_conn))))
     {
         return true;
     }
 
     const LibFred::InfoContactData::Address a1 = _c1.get_address<LibFred::ContactAddressType::MAILING>();
     const LibFred::InfoContactData::Address a2 = _c2.get_address<LibFred::ContactAddressType::MAILING>();
-    if (case_insensitive_differs(std::forward<C>(db_conn), a1.name, a2.name))
+    if (does_it_differ(a1.name, a2.name, Util::case_insensitive_equal_to(std::forward<C>(db_conn))))
     {
         const std::string name1 = a1.name.isset() ? a1.name.get_value() : _c1.name.get_value_or_default();
         const std::string name2 = a2.name.isset() ? a2.name.get_value() : _c2.name.get_value_or_default();
-        if (case_insensitive_differs(std::forward<C>(db_conn), name1, name2))
+        if (does_it_differ(name1, name2, Util::case_insensitive_equal_to(std::forward<C>(db_conn))))
         {
             return true;
         }
     }
-    if (differs(a1.street1, a2.street1) ||
-        differs(a1.street2, a2.street2) ||
-        differs(a1.street3, a2.street3) ||
-        differs(a1.city, a2.city) ||
-        differs(a1.stateorprovince, a2.stateorprovince) ||
-        differs(a1.country, a2.country) ||
-        differs(a1.postalcode, a2.postalcode))
+    if (does_it_differ(a1.street1, a2.street1) ||
+        does_it_differ(a1.street2, a2.street2) ||
+        does_it_differ(a1.street3, a2.street3) ||
+        does_it_differ(a1.city, a2.city) ||
+        does_it_differ(a1.stateorprovince, a2.stateorprovince) ||
+        does_it_differ(a1.country, a2.country) ||
+        does_it_differ(a1.postalcode, a2.postalcode))
     {
         return true;
     }
@@ -1178,7 +1182,9 @@ void MojeIdImpl::update_contact_prepare(
         const LibFred::InfoContactData current_data = LibFred::InfoContactById(new_data.id).exec(ctx).info_contact_data;
         const LibFred::InfoContactDiff data_changes = LibFred::diff_contact_data(current_data, new_data);
         const bool name_changed = data_changes.name.isset() &&
-                                  case_insensitive_differs(ctx.get_conn(), current_data.name, new_data.name);
+                                  does_it_differ(current_data.name,
+                                                 new_data.name,
+                                                 Util::case_insensitive_equal_to(ctx.get_conn()));
         if (!(name_changed ||
               data_changes.organization.isset() ||
               data_changes.vat.isset() ||
@@ -1205,7 +1211,7 @@ void MojeIdImpl::update_contact_prepare(
             }
         }
         const bool drop_identification = identified_data_changed(ctx.get_conn(), current_data, new_data);
-        if (drop_identification || differs(current_data.email, new_data.email))
+        if (drop_identification || does_it_differ(current_data.email, new_data.email))
         {
             cancel_message_sending<MessageType::mojeid_card, CommType::letter>(ctx, new_data.id);
             cancel_message_sending<MessageType::mojeid_pin3, CommType::letter>(ctx, new_data.id);
@@ -1393,13 +1399,13 @@ MojeIdImplData::InfoContact MojeIdImpl::update_transfer_contact_prepare(
             {
                 const LibFred::InfoContactData& c1 = current_data;
                 const LibFred::InfoContactData& c2 = new_data;
-                drop_identification = case_insensitive_differs(ctx.get_conn(), c1.name, c2.name);
+                drop_identification = does_it_differ(c1.name, c2.name, Util::case_insensitive_equal_to(ctx.get_conn()));
                 if (!drop_identification)
                 {
                     const LibFred::InfoContactData::Address a1 = c1.get_address<LibFred::ContactAddressType::MAILING>();
                     const LibFred::InfoContactData::Address a2 = c2.get_address<LibFred::ContactAddressType::MAILING>();
                     drop_identification =
-                            case_insensitive_differs(ctx.get_conn(), a1.name, a2.name) ||
+                            does_it_differ(a1.name, a2.name, Util::case_insensitive_equal_to(ctx.get_conn())) ||
                             (a1.organization.get_value_or_default() != a2.organization.get_value_or_default()) ||
                             (a1.company_name.get_value_or_default() != a2.company_name.get_value_or_default()) ||
                             (a1.street1 != a2.street1) ||

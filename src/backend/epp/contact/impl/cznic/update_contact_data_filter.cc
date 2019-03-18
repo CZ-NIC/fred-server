@@ -172,14 +172,7 @@ bool is_fake_case_insensitive_change_operation(const Deletable<std::string>& op,
         {
             return true;
         }
-        switch (Util::CaseInsensitive::compare(trimmed_new_value, trimmed_old_value))
-        {
-            case Util::CaseInsensitive::ComparisonResult::equal:
-                return true;
-            case Util::CaseInsensitive::ComparisonResult::not_equal:
-                return false;
-        }
-        return false;
+        return Util::case_insensitive_equal_to()(trimmed_new_value, trimmed_old_value);
     }
     throw std::runtime_error("unknown update operation");
 }
