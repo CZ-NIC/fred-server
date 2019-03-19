@@ -415,6 +415,14 @@ PaymentInvoices import_payment(
     {
         throw InvalidPaymentData();
     }
+    catch (const LibFred::Invoicing::InvalidTaxDateFormat&)
+    {
+        throw InvalidPaymentData(); // tax_date is taken from payment_data.date
+    }
+    catch (const LibFred::Invoicing::TaxDateTooOld&)
+    {
+        throw PaymentTooOld();
+    }
     catch (const LibFred::Banking::PaymentAlreadyProcessed&)
     {
         throw PaymentAlreadyProcessed();
@@ -469,9 +477,13 @@ PaymentInvoices import_payment_by_registrar_handle(
     {
         throw InvalidPaymentData();
     }
-    catch (const LibFred::Invoicing::InvalidTaxDate&)
+    catch (const LibFred::Invoicing::InvalidTaxDateFormat&)
     {
-        throw InvalidTaxDate();
+        throw InvalidTaxDateFormat();
+    }
+    catch (const LibFred::Invoicing::TaxDateTooOld&)
+    {
+        throw TaxDateTooOld();
     }
     catch (const LibFred::Banking::PaymentAlreadyProcessed&)
     {

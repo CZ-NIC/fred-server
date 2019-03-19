@@ -22,9 +22,14 @@
 namespace LibFred {
 namespace Invoicing {
 
-const char* InvalidTaxDate::what() const noexcept
+const char* InvalidTaxDateFormat::what() const noexcept
 {
-    return "tax_date must be valid date and no more than 15 days before invoice_date";
+    return "invalid tax date format";
+}
+
+const char* TaxDateTooOld::what() const noexcept
+{
+    return "tax_date value must be less than 15 days before invoice_date (which is today)";
 }
 
 } // namespace Libfred::Invoicing

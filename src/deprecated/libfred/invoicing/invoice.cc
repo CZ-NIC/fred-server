@@ -396,10 +396,14 @@ unsigned long long  createDepositInvoice(boost::gregorian::date tax_date, unsign
         )
 {
 
-    if (tax_date.is_special() ||
-       (invoice_date.date() - tax_date > boost::gregorian::days(15)))
+    if (tax_date.is_special())
     {
-        throw InvalidTaxDate();
+        throw InvalidTaxDateFormat();
+    }
+
+    if (invoice_date.date() - tax_date > boost::gregorian::days(15))
+    {
+        throw TaxDateTooOld();
     }
 
     Database::Connection conn = Database::Manager::acquire();

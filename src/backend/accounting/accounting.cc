@@ -168,6 +168,16 @@ PaymentInvoices import_payment(
         LOGGER.info(e.what());
         throw InvalidPaymentData();
     }
+    catch (const Impl::InvalidTaxDateFormat& e)
+    {
+        LOGGER.info(e.what());
+        throw InvalidTaxDateFormat();
+    }
+    catch (const Impl::PaymentTooOld& e)
+    {
+        LOGGER.info(e.what());
+        throw PaymentTooOld();
+    }
     catch (const Impl::PaymentAlreadyProcessed& e)
     {
         LOGGER.info(e.what());
@@ -213,10 +223,15 @@ PaymentInvoices import_payment_by_registrar_handle(
         LOGGER.info(e.what());
         throw InvalidPaymentData();
     }
-    catch (const Impl::InvalidTaxDate& e)
+    catch (const Impl::InvalidTaxDateFormat& e)
     {
         LOGGER.info(e.what());
-        throw InvalidTaxDate();
+        throw InvalidTaxDateFormat();
+    }
+    catch (const Impl::TaxDateTooOld& e)
+    {
+        LOGGER.info(e.what());
+        throw TaxDateTooOld();
     }
     catch (const Impl::PaymentAlreadyProcessed& e)
     {

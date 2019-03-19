@@ -168,6 +168,10 @@ Registry::Accounting::InvoiceReferenceSeq* AccountingImpl::import_payment(
     {
         throw Registry::Accounting::INVALID_PAYMENT_DATA();
     }
+    catch (const Fred::Backend::Accounting::PaymentTooOld&)
+    {
+        throw Registry::Accounting::PAYMENT_TOO_OLD();
+    }
     catch (const Fred::Backend::Accounting::PaymentAlreadyProcessed&)
     {
         throw Registry::Accounting::PAYMENT_ALREADY_PROCESSED();
@@ -212,9 +216,13 @@ Registry::Accounting::InvoiceReferenceSeq* AccountingImpl::import_payment_by_reg
     {
         throw Registry::Accounting::INVALID_PAYMENT_DATA();
     }
-    catch (const Fred::Backend::Accounting::InvalidTaxDate&)
+    catch (const Fred::Backend::Accounting::InvalidTaxDateFormat&)
     {
-        throw Registry::Accounting::INVALID_TAX_DATE();
+        throw Registry::Accounting::INVALID_TAX_DATE_FORMAT();
+    }
+    catch (const Fred::Backend::Accounting::PaymentTooOld&)
+    {
+        throw Registry::Accounting::PAYMENT_TOO_OLD();
     }
     catch (const Fred::Backend::Accounting::RegistrarNotFound&)
     {

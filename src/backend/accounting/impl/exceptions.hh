@@ -51,7 +51,17 @@ struct InvalidPaymentData : std::exception
     const char* what() const noexcept override;
 };
 
-struct InvalidTaxDate : std::exception
+struct InvalidTaxDateFormat : std::exception
+{
+    const char* what() const noexcept override;
+};
+
+struct TaxDateTooOld : std::exception
+{
+    const char* what() const noexcept override;
+};
+
+struct PaymentTooOld : std::exception
 {
     const char* what() const noexcept override;
 };

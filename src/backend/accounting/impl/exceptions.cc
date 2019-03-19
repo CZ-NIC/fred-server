@@ -48,9 +48,19 @@ const char* InvalidPaymentData::what() const noexcept
     return "invalid payment data";
 }
 
-const char* InvalidTaxDate::what() const noexcept
+const char* InvalidTaxDateFormat::what() const noexcept
 {
-    return "tax_date must be valid date and no more than 15 days before invoice_date";
+    return "invalid tax_date format";
+}
+
+const char* TaxDateTooOld::what() const noexcept
+{
+    return "tax_date value must be less than 15 days before invoice_date (which is today)";
+}
+
+const char* PaymentTooOld::what() const noexcept
+{
+    return "payment too old - account.date (tax_date) value must be less than 15 days before invoice_date (which is today)";
 }
 
 const char* PaymentAlreadyProcessed::what() const noexcept
