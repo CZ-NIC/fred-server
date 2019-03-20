@@ -1,3 +1,26 @@
+2019-03-20 (2.39.0)
+
+  * License GNU GPLv3+
+
+  * CMake fixes
+
+  * Autotools removal
+
+  * Library libfred moved to separate repository (easier to reuse)
+
+  * Removed old database model structures and rewriting them to libfred operations (phase 2)
+
+  * Unique registrar payment identifier
+
+  * Administrative domain blocking/unblocking
+    - when unblocking domain, unblock also linked contact (only if possible - must
+      be also admin. blocked and not linked to another admin. blocked domain)
+
+  * Contact verification / MojeID
+    - do not cancel identifiedContact and validatedContact flags on only letter case change in contact name
+
+  * CI fixes
+
 2019-02-26 (2.38.3)
 
   * Fix mojeid method for sending new pin3 (always create new request)
