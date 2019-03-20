@@ -1,3 +1,0 @@
-[submodule "libfred"]
-	path = external/lib/libfred
-	url = git@gitlab.office.nic.cz:fred/libfred.git
