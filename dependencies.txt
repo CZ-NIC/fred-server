@@ -1,0 +1,4 @@
+# <repository> <commitish> <clone-path>
+fred/libfred master external/lib/libfred
+fred/idl master external/idl
+fred/db master external/db
