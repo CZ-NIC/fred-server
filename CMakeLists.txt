@@ -1973,6 +1973,7 @@ target_link_external_libraries(fred-accifd
     libidn
     postgres
     omniorb4
+    omnidynamic4
     openssl
     threads
     mpdec)

@@ -222,7 +222,7 @@ Registry::Accounting::InvoiceReferenceSeq* AccountingImpl::import_payment_by_reg
     }
     catch (const Fred::Backend::Accounting::PaymentTooOld&)
     {
-        throw Registry::Accounting::PAYMENT_TOO_OLD();
+        throw Registry::Accounting::INVALID_TAX_DATE_VALUE();
     }
     catch (const Fred::Backend::Accounting::RegistrarNotFound&)
     {
