@@ -25,7 +25,7 @@ docker:server:ubuntu:
 docker:server:fedora:
   <<: *image
   variables:
-    IMAGE_NAME: fedora:27
+    IMAGE_NAME: fedora:28
     IMAGE_TAG: $CI_REGISTRY_IMAGE/$IMAGE_NAME
   only:
     - master
@@ -51,8 +51,8 @@ docker:server:centos:
     - builder
     - linux
 
-.fedora_27: &fedora_27
-  image: "$CI_REGISTRY/fred/server/fedora:27"
+.fedora_28: &fedora_28
+  image: "$CI_REGISTRY/fred/server/fedora:28"
   tags:
     - amd64
     - builder
@@ -87,7 +87,7 @@ build:ubuntu:amd64:
     - make -j $(($(grep -c processor /proc/cpuinfo) / 2 + 1)) distcheck
 
 build:fedora:amd64:
-  <<: *fedora_27
+  <<: *fedora_28
   <<: *build_job
   script:
     - echo "\$PWD=$PWD"
