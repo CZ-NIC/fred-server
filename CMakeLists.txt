@@ -46,13 +46,14 @@ if(NOT VERSION)
 endif()
 set(TARBALL_FILE_NAME "${program_name}-${VERSION}")
 
-if(NOT TARGET fred-static::library)
-    add_subdirectory(external/lib/libfred EXCLUDE_FROM_ALL)
-endif()
-
 set_default(IDL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/idl/idl)
+set_default(LIBFRED_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/lib/libfred)
 
 set_default(PACKAGE ${program_name})
+
+if(NOT TARGET fred-static::library)
+    add_subdirectory(${LIBFRED_DIR} ${CMAKE_CURRENT_BINARY_DIR}/external/lib/libfred EXCLUDE_FROM_ALL)
+endif()
 
 normalize_path(NORMALIZED_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
 if("x${NORMALIZED_INSTALL_PREFIX}" STREQUAL "x/usr/local")
@@ -2986,8 +2987,8 @@ endif()
 if(EXISTS ${CMAKE_SOURCE_DIR}/.git AND GIT_PROGRAM)
     if(NOT TARGET dist)
         add_custom_target(dist_libfred
-            COMMAND ${GIT_PROGRAM} archive --format=tar --prefix=${TARBALL_FILE_NAME}/external/lib/libfred/ HEAD > ../../../.libfred.tar
-            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/external/lib/libfred)
+            COMMAND ${GIT_PROGRAM} archive --format=tar --prefix=${TARBALL_FILE_NAME}/external/lib/libfred/ HEAD > ${CMAKE_SOURCE_DIR}/.libfred.tar
+            WORKING_DIRECTORY ${LIBFRED_DIR})
         add_custom_target(dist
             COMMAND ${GIT_PROGRAM} archive --format=tar --prefix=${TARBALL_FILE_NAME}/ HEAD > .${TARBALL_FILE_NAME}.tar
             COMMAND tar --concatenate --file=.${TARBALL_FILE_NAME}.tar .libfred.tar
