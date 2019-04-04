@@ -50,7 +50,7 @@ if(NOT TARGET fred-static::library)
     add_subdirectory(external/lib/libfred EXCLUDE_FROM_ALL)
 endif()
 
-set_default(IDL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../idl/idl)
+set_default(IDL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/idl/idl)
 
 set_default(PACKAGE ${program_name})
 
