@@ -27,14 +27,13 @@ namespace Backend {
 namespace Epp {
 namespace Domain {
 
-std::vector<std::string> vector_of_Fred_ObjectIdHandlePair_to_vector_of_string(const std::vector<::LibFred::ObjectIdHandlePair>& admin_contacts) {
+std::vector<std::string> vector_of_Fred_RegistrableObject_Contact_ContactReference_to_vector_of_string(
+        const std::vector< ::LibFred::RegistrableObject::Contact::ContactReference>& admin_contacts)
+{
     std::vector<std::string> admin;
-    for (
-        std::vector<::LibFred::ObjectIdHandlePair>::const_iterator object_id_handle_pair = admin_contacts.begin();
-        object_id_handle_pair != admin_contacts.end();
-        ++object_id_handle_pair
-    ) {
-        admin.push_back(object_id_handle_pair->handle);
+    for (const auto& object_id_handle_pair : admin_contacts)
+    {
+        admin.push_back(object_id_handle_pair.handle);
     }
     return admin;
 }

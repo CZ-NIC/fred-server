@@ -24,7 +24,6 @@
 #include "src/backend/epp/nsset/status_value.hh"
 
 #include <boost/optional.hpp>
-#include <boost/foreach.hpp>
 
 #include <set>
 #include <vector>
@@ -40,7 +39,7 @@ InfoNssetOutputData get_info_nsset_output(
 {
     std::vector<std::string> tech_contacts;
     tech_contacts.reserve(_data.tech_contacts.size());
-    BOOST_FOREACH(const LibFred::ObjectIdHandlePair & tech_contact, _data.tech_contacts) {
+    for (const auto& tech_contact : _data.tech_contacts) {
         tech_contacts.push_back(tech_contact.handle);
     }
 

@@ -34,7 +34,8 @@
 #include <string>
 #include <vector>
 
-namespace LibFred {
+namespace Fred {
+namespace Backend {
 namespace AutomaticKeysetManagement {
 
 /**
@@ -264,7 +265,8 @@ private:
 
 };
 
-} // namespace LibFred::AutomaticKeysetManagement
-} // namespace LibFred
+} // namespace Fred::Backend::AutomaticKeysetManagement
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

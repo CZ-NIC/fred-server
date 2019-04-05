@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_SUITE(Epp)
 BOOST_AUTO_TEST_SUITE(Domain)
 BOOST_AUTO_TEST_SUITE(CreateDomain)
 
-bool handle_oidhpair_predicate (const std::string& handle, const ::LibFred::ObjectIdHandlePair& pair)
+bool handle_contact_reference_predicate (const std::string& handle, const ::LibFred::RegistrableObject::Contact::ContactReference& pair)
 {
   return (handle == pair.handle);
 }
@@ -791,7 +791,7 @@ BOOST_FIXTURE_TEST_CASE(create_empty_authinfopw, supply_ctx<HasRegistrarWithSess
 
     BOOST_CHECK(info_data.admin_contacts.size() == create_domain_input_data.data.admin_contacts.size());
     BOOST_CHECK(std::equal (create_domain_input_data.data.admin_contacts.begin(), create_domain_input_data.data.admin_contacts.end(),
-            info_data.admin_contacts.begin(), handle_oidhpair_predicate));
+            info_data.admin_contacts.begin(), handle_contact_reference_predicate));
 
     BOOST_CHECK(info_data.enum_domain_validation.isnull());
 }
@@ -833,7 +833,7 @@ BOOST_FIXTURE_TEST_CASE(create_authinfopw_not_set, supply_ctx<HasRegistrarWithSe
 
     BOOST_CHECK(info_data.admin_contacts.size() == create_domain_input_data.data.admin_contacts.size());
     BOOST_CHECK(std::equal (create_domain_input_data.data.admin_contacts.begin(), create_domain_input_data.data.admin_contacts.end(),
-            info_data.admin_contacts.begin(), handle_oidhpair_predicate));
+            info_data.admin_contacts.begin(), handle_contact_reference_predicate));
 
     BOOST_CHECK(info_data.enum_domain_validation.isnull());
 }
@@ -915,7 +915,7 @@ BOOST_FIXTURE_TEST_CASE(create_ok, supply_ctx<HasRegistrarWithSessionAndCreateDo
 
     BOOST_CHECK(info_data.admin_contacts.size() == create_domain_input_data.data.admin_contacts.size());
     BOOST_CHECK(std::equal (create_domain_input_data.data.admin_contacts.begin(), create_domain_input_data.data.admin_contacts.end(),
-            info_data.admin_contacts.begin(), handle_oidhpair_predicate));
+            info_data.admin_contacts.begin(), handle_contact_reference_predicate));
 
     BOOST_CHECK(info_data.enum_domain_validation.isnull());
 

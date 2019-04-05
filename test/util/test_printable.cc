@@ -50,9 +50,10 @@
 #include "libfred/registrable_object/contact/delete_contact.hh"
 #include "libfred/registrable_object/contact/check_contact.hh"
 #include "libfred/registrable_object/nsset/create_nsset.hh"
+#include "libfred/registrable_object/keyset/check_keyset.hh"
 #include "libfred/registrable_object/keyset/create_keyset.hh"
 #include "libfred/registrable_object/keyset/delete_keyset.hh"
-#include "libfred/registrable_object/keyset/check_keyset.hh"
+#include "libfred/registrable_object/keyset/keyset_uuid.hh"
 #include "libfred/registrable_object/domain/create_domain.hh"
 #include "libfred/registrable_object/domain/delete_domain.hh"
 #include "libfred/registrable_object/domain/check_domain.hh"
@@ -64,6 +65,7 @@
 #include "libfred/registrable_object/nsset/check_nsset.hh"
 #include "libfred/registrable_object/nsset/update_nsset.hh"
 #include "libfred/registrable_object/domain/info_domain.hh"
+#include "libfred/registrable_object/contact/contact_uuid.hh"
 #include "libfred/registrable_object/contact/info_contact.hh"
 #include "libfred/registrable_object/contact/merge_contact.hh"
 #include "libfred/registrable_object/contact/merge_contact_email_notification_data.hh"
@@ -74,6 +76,8 @@
 #include "libfred/registrable_object/keyset/info_keyset_diff.hh"
 #include "libfred/registrable_object/nsset/info_nsset_diff.hh"
 #include "libfred/object/object_id_handle_pair.hh"
+#include "libfred/registrable_object/contact/contact_reference.hh"
+#include "libfred/registrable_object/keyset/keyset_reference.hh"
 
 #include "util/util.hh"
 #include "util/printable.hh"
@@ -254,10 +258,10 @@ BOOST_AUTO_TEST_CASE(check_domain)
 BOOST_AUTO_TEST_CASE(info_domain_data)
 {
     ::LibFred::InfoDomainData i;
-    i.admin_contacts = Util::vector_of<::LibFred::ObjectIdHandlePair>
-        (::LibFred::ObjectIdHandlePair(1, "admin1"))
-        (::LibFred::ObjectIdHandlePair(2, "admin2"))
-        (::LibFred::ObjectIdHandlePair(3, "admin3"));
+    i.admin_contacts = Util::vector_of<::LibFred::RegistrableObject::Contact::ContactReference>
+        (::LibFred::RegistrableObject::Contact::ContactReference(1, "admin1", LibFred::RegistrableObject::Contact::ContactUuid()))
+        (::LibFred::RegistrableObject::Contact::ContactReference(2, "admin2", LibFred::RegistrableObject::Contact::ContactUuid()))
+        (::LibFred::RegistrableObject::Contact::ContactReference(3, "admin3", LibFred::RegistrableObject::Contact::ContactUuid()));
 
     i.expiration_date = boost::gregorian::day_clock::local_day();
     printable_test(i);
@@ -272,7 +276,8 @@ BOOST_AUTO_TEST_CASE(info_domain_history_output)
     id.fqdn = "test-fred.cz";
     id.creation_time = boost::posix_time::microsec_clock::universal_time();
     id.delete_time = boost::posix_time::microsec_clock::universal_time();
-    id.keyset=Nullable<::LibFred::ObjectIdHandlePair>(::LibFred::ObjectIdHandlePair(1,"TEST-KEYSET"));
+    id.keyset = Nullable<::LibFred::RegistrableObject::Keyset::KeysetReference>(
+            ::LibFred::RegistrableObject::Keyset::KeysetReference(1, "TEST-KEYSET", LibFred::RegistrableObject::Keyset::KeysetUuid()));
 
     ::LibFred::InfoDomainOutput ih;
     ih.history_valid_from = boost::posix_time::microsec_clock::universal_time();
@@ -351,9 +356,10 @@ BOOST_AUTO_TEST_CASE(info_keyset_data)
     i.handle = "TEST-INFO-KEYSET-HANDLE";
     i.creation_time = boost::posix_time::microsec_clock::universal_time();
     i.delete_time = boost::posix_time::microsec_clock::universal_time();
-    i.tech_contacts = Util::vector_of<::LibFred::ObjectIdHandlePair>(::LibFred::ObjectIdHandlePair(1, "tech1"))
-        (::LibFred::ObjectIdHandlePair(2, "tech2"))
-        (::LibFred::ObjectIdHandlePair(3, "tech3"));
+    i.tech_contacts = Util::vector_of<::LibFred::RegistrableObject::Contact::ContactReference>
+        (::LibFred::RegistrableObject::Contact::ContactReference(1, "tech1", ::LibFred::RegistrableObject::make_uuid_of<::LibFred::Object_Type::contact>("f72f9f35-09b2-4bad-a698-84827966d6ee")))
+        (::LibFred::RegistrableObject::Contact::ContactReference(2, "tech2", ::LibFred::RegistrableObject::make_uuid_of<::LibFred::Object_Type::contact>("4e1ffdd7-950e-4818-ba15-2b66214c4994")))
+        (::LibFred::RegistrableObject::Contact::ContactReference(3, "tech3", ::LibFred::RegistrableObject::make_uuid_of<::LibFred::Object_Type::contact>("b899d980-e2da-4bc1-a583-8364374b043b")));
     i.dns_keys = Util::vector_of<::LibFred::DnsKey>
     (::LibFred::DnsKey(257, 3, 5, "test1"))
     (::LibFred::DnsKey(257, 3, 5, "test2"));
@@ -371,9 +377,10 @@ BOOST_AUTO_TEST_CASE(info_keyset_output)
     d.handle = "TEST-INFO-KEYSET-HANDLE";
     d.creation_time = boost::posix_time::microsec_clock::universal_time();
     d.delete_time = boost::posix_time::microsec_clock::universal_time();
-    d.tech_contacts = Util::vector_of<::LibFred::ObjectIdHandlePair>(::LibFred::ObjectIdHandlePair(1, "tech1"))
-        (::LibFred::ObjectIdHandlePair(2, "tech2"))
-        (::LibFred::ObjectIdHandlePair(3, "tech3"));
+    d.tech_contacts = Util::vector_of<::LibFred::RegistrableObject::Contact::ContactReference>
+        (::LibFred::RegistrableObject::Contact::ContactReference(1, "tech1", ::LibFred::RegistrableObject::make_uuid_of<::LibFred::Object_Type::contact>("996a70c5-2440-41a1-ac4d-a017fbed1123")))
+        (::LibFred::RegistrableObject::Contact::ContactReference(2, "tech2", ::LibFred::RegistrableObject::make_uuid_of<::LibFred::Object_Type::contact>("dc1260d1-85f9-4a53-ba85-951d09ec6ed2")))
+        (::LibFred::RegistrableObject::Contact::ContactReference(3, "tech3", ::LibFred::RegistrableObject::make_uuid_of<::LibFred::Object_Type::contact>("1a1c5105-fbfd-40d5-9846-809ccdb5d049")));
     d.dns_keys = Util::vector_of<::LibFred::DnsKey>
     (::LibFred::DnsKey(257, 3, 5, "test1"))
     (::LibFred::DnsKey(257, 3, 5, "test2"));
@@ -477,9 +484,10 @@ BOOST_AUTO_TEST_CASE(info_nsset_output)
     d.handle = "TEST-INFO-NSSET-HANDLE";
     d.creation_time = boost::posix_time::microsec_clock::universal_time();
     d.delete_time = boost::posix_time::microsec_clock::universal_time();
-    d.tech_contacts = Util::vector_of<::LibFred::ObjectIdHandlePair>(::LibFred::ObjectIdHandlePair(1, "tech1"))
-        (::LibFred::ObjectIdHandlePair(2, "tech2"))
-        (::LibFred::ObjectIdHandlePair(3, "tech3"));
+    d.tech_contacts = Util::vector_of<::LibFred::RegistrableObject::Contact::ContactReference>
+        (::LibFred::RegistrableObject::Contact::ContactReference(1, "tech1", ::LibFred::RegistrableObject::make_uuid_of<::LibFred::Object_Type::contact>("99bb3294-440e-4452-bd52-b1bcc23351b2")))
+        (::LibFred::RegistrableObject::Contact::ContactReference(2, "tech2", ::LibFred::RegistrableObject::make_uuid_of<::LibFred::Object_Type::contact>("5d3df8a1-093d-42f5-82ad-603db7f0939f")))
+        (::LibFred::RegistrableObject::Contact::ContactReference(3, "tech3", ::LibFred::RegistrableObject::make_uuid_of<::LibFred::Object_Type::contact>("f8bdf50f-59cf-4e86-abfc-1b2f21f148d9")));
     d.dns_hosts = Util::vector_of<::LibFred::DnsHost>
         (::LibFred::DnsHost("test1dns.cz", Util::vector_of<ip::address>(ip::address::from_string("6.6.6.6"))(ip::address::from_string("7.7.7.7"))))
         (::LibFred::DnsHost("test2dns.cz", Util::vector_of<ip::address>(ip::address::from_string("6.6.6.6"))(ip::address::from_string("7.7.7.7"))));
@@ -917,7 +925,7 @@ BOOST_AUTO_TEST_CASE(info_keyset_diff)
 
 BOOST_AUTO_TEST_CASE(object_id_handle_pair)
 {
-    ::LibFred::ObjectIdHandlePair i(1,"test");
+    ::LibFred::ObjectIdHandlePair i(1, "test");
     printable_test(i);
     BOOST_CHECK(i.id == 1);
     BOOST_CHECK(i.handle == "test");

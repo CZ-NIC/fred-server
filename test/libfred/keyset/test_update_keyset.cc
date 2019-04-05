@@ -32,6 +32,7 @@
 #include "libfred/registrable_object/keyset/info_keyset_diff.hh"
 #include "libfred/registrable_object/keyset/info_keyset_impl.hh"
 #include "libfred/registrable_object/keyset/update_keyset.hh"
+#include "libfred/registrable_object/uuid.hh"
 #include "util/random_data_generator.hh"
 #include "test/setup/fixtures.hh"
 
@@ -200,8 +201,12 @@ BOOST_AUTO_TEST_CASE(update_keyset)
 
     //tech contacts
     ::LibFred::InfoContactOutput admin_contact5_info  = ::LibFred::InfoContactByHandle(admin_contact5_handle).exec(ctx);
-    info_data_2_with_changes.info_keyset_data.tech_contacts = Util::vector_of<::LibFred::ObjectIdHandlePair>(::LibFred::ObjectIdHandlePair(
-        admin_contact5_info.info_contact_data.id, admin_contact5_info.info_contact_data.handle));
+    info_data_2_with_changes.info_keyset_data.tech_contacts =
+            Util::vector_of<::LibFred::RegistrableObject::Contact::ContactReference>(
+                    ::LibFred::RegistrableObject::Contact::ContactReference(
+                            admin_contact5_info.info_contact_data.id,
+                            admin_contact5_info.info_contact_data.handle,
+                            ::LibFred::RegistrableObject::make_uuid_of<::LibFred::Object_Type::contact>()));
 
     //check changes made by last update
     BOOST_CHECK(info_data_2_with_changes == info_data_3);

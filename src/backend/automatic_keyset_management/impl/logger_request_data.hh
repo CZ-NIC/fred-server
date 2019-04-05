@@ -26,7 +26,8 @@
 
 #include <string>
 
-namespace LibFred {
+namespace Fred {
+namespace Backend {
 namespace AutomaticKeysetManagement {
 namespace Impl {
 
@@ -42,12 +43,12 @@ public:
     template <LoggerRequestProperty::Enum>
     LoggerRequestData& add(unsigned long long _value);
 
-    const Logger::ObjectReferences& get_object_references() const
+    const LibFred::Logger::ObjectReferences& get_object_references() const
     {
         return object_references_;
     }
 
-    const Logger::RequestProperties& get_request_properties() const
+    const LibFred::Logger::RequestProperties& get_request_properties() const
     {
         return request_properties_;
     }
@@ -58,15 +59,16 @@ private:
             const std::string& _value,
             const bool is_child)
     {
-        request_properties_.push_back(Logger::RequestProperty(_name, _value, is_child));
+        request_properties_.push_back(LibFred::Logger::RequestProperty(_name, _value, is_child));
     }
 
-    Logger::ObjectReferences object_references_;
-    Logger::RequestProperties request_properties_;
+    LibFred::Logger::ObjectReferences object_references_;
+    LibFred::Logger::RequestProperties request_properties_;
 };
 
-} // namespace LibFred::AutomaticKeysetManagement::Impl
-} // namespace LibFred::AutomaticKeysetManagement
-} // namespace LibFred
+} // namespace Fred::Backend::AutomaticKeysetManagement::Impl
+} // namespace Fred::Backend::AutomaticKeysetManagement
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

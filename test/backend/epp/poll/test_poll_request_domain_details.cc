@@ -54,11 +54,9 @@ void check_equal(
     BOOST_CHECK_EQUAL(*output_data.authinfopw, domain_data.authinfopw);
 
     std::set<std::string> info_domain_data_admin_contacts;
-    for (std::vector<::LibFred::ObjectIdHandlePair>::const_iterator object_id_handle_pair = domain_data.admin_contacts.begin();
-         object_id_handle_pair != domain_data.admin_contacts.end();
-         ++object_id_handle_pair)
+    for (const auto& object_id_handle_pair : domain_data.admin_contacts)
     {
-        info_domain_data_admin_contacts.insert(object_id_handle_pair->handle);
+        info_domain_data_admin_contacts.insert(object_id_handle_pair.handle);
     }
 
     BOOST_CHECK_EQUAL_COLLECTIONS(

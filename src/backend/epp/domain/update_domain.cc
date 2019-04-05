@@ -255,7 +255,7 @@ unsigned long long update_domain(
         else if (
             std::find_if(info_domain_data_before_update.admin_contacts.begin(),
                          info_domain_data_before_update.admin_contacts.end(),
-                         MatchesHandle<LibFred::ObjectIdHandlePair>(*admin_contact_add_iter))
+                         MatchesHandle<LibFred::RegistrableObject::Contact::ContactReference>(*admin_contact_add_iter))
             != info_domain_data_before_update.admin_contacts.end())
         {
             parameter_value_policy_errors.add_extended_error(
@@ -293,7 +293,7 @@ unsigned long long update_domain(
         else if (
             std::find_if(info_domain_data_before_update.admin_contacts.begin(),
                          info_domain_data_before_update.admin_contacts.end(),
-                         MatchesHandle<LibFred::ObjectIdHandlePair>(*admin_contact_rem_iter))
+                         MatchesHandle<LibFred::RegistrableObject::Contact::ContactReference>(*admin_contact_rem_iter))
             == info_domain_data_before_update.admin_contacts.end())
         {
             parameter_value_policy_errors.add_extended_error(

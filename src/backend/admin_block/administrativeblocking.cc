@@ -554,7 +554,7 @@ void administrative_unblock_domains(
                     }
                     if (_remove_admin_c)
                     {
-                        for (const auto admin_contact : info_domain_data.admin_contacts)
+                        for (const auto& admin_contact : info_domain_data.admin_contacts)
                         {
                             update_domain.rem_admin_contact(admin_contact.handle);
                         }

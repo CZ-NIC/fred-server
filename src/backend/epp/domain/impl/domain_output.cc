@@ -19,7 +19,6 @@
 #include "src/backend/epp/domain/impl/domain_output.hh"
 
 #include "util/db/nullable.hh"
-#include "libfred/object/object_id_handle_pair.hh"
 #include "libfred/object/object_state.hh"
 #include "src/backend/epp/domain/status_value.hh"
 #include "util/enum_conversion.hh"
@@ -72,12 +71,9 @@ InfoDomainOutputData get_info_domain_output(
     const bool authinfopw_has_to_be_hidden = !_info_is_for_sponsoring_registrar;
     ret.authinfopw = authinfopw_has_to_be_hidden ? boost::optional<std::string>() : _data.authinfopw;
 
-    for (std::vector<LibFred::ObjectIdHandlePair>::const_iterator object_id_handle_pair =
-             _data.admin_contacts.begin();
-         object_id_handle_pair != _data.admin_contacts.end();
-         ++object_id_handle_pair)
+    for (const auto& admin_contact : _data.admin_contacts)
     {
-        ret.admin.insert(object_id_handle_pair->handle);
+        ret.admin.insert(admin_contact.handle);
     }
 
     ret.ext_enum_domain_validation =

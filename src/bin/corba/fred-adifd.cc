@@ -22,24 +22,13 @@
  */
 
 #include "config.h"
+
 #include "src/bin/corba/Admin.hh"
 #include "src/bin/corba/admin/admin_impl.hh"
 #include "src/bin/corba/admin_block/server_i.hh"
 #include "src/bin/corba/Notification.hh"
 #include "src/bin/corba/notification/server_i.hh"
-
-#include <iostream>
-#include <stdexcept>
-#include <string>
-
-#include <boost/format.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/thread.hpp>
-#include <boost/thread/barrier.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/date_time.hpp>
-#include <boost/assign/list_of.hpp>
-#include <utility>
+#include "src/bin/corba/admin_contact_verification/server_i.hh"
 
 #include "libfred/db_settings.hh"
 #include "src/util/corba_wrapper.hh"
@@ -57,23 +46,32 @@
 #include "src/util/cfg/handle_corbanameservice_args.hh"
 #include "src/util/cfg/handle_adifd_args.hh"
 
-#include "src/bin/corba/admin_contact_verification/server_i.hh"
+#include <boost/format.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/thread.hpp>
+#include <boost/thread/barrier.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time.hpp>
+#include <boost/assign/list_of.hpp>
 
-using namespace std;
+#include <cstdlib>
+#include <exception>
+#include <iostream>
+#include <string>
 
-const string server_name = "fred-adifd";
+const std::string server_name = "fred-adifd";
 
 //config args processing
-HandlerPtrVector global_hpv =
-boost::assign::list_of
-    (HandleArgsPtr(new HandleHelpArg("\nUsage: " + server_name + " <switches>\n")))
-    (HandleArgsPtr(new HandleConfigFileArgs(CONFIG_FILE) ))
-    (HandleArgsPtr(new HandleServerArgs))
-    (HandleArgsPtr(new HandleLoggingArgs))
-    (HandleArgsPtr(new HandleDatabaseArgs))
-    (HandleArgsPtr(new HandleCorbaNameServiceArgs))
-    (HandleArgsPtr(new HandleRegistryArgs))
-    (HandleArgsPtr(new HandleAdifdArgs));
+const HandlerPtrVector global_hpv =
+        boost::assign::list_of
+            (HandleArgsPtr(new HandleHelpArg("\nUsage: " + server_name + " <switches>\n")))
+            (HandleArgsPtr(new HandleConfigFileArgs(CONFIG_FILE) ))
+            (HandleArgsPtr(new HandleServerArgs))
+            (HandleArgsPtr(new HandleLoggingArgs))
+            (HandleArgsPtr(new HandleDatabaseArgs))
+            (HandleArgsPtr(new HandleCorbaNameServiceArgs))
+            (HandleArgsPtr(new HandleRegistryArgs))
+            (HandleArgsPtr(new HandleAdifdArgs));
 
 int main(int argc, char *argv[])
 {
@@ -101,89 +99,91 @@ int main(int argc, char *argv[])
         corba_init();
 
         //conf pointers
-        HandleDatabaseArgs* db_args_ptr = CfgArgs::instance()
-            ->get_handler_ptr_by_type<HandleDatabaseArgs>();
-        HandleRegistryArgs* registry_args_ptr = CfgArgs::instance()
-            ->get_handler_ptr_by_type<HandleRegistryArgs>();
-        HandleAdifdArgs* adifd_args_ptr = CfgArgs::instance()
-            ->get_handler_ptr_by_type<HandleAdifdArgs>();
+        HandleDatabaseArgs* const db_args_ptr = CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>();
+        HandleRegistryArgs* const registry_args_ptr = CfgArgs::instance()->get_handler_ptr_by_type<HandleRegistryArgs>();
+        HandleAdifdArgs* const adifd_args_ptr = CfgArgs::instance()->get_handler_ptr_by_type<HandleAdifdArgs>();
 
-        std::unique_ptr<ccReg_Admin_i> myccReg_Admin_i ( new ccReg_Admin_i(
-                    db_args_ptr->get_conn_info()
-                    , CorbaContainer::get_instance()->getNS()
-                    , registry_args_ptr->restricted_handles
-                    , registry_args_ptr->docgen_path
-                    , registry_args_ptr->docgen_template_path
-                    , registry_args_ptr->docgen_domain_count_limit
-                    , registry_args_ptr->fileclient_path
-                    , adifd_args_ptr->adifd_session_max
-                    , adifd_args_ptr->adifd_session_timeout
-                    , adifd_args_ptr->adifd_session_garbage
-            ));
+        auto myccReg_Admin_i = std::make_unique<ccReg_Admin_i>(
+                    db_args_ptr->get_conn_info(),
+                    CorbaContainer::get_instance()->getNS(),
+                    registry_args_ptr->restricted_handles,
+                    registry_args_ptr->docgen_path,
+                    registry_args_ptr->docgen_template_path,
+                    registry_args_ptr->docgen_domain_count_limit,
+                    registry_args_ptr->fileclient_path,
+                    adifd_args_ptr->adifd_session_max,
+                    adifd_args_ptr->adifd_session_timeout,
+                    adifd_args_ptr->adifd_session_garbage);
 
-        std::unique_ptr<CorbaConversion::AdminContactVerification::Server_i>
-            admin_contact_verification_server(new(CorbaConversion::AdminContactVerification::Server_i));
+        auto admin_contact_verification_server = std::make_unique<CorbaConversion::AdminContactVerification::Server_i>();
 
-            // create session use values from config
-            LOGGER.info(boost::format(
-                    "sessions max: %1%; timeout: %2%")
-                    % adifd_args_ptr->adifd_session_max
-                    % adifd_args_ptr->adifd_session_timeout);
+        // create session use values from config
+        LOGGER.info(boost::format("sessions max: %1%; timeout: %2%") % adifd_args_ptr->adifd_session_max
+                                                                     % adifd_args_ptr->adifd_session_timeout);
 
         //create server object with poa and nameservice registration
-        CorbaContainer::get_instance()
-            ->register_server(myccReg_Admin_i.release(), "Admin");
-        CorbaContainer::get_instance()
-            ->register_server(admin_contact_verification_server.release(), "AdminContactVerification");
+        CorbaContainer::get_instance()->register_server(
+                myccReg_Admin_i.release(),
+                "Admin");
+        CorbaContainer::get_instance()->register_server(
+                admin_contact_verification_server.release(),
+                "AdminContactVerification");
 
-        CorbaContainer::get_instance()
-            ->register_server(new CorbaConversion::AdministrativeBlocking::Server_i(server_name), "AdminBlocking");
+        CorbaContainer::get_instance()->register_server(
+                new CorbaConversion::AdministrativeBlocking::Server_i(server_name),
+                "AdminBlocking");
 
-        CorbaContainer::get_instance()
-            ->register_server(new Registry::Notification::Server_i(server_name), "Notification");
+        CorbaContainer::get_instance()->register_server(
+                new Registry::Notification::Server_i(server_name),
+                "Notification");
 
         run_server(CfgArgs::instance(), CorbaContainer::get_instance());
-
-    }//try
-    catch(CORBA::TRANSIENT&)
+        return EXIT_SUCCESS;
+    }
+    catch (const CORBA::TRANSIENT&)
     {
-        cerr << "Caught system exception TRANSIENT -- unable to contact the "
-             << "server." << endl;
+        std::cerr << "Caught system exception TRANSIENT -- unable to contact the server." << std::endl;
+        LOGGER.error("Caught system exception TRANSIENT -- unable to contact the server");
         return EXIT_FAILURE;
     }
-    catch(CORBA::SystemException& ex)
+    catch (const CORBA::SystemException& e)
     {
-        cerr << "Caught a CORBA::" << ex._name() << endl;
+        std::cerr << "Caught a CORBA::" << e._name() << std::endl;
+        LOGGER.error("Caught a CORBA::" + std::string(e._name()));
         return EXIT_FAILURE;
     }
-    catch(CORBA::Exception& ex)
+    catch (const CORBA::Exception& e)
     {
-        cerr << "Caught CORBA::Exception: " << ex._name() << endl;
+        std::cerr << "Caught CORBA::Exception: " << e._name() << std::endl;
+        LOGGER.error("Caught CORBA::Exception: " + std::string(e._name()));
         return EXIT_FAILURE;
     }
-    catch(omniORB::fatalException& fe)
+    catch (const omniORB::fatalException& e)
     {
-        cerr << "Caught omniORB::fatalException:" << endl;
-        cerr << "  file: " << fe.file() << endl;
-        cerr << "  line: " << fe.line() << endl;
-        cerr << "  mesg: " << fe.errmsg() << endl;
+        std::cerr << "Caught omniORB::fatalException:\n"
+                     "  file: " << e.file() << "\n"
+                     "  line: " << e.line() << "\n"
+                     "  mesg: " << e.errmsg() << std::endl;
+        LOGGER.error("Caught omniORB::fatalException: "
+                     "file: " + std::string(e.file()) + " "
+                     "line: " + std::to_string(e.line()) + " "
+                     "mesg: " + e.errmsg());
         return EXIT_FAILURE;
     }
-
-    catch(const ReturnFromMain&)
+    catch (const ReturnFromMain&)
     {
         return EXIT_SUCCESS;
     }
-    catch(exception& ex)
+    catch (const std::exception& e)
     {
-        cerr << "Error: " << ex.what() << endl;
+        std::cerr << "Error: " << e.what() << std::endl;
+        LOGGER.error("Error: " + std::string(e.what()));
         return EXIT_FAILURE;
     }
-    catch(...)
+    catch (...)
     {
-        cerr << "Unknown Error" << endl;
+        std::cerr << "Unknown Error" << std::endl;
+        LOGGER.error("Unknown Error");
         return EXIT_FAILURE;
     }
-
-    return EXIT_SUCCESS;
 }

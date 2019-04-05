@@ -18,7 +18,8 @@
  */
 #include "src/backend/automatic_keyset_management/impl/logger_request_type.hh"
 
-namespace LibFred {
+namespace Fred {
+namespace Backend {
 namespace AutomaticKeysetManagement {
 namespace Impl {
 
@@ -40,7 +41,8 @@ std::string to_fred_logger_request_type_name<LoggerRequestType::akm_rollover>()
     return "AkmRollover";
 }
 
-} // namespace LibFred::AutomaticKeysetManagement::Impl
-} // namespace LibFred::AutomaticKeysetManagement
-} // namespace LibFred
+} // namespace Fred::Backend::AutomaticKeysetManagement::Impl
+} // namespace Fred::Backend::AutomaticKeysetManagement
+} // namespace Fred::Backend
+} // namespace Fred
 

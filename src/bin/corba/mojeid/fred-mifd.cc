@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/bin/corba/connection_releaser.hh"
 #include "src/bin/corba/mojeid/server_i.hh"
 #include "libfred/db_settings.hh"
@@ -39,13 +40,14 @@
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 
+#include <cstdlib>
+#include <exception>
 #include <iostream>
-#include <utility>
 
 const std::string server_name = "fred-mifd";
 
 //config args processing
-HandlerPtrVector global_hpv =
+const HandlerPtrVector global_hpv =
         boost::assign::list_of
                 // clang-format off
                 (HandleArgsPtr(new HandleHelpArg("\nUsage: " + server_name + " <switches>\n")))
@@ -59,15 +61,13 @@ HandlerPtrVector global_hpv =
                 (HandleArgsPtr(new HandleContactVerificationArgs));
                 // clang-format on
 
-
 int main(int argc, char* argv[])
 {
     FakedArgs fa; //producing faked args with unrecognized ones
     try
-    { //config
+    {
         fa = CfgArgs::init<HandleHelpArg>(global_hpv)->handle(argc, argv);
 
-        // setting up logger
         setup_logging(CfgArgs::instance());
 
         Logging::Context ctx(server_name);
@@ -76,14 +76,12 @@ int main(int argc, char* argv[])
         if (CfgArgs::instance()->get_handler_ptr_by_type<HandleLoggingArgs>()->log_config_dump)
         {
             for (std::string config_item = AccumulatedConfig::get_instance().pop_front();
-                    !config_item.empty();
-                    config_item = AccumulatedConfig::get_instance().pop_front())
+                 !config_item.empty(); config_item = AccumulatedConfig::get_instance().pop_front())
             {
                 Logging::Manager::instance_ref().debug(config_item);
             }
         }
 
-        //CORBA init
         corba_init();
 
         //create server object with poa and nameservice registration
@@ -92,20 +90,23 @@ int main(int argc, char* argv[])
                 Registry::MojeId::service_name);
         run_server(CfgArgs::instance(), CorbaContainer::get_instance());
         return EXIT_SUCCESS;
-    } //try
+    }
     catch (const CORBA::TRANSIENT&)
     {
         std::cerr << "Caught system exception TRANSIENT -- unable to contact the server." << std::endl;
+        LOGGER.error("Caught system exception TRANSIENT -- unable to contact the server");
         return EXIT_FAILURE;
     }
     catch (const CORBA::SystemException& e)
     {
         std::cerr << "Caught a CORBA::" << e._name() << std::endl;
+        LOGGER.error("Caught a CORBA::" + std::string(e._name()));
         return EXIT_FAILURE;
     }
     catch (const CORBA::Exception& e)
     {
         std::cerr << "Caught CORBA::Exception: " << e._name() << std::endl;
+        LOGGER.error("Caught CORBA::Exception: " + std::string(e._name()));
         return EXIT_FAILURE;
     }
     catch (const omniORB::fatalException& e)
@@ -114,6 +115,10 @@ int main(int argc, char* argv[])
                   << "  file: " << e.file() << std::endl
                   << "  line: " << e.line() << std::endl
                   << "  mesg: " << e.errmsg() << std::endl;
+        LOGGER.error("Caught omniORB::fatalException: "
+                     "file: " + std::string(e.file()) + " "
+                     "line: " + std::to_string(e.line()) + " "
+                     "mesg: " + e.errmsg());
         return EXIT_FAILURE;
     }
     catch (const ReturnFromMain&)
@@ -123,11 +128,13 @@ int main(int argc, char* argv[])
     catch (const std::exception& e)
     {
         std::cerr << "Error: " << e.what() << std::endl;
+        LOGGER.error("Error: " + std::string(e.what()));
         return EXIT_FAILURE;
     }
     catch (...)
     {
         std::cerr << "Unknown Error" << std::endl;
+        LOGGER.error("Unknown Error");
         return EXIT_FAILURE;
     }
 }

@@ -202,11 +202,13 @@ BOOST_FIXTURE_TEST_CASE(transfer_ok_full_data, supply_ctx<HasRegistrarWithSessio
 
     const ::LibFred::InfoNssetDiff nsset_data_change = diff_nsset_data(nsset_data_before, nsset_data_after);
     const std::set<std::string> change_fields_etalon =
-            boost::assign::list_of
-                    ("sponsoring_registrar_handle")
-                    ("transfer_time")
-                    ("historyid")
-                    ("authinfopw");
+            {
+                "sponsoring_registrar_handle",
+                "transfer_time",
+                "historyid",
+                "history_uuid",
+                "authinfopw"
+            };
 
     BOOST_CHECK(nsset_data_change.changed_fields() == change_fields_etalon);
 
@@ -228,10 +230,9 @@ BOOST_FIXTURE_TEST_CASE(transfer_ok_full_data, supply_ctx<HasRegistrarWithSessio
     BOOST_CHECK(nsset_data_before.authinfopw != nsset_data_after.authinfopw);
 }
 
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END()//Backend/Epp/Nsset/TransferNsset
+BOOST_AUTO_TEST_SUITE_END()//Backend/Epp/Nsset
+BOOST_AUTO_TEST_SUITE_END()//Backend/Epp
+BOOST_AUTO_TEST_SUITE_END()//Backend
 
-} // namespace Test
- 
+}//namespace Test

@@ -338,10 +338,8 @@ struct has_updated_domain_followed_by_future_changes {
             .set_registrant(different_registrant_handle)
             .add_admin_contact(different_admin_handle);
 
-        BOOST_FOREACH(
-            const ::LibFred::ObjectIdHandlePair& a_c,
-            ::LibFred::InfoDomainByFqdn(_fqdn).exec(_ctx).info_domain_data.admin_contacts
-        ) {
+        for (const auto& a_c : ::LibFred::InfoDomainByFqdn(_fqdn).exec(_ctx).info_domain_data.admin_contacts)
+        {
             future_update.rem_admin_contact(a_c.handle);
         }
 
@@ -546,7 +544,7 @@ BOOST_FIXTURE_TEST_CASE(test_process_update_domain, has_domain_big_update)
             std::string admin_c_list_pre_update;
 
             std::vector<std::string> admin_contact_handles;
-            BOOST_FOREACH(const ::LibFred::ObjectIdHandlePair& a_c, domain_data_pre_update.admin_contacts) {
+            for (const auto& a_c : domain_data_pre_update.admin_contacts) {
                 admin_contact_handles.push_back(a_c.handle);
             }
             std::sort( admin_contact_handles.begin(), admin_contact_handles.end() );
@@ -558,7 +556,8 @@ BOOST_FIXTURE_TEST_CASE(test_process_update_domain, has_domain_big_update)
             std::string admin_c_list_post_update;
 
             std::vector<std::string> admin_contact_handles;
-            BOOST_FOREACH(const ::LibFred::ObjectIdHandlePair& a_c, domain_data_post_update.admin_contacts) {
+            for (const auto& a_c : domain_data_post_update.admin_contacts)
+            {
                 admin_contact_handles.push_back(a_c.handle);
             }
             std::sort( admin_contact_handles.begin(), admin_contact_handles.end() );

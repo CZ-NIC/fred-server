@@ -47,7 +47,7 @@ struct domains_by_registrant_fixture
         now_utc = boost::posix_time::time_from_string(
                       static_cast<std::string>(
                           ctx.get_conn().exec("SELECT now()::timestamp")[0][0]));
-        for(unsigned int i=0; i < regular_domains; ++i)
+        for (unsigned int i = 0; i < regular_domains; ++i)
         {
             const LibFred::InfoDomainData& idd = Test::exec(
                 Test::CreateX_factory<::LibFred::CreateDomain>()
@@ -146,7 +146,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_registrant, domains_by_registrant_fixture
         BOOST_CHECK(it.keyset     == found->second.keyset.get_value_or_default().handle);
         BOOST_CHECK(it.nsset      == found->second.nsset.get_value_or_default().handle);
 
-        BOOST_FOREACH(const LibFred::ObjectIdHandlePair& oit, found->second.admin_contacts)
+        for (const auto& oit : found->second.admin_contacts)
         {
             BOOST_CHECK(it.admin_contacts.end() != std::find(it.admin_contacts.begin(),
                         it.admin_contacts.end(), oit.handle));
@@ -200,7 +200,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_registrant_limit_exceeded, domains_by_reg
         BOOST_CHECK(it.keyset     == found->second.keyset.get_value_or_default().handle);
         BOOST_CHECK(it.nsset      == found->second.nsset.get_value_or_default().handle);
 
-        BOOST_FOREACH(const LibFred::ObjectIdHandlePair& oit, found->second.admin_contacts)
+        for (const auto& oit : found->second.admin_contacts)
         {
             BOOST_CHECK(it.admin_contacts.end() != std::find(it.admin_contacts.begin(),
                         it.admin_contacts.end(), oit.handle));

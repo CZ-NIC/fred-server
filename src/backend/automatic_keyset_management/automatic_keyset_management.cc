@@ -25,6 +25,8 @@
 
 #include "src/backend/automatic_keyset_management/impl/limits.hh"
 #include "src/backend/automatic_keyset_management/dns_key.hh"
+#include "src/backend/automatic_keyset_management/impl/domain_reference.hh"
+#include "src/backend/automatic_keyset_management/impl/keyset_reference.hh"
 #include "src/backend/automatic_keyset_management/impl/logger_request.hh"
 #include "src/backend/automatic_keyset_management/impl/logger_request_akm_rollover.hh"
 #include "src/backend/automatic_keyset_management/impl/logger_request_akm_turn_off.hh"
@@ -56,6 +58,7 @@
 #include "libfred/opcontext.hh"
 #include "libfred/poll/create_poll_message.hh"
 #include "libfred/poll/create_update_object_poll_message.hh"
+#include "libfred/registrable_object/domain/domain_reference.hh"
 #include "libfred/registrar/info_registrar.hh"
 #include "util/log/context.hh"
 #include "util/random.hh"
@@ -73,7 +76,8 @@
 #include <string>
 #include <vector>
 
-namespace LibFred {
+namespace Fred {
+namespace Backend {
 namespace AutomaticKeysetManagement {
 
 namespace {
@@ -114,11 +118,9 @@ private:
 bool are_nssets_equal(const Nsset& nsset, const std::vector<LibFred::DnsHost>& dns_hosts)
 {
     std::set<std::string> fred_dns_hosts;
-    for (std::vector<LibFred::DnsHost>::const_iterator fred_dns_host = dns_hosts.begin();
-         fred_dns_host != dns_hosts.end();
-         ++fred_dns_host)
+    for (const auto& fred_dns_host : dns_hosts)
     {
-        fred_dns_hosts.insert(fred_dns_host->get_fqdn());
+        fred_dns_hosts.insert(fred_dns_host.get_fqdn());
     }
     return nsset.nameservers == fred_dns_hosts;
 }
@@ -126,15 +128,13 @@ bool are_nssets_equal(const Nsset& nsset, const std::vector<LibFred::DnsHost>& d
 bool are_keysets_equal(const Keyset& keyset, const std::vector<LibFred::DnsKey>& dns_keys)
 {
     std::set<DnsKey> fred_dns_keys;
-    for (std::vector<LibFred::DnsKey>::const_iterator fred_dns_key = dns_keys.begin();
-         fred_dns_key != dns_keys.end();
-         ++fred_dns_key)
+    for (const auto& fred_dns_key : dns_keys)
     {
         fred_dns_keys.insert(
-                DnsKey(fred_dns_key->get_flags(),
-                       fred_dns_key->get_protocol(),
-                       fred_dns_key->get_alg(),
-                       fred_dns_key->get_key()));
+                DnsKey(fred_dns_key.get_flags(),
+                       fred_dns_key.get_protocol(),
+                       fred_dns_key.get_alg(),
+                       fred_dns_key.get_key()));
     }
     return keyset.dns_keys == fred_dns_keys;
 }
@@ -165,7 +165,7 @@ void check_configuration_of_automatically_managed_keyset_prefix(const std::strin
         handle_prefix.length() > Impl::automatically_managed_keyset_handle_prefix_length_max)
     {
         LOGGER.debug("configuration error: automatically_managed_keyset_prefix configuration invalid");
-        throw LibFred::AutomaticKeysetManagement::ConfigurationError();
+        throw ConfigurationError();
     }
 }
 
@@ -219,10 +219,9 @@ bool has_valid_dnskeys(LibFred::OperationContext& ctx, const Keyset& keyset)
 {
     Epp::Keyset::DnsKey::AlgValidator alg_validator(ctx);
 
-    for (DnsKeys::const_iterator dns_key = keyset.dns_keys.begin();
-         dns_key != keyset.dns_keys.end(); ++dns_key)
+    for (const auto& dns_key : keyset.dns_keys)
     {
-        const Epp::Keyset::DnsKey epp_dns_key(dns_key->flags, dns_key->protocol, dns_key->alg, dns_key->key);
+        const Epp::Keyset::DnsKey epp_dns_key(dns_key.flags, dns_key.protocol, dns_key.alg, dns_key.key);
 
         if (!epp_dns_key.is_flags_correct())
         {
@@ -255,9 +254,9 @@ bool has_valid_dnskeys(LibFred::OperationContext& ctx, const Keyset& keyset)
     return true;
 }
 
-ObjectIdHandlePair create_automatically_managed_keyset(
+Impl::KeysetReference create_automatically_managed_keyset(
         LibFred::OperationContext& ctx,
-        const InfoRegistrarData& automatically_managed_keyset_registrar,
+        const LibFred::InfoRegistrarData& automatically_managed_keyset_registrar,
         const std::string& automatically_managed_keyset_prefix,
         const std::string& automatically_managed_keyset_tech_contact,
         const Keyset& new_keyset,
@@ -266,19 +265,17 @@ ObjectIdHandlePair create_automatically_managed_keyset(
 {
     const std::string automatically_managed_keyset_handle =
             generate_automatically_managed_keyset_handle(automatically_managed_keyset_prefix);
-    // TODO check !exists
+    // TODO(akm) check !exists
 
-    if (TestHandleOf<Object_Type::keyset>(automatically_managed_keyset_handle).is_invalid_handle(ctx))
+    if (LibFred::TestHandleOf<LibFred::Object_Type::keyset>(automatically_managed_keyset_handle).is_invalid_handle(ctx))
     {
         throw std::runtime_error("automatically_managed_keyset_handle invalid");
     }
 
     std::vector<LibFred::DnsKey> libfred_dns_keys;
-    for (DnsKeys::const_iterator dns_key = new_keyset.dns_keys.begin();
-            dns_key != new_keyset.dns_keys.end();
-            ++dns_key)
+    for (const auto& dns_key : new_keyset.dns_keys)
     {
-        libfred_dns_keys.push_back(LibFred::DnsKey(dns_key->flags, dns_key->protocol, dns_key->alg, dns_key->key));
+        libfred_dns_keys.push_back(LibFred::DnsKey(dns_key.flags, dns_key.protocol, dns_key.alg, dns_key.key));
     }
 
     const LibFred::CreateKeyset::Result create_keyset_result =
@@ -305,13 +302,15 @@ ObjectIdHandlePair create_automatically_managed_keyset(
                 "");
     }
 
-    return ObjectIdHandlePair(create_keyset_result.create_object_result.object_id, automatically_managed_keyset_handle);
+    return Impl::KeysetReference(
+            create_keyset_result.create_object_result.object_id,
+            automatically_managed_keyset_handle);
 }
 
 void link_automatically_managed_keyset_to_domain(
         LibFred::OperationContext& ctx,
-        const InfoRegistrarData& automatically_managed_keyset_registrar,
-        const InfoDomainData& info_domain_data,
+        const LibFred::InfoRegistrarData& automatically_managed_keyset_registrar,
+        const LibFred::InfoDomainData& info_domain_data,
         const std::string& automatically_managed_keyset,
         unsigned long long logger_request_id,
         const bool _notifier_disabled)
@@ -367,8 +366,8 @@ bool is_keyset_shared(LibFred::OperationContext& ctx, unsigned long long keyset_
 
 void update_automatically_managed_keyset(
         LibFred::OperationContext& ctx,
-        const InfoKeysetData& info_keyset_data,
-        const InfoRegistrarData automatically_managed_keyset_registrar,
+        const LibFred::InfoKeysetData& info_keyset_data,
+        const LibFred::InfoRegistrarData automatically_managed_keyset_registrar,
         const Keyset& new_keyset,
         unsigned long long logger_request_id,
         const bool notifier_disabled)
@@ -389,7 +388,7 @@ void update_automatically_managed_keyset(
         keyset_states.presents(LibFred::Object_State::delete_candidate))
     {
         LOGGER.debug("keyset state prohibits action");
-        throw LibFred::AutomaticKeysetManagement::KeysetStatePolicyError();
+        throw KeysetStatePolicyError();
     }
 
     if (is_keyset_shared(ctx, info_keyset_data.id))
@@ -401,19 +400,15 @@ void update_automatically_managed_keyset(
             info_keyset_data.handle,
             automatically_managed_keyset_registrar.handle);
 
-    for (std::vector<LibFred::DnsKey>::const_iterator dns_key = info_keyset_data.dns_keys.begin();
-         dns_key != info_keyset_data.dns_keys.end();
-         ++dns_key)
+    for (const auto& dns_key : info_keyset_data.dns_keys)
     {
-        update_keyset.rem_dns_key(*dns_key);
+        update_keyset.rem_dns_key(dns_key);
     }
 
     std::vector<LibFred::DnsKey> libfred_dns_keys;
-    for (DnsKeys::const_iterator dns_key = new_keyset.dns_keys.begin();
-            dns_key != new_keyset.dns_keys.end();
-            ++dns_key)
+    for (const auto& dns_key : new_keyset.dns_keys)
     {
-        update_keyset.add_dns_key(LibFred::DnsKey(dns_key->flags, dns_key->protocol, dns_key->alg, dns_key->key));
+        update_keyset.add_dns_key(LibFred::DnsKey(dns_key.flags, dns_key.protocol, dns_key.alg, dns_key.key));
     }
 
     const unsigned long long keyset_new_history_id =
@@ -437,8 +432,8 @@ void update_automatically_managed_keyset(
 
 void unlink_automatically_managed_keyset(
         LibFred::OperationContext& ctx,
-        const InfoDomainData& info_domain_data,
-        const InfoRegistrarData& automatically_managed_keyset_registrar,
+        const LibFred::InfoDomainData& info_domain_data,
+        const LibFred::InfoRegistrarData& automatically_managed_keyset_registrar,
         unsigned long long logger_request_id,
         const bool notifier_disabled)
 {
@@ -503,7 +498,7 @@ AutomaticKeysetManagementImpl::AutomaticKeysetManagementImpl(
         if (!automatically_managed_keyset_registrar_is_system_registrar)
         {
             LOGGER.debug("configuration error: automatically_managed_keyset_registrar is not system registrar");
-            throw LibFred::AutomaticKeysetManagement::ConfigurationError();
+            throw ConfigurationError();
         }
     }
     catch (const LibFred::InfoRegistrarByHandle::Exception& e)
@@ -511,7 +506,7 @@ AutomaticKeysetManagementImpl::AutomaticKeysetManagementImpl(
         if (e.is_set_unknown_registrar_handle())
         {
             LOGGER.error(std::string("registrar: '") + automatically_managed_keyset_registrar_ + "' not found");
-            throw LibFred::AutomaticKeysetManagement::ConfigurationError();
+            throw ConfigurationError();
         }
         throw;
     }
@@ -560,10 +555,9 @@ NameserversDomains AutomaticKeysetManagementImpl::get_nameservers_with_insecure_
                  "WHERE d.keyset IS NULL "
                    "AND z.fqdn IN (");
         Util::HeadSeparator in_separator("", ", ");
-        for (std::set<std::string>::const_iterator it = automatically_managed_keyset_zones_.begin();
-                it != automatically_managed_keyset_zones_.end(); ++it)
+        for (const auto& automatically_managed_keyset_zone : automatically_managed_keyset_zones_)
         {
-             sql(in_separator.get()).param_text(*it);
+             sql(in_separator.get()).param_text(automatically_managed_keyset_zone);
         }
         sql(") ORDER BY ns.fqdn");
         // clang-format on
@@ -624,10 +618,9 @@ NameserversDomains AutomaticKeysetManagementImpl::get_nameservers_with_secure_au
                   "AND oregk.type = get_object_type_id('keyset') "
                   "AND z.fqdn IN (");
         Util::HeadSeparator in_separator("", ", ");
-        for (std::set<std::string>::const_iterator it = automatically_managed_keyset_zones_.begin();
-                it != automatically_managed_keyset_zones_.end(); ++it)
+        for (const auto& automatically_managed_keyset_zone : automatically_managed_keyset_zones_)
         {
-             sql(in_separator.get()).param_text(*it);
+             sql(in_separator.get()).param_text(automatically_managed_keyset_zone);
         }
         sql(") ORDER BY ns.fqdn");
         // clang-format on
@@ -686,10 +679,9 @@ NameserversDomains AutomaticKeysetManagementImpl::get_nameservers_with_automatic
                   "AND oregk.type = get_object_type_id('keyset') "
                   "AND z.fqdn IN (");
         Util::HeadSeparator in_separator("", ", ");
-        for (std::set<std::string>::const_iterator it = automatically_managed_keyset_zones_.begin();
-                it != automatically_managed_keyset_zones_.end(); ++it)
+        for (const auto& automatically_managed_keyset_zone : automatically_managed_keyset_zones_)
         {
-             sql(in_separator.get()).param_text(*it);
+             sql(in_separator.get()).param_text(automatically_managed_keyset_zone);
         }
         sql(") ORDER BY ns.fqdn");
         // clang-format on
@@ -742,39 +734,39 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_insec
                 automatically_managed_keyset_zones_.end();
         if (!domain_zone_is_automatically_managed)
         {
-            throw LibFred::AutomaticKeysetManagement::ObjectNotFound();
+            throw ObjectNotFound();
         }
 
         if (!info_domain_data.keyset.isnull())
         {
-            throw LibFred::AutomaticKeysetManagement::DomainHasKeyset();
+            throw DomainHasKeyset();
         }
 
         if (info_domain_data.nsset.isnull())
         {
-            throw LibFred::AutomaticKeysetManagement::DomainNssetIsEmpty();
+            throw DomainNssetIsEmpty();
         }
 
         if (_current_nsset.nameservers.empty())
         {
-            throw LibFred::AutomaticKeysetManagement::NssetIsEmpty();
+            throw NssetIsEmpty();
         }
 
         if (!is_keyset_size_within_limits(_new_keyset))
         {
             LOGGER.debug("keyset invalid: incorrect number of dns_keys");
-            throw LibFred::AutomaticKeysetManagement::KeysetIsInvalid();
+            throw KeysetIsInvalid();
         }
 
         const bool turn_dnssec_off = is_dnssec_turn_off_requested(_new_keyset);
         if (turn_dnssec_off)
         {
-            throw LibFred::AutomaticKeysetManagement::DomainAlreadyDoesNotHaveKeyset();
+            throw DomainAlreadyDoesNotHaveKeyset();
         }
         else if (!has_valid_dnskeys(ctx, _new_keyset))
         {
             LOGGER.debug("keyset invalid: incorrect keys");
-            throw LibFred::AutomaticKeysetManagement::KeysetIsInvalid();
+            throw KeysetIsInvalid();
         }
 
         const LibFred::InfoNssetData info_nsset_data =
@@ -782,7 +774,7 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_insec
 
         if (!are_nssets_equal(_current_nsset, info_nsset_data.dns_hosts))
         {
-            throw LibFred::AutomaticKeysetManagement::NssetIsDifferent();
+            throw NssetIsDifferent();
         }
 
         LibFred::LockObjectStateRequestLock(info_domain_data.id).exec(ctx);
@@ -794,7 +786,7 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_insec
             domain_states.presents(LibFred::Object_State::server_update_prohibited) ||
             domain_states.presents(LibFred::Object_State::delete_candidate))
         {
-            throw LibFred::AutomaticKeysetManagement::DomainStatePolicyError();
+            throw DomainStatePolicyError();
         }
 
         const LibFred::InfoRegistrarData automatically_managed_keyset_registrar =
@@ -806,25 +798,29 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_insec
         if (!automatically_managed_keyset_registrar_is_system_registrar)
         {
             LOGGER.debug("configuration error: automatically_managed_keyset_registrar is not system registrar");
-            throw LibFred::AutomaticKeysetManagement::ConfigurationError();
+            throw ConfigurationError();
         }
 
         try
         {
-            get_id_of_registered<Object_Type::contact>(ctx, automatically_managed_keyset_tech_contact_);
+            LibFred::get_id_of_registered<LibFred::Object_Type::contact>(ctx, automatically_managed_keyset_tech_contact_);
         }
         catch (const ObjectNotFound&)
         {
             LOGGER.error(std::string("registrar: '") + automatically_managed_keyset_tech_contact_ + "' not found");
-            throw LibFred::AutomaticKeysetManagement::ConfigurationError();
+            throw ConfigurationError();
         }
 
         check_configuration_of_automatically_managed_keyset_prefix(automatically_managed_keyset_prefix_);
 
-        const Impl::LoggerRequestAkmTurnOn logger_request(logger_client_, ObjectIdHandlePair(info_domain_data.id, info_domain_data.fqdn));
+        const Impl::LoggerRequestAkmTurnOn logger_request(
+                logger_client_,
+                Impl::DomainReference(
+                        info_domain_data.id,
+                        info_domain_data.fqdn));
         try
         {
-            const ObjectIdHandlePair automatically_managed_keyset = create_automatically_managed_keyset(
+            const Impl::KeysetReference automatically_managed_keyset = create_automatically_managed_keyset(
                     ctx,
                     automatically_managed_keyset_registrar,
                     automatically_managed_keyset_prefix_,
@@ -844,7 +840,7 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_insec
             ctx.commit_transaction();
 
             logger_request.close_on_success(
-                    ObjectIdHandlePair(info_domain_data.id, info_domain_data.fqdn),
+                    Impl::DomainReference(info_domain_data.id, info_domain_data.fqdn),
                     automatically_managed_keyset,
                     _new_keyset);
         }
@@ -859,7 +855,7 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_insec
     {
         if (e.is_set_unknown_object_id())
         {
-            throw LibFred::AutomaticKeysetManagement::ObjectNotFound();
+            throw ObjectNotFound();
         }
         throw;
     }
@@ -868,7 +864,7 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_insec
         if (e.is_set_unknown_registrar_handle())
         {
             LOGGER.error(std::string("registrar: '") + automatically_managed_keyset_registrar_ + "' not found");
-            throw LibFred::AutomaticKeysetManagement::ConfigurationError();
+            throw ConfigurationError();
         }
         throw;
     }
@@ -929,12 +925,12 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_secur
                 automatically_managed_keyset_zones_.end();
         if (!domain_zone_is_automatically_managed)
         {
-            throw LibFred::AutomaticKeysetManagement::ObjectNotFound();
+            throw ObjectNotFound();
         }
 
         if (info_domain_data.keyset.isnull())
         {
-            throw LibFred::AutomaticKeysetManagement::DomainDoesNotHaveKeyset();
+            throw DomainDoesNotHaveKeyset();
         }
 
         const bool domain_has_automatically_managed_keyset =
@@ -947,20 +943,20 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_secur
 
         if (domain_has_automatically_managed_keyset)
         {
-            throw LibFred::AutomaticKeysetManagement::DomainAlreadyHasAutomaticallyManagedKeyset();
+            throw DomainAlreadyHasAutomaticallyManagedKeyset();
         }
 
         if (!is_keyset_size_within_limits(_new_keyset))
         {
             LOGGER.debug("keyset invalid: incorrect number of dns_keys");
-            throw LibFred::AutomaticKeysetManagement::KeysetIsInvalid();
+            throw KeysetIsInvalid();
         }
 
         const bool turn_dnssec_off = is_dnssec_turn_off_requested(_new_keyset);
         if (!turn_dnssec_off && !has_valid_dnskeys(ctx, _new_keyset))
         {
             LOGGER.debug("keyset invalid: incorrect keys");
-            throw LibFred::AutomaticKeysetManagement::KeysetIsInvalid();
+            throw KeysetIsInvalid();
         }
 
         LibFred::LockObjectStateRequestLock(info_domain_data.id).exec(ctx);
@@ -972,7 +968,7 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_secur
             domain_states.presents(LibFred::Object_State::server_update_prohibited) ||
             domain_states.presents(LibFred::Object_State::delete_candidate))
         {
-            throw LibFred::AutomaticKeysetManagement::DomainStatePolicyError();
+            throw DomainStatePolicyError();
         }
 
         const LibFred::InfoRegistrarData automatically_managed_keyset_registrar =
@@ -984,22 +980,26 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_secur
         if (!automatically_managed_keyset_registrar_is_system_registrar)
         {
             LOGGER.debug("configuration error: automatically_managed_keyset_registrar is not system registrar");
-            throw LibFred::AutomaticKeysetManagement::ConfigurationError();
+            throw ConfigurationError();
         }
 
         try
         {
-            get_id_of_registered<Object_Type::contact>(ctx, automatically_managed_keyset_tech_contact_);
+            LibFred::get_id_of_registered<LibFred::Object_Type::contact>(ctx, automatically_managed_keyset_tech_contact_);
         }
         catch (const ObjectNotFound&)
         {
             LOGGER.error(std::string("registrar: '") + automatically_managed_keyset_tech_contact_ + "' not found");
-            throw LibFred::AutomaticKeysetManagement::ConfigurationError();
+            throw ConfigurationError();
         }
 
         if (turn_dnssec_off)
         {
-            const Impl::LoggerRequestAkmTurnOff logger_request(logger_client_, ObjectIdHandlePair(info_domain_data.id, info_domain_data.fqdn));
+            const Impl::LoggerRequestAkmTurnOff logger_request(
+                    logger_client_,
+                    Impl::DomainReference(
+                            info_domain_data.id,
+                            info_domain_data.fqdn));
             try
             {
                 unlink_automatically_managed_keyset(
@@ -1012,8 +1012,12 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_secur
                 ctx.commit_transaction();
 
                 logger_request.close_on_success(
-                        ObjectIdHandlePair(info_domain_data.id, info_domain_data.fqdn),
-                        info_domain_data.keyset.get_value());
+                        Impl::DomainReference(
+                                info_domain_data.id,
+                                info_domain_data.fqdn),
+                        Impl::KeysetReference(
+                                info_domain_data.keyset.get_value().id,
+                                info_domain_data.keyset.get_value().handle));
             }
             catch (...)
             {
@@ -1023,10 +1027,14 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_secur
         }
         else
         {
-            const Impl::LoggerRequestAkmTurnOn logger_request(logger_client_, ObjectIdHandlePair(info_domain_data.id, info_domain_data.fqdn));
+            const Impl::LoggerRequestAkmTurnOn logger_request(
+                    logger_client_,
+                    Impl::DomainReference(
+                            info_domain_data.id,
+                            info_domain_data.fqdn));
             try
             {
-                const ObjectIdHandlePair automatically_managed_keyset = create_automatically_managed_keyset(
+                const Impl::KeysetReference automatically_managed_keyset = create_automatically_managed_keyset(
                         ctx,
                         automatically_managed_keyset_registrar,
                         automatically_managed_keyset_prefix_,
@@ -1046,7 +1054,7 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_secur
                 ctx.commit_transaction();
 
                 logger_request.close_on_success(
-                        ObjectIdHandlePair(info_domain_data.id, info_domain_data.fqdn),
+                        Impl::DomainReference(info_domain_data.id, info_domain_data.fqdn),
                         automatically_managed_keyset,
                         _new_keyset);
             }
@@ -1062,7 +1070,7 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_secur
     {
         if (e.is_set_unknown_object_id())
         {
-            throw LibFred::AutomaticKeysetManagement::ObjectNotFound();
+            throw ObjectNotFound();
         }
         throw;
     }
@@ -1071,7 +1079,7 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_secur
         if (e.is_set_unknown_registrar_handle())
         {
             LOGGER.error(std::string("registrar: '") + automatically_managed_keyset_registrar_ + "' not found");
-            throw LibFred::AutomaticKeysetManagement::ConfigurationError();
+            throw ConfigurationError();
         }
         throw;
     }
@@ -1132,7 +1140,7 @@ void AutomaticKeysetManagementImpl::update_automatically_managed_keyset_of_domai
                 automatically_managed_keyset_zones_.end();
         if (!domain_zone_is_automatically_managed)
         {
-            throw LibFred::AutomaticKeysetManagement::ObjectNotFound();
+            throw ObjectNotFound();
         }
 
         const bool domain_has_automatically_managed_keyset =
@@ -1145,20 +1153,20 @@ void AutomaticKeysetManagementImpl::update_automatically_managed_keyset_of_domai
 
         if (!domain_has_automatically_managed_keyset)
         {
-            throw LibFred::AutomaticKeysetManagement::DomainDoesNotHaveAutomaticallyManagedKeyset();
+            throw DomainDoesNotHaveAutomaticallyManagedKeyset();
         }
 
         if (!is_keyset_size_within_limits(_new_keyset))
         {
             LOGGER.debug("keyset invalid: incorrect number of dns_keys");
-            throw LibFred::AutomaticKeysetManagement::KeysetIsInvalid();
+            throw KeysetIsInvalid();
         }
 
         const bool turn_dnssec_off = is_dnssec_turn_off_requested(_new_keyset);
         if (!turn_dnssec_off && !has_valid_dnskeys(ctx, _new_keyset))
         {
             LOGGER.debug("keyset invalid: incorrect keys");
-            throw LibFred::AutomaticKeysetManagement::KeysetIsInvalid();
+            throw KeysetIsInvalid();
         }
 
         const LibFred::InfoRegistrarData automatically_managed_keyset_registrar =
@@ -1170,7 +1178,7 @@ void AutomaticKeysetManagementImpl::update_automatically_managed_keyset_of_domai
         if (!automatically_managed_keyset_registrar_is_system_registrar)
         {
             LOGGER.debug("configuration error: automatically_managed_keyset_registrar is not system registrar");
-            throw LibFred::AutomaticKeysetManagement::ConfigurationError();
+            throw ConfigurationError();
         }
 
         if (turn_dnssec_off)
@@ -1184,10 +1192,14 @@ void AutomaticKeysetManagementImpl::update_automatically_managed_keyset_of_domai
                 domain_states.presents(LibFred::Object_State::server_update_prohibited) ||
                 domain_states.presents(LibFred::Object_State::delete_candidate))
             {
-                throw LibFred::AutomaticKeysetManagement::DomainStatePolicyError();
+                throw DomainStatePolicyError();
             }
 
-            const Impl::LoggerRequestAkmTurnOff logger_request(logger_client_, ObjectIdHandlePair(info_domain_data.id, info_domain_data.fqdn));
+            const Impl::LoggerRequestAkmTurnOff logger_request(
+                    logger_client_,
+                    Impl::DomainReference(
+                            info_domain_data.id,
+                            info_domain_data.fqdn));
             try
             {
                 unlink_automatically_managed_keyset(
@@ -1200,8 +1212,12 @@ void AutomaticKeysetManagementImpl::update_automatically_managed_keyset_of_domai
                 ctx.commit_transaction();
 
                 logger_request.close_on_success(
-                        ObjectIdHandlePair(info_domain_data.id, info_domain_data.fqdn),
-                        info_domain_data.keyset.get_value());
+                        Impl::DomainReference(
+                                info_domain_data.id,
+                                info_domain_data.fqdn),
+                        Impl::KeysetReference(
+                                info_domain_data.keyset.get_value().id,
+                                info_domain_data.keyset.get_value().handle));
             }
             catch (...)
             {
@@ -1216,7 +1232,7 @@ void AutomaticKeysetManagementImpl::update_automatically_managed_keyset_of_domai
 
             if (are_keysets_equal(_new_keyset, info_keyset_data.dns_keys))
             {
-                throw LibFred::AutomaticKeysetManagement::KeysetSameAsDomainKeyset();
+                throw KeysetSameAsDomainKeyset();
             }
 
             LibFred::LockObjectStateRequestLock(info_keyset_data.id).exec(ctx);
@@ -1227,10 +1243,14 @@ void AutomaticKeysetManagementImpl::update_automatically_managed_keyset_of_domai
             if (keyset_states.presents(LibFred::Object_State::server_update_prohibited) ||
                 keyset_states.presents(LibFred::Object_State::delete_candidate))
             {
-                throw LibFred::AutomaticKeysetManagement::KeysetStatePolicyError();
+                throw KeysetStatePolicyError();
             }
 
-            const Impl::LoggerRequestAkmRollover logger_request(logger_client_, ObjectIdHandlePair(info_domain_data.id, info_domain_data.fqdn));
+            const Impl::LoggerRequestAkmRollover logger_request(
+                    logger_client_,
+                    Impl::DomainReference(
+                            info_domain_data.id,
+                            info_domain_data.fqdn));
             try
             {
                 update_automatically_managed_keyset(
@@ -1244,8 +1264,12 @@ void AutomaticKeysetManagementImpl::update_automatically_managed_keyset_of_domai
                 ctx.commit_transaction();
 
                 logger_request.close_on_success(
-                        ObjectIdHandlePair(info_domain_data.id, info_domain_data.fqdn),
-                        info_domain_data.keyset.get_value(),
+                        Impl::DomainReference(
+                                info_domain_data.id,
+                                info_domain_data.fqdn),
+                        Impl::KeysetReference(
+                                info_domain_data.keyset.get_value().id,
+                                info_domain_data.keyset.get_value().handle),
                         info_keyset_data.dns_keys,
                         _new_keyset);
             }
@@ -1261,7 +1285,7 @@ void AutomaticKeysetManagementImpl::update_automatically_managed_keyset_of_domai
     {
         if (e.is_set_unknown_object_id())
         {
-            throw LibFred::AutomaticKeysetManagement::ObjectNotFound();
+            throw ObjectNotFound();
         }
         throw;
     }
@@ -1270,7 +1294,7 @@ void AutomaticKeysetManagementImpl::update_automatically_managed_keyset_of_domai
         if (e.is_set_unknown_registrar_handle())
         {
             LOGGER.error(std::string("registrar: '") + automatically_managed_keyset_registrar_ + "' not found");
-            throw LibFred::AutomaticKeysetManagement::ConfigurationError();
+            throw AutomaticKeysetManagement::ConfigurationError();
         }
         throw;
     }
@@ -1328,7 +1352,7 @@ EmailAddresses AutomaticKeysetManagementImpl::get_email_addresses_by_domain_id(
                             Database::query_param_list(_domain_id));
             if (db_result.size() < 1)
             {
-                throw LibFred::AutomaticKeysetManagement::ObjectNotFound();
+                throw ObjectNotFound();
             }
             if (db_result.size() > 1)
             {
@@ -1382,5 +1406,6 @@ bool operator<(const Domain& lhs, const Domain& rhs)
     return lhs.fqdn < rhs.fqdn;
 }
 
-} // namespace LibFred::AutomaticKeysetManagement
-} // namespace LibFred
+} // namespace Fred::Backend::AutomaticKeysetManagement
+} // namespace Fred::Backend
+} // namespace Fred

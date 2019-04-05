@@ -48,6 +48,7 @@ struct info_keyset_fixture : public Test::instantiate_db_template
     std::string admin_contact4_handle;
     std::string admin_contact5_handle;
     std::string admin_contact6_handle;
+    std::string admin_contact6_uuid;
     std::string test_keyset_handle;
     std::string test_keyset_history_handle;
 
@@ -57,7 +58,8 @@ struct info_keyset_fixture : public Test::instantiate_db_template
     :xmark(RandomDataGenerator().xnumstring(6))
     , admin_contact4_handle(std::string("TEST-ADMIN-CONTACT4-HANDLE")+xmark)
     , admin_contact5_handle(std::string("TEST-ADMIN-CONTACT5-HANDLE")+xmark)
-    , admin_contact6_handle(std::string("TEST-ADMIN-CONTACT6-HANDLE")+xmark)
+    , admin_contact6_handle(std::string("e70a23bd-0727-4240-8bdd-d72af02f0a56")+xmark)
+    , admin_contact6_uuid(std::string("TEST-ADMIN-CONTACT6-HANDLE")+xmark)
     , test_keyset_handle(std::string("TEST-KEYSET-HANDLE")+xmark)
     , test_keyset_history_handle(std::string("TEST-KEYSET-HISTORY-HANDLE")+xmark)
     {
@@ -137,8 +139,12 @@ struct info_keyset_fixture : public Test::instantiate_db_template
         test_info_keyset_output.info_keyset_data.creation_time = boost::posix_time::time_from_string("2011-07-01 01:59:59");
         test_info_keyset_output.info_keyset_data.transfer_time = Nullable<boost::posix_time::ptime>();
         test_info_keyset_output.info_keyset_data.authinfopw = "testauthinfo1";
-        test_info_keyset_output.info_keyset_data.tech_contacts = Util::vector_of<::LibFred::ObjectIdHandlePair>
-            (::LibFred::ObjectIdHandlePair(static_cast<unsigned long long>(id_res[0]["admin_contact6_handle_id"]), admin_contact6_handle));
+        test_info_keyset_output.info_keyset_data.tech_contacts =
+            Util::vector_of<::LibFred::RegistrableObject::Contact::ContactReference>(
+                    ::LibFred::RegistrableObject::Contact::ContactReference(
+                            static_cast<unsigned long long>(id_res[0]["admin_contact6_handle_id"]),
+                            admin_contact6_handle,
+                            LibFred::RegistrableObject::make_uuid_of<LibFred::Object_Type::contact>(admin_contact6_uuid)));
         test_info_keyset_output.info_keyset_data.delete_time = Nullable<boost::posix_time::ptime>();
         test_info_keyset_output.info_keyset_data.dns_keys = Util::vector_of<::LibFred::DnsKey>
             (::LibFred::DnsKey(257, 3, 5, "AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8"));

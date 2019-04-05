@@ -26,7 +26,8 @@
 #include "src/bin/corba/automatic_keyset_management/server_i.hh"
 
 #include "src/backend/automatic_keyset_management/automatic_keyset_management.hh"
-#include "src/bin/corba/automatic_keyset_management/corba_conversions.cc"
+#include "src/bin/corba/automatic_keyset_management/corba_conversions.hh"
+#include "src/bin/corba/util/corba_conversions_int.hh"
 #include "src/bin/corba/AutomaticKeysetManagement.hh"
 
 #include <iostream>
@@ -42,7 +43,7 @@ Server_i::Server_i(
         const std::set<std::string>& _automatically_managed_keyset_zones,
         const bool _disable_notifier,
         LibFred::Logger::LoggerClient& _logger_client)
-    : impl_(new LibFred::AutomaticKeysetManagement::AutomaticKeysetManagementImpl(
+    : impl_(new Fred::Backend::AutomaticKeysetManagement::AutomaticKeysetManagementImpl(
                       _server_name,
                       _automatically_managed_keyset_prefix,
                       _automatically_managed_keyset_registrar,
@@ -65,10 +66,10 @@ NameserverDomainsSeq* Server_i::get_nameservers_with_insecure_automatically_mana
 {
     try
     {
-        const LibFred::AutomaticKeysetManagement::NameserversDomains nameservers_domains =
+        const Fred::Backend::AutomaticKeysetManagement::NameserversDomains nameservers_domains =
                 impl_->get_nameservers_with_insecure_automatically_managed_domain_candidates();
 
-        return LibFred::Corba::AutomaticKeysetManagement::wrap_NameserversDomains(nameservers_domains)._retn();
+        return CorbaConversions::wrap_NameserversDomains(nameservers_domains)._retn();
     }
     catch (...)
     {
@@ -80,10 +81,10 @@ NameserverDomainsSeq* Server_i::get_nameservers_with_secure_automatically_manage
 {
     try
     {
-        const LibFred::AutomaticKeysetManagement::NameserversDomains nameservers_domains =
+        const Fred::Backend::AutomaticKeysetManagement::NameserversDomains nameservers_domains =
                 impl_->get_nameservers_with_secure_automatically_managed_domain_candidates();
 
-        return LibFred::Corba::AutomaticKeysetManagement::wrap_NameserversDomains(nameservers_domains)._retn();
+        return CorbaConversions::wrap_NameserversDomains(nameservers_domains)._retn();
     }
     catch (...)
     {
@@ -95,10 +96,10 @@ NameserverDomainsSeq* Server_i::get_nameservers_with_automatically_managed_domai
 {
     try
     {
-        const LibFred::AutomaticKeysetManagement::NameserversDomains nameservers_domains =
+        const Fred::Backend::AutomaticKeysetManagement::NameserversDomains nameservers_domains =
                 impl_->get_nameservers_with_automatically_managed_domains();
 
-        return LibFred::Corba::AutomaticKeysetManagement::wrap_NameserversDomains(nameservers_domains)._retn();
+        return CorbaConversions::wrap_NameserversDomains(nameservers_domains)._retn();
     }
     catch (...)
     {
@@ -114,47 +115,47 @@ void Server_i::turn_on_automatic_keyset_management_on_insecure_domain(
     try
     {
         const unsigned long long domain_id = LibFred::Corba::wrap_int<unsigned long long>(_domain_id);
-        LibFred::AutomaticKeysetManagement::Nsset current_nsset = LibFred::Corba::AutomaticKeysetManagement::unwrap_Nsset(_current_nsset);
-        LibFred::AutomaticKeysetManagement::Keyset new_keyset = LibFred::Corba::AutomaticKeysetManagement::unwrap_Keyset(_new_keyset);
+        Fred::Backend::AutomaticKeysetManagement::Nsset current_nsset = CorbaConversions::unwrap_Nsset(_current_nsset);
+        Fred::Backend::AutomaticKeysetManagement::Keyset new_keyset = CorbaConversions::unwrap_Keyset(_new_keyset);
 
         impl_->turn_on_automatic_keyset_management_on_insecure_domain(
                 domain_id,
                 current_nsset,
                 new_keyset);
     }
-    catch (LibFred::AutomaticKeysetManagement::ObjectNotFound&)
+    catch (Fred::Backend::AutomaticKeysetManagement::ObjectNotFound&)
     {
         throw OBJECT_NOT_FOUND();
     }
-    catch (LibFred::AutomaticKeysetManagement::NssetIsEmpty&)
+    catch (Fred::Backend::AutomaticKeysetManagement::NssetIsEmpty&)
     {
         throw NSSET_IS_EMPTY();
     }
-    catch (LibFred::AutomaticKeysetManagement::KeysetIsInvalid&)
+    catch (Fred::Backend::AutomaticKeysetManagement::KeysetIsInvalid&)
     {
         throw KEYSET_IS_INVALID();
     }
-    catch (LibFred::AutomaticKeysetManagement::NssetIsDifferent&)
+    catch (Fred::Backend::AutomaticKeysetManagement::NssetIsDifferent&)
     {
         throw NSSET_IS_DIFFERENT();
     }
-    catch (LibFred::AutomaticKeysetManagement::DomainHasKeyset&)
+    catch (Fred::Backend::AutomaticKeysetManagement::DomainHasKeyset&)
     {
         throw DOMAIN_HAS_KEYSET();
     }
-    catch (LibFred::AutomaticKeysetManagement::DomainAlreadyDoesNotHaveKeyset&)
+    catch (Fred::Backend::AutomaticKeysetManagement::DomainAlreadyDoesNotHaveKeyset&)
     {
         throw DOMAIN_ALREADY_DOES_NOT_HAVE_KEYSET();
     }
-    catch (LibFred::AutomaticKeysetManagement::DomainStatePolicyError&)
+    catch (Fred::Backend::AutomaticKeysetManagement::DomainStatePolicyError&)
     {
         throw DOMAIN_STATE_POLICY_ERROR();
     }
-    catch (LibFred::AutomaticKeysetManagement::KeysetStatePolicyError&)
+    catch (Fred::Backend::AutomaticKeysetManagement::KeysetStatePolicyError&)
     {
         throw KEYSET_STATE_POLICY_ERROR();
     }
-    catch (LibFred::AutomaticKeysetManagement::ConfigurationError&)
+    catch (Fred::Backend::AutomaticKeysetManagement::ConfigurationError&)
     {
         throw CONFIGURATION_ERROR();
     }
@@ -171,33 +172,33 @@ void Server_i::turn_on_automatic_keyset_management_on_secure_domain(
     try
     {
         const unsigned long long domain_id = LibFred::Corba::wrap_int<unsigned long long>(_domain_id);
-        LibFred::AutomaticKeysetManagement::Keyset new_keyset = LibFred::Corba::AutomaticKeysetManagement::unwrap_Keyset(_new_keyset);
+        Fred::Backend::AutomaticKeysetManagement::Keyset new_keyset = CorbaConversions::unwrap_Keyset(_new_keyset);
 
         impl_->turn_on_automatic_keyset_management_on_secure_domain(
                 domain_id,
                 new_keyset);
     }
-    catch (LibFred::AutomaticKeysetManagement::ObjectNotFound&)
+    catch (Fred::Backend::AutomaticKeysetManagement::ObjectNotFound&)
     {
         throw OBJECT_NOT_FOUND();
     }
-    catch (LibFred::AutomaticKeysetManagement::KeysetIsInvalid&)
+    catch (Fred::Backend::AutomaticKeysetManagement::KeysetIsInvalid&)
     {
         throw KEYSET_IS_INVALID();
     }
-    catch (LibFred::AutomaticKeysetManagement::DomainDoesNotHaveKeyset&)
+    catch (Fred::Backend::AutomaticKeysetManagement::DomainDoesNotHaveKeyset&)
     {
         throw DOMAIN_DOES_NOT_HAVE_KEYSET();
     }
-    catch (LibFred::AutomaticKeysetManagement::DomainAlreadyHasAutomaticallyManagedKeyset&)
+    catch (Fred::Backend::AutomaticKeysetManagement::DomainAlreadyHasAutomaticallyManagedKeyset&)
     {
         throw DOMAIN_ALREADY_HAS_AUTOMATICALLY_MANAGED_KEYSET();
     }
-    catch (LibFred::AutomaticKeysetManagement::DomainStatePolicyError&)
+    catch (Fred::Backend::AutomaticKeysetManagement::DomainStatePolicyError&)
     {
         throw DOMAIN_STATE_POLICY_ERROR();
     }
-    catch (LibFred::AutomaticKeysetManagement::ConfigurationError&)
+    catch (Fred::Backend::AutomaticKeysetManagement::ConfigurationError&)
     {
         throw CONFIGURATION_ERROR();
     }
@@ -214,37 +215,37 @@ void Server_i::update_automatically_managed_keyset_of_domain(
     try
     {
         const unsigned long long domain_id = LibFred::Corba::wrap_int<unsigned long long>(_domain_id);
-        LibFred::AutomaticKeysetManagement::Keyset new_keyset = LibFred::Corba::AutomaticKeysetManagement::unwrap_Keyset(_new_keyset);
+        Fred::Backend::AutomaticKeysetManagement::Keyset new_keyset = CorbaConversions::unwrap_Keyset(_new_keyset);
 
         impl_->update_automatically_managed_keyset_of_domain(
                 domain_id,
                 new_keyset);
     }
-    catch (LibFred::AutomaticKeysetManagement::ObjectNotFound&)
+    catch (Fred::Backend::AutomaticKeysetManagement::ObjectNotFound&)
     {
         throw OBJECT_NOT_FOUND();
     }
-    catch (LibFred::AutomaticKeysetManagement::KeysetIsInvalid&)
+    catch (Fred::Backend::AutomaticKeysetManagement::KeysetIsInvalid&)
     {
         throw KEYSET_IS_INVALID();
     }
-    catch (LibFred::AutomaticKeysetManagement::DomainDoesNotHaveAutomaticallyManagedKeyset&)
+    catch (Fred::Backend::AutomaticKeysetManagement::DomainDoesNotHaveAutomaticallyManagedKeyset&)
     {
         throw DOMAIN_DOES_NOT_HAVE_AUTOMATICALLY_MANAGED_KEYSET();
     }
-    catch (LibFred::AutomaticKeysetManagement::KeysetSameAsDomainKeyset&)
+    catch (Fred::Backend::AutomaticKeysetManagement::KeysetSameAsDomainKeyset&)
     {
         throw KEYSET_SAME_AS_DOMAIN_KEYSET();
     }
-    catch (LibFred::AutomaticKeysetManagement::DomainStatePolicyError&)
+    catch (Fred::Backend::AutomaticKeysetManagement::DomainStatePolicyError&)
     {
         throw DOMAIN_STATE_POLICY_ERROR();
     }
-    catch (LibFred::AutomaticKeysetManagement::KeysetStatePolicyError&)
+    catch (Fred::Backend::AutomaticKeysetManagement::KeysetStatePolicyError&)
     {
         throw KEYSET_STATE_POLICY_ERROR();
     }
-    catch (LibFred::AutomaticKeysetManagement::ConfigurationError&)
+    catch (Fred::Backend::AutomaticKeysetManagement::ConfigurationError&)
     {
         throw CONFIGURATION_ERROR();
     }
@@ -261,12 +262,12 @@ EmailAddressSeq* Server_i::get_email_addresses_by_domain_id(
     {
         const unsigned long long domain_id = LibFred::Corba::wrap_int<unsigned long long>(_domain_id);
 
-        const LibFred::AutomaticKeysetManagement::EmailAddresses email_addresses =
+        const Fred::Backend::AutomaticKeysetManagement::EmailAddresses email_addresses =
                 impl_->get_email_addresses_by_domain_id(domain_id);
 
-        return LibFred::Corba::AutomaticKeysetManagement::wrap_EmailAddresses(email_addresses)._retn();
+        return CorbaConversions::wrap_EmailAddresses(email_addresses)._retn();
     }
-    catch (LibFred::AutomaticKeysetManagement::ObjectNotFound&)
+    catch (Fred::Backend::AutomaticKeysetManagement::ObjectNotFound&)
     {
         throw OBJECT_NOT_FOUND();
     }

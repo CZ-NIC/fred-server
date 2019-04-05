@@ -29,8 +29,6 @@
 #include "libfred/registrable_object/domain/info_domain.hh"
 #include "libfred/registrable_object/domain/transfer_domain.hh"
 
-#include <boost/foreach.hpp>
-
 
 BOOST_AUTO_TEST_SUITE(TestNotifier)
 BOOST_AUTO_TEST_SUITE(GatherEmailAddresses)
@@ -274,10 +272,8 @@ template<typename Tdomainoperation = ::LibFred::UpdateDomain> struct has_domain_
                 .set_registrant(different_registrant_handle)
                 .add_admin_contact(different_admin_handle);
 
-            BOOST_FOREACH(
-                const ::LibFred::ObjectIdHandlePair& a_c,
-                ::LibFred::InfoDomainByFqdn(_fqdn).exec(_ctx).info_domain_data.admin_contacts
-            ) {
+            for (const auto& a_c : ::LibFred::InfoDomainByFqdn(_fqdn).exec(_ctx).info_domain_data.admin_contacts)
+            {
                 future_update.rem_admin_contact(a_c.handle);
             }
 

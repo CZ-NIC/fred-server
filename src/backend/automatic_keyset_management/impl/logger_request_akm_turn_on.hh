@@ -20,6 +20,10 @@
 #define LOGGER_REQUEST_AKM_TURN_ON_HH_63B5F847808546D4A2FC3E8963CC16DF
 
 #include "src/backend/automatic_keyset_management/dns_key.hh"
+#include "src/backend/automatic_keyset_management/keyset.hh"
+#include "src/backend/automatic_keyset_management/impl/domain_reference.hh"
+#include "src/backend/automatic_keyset_management/impl/keyset_reference.hh"
+#include "src/backend/automatic_keyset_management/impl/logger_request.hh"
 #include "src/backend/automatic_keyset_management/impl/logger_request_data.hh"
 #include "src/backend/automatic_keyset_management/impl/logger_request_object_type.hh"
 #include "src/backend/automatic_keyset_management/impl/logger_request_property.hh"
@@ -28,7 +32,8 @@
 #include "src/deprecated/libfred/logger_client.hh"
 #include "libfred/object/object_id_handle_pair.hh"
 
-namespace LibFred {
+namespace Fred {
+namespace Backend {
 namespace AutomaticKeysetManagement {
 namespace Impl {
 
@@ -37,31 +42,29 @@ class LoggerRequestAkmTurnOn
 public:
     LoggerRequestAkmTurnOn(
             LibFred::Logger::LoggerClient& _logger_client,
-            const ObjectIdHandlePair& _domain)
+            const DomainReference& _domain)
         : logger_request_(
                   _logger_client,
                   LoggerRequestData()
                           .add<LoggerRequestObjectType::domain>(_domain.id)
-                          .add<LoggerRequestProperty::name>(_domain.handle))
+                          .add<LoggerRequestProperty::name>(_domain.fqdn))
     {
     }
 
     void close_on_success(
-            const ObjectIdHandlePair& _domain,
-            const ObjectIdHandlePair& _keyset,
+            const DomainReference& _domain,
+            const KeysetReference& _keyset,
             const Keyset& _new_keyset) const
     {
         LoggerRequestData logger_request_data;
 
         logger_request_data.add<LoggerRequestObjectType::keyset>(_keyset.id);
 
-        logger_request_data.add<LoggerRequestProperty::name>(_domain.handle);
+        logger_request_data.add<LoggerRequestProperty::name>(_domain.fqdn);
         logger_request_data.add<LoggerRequestProperty::keyset>(_keyset.handle);
-        for (DnsKeys::const_iterator new_dns_key = _new_keyset.dns_keys.begin();
-                new_dns_key != _new_keyset.dns_keys.end();
-                ++new_dns_key)
+        for (const auto& new_dns_key : _new_keyset.dns_keys)
         {
-            logger_request_data.add<LoggerRequestProperty::new_dns_key>(to_string(*new_dns_key));
+            logger_request_data.add<LoggerRequestProperty::new_dns_key>(to_string(new_dns_key));
         }
 
         logger_request_.close_on_success(logger_request_data);
@@ -82,8 +85,9 @@ private:
     LoggerRequest<LoggerRequestType::akm_turn_on, LoggerServiceType::admin> logger_request_;
 };
 
-} // namespace LibFred::AutomaticKeysetManagement::Impl
-} // namespace LibFred::AutomaticKeysetManagement
-} // namespace LibFred
+} // namespace Fred::Backend::AutomaticKeysetManagement::Impl
+} // namespace Fred::Backend::AutomaticKeysetManagement
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif

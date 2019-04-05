@@ -158,7 +158,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset, domains_by_keyset_fixture)
         BOOST_CHECK(it.keyset     == found->second.keyset.get_value_or_default().handle);
         BOOST_CHECK(it.nsset      == found->second.nsset.get_value_or_default().handle);
 
-        BOOST_FOREACH(const ::LibFred::ObjectIdHandlePair& oit, found->second.admin_contacts)
+        for (const auto& oit : found->second.admin_contacts)
         {
             BOOST_CHECK(it.admin_contacts.end() != std::find(it.admin_contacts.begin(),
                         it.admin_contacts.end(), oit.handle));
@@ -213,9 +213,9 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset_limit_exceeded, domains_by_keyset_
         BOOST_CHECK(it.keyset     == found->second.keyset.get_value_or_default().handle);
         BOOST_CHECK(it.nsset      == found->second.nsset.get_value_or_default().handle);
 
-        BOOST_FOREACH(const ::LibFred::ObjectIdHandlePair& oit, found->second.admin_contacts)
+        for (const auto& admin_contact : found->second.admin_contacts)
         {
-            BOOST_CHECK(std::find(it.admin_contacts.begin(), it.admin_contacts.end(), oit.handle) !=
+            BOOST_CHECK(std::find(it.admin_contacts.begin(), it.admin_contacts.end(), admin_contact.handle) !=
                     it.admin_contacts.end());
         }
         BOOST_CHECK(it.admin_contacts.size() == found->second.admin_contacts.size());

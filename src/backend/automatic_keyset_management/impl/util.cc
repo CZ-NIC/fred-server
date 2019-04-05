@@ -22,7 +22,8 @@
 
 #include <string>
 
-namespace LibFred {
+namespace Fred {
+namespace Backend {
 namespace AutomaticKeysetManagement {
 namespace Impl {
 
@@ -46,6 +47,7 @@ std::string to_string(const LibFred::DnsKey& dnskey)
            "]";
 }
 
-} // namespace LibFred::AutomaticKeysetManagement::Impl
-} // namespace LibFred::AutomaticKeysetManagement
-} // namespace LibFred
+} // namespace Fred::Backend::AutomaticKeysetManagement::Impl
+} // namespace Fred::Backend::AutomaticKeysetManagement
+} // namespace Fred::Backend
+} // namespace Fred

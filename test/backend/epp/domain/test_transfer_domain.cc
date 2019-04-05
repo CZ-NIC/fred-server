@@ -221,11 +221,14 @@ BOOST_FIXTURE_TEST_CASE(ok_transfer_prohibited_but_system_registrar, supply_ctx<
     const ::LibFred::InfoDomainData domain_data_after = ::LibFred::InfoDomainByFqdn(domain_data_before.fqdn).exec(ctx).info_domain_data;
 
     const ::LibFred::InfoDomainDiff domain_data_change = diff_domain_data(domain_data_before, domain_data_after);
-    const std::set<std::string> change_fields_etalon = boost::assign::list_of
-        ("sponsoring_registrar_handle")
-        ("transfer_time")
-        ("historyid")
-        ("authinfopw");
+    const std::set<std::string> change_fields_etalon =
+            {
+                "sponsoring_registrar_handle",
+                "transfer_time",
+                "historyid",
+                "history_uuid",
+                "authinfopw"
+            };
 
     BOOST_CHECK(domain_data_change.changed_fields() == change_fields_etalon);
 
@@ -262,11 +265,14 @@ BOOST_FIXTURE_TEST_CASE(ok, supply_ctx<HasRegistrarWithSessionAndDomainOfDiffere
     const ::LibFred::InfoDomainData domain_data_after = ::LibFred::InfoDomainByFqdn(domain_data_before.fqdn).exec(ctx).info_domain_data;
 
     const ::LibFred::InfoDomainDiff domain_data_change = diff_domain_data(domain_data_before, domain_data_after);
-    const std::set<std::string> change_fields_etalon = boost::assign::list_of
-        ("sponsoring_registrar_handle")
-        ("transfer_time")
-        ("historyid")
-        ("authinfopw");
+    const std::set<std::string> change_fields_etalon =
+            {
+                "sponsoring_registrar_handle",
+                "transfer_time",
+                "historyid",
+                "history_uuid",
+                "authinfopw"
+            };
 
     BOOST_CHECK(domain_data_change.changed_fields() == change_fields_etalon);
 
@@ -283,14 +289,13 @@ BOOST_FIXTURE_TEST_CASE(ok, supply_ctx<HasRegistrarWithSessionAndDomainOfDiffere
         )
     );
 
-    BOOST_CHECK(domain_data_before.historyid != domain_data_after.historyid);
-
-    BOOST_CHECK(domain_data_before.authinfopw != domain_data_after.authinfopw);
+    BOOST_CHECK_NE(domain_data_before.historyid, domain_data_after.historyid);
+    BOOST_CHECK_NE(domain_data_before.authinfopw, domain_data_after.authinfopw);
 }
 
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END()//Backend/Epp/Domain/TransferDomain
+BOOST_AUTO_TEST_SUITE_END()//Backend/Epp/Domain
+BOOST_AUTO_TEST_SUITE_END()//Backend/Epp
+BOOST_AUTO_TEST_SUITE_END()//Backend
 
-} // namespace Test
+}//namespace Test

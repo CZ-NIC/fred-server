@@ -82,7 +82,7 @@ BOOST_FIXTURE_TEST_CASE(regular_case, plain_domain_fixture)
     BOOST_CHECK(dom.keyset                   == domain.keyset.get_value().handle);
     BOOST_CHECK(dom.nsset                    == domain.nsset.get_value().handle);
 
-    BOOST_FOREACH(const LibFred::ObjectIdHandlePair& it, domain.admin_contacts)
+    for (const auto& it : domain.admin_contacts)
     {
         BOOST_CHECK(std::find(dom.admin_contacts.begin(), dom.admin_contacts.end(), it.handle) !=
                         dom.admin_contacts.end());
@@ -153,7 +153,7 @@ BOOST_FIXTURE_TEST_CASE(root_dot_query_case, cz_domain_fixture)
     BOOST_CHECK(dom.keyset                   == domain.keyset.get_value().handle);
     BOOST_CHECK(dom.nsset                    == domain.nsset.get_value().handle);
 
-    BOOST_FOREACH(const LibFred::ObjectIdHandlePair& it, domain.admin_contacts)
+    for (const auto& it : domain.admin_contacts)
     {
         BOOST_CHECK(std::find(dom.admin_contacts.begin(), dom.admin_contacts.end(), it.handle) !=
                         dom.admin_contacts.end());
@@ -594,7 +594,7 @@ BOOST_FIXTURE_TEST_CASE(child_parent, child_parent_fixture)
     BOOST_CHECK(dom.keyset                   == parent_obj.keyset.get_value().handle);
     BOOST_CHECK(dom.nsset                    == parent_obj.nsset.get_value().handle);
 
-    BOOST_FOREACH(const LibFred::ObjectIdHandlePair& it, parent_obj.admin_contacts)
+    for (const auto& it : parent_obj.admin_contacts)
     {
         BOOST_CHECK(std::find(dom.admin_contacts.begin(), dom.admin_contacts.end(), it.handle) !=
                         dom.admin_contacts.end());
@@ -669,7 +669,7 @@ BOOST_FIXTURE_TEST_CASE(parent_child, parent_child_fixture)
     BOOST_CHECK(dom.keyset                   == child_obj.keyset.get_value().handle);
     BOOST_CHECK(dom.nsset                    == child_obj.nsset.get_value().handle);
 
-    BOOST_FOREACH(const LibFred::ObjectIdHandlePair& it, child_obj.admin_contacts)
+    for (const auto& it : child_obj.admin_contacts)
     {
         BOOST_CHECK(std::find(dom.admin_contacts.begin(), dom.admin_contacts.end(), it.handle) !=
                         dom.admin_contacts.end());

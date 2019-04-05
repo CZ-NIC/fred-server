@@ -116,11 +116,9 @@ boost::optional<NssetPrintoutInputData> make_nsset_data(
     retval.info = LibFred::InfoNssetByHandle(*nsset_handle).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
     retval.tech_contact.reserve(retval.info.info_nsset_data.tech_contacts.size());
 
-    for (std::vector<LibFred::ObjectIdHandlePair>::const_iterator itr = retval.info.info_nsset_data.tech_contacts.begin();
-            itr != retval.info.info_nsset_data.tech_contacts.end();
-            ++itr)
+    for (const auto& tech_contact : retval.info.info_nsset_data.tech_contacts)
     {
-        retval.tech_contact.push_back(LibFred::InfoContactByHandle(itr->handle).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()));
+        retval.tech_contact.push_back(LibFred::InfoContactByHandle(tech_contact.handle).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()));
     }
 
     retval.sponsoring_registrar = LibFred::InfoRegistrarByHandle(
@@ -145,11 +143,9 @@ boost::optional<KeysetPrintoutInputData> make_keyset_data(
     retval.info = LibFred::InfoKeysetByHandle(*keyset_handle).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
     retval.tech_contact.reserve(retval.info.info_keyset_data.tech_contacts.size());
 
-    for (std::vector<LibFred::ObjectIdHandlePair>::const_iterator itr = retval.info.info_keyset_data.tech_contacts.begin();
-            itr != retval.info.info_keyset_data.tech_contacts.end();
-            ++itr)
+    for (const auto& tech_contact : retval.info.info_keyset_data.tech_contacts)
     {
-        retval.tech_contact.push_back(LibFred::InfoContactByHandle(itr->handle).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()));
+        retval.tech_contact.push_back(LibFred::InfoContactByHandle(tech_contact.handle).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()));
     }
 
     retval.sponsoring_registrar = LibFred::InfoRegistrarByHandle(
@@ -564,13 +560,11 @@ boost::optional<NssetPrintoutInputData> make_historic_nsset_data(
     NssetPrintoutInputData retval;
     retval.info = LibFred::InfoNssetHistoryByHistoryid(*nsset_historyid).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
 
-    for (std::vector<LibFred::ObjectIdHandlePair>::const_iterator itr = retval.info.info_nsset_data.tech_contacts.begin();
-            itr != retval.info.info_nsset_data.tech_contacts.end();
-            ++itr)
+    for (const auto& tech_contact : retval.info.info_nsset_data.tech_contacts)
     {
         retval.tech_contact.push_back(
                 LibFred::InfoContactHistoryByHistoryid(
-                        get_history_id_internal_of<LibFred::Object_Type::contact>(itr->handle, timestamp, ctx))
+                        get_history_id_internal_of<LibFred::Object_Type::contact>(tech_contact.handle, timestamp, ctx))
                         .exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()));
     }
 
@@ -596,13 +590,11 @@ boost::optional<KeysetPrintoutInputData> make_historic_keyset_data(
     KeysetPrintoutInputData retval;
     retval.info = LibFred::InfoKeysetHistoryByHistoryid(*keyset_historyid).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
 
-    for (std::vector<LibFred::ObjectIdHandlePair>::const_iterator itr = retval.info.info_keyset_data.tech_contacts.begin();
-            itr != retval.info.info_keyset_data.tech_contacts.end();
-            ++itr)
+    for (const auto& tech_contact : retval.info.info_keyset_data.tech_contacts)
     {
         retval.tech_contact.push_back(
                 LibFred::InfoContactHistoryByHistoryid(
-                        get_history_id_internal_of<LibFred::Object_Type::contact>(itr->handle, timestamp, ctx))
+                        get_history_id_internal_of<LibFred::Object_Type::contact>(tech_contact.handle, timestamp, ctx))
                         .exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()));
     }
 

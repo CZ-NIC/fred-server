@@ -29,7 +29,6 @@
 #include "libfred/notifier/gather_email_data/gather_email_content.hh"
 
 #include <boost/assign/list_of.hpp>
-#include <boost/foreach.hpp>
 #include <boost/algorithm/string/join.hpp>
 
 
@@ -147,9 +146,9 @@ BOOST_FIXTURE_TEST_CASE(test_big_update_from_empty_data, has_keyset_big_update<h
     etalon["changes.object.authinfo.new"]   = new_keyset_data.authinfopw;
 
     struct extract {
-        static std::set<std::string> handles(const std::vector<::LibFred::ObjectIdHandlePair>& _in) {
+        static std::set<std::string> handles(const std::vector<::LibFred::RegistrableObject::Contact::ContactReference>& _in) {
             std::set<std::string> result;
-            BOOST_FOREACH(const ::LibFred::ObjectIdHandlePair& elem, _in) {
+            for (const auto& elem : _in) {
                 result.insert(elem.handle);
             }
             return result;
@@ -193,9 +192,9 @@ BOOST_FIXTURE_TEST_CASE(test_big_update_from_full_data, has_keyset_big_update<ha
     etalon["changes.object.authinfo.new"]   = new_keyset_data.authinfopw;
 
     struct extract {
-        static std::set<std::string> handles(const std::vector<::LibFred::ObjectIdHandlePair>& _in) {
+        static std::set<std::string> handles(const std::vector<::LibFred::RegistrableObject::Contact::ContactReference>& _in) {
             std::set<std::string> result;
-            BOOST_FOREACH(const ::LibFred::ObjectIdHandlePair& elem, _in) {
+            for (const ::LibFred::RegistrableObject::Contact::ContactReference& elem : _in) {
                 result.insert(elem.handle);
             }
             return result;

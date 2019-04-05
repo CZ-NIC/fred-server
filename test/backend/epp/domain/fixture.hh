@@ -70,7 +70,7 @@ namespace Backend {
 namespace Epp {
 namespace Domain {
 
-std::vector<std::string> vector_of_Fred_ObjectIdHandlePair_to_vector_of_string(const std::vector<::LibFred::ObjectIdHandlePair>& admin_contacts);
+std::vector<std::string> vector_of_Fred_RegistrableObject_Contact_ContactReference_to_vector_of_string(const std::vector<::LibFred::RegistrableObject::Contact::ContactReference>& admin_contacts);
 
 struct DefaultCheckDomainConfigData : ::Epp::Domain::CheckDomainConfigData
 {
@@ -844,7 +844,7 @@ struct HasDataForUpdateDomain
                                   (admin_handle2)
                                   (admin_handle3);
 
-        admin_contacts_rem_ = vector_of_Fred_ObjectIdHandlePair_to_vector_of_string(
+        admin_contacts_rem_ = vector_of_Fred_RegistrableObject_Contact_ContactReference_to_vector_of_string(
                 domain.data.admin_contacts);
 
         tmpcontacts_rem_ = Util::vector_of<std::string>

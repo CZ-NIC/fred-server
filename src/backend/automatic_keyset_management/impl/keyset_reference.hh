@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2019  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,42 +16,28 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
-#ifndef DNS_KEY_HH_1B0B00DF1F674F65BAAD0B35172C897D
-#define DNS_KEY_HH_1B0B00DF1F674F65BAAD0B35172C897D
+#ifndef KEYSET_REFERENCE_HH_5792FFF26D80474BAF5539C0D3D01214
+#define KEYSET_REFERENCE_HH_5792FFF26D80474BAF5539C0D3D01214
 
-#include <set>
 #include <string>
 
 namespace Fred {
 namespace Backend {
 namespace AutomaticKeysetManagement {
+namespace Impl {
 
-struct DnsKey
+struct KeysetReference
 {
-    DnsKey(
-            unsigned short _flags,
-            unsigned short _protocol,
-            unsigned short _alg,
-            const std::string& _key)
-        : flags(_flags),
-          protocol(_protocol),
-          alg(_alg),
-          key(_key)
+    KeysetReference(const unsigned long long _id, const std::string& _handle)
+        : id(_id), handle(_handle)
     {
     }
 
-    friend bool operator<(const DnsKey& _lhs, const DnsKey& _rhs);
-
-    friend bool operator==(const DnsKey& _lhs, const DnsKey& _rhs);
-
-    unsigned short flags;
-    unsigned short protocol;
-    unsigned short alg;
-    std::string key;
+    unsigned long long id;
+    std::string handle;
 };
 
-std::string to_string(const DnsKey& dnskey);
-
+} // namespace Fred::Backend::AutomaticKeysetManagement::Impl
 } // namespace Fred::Backend::AutomaticKeysetManagement
 } // namespace Fred::Backend
 } // namespace Fred

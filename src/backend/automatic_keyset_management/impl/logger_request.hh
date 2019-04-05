@@ -27,7 +27,8 @@
 
 #include <string>
 
-namespace LibFred {
+namespace Fred {
+namespace Backend {
 namespace AutomaticKeysetManagement {
 namespace Impl {
 
@@ -92,8 +93,8 @@ public:
 private:
     static unsigned long long create_request(
             LibFred::Logger::LoggerClient& _logger_client,
-            const Logger::RequestProperties& _properties,
-            const Logger::ObjectReferences& _references)
+            const LibFred::Logger::RequestProperties& _properties,
+            const LibFred::Logger::ObjectReferences& _references)
     {
         const std::string no_src_ip = "";
         const std::string no_content = "";
@@ -112,8 +113,9 @@ private:
     const unsigned long long request_id_;
 };
 
-} // namespace LibFred::AutomaticKeysetManagement::Impl
-} // namespace LibFred::AutomaticKeysetManagement
-} // namespace LibFred
+} // namespace Fred::Backend::AutomaticKeysetManagement::Impl
+} // namespace Fred::Backend::AutomaticKeysetManagement
+} // namespace Fred::Backend
+} // namespace Fred
 
 #endif
