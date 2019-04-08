@@ -185,7 +185,7 @@ public:
         try
         {
 #ifdef HAVE_LOGGER
-          if (LOGGER.is_sufficient<Logging::Log::EventImportance::debug>())
+          if (LOGGER.is_sufficient<Logging::Log::Severity::debug>())
           {
               std::string value;
               std::string params_dump;

@@ -519,7 +519,7 @@ ccReg_EPP_i::ccReg_EPP_i(
   Database::Connection conn = Database::Manager::acquire();
   db_disconnect_guard_.reset(new DB(conn));
 
-  LOG<Logging::Log::EventImportance::notice>( "successfully  connect to DATABASE");
+  LOG<Logging::Log::Severity::notice>( "successfully  connect to DATABASE");
   regMan.reset(LibFred::Manager::create(db_disconnect_guard_, false)); //TODO: replace 'false'
   regMan->initStates();
 }
@@ -531,28 +531,28 @@ ccReg_EPP_i::~ccReg_EPP_i()
   delete ReasonMsg;
   delete ErrorMsg;
 
-  LOG<Logging::Log::EventImportance::err>( "EPP_i destructor");
+  LOG<Logging::Log::Severity::err>( "EPP_i destructor");
 }
 
 // HANDLE EXCEPTIONS
 void ccReg_EPP_i::ServerInternalError(
   const char *fce, const char *svTRID)
 {
-  LOG<Logging::Log::EventImportance::err>("Internal errror in fce %s svTRID[%s] " , fce , svTRID );
+  LOG<Logging::Log::Severity::err>("Internal errror in fce %s svTRID[%s] " , fce , svTRID );
   throw ccReg::EPP::EppError( COMMAND_FAILED , "" , svTRID , ccReg::Errors(0) );
 }
 
 void ccReg_EPP_i::EppError(
   short errCode, const char *msg, const char *svTRID, ccReg::Errors_var& errors)
 {
-  LOG<Logging::Log::EventImportance::warning>("EppError errCode %d msg %s svTRID[%s] " , errCode , msg , svTRID );
+  LOG<Logging::Log::Severity::warning>("EppError errCode %d msg %s svTRID[%s] " , errCode , msg , svTRID );
   throw ccReg::EPP::EppError( errCode , msg , svTRID , errors );
 }
 
 void ccReg_EPP_i::NoMessages(
   short errCode, const char *msg, const char *svTRID)
 {
-  LOG<Logging::Log::EventImportance::warning>("NoMessages errCode %d msg %s svTRID[%s] " , errCode , msg , svTRID );
+  LOG<Logging::Log::Severity::warning>("NoMessages errCode %d msg %s svTRID[%s] " , errCode , msg , svTRID );
   throw ccReg::EPP::NoMessages ( errCode , msg , svTRID );
 
 }
@@ -662,7 +662,7 @@ short ccReg_EPP_i::SetErrorReason(
   errors[seq].position = position;
   errors[seq].reason = CORBA::string_dup(GetReasonMessage(reasonMsg, lang) );
 
-  LOG<Logging::Log::EventImportance::warning>( "SetErrorReason seq%d: err_code %d position [%d]  param %d msgID [%d] " , seq , errCode , position , paramCode , reasonMsg );
+  LOG<Logging::Log::Severity::warning>( "SetErrorReason seq%d: err_code %d position [%d]  param %d msgID [%d] " , seq , errCode , position , paramCode , reasonMsg );
   return errCode;
 }
 
@@ -670,7 +670,7 @@ short ccReg_EPP_i::SetReasonContactHandle(
   ccReg::Errors_var& err, const char *handle, int lang)
 {
 
-  LOG<Logging::Log::EventImportance::warning>( "bad format of contact [%s]" , handle );
+  LOG<Logging::Log::Severity::warning>( "bad format of contact [%s]" , handle );
   return SetErrorReason(err, COMMAND_PARAMETR_ERROR, ccReg::contact_handle, 1,
   REASON_MSG_BAD_FORMAT_CONTACT_HANDLE, lang);
 }
@@ -679,7 +679,7 @@ short ccReg_EPP_i::SetReasonNSSetHandle(
   ccReg::Errors_var& err, const char *handle, int lang)
 {
 
-  LOG<Logging::Log::EventImportance::warning>( "bad format of nsset  [%s]" , handle );
+  LOG<Logging::Log::Severity::warning>( "bad format of nsset  [%s]" , handle );
   return SetErrorReason(err, COMMAND_PARAMETR_ERROR, ccReg::nsset_handle, 1,
   REASON_MSG_BAD_FORMAT_NSSET_HANDLE, lang);
 
@@ -691,7 +691,7 @@ ccReg_EPP_i::SetReasonKeySetHandle(
         const char *handle,
         int lang)
 {
-    LOG<Logging::Log::EventImportance::warning>( "bad format of keyset [%s]", handle);
+    LOG<Logging::Log::Severity::warning>( "bad format of keyset [%s]", handle);
     return SetErrorReason(err, COMMAND_PARAMETR_ERROR, ccReg::keyset_handle, 1,
             REASON_MSG_BAD_FORMAT_KEYSET_HANDLE, lang);
 }
@@ -700,7 +700,7 @@ short ccReg_EPP_i::SetReasonDomainFQDN(
   ccReg::Errors_var& err, const char *fqdn, int zone, int lang)
 {
 
-  LOG<Logging::Log::EventImportance::warning>( "domain in zone %s" , (const char * ) fqdn );
+  LOG<Logging::Log::Severity::warning>( "domain in zone %s" , (const char * ) fqdn );
   if (zone == 0)
     return SetErrorReason(err, COMMAND_PARAMETR_ERROR, ccReg::domain_fqdn, 1,
     REASON_MSG_NOT_APPLICABLE_DOMAIN, lang);
@@ -722,7 +722,7 @@ char* ccReg_EPP_i::version(
   time_t t;
   char dateStr[MAX_DATE+1];
 
-  LOG<Logging::Log::EventImportance::notice>( "get version %s BUILD %s %s", VERSION, __DATE__, __TIME__);
+  LOG<Logging::Log::Severity::notice>( "get version %s BUILD %s %s", VERSION, __DATE__, __TIME__);
 
   // return  actual time (local time)
   t = time(NULL);
@@ -888,15 +888,15 @@ int ccReg_EPP_i::getFQDN(
 
   FQDN[0] = 0;
 
-  LOG<Logging::Log::EventImportance::debug>( "getFQDN [%s] zone %d max %d" , fqdn , z , max );
+  LOG<Logging::Log::Severity::debug>( "getFQDN [%s] zone %d max %d" , fqdn , z , max );
 
   // maximal length of the domain
   if (len > 67) {
-    LOG<Logging::Log::EventImportance::debug>( "out ouf maximal length %d" , len );
+    LOG<Logging::Log::Severity::debug>( "out ouf maximal length %d" , len );
     return -1;
   }
   if (max == 0) {
-    LOG<Logging::Log::EventImportance::debug>( "minimal length" );
+    LOG<Logging::Log::Severity::debug>( "minimal length" );
     return -1;
   }
 
@@ -904,19 +904,19 @@ int ccReg_EPP_i::getFQDN(
   for (i = 1; i < len; i ++) {
 
     if (fqdn[i] == '.' && fqdn[i-1] == '.') {
-      LOG<Logging::Log::EventImportance::debug>( "double \'.\' not allowed" );
+      LOG<Logging::Log::Severity::debug>( "double \'.\' not allowed" );
       return -1;
     }
 
     if (fqdn[i] == '-' && fqdn[i-1] == '-') {
-      LOG<Logging::Log::EventImportance::debug>( "double  \'-\' not allowed" );
+      LOG<Logging::Log::Severity::debug>( "double  \'-\' not allowed" );
       return -1;
     }
 
   }
 
   if (fqdn[0] == '-') {
-    LOG<Logging::Log::EventImportance::debug>( "first \'-\' not allowed" );
+    LOG<Logging::Log::Severity::debug>( "first \'-\' not allowed" );
     return -1;
   }
 
@@ -929,7 +929,7 @@ int ccReg_EPP_i::getFQDN(
   dot_max = GetZoneDotsMax(db, z);
 
   if (dot > dot_max) {
-    LOG<Logging::Log::EventImportance::debug>( "too much %d dots max %d" , dot , dot_max );
+    LOG<Logging::Log::Severity::debug>( "too much %d dots max %d" , dot , dot_max );
     return -1;
   }
 
@@ -942,14 +942,14 @@ int ccReg_EPP_i::getFQDN(
       if (isdigit(fqdn[i]) || fqdn[i] == '.' || fqdn[i] == '-')
         FQDN[i] = fqdn[i];
       else {
-        LOG<Logging::Log::EventImportance::debug>( "character  %c not allowed" , fqdn[i] );
+        LOG<Logging::Log::Severity::debug>( "character  %c not allowed" , fqdn[i] );
         FQDN[0] = 0;
         return -1;
       }
 
       // test double numbers
       if (isdigit(fqdn[i]) && isdigit(fqdn[i+1]) ) {
-        LOG<Logging::Log::EventImportance::debug>( "double digit [%c%c] not allowed" , fqdn[i] , fqdn[i+1] );
+        LOG<Logging::Log::Severity::debug>( "double digit [%c%c] not allowed" , fqdn[i] , fqdn[i+1] );
         FQDN[0] = 0;
         return -1;
       }
@@ -959,7 +959,7 @@ int ccReg_EPP_i::getFQDN(
       if (isalnum(fqdn[i]) || fqdn[i] == '-' || fqdn[i] == '.')
         FQDN[i] = tolower(fqdn[i]) ;
       else {
-        LOG<Logging::Log::EventImportance::debug>( "character  %c not allowed" , fqdn[i] );
+        LOG<Logging::Log::Severity::debug>( "character  %c not allowed" , fqdn[i] );
         FQDN[0] = 0;
         return -1;
       }
@@ -973,7 +973,7 @@ int ccReg_EPP_i::getFQDN(
   FQDN[i] = 0; // on the end
 
 
-  LOG<Logging::Log::EventImportance::debug>( "zone %d -> FQDN [%s]" , z , FQDN );
+  LOG<Logging::Log::Severity::debug>( "zone %d -> FQDN [%s]" , z , FQDN );
   return z;
 
 }
@@ -1007,11 +1007,11 @@ ccReg::Response* ccReg_EPP_i::GetTransaction(
   ret = new ccReg::Response;
   int i, len;
 
-  LOG<Logging::Log::EventImportance::notice>( "GetTransaction: clientID -> %llu clTRID [%s] ", clientID, clTRID );
-  LOG<Logging::Log::EventImportance::notice>( "GetTransaction:  errCode %d", (int ) errCode );
+  LOG<Logging::Log::Severity::notice>( "GetTransaction: clientID -> %llu clTRID [%s] ", clientID, clTRID );
+  LOG<Logging::Log::Severity::notice>( "GetTransaction:  errCode %d", (int ) errCode );
 
   len = errorCodes.length();
-  LOG<Logging::Log::EventImportance::notice>( "GetTransaction:  errorCodes length %d" , len );
+  LOG<Logging::Log::Severity::notice>( "GetTransaction:  errorCodes length %d" , len );
 
   // default
   ret->code = 0;
@@ -1041,7 +1041,7 @@ ccReg::Response* ccReg_EPP_i::GetTransaction(
         (*errStrings)[i] = CORBA::string_dup("not specified error");
     }
 
-    LOG<Logging::Log::EventImportance::notice>( "return reason msg: errors[%d] code %d  message %s\n" , i , errorCodes[i] , ( char * ) (*errStrings)[i] );
+    LOG<Logging::Log::Severity::notice>( "return reason msg: errors[%d] code %d  message %s\n" , i , errorCodes[i] , ( char * ) (*errStrings)[i] );
   }
 
   {
@@ -1054,7 +1054,7 @@ ccReg::Response* ccReg_EPP_i::GetTransaction(
           ret->msg = CORBA::string_dup(GetErrorMessage(ret->code,
               GetRegistrarLang(clientID) ) );
 
-          LOG<Logging::Log::EventImportance::notice>( "GetTransaction: svTRID [%s] errCode -> %d msg [%s] ", ( char * ) ret->svTRID, ret->code, ( char * ) ret->msg );
+          LOG<Logging::Log::Severity::notice>( "GetTransaction: svTRID [%s] errCode -> %d msg [%s] ", ( char * ) ret->svTRID, ret->code, ( char * ) ret->msg );
       }
     }
   }
@@ -1425,7 +1425,7 @@ ccReg_EPP_i::ClientLogout(const ccReg::EppParams &params)
     Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
     ConnectionReleaser releaser;
 
-    LOG<Logging::Log::EventImportance::notice>( "ClientLogout: clientID -> %llu clTRID [%s]", params.loginID, static_cast<const char*>(params.clTRID) );
+    LOG<Logging::Log::Severity::notice>( "ClientLogout: clientID -> %llu clTRID [%s]", params.loginID, static_cast<const char*>(params.clTRID) );
     EPPAction action(this, params.loginID, EPP_ClientLogout, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
 
     epp_sessions_.logout_session(params.loginID);
@@ -1472,7 +1472,7 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
             clTRID %
             hide(passwd) %
             hide(newpass));
-    LOG<Logging::Log::EventImportance::notice>( "ClientLogin: certID [%s] language [%d]", certID, lang);
+    LOG<Logging::Log::Severity::notice>( "ClientLogin: certID [%s] language [%d]", certID, lang);
 
     Database::Connection conn = Database::Manager::acquire();
     DB DBsql(conn);
@@ -1484,7 +1484,7 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
         const int regID = DBsql.GetNumericFromTable("REGISTRAR", "id", "handle", const_cast<char*>(ClID));
         if (regID == 0)
         {
-            LOG<Logging::Log::EventImportance::notice>( "bad username [%s]", ClID);
+            LOG<Logging::Log::Severity::notice>( "bad username [%s]", ClID);
             // bad username
             ret->code = COMMAND_AUTH_ERROR;
         }
@@ -1519,7 +1519,7 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
                     switch (lang_)
                     {
                         case ccReg::CS:
-                            LOG<Logging::Log::EventImportance::notice>( "SET LANG to CS");
+                            LOG<Logging::Log::Severity::notice>( "SET LANG to CS");
                             return 1;
                         case ccReg::EN:
                             return 0;
@@ -3112,7 +3112,7 @@ ccReg_EPP_i::FullList(short act, const char *table, const char *fname,
 
     list = new ccReg::Lists;
 
-    LOG<Logging::Log::EventImportance::notice >( "LIST %d  clientID -> %llu clTRID [%s] " , act , params.loginID, static_cast<const char*>(params.clTRID) );
+    LOG<Logging::Log::Severity::notice >( "LIST %d  clientID -> %llu clTRID [%s] " , act , params.loginID, static_cast<const char*>(params.clTRID) );
 
     EPPAction action(this, params.loginID, act, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
 
@@ -3142,7 +3142,7 @@ ccReg_EPP_i::FullList(short act, const char *table, const char *fname,
     if (action.getDB()->ExecSelect(sqlString) ) {
         rows = action.getDB()->GetSelectRows();
 
-        LOG<Logging::Log::EventImportance::notice>( "Full List: %s  num -> %d ClID %d", table , rows , action.getRegistrar() );
+        LOG<Logging::Log::Severity::notice>( "Full List: %s  num -> %d ClID %d", table , rows , action.getRegistrar() );
         list->length(rows);
 
         for (i = 0; i < rows; i ++) {
@@ -3223,7 +3223,7 @@ ccReg::Response* ccReg_EPP_i::nssetTest(
   int nssetid;
   bool internalError = false;
 
-  LOG<Logging::Log::EventImportance::notice >( "nssetTest nsset %s  clientID -> %llu clTRID [%s] \n" , handle, params.loginID, static_cast<const char*>(params.clTRID) );
+  LOG<Logging::Log::Severity::notice >( "nssetTest nsset %s  clientID -> %llu clTRID [%s] \n" , handle, params.loginID, static_cast<const char*>(params.clTRID) );
 
   Database::Connection conn = Database::Manager::acquire();
   DBSharedPtr DBsql (new DB(conn));
@@ -3249,19 +3249,19 @@ ccReg::Response* ccReg_EPP_i::nssetTest(
             tc.checkFromRegistrar(regHandle,handle,level,ifqdns,params.clTRID);
           }
           catch (TechCheckManager::INTERNAL_ERROR) {
-            LOG<Logging::Log::EventImportance::err>("Tech check internal error nsset [%s] clientID -> %llu clTRID [%s] " , handle , params.loginID , static_cast<const char*>(params.clTRID) );
+            LOG<Logging::Log::Severity::err>("Tech check internal error nsset [%s] clientID -> %llu clTRID [%s] " , handle , params.loginID , static_cast<const char*>(params.clTRID) );
             internalError = true;
           }
           catch (TechCheckManager::REGISTRAR_NOT_FOUND) {
-            LOG<Logging::Log::EventImportance::err>("Tech check reg not found nsset [%s] clientID -> %llu clTRID [%s] " , handle , params.loginID , static_cast<const char*>(params.clTRID) );
+            LOG<Logging::Log::Severity::err>("Tech check reg not found nsset [%s] clientID -> %llu clTRID [%s] " , handle , params.loginID , static_cast<const char*>(params.clTRID) );
             internalError = true;
           }
           catch (TechCheckManager::NSSET_NOT_FOUND) {
-            LOG<Logging::Log::EventImportance::err>("Tech check nsset not found nset [%s] clientID -> %llu clTRID [%s] " , handle , params.loginID , static_cast<const char*>(params.clTRID) );
+            LOG<Logging::Log::Severity::err>("Tech check nsset not found nset [%s] clientID -> %llu clTRID [%s] " , handle , params.loginID , static_cast<const char*>(params.clTRID) );
             internalError = true;
           }
         } else {
-          LOG<Logging::Log::EventImportance::warning>( "nsset handle [%s] NOT_EXIST", handle );
+          LOG<Logging::Log::Severity::warning>( "nsset handle [%s] NOT_EXIST", handle );
           ret->code = COMMAND_OBJECT_NOT_EXIST;
         }
 
@@ -3443,7 +3443,7 @@ ccReg::Response* ccReg_EPP_i::info(
   Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
   ConnectionReleaser releaser;
 
-  LOG<Logging::Log::EventImportance::notice>(
+  LOG<Logging::Log::Severity::notice>(
       "Info: clientID -> %llu clTRID [%s]",
       params.loginID,
       static_cast<const char*>(params.clTRID));
@@ -3514,7 +3514,7 @@ ccReg::Response* ccReg_EPP_i::getInfoResults(
   Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
   ConnectionReleaser releaser;
 
-  LOG<Logging::Log::EventImportance::notice>(
+  LOG<Logging::Log::Severity::notice>(
       "getResults: clientID -> %llu clTRID [%s]",
       params.loginID,
       static_cast<const char*>(params.clTRID)

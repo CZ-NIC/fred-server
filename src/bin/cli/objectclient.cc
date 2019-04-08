@@ -214,12 +214,12 @@ ObjectClient::regular_procedure()
             }
             catch (const NameService::NOT_RUNNING&)
             {
-                LOG<Logging::Log::EventImportance::err>(
+                LOG<Logging::Log::Severity::err>(
                     "regular_procedure(): resolve attempt %d of %d catching NOT_RUNNING", attempt, resolve_tries);
             }
             catch (const NameService::BAD_CONTEXT&)
             {
-                LOG<Logging::Log::EventImportance::err>(
+                LOG<Logging::Log::Severity::err>(
                     "regular_procedure(): resolve attempt %d of %d catching BAD_CONTEXT", attempt, resolve_tries);
             }
         }

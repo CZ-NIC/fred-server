@@ -72,7 +72,7 @@ int main(int argc, char* argv[])
 {
     try
     {
-        LOGGER.add_handler_of<Logging::Log::Device::console>(Logging::Log::EventImportance::debug);
+        LOGGER.add_handler_of<Logging::Log::Device::console>(Logging::Log::Severity::debug);
 
         //Zone Test
         bool at_least_one = false;

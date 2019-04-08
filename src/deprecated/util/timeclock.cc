@@ -61,11 +61,11 @@ void timeclock_end()
 
   total = get_time_clock() - time_clock;
   total_clock += total;
-  LOG<Logging::Log::EventImportance::debug>( "TIMECLOCK  END  %lld (usec)" , total );
+  LOG<Logging::Log::Severity::debug>( "TIMECLOCK  END  %lld (usec)" , total );
 }
 
 void timeclock_quit()
 {
-  LOG<Logging::Log::EventImportance::debug>( "TIMECLOCK TOTAL  %lld (sec) %lld (usec)" , total_clock / MICROSEC , total_clock % MICROSEC);
+  LOG<Logging::Log::Severity::debug>( "TIMECLOCK TOTAL  %lld (sec) %lld (usec)" , total_clock / MICROSEC , total_clock % MICROSEC);
   total_clock=0;
 }

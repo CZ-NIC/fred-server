@@ -73,37 +73,37 @@ void handle_command_line_args::setup_logging(CfgArgs *cfg_instance_ptr)
     HandleLoggingArgs* const handler_ptr = cfg_instance_ptr->get_handler_ptr_by_type<HandleLoggingArgs>();
 
     const auto log_type = static_cast<unsigned>(handler_ptr->log_type);
-    Logging::Log::EventImportance min_importance = Logging::Log::EventImportance::trace;
+    Logging::Log::Severity min_importance = Logging::Log::Severity::trace;
     if ((log_type == 0) || (log_type == 1))
     {
         switch (handler_ptr->log_level)
         {
             case 0:
-                min_importance = Logging::Log::EventImportance::emerg;
+                min_importance = Logging::Log::Severity::emerg;
                 break;
             case 1:
-                min_importance = Logging::Log::EventImportance::alert;
+                min_importance = Logging::Log::Severity::alert;
                 break;
             case 2:
-                min_importance = Logging::Log::EventImportance::crit;
+                min_importance = Logging::Log::Severity::crit;
                 break;
             case 3:
-                min_importance = Logging::Log::EventImportance::err;
+                min_importance = Logging::Log::Severity::err;
                 break;
             case 4:
-                min_importance = Logging::Log::EventImportance::warning;
+                min_importance = Logging::Log::Severity::warning;
                 break;
             case 5:
-                min_importance = Logging::Log::EventImportance::notice;
+                min_importance = Logging::Log::Severity::notice;
                 break;
             case 6:
-                min_importance = Logging::Log::EventImportance::info;
+                min_importance = Logging::Log::Severity::info;
                 break;
             case 7:
-                min_importance = Logging::Log::EventImportance::debug;
+                min_importance = Logging::Log::Severity::debug;
                 break;
             case 8:
-                min_importance = Logging::Log::EventImportance::trace;
+                min_importance = Logging::Log::Severity::trace;
                 break;
         }
     }

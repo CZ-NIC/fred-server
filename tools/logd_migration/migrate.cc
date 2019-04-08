@@ -100,7 +100,7 @@ int main()
         signal(6, signal_handler);
 
         // setup loggin via LOGGER
-        LOGGER.add_handler_of<Logging::Log::Device::file>(LOG_FILENAME, Logging::Log::EventImportance::trace);
+        LOGGER.add_handler_of<Logging::Log::Device::file>(LOG_FILENAME, Logging::Log::Severity::trace);
         LOGGER.info("Logging initialized for migration");
 
         // TODO is this safe?
