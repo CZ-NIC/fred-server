@@ -214,7 +214,7 @@ bool get_handle(
 
   len = strlen(handle);
 
-  LOG<Logging::Log::EventImportance::debug>( "get_HANDLE from [%s] len %d" , handle , len );
+  LOG<Logging::Log::Severity::debug>( "get_HANDLE from [%s] len %d" , handle , len );
 
   // max a min lenght
   if (len > 1 && len <= 40) {
@@ -238,24 +238,24 @@ bool get_handle(
     switch (typ) {
       case 1:
         if (strncmp(HANDLE, "CID:", 4) == 0) {
-          LOG<Logging::Log::EventImportance::debug>( "OK CONTACT HANDLE [%s] " , HANDLE );
+          LOG<Logging::Log::Severity::debug>( "OK CONTACT HANDLE [%s] " , HANDLE );
           return true;
         } else
           return false;
       case 2:
         if (strncmp(HANDLE, "NSSID:", 6) == 0) {
-          LOG<Logging::Log::EventImportance::debug>( "OK NSSET HANDLE [%s] " , HANDLE );
+          LOG<Logging::Log::Severity::debug>( "OK NSSET HANDLE [%s] " , HANDLE );
           return true;
         } else
           return false;
       case 4:
         if (strncmp(HANDLE, "KEYID:", 6) == 0) {
-            LOG<Logging::Log::EventImportance::debug>( "OK KEYSET HANDLE [%s] ", HANDLE);
+            LOG<Logging::Log::Severity::debug>( "OK KEYSET HANDLE [%s] ", HANDLE);
             return true;
         } else
             return false;
       default:
-        LOG<Logging::Log::EventImportance::debug>( "OK HANDLE [%s] " , HANDLE );
+        LOG<Logging::Log::Severity::debug>( "OK HANDLE [%s] " , HANDLE );
         return true;
     }
 
@@ -295,11 +295,11 @@ bool TestDNSHost(
 
   len = strlen(fqdn);
 
-  LOG<Logging::Log::EventImportance::debug>( "test DNSHost %s" , fqdn );
+  LOG<Logging::Log::Severity::debug>( "test DNSHost %s" , fqdn );
 
   // if dot on the end
   if (fqdn[len-1] == '.') {
-    LOG<Logging::Log::EventImportance::debug>( "ERORR dots on end" );
+    LOG<Logging::Log::Severity::debug>( "ERORR dots on end" );
     return false;
   }
 
@@ -307,7 +307,7 @@ bool TestDNSHost(
     if (fqdn[i] == '.')
       break;
     else if (isalpha(fqdn[i]) == 0) {
-      LOG<Logging::Log::EventImportance::debug>( "ERORR not tld" );
+      LOG<Logging::Log::Severity::debug>( "ERORR not tld" );
       return false;
     }
   }
@@ -329,7 +329,7 @@ bool TestDNSHost(
 
     // minimal one dot
     if (dot >= 1) {
-      LOG<Logging::Log::EventImportance::debug>( "test OK dots %d" , dot );
+      LOG<Logging::Log::Severity::debug>( "test OK dots %d" , dot );
       return true;
     }
   }
@@ -344,7 +344,7 @@ bool TestInetAddress(
   int t;
 
   t = test_inet_addr(address);
-  LOG<Logging::Log::EventImportance::debug>( "test InetAddress %s -> %d" , address , t );
+  LOG<Logging::Log::Severity::debug>( "test InetAddress %s -> %d" , address , t );
   if (t)
     return true;
   else
@@ -355,13 +355,13 @@ bool TestInetAddress(
 bool TestExDate(
   const char *curExDate, const char * ExDate)
 {
-  LOG<Logging::Log::EventImportance::debug>( "test curExDate [%s] ExDate [%s]" , curExDate , ExDate );
+  LOG<Logging::Log::Severity::debug>( "test curExDate [%s] ExDate [%s]" , curExDate , ExDate );
 
   if (strcmp(curExDate, ExDate) == 0) {
-    LOG<Logging::Log::EventImportance::debug>( "test OK" );
+    LOG<Logging::Log::Severity::debug>( "test OK" );
     return true;
   } else {
-    LOG<Logging::Log::EventImportance::debug>( "test fail " );
+    LOG<Logging::Log::Severity::debug>( "test fail " );
     return false;
   }
 }
@@ -371,7 +371,7 @@ int TestPeriodyInterval(
   int period, int min, int max)
 {
   int mod;
-  LOG<Logging::Log::EventImportance::debug>( "test periody interval perido %d min %d max %d" , period , min , max );
+  LOG<Logging::Log::Severity::debug>( "test periody interval perido %d min %d max %d" , period , min , max );
 
   // period must be in interval
   if (period > 0 && period <= max) {
@@ -415,7 +415,7 @@ long get_price(
 
   price=atol(str);
 
-  LOG<Logging::Log::EventImportance::debug>( "get_price from string[%s] -> %ld hal" , priceStr , price );
+  LOG<Logging::Log::Severity::debug>( "get_price from string[%s] -> %ld hal" , priceStr , price );
 
   return price;
 }
@@ -440,7 +440,7 @@ time_t get_local_format_time_t(
   // convert local time
   t = mktime( &dt);
 
-  LOG<Logging::Log::EventImportance::debug>( "get_local_time_t from [%s] = %ld" , string , t );
+  LOG<Logging::Log::Severity::debug>( "get_local_time_t from [%s] = %ld" , string , t );
   return t;
 }
 
@@ -471,7 +471,7 @@ time_t get_time_t(
     if (t < 0)
       return 0; // fix if  convert fault
 
-    LOG<Logging::Log::EventImportance::debug>( "get_time_t from [%s] = %ld" , string , t );
+    LOG<Logging::Log::Severity::debug>( "get_time_t from [%s] = %ld" , string , t );
     return t;
   }
 
@@ -494,7 +494,7 @@ time_t get_utctime_from_localdate(
   dt.tm_year = year - 1900;
   dt.tm_isdst = -1; // negative if the information is not available ( test dayling saving time )
 
-  LOG<Logging::Log::EventImportance::debug>( "tm_year  %d tm_mon  %d tm_mday %d hour %d min %d sec %d" , dt.tm_year , dt.tm_mon , dt.tm_mday , dt.tm_hour, dt.tm_min , dt.tm_sec );
+  LOG<Logging::Log::Severity::debug>( "tm_year  %d tm_mon  %d tm_mday %d hour %d min %d sec %d" , dt.tm_year , dt.tm_mon , dt.tm_mday , dt.tm_hour, dt.tm_min , dt.tm_sec );
   t = mktime( &dt);
 
   return t;

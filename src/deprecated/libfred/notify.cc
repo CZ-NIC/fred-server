@@ -488,7 +488,7 @@ namespace LibFred
             }
           }
           catch (...) {
-            LOG<Logging::Log::EventImportance::err>(
+            LOG<Logging::Log::Severity::err>(
               "Notfication wasn't successful (state=%d, type=%d)",
               i->state_id, i->type
             );

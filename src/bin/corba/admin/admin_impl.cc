@@ -399,7 +399,7 @@ ccReg::RegistrarList* ccReg_Admin_i::getRegistrars()
     unionFilter->addFilter( new Database::Filters::RegistrarImpl(true) );
     rl->reload(*unionFilter.get());
 
-    LOG<Logging::Log::EventImportance::notice>( "getRegistrars: num -> %d", rl->size() );
+    LOG<Logging::Log::Severity::notice>( "getRegistrars: num -> %d", rl->size() );
     ccReg::RegistrarList* reglist = new ccReg::RegistrarList;
     reglist->length(rl->size());
     for (unsigned i=0; i<rl->size(); i++)
@@ -416,7 +416,7 @@ ccReg::AdminRegistrar* ccReg_Admin_i::getRegistrarById(ccReg::TID id)
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
-  LOG<Logging::Log::EventImportance::notice>( "getRegistarByHandle: id -> %lld", (unsigned long long)id );
+  LOG<Logging::Log::Severity::notice>( "getRegistarByHandle: id -> %lld", (unsigned long long)id );
   if (!id) throw ccReg::Admin::ObjectNotFound();
 
   try {

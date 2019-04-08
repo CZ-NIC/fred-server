@@ -169,60 +169,55 @@ HandlerGrpVector create_expired_domain_gv = boost::assign::list_of
 HandlerPtrGrid global_hpg = gv_list
     (help_gv)(help_dates_gv)
     .addCommandOptions(cog)
-    (config_gv)(loging_gv)(database_gv)(corbans_gv)(registry_gv)(sms_gv)(create_expired_domain_gv)
-    ;
+    (config_gv)(loging_gv)(database_gv)(corbans_gv)(registry_gv)(sms_gv)(create_expired_domain_gv);
 
-
-void setup_admin_logging(CfgArgGroups * cfg_instance_ptr)
+void setup_admin_logging(CfgArgGroups* cfg_instance_ptr)
 {
     HandleLoggingArgsGrp* const handler_ptr = cfg_instance_ptr->get_handler_ptr_by_type<HandleLoggingArgsGrp>();
 
     const auto log_type = static_cast<unsigned>(handler_ptr->get_log_type());
-    Logging::Log::EventImportance min_importance = Logging::Log::EventImportance::trace;
-    if ((log_type == 0) || (log_type == 1))
+    Logging::Log::Severity min_severity = Logging::Log::Severity::trace;
+    switch (handler_ptr->get_log_level())
     {
-        switch (handler_ptr->get_log_level())
-        {
-            case 0:
-                min_importance = Logging::Log::EventImportance::emerg;
-                break;
-            case 1:
-                min_importance = Logging::Log::EventImportance::alert;
-                break;
-            case 2:
-                min_importance = Logging::Log::EventImportance::crit;
-                break;
-            case 3:
-                min_importance = Logging::Log::EventImportance::err;
-                break;
-            case 4:
-                min_importance = Logging::Log::EventImportance::warning;
-                break;
-            case 5:
-                min_importance = Logging::Log::EventImportance::notice;
-                break;
-            case 6:
-                min_importance = Logging::Log::EventImportance::info;
-                break;
-            case 7:
-                min_importance = Logging::Log::EventImportance::debug;
-                break;
-            case 8:
-                min_importance = Logging::Log::EventImportance::trace;
-                break;
-        }
+        case 0:
+            min_severity = Logging::Log::Severity::emerg;
+            break;
+        case 1:
+            min_severity = Logging::Log::Severity::alert;
+            break;
+        case 2:
+            min_severity = Logging::Log::Severity::crit;
+            break;
+        case 3:
+            min_severity = Logging::Log::Severity::err;
+            break;
+        case 4:
+            min_severity = Logging::Log::Severity::warning;
+            break;
+        case 5:
+            min_severity = Logging::Log::Severity::notice;
+            break;
+        case 6:
+            min_severity = Logging::Log::Severity::info;
+            break;
+        case 7:
+            min_severity = Logging::Log::Severity::debug;
+            break;
+        case 8:
+            min_severity = Logging::Log::Severity::trace;
+            break;
     }
 
     switch (log_type)
     {
         case 0:
-            LOGGER.add_handler_of<Logging::Log::Device::console>(min_importance);
+            LOGGER.add_handler_of<Logging::Log::Device::console>(min_severity);
             break;
         case 1:
-            LOGGER.add_handler_of<Logging::Log::Device::file>(handler_ptr->get_log_file(), min_importance);
+            LOGGER.add_handler_of<Logging::Log::Device::file>(handler_ptr->get_log_file(), min_severity);
             break;
         case 2:
-            LOGGER.add_handler_of<Logging::Log::Device::syslog>(handler_ptr->get_log_syslog_facility());
+            LOGGER.add_handler_of<Logging::Log::Device::syslog>(handler_ptr->get_log_syslog_facility(), min_severity);
             break;
     }
 }

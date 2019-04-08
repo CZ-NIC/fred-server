@@ -56,7 +56,7 @@ int main()
 {
   try
   {
-    LOGGER.add_handler_of<Logging::Log::Device::console>(Logging::Log::EventImportance::trace);
+    LOGGER.add_handler_of<Logging::Log::Device::console>(Logging::Log::Severity::trace);
 
     Database::Manager::init(new Database::Factory::Simple<Database::PSQLConnection>(
             std::string("host=localhost dbname=fred user=fred")));
