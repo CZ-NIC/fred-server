@@ -343,7 +343,7 @@ template <typename T, typename C>
 bool does_it_differ(const Nullable<T>& a, const Nullable<T>& b, C&& equal_to)
 {
     return (a.isnull() != b.isnull()) ||
-           (a.isnull() && does_it_differ(a.get_value(), b.get_value(), std::forward<C>(equal_to)));
+           (!a.isnull() && does_it_differ(a.get_value(), b.get_value(), std::forward<C>(equal_to)));
 }
 
 template <typename T, typename C>
@@ -388,7 +388,7 @@ bool validated_data_changed(C&& db_conn, const LibFred::InfoContactData& _c1, co
         return true;
     }
 
-    if (does_it_differ(_c1.organization, _c2.organization, typename std::template equal_to<void>()))
+    if (does_it_differ(_c1.organization, _c2.organization))
     {
         return true;
     }
