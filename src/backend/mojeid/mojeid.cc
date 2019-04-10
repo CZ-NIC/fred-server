@@ -1181,11 +1181,7 @@ void MojeIdImpl::update_contact_prepare(
         }
         const LibFred::InfoContactData current_data = LibFred::InfoContactById(new_data.id).exec(ctx).info_contact_data;
         const LibFred::InfoContactDiff data_changes = LibFred::diff_contact_data(current_data, new_data);
-        const bool name_changed = data_changes.name.isset() &&
-                                  does_it_differ(current_data.name,
-                                                 new_data.name,
-                                                 Util::case_insensitive_equal_to(ctx.get_conn()));
-        if (!(name_changed ||
+        if (!(data_changes.name.isset() ||
               data_changes.organization.isset() ||
               data_changes.vat.isset() ||
               data_changes.personal_id.isset() ||
@@ -1275,6 +1271,10 @@ void MojeIdImpl::update_contact_prepare(
                                               states.presents(LibFred::Object_State::contact_passed_manual_verification);
         if (manual_verification_done)
         {
+            const bool name_changed = data_changes.name.isset() &&
+                                      does_it_differ(current_data.name,
+                                                     new_data.name,
+                                                     Util::case_insensitive_equal_to(ctx.get_conn()));
             const bool cancel_manual_verification = name_changed ||
                                                     data_changes.organization.isset() ||
                                                     data_changes.personal_id.isset() ||
