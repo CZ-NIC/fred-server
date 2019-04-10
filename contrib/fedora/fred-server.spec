@@ -6,7 +6,6 @@ Group:          Applications/Utils
 License:        GPLv3+
 URL:            http://fred.nic.cz
 Source0:        %{name}-%{version}.tar.gz
-Source1:        idl-%{idl_branch}.tar.gz
 Requires(pre):  /usr/sbin/useradd, /usr/bin/getent
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-%(%{__id_u} -n)
 BuildRequires:  git, omniORB-devel, boost-devel, postgresql-devel, gcc-c++, libxml2-devel, libcurl-devel, libidn-devel, mpdecimal-devel, libssh-devel, minizip-devel, openssl-devel, systemd
@@ -24,14 +23,14 @@ CORBA backend server which provides core bussiness logic for its numerous
 clients. 
 
 %prep
-%setup -b 1
+%setup
 
 %build
 %if 0%{?centos}
 %{?scl:scl enable devtoolset-7 llvm-toolset-7 - << \EOF}
 %global __cmake /opt/rh/llvm-toolset-7/root/usr/bin/cmake
 %endif
-%cmake -DCMAKE_INSTALL_PREFIX=/ -DUSE_USR_PREFIX=1 -DDO_NOT_INSTALL_TESTS=1 -DVERSION=%{version} -DIDL_DIR=%{_topdir}/BUILD/idl-%{idl_branch}/idl .
+%cmake -DCMAKE_INSTALL_PREFIX=/ -DUSE_USR_PREFIX=1 -DDO_NOT_INSTALL_TESTS=1 -DVERSION=%{version} .
 %make_build
 %if 0%{?centos}
 %{?scl:EOF}
