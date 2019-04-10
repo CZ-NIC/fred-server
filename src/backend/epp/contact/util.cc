@@ -188,6 +188,10 @@ boost::optional<boost::optional<ContactIdent>> trim(const boost::optional<boost:
 template <>
 Deletable<ContactIdent> trim(const Deletable<ContactIdent>& src)
 {
+    if (src == UpdateOperation::operation_not_specified)
+    {
+        return src;
+    }
     if (src == UpdateOperation::Action::set_value)
     {
         return Deletable<ContactIdent>(Epp::UpdateOperation::set_value(trim(*src)));
