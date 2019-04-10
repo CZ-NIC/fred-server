@@ -285,6 +285,11 @@ unsigned long long update_contact(
         throw EppResponseFailure(parameter_value_policy_errors);
     }
 
+    if (trimmed_change.ident == UpdateOperation::operation_not_specified)
+    {
+        throw EppResponseFailure(EppResultFailure(EppResultCode::Failure::required_parameter_missing));
+    }
+
     // update itself
     {
         LibFred::UpdateContactByHandle updater(contact_handle, session_registrar.handle);

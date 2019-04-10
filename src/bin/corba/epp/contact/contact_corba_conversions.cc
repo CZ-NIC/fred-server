@@ -205,8 +205,8 @@ Epp::Deletable<Epp::Contact::ContactIdent> make_deletable_contact_ident(
     }
     switch (ident_type)
     {
-        case ccReg::EMPTY:
-            return Epp::Deletable<Epp::Contact::ContactIdent>(Epp::UpdateOperation::delete_value());
+        case ccReg::EMPTY://set value of unspecified ident type is prohibited
+            return Epp::UpdateOperation::operation_not_specified;
         case ccReg::OP:
             return Epp::Deletable<Epp::Contact::ContactIdent>(
                     Epp::UpdateOperation::set_value(

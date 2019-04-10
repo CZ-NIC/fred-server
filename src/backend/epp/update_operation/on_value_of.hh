@@ -25,9 +25,27 @@
 
 #include <iosfwd>
 #include <stdexcept>
+#include <utility>
 
 namespace Epp {
 namespace UpdateOperation {
+
+struct OperationNotSpecified
+{
+    OperationNotSpecified() = delete;
+    explicit OperationNotSpecified(int) { }
+    static const OperationNotSpecified& static_instance()
+    {
+        static const OperationNotSpecified singleton(0);
+        return singleton;
+    }
+};
+
+namespace {
+
+const OperationNotSpecified& operation_not_specified = OperationNotSpecified::static_instance();
+
+}//namespace Epp::UpdateOperation::{anonymous}
 
 template <typename T>
 struct OnValueOf
@@ -41,11 +59,15 @@ struct OnValueOf
         using Type = T;
         AnyOf() = default;
         AnyOf(const AnyOf&) = default;
+        AnyOf(AnyOf&&) = default;
+        AnyOf(const OperationNotSpecified&) : operation_(NotSpecified()) { }
         template <typename U>
-        AnyOf(const U& src) : operation_(src) { }
+        AnyOf(U&& src) : operation_(std::forward<U>(src)) { }
         AnyOf& operator=(const AnyOf&) = default;
+        AnyOf& operator=(AnyOf&&) = default;
         template <typename U>
-        AnyOf& operator=(const U& src) { operation_ = src; return *this; }
+        AnyOf& operator=(U&& src) { operation_ = std::forward<U>(src); return *this; }
+        AnyOf& operator=(const OperationNotSpecified&) { operation_ = NotSpecified(); return *this; }
         bool operator==(Action operation)const
         {
             switch (operation)
@@ -62,6 +84,10 @@ struct OnValueOf
         bool operator!=(Action operation)const
         {
             return !this->operator==(operation);
+        }
+        bool operator==(const OperationNotSpecified&)const
+        {
+            return !this->visit(IsSpecified());
         }
         Type operator*()const
         {
@@ -87,11 +113,23 @@ struct OnValueOf
             }
             bool operator()(const NotSpecified&)const
             {
-                struct OperationNotSpecifiedException : std::runtime_error, NotSpecified
+                struct OperationNotSpecifiedException : std::runtime_error
                 {
                     OperationNotSpecifiedException() : std::runtime_error("operation not specified") { }
                 };
                 throw OperationNotSpecifiedException();
+            }
+        };
+        struct IsSpecified : boost::static_visitor<bool>
+        {
+            template <typename X>
+            bool operator()(const X&)const
+            {
+                return true;
+            }
+            bool operator()(const NotSpecified&)const
+            {
+                return false;
             }
         };
         struct GetValue : boost::static_visitor<Type>
@@ -125,7 +163,7 @@ struct OnValueOf
             }
             Type operator()(const NotSpecified&)const
             {
-                struct OperationNotSpecifiedException : std::runtime_error, NotSpecified
+                struct OperationNotSpecifiedException : std::runtime_error
                 {
                     OperationNotSpecifiedException() : std::runtime_error("operation not specified") { }
                 };
@@ -144,26 +182,23 @@ struct OnValueOf
         }
         friend std::ostream& operator<<(std::ostream& out, const AnyOf& operation)
         {
-            try
-            {
-                if (operation == Action::no_operation)
-                {
-                    return out << "no operation";
-                }
-                if (operation == Action::set_value)
-                {
-                    return out << "set value: " << (*operation);
-                }
-                if (operation == Action::delete_value)
-                {
-                    return out << "delete value";
-                }
-                throw std::runtime_error("unexpected operation");
-            }
-            catch (const NotSpecified&)
+            if (operation == operation_not_specified)
             {
                 return out << "not specified";
             }
+            if (operation == Action::no_operation)
+            {
+                return out << "no operation";
+            }
+            if (operation == Action::set_value)
+            {
+                return out << "set value: " << (*operation);
+            }
+            if (operation == Action::delete_value)
+            {
+                return out << "delete value";
+            }
+            throw std::runtime_error("unexpected operation");
         }
     };
 };
