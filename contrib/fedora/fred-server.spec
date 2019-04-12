@@ -8,13 +8,13 @@ URL:            http://fred.nic.cz
 Source0:        %{name}-%{version}.tar.gz
 Requires(pre):  /usr/sbin/useradd, /usr/bin/getent
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-%(%{__id_u} -n)
-BuildRequires:  git, omniORB-devel, boost-devel, postgresql-devel, gcc-c++, libxml2-devel, libcurl-devel, libidn-devel, mpdecimal-devel, libssh-devel, minizip-devel, openssl-devel, systemd
+BuildRequires:  git, omniORB-devel, boost-devel, postgresql-devel >= 9.6, gcc-c++, libxml2-devel, libcurl-devel, libidn-devel, mpdecimal-devel, libssh-devel, minizip-devel, openssl-devel, systemd
 %if 0%{?centos}
 BuildRequires: centos-release-scl, devtoolset-7, devtoolset-7-build, cmake3
 %else
 BuildRequires: cmake
 %endif
-Requires: omniORB, boost, postgresql-libs, libxml2, libcurl, libidn, fred-pyfred, fred-doc2pdf, fred-db, redhat-lsb, mpdecimal, openssl-libs, libxslt
+Requires: omniORB, boost, postgresql-libs >= 9.6, libxml2, libcurl, libidn, fred-pyfred, fred-doc2pdf, fred-db, redhat-lsb, mpdecimal, openssl-libs, libxslt
 
 %description
 FRED (Free Registry for Enum and Domain) is free registry system for 
