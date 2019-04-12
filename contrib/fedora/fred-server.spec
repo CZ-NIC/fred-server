@@ -10,7 +10,7 @@ Requires(pre):  /usr/sbin/useradd, /usr/bin/getent
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-%(%{__id_u} -n)
 BuildRequires:  git, omniORB-devel, boost-devel, postgresql-devel, gcc-c++, libxml2-devel, libcurl-devel, libidn-devel, mpdecimal-devel, libssh-devel, minizip-devel, openssl-devel, systemd
 %if 0%{?centos}
-BuildRequires: centos-release-scl, devtoolset-7, devtoolset-7-build, llvm-toolset-7-cmake, llvm-toolset-7-build
+BuildRequires: centos-release-scl, devtoolset-7, devtoolset-7-build, cmake3
 %else
 BuildRequires: cmake
 %endif
@@ -27,10 +27,11 @@ clients.
 
 %build
 %if 0%{?centos}
-%{?scl:scl enable devtoolset-7 llvm-toolset-7 - << \EOF}
-%global __cmake /opt/rh/llvm-toolset-7/root/usr/bin/cmake
-%endif
+%{?scl:scl enable devtoolset-7 - << \EOF}
+%cmake3 -DCMAKE_INSTALL_PREFIX=/ -DUSE_USR_PREFIX=1 -DDO_NOT_INSTALL_TESTS=1 -DVERSION=%{version} .
+%else
 %cmake -DCMAKE_INSTALL_PREFIX=/ -DUSE_USR_PREFIX=1 -DDO_NOT_INSTALL_TESTS=1 -DVERSION=%{version} .
+%endif
 %make_build
 %if 0%{?centos}
 %{?scl:EOF}
