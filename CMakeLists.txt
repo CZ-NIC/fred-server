@@ -325,8 +325,8 @@ function(compile_idl_files)
             message(FATAL_ERROR "${IDL_DIR}/${idl_name}.idl does not exist; you need to pass -DIDL_DIR")
         endif()
         execute_process(
-            COMMAND ${IDL_PROGRAM} -bcxx -Wbuse_quotes -Wba -C . ${IDL_DIR}/${idl_name}.idl
-            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/src/bin/corba
+            COMMAND ${IDL_PROGRAM} -bcxx -Wbuse_quotes -Wba -C ./src/bin/corba ${IDL_DIR}/${idl_name}.idl
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
             OUTPUT_VARIABLE OMNIIDL_MESSAGE${idl_name})
         message(STATUS ${OMNIIDL_MESSAGE}${idl_name})
     endforeach()
