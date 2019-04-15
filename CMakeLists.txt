@@ -51,6 +51,10 @@ set_default(LIBFRED_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/lib/libfred)
 
 set_default(PACKAGE ${program_name})
 
+if(NOT EXISTS ${LIBFRED_DIR}/CMakeLists.txt)
+    message(FATAL_ERROR "${LIBFRED_DIR}/CMakeLists.txt does not exist; you need to pass -DLIBFRED_DIR")
+endif()
+
 if(NOT TARGET fred-static::library)
     add_subdirectory(${LIBFRED_DIR} ${CMAKE_CURRENT_BINARY_DIR}/external/lib/libfred EXCLUDE_FROM_ALL)
 endif()
