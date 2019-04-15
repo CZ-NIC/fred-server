@@ -201,6 +201,10 @@ Epp::Deletable<Epp::Contact::ContactIdent> make_deletable_contact_ident(
     }
     if (does_contact_change_string_mean_not_to_touch(ident_value))
     {
+        if (ident_type != ccReg::EMPTY)//set ident type without setting of ident value is prohibited
+        {//this case is not accessible through the EPP XML interface stimulation
+            return Epp::UpdateOperation::operation_not_specified;
+        }
         return Epp::Deletable<Epp::Contact::ContactIdent>(Epp::UpdateOperation::no_operation());
     }
     switch (ident_type)
