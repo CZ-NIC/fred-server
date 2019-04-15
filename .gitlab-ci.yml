@@ -101,7 +101,7 @@ build:ubuntu:amd64:
   <<: *build_job
   script:
     - echo "\$PWD=$PWD"
-    - DISTCHECK_CMAKE_FLAGS=-DPostgreSQL_ADDITIONAL_VERSIONS=9.6 cmake -DPostgreSQL_ADDITIONAL_VERSIONS=9.6 -DIDL_DIR=/builds/fred/server/external/idl/idl .
+    - DISTCHECK_CMAKE_FLAGS=-DPostgreSQL_ADDITIONAL_VERSIONS=9.6 cmake -DPostgreSQL_ADDITIONAL_VERSIONS=9.6 .
     - make -j $(($(grep -c processor /proc/cpuinfo) / 2 + 1)) distcheck
 
 build:fedora28:amd64:
@@ -109,7 +109,7 @@ build:fedora28:amd64:
   <<: *build_job
   script:
     - echo "\$PWD=$PWD"
-    - cmake -DIDL_DIR=/builds/fred/server/external/idl/idl .
+    - cmake .
     - make -j $(($(grep -c processor /proc/cpuinfo) / 2 + 1)) distcheck
   only:
     - master
@@ -122,7 +122,7 @@ build:fedora29:amd64:
   <<: *build_job
   script:
     - echo "\$PWD=$PWD"
-    - cmake -DIDL_DIR=/builds/fred/server/external/idl/idl .
+    - cmake .
     - make -j $(($(grep -c processor /proc/cpuinfo) / 2 + 1)) distcheck
   only:
     - master
@@ -135,7 +135,7 @@ build:centos:amd64:
   <<: *build_job
   script:
     - echo "\$PWD=$PWD"
-    - cmake3 -DIDL_DIR=/builds/fred/server/external/idl/idl .
+    - cmake3 .
     - make -j $(($(grep -c processor /proc/cpuinfo) / 2 + 1)) distcheck
   only:
     - master
