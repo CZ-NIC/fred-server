@@ -8,13 +8,13 @@ URL:            http://fred.nic.cz
 Source0:        %{name}-%{version}.tar.gz
 Requires(pre):  /usr/sbin/useradd, /usr/bin/getent
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-%(%{__id_u} -n)
-BuildRequires:  git, omniORB-devel, boost-devel, postgresql-devel, gcc-c++, libxml2-devel, libcurl-devel, libidn-devel, mpdecimal-devel, libssh-devel, minizip-devel, openssl-devel, systemd
+BuildRequires:  git, omniORB-devel, boost-devel, postgresql-devel >= 9.6, gcc-c++, libxml2-devel, libcurl-devel, libidn-devel, mpdecimal-devel, libssh-devel, minizip-devel, openssl-devel, systemd
 %if 0%{?centos}
-BuildRequires: centos-release-scl, devtoolset-7, devtoolset-7-build, llvm-toolset-7-cmake, llvm-toolset-7-build
+BuildRequires: centos-release-scl, devtoolset-7, devtoolset-7-build, cmake3
 %else
 BuildRequires: cmake
 %endif
-Requires: omniORB, boost, postgresql-libs, libxml2, libcurl, libidn, fred-pyfred, fred-doc2pdf, fred-db, redhat-lsb, mpdecimal, openssl-libs, libxslt
+Requires: omniORB, boost, postgresql-libs >= 9.6, libxml2, libcurl, libidn, fred-pyfred, fred-doc2pdf, fred-db, redhat-lsb, mpdecimal, openssl-libs, libxslt
 
 %description
 FRED (Free Registry for Enum and Domain) is free registry system for 
@@ -27,10 +27,11 @@ clients.
 
 %build
 %if 0%{?centos}
-%{?scl:scl enable devtoolset-7 llvm-toolset-7 - << \EOF}
-%global __cmake /opt/rh/llvm-toolset-7/root/usr/bin/cmake
-%endif
+%{?scl:scl enable devtoolset-7 - << \EOF}
+%cmake3 -DCMAKE_INSTALL_PREFIX=/ -DUSE_USR_PREFIX=1 -DDO_NOT_INSTALL_TESTS=1 -DVERSION=%{version} .
+%else
 %cmake -DCMAKE_INSTALL_PREFIX=/ -DUSE_USR_PREFIX=1 -DDO_NOT_INSTALL_TESTS=1 -DVERSION=%{version} .
+%endif
 %make_build
 %if 0%{?centos}
 %{?scl:EOF}
