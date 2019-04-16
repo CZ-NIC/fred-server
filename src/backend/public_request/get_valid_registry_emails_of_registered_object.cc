@@ -103,9 +103,10 @@ std::set<std::string> get_valid_registry_emails_of_registered_object(
 
     for (const auto contact_id : object_contacts)
     {
-        const std::string email_spec = LibFred::InfoContactById(contact_id).exec(_ctx).info_contact_data.email.get_value_or_default();
+        const std::string emails_comma_list =
+            LibFred::InfoContactById(contact_id).exec(_ctx).info_contact_data.email.get_value_or_default();
         std::vector<std::string> emails;
-        boost::split(emails, email_spec, boost::is_any_of(","));
+        boost::split(emails, emails_comma_list, boost::is_any_of(","));
         for (const auto & email: emails)
         {
             const bool email_format_is_valid = DjangoEmailFormat().check(email);
