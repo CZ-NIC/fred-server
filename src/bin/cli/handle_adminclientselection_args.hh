@@ -1327,10 +1327,12 @@ public:
         cfg_opts->add_options()
             ("registrar_add_zone", "add access right for registrar to zone")
             ("zone_fqdn", boost::program_options
-                ::value<Checked::string>()->notifier(save_arg<std::string>(params.zone_fqdn))
+                ::value<Checked::string>()->required()
+                ->notifier(save_arg<std::string>(params.zone_fqdn))
                 , "zone fqdn")
             ("handle", boost::program_options
-                ::value<Checked::string>()->notifier(save_arg<std::string>(params.handle))
+                ::value<Checked::string>()->required()
+                ->notifier(save_arg<std::string>(params.handle))
                 , "registrar handle")
             ("from_date", boost::program_options
                 ::value<Checked::string>()->notifier(save_optional_string(params.from_date))
