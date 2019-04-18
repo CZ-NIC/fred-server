@@ -16,8 +16,11 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+#include "libfred/registrar/zone_access/registrar_zone_access_type.hh"
+
 #include "src/backend/admin/registrar/create_registrar.hh"
 #include "src/backend/admin/registrar/update_epp_auth.hh"
+#include "src/backend/admin/registrar/update_zone_access.hh"
 #include "src/backend/admin/zone/zone.hh"
 #include "src/bin/cli/commonclient.hh"
 #include "src/bin/cli/registrarclient.hh"
@@ -25,6 +28,7 @@
 #include "src/util/types/money.hh"
 
 #include <boost/asio.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/optional.hpp>
 #include <string>
 #include <vector>
@@ -288,17 +292,22 @@ RegistrarClient::registrar_acl_add()
 void
 RegistrarClient::registrar_add_zone()
 {
-    std::string zone = registrar_add_zone_params_.zone_fqdn;//REGISTRAR_ZONE_FQDN_NAME
-    std::string registrar = registrar_add_zone_params_.handle;//REGISTRAR_ADD_HANDLE_NAME
-    Database::Date fromDate;
-    Database::Date toDate;
+    LibFred::Registrar::ZoneAccess::RegistrarZoneAccesses accesses;
+    LibFred::Registrar::ZoneAccess::ZoneAccess zone;
+    zone.zone_fqdn = registrar_add_zone_params_.zone_fqdn;//REGISTRAR_ZONE_FQDN_NAME
+    Database::Date fromDate(boost::gregorian::day_clock::local_day());
     if (registrar_add_zone_params_.from_date.is_value_set()) {//REGISTRAR_FROM_DATE_NAME
         fromDate.from_string(registrar_add_zone_params_.from_date.get_value());
     }
+    zone.from_date = fromDate;
     if (registrar_add_zone_params_.to_date.is_value_set()) {//REGISTRAR_TO_DATE_NAME
+        Database::Date toDate;
         toDate.from_string(registrar_add_zone_params_.to_date.get_value());
+        zone.to_date = toDate;
     }
-    LibFred::Registrar::addRegistrarZone(registrar, zone, fromDate, toDate);
+    accesses.zone_accesses.push_back(zone);
+    accesses.registrar_handle = registrar_add_zone_params_.handle;//REGISTRAR_ADD_HANDLE_NAME
+    Admin::Registrar::update_zone_access(accesses);
     return;
 }
 

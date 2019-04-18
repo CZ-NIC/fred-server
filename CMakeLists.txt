@@ -1983,6 +1983,7 @@ prepare_executable(fred-admin
     src/backend/admin/notification/notification.cc
     src/backend/admin/registrar/create_registrar.cc
     src/backend/admin/registrar/update_epp_auth.cc
+    src/backend/admin/registrar/update_zone_access.cc
     src/backend/admin/zone/zone.cc
     src/backend/buffer.cc
     src/bin/cli/bankclient.cc
