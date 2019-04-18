@@ -51,6 +51,9 @@ set_default(LIBFRED_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/lib/libfred)
 
 set_default(PACKAGE ${program_name})
 
+if(NOT IS_ABSOLUTE ${LIBFRED_DIR})
+    set(LIBFRED_DIR ${CMAKE_BINARY_DIR}/${LIBFRED_DIR})
+endif()
 if(NOT EXISTS ${LIBFRED_DIR}/CMakeLists.txt)
     message(FATAL_ERROR "${LIBFRED_DIR}/CMakeLists.txt does not exist; you need to pass -DLIBFRED_DIR")
 endif()
