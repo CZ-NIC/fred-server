@@ -16,11 +16,13 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
-#include "src/backend/admin/registrar/update_zone_access.hh"
+#include "libfred/opcontext.hh"
 #include "libfred/registrar/zone_access/add_registrar_zone_access.hh"
 #include "libfred/registrar/zone_access/exceptions.hh"
 #include "libfred/registrar/zone_access/update_registrar_zone_access.hh"
-#include "libfred/opcontext.hh"
+#include "src/backend/admin/registrar/update_zone_access.hh"
+#include "src/deprecated/libfred/credit.hh"
+#include "util/db/query_param.hh"
 #include "util/log/context.hh"
 #include "util/log/logger.hh"
 
@@ -113,11 +115,19 @@ void update_zone_access(const LibFred::Registrar::ZoneAccess::RegistrarZoneAcces
             }
             try
             {
-                LibFred::Registrar::ZoneAccess::AddRegistrarZoneAccess(_zones.registrar_handle,
-                        zone.zone_fqdn,
-                        zone.from_date)
-                    .set_to_date(to_date)
-                    .exec(ctx);
+                const unsigned long long zone_access_id =
+                        LibFred::Registrar::ZoneAccess::AddRegistrarZoneAccess(_zones.registrar_handle,
+                                zone.zone_fqdn,
+                                zone.from_date)
+                            .set_to_date(to_date)
+                            .exec(ctx);
+
+                Database::Result res = ctx.get_conn().exec_params(
+                        "SELECT registrarid, zone FROM registrarinvoice where id = $1::bigint",
+                        Database::query_param_list(zone_access_id));
+                const auto reg_id = static_cast<unsigned long long>(res[0]["registrarid"]);
+                const auto zone_id = static_cast<unsigned long long>(res[0]["zone"]);
+                LibFred::Credit::init_new_registrar_credit(reg_id, zone_id);
             }
             catch (const LibFred::Registrar::ZoneAccess::NonexistentRegistrar& e)
             {
