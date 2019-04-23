@@ -154,7 +154,7 @@ void update_epp_auth(const EppAuthData& _auth_data)
         else
         {
             const std::string operation_name = "Libfred::Registrar::EppAuth::UpdateRegistrarEppAuth()";
-            const bool has_mandatory_data = !password.empty() || !certificate.empty();
+            const bool has_mandatory_data = !certificate.empty();
             if (!has_mandatory_data)
             {
                 LOGGER.info(operation_name + "No data for update.");
@@ -163,10 +163,12 @@ void update_epp_auth(const EppAuthData& _auth_data)
             try
             {
                 TRACE("[CALL] " + operation_name);
-                LibFred::Registrar::EppAuth::UpdateRegistrarEppAuth(auth_id)
-                        .set_certificate_fingerprint(certificate)
-                        .set_plain_password(password)
-                        .exec(ctx);
+                auto update_registrar_epp_auth = LibFred::Registrar::EppAuth::UpdateRegistrarEppAuth(auth_id);
+                if (!password.empty() && second_cert.empty())
+                {
+                    update_registrar_epp_auth.set_plain_password(password);
+                }
+                update_registrar_epp_auth.set_certificate_fingerprint(certificate).exec(ctx);
             }
             catch (const LibFred::Registrar::EppAuth::NonexistentRegistrarEppAuth& e)
             {
