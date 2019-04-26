@@ -20,7 +20,7 @@
 #define ACCOUNTING_I_HH_F0DCD580DEA74C35B7172B9034F8FB79
 
 #include "src/bin/corba/Accounting.hh"
-#include "src/bin/corba/IsoDateTime.hh"
+#include "src/bin/corba/NullableIsoDate.hh"
 #include "src/bin/corba/Registry.hh"
 #include "src/deprecated/libfred/banking/bank_manager.hh"
 #include "src/deprecated/libfred/documents.hh"
@@ -58,6 +58,7 @@ public:
     Registry::Accounting::InvoiceReferenceSeq* import_payment_by_registrar_handle(
             const Registry::Accounting::PaymentData& _payment_data,
             const char* _registrar_handle,
+            Registry::NullableIsoDate* _tax_date,
             Registry::Accounting::Credit_out _remaining_credit) override;
 
     Registry::Accounting::RegistrarReferenceSeq* get_registrar_references() override;

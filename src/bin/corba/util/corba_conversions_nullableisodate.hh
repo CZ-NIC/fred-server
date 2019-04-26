@@ -23,6 +23,7 @@
 #include "util/db/nullable.hh"
 
 #include <boost/date_time/gregorian/gregorian_types.hpp>
+#include <boost/optional/optional.hpp>
 
 namespace CorbaConversion {
 namespace Util {
@@ -35,6 +36,15 @@ void
 unwrap_NullableIsoDate_to_Nullable_boost_gregorian_date(
         const Registry::NullableIsoDate* src_ptr,
         Nullable<boost::gregorian::date>& dst);
+
+boost::optional<boost::gregorian::date>
+unwrap_NullableIsoDate_to_optional_boost_gregorian_date(
+        const Registry::NullableIsoDate* src_ptr);
+
+void
+unwrap_NullableIsoDate_to_optional_boost_gregorian_date(
+        const Registry::NullableIsoDate* src_ptr,
+        boost::optional<boost::gregorian::date>& dst);
 
 Registry::NullableIsoDate_var
 wrap_Nullable_boost_gregorian_date_to_NullableIsoDate(

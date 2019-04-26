@@ -28,6 +28,7 @@
 #include "src/deprecated/libfred/banking/bank_manager.hh"
 #include "src/deprecated/libfred/banking/payment_invoices.hh"
 #include "src/deprecated/libfred/banking/exceptions.hh"
+#include "src/deprecated/libfred/invoicing/exceptions.hh"
 #include "libfred/object/object_type.hh"
 #include "libfred/object_state/get_object_states.hh"
 #include "libfred/opcontext.hh"
@@ -392,7 +393,8 @@ PaymentInvoices import_payment(
                         _payment_data.date,
                         _payment_data.memo,
                         _payment_data.creation_time,
-                        no_registrar_handle);
+                        no_registrar_handle,
+                        boost::none);
 
         return convert_vector_of_LibFred_Baking_InvoiceReference_to_Fred_Backend_Accounting_PaymentInvoices(
                 payment_invoices);
@@ -413,6 +415,14 @@ PaymentInvoices import_payment(
     {
         throw InvalidPaymentData();
     }
+    catch (const LibFred::Invoicing::InvalidTaxDateFormat&)
+    {
+        throw InvalidPaymentData(); // tax_date is taken from payment_data.date
+    }
+    catch (const LibFred::Invoicing::TaxDateTooOld&)
+    {
+        throw PaymentTooOld();
+    }
     catch (const LibFred::Banking::PaymentAlreadyProcessed&)
     {
         throw PaymentAlreadyProcessed();
@@ -421,6 +431,7 @@ PaymentInvoices import_payment(
 
 PaymentInvoices import_payment_by_registrar_handle(
         const PaymentData& _payment_data,
+        const boost::optional<boost::gregorian::date>& _tax_date,
         const std::string& _registrar_handle)
 {
     const BankAccount bank_account = BankAccount::from_string(_payment_data.account_number);
@@ -444,7 +455,8 @@ PaymentInvoices import_payment_by_registrar_handle(
                         _payment_data.date,
                         _payment_data.memo,
                         _payment_data.creation_time,
-                        _registrar_handle);
+                        _registrar_handle,
+                        _tax_date);
 
         return convert_vector_of_LibFred_Baking_InvoiceReference_to_Fred_Backend_Accounting_PaymentInvoices(
                 payment_invoices);
@@ -464,6 +476,14 @@ PaymentInvoices import_payment_by_registrar_handle(
     catch (const LibFred::Banking::InvalidPaymentData&)
     {
         throw InvalidPaymentData();
+    }
+    catch (const LibFred::Invoicing::InvalidTaxDateFormat&)
+    {
+        throw InvalidTaxDateFormat();
+    }
+    catch (const LibFred::Invoicing::TaxDateTooOld&)
+    {
+        throw TaxDateTooOld();
     }
     catch (const LibFred::Banking::PaymentAlreadyProcessed&)
     {

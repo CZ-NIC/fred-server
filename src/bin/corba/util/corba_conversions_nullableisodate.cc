@@ -48,6 +48,25 @@ unwrap_NullableIsoDate_to_Nullable_boost_gregorian_date(
     dst = unwrap_NullableIsoDate_to_Nullable_boost_gregorian_date(src_ptr);
 }
 
+boost::optional<boost::gregorian::date>
+unwrap_NullableIsoDate_to_optional_boost_gregorian_date(
+        const Registry::NullableIsoDate* src_ptr)
+{
+    if (src_ptr == nullptr)
+    {
+        return boost::optional<boost::gregorian::date>();
+    }
+    return unwrap_IsoDate_to_boost_gregorian_date(src_ptr->_boxed_in());
+}
+
+void
+unwrap_NullableIsoDate_to_optional_boost_gregorian_date(
+        const Registry::NullableIsoDate* src_ptr,
+        boost::optional<boost::gregorian::date>& dst)
+{
+    dst = unwrap_NullableIsoDate_to_optional_boost_gregorian_date(src_ptr);
+}
+
 Registry::NullableIsoDate_var
 wrap_Nullable_boost_gregorian_date_to_NullableIsoDate(
         const Nullable<boost::gregorian::date>& src)
