@@ -1313,7 +1313,9 @@ try
     else
     {
         TRACE("[CALL] Admin::Registrar::UpdateRegistrar()");
-        registrar_id = ::Admin::Registrar::update_registrar(registrar_handle,
+        registrar_id = _registrar.id;
+        ::Admin::Registrar::update_registrar(registrar_id,
+                LibFred::Corba::unwrap_string(_registrar.handle),
                 LibFred::Corba::unwrap_string(_registrar.name),
                 LibFred::Corba::unwrap_string(_registrar.organization),
                 LibFred::Corba::unwrap_string(_registrar.street1),

@@ -59,6 +59,11 @@ const char* UpdateRegistrarInvalidVarSymb::what() const noexcept
     return "Failed to update registrar bacause the variable symbol already exists.";
 }
 
+const char* UpdateRegistrarInvalidHandle::what() const noexcept
+{
+    return "Failed to update registrar bacause the handle already exists.";
+}
+
 const char* UpdateRegistrarNoUpdateData::what() const noexcept
 {
     return "No data for update registrar.";
@@ -69,7 +74,8 @@ const char* UpdateRegistrarInvalidCountryCode::what() const noexcept
     return "Failed to update registrar due to invalid country code.";
 }
 
-unsigned long long update_registrar(const std::string& _handle,
+unsigned long long update_registrar(const unsigned long long _id,
+                const boost::optional<std::string>& _handle,
                 const boost::optional<std::string>& _name,
                 const boost::optional<std::string>& _organization,
                 const boost::optional<std::string>& _street1,
@@ -91,14 +97,15 @@ unsigned long long update_registrar(const std::string& _handle,
                 boost::optional<bool> _vat_payer)
 {
     LOGGING_CONTEXT(log_ctx);
-    LOGGER.debug("Registrar handle: " + _handle);
+    LOGGER.debug("Registrar id: " + _id);
     const std::string operation_name = "LibFred::Registrar::UpdateRegistrar()";
 
     LibFred::OperationContextCreator ctx;
 
     try {
         TRACE("[CALL] " + operation_name);
-        const unsigned long long id = LibFred::Registrar::UpdateRegistrar(_handle)
+        const unsigned long long id = LibFred::Registrar::UpdateRegistrar(_id)
+            .set_handle(_handle)
             .set_name(_name)
             .set_organization(_organization)
             .set_street1(_street1)
@@ -131,6 +138,11 @@ unsigned long long update_registrar(const std::string& _handle,
     {
         LOGGER.warning(operation_name + e.what());
         throw UpdateRegistrarNonexistent();
+    }
+    catch (const LibFred::Registrar::RegistrarHandleAlreadyExists& e)
+    {
+        LOGGER.warning(operation_name + e.what());
+        throw UpdateRegistrarInvalidHandle();
     }
     catch (const LibFred::Registrar::VariableSymbolAlreadyExists& e)
     {

@@ -42,7 +42,8 @@ BOOST_AUTO_TEST_SUITE(TestAdminUpdateRegistrar)
 
 BOOST_FIXTURE_TEST_CASE(set_nonexistent_registrar, SupplyFixtureCtx<HasNonexistentRegistrarMin>)
 {
-   BOOST_CHECK_THROW(::Admin::Registrar::update_registrar(registrar.handle,
+   BOOST_CHECK_THROW(::Admin::Registrar::update_registrar(registrar.id,
+                registrar.handle,
                 contact.name,
                 merchant.organization,
                 address.street1,
@@ -67,7 +68,8 @@ BOOST_FIXTURE_TEST_CASE(set_nonexistent_registrar, SupplyFixtureCtx<HasNonexiste
 
 BOOST_FIXTURE_TEST_CASE(set_no_update_data, SupplyFixtureCtx<HasExistingRegistrarEmpty>)
 {
-   BOOST_CHECK_THROW(::Admin::Registrar::update_registrar(registrar.handle,
+   BOOST_CHECK_THROW(::Admin::Registrar::update_registrar(registrar.id,
+                registrar.handle,
                 contact.name,
                 merchant.organization,
                 address.street1,
@@ -92,7 +94,8 @@ BOOST_FIXTURE_TEST_CASE(set_no_update_data, SupplyFixtureCtx<HasExistingRegistra
 
 BOOST_FIXTURE_TEST_CASE(set_update_registrar_min, SupplyFixtureCtx<HasExistingRegistrarMin>)
 {
-    registrar.id = ::Admin::Registrar::update_registrar(registrar.handle,
+    registrar.id = ::Admin::Registrar::update_registrar(registrar.id,
+                registrar.handle,
                 contact.name,
                 merchant.organization,
                 address.street1,
@@ -118,7 +121,8 @@ BOOST_FIXTURE_TEST_CASE(set_update_registrar_min, SupplyFixtureCtx<HasExistingRe
 
 BOOST_FIXTURE_TEST_CASE(set_update_registrar_max, SupplyFixtureCtx<HasExistingRegistrarMax>)
 {
-    registrar.id = ::Admin::Registrar::update_registrar(registrar.handle,
+    registrar.id = ::Admin::Registrar::update_registrar(registrar.id,
+                registrar.handle,
                 contact.name,
                 merchant.organization,
                 address.street1,
