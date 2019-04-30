@@ -53,6 +53,11 @@ const char* RegistrarAlreadyExists::what() const noexcept
     return "Registrar already exists in database.";
 }
 
+const char* VariableSymbolAlreadyExists::what() const noexcept
+{
+    return "Variable symbol already exists in database.";
+}
+
 unsigned long long create_registrar(const std::string& _handle,
                 const boost::optional<std::string>& _name,
                 const boost::optional<std::string>& _organization,
@@ -170,6 +175,11 @@ unsigned long long create_registrar(const std::string& _handle,
         {
             LOGGER.warning(operation_name + e.what());
             throw RegistrarAlreadyExists();
+        }
+        if (e.is_set_invalid_registrar_varsymb())
+        {
+            LOGGER.warning(operation_name + e.what());
+            throw VariableSymbolAlreadyExists();
         }
         LOGGER.error(operation_name + e.what());
         throw CreateRegistrarException();
