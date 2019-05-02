@@ -74,7 +74,7 @@ const char* UpdateRegistrarInvalidCountryCode::what() const noexcept
     return "Failed to update registrar due to invalid country code.";
 }
 
-unsigned long long update_registrar(const unsigned long long _id,
+void update_registrar(const unsigned long long _id,
                 const boost::optional<std::string>& _handle,
                 const boost::optional<std::string>& _name,
                 const boost::optional<std::string>& _organization,
@@ -98,13 +98,13 @@ unsigned long long update_registrar(const unsigned long long _id,
 {
     LOGGING_CONTEXT(log_ctx);
     LOGGER.debug("Registrar id: " + _id);
-    const std::string operation_name = "LibFred::Registrar::UpdateRegistrar()";
+    const std::string operation_name = "LibFred::Registrar::UpdateRegistrarById()";
 
     LibFred::OperationContextCreator ctx;
 
     try {
         TRACE("[CALL] " + operation_name);
-        const unsigned long long id = LibFred::Registrar::UpdateRegistrar(_id)
+        LibFred::Registrar::UpdateRegistrarById(_id)
             .set_handle(_handle)
             .set_name(_name)
             .set_organization(_organization)
@@ -127,7 +127,6 @@ unsigned long long update_registrar(const unsigned long long _id,
             .set_vat_payer(_vat_payer)
             .exec(ctx);
         ctx.commit_transaction();
-        return id;
     }
     catch (const LibFred::Registrar::NoUpdateData& e)
     {
@@ -159,7 +158,6 @@ unsigned long long update_registrar(const unsigned long long _id,
         LOGGER.error(operation_name + e.what());
         throw UpdateRegistrarException();
     }
-    throw UpdateRegistrarException();
 }
 
 } // namespace Admin::Registrar

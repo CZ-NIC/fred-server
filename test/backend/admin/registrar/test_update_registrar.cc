@@ -66,10 +66,84 @@ BOOST_FIXTURE_TEST_CASE(set_nonexistent_registrar, SupplyFixtureCtx<HasNonexiste
            ::Admin::Registrar::UpdateRegistrarNonexistent);
 }
 
+BOOST_FIXTURE_TEST_CASE(set_already_existing_handle, SupplyFixtureCtx<HasAlreadyExistingHandle>)
+{
+   BOOST_CHECK_THROW(::Admin::Registrar::update_registrar(second_registrar.registrar.id,
+                first_registrar.registrar.handle,
+                contact.name,
+                merchant.organization,
+                address.street1,
+                address.street2,
+                address.street3,
+                address.city,
+                address.state_or_province,
+                address.postal_code,
+                address.country,
+                contact.telephone,
+                contact.fax,
+                contact.email,
+                contact.url,
+                system,
+                merchant.ico,
+                merchant.dic,
+                merchant.variable_symbol,
+                merchant.payment_memo_regex,
+                merchant.vat_payer),
+           ::Admin::Registrar::UpdateRegistrarInvalidHandle);
+}
+
+BOOST_FIXTURE_TEST_CASE(set_already_existing_varsymb, SupplyFixtureCtx<HasAlreadyExistingVarSymb>)
+{
+    ::Admin::Registrar::update_registrar(first_registrar.registrar.id,
+                first_registrar.registrar.handle,
+                contact.name,
+                merchant.organization,
+                address.street1,
+                address.street2,
+                address.street3,
+                address.city,
+                address.state_or_province,
+                address.postal_code,
+                address.country,
+                contact.telephone,
+                contact.fax,
+                contact.email,
+                contact.url,
+                system,
+                merchant.ico,
+                merchant.dic,
+                merchant.variable_symbol,
+                merchant.payment_memo_regex,
+                merchant.vat_payer);
+   BOOST_CHECK_THROW(::Admin::Registrar::update_registrar(second_registrar.registrar.id,
+                second_registrar.registrar.handle,
+                contact.name,
+                merchant.organization,
+                address.street1,
+                address.street2,
+                address.street3,
+                address.city,
+                address.state_or_province,
+                address.postal_code,
+                address.country,
+                contact.telephone,
+                contact.fax,
+                contact.email,
+                contact.url,
+                system,
+                merchant.ico,
+                merchant.dic,
+                merchant.variable_symbol,
+                merchant.payment_memo_regex,
+                merchant.vat_payer),
+           ::Admin::Registrar::UpdateRegistrarInvalidVarSymb);
+}
+
 BOOST_FIXTURE_TEST_CASE(set_no_update_data, SupplyFixtureCtx<HasExistingRegistrarEmpty>)
 {
+    boost::optional<std::string> empty_handle;
    BOOST_CHECK_THROW(::Admin::Registrar::update_registrar(registrar.id,
-                registrar.handle,
+                empty_handle,
                 contact.name,
                 merchant.organization,
                 address.street1,
@@ -94,7 +168,7 @@ BOOST_FIXTURE_TEST_CASE(set_no_update_data, SupplyFixtureCtx<HasExistingRegistra
 
 BOOST_FIXTURE_TEST_CASE(set_update_registrar_min, SupplyFixtureCtx<HasExistingRegistrarMin>)
 {
-    registrar.id = ::Admin::Registrar::update_registrar(registrar.id,
+    ::Admin::Registrar::update_registrar(registrar.id,
                 registrar.handle,
                 contact.name,
                 merchant.organization,
@@ -121,7 +195,7 @@ BOOST_FIXTURE_TEST_CASE(set_update_registrar_min, SupplyFixtureCtx<HasExistingRe
 
 BOOST_FIXTURE_TEST_CASE(set_update_registrar_max, SupplyFixtureCtx<HasExistingRegistrarMax>)
 {
-    registrar.id = ::Admin::Registrar::update_registrar(registrar.id,
+    ::Admin::Registrar::update_registrar(registrar.id,
                 registrar.handle,
                 contact.name,
                 merchant.organization,

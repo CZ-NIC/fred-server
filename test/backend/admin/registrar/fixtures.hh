@@ -196,6 +196,41 @@ struct HasExistingRegistrarEmpty : ExistingRegistrar
     }
 };
 
+struct HasAlreadyExistingHandle
+{
+    ExistingRegistrar first_registrar;
+    ExistingRegistrar second_registrar;
+    EmptyContactAddress address;
+    EmptyContactData contact;
+    boost::optional<bool> system;
+    EmptyMerchantInformation merchant;
+
+    HasAlreadyExistingHandle(::LibFred::OperationContext& _ctx)
+            : first_registrar(_ctx),
+              second_registrar(_ctx),
+              system(false)
+    {
+    }
+};
+
+struct HasAlreadyExistingVarSymb
+{
+    ExistingRegistrar first_registrar;
+    ExistingRegistrar second_registrar;
+    EmptyContactAddress address;
+    EmptyContactData contact;
+    boost::optional<bool> system;
+    FullMerchantInformation merchant;
+
+    HasAlreadyExistingVarSymb(::LibFred::OperationContext& _ctx)
+            : first_registrar(_ctx),
+              second_registrar(_ctx),
+              system(false),
+              merchant(first_registrar.registrar.handle)
+    {
+    }
+};
+
 struct HasNonexistentRegistrarMin : NonexistentRegistrar
 {
     EmptyContactAddress address;

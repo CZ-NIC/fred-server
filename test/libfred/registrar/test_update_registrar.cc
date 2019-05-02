@@ -56,7 +56,7 @@ BOOST_FIXTURE_TEST_SUITE(TestUpdateRegistrar, SupplyFixtureCtx<update_registrar_
 BOOST_AUTO_TEST_CASE(set_nonexistent_registrar)
 {
     const std::string nonexistentRegistrar = RandomDataGenerator().xstring(13);
-    BOOST_CHECK_THROW(::LibFred::Registrar::UpdateRegistrar(nonexistentRegistrar)
+    BOOST_CHECK_THROW(::LibFred::Registrar::UpdateRegistrarById(nonexistentRegistrar)
             .set_name(registrar.name.get_value())
             .exec(ctx),
            ::LibFred::Registrar::NonExistentRegistrar);
@@ -64,15 +64,15 @@ BOOST_AUTO_TEST_CASE(set_nonexistent_registrar)
 
 BOOST_AUTO_TEST_CASE(set_no_update_registrar_data)
 {
-    BOOST_CHECK_THROW(::LibFred::Registrar::UpdateRegistrar(registrar.handle)
+    BOOST_CHECK_THROW(::LibFred::Registrar::UpdateRegistrarById(registrar.id)
                 .exec(ctx),
            ::LibFred::Registrar::NoUpdateData);
 }
 
 BOOST_AUTO_TEST_CASE(set_registrar_update_min)
 {
-    registrar.id = ::LibFred::Registrar::UpdateRegistrar(registrar.handle)
-            .set_name(registrar.name.get_value())
+    ::LibFred::Registrar::UpdateRegistrarById(registrar.id)
+            .set_handle(registrar.handle.get_value())
             .exec(ctx);
 
     ::LibFred::InfoRegistrarOutput registrar_info = ::LibFred::InfoRegistrarByHandle(registrar.handle).exec(ctx);
@@ -82,6 +82,7 @@ BOOST_AUTO_TEST_CASE(set_registrar_update_min)
 
 BOOST_AUTO_TEST_CASE(set_registrar_update_all)
 {
+    registrar.handle = Nullable<std::string>("new_handle_name");
     registrar.street1 = Nullable<std::string>("STR1");
     registrar.street2 = Nullable<std::string>("str2");
     registrar.street3 = Nullable<std::string>("str3");
@@ -101,7 +102,8 @@ BOOST_AUTO_TEST_CASE(set_registrar_update_all)
     registrar.variable_symbol = Nullable<std::string>("1234567890");
     registrar.vat_payer = true;
 
-    registrar.id = ::LibFred::Registrar::UpdateRegistrar(registrar.handle)
+    ::LibFred::Registrar::UpdateRegistrarById(registrar.id)
+            .set_handle(registrar.handle.get_value())
             .set_name(registrar.name.get_value())
             .set_street1(registrar.street1.get_value())
             .set_street2(registrar.street2.get_value())
