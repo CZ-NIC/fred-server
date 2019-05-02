@@ -78,6 +78,20 @@ unwrap_Registry_Accounting_Credit(
     return Fred::Backend::Credit(LibFred::Corba::unwrap_string_from_const_char_ptr(_credit.value.in()));
 }
 
+boost::optional<boost::gregorian::date>
+unwrap_TaxDate(
+        const Registry::NullableIsoDate* src_ptr)
+{
+    try {
+        return Util::unwrap_NullableIsoDate_to_optional_boost_gregorian_date(src_ptr);
+    }
+    catch (const std::exception& e)
+    {
+        LOGGER.info(e.what());
+        throw InvalidTaxDateFormat();
+    }
+}
+
 Registry::Accounting::PlaceAddress
 wrap_Backend_Accounting_PlaceAddress_to_Registry_Accounting_PlaceAddress(
         const Fred::Backend::Accounting::PlaceAddress& _place_address)

@@ -31,7 +31,13 @@ boost::gregorian::date
 unwrap_IsoDate_to_boost_gregorian_date(
         const Registry::IsoDate src)
 {
-    return boost::gregorian::from_simple_string(src.value.in());
+    try {
+        return boost::gregorian::from_simple_string(src.value.in());
+    }
+    catch (const boost::bad_lexical_cast& e)
+    {
+        throw std::runtime_error("date is invalid");
+    }
 }
 
 void

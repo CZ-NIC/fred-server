@@ -417,11 +417,11 @@ PaymentInvoices import_payment(
     }
     catch (const LibFred::Invoicing::InvalidTaxDateFormat&)
     {
-        throw InvalidPaymentData(); // tax_date is taken from payment_data.date
+        throw InvalidPaymentData(); // tax_date was internally taken from payment_data.date which means from client's point of view, payment_data is invalid
     }
     catch (const LibFred::Invoicing::TaxDateTooOld&)
     {
-        throw PaymentTooOld();
+        throw PaymentTooOld(); // tax_date was internally taken from payment_data.date which means from client's point of view, payment_data is invalid
     }
     catch (const LibFred::Banking::PaymentAlreadyProcessed&)
     {

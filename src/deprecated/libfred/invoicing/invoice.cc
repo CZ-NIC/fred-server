@@ -401,7 +401,8 @@ unsigned long long  createDepositInvoice(boost::gregorian::date tax_date, unsign
         throw InvalidTaxDateFormat();
     }
 
-    if (invoice_date.date() - tax_date > boost::gregorian::days(15))
+    if (invoice_date.date() < tax_date ||
+       (invoice_date.date() - tax_date > boost::gregorian::days(15)))
     {
         throw TaxDateTooOld();
     }
@@ -528,7 +529,8 @@ unsigned long long insert_account_invoice(
     Database::Connection conn = Database::Manager::acquire();
     Database::Transaction tx(conn);
 
-    if ((invoice_date.date() - tax_date) > boost::gregorian::days(15) )
+    if (invoice_date.date() < tax_date ||
+       (invoice_date.date() - tax_date > boost::gregorian::days(15)))
     {
         throw std::runtime_error(
             "insert_account_invoice: invoice_date is more than"

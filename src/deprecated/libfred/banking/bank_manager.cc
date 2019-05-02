@@ -21,6 +21,7 @@
 #include "src/deprecated/libfred/banking/exceptions.hh"
 #include "src/deprecated/libfred/banking/payment_data.hh"
 #include "src/deprecated/libfred/credit.hh"
+#include "src/deprecated/libfred/invoicing/exceptions.hh"
 #include "src/deprecated/libfred/invoicing/invoice.hh"
 #include "src/deprecated/libfred/registrar.hh"
 #include "src/util/types/money.hh"
@@ -241,6 +242,16 @@ public:
             throw;
         }
         catch (const LibFred::Banking::PaymentAlreadyProcessed& e) {
+            LOGGER.info(boost::str(boost::format(
+                            "bank import payment: %1%") % e.what()));
+            throw;
+        }
+        catch (const LibFred::Invoicing::InvalidTaxDateFormat& e) {
+            LOGGER.info(boost::str(boost::format(
+                            "bank import payment: %1%") % e.what()));
+            throw;
+        }
+        catch (const LibFred::Invoicing::TaxDateTooOld& e) {
             LOGGER.info(boost::str(boost::format(
                             "bank import payment: %1%") % e.what()));
             throw;

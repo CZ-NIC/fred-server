@@ -33,7 +33,6 @@
 #include "src/bin/corba/Accounting.hh"
 #include "src/bin/corba/accounting/impl/corba_conversions.hh"
 #include "src/bin/corba/accounting/impl/exceptions.hh"
-#include "src/bin/corba/util/corba_conversions_nullableisodate.hh"
 #include "src/bin/corba/util/corba_conversions_string.hh"
 
 #include <boost/date_time/gregorian/greg_date.hpp>
@@ -193,7 +192,7 @@ Registry::Accounting::InvoiceReferenceSeq* AccountingImpl::import_payment_by_reg
         const Fred::Backend::Accounting::PaymentInvoices payment_invoices =
                 Fred::Backend::Accounting::import_payment_by_registrar_handle(
                         Impl::unwrap_Registry_Accounting_PaymentData(_payment_data),
-                        CorbaConversion::Util::unwrap_NullableIsoDate_to_optional_boost_gregorian_date(_tax_date),
+                        Impl::unwrap_TaxDate(_tax_date),
                         LibFred::Corba::unwrap_string_from_const_char_ptr(_registrar_handle));
 
         const auto credit =
@@ -216,11 +215,15 @@ Registry::Accounting::InvoiceReferenceSeq* AccountingImpl::import_payment_by_reg
     {
         throw Registry::Accounting::INVALID_PAYMENT_DATA();
     }
+    catch (const Impl::InvalidTaxDateFormat&)
+    {
+        throw Registry::Accounting::INVALID_TAX_DATE_FORMAT();
+    }
     catch (const Fred::Backend::Accounting::InvalidTaxDateFormat&)
     {
         throw Registry::Accounting::INVALID_TAX_DATE_FORMAT();
     }
-    catch (const Fred::Backend::Accounting::PaymentTooOld&)
+    catch (const Fred::Backend::Accounting::TaxDateTooOld&)
     {
         throw Registry::Accounting::INVALID_TAX_DATE_VALUE();
     }
