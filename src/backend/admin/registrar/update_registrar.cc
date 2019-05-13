@@ -122,22 +122,22 @@ unsigned long long update_registrar(const std::string& _handle,
         ctx.commit_transaction();
         return id;
     }
-    catch (const ::LibFred::Registrar::NoUpdateData& e)
+    catch (const LibFred::Registrar::NoUpdateData& e)
     {
         LOGGER.info(operation_name + e.what());
         throw UpdateRegistrarNoUpdateData();
     }
-    catch (const ::LibFred::Registrar::NonExistentRegistrar& e)
+    catch (const LibFred::Registrar::NonExistentRegistrar& e)
     {
         LOGGER.warning(operation_name + e.what());
         throw UpdateRegistrarNonexistent();
     }
-    catch (const ::LibFred::Registrar::VariableSymbolAlreadyExists& e)
+    catch (const LibFred::Registrar::VariableSymbolAlreadyExists& e)
     {
         LOGGER.warning(operation_name + e.what());
         throw UpdateRegistrarInvalidVarSymb();
     }
-    catch (const ::LibFred::Registrar::UnknownCountryCode& e)
+    catch (const LibFred::Registrar::UnknownCountryCode& e)
     {
         LOGGER.warning(operation_name + e.what());
         throw UpdateRegistrarInvalidCountryCode();
