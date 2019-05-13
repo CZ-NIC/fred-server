@@ -54,6 +54,11 @@ const char* UpdateRegistrarNonexistent::what() const noexcept
     return "Failed to update registrar because the registrar doesn't exist.";
 }
 
+const char* UpdateRegistrarInvalidVarSymb::what() const noexcept
+{
+    return "Failed to update registrar bacause the variable symbol already exists.";
+}
+
 const char* UpdateRegistrarNoUpdateData::what() const noexcept
 {
     return "No data for update registrar.";
@@ -126,6 +131,11 @@ unsigned long long update_registrar(const std::string& _handle,
     {
         LOGGER.warning(operation_name + e.what());
         throw UpdateRegistrarNonexistent();
+    }
+    catch (const ::LibFred::Registrar::VariableSymbolAlreadyExists& e)
+    {
+        LOGGER.warning(operation_name + e.what());
+        throw UpdateRegistrarInvalidVarSymb();
     }
     catch (const ::LibFred::Registrar::UnknownCountryCode& e)
     {

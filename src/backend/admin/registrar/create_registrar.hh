@@ -36,6 +36,11 @@ struct RegistrarAlreadyExists : std::exception
     const char* what() const noexcept override;
 };
 
+struct VariableSymbolAlreadyExists : std::exception
+{
+    const char* what() const noexcept override;
+};
+
 unsigned long long create_registrar(const std::string& _handle,
                 const boost::optional<std::string>& _name,
                 const boost::optional<std::string>& _organization,

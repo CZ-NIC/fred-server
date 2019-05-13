@@ -36,6 +36,11 @@ struct UpdateRegistrarNonexistent : std::exception
     const char* what() const noexcept override;
 };
 
+struct UpdateRegistrarInvalidVarSymb : std::exception
+{
+    const char* what() const noexcept override;
+};
+
 struct UpdateRegistrarNoUpdateData : std::exception
 {
     const char* what() const noexcept override;
