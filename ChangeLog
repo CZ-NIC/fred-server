@@ -4,6 +4,10 @@
     * add optional custom tax date when specifying registrar manually
     * fix - use account date as tax date when matching registrar automatically
 
+2019-05-02 (2.39.1)
+
+  * Fix CMake (relative path for LIBFRED_DIR)
+
 2019-03-20 (2.39.0)
 
   * License GNU GPLv3+
