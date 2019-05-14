@@ -37,6 +37,11 @@ const char* InvalidPlaceAddress::what() const noexcept
     return "invalid place address";
 }
 
+const char* InvalidTaxDateFormat::what() const noexcept
+{
+    return "invalid tax date format";
+}
+
 } // namespace CorbaConversion::Accounting::Impl
 } // namespace CorbaConversion::Accounting
 } // namespace CorbaConversion

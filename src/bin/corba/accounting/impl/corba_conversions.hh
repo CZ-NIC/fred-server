@@ -26,6 +26,7 @@
 #include "src/backend/accounting/registrar_reference.hh"
 #include "src/backend/credit.hh"
 #include "src/bin/corba/Accounting.hh"
+#include "src/bin/corba/util/corba_conversions_nullableisodate.hh"
 #include "src/util/types/money.hh"
 
 #include <set>
@@ -47,6 +48,10 @@ unwrap_Registry_Accounting_PaymentData(
 Fred::Backend::Credit
 unwrap_Registry_Accounting_Credit(
        Registry::Accounting::Credit _credit);
+
+boost::optional<boost::gregorian::date>
+unwrap_TaxDate(
+        const Registry::NullableIsoDate* src_ptr);
 
 Registry::Accounting::PlaceAddress
 wrap_Backend_Accounting_PlaceAddress_to_Registry_Accounting_PlaceAddress(

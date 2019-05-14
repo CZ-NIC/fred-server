@@ -40,6 +40,11 @@ struct InvalidPlaceAddress : std::exception
     const char* what() const noexcept;
 };
 
+struct InvalidTaxDateFormat : std::exception
+{
+    const char* what() const noexcept;
+};
+
 } // namespace CorbaConversions::Accounting::Impl
 } // namespace CorbaConversions::Accounting
 } // namespace CorbaConversions
