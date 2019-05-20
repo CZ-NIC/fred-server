@@ -71,6 +71,13 @@ BOOST_FIXTURE_TEST_CASE(set_missing_params, SupplyFixtureCtx<HasMissingParams>)
             ::Admin::Registrar::ZoneAccessMissingParameters);
 }
 
+BOOST_FIXTURE_TEST_CASE(set_overlapping_range, SupplyFixtureCtx<HasAddZoneAccessMax>)
+{
+    ::Admin::Registrar::update_zone_access(accesses);
+    BOOST_CHECK_THROW(::Admin::Registrar::update_zone_access(accesses),
+            ::Admin::Registrar::UpdateZoneAccessException);
+}
+
 BOOST_FIXTURE_TEST_CASE(set_zone_access_empty, SupplyFixtureCtx<HasZoneAccessEmpty>)
 {
     ::Admin::Registrar::update_zone_access(accesses);

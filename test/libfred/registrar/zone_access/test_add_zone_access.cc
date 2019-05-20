@@ -80,6 +80,34 @@ BOOST_AUTO_TEST_CASE(set_nonexistent_zone)
             ::LibFred::Registrar::ZoneAccess::NonexistentZone);
 }
 
+BOOST_AUTO_TEST_CASE(set_overlapping_range)
+{
+    ::LibFred::Registrar::ZoneAccess::AddRegistrarZoneAccess(
+            registrar_handle,
+            zone_fqdn,
+            from_date)
+    .exec(ctx),
+    BOOST_CHECK_THROW(
+            ::LibFred::Registrar::ZoneAccess::AddRegistrarZoneAccess(
+                    registrar_handle,
+                    zone_fqdn,
+                    from_date)
+            .exec(ctx),
+            ::LibFred::Registrar::ZoneAccess::OverlappingZoneAccessRange);
+}
+
+BOOST_AUTO_TEST_CASE(set_invalid_from_date)
+{
+    boost::gregorian::date invalid_from_date;
+    BOOST_CHECK_THROW(
+            ::LibFred::Registrar::ZoneAccess::AddRegistrarZoneAccess(
+                    registrar_handle,
+                    zone_fqdn,
+                    invalid_from_date)
+            .exec(ctx),
+            ::LibFred::Registrar::ZoneAccess::InvalidDateFrom);
+}
+
 BOOST_AUTO_TEST_CASE(set_min_add_registrar_zone)
 {
     const unsigned long long id =
