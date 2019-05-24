@@ -121,13 +121,6 @@ void update_zone_access(const LibFred::Registrar::ZoneAccess::RegistrarZoneAcces
                                 zone.from_date)
                             .set_to_date(to_date)
                             .exec(ctx);
-
-                Database::Result res = ctx.get_conn().exec_params(
-                        "SELECT registrarid, zone FROM registrarinvoice where id = $1::bigint",
-                        Database::query_param_list(zone_access_id));
-                const auto reg_id = static_cast<unsigned long long>(res[0]["registrarid"]);
-                const auto zone_id = static_cast<unsigned long long>(res[0]["zone"]);
-                LibFred::Credit::init_new_registrar_credit(reg_id, zone_id);
             }
             catch (const LibFred::Registrar::ZoneAccess::NonexistentRegistrar& e)
             {

@@ -87,20 +87,5 @@ namespace LibFred
              return registrar_credit_transaction_id;
          }
 
-         void init_new_registrar_credit (Database::ID reg_id, Database::ID zone_id) 
-         {
-            Database::Connection conn = Database::Manager::acquire();
-            // init credit for a new registrar to 0
-            conn.exec_params("INSERT INTO registrar_credit (credit, registrar_id, zone_id) VALUES "
-                "(0, "
-                "($1::bigint), "
-                "($2::bigint)) "
-                "ON CONFLICT DO NOTHING",
-                Database::query_param_list
-                        (reg_id)
-                        (zone_id) );
-         }
-
-
     }//namespace Credit
 } // namespace LibFred
