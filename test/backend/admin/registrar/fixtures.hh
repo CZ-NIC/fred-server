@@ -495,26 +495,33 @@ struct HasMoreZoneAccesses : ExistingRegistrar
               zone(_ctx)
     {
         boost::gregorian::date today = boost::gregorian::day_clock::local_day();
-        for (unsigned i = 0; i < 2; ++i)
+        for (unsigned i = 0; i < 7; ++i)
         {
-            zone.zone.from_date = today;
-            accesses.zone_accesses.push_back(zone.zone);
-        }
-        for (unsigned i = 0; i < 3; ++i)
-        {
-            zone.zone.id =
-                    ::LibFred::Registrar::ZoneAccess::AddRegistrarZoneAccess(
-                            registrar.handle,
-                            zone.zone.zone_fqdn,
-                            today)
-                    .exec(_ctx);
-            if (i % 2 == 1 || i == 0)
+            boost::gregorian::date from_date = today + boost::gregorian::date_duration(i*4);
+            boost::gregorian::date to_date = from_date + boost::gregorian::date_duration(3);
+            if (i < 3)
             {
-                zone.zone.from_date = today - boost::gregorian::date_duration(i + 1);
+                zone.zone.id =
+                        ::LibFred::Registrar::ZoneAccess::AddRegistrarZoneAccess(
+                                registrar.handle,
+                                zone.zone.zone_fqdn,
+                                from_date)
+                        .set_to_date(to_date)
+                        .exec(_ctx);
+                if (i % 2 == 1 || i == 0)
+                {
+                    zone.zone.from_date = from_date + boost::gregorian::date_duration(1);
+                }
+                if (i % 2 == 0)
+                {
+                    zone.zone.to_date = to_date - boost::gregorian::date_duration(1);
+                }
             }
-            if (i % 2 == 0)
+            else
             {
-                zone.zone.to_date = today + boost::gregorian::weeks_duration(3);
+                zone.zone.id = 0;
+                zone.zone.from_date = from_date;
+                zone.zone.to_date = to_date;
             }
             accesses.zone_accesses.push_back(zone.zone);
         }
