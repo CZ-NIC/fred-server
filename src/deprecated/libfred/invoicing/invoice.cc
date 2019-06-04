@@ -225,18 +225,23 @@ public:
            " FOR UPDATE "
           , Database::query_param_list(registrar_id)(zone_id));
 
-      if(locked_registrar_credit_result.size() != 1)
+      unsigned long long registrar_credit_id;
+      Money registrar_credit_balance;
+      if(locked_registrar_credit_result.size() == 1)
       {
-          std::string errmsg = str( boost::format("ManagerImpl::charge_operation"
-                  " zone_id %1% registrar_id %2% unable to get registrar_credit")
-          % zone_id % registrar_id );
-
-          LOGGER.error(errmsg);
-          throw std::runtime_error(errmsg);
+          registrar_credit_id = locked_registrar_credit_result[0][0];
+          registrar_credit_balance = std::string(locked_registrar_credit_result[0][1]);
       }
-
-      unsigned long long registrar_credit_id = locked_registrar_credit_result[0][0];
-      Money registrar_credit_balance = std::string(locked_registrar_credit_result[0][1]);
+      else
+      {
+          Database::Result init_registrar_credit_result = conn.exec_params(
+                  "INSERT INTO registrar_credit (credit, registrar_id, zone_id) "
+                  "VALUES (0, $1::bigint, $2::bigint) "
+                  "RETURNING id, credit ",
+                  Database::query_param_list(registrar_id)(zone_id));
+          registrar_credit_id = static_cast<unsigned long long>(init_registrar_credit_result[0][0]);
+          registrar_credit_balance = Decimal("0");
+      }
 
       if(registrar_credit_balance < price && !enable_postpaid_operation)
       {

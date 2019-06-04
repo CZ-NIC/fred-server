@@ -50,9 +50,14 @@ namespace LibFred
              {
                  registrar_credit_id = registrar_credit_id_result[0][0];
              }
-             if(registrar_credit_id == 0)
+             else
              {
-                 throw std::runtime_error("add_credit_to_invoice: registrar_credit not found");
+                 Database::Result init_credit_result = conn.exec_params(
+                             "INSERT INTO registrar_credit (credit, registrar_id, zone_id) "
+                             "VALUES (0, $1::bigint, $2::bigint) "
+                             "RETURNING id ",
+                             Database::query_param_list(registrar_id)(zone_id));
+                 registrar_credit_id = static_cast<unsigned long long>(init_credit_result[0][0]);
              }
 
              Database::Result registrar_credit_transaction_id_result

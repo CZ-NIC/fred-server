@@ -247,11 +247,8 @@ const Decimal get_credit(Database::ID reg_id, Database::ID zone_id)
 
     if(credit_res.size() == 1 && credit_res[0].size() == 1) {
         return Decimal(std::string(credit_res[0][0]));
-    } else {
-        boost::format msg("Credit for registrar %1% and zone %2% not found. ");
-        msg % reg_id % zone_id;
-        throw std::runtime_error(msg.str());
     }
+    return Decimal("0");
 }
 
 void get_vat(int &vat_percent, std::string &vat_koef, date taxdate)
