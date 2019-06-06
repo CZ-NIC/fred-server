@@ -80,6 +80,7 @@
 #include <functional>
 #include <iomanip>
 #include <map>
+#include <type_traits>
 #include <utility>
 
 namespace Fred {
@@ -325,50 +326,123 @@ public:
                 max_sent_letters_,
                 watched_period_in_days_);
     }
-
 private:
     const unsigned max_sent_letters_;
     const unsigned watched_period_in_days_;
 };
 
-} // namespace Fred::Backend::MojeId::check_limits
+} // namespace Fred::Backend::MojeId::{anonymous}::check_limits
 
-template <typename T, typename C>
-bool does_it_differ(const T& a, const T& b, C&& equal_to)
-{
-    return !std::forward<C>(equal_to)(a, b);
-}
+template <typename T>
+auto missing_value_differs_from_existing(T&&);
 
-template <typename T, typename C>
-bool does_it_differ(const Nullable<T>& a, const Nullable<T>& b, C&& equal_to)
+template <typename C>
+class MissingValueDiffersFromExisting
 {
-    return (a.isnull() != b.isnull()) ||
-           (!a.isnull() && does_it_differ(a.get_value(), b.get_value(), std::forward<C>(equal_to)));
-}
+public:
+    MissingValueDiffersFromExisting(MissingValueDiffersFromExisting&& src)
+        : equal_to_(std::move(src.equal_to_)) { }
+    template <typename T>
+    bool operator()(const Nullable<T>& lhs, const Nullable<T>& rhs)const
+    {
+        return (lhs.isnull() == rhs.isnull()) &&
+               (lhs.isnull() || equal_to_(lhs.get_value(), rhs.get_value()));
+    }
+    template <typename T>
+    bool operator()(const Optional<T>& lhs, const Optional<T>& rhs)const
+    {
+        return (lhs.is_set() == rhs.is_set()) &&
+               (!lhs.is_set() || equal_to_(lhs.get_value(), rhs.get_value()));
+    }
+private:
+    explicit MissingValueDiffersFromExisting(C&& comparator)
+        : equal_to_(std::move(comparator)) { }
+    C equal_to_;
+    template <typename T>
+    friend auto missing_value_differs_from_existing(T&&);
+};
 
-template <typename T, typename C>
-bool does_it_differ(const Optional<T>& a, const Optional<T>& b, C&& equal_to)
+template <typename T>
+auto missing_value_as_empty(T&&);
+
+template <typename C>
+class MissingValueAsEmpty
 {
-    return (a.isset() != b.isset()) ||
-           (a.isset() && does_it_differ(a.get_value(), b.get_value(), std::forward<C>(equal_to)));
+public:
+    MissingValueAsEmpty(MissingValueAsEmpty&& src)
+        : equal_to_(std::move(src.equal_to_)) { }
+    template <typename T>
+    bool operator()(const Nullable<T>& lhs, const Nullable<T>& rhs)const
+    {
+        if (lhs.isnull() == rhs.isnull())
+        {
+            return lhs.isnull() || equal_to_(lhs.get_value(), rhs.get_value());
+        }
+        if (lhs.isnull())
+        {
+            return rhs.get_value().empty();
+        }
+        return lhs.get_value().empty();
+    }
+    template <typename T>
+    bool operator()(const Optional<T>& lhs, const Optional<T>& rhs)const
+    {
+        if (lhs.is_set() == rhs.is_set())
+        {
+            return !lhs.is_set() || equal_to_(lhs.get_value(), rhs.get_value());
+        }
+        if (lhs.is_set())
+        {
+            return lhs.get_value().empty();
+        }
+        return rhs.get_value().empty();
+    }
+private:
+    explicit MissingValueAsEmpty(C&& comparator)
+        : equal_to_(std::move(comparator)) { }
+    C equal_to_;
+    template <typename T>
+    friend auto missing_value_as_empty(T&&);
+};
+
+template <typename T>
+auto missing_value_differs_from_existing(T&& comparator)
+{
+    return MissingValueDiffersFromExisting<std::remove_reference_t<T>>(std::forward<T>(comparator));
 }
 
 template <typename T>
-bool does_it_differ(const T& a, const T& b)
+auto missing_value_as_empty(T&& comparator)
 {
-    return does_it_differ(a, b, std::equal_to<void>());
+    return MissingValueAsEmpty<std::remove_reference_t<T>>(std::forward<T>(comparator));
+}
+
+template <typename L, typename R, typename C>
+bool does_it_differ(L&& a, R&& b, C&& equal_to)
+{
+    return !std::forward<C>(equal_to)(std::forward<L>(a), std::forward<R>(b));
+}
+
+template <typename L, typename R>
+bool does_it_differ(L&& a, R&& b)
+{
+    return does_it_differ(std::forward<L>(a), std::forward<R>(b), std::equal_to<void>());
+}
+
+bool does_it_differ(const Nullable<std::string>& a, const Nullable<std::string>& b)
+{
+    return does_it_differ(a, b, missing_value_as_empty(std::equal_to<void>()));
+}
+
+bool does_it_differ(const Optional<std::string>& a, const Optional<std::string>& b)
+{
+    return does_it_differ(a, b, missing_value_as_empty(std::equal_to<void>()));
 }
 
 template <typename T>
-bool does_it_differ(const Nullable<T>& a, const Nullable<T>& b)
+auto case_insensitive(T&& db_conn)
 {
-    return does_it_differ(a, b, std::equal_to<void>());
-}
-
-template <typename T>
-bool does_it_differ(const Optional<T>& a, const Optional<T>& b)
-{
-    return does_it_differ(a, b, std::equal_to<void>());
+    return Util::case_insensitive_equal_to(std::forward<T>(db_conn));
 }
 
 Nullable<boost::gregorian::date> convert_as_birthdate(const Nullable<std::string>& _birth_date)
@@ -383,13 +457,15 @@ Nullable<boost::gregorian::date> convert_as_birthdate(const Nullable<std::string
 template <typename C>
 bool validated_data_changed(C&& db_conn, const LibFred::InfoContactData& _c1, const LibFred::InfoContactData& _c2)
 {
-    if (does_it_differ(_c1.name, _c2.name, ::Util::case_insensitive_equal_to(std::forward<C>(db_conn))))
+    if (does_it_differ(_c1.name, _c2.name, missing_value_as_empty(case_insensitive(std::forward<C>(db_conn)))))
     {
+        LOGGER.debug("case insensitive change of name detected");
         return true;
     }
 
     if (does_it_differ(_c1.organization, _c2.organization))
     {
+        LOGGER.debug("change of organization detected");
         return true;
     }
 
@@ -403,11 +479,13 @@ bool validated_data_changed(C&& db_conn, const LibFred::InfoContactData& _c1, co
         does_it_differ(a1.country, a2.country) ||
         does_it_differ(a1.postalcode, a2.postalcode))
     {
+        LOGGER.debug("change of address detected");
         return true;
     }
 
     if (does_it_differ(_c1.ssntype, _c2.ssntype))
     {
+        LOGGER.debug("change of ssntype detected");
         return true;
     }
 
@@ -415,16 +493,17 @@ bool validated_data_changed(C&& db_conn, const LibFred::InfoContactData& _c1, co
     {
         if (_c1.ssntype.get_value_or_default() != Conversion::Enums::to_db_handle(LibFred::SSNType::birthday))
         {
+            LOGGER.debug("unexpected ssntype detected");
             return true;
         }
         const Nullable<boost::gregorian::date> bd1 = convert_as_birthdate(_c1.ssn);
         const Nullable<boost::gregorian::date> bd2 = convert_as_birthdate(_c2.ssn);
         if (does_it_differ(bd1, bd2))
         {
+            LOGGER.debug("change of birthdate detected");
             return true;
         }
     }
-
     return false;
 }
 
@@ -766,18 +845,18 @@ template <MessageType::Enum MT, CommType::Enum CT>
 template <typename C>
 bool identified_data_changed(C&& db_conn, const LibFred::InfoContactData& _c1, const LibFred::InfoContactData& _c2)
 {
-    if (does_it_differ(_c1.name, _c2.name, Util::case_insensitive_equal_to(std::forward<C>(db_conn))))
+    if (does_it_differ(_c1.name, _c2.name, missing_value_as_empty(case_insensitive(std::forward<C>(db_conn)))))
     {
         return true;
     }
 
     const LibFred::InfoContactData::Address a1 = _c1.get_address<LibFred::ContactAddressType::MAILING>();
     const LibFred::InfoContactData::Address a2 = _c2.get_address<LibFred::ContactAddressType::MAILING>();
-    if (does_it_differ(a1.name, a2.name, Util::case_insensitive_equal_to(std::forward<C>(db_conn))))
+    if (does_it_differ(a1.name, a2.name, missing_value_differs_from_existing(case_insensitive(std::forward<C>(db_conn)))))
     {
         const std::string name1 = a1.name.isset() ? a1.name.get_value() : _c1.name.get_value_or_default();
         const std::string name2 = a2.name.isset() ? a2.name.get_value() : _c2.name.get_value_or_default();
-        if (does_it_differ(name1, name2, Util::case_insensitive_equal_to(std::forward<C>(db_conn))))
+        if (does_it_differ(name1, name2, case_insensitive(std::forward<C>(db_conn))))
         {
             return true;
         }
@@ -1272,9 +1351,10 @@ void MojeIdImpl::update_contact_prepare(
         if (manual_verification_done)
         {
             const bool name_changed = data_changes.name.isset() &&
-                                      does_it_differ(current_data.name,
-                                                     new_data.name,
-                                                     Util::case_insensitive_equal_to(ctx.get_conn()));
+                                      does_it_differ(
+                                              current_data.name,
+                                              new_data.name,
+                                              missing_value_as_empty(case_insensitive(ctx.get_conn())));
             const bool cancel_manual_verification = name_changed ||
                                                     data_changes.organization.isset() ||
                                                     data_changes.personal_id.isset() ||
@@ -1399,22 +1479,25 @@ MojeIdImplData::InfoContact MojeIdImpl::update_transfer_contact_prepare(
             {
                 const LibFred::InfoContactData& c1 = current_data;
                 const LibFred::InfoContactData& c2 = new_data;
-                drop_identification = does_it_differ(c1.name, c2.name, Util::case_insensitive_equal_to(ctx.get_conn()));
+                drop_identification = does_it_differ(
+                        c1.name,
+                        c2.name,
+                        missing_value_as_empty(case_insensitive(ctx.get_conn())));
                 if (!drop_identification)
                 {
                     const LibFred::InfoContactData::Address a1 = c1.get_address<LibFred::ContactAddressType::MAILING>();
                     const LibFred::InfoContactData::Address a2 = c2.get_address<LibFred::ContactAddressType::MAILING>();
                     drop_identification =
-                            does_it_differ(a1.name, a2.name, Util::case_insensitive_equal_to(ctx.get_conn())) ||
-                            (a1.organization.get_value_or_default() != a2.organization.get_value_or_default()) ||
-                            (a1.company_name.get_value_or_default() != a2.company_name.get_value_or_default()) ||
-                            (a1.street1 != a2.street1) ||
-                            (a1.street2.get_value_or_default() != a2.street2.get_value_or_default()) ||
-                            (a1.street3.get_value_or_default() != a2.street3.get_value_or_default()) ||
-                            (a1.city != a2.city) ||
-                            (a1.stateorprovince.get_value_or_default() != a2.stateorprovince.get_value_or_default()) ||
-                            (a1.postalcode != a2.postalcode) ||
-                            (a1.country != a2.country);
+                            does_it_differ(a1.name, a2.name, missing_value_as_empty(case_insensitive(ctx.get_conn()))) ||
+                            does_it_differ(a1.organization, a2.organization) ||
+                            does_it_differ(a1.company_name, a2.company_name) ||
+                            does_it_differ(a1.street1, a2.street1) ||
+                            does_it_differ(a1.street2, a2.street2) ||
+                            does_it_differ(a1.street3, a2.street3) ||
+                            does_it_differ(a1.city, a2.city) ||
+                            does_it_differ(a1.stateorprovince, a2.stateorprovince) ||
+                            does_it_differ(a1.postalcode, a2.postalcode) ||
+                            does_it_differ(a1.country, a2.country);
                 }
             }
             if (states.presents(LibFred::Object_State::conditionally_identified_contact) ||
@@ -1423,8 +1506,8 @@ MojeIdImplData::InfoContact MojeIdImpl::update_transfer_contact_prepare(
                 const LibFred::InfoContactData& c1 = current_data;
                 const LibFred::InfoContactData& c2 = new_data;
                 drop_cond_identification =
-                        (c1.telephone.get_value_or_default() != c2.telephone.get_value_or_default()) ||
-                        (c1.email.get_value_or_default() != c2.email.get_value_or_default());
+                        does_it_differ(c1.telephone, c2.telephone) ||
+                        does_it_differ(c1.email, c2.email);
                 drop_identification |= drop_cond_identification;
             }
             if (drop_cond_identification || drop_identification)
@@ -1432,13 +1515,13 @@ MojeIdImplData::InfoContact MojeIdImpl::update_transfer_contact_prepare(
                 LibFred::StatusList to_cancel;
                 //drop conditionally identified flag if e-mail or mobile changed
                 if (drop_cond_identification &&
-                        states.presents(LibFred::Object_State::conditionally_identified_contact))
+                    states.presents(LibFred::Object_State::conditionally_identified_contact))
                 {
                     to_cancel.insert(Conversion::Enums::to_db_handle(LibFred::Object_State::conditionally_identified_contact));
                 }
                 //drop identified flag if name, mailing address, e-mail or mobile changed
                 if (drop_identification &&
-                        states.presents(LibFred::Object_State::identified_contact))
+                    states.presents(LibFred::Object_State::identified_contact))
                 {
                     to_cancel.insert(Conversion::Enums::to_db_handle(LibFred::Object_State::identified_contact));
                 }
