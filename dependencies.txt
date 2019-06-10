@@ -1,4 +1,4 @@
 # <repository> <commitish> <clone-path>
-fred/libfred 24953-contact-change-detection-fix external/lib/libfred
+fred/libfred 1.0.2 external/lib/libfred
 fred/idl 2.35.0 external/idl
 fred/db 2.37.0 external/db
