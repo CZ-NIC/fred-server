@@ -76,13 +76,16 @@ void create_domain_bill_item(
         = _ctx.get_conn().exec_params(
             // clang-format off
             "SELECT r.handle, "
-            " (SELECT z.fqdn FROM zone z WHERE z.id = $2::bigint), "
-            " (SELECT rc.credit FROM registrar_credit rc "
-            " WHERE rc.registrar_id = $1::bigint "
-            " AND rc.zone_id = $2::bigint "
-            " FOR UPDATE) "
-            "FROM registrar r "
-            "WHERE r.id = $1::bigint ",
+                 "(SELECT z.fqdn "
+                    "FROM zone z "
+                   "WHERE z.id = $2::bigint), "
+                 "(SELECT rc.credit "
+                    "FROM registrar_credit rc "
+                  "WHERE rc.registrar_id = $1::bigint "
+                    "AND rc.zone_id = $2::bigint "
+                    "FOR UPDATE) "
+              "FROM registrar r "
+             "WHERE r.id = $1::bigint ",
             // clang-format on
             Database::query_param_list(_sponsoring_registrar_id)(zone_id));
 
@@ -211,13 +214,16 @@ void renew_domain_bill_item(
             _ctx.get_conn().exec_params(
                     // clang-format off
                     "SELECT r.handle, "
-                    " (SELECT z.fqdn FROM zone z WHERE z.id = $2::bigint), "
-                    " (SELECT rc.credit FROM registrar_credit rc "
-                    " WHERE rc.registrar_id = $1::bigint "
-                    " AND rc.zone_id = $2::bigint "
-                    " FOR UPDATE) "
-                    "FROM registrar r "
-                    "WHERE r.id = $1::bigint ",
+                        "(SELECT z.fqdn "
+                           "FROM zone z "
+                          "WHERE z.id = $2::bigint), "
+                        "(SELECT rc.credit "
+                           "FROM registrar_credit rc "
+                          "WHERE rc.registrar_id = $1::bigint "
+                            "AND rc.zone_id = $2::bigint "
+                            "FOR UPDATE) "
+                      "FROM registrar r "
+                     "WHERE r.id = $1::bigint ",
                     // clang-format on
                     Database::query_param_list(_sponsoring_registrar_id)(zone_id));
 

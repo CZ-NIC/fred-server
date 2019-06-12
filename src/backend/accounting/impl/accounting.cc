@@ -38,6 +38,7 @@
 #include "libfred/registrable_object/nsset/info_nsset.hh"
 #include "libfred/registrar/credit/create_registrar_credit_transaction.hh"
 #include "libfred/registrar/credit/exceptions.hh"
+#include "libfred/zone/exceptions.hh"
 #include "util/log/context.hh"
 #include "util/random.hh"
 #include "src/util/subprocess.hh"
@@ -119,7 +120,7 @@ void change_zone_credit_of_registrar(
     {
         throw RegistrarNotFound();
     }
-    catch (const LibFred::Registrar::Credit::NonexistentZone&)
+    catch (const LibFred::Zone::NonExistentZone&)
     {
         throw ZoneNotFound();
     }
