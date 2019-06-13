@@ -806,6 +806,11 @@ ccReg::DomainDetail* ccReg_Whois_i::getDomainByFQDN(const char* fqdn)
         LOGGER.notice("getDomainByFQDN: ccReg::Whois::ObjectNotFound");
         throw;
     }
+    catch (const LibFred::Zone::idn_conversion_fail&)
+    {
+        LOGGER.info("getDomainByFQDN: IDN conversion failed (fqdn='" + std::string(fqdn) + "')");
+        throw ccReg::Whois::ObjectNotFound();
+    }
     catch (const ccReg::Whois::InternalServerError&)
     {
         LOGGER.error("getDomainByFQDN: ccReg::Whois::InternalServerError");
