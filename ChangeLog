@@ -2,6 +2,8 @@
 
   * MojeID - fix contact data change detection (to avoid dropping contact verification states)
 
+  * Whois - fix log serverity for failed idn conversion of domain name
+
 2019-04-26 (2.40.0)
 
   * Accounting (fred-accifd) - payment import
