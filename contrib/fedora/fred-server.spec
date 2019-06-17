@@ -8,12 +8,18 @@ URL:            http://fred.nic.cz
 Source0:        %{name}-%{version}.tar.gz
 Requires(pre):  /usr/sbin/useradd, /usr/bin/getent
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-%(%{__id_u} -n)
-BuildRequires:  git, omniORB-devel, boost-devel, postgresql-devel >= 9.6, gcc-c++, libxml2-devel, libcurl-devel, libidn-devel, mpdecimal-devel, libssh-devel, minizip-devel, openssl-devel, systemd
+BuildRequires:  git, omniORB-devel, boost-devel, postgresql-devel >= 9.6, gcc-c++, libxml2-devel, libcurl-devel, libidn-devel, mpdecimal-devel, libssh-devel, openssl-devel, systemd
 %if 0%{?centos}
 BuildRequires: centos-release-scl, devtoolset-7, devtoolset-7-build, cmake3
 %else
 BuildRequires: cmake
 %endif
+%if 0%{?fedora} >= 30
+BuildRequires: libpq-devel, postgresql-server-devel, minizip-compat-devel
+%else
+BuildRequires: minizip-devel
+%endif
+
 Requires: omniORB, boost, postgresql-libs >= 9.6, libxml2, libcurl, libidn, fred-pyfred, fred-doc2pdf, fred-db, redhat-lsb, mpdecimal, openssl-libs, libxslt
 
 %description
@@ -43,7 +49,7 @@ rm -rf ${RPM_BUILD_ROOT}
 mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/fred/
 grep ExecStart contrib/fedora/*.service | grep -h -o 'fred-[^/]*\.conf' | while read FILE; do ln -s %{_sysconfdir}/fred/server.conf $RPM_BUILD_ROOT/%{_sysconfdir}/fred/$FILE; done
 mkdir -p $RPM_BUILD_ROOT/%{_unitdir}
-install contrib/fedora/*.service $RPM_BUILD_ROOT/%{_unitdir}
+install -m 644 contrib/fedora/*.service $RPM_BUILD_ROOT/%{_unitdir}
 
 %pre
 /usr/bin/getent passwd fred || /usr/sbin/useradd -r -d /etc/fred -s /bin/bash fred
