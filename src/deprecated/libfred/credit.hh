@@ -44,12 +44,6 @@ namespace LibFred
                 , Money price
                 , unsigned long long invoice_id);
 
-
-            void init_new_registrar_credit (
-                Database::ID reg_id, 
-                Database::ID zone_id
-            );
-
     }//namespace Credit
 } // namespace LibFred
 

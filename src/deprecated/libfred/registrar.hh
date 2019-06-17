@@ -276,13 +276,6 @@ public:
     virtual LibFred::Registrar::Registrar* findId(Database::ID id) const = 0;
 };
 
-//Add access to zone for registrar
-unsigned long addRegistrarZone(
-          const std::string& registrarHandle,
-          const std::string& zone,
-          const Database::Date& fromDate,
-          const Database::Date& toDate);
-
 enum RegCertClass{c0,c1,c2,c3,c4,c5};///classification for registrar certification
 
 /// Registrar certification structure

@@ -74,13 +74,12 @@ BOOST_FIXTURE_TEST_CASE(create_domain_no_credit_record, supply_ctx<HasRegistrarW
 {
     BOOST_TEST_MESSAGE(domain.data.to_string());
 
-    BOOST_CHECK_THROW(
+    BOOST_CHECK_NO_THROW(
         ::Epp::Domain::create_domain_bill_item(domain.data.fqdn,
             domain.data.creation_time,
             registrar.data.id,
             domain.data.id,
-        ctx),
-        std::runtime_error);
+        ctx));
 }
 
 BOOST_FIXTURE_TEST_CASE(create_domain_no_money, supply_ctx<HasRegistrarWithSessionAndDomain>)

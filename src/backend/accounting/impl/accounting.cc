@@ -36,10 +36,9 @@
 #include "libfred/registrable_object/domain/info_domain.hh"
 #include "libfred/registrable_object/keyset/info_keyset.hh"
 #include "libfred/registrable_object/nsset/info_nsset.hh"
-#include "libfred/registrar/info_registrar.hh"
+#include "libfred/registrar/credit/create_registrar_credit_transaction.hh"
+#include "libfred/registrar/credit/exceptions.hh"
 #include "libfred/zone/exceptions.hh"
-#include "libfred/zone/info_zone.hh"
-#include "libfred/zone/info_zone_data.hh"
 #include "util/log/context.hh"
 #include "util/random.hh"
 #include "src/util/subprocess.hh"
@@ -106,63 +105,28 @@ void change_zone_credit_of_registrar(
         const std::string& _zone,
         const Credit& _credit_amount_to_add)
 {
-    try {
-        const auto registrar_id =
-                LibFred::InfoRegistrarByHandle(_registrar_handle)
-                .exec(_ctx).info_registrar_data.id;
-
-        const auto zone_id = LibFred::Zone::get_zone_id(
-                LibFred::Zone::InfoZone(_zone).exec(_ctx));
-
-        const Database::Result registrar_credit_id_result =
-                _ctx.get_conn().exec_params(
-                        // clang-format off
-                        "SELECT id FROM registrar_credit "
-                         "WHERE registrar_id = $1::bigint AND zone_id = $2::bigint",
-                        // clang-format on
-                        Database::query_param_list
-                               (registrar_id)
-                               (zone_id));
-
-        if (registrar_credit_id_result.size() != 1)
-        {
-            throw std::runtime_error("add_credit_to_invoice: registrar_credit not found");
-        }
-        const auto registrar_credit_id = static_cast<unsigned long long>(registrar_credit_id_result[0][0]);
-
-        if (_credit_amount_to_add.value.is_special())
-        {
-            throw InvalidCreditValue();
-        }
-
-        const Database::Result registrar_credit_transaction_id_result =
-                _ctx.get_conn().exec_params(
-                        // clang-format off
-                        "INSERT INTO registrar_credit_transaction "
-                        "(id, balance_change, registrar_credit_id) "
-                        "VALUES (DEFAULT, $1::numeric, $2::bigint) "
-                        "RETURNING id",
-                        // clang-format on
-                        Database::query_param_list
-                                (_credit_amount_to_add.value)
-                                (registrar_credit_id));
-
-        if (registrar_credit_transaction_id_result.size() != 1)
-        {
-            throw std::runtime_error("add_credit_to_invoice: registrar_credit_transaction not found");
-        }
-
-    }
-    catch (const LibFred::InfoRegistrarByHandle::Exception& e)
+    if (_credit_amount_to_add.value.is_special())
     {
-        if (e.is_set_unknown_registrar_handle()) {
-            throw RegistrarNotFound();
-        }
-        throw;
+        throw InvalidCreditValue();
+    }
+
+    try {
+        LibFred::Registrar::Credit::CreateRegistrarCreditTransaction(_registrar_handle,
+                    _zone,
+                    _credit_amount_to_add.value)
+                .exec(_ctx);
+    }
+    catch (const LibFred::Registrar::Credit::NonexistentRegistrar&)
+    {
+        throw RegistrarNotFound();
     }
     catch (const LibFred::Zone::NonExistentZone&)
     {
         throw ZoneNotFound();
+    }
+    catch (const LibFred::Registrar::Credit::NonexistentZoneAccess&)
+    {
+        throw ;
     }
 }
 

@@ -18,6 +18,7 @@
  */
 #include "src/backend/epp/domain/impl/domain_billing.hh"
 #include "src/backend/epp/exception.hh"
+#include "libfred/registrar/credit/create_registrar_credit_transaction.hh"
 #include "libfred/zone/zone.hh"
 #include "util/decimal/decimal.hh"
 
@@ -74,24 +75,30 @@ void create_domain_bill_item(
     const Database::Result locked_registrar_credit_result
         = _ctx.get_conn().exec_params(
             // clang-format off
-            "SELECT id, credit "
-                " FROM registrar_credit "
-                " WHERE registrar_id = $1::bigint "
-                    " AND zone_id = $2::bigint "
-            " FOR UPDATE "
+            "SELECT r.handle, "
+                 "(SELECT z.fqdn "
+                    "FROM zone z "
+                   "WHERE z.id = $2::bigint), "
+                 "(SELECT rc.credit "
+                    "FROM registrar_credit rc "
+                  "WHERE rc.registrar_id = $1::bigint "
+                    "AND rc.zone_id = $2::bigint "
+                    "FOR UPDATE) "
+              "FROM registrar r "
+             "WHERE r.id = $1::bigint ",
             // clang-format on
-            ,
             Database::query_param_list(_sponsoring_registrar_id)(zone_id));
 
     if (locked_registrar_credit_result.size() != 1)
     {
+        std::cout << locked_registrar_credit_result.size() << std::endl;
         _ctx.get_log().error("unable to get registrar_credit");
         throw std::runtime_error("unable to get registrar_credit");
     }
 
-    const unsigned long long registrar_credit_id =
-        static_cast<unsigned long long>(locked_registrar_credit_result[0][0]);
-    const Decimal registrar_credit_balance = static_cast<std::string>(locked_registrar_credit_result[0][1]);
+    const std::string registrar_handle = static_cast<std::string>(locked_registrar_credit_result[0][0]);
+    const std::string zone_fqdn = static_cast<std::string>(locked_registrar_credit_result[0][1]);
+    const Decimal registrar_credit_balance = static_cast<std::string>(locked_registrar_credit_result[0][2]);
 
     if ((price != Decimal("0"))
         && (registrar_credit_balance < price)
@@ -100,26 +107,21 @@ void create_domain_bill_item(
         throw BillingFailure();
     }
 
+    unsigned long long registrar_credit_transaction_id;
     // save info about debt into credit
-    const Database::Result registrar_credit_transaction_result =
-            _ctx.get_conn().exec_params(
-                    // clang-format off
-                    "INSERT INTO registrar_credit_transaction "
-                        " (id, balance_change, registrar_credit_id) "
-                        " VALUES (DEFAULT, $1::numeric , $2::bigint) "
-                    " RETURNING id "
-                    // clang-format on
-                    ,
-                    Database::query_param_list(Decimal("0") - price)(registrar_credit_id));
-
-    if (registrar_credit_transaction_result.size() != 1)
+    try
+    {
+        registrar_credit_transaction_id = LibFred::Registrar::Credit::CreateRegistrarCreditTransaction(
+                                                registrar_handle,
+                                                zone_fqdn,
+                                                Decimal("0") - price)
+                                            .exec(_ctx);
+    }
+    catch (...)
     {
         _ctx.get_log().error("charge_operation: registrar_credit_transaction failed");
         throw std::runtime_error("charge_operation: registrar_credit_transaction failed");
     }
-
-    const unsigned long long registrar_credit_transaction_id =
-        static_cast<unsigned long long>(registrar_credit_transaction_result[0][0]);
 
     // new record to invoice_operation
     _ctx.get_conn().exec_params(
@@ -211,23 +213,30 @@ void renew_domain_bill_item(
     const Database::Result locked_registrar_credit_result =
             _ctx.get_conn().exec_params(
                     // clang-format off
-                    "SELECT id, credit "
-                        " FROM registrar_credit "
-                        " WHERE registrar_id = $1::bigint "
-                            " AND zone_id = $2::bigint "
-                    " FOR UPDATE ",
+                    "SELECT r.handle, "
+                        "(SELECT z.fqdn "
+                           "FROM zone z "
+                          "WHERE z.id = $2::bigint), "
+                        "(SELECT rc.credit "
+                           "FROM registrar_credit rc "
+                          "WHERE rc.registrar_id = $1::bigint "
+                            "AND rc.zone_id = $2::bigint "
+                            "FOR UPDATE) "
+                      "FROM registrar r "
+                     "WHERE r.id = $1::bigint ",
                     // clang-format on
                     Database::query_param_list(_sponsoring_registrar_id)(zone_id));
 
     if (locked_registrar_credit_result.size() != 1)
     {
+        std::cout << locked_registrar_credit_result.size() << std::endl;
         _ctx.get_log().error("unable to get registrar_credit");
         throw std::runtime_error("unable to get registrar_credit");
     }
 
-    const unsigned long long registrar_credit_id =
-        static_cast<unsigned long long>(locked_registrar_credit_result[0][0]);
-    const Decimal registrar_credit_balance = static_cast<std::string>(locked_registrar_credit_result[0][1]);
+    const std::string registrar_handle = static_cast<std::string>(locked_registrar_credit_result[0][0]);
+    const std::string zone_fqdn = static_cast<std::string>(locked_registrar_credit_result[0][1]);
+    const Decimal registrar_credit_balance = static_cast<std::string>(locked_registrar_credit_result[0][2]);
 
     if ((price != Decimal("0"))
         && (registrar_credit_balance < price)
@@ -236,25 +245,21 @@ void renew_domain_bill_item(
         throw BillingFailure();
     }
 
+    unsigned long long registrar_credit_transaction_id;
     // save info about debt into credit
-    const Database::Result registrar_credit_transaction_result =
-            _ctx.get_conn().exec_params(
-                    // clang-format off
-                    "INSERT INTO registrar_credit_transaction "
-                        " (id, balance_change, registrar_credit_id) "
-                        " VALUES (DEFAULT, $1::numeric , $2::bigint) "
-                    " RETURNING id ",
-                    // clang-format on
-                    Database::query_param_list(Decimal("0") - price)(registrar_credit_id));
-
-    if (registrar_credit_transaction_result.size() != 1)
+    try
+    {
+        registrar_credit_transaction_id = LibFred::Registrar::Credit::CreateRegistrarCreditTransaction(
+                                                registrar_handle,
+                                                zone_fqdn,
+                                                Decimal("0") - price)
+                                            .exec(_ctx);
+    }
+    catch (...)
     {
         _ctx.get_log().error("charge_operation: registrar_credit_transaction failed");
         throw std::runtime_error("charge_operation: registrar_credit_transaction failed");
     }
-
-    const unsigned long long registrar_credit_transaction_id =
-        static_cast<unsigned long long>(registrar_credit_transaction_result[0][0]);
 
     // new record to invoice_operation
     _ctx.get_conn().exec_params(

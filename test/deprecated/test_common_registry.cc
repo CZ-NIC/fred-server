@@ -34,6 +34,7 @@
 
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/assign/list_of.hpp>
 #include <boost/algorithm/string.hpp>
@@ -115,16 +116,15 @@ LibFred::Registrar::Registrar::AutoPtr createTestRegistrarClass()
     registrar->setId(registrar_id);
     const unsigned long long epp_auth_id =
             ::LibFred::Registrar::EppAuth::AddRegistrarEppAuth(registrar_handle, "", "").exec(ctx);
-    ctx.commit_transaction();
     registrar_acl->setId(epp_auth_id);
 
     //add registrar into zone
     std::string rzzone ("cz");//REGISTRAR_ZONE_FQDN_NAME
-    Database::Date rzfromDate;
-    Database::Date rztoDate;
-    ::LibFred::Registrar::addRegistrarZone(registrar_handle, rzzone, rzfromDate, rztoDate);
-    ::LibFred::Registrar::addRegistrarZone(registrar_handle, "0.2.4.e164.arpa", rzfromDate, rztoDate);
-
+    boost::gregorian::date rzfromDate(boost::gregorian::day_clock::local_day());
+    ::LibFred::Registrar::ZoneAccess::AddRegistrarZoneAccess(registrar_handle, rzzone, rzfromDate).exec(ctx);
+    ::LibFred::Registrar::ZoneAccess::AddRegistrarZoneAccess(registrar_handle, "0.2.4.e164.arpa", rzfromDate)
+            .exec(ctx);
+    ctx.commit_transaction();
     return registrar;
 }
 
@@ -247,11 +247,8 @@ const Decimal get_credit(Database::ID reg_id, Database::ID zone_id)
 
     if(credit_res.size() == 1 && credit_res[0].size() == 1) {
         return Decimal(std::string(credit_res[0][0]));
-    } else {
-        boost::format msg("Credit for registrar %1% and zone %2% not found. ");
-        msg % reg_id % zone_id;
-        throw std::runtime_error(msg.str());
     }
+    return Decimal("0");
 }
 
 void get_vat(int &vat_percent, std::string &vat_koef, date taxdate)
