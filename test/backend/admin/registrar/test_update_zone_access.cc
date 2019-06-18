@@ -18,12 +18,13 @@
  */
 #include "src/backend/admin/registrar/update_zone_access.hh"
 #include "libfred/opcontext.hh"
-#include "libfred/registrar/zone_access/get_registrar_zone_access.hh"
+#include "libfred/registrar/zone_access/get_zone_access_history.hh"
 #include "test/backend/admin/registrar/fixtures.hh"
 #include "test/setup/fixtures.hh"
 
 #include <boost/test/unit_test.hpp>
 #include <boost/test/test_tools.hpp>
+
 #include <vector>
 
 namespace Test {
@@ -36,9 +37,25 @@ BOOST_AUTO_TEST_SUITE(TestUpdateZoneAccess)
 std::vector<::LibFred::Registrar::ZoneAccess::ZoneAccess> getNewZoneAccess(const std::string& _handle)
 {
     ::LibFred::OperationContextCreator ctx;
-    const ::LibFred::Registrar::ZoneAccess::RegistrarZoneAccesses& new_accesses =
-            ::LibFred::Registrar::ZoneAccess::GetZoneAccess(_handle).exec(ctx);
-    return new_accesses.zone_accesses;
+    const ::LibFred::Registrar::ZoneAccess::RegistrarZoneAccessHistory zone_access =
+            ::LibFred::Registrar::ZoneAccess::GetZoneAccessHistory(_handle).exec(ctx);
+    std::vector<::LibFred::Registrar::ZoneAccess::ZoneAccess> new_accesses;
+    for (const auto& zone_invoices : zone_access.invoices_by_zone)
+    {
+        for (const auto& date_invoice_id : zone_invoices.second)
+        {
+            ::LibFred::Registrar::ZoneAccess::ZoneAccess access;
+            access.zone_fqdn = zone_invoices.first;
+            access.id = get_raw_value_from(date_invoice_id.second);
+            access.from_date = date_invoice_id.first.from_date;
+            if (date_invoice_id.first.to_date != boost::none)
+            {
+                access.to_date = *date_invoice_id.first.to_date;
+            }
+            new_accesses.push_back(access);
+        }
+    }
+    return new_accesses;
 }
 
 BOOST_FIXTURE_TEST_CASE(set_noexistent_registrar, SupplyFixtureCtx<HasZoneAccessWithNonexistentRegistrar>)
