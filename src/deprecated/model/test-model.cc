@@ -17,6 +17,7 @@
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include "src/deprecated/model/model_filters.hh"
+#include "util/log/add_log_device.hh"
 #include "util/log/logger.hh"
 #include "libfred/opcontext.hh"
 
@@ -72,7 +73,7 @@ int main(int argc, char* argv[])
 {
     try
     {
-        LOGGER.add_handler_of<Logging::Log::Device::console>(Logging::Log::Severity::debug);
+        Logging::add_console_device(LOGGER, Logging::Log::Severity::debug);
 
         //Zone Test
         bool at_least_one = false;

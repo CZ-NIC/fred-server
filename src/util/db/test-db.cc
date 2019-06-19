@@ -16,6 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
+#include "util/log/add_log_device.hh"
 #include "util/log/logger.hh"
 #include "util/log/context.hh"
 
@@ -56,7 +58,7 @@ int main()
 {
   try
   {
-    LOGGER.add_handler_of<Logging::Log::Device::console>(Logging::Log::Severity::trace);
+    Logging::add_console_device(LOGGER, Logging::Log::Severity::trace);
 
     Database::Manager::init(new Database::Factory::Simple<Database::PSQLConnection>(
             std::string("host=localhost dbname=fred user=fred")));

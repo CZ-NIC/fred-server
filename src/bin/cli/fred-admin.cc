@@ -18,6 +18,7 @@
  */
 #include "libfred/db_settings.hh"
 #include "src/util/corba_wrapper.hh"
+#include "util/log/add_log_device.hh"
 #include "util/log/logger.hh"
 #include "util/log/context.hh"
 #include "src/bin/corba/connection_releaser.hh"
@@ -211,13 +212,13 @@ void setup_admin_logging(CfgArgGroups* cfg_instance_ptr)
     switch (log_type)
     {
         case 0:
-            LOGGER.add_handler_of<Logging::Log::Device::console>(min_severity);
+            Logging::add_console_device(LOGGER, min_severity);
             break;
         case 1:
-            LOGGER.add_handler_of<Logging::Log::Device::file>(handler_ptr->get_log_file(), min_severity);
+            Logging::add_file_device(LOGGER, handler_ptr->get_log_file(), min_severity);
             break;
         case 2:
-            LOGGER.add_handler_of<Logging::Log::Device::syslog>(handler_ptr->get_log_syslog_facility(), min_severity);
+            Logging::add_syslog_device(LOGGER, handler_ptr->get_log_syslog_facility(), min_severity);
             break;
     }
 }

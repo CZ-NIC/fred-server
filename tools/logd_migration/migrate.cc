@@ -20,6 +20,7 @@
 
 //#include "conf/manager.h"
 
+#include "util/log/add_log_device.hh"
 #include "util/log/logger.hh"
 
 #include "util/util.hh"
@@ -100,7 +101,7 @@ int main()
         signal(6, signal_handler);
 
         // setup loggin via LOGGER
-        LOGGER.add_handler_of<Logging::Log::Device::file>(LOG_FILENAME, Logging::Log::Severity::trace);
+        Logging::add_file_device(LOGGER, LOG_FILENAME, Logging::Log::Severity::trace);
         LOGGER.info("Logging initialized for migration");
 
         // TODO is this safe?

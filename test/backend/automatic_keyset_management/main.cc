@@ -37,6 +37,7 @@
 #include "src/util/cfg/handle_adifd_args.hh"
 #include "src/util/cfg/handle_akmd_args.hh"
 
+#include "util/log/add_log_device.hh"
 #include "util/log/logger.hh"
 
 #include <boost/assign/list_of.hpp>
@@ -110,13 +111,13 @@ void handle_command_line_args::setup_logging(CfgArgs *cfg_instance_ptr)
     switch (log_type)
     {
         case 0:
-            LOGGER.add_handler_of<Logging::Log::Device::console>(min_severity);
+            Logging::add_console_device(LOGGER, min_severity);
             break;
         case 1:
-            LOGGER.add_handler_of<Logging::Log::Device::file>(handler_ptr->log_file, min_severity);
+            Logging::add_file_device(LOGGER, handler_ptr->log_file, min_severity);
             break;
         case 2:
-            LOGGER.add_handler_of<Logging::Log::Device::syslog>(handler_ptr->log_syslog_facility, min_severity);
+            Logging::add_syslog_device(LOGGER, handler_ptr->log_syslog_facility, min_severity);
             break;
     }
 }
