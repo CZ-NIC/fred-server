@@ -22,10 +22,10 @@ docker:server:ubuntu:
     IMAGE_NAME: ubuntu:16.04
     IMAGE_TAG: $CI_REGISTRY_IMAGE/$IMAGE_NAME
 
-docker:server:fedora28:
+docker:server:fedora29:
   <<: *image
   variables:
-    IMAGE_NAME: fedora:28
+    IMAGE_NAME: fedora:29
     IMAGE_TAG: $CI_REGISTRY_IMAGE/$IMAGE_NAME
   only:
     - master
@@ -33,10 +33,10 @@ docker:server:fedora28:
     - schedules
     - web
 
-docker:server:fedora29:
+docker:server:fedora30:
   <<: *image
   variables:
-    IMAGE_NAME: fedora:29
+    IMAGE_NAME: fedora:30
     IMAGE_TAG: $CI_REGISTRY_IMAGE/$IMAGE_NAME
   only:
     - master
@@ -62,15 +62,15 @@ docker:server:centos:
     - builder
     - linux
 
-.fedora_28: &fedora_28
-  image: "$CI_REGISTRY/fred/server/fedora:28"
+.fedora_29: &fedora_29
+  image: "$CI_REGISTRY/fred/server/fedora:29"
   tags:
     - amd64
     - builder
     - linux
 
-.fedora_29: &fedora_29
-  image: "$CI_REGISTRY/fred/server/fedora:29"
+.fedora_30: &fedora_30
+  image: "$CI_REGISTRY/fred/server/fedora:30"
   tags:
     - amd64
     - builder
@@ -104,8 +104,8 @@ build:ubuntu:amd64:
     - DISTCHECK_CMAKE_FLAGS=-DPostgreSQL_ADDITIONAL_VERSIONS=9.6 cmake -DPostgreSQL_ADDITIONAL_VERSIONS=9.6 .
     - make -j $(($(grep -c processor /proc/cpuinfo) / 2 + 1)) distcheck
 
-build:fedora28:amd64:
-  <<: *fedora_28
+build:fedora29:amd64:
+  <<: *fedora_29
   <<: *build_job
   script:
     - echo "\$PWD=$PWD"
@@ -117,8 +117,8 @@ build:fedora28:amd64:
     - schedules
     - web
 
-build:fedora29:amd64:
-  <<: *fedora_29
+build:fedora30:amd64:
+  <<: *fedora_30
   <<: *build_job
   script:
     - echo "\$PWD=$PWD"
