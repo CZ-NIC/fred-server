@@ -24,8 +24,10 @@
 #include "src/backend/epp/epp_response_failure.hh"
 #include "src/backend/epp/param.hh"
 #include "src/backend/epp/reason.hh"
+#include "src/backend/epp/poll/poll_request.hh"
 
 #include <boost/algorithm/string/case_conv.hpp>
+#include <boost/variant/get.hpp>
 #include <boost/assign/list_of.hpp>
 #include <boost/test/unit_test.hpp>
 
@@ -189,6 +191,71 @@ BOOST_FIXTURE_TEST_CASE(ok_states_are_upgraded, supply_ctx<HasRegistrarWithSessi
             object_states_after.end()
         );
     }
+}
+
+BOOST_FIXTURE_TEST_CASE(ok_system_registrar_different_domain, supply_ctx<HasSystemRegistrarWithSessionAndDifferentRegistrar>)
+{
+    Domain domain(ctx, different_registrar.data.handle);
+
+    ::Epp::Domain::delete_domain(
+        ctx,
+        domain.data.fqdn,
+        DefaultDeleteDomainConfigData(),
+        session.data
+    );
+
+    const auto info_domain_data = ::LibFred::InfoDomainHistoryById(domain.data.id).exec(ctx).rbegin()->info_domain_data;
+    BOOST_CHECK_EQUAL(
+        info_domain_data.delete_time.isnull(),
+        false
+    );
+
+    try
+    {
+        const auto poll_msg = ::Epp::Poll::poll_request(ctx, different_registrar.data.id);
+        const auto event = boost::get<::Epp::Poll::MessageEvent>(poll_msg.message);
+        const auto delete_event = boost::get<::Epp::Poll::MessageEvent::Data<::Epp::Poll::MessageEvent::DeleteDomain>>(event.message);
+        BOOST_CHECK_EQUAL(delete_event.handle, domain.data.fqdn);
+        BOOST_CHECK_EQUAL(delete_event.date, info_domain_data.delete_time.get_value().date());
+    }
+    catch (...)
+    {
+        BOOST_FAIL("Unable to get delete domain poll message");
+    }
+}
+
+BOOST_FIXTURE_TEST_CASE(ok_system_registrar_domain_lock_delete, supply_ctx<HasSystemRegistrarWithSessionAndDifferentRegistrar>)
+{
+    DomainWithStatusServerDeleteProhibited domain(ctx, different_registrar.data.handle);
+
+    ::Epp::Domain::delete_domain(
+        ctx,
+        domain.data.fqdn,
+        DefaultDeleteDomainConfigData(),
+        session.data
+    );
+
+    BOOST_CHECK_EQUAL(
+        ::LibFred::InfoDomainHistoryById(domain.data.id).exec(ctx).rbegin()->info_domain_data.delete_time.isnull(),
+        false
+    );
+}
+
+BOOST_FIXTURE_TEST_CASE(ok_system_registrar_domain_lock_update, supply_ctx<HasSystemRegistrarWithSessionAndDifferentRegistrar>)
+{
+    DomainWithStatusServerUpdateProhibited domain(ctx, different_registrar.data.handle);
+
+    ::Epp::Domain::delete_domain(
+        ctx,
+        domain.data.fqdn,
+        DefaultDeleteDomainConfigData(),
+        session.data
+    );
+
+    BOOST_CHECK_EQUAL(
+        ::LibFred::InfoDomainHistoryById(domain.data.id).exec(ctx).rbegin()->info_domain_data.delete_time.isnull(),
+        false
+    );
 }
 
 BOOST_AUTO_TEST_SUITE_END();
