@@ -17,6 +17,6 @@ RUN dnf -y clean all                  \
                   openssl-devel       \
                   minizip-devel       \
                   omniORB-devel
-RUN rpm -Uvh https://yum.postgresql.org/9.6/fedora/fedora-29-x86_64/pgdg-fedora96-9.6-4.noarch.rpm \
+RUN rpm -Uvh https://download.postgresql.org/pub/repos/yum/reporpms/F-29-x86_64/pgdg-fedora-repo-latest.noarch.rpm \
         && dnf -y update \
         && dnf -y install postgresql96-devel
