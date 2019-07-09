@@ -1,4 +1,4 @@
 # <repository> <commitish> <clone-path>
-fred/libfred 24705-simplify external/lib/libfred
+fred/libfred 3.0.0 external/lib/libfred
 fred/idl 2.35.0 external/idl
 fred/db 2.37.0 external/db
