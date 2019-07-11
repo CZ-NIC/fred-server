@@ -14,7 +14,6 @@ stages:
     - docker push "$IMAGE_TAG"
   tags:
     - dind
-    - old
 
 docker:server:ubuntu:
   <<: *image
