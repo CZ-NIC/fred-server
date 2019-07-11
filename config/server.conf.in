@@ -118,7 +118,7 @@ fileclient_path = @BINDIR@/filemanager_client
 registry_timezone = Europe/Prague
 
 # handle of registrar with system privileges for restricted actions
-system_registrar = REG-CZNIC
+system_registrar = REG-SYSTEM
 
 ################################################################################
 ## Daemon-specific settings
@@ -258,8 +258,8 @@ list_contacts_limit=5000
 ### AKMD (Automatic Keyset Management) settings
 [akmd]
 automatically_managed_keyset_prefix = AUTO-
-automatically_managed_keyset_registrar = REG-FRED_C
-automatically_managed_keyset_tech_contact = KONTAKT
+automatically_managed_keyset_registrar = REG-SYSTEM
+automatically_managed_keyset_tech_contact = AKM-CONTACT
 # use the following option for each domain zone which is permitted for automatic keyset management
 # (use the option multiple times for multiple zones)
 automatically_managed_keyset_zones = cz
