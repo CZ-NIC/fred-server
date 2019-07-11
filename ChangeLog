@@ -1,3 +1,7 @@
+2019-07-11 (2.40.3)
+
+  * Fix configuration according to documented instalation procedure
+
 2019-06-19 (2.40.2)
 
   * Fix rpm build (fedora 30)
