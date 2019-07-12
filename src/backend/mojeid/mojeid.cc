@@ -1473,6 +1473,7 @@ MojeIdImplData::InfoContact MojeIdImpl::update_transfer_contact_prepare(
         const LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_contact(ctx, new_data.id);
         bool drop_identification = false;
         bool drop_cond_identification = false;
+        bool drop_validation = false;
         unsigned long long history_id;
         {
             if (states.presents(LibFred::Object_State::identified_contact))
@@ -1501,7 +1502,7 @@ MojeIdImplData::InfoContact MojeIdImpl::update_transfer_contact_prepare(
                 }
             }
             if (states.presents(LibFred::Object_State::conditionally_identified_contact) ||
-                    (!drop_identification && states.presents(LibFred::Object_State::identified_contact)))
+                (!drop_identification && states.presents(LibFred::Object_State::identified_contact)))
             {
                 const LibFred::InfoContactData& c1 = current_data;
                 const LibFred::InfoContactData& c2 = new_data;
@@ -1510,7 +1511,11 @@ MojeIdImplData::InfoContact MojeIdImpl::update_transfer_contact_prepare(
                         does_it_differ(c1.email, c2.email);
                 drop_identification |= drop_cond_identification;
             }
-            if (drop_cond_identification || drop_identification)
+            if (states.presents(LibFred::Object_State::validated_contact))
+            {
+                drop_validation = validated_data_changed(ctx.get_conn(), current_data, new_data);
+            }
+            if (drop_cond_identification || drop_identification || drop_validation)
             {
                 LibFred::StatusList to_cancel;
                 //drop conditionally identified flag if e-mail or mobile changed
@@ -1524,6 +1529,10 @@ MojeIdImplData::InfoContact MojeIdImpl::update_transfer_contact_prepare(
                     states.presents(LibFred::Object_State::identified_contact))
                 {
                     to_cancel.insert(Conversion::Enums::to_db_handle(LibFred::Object_State::identified_contact));
+                }
+                if (drop_validation)
+                {
+                    to_cancel.insert(Conversion::Enums::to_db_handle(LibFred::Object_State::validated_contact));
                 }
                 if (!to_cancel.empty())
                 {
@@ -1573,6 +1582,14 @@ MojeIdImplData::InfoContact MojeIdImpl::update_transfer_contact_prepare(
             //perform changes
             LibFred::UpdateContactById update_contact_op(new_data.id, mojeid_registrar_.handle());
             set_update_contact_op(LibFred::diff_contact_data(current_data, new_data), update_contact_op);
+            const bool is_identified = states.presents(LibFred::Object_State::identified_contact) && !drop_identification;
+            const bool is_validated = states.presents(LibFred::Object_State::validated_contact) && !drop_validation;
+            const bool addr_can_be_hidden = (is_identified || is_validated) &&
+                                            new_data.organization.get_value_or_default().empty();
+            if (!addr_can_be_hidden)
+            {
+                update_contact_op.set_discloseaddress(true);
+            }
             if (0 < _log_request_id)
             {
                 update_contact_op.set_logd_request_id(_log_request_id);
