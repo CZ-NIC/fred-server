@@ -323,10 +323,10 @@ struct ContactWithStatus
     }
 };
 
-struct ContactWithServerDeleteProhibited
+struct ContactWithStatusServerDeleteProhibited
     : ContactWithStatus
 {
-    ContactWithServerDeleteProhibited(
+    ContactWithStatusServerDeleteProhibited(
             ::LibFred::OperationContext& _ctx,
             const std::string& _registrar_handle)
         : ContactWithStatus(_ctx, _registrar_handle, "serverDeleteProhibited")
