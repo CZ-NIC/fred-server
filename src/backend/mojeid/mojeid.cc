@@ -1396,6 +1396,7 @@ void MojeIdImpl::update_contact_prepare(
         }
         const unsigned long long history_id = update_contact_op.exec(ctx);
 
+        LibFred::Poll::CreateUpdateOperationPollMessage<LibFred::Object_Type::contact>().exec(ctx, history_id);
         notify(ctx, Notification::updated, mojeid_registrar_.id(), history_id, _log_request_id);
 
         if (object_states_changed)
@@ -1595,6 +1596,7 @@ MojeIdImplData::InfoContact MojeIdImpl::update_transfer_contact_prepare(
                 update_contact_op.set_logd_request_id(_log_request_id);
             }
             history_id = update_contact_op.exec(ctx);
+            LibFred::Poll::CreateUpdateOperationPollMessage<LibFred::Object_Type::contact>().exec(ctx, history_id);
         }
         const bool is_cond_identified = states.presents(LibFred::Object_State::conditionally_identified_contact) &&
                                         !drop_cond_identification;
