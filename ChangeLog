@@ -1,3 +1,16 @@
+2019-07-18 (2.41.0)
+
+  * Epp - create poll message when contact or domain is deleted administratively (to notify sponsoring registrar)
+
+  * Epp, MojeID - create poll message when contact is changed to:
+    - sponsoring registrar of this contact if change was done by other than sponsoring registrar
+    - sponsoring registrars of domains where this contact is assigned as holder or admin-c
+
+  * Epp - fix contact data change detection (to avoid dropping contact verification states)
+
+  * MojeID - fix contact address discloseflag change due to loss of contact
+             verification states in `update_transfer_contact_prepare` method
+
 2019-07-11 (2.40.3)
 
   * Fix configuration according to documented instalation procedure
