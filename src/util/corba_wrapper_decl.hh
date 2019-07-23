@@ -157,5 +157,25 @@ public:
 
 };//class CorbaContainer
 
+// Ticket #25186
+struct DestroyCorbaContainerInMyDestructor
+{
+    DestroyCorbaContainerInMyDestructor()
+    {
+        // user provided empty constructor of POD struct for gcc < 4.6.4, clang < 3.9.0
+        // so it can be declared const without explicit initialization
+    }
+
+    ~DestroyCorbaContainerInMyDestructor()
+    {
+        try
+        {
+            CorbaContainer::destroy_instance();
+        }
+        catch (...)
+        {
+        }
+    }
+};
 
 #endif
