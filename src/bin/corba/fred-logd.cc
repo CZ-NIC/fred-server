@@ -82,6 +82,8 @@ int main(int argc, char *argv[])
 
         Logging::Context ctx(server_name);
 
+        const DestroyCorbaContainerInMyDestructor prevent_usage_of_destroyed_logging_singleton;
+
         // config dump
         if (CfgArgs::instance()->get_handler_ptr_by_type<HandleLoggingArgs>()->log_config_dump)
         {
