@@ -74,6 +74,8 @@ int main(int argc, char* argv[])
         // setting up logger
         setup_logging(CfgArgs::instance());
 
+        const DestroyCorbaContainerInMyDestructor prevent_usage_of_destroyed_logging_singleton;
+
         //CORBA init
         corba_init();
 

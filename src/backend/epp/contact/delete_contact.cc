@@ -31,6 +31,8 @@
 #include "libfred/object_state/lock_object_state_request_lock.hh"
 #include "libfred/object_state/perform_object_state_request.hh"
 #include "src/backend/epp/impl/util.hh"
+#include "libfred/poll/create_poll_message.hh"
+#include "libfred/poll/message_type.hh"
 
 namespace Epp {
 namespace Contact {
@@ -106,14 +108,15 @@ unsigned long long delete_contact(
     }
 
     try {
-
         LibFred::DeleteContactByHandle(_contact_handle).exec(_ctx);
-
+        if (!is_sponsoring_registrar)
+        {
+            LibFred::Poll::CreatePollMessage<::LibFred::Poll::MessageType::delete_contact>()
+                .exec(_ctx, contact_data_before_delete.historyid);
+        }
         return contact_data_before_delete.historyid;
-
     }
     catch(const LibFred::DeleteContactByHandle::Exception& e) {
-
         // general errors (possibly but not NECESSARILLY caused by input data) signalizing unknown/bigger problems have priority
         if ( e.is_set_unknown_contact_handle() ) {
             throw;

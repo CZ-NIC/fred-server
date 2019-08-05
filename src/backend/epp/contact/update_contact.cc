@@ -29,6 +29,7 @@
 #include "libfred/object/object_states_info.hh"
 #include "libfred/object_state/lock_object_state_request_lock.hh"
 #include "libfred/object_state/perform_object_state_request.hh"
+#include "libfred/poll/create_poll_message.hh"
 #include "libfred/registrable_object/contact/check_contact.hh"
 #include "libfred/registrable_object/contact/info_contact.hh"
 #include "libfred/registrable_object/contact/update_contact.hh"
@@ -415,6 +416,7 @@ unsigned long long update_contact(
         try
         {
             const unsigned long long new_history_id = updater.exec(ctx);
+            LibFred::Poll::CreateUpdateOperationPollMessage<LibFred::Object_Type::contact>().exec(ctx, new_history_id);
             return new_history_id;
         }
         catch (const LibFred::UpdateContactByHandle::ExceptionType& e)

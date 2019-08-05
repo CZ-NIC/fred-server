@@ -26,6 +26,7 @@
 #include "src/backend/epp/contact/delete_contact.hh"
 #include "src/backend/epp/epp_response_failure.hh"
 #include "src/backend/epp/epp_result_code.hh"
+#include "src/backend/epp/poll/poll_request.hh"
 
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/assign/list_of.hpp>
@@ -260,6 +261,71 @@ BOOST_FIXTURE_TEST_CASE(delete_fail_linked_keyset, supply_ctx<HasRegistrarWithSe
 
 BOOST_FIXTURE_TEST_CASE(delete_ok, supply_ctx<HasRegistrarWithSessionAndContact>)
 {
+    ::Epp::Contact::delete_contact(
+        ctx,
+        contact.data.handle,
+        DefaultDeleteContactConfigData(),
+        session.data
+    );
+
+    BOOST_CHECK_EQUAL(
+        ::LibFred::InfoContactHistoryById(contact.data.id).exec(ctx).rbegin()->info_contact_data.delete_time.isnull(),
+        false
+    );
+}
+
+BOOST_FIXTURE_TEST_CASE(ok_system_registrar_different_contact, supply_ctx<HasSystemRegistrarWithSessionAndDifferentRegistrar>)
+{
+    Contact contact(ctx, different_registrar.data.handle);
+
+    ::Epp::Contact::delete_contact(
+        ctx,
+        contact.data.handle,
+        DefaultDeleteContactConfigData(),
+        session.data
+    );
+
+    const auto info_contact_data = ::LibFred::InfoContactHistoryById(contact.data.id).exec(ctx).rbegin()->info_contact_data;
+    BOOST_CHECK_EQUAL(
+        info_contact_data.delete_time.isnull(),
+        false
+    );
+
+    try
+    {
+        const auto poll_msg = ::Epp::Poll::poll_request(ctx, different_registrar.data.id);
+        const auto event = boost::get<::Epp::Poll::MessageEvent>(poll_msg.message);
+        const auto delete_event = boost::get<::Epp::Poll::MessageEvent::Data<::Epp::Poll::MessageEvent::DeleteContact>>(event.message);
+        BOOST_CHECK_EQUAL(delete_event.handle, contact.data.handle);
+        BOOST_CHECK_EQUAL(delete_event.date, info_contact_data.delete_time.get_value().date());
+    }
+    catch (...)
+    {
+        BOOST_FAIL("Unable to get delete contact poll message");
+    }
+}
+
+BOOST_FIXTURE_TEST_CASE(ok_system_registrar_contact_lock_delete, supply_ctx<HasSystemRegistrarWithSessionAndDifferentRegistrar>)
+{
+    ContactWithStatusServerDeleteProhibited contact(ctx, different_registrar.data.handle);
+
+    ::Epp::Contact::delete_contact(
+        ctx,
+        contact.data.handle,
+        DefaultDeleteContactConfigData(),
+        session.data
+    );
+
+    BOOST_CHECK_EQUAL(
+        ::LibFred::InfoContactHistoryById(contact.data.id).exec(ctx).rbegin()->info_contact_data.delete_time.isnull(),
+        false
+    );
+}
+
+BOOST_FIXTURE_TEST_CASE(ok_system_registrar_contact_lock_update, supply_ctx<HasSystemRegistrarWithSessionAndDifferentRegistrar>)
+{
+    ContactWithStatusServerUpdateProhibited contact(ctx, different_registrar.data.handle);
+
     ::Epp::Contact::delete_contact(
         ctx,
         contact.data.handle,

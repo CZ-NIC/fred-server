@@ -68,6 +68,8 @@ int main(int argc, char* argv[])
 
         setup_logging(CfgArgs::instance());
 
+        const DestroyCorbaContainerInMyDestructor prevent_usage_of_destroyed_logging_singleton;
+
         corba_init();
 
         boost::scoped_ptr<LibFred::Logger::LoggerClient> logger_client;

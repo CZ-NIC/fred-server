@@ -31,6 +31,8 @@
 #include "libfred/registrar/info_registrar.hh"
 #include "libfred/registrar/registrar_zone_access.hh"
 #include "libfred/zone/zone.hh"
+#include "libfred/poll/create_poll_message.hh"
+#include "libfred/poll/message_type.hh"
 
 #include <boost/date_time/gregorian/greg_date.hpp>
 
@@ -134,15 +136,16 @@ unsigned long long delete_domain(
 
     try
     {
-
         LibFred::DeleteDomainByFqdn(_domain_fqdn).exec(_ctx);
-
+        if (!is_sponsoring_registrar)
+        {
+            LibFred::Poll::CreatePollMessage<::LibFred::Poll::MessageType::delete_domain>()
+                .exec(_ctx, domain_data_before_delete.historyid);
+        }
         return domain_data_before_delete.historyid;
-
     }
     catch (const LibFred::DeleteDomainByFqdn::Exception& e)
     {
-
         // general errors (possibly but not NECESSARILLY caused by input data) signalizing unknown/bigger problems have priority
         if (e.is_set_unknown_domain_fqdn())
         {
