@@ -46,6 +46,7 @@
 #include "src/bin/cli/charge_params.hh"
 #include "src/bin/cli/public_request_params.hh"
 #include "src/bin/cli/domain_name_validation_params.hh"
+#include "src/bin/cli/charge_registry_access_fee_params.hh"
 
 #include <iostream>
 #include <exception>
@@ -2633,6 +2634,100 @@ struct HandleAdminClientProcessPublicRequestsArgsGrp : HandleCommandGrpArgs
         return option_group_index;
     }
     ProcessPublicRequestsArgs process_public_requests_params;
+};
+
+struct HandleChargeRegistryAccessFeeAnnualArgsGrp : HandleCommandGrpArgs
+{
+    ChargeRegistryAccessFeeAnnualArgs params;
+
+    CommandDescription get_command_option() override
+    {
+        return CommandDescription("charge_registry_access_fee_annual");
+    }
+
+    std::shared_ptr<boost::program_options::options_description>
+    get_options_description() override
+    {
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("charge_registry_access_fee_annual options")));
+        cfg_opts->add_options()
+               ("charge_registry_access_fee_annual", "charge_registry_access_fee_annual options")
+               ("registrars", boost::program_options::value<std::vector<std::string> >()->multitoken()
+                   ->notifier(save_arg<std::vector<std::string>>(params.registrars)),
+                   "space separated list of registrars to be processed")
+               ("all_registrars_except", boost::program_options::value<std::vector<std::string> >()->multitoken()
+                   ->notifier(save_arg<std::vector<std::string>>(params.except_registrars)),
+                   "space separated list of registrars not to be processed")
+               ("all_registrars",  boost::program_options::value<bool>()->zero_tokens()
+                    ->notifier(save_arg<bool>(params.all_registrars)),
+                    "process all registrars")
+               ("zone", boost::program_options::value<std::string>()->required()
+                   ->notifier(save_arg<std::string>(params.zone)),
+                   "zone fqdn (for example 'cz')")
+               ("year", boost::program_options::value<std::string>()->required()
+                   ->notifier(save_arg<std::string>(params.year)),
+                   "year [YYYY]");
+        return cfg_opts;
+    }
+
+    std::size_t handle(
+            int argc,
+            char* argv[],
+            FakedArgs& fa,
+            std::size_t option_group_index) override
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }
+};
+
+struct HandleChargeRegistryAccessFeeMonthlyArgsGrp : HandleCommandGrpArgs
+{
+    ChargeRegistryAccessFeeMonthlyArgs params;
+
+    CommandDescription get_command_option() override
+    {
+        return CommandDescription("charge_registry_access_fee_monthly");
+    }
+
+    std::shared_ptr<boost::program_options::options_description>
+    get_options_description() override
+    {
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("charge_registry_access_fee_monthly options")));
+        cfg_opts->add_options()
+               ("charge_registry_access_fee_monthly", "charge_registry_access_fee_monthly options")
+               ("registrars", boost::program_options::value<std::vector<std::string> >()->multitoken()
+                   ->notifier(save_arg<std::vector<std::string>>(params.registrars)),
+                   "list of registrars to be processed")
+               ("all_registrars_except", boost::program_options::value<std::vector<std::string> >()->multitoken()
+                   ->notifier(save_arg<std::vector<std::string>>(params.except_registrars)),
+                   "list of registrars not to be processed")
+               ("all_registrars",  boost::program_options::value<bool>()->zero_tokens()
+                    ->notifier(save_arg<bool>(params.all_registrars)),
+                    "process all registrars")
+               ("zone", boost::program_options::value<std::string>()->required()
+                   ->notifier(save_arg<std::string>(params.zone)),
+                   "zone fqdn (for example 'cz')")
+               ("month", boost::program_options::value<std::string>()->required()
+                   ->notifier(save_arg<std::string>(params.year_month)),
+                   "month [YYYY-MM]");
+        return cfg_opts;
+    }
+
+    std::size_t handle(
+            int argc,
+            char* argv[],
+            FakedArgs& fa,
+            std::size_t option_group_index) override
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }
 };
 
 #endif

@@ -1,4 +1,4 @@
 # <repository> <commitish> <clone-path>
 fred/libfred master external/lib/libfred
 fred/idl 2.35.0 external/idl
-fred/db 2.37.0 external/db
+fred/db 24523-charge-registry-access-fee external/db

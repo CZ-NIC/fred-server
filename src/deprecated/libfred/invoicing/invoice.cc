@@ -92,6 +92,70 @@ struct AdvanceInvoice
     Money credit_change;
 };
 
+namespace {
+
+bool has_registrar_access_to_the_zone(
+    const Database::ID &_registrar_id,
+    unsigned long long _zone_id,
+    const boost::gregorian::date _date_from,
+    const boost::gregorian::date _date_to)
+{
+    Database::Connection conn = Database::Manager::acquire();
+
+    Database::Result res = conn.exec_params(
+            // clang-format off
+            "SELECT 1 "
+              "FROM registrar r "
+              "LEFT JOIN registrarinvoice ri ON ri.registrarid = r.id "
+             "WHERE r.id = $1 "
+             "AND ri.fromdate <= $3::date "
+               "AND (ri.todate IS NULL "
+                   "OR ri.todate >= $2::date) "
+               "AND ri.zone = $4::integer ",
+            Database::query_param_list
+                    (_registrar_id)
+                    (_date_from)
+                    (_date_to)
+                    (_zone_id));
+    if (res.size() == 0)
+    {
+        return false;
+    }
+    return true;
+}
+
+bool was_registrar_charged(
+    const Database::ID &_registrar_id,
+    unsigned long long _zone_id,
+    const boost::gregorian::date _date_from,
+    const boost::gregorian::date _date_to)
+{
+    Database::Connection conn = Database::Manager::acquire();
+
+    Database::Result res = conn.exec_params(
+            // clang-format off
+            "SELECT io.id "
+              "FROM invoice_operation io "
+              "JOIN enum_operation eo ON eo.id = io.operation_id  "
+             "WHERE eo.operation = $1::text "
+               "AND registrar_id = $2::bigint "
+               "AND $3::date >= date_from "
+               "AND $3::date <= date_to ",
+            // clang-format on
+            Database::query_param_list
+                    ("MonthlyFee")
+                    (_registrar_id)
+                    (_date_from));
+                    //(_date_to));
+    if (res.size() > 0)
+    {
+        return true;
+    }
+    return false;
+}
+
+} // namespace Libfred::Invoicing::{anonymous}
+
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 //  ManagerImpl
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -369,6 +433,65 @@ public:
                 Decimal(boost::lexical_cast<std::string>(paid_requests)) //unsigned long quantity - for renew in years
                 );
       }
+  }
+
+  virtual bool chargeRegistryAccessFee(
+          const Database::ID &_registrar_id,
+          unsigned long long _zone_id,
+          const boost::gregorian::date _date_from,
+          const boost::gregorian::date _date_to)
+  {
+      TRACE("[CALL] LibFred::Invoicing::Manager::chargeRegistryAccessFee()");
+
+      const bool charge_annual_fee = _date_to == _date_from + boost::gregorian::years(1) - boost::gregorian::days(1);
+      const bool charge_monthly_fee = _date_to == _date_from + boost::gregorian::months(1) - boost::gregorian::days(1);
+      if (!charge_annual_fee && !charge_monthly_fee)
+      {
+          throw std::logic_error("requested fee interval not supported");
+      }
+
+      int quantity = 0;
+      for (boost::gregorian::date date_from = _date_from;
+           date_from < _date_to;
+           date_from += boost::gregorian::months(1))
+      {
+          const boost::gregorian::date date_to = date_from + boost::gregorian::months(1) - boost::gregorian::days(1);
+
+          const bool has_access = has_registrar_access_to_the_zone(_registrar_id, _zone_id, date_from, date_to);
+          if (!has_access)
+          {
+              LOGGER.info(boost::format("Registrar %1% did not have an access to the zone %2% in period %3% to %4%, not charging.")
+              % _registrar_id % _zone_id % _date_from % _date_to);
+          }
+
+          const bool was_already_charged = was_registrar_charged(_registrar_id, _zone_id, date_from, date_to);
+          if (was_already_charged)
+          {
+              LOGGER.info(boost::format("Registrar %1% was already charged for fee in period %2% to %3% (overlaps %4% to %5%), not charging.")
+              % _registrar_id % date_from % date_to % _date_from % _date_to);
+          }
+          if (has_access && !was_already_charged)
+          {
+              quantity++;
+          }
+      }
+
+      if (quantity > 0)
+      {
+          const std::string operation = "MonthlyFee";
+          const unsigned long long object_id = 0;
+          const auto crdate = boost::posix_time::ptime(_date_to) + boost::gregorian::days(1) - boost::posix_time::seconds(1);
+          return charge_operation_auto_price(
+                  operation,
+                  _zone_id,
+                  _registrar_id,
+                  object_id,
+                  crdate,
+                  _date_from,
+                  _date_to,
+                  Decimal(boost::lexical_cast<std::string>(quantity)));
+      }
+      return true;
   }
 
   //count VAT from price with tax using coefficient - local CZ rules
