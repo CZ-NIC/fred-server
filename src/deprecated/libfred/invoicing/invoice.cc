@@ -94,7 +94,20 @@ struct AdvanceInvoice
 
 namespace {
 
-bool has_registrar_access_to_the_zone(
+struct RegistrarZoneAccess
+{
+    RegistrarZoneAccess(
+            const boost::gregorian::date _date_from,
+            const boost::gregorian::date _date_to)
+            : date_from(_date_from),
+              date_to(_date_to)
+    {
+    }
+    const boost::gregorian::date date_from;
+    const boost::gregorian::date date_to;
+};
+
+boost::optional<RegistrarZoneAccess> registrar_access_to_the_zone(
     const Database::ID &_registrar_id,
     unsigned long long _zone_id,
     const boost::gregorian::date _date_from,
@@ -104,14 +117,16 @@ bool has_registrar_access_to_the_zone(
 
     Database::Result res = conn.exec_params(
             // clang-format off
-            "SELECT 1 "
+            "SELECT ri.fromdate AS date_from, "
+                   "COALESCE(ri.todate, $3::date) AS date_to "
               "FROM registrar r "
               "LEFT JOIN registrarinvoice ri ON ri.registrarid = r.id "
              "WHERE r.id = $1 "
-             "AND ri.fromdate <= $3::date "
+               "AND ri.fromdate <= $3::date "
                "AND (ri.todate IS NULL "
                    "OR ri.todate >= $2::date) "
                "AND ri.zone = $4::integer ",
+            // clang-format on
             Database::query_param_list
                     (_registrar_id)
                     (_date_from)
@@ -119,9 +134,12 @@ bool has_registrar_access_to_the_zone(
                     (_zone_id));
     if (res.size() == 0)
     {
-        return false;
+        return boost::optional<RegistrarZoneAccess>();
     }
-    return true;
+    return RegistrarZoneAccess(
+            boost::gregorian::from_string(static_cast<std::string>(res[0]["date_from"])),
+            boost::gregorian::from_string(static_cast<std::string>(res[0]["date_to"])));
+
 }
 
 bool was_registrar_charged(
@@ -450,6 +468,8 @@ public:
           throw std::logic_error("requested fee interval not supported");
       }
 
+      boost::optional<boost::gregorian::date> invoice_date_from;
+      boost::gregorian::date invoice_date_to = _date_to;
       int quantity = 0;
       for (boost::gregorian::date date_from = _date_from;
            date_from < _date_to;
@@ -457,7 +477,8 @@ public:
       {
           const boost::gregorian::date date_to = date_from + boost::gregorian::months(1) - boost::gregorian::days(1);
 
-          const bool has_access = has_registrar_access_to_the_zone(_registrar_id, _zone_id, date_from, date_to);
+          const auto zone_access = registrar_access_to_the_zone(_registrar_id, _zone_id, date_from, date_to);
+          const bool has_access = zone_access != boost::none;
           if (!has_access)
           {
               LOGGER.info(boost::format("Registrar %1% did not have an access to the zone %2% in period %3% to %4%, not charging.")
@@ -473,6 +494,12 @@ public:
           if (has_access && !was_already_charged)
           {
               quantity++;
+
+              if (invoice_date_from == boost::none)
+              {
+                  invoice_date_from = std::max({(*zone_access).date_from, date_from, _date_from});
+              }
+              invoice_date_to = std::min((*zone_access).date_to, _date_to);
           }
       }
 
@@ -487,8 +514,8 @@ public:
                   _registrar_id,
                   object_id,
                   crdate,
-                  _date_from,
-                  _date_to,
+                  *invoice_date_from,
+                  invoice_date_to,
                   Decimal(boost::lexical_cast<std::string>(quantity)));
       }
       return true;
