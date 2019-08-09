@@ -61,16 +61,6 @@ Type2Str(Type _type)
     }
 }
 
-std::string
-PaymentActionType2Str(PaymentActionType type)
-{
-    switch (type) {
-        case PAT_CREATE_DOMAIN: return "Create domain";
-        case PAT_RENEW_DOMAIN:  return "Renew domain";
-        default:                return "TYPE UNKNOWN";
-    }
-}
-
 // hold vat rates for time periods
 class VAT {
 public:
@@ -99,8 +89,8 @@ struct RegistrarZoneAccess
     RegistrarZoneAccess(
             const boost::gregorian::date _date_from,
             const boost::gregorian::date _date_to)
-            : date_from(_date_from),
-              date_to(_date_to)
+        : date_from(_date_from),
+          date_to(_date_to)
     {
     }
     const boost::gregorian::date date_from;
@@ -108,10 +98,10 @@ struct RegistrarZoneAccess
 };
 
 boost::optional<RegistrarZoneAccess> registrar_access_to_the_zone(
-    const Database::ID &_registrar_id,
-    unsigned long long _zone_id,
-    const boost::gregorian::date _date_from,
-    const boost::gregorian::date _date_to)
+        const Database::ID& _registrar_id,
+        unsigned long long _zone_id,
+        const boost::gregorian::date _date_from,
+        const boost::gregorian::date _date_to)
 {
     Database::Connection conn = Database::Manager::acquire();
 
@@ -139,14 +129,13 @@ boost::optional<RegistrarZoneAccess> registrar_access_to_the_zone(
     return RegistrarZoneAccess(
             boost::gregorian::from_string(static_cast<std::string>(res[0]["date_from"])),
             boost::gregorian::from_string(static_cast<std::string>(res[0]["date_to"])));
-
 }
 
 bool was_registrar_charged(
-    const Database::ID &_registrar_id,
-    unsigned long long _zone_id,
-    const boost::gregorian::date _date_from,
-    const boost::gregorian::date _date_to)
+        const Database::ID& _registrar_id,
+        unsigned long long _zone_id,
+        const boost::gregorian::date _date_from,
+        const boost::gregorian::date _date_to)
 {
     Database::Connection conn = Database::Manager::acquire();
 
@@ -456,13 +445,18 @@ public:
   virtual bool chargeRegistryAccessFee(
           const Database::ID &_registrar_id,
           unsigned long long _zone_id,
-          const boost::gregorian::date _date_from,
-          const boost::gregorian::date _date_to)
+          const boost::gregorian::date& _date_from,
+          const boost::gregorian::date& _date_to)
   {
       TRACE("[CALL] LibFred::Invoicing::Manager::chargeRegistryAccessFee()");
 
-      const bool charge_annual_fee = _date_to == _date_from + boost::gregorian::years(1) - boost::gregorian::days(1);
-      const bool charge_monthly_fee = _date_to == _date_from + boost::gregorian::months(1) - boost::gregorian::days(1);
+      const bool charge_annual_fee =
+              _date_from.day() == 1 &&
+              _date_from.month() == 1 &&
+              _date_to == _date_from + boost::gregorian::years(1) - boost::gregorian::days(1);
+      const bool charge_monthly_fee =
+              _date_from.day() == 1 &&
+              _date_to == _date_from + boost::gregorian::months(1) - boost::gregorian::days(1);
       if (!charge_annual_fee && !charge_monthly_fee)
       {
           throw std::logic_error("requested fee interval not supported");
@@ -506,13 +500,13 @@ public:
       if (quantity > 0)
       {
           const std::string operation = "MonthlyFee";
-          const unsigned long long object_id = 0;
+          const unsigned long long not_related_to_any_object_id = 0;
           const auto crdate = boost::posix_time::ptime(_date_to) + boost::gregorian::days(1) - boost::posix_time::seconds(1);
           return charge_operation_auto_price(
                   operation,
                   _zone_id,
                   _registrar_id,
-                  object_id,
+                  not_related_to_any_object_id,
                   crdate,
                   *invoice_date_from,
                   invoice_date_to,
@@ -1632,7 +1626,7 @@ public:
     return pricePerUnit;
   }
   virtual std::string getActionStr() const
-    {        
+    {
         switch (getAction()) {
             case PAT_CREATE_DOMAIN:
                 return "CREATE";
@@ -1642,6 +1636,15 @@ public:
                 break;
             case PAT_REQUESTS_OVER_LIMIT:
                 return "REQ";
+                break;
+            case PAT_FINE:
+                return "RPOK";
+                break;
+            case PAT_FEE:
+                return "RPOP";
+                break;
+            case PAT_MONTHLY_FEE:
+                return "RPOP";
                 break;
             default:
                 return "UNKNOWN";
@@ -2053,7 +2056,6 @@ public:
         % id
     );
 
-                          
     PaymentActionImpl *new_action = new PaymentActionImpl(price,
                                                           vat_rate,
                                                           man->countVAT(price, vat_rate, true),
@@ -2396,7 +2398,9 @@ public:
                 : (pa->getAction() == PAT_REQUESTS_OVER_LIMIT ? "REPP"
                   : (pa->getAction() == PAT_FINE ? "RPOK"
                     : (pa->getAction() == PAT_FEE ? "RPOP"
-                      : "RUNK")
+                      : (pa->getAction() == PAT_MONTHLY_FEE ? "RPOP"
+                        : "RUNK")
+                      )
                     )
                   )
                 )

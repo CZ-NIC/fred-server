@@ -140,8 +140,8 @@ enum PaymentActionType {
   , PAT_REQUESTS_OVER_LIMIT
   , PAT_FINE
   , PAT_FEE
+  , PAT_MONTHLY_FEE
 };
-std::string PaymentActionType2Str(PaymentActionType type);
 
 class PaymentAction : virtual public Payment {
 protected:
@@ -362,8 +362,8 @@ public:
   virtual bool chargeRegistryAccessFee(
           const Database::ID &registrar_id,
           unsigned long long zone_id,
-          const boost::gregorian::date date_from,
-          const boost::gregorian::date date_to) = 0;
+          const boost::gregorian::date& date_from,
+          const boost::gregorian::date& date_to) = 0;
 
   virtual void createAccountInvoices(
           const std::string& zone_fqdn

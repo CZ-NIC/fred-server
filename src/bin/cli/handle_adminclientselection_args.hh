@@ -2702,10 +2702,10 @@ struct HandleChargeRegistryAccessFeeMonthlyArgsGrp : HandleCommandGrpArgs
                ("charge_registry_access_fee_monthly", "charge_registry_access_fee_monthly options")
                ("registrars", boost::program_options::value<std::vector<std::string> >()->multitoken()
                    ->notifier(save_arg<std::vector<std::string>>(params.registrars)),
-                   "list of registrars to be processed")
+                   "space separated list of registrars to be processed")
                ("all_registrars_except", boost::program_options::value<std::vector<std::string> >()->multitoken()
                    ->notifier(save_arg<std::vector<std::string>>(params.except_registrars)),
-                   "list of registrars not to be processed")
+                   "space separated list of registrars not to be processed")
                ("all_registrars",  boost::program_options::value<bool>()->zero_tokens()
                     ->notifier(save_arg<bool>(params.all_registrars)),
                     "process all registrars")

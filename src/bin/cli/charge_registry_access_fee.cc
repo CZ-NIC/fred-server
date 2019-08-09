@@ -29,15 +29,17 @@ namespace {
 
 unsigned long long getRegistrarID(const std::string &handle) {
     Database::Connection conn = Database::Manager::acquire();
-    Database::Result result = conn.exec_params(
+    const Database::Result result = conn.exec_params(
             "SELECT id FROM registrar WHERE handle = $1::text",
             Database::query_param_list(handle));
 
-    if (result.size() != 1) {
+    if (result.size() == 0) {
         throw std::runtime_error((boost::format("Registrar with handle %1% not found in database.") % handle).str());
     }
-
-    return result[0][0];
+    if (result.size() > 1) {
+        throw std::runtime_error((boost::format("Too many registrars with handle %1% found in database.") % handle).str());
+    }
+    return static_cast<unsigned long long>(result[0][0]);
 }
 
 } // namespace Admin::{anonymous}
@@ -46,17 +48,23 @@ void chargeRegistryAccessFee(
         bool _all_registrars,
         const std::vector<std::string>& _only_registrars,
         const std::vector<std::string>& _except_registrars,
-        boost::gregorian::date _date_from,
-        boost::gregorian::date _date_to)
+        const boost::gregorian::date& _date_from,
+        const boost::gregorian::date& _date_to)
 {
-    if ((_all_registrars && (!_only_registrars.empty() || !_except_registrars.empty())) ||
-       (!_all_registrars && _only_registrars.empty() && _except_registrars.empty()) ||
-       (!_only_registrars.empty() && !_except_registrars.empty()))
+    struct MutuallyExclusiveArguments
+    {
+        static bool is_only_one_true(bool a, bool b, bool c)
+        {
+            return (a && !b && !c) || (!a &&  b && !c) || (!a && !b &&  c);
+        }
+    };
+
+    if (!MutuallyExclusiveArguments::is_only_one_true(_all_registrars, !_only_registrars.empty(), !_except_registrars.empty()))
     {
         throw std::runtime_error("invalid option(s)");
     }
 
-    std::unique_ptr<LibFred::Invoicing::Manager> invMan(
+    const std::unique_ptr<LibFred::Invoicing::Manager> invMan(
     LibFred::Invoicing::Manager::create());
 
     Database::Connection conn = Database::Manager::acquire();
@@ -67,42 +75,32 @@ void chargeRegistryAccessFee(
     std::vector<Database::ID> only_registrars_ids;
     for (const auto& registrar : _only_registrars)
     {
-        Database::ID reg_id = getRegistrarID(registrar);
+        const Database::ID reg_id = getRegistrarID(registrar);
         only_registrars_ids.push_back(reg_id);
     }
-    std::string only_registrars_id_array = "{" + Util::container2comma_list(only_registrars_ids) + "}";
+    const std::string only_registrars_id_array = "{" + Util::container2comma_list(only_registrars_ids) + "}";
 
     std::vector<Database::ID> except_registrars_ids;
     for (const auto& registrar : _except_registrars)
     {
-        Database::ID reg_id = getRegistrarID(registrar);
+        const Database::ID reg_id = getRegistrarID(registrar);
         except_registrars_ids.push_back(reg_id);
     }
-    std::string except_registrars_id_array = "{" + Util::container2comma_list(except_registrars_ids) + "}";
+    const std::string except_registrars_id_array = "{" + Util::container2comma_list(except_registrars_ids) + "}";
 
-    std::string condition;
-    Database::query_param_list params;
+    std::string condition = "";
+    auto params = Database::query_param_list(_date_from)
+                                            (_date_to)
+                                            (zone_id);
     if (!_only_registrars.empty())
     {
         condition = "AND r.id = ANY ($4::bigint[]) ";
-        params = Database::query_param_list(_date_from)
-                                           (_date_to)
-                                           (zone_id)
-                                           (only_registrars_id_array);
+        params.add(only_registrars_id_array);
     }
     else if (!_except_registrars.empty())
     {
         condition = "AND r.id <> ALL ($4::bigint[]) ";
-        params = Database::query_param_list(_date_from)
-                                           (_date_to)
-                                           (zone_id)
-                                           (except_registrars_id_array);
-    }
-    else {
-        condition = "";
-        params = Database::query_param_list(_date_from)
-                                           (_date_to)
-                                           (zone_id);
+        params.add(except_registrars_id_array);
     }
 
     const auto result = conn.exec_params(
