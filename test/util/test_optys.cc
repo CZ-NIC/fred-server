@@ -32,7 +32,6 @@
 #include "src/util/subprocess.hh"
 #include "util/printable.hh"
 #include "src/util/optys/download_client.hh"
-#include "util/random_data_generator.hh"
 #include "src/util/optys/handle_optys_mail_args.hh"
 #include "test/setup/fixtures.hh"
 

@@ -18,7 +18,8 @@
  */
 #include "libfred/registrar/epp_auth/exceptions.hh"
 #include "libfred/registrar/epp_auth/update_registrar_epp_auth.hh"
-#include "util/random_data_generator.hh"
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
 #include "test/libfred/registrar/epp_auth/util.hh"
 #include "test/libfred/util.hh"
 #include "test/setup/fixtures.hh"
@@ -26,6 +27,7 @@
 #include <boost/optional.hpp>
 #include <boost/test/test_tools.hpp>
 #include <boost/test/unit_test.hpp>
+#include <limits>
 #include <string>
 
 namespace Test{
@@ -63,7 +65,9 @@ BOOST_AUTO_TEST_CASE(set_no_update_data)
 
 BOOST_AUTO_TEST_CASE(set_nonexistent_registrar_epp_auth)
 {
-    id = RandomDataGenerator().xuint();
+    id = Random::Generator().get(
+            std::numeric_limits<unsigned>::min(), 
+            std::numeric_limits<unsigned>::max());
     BOOST_CHECK_THROW(
             ::LibFred::Registrar::EppAuth::UpdateRegistrarEppAuth(id)
             .set_plain_password(plain_password)
@@ -73,7 +77,7 @@ BOOST_AUTO_TEST_CASE(set_nonexistent_registrar_epp_auth)
 
 BOOST_AUTO_TEST_CASE(set_update_registrar_certificate_fingerprint)
 {
-    const std::string new_certificate = RandomDataGenerator().xnstring(10);
+    const std::string new_certificate = Random::Generator().get_seq(Random::CharSet::letters_and_digits(), 10);
     ::LibFred::Registrar::EppAuth::UpdateRegistrarEppAuth(id)
             .set_certificate_fingerprint(new_certificate)
             .set_plain_password(boost::none)
@@ -83,7 +87,7 @@ BOOST_AUTO_TEST_CASE(set_update_registrar_certificate_fingerprint)
 
 BOOST_AUTO_TEST_CASE(set_update_registrar_plain_password)
 {
-    const std::string new_password = RandomDataGenerator().xnstring(10);
+    const std::string new_password = Random::Generator().get_seq(Random::CharSet::letters_and_digits(), 10);
     ::LibFred::Registrar::EppAuth::UpdateRegistrarEppAuth(id)
             .set_plain_password(new_password)
             .exec(ctx);
@@ -92,8 +96,8 @@ BOOST_AUTO_TEST_CASE(set_update_registrar_plain_password)
 
 BOOST_AUTO_TEST_CASE(set_update_registrar_all_epp_auth)
 {
-    const std::string new_certificate = RandomDataGenerator().xnstring(10);
-    const std::string new_password = RandomDataGenerator().xnstring(10);
+    const std::string new_certificate = Random::Generator().get_seq(Random::CharSet::letters_and_digits(), 10);
+    const std::string new_password = Random::Generator().get_seq(Random::CharSet::letters_and_digits(), 10);
     ::LibFred::Registrar::EppAuth::UpdateRegistrarEppAuth(id)
             .set_certificate_fingerprint(new_certificate)
             .set_plain_password(new_password)

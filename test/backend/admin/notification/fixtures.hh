@@ -30,7 +30,6 @@
 #include "libfred/opcontext.hh"
 #include "test/setup/fixtures.hh"
 #include "test/setup/fixtures_utils.hh"
-#include "util/random_data_generator.hh"
 
 #include <map>
 #include <set>

@@ -41,7 +41,7 @@
 #include "libfred/registrar/info_registrar.hh"
 #include "util/log/context.hh"
 #include "util/map_at.hh"
-#include "util/random.hh"
+#include "util/random/random.hh"
 #include "util/util.hh"
 
 #include <boost/algorithm/string.hpp>
@@ -69,7 +69,7 @@ const std::string DomainBrowser::output_timezone("UTC");
  */
 static const std::string create_ctx_name(const std::string& _name)
 {
-    return boost::str(boost::format("%1%-<%2%>") % _name % Random::integer(0, 10000));
+    return boost::str(boost::format("%1%-<%2%>") % _name % Random::Generator().get(0, 10000));
 }
 
 

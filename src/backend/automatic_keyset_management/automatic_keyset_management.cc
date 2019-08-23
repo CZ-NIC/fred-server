@@ -61,14 +61,13 @@
 #include "libfred/registrable_object/domain/domain_reference.hh"
 #include "libfred/registrar/info_registrar.hh"
 #include "util/log/context.hh"
-#include "util/random.hh"
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
 #include "util/util.hh"
 
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/format.hpp>
 #include <boost/format/free_funcs.hpp>
-#include <boost/nondet_random.hpp>
-#include <boost/random/uniform_int.hpp>
 
 #include <algorithm>
 #include <sstream>
@@ -84,7 +83,7 @@ namespace {
 
 std::string create_ctx_name(const std::string& name)
 {
-    return str(boost::format("%1%-<%2%>") % name % Random::integer(0, 10000));
+    return str(boost::format("%1%-<%2%>") % name % Random::Generator().get(0, 10000));
 }
 
 
@@ -173,16 +172,11 @@ std::string generate_automatically_managed_keyset_handle(const std::string& hand
 {
     check_configuration_of_automatically_managed_keyset_prefix(handle_prefix);
 
-    static const std::string alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    boost::random_device rng;
-    boost::uniform_int<> index_dist(0, alphabet.size() - 1);
-    std::string result = handle_prefix;
-    result.reserve(Impl::automatically_managed_keyset_handle_length);
-    while (result.length() < Impl::automatically_managed_keyset_handle_length)
-    {
-        result += alphabet.at(index_dist(rng));
-    }
-    return result;
+    const auto total_size = Impl::automatically_managed_keyset_handle_length;
+    const auto suffix_size = total_size - handle_prefix.size();
+    return handle_prefix + Random::Generator().get_seq(
+                               Random::CharSet::capital_letters_and_digits(),
+                               suffix_size);
 }
 
 bool is_keyset_size_within_limits(const Keyset& keyset)

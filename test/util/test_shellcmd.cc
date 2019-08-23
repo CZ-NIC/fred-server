@@ -39,9 +39,8 @@
 
 #include "src/util/setup_server_decl.hh"
 #include "src/util/time_clock.hh"
-#include "util/random_data_generator.hh"
 #include "src/util/concurrent_queue.hh"
-
+#include "util/random/random.hh"
 
 #include "src/util/cfg/handle_general_args.hh"
 #include "src/util/cfg/handle_server_args.hh"
@@ -408,12 +407,10 @@ public:
             unsigned thread_number,
             unsigned sleep_time,
             sync_barriers* sb_ptr,
-            ThreadResultQueue *result_queue_ptr = nullptr,
-            unsigned seed = 0)
+            ThreadResultQueue *result_queue_ptr = nullptr)
         : number_(thread_number),
           sleep_time_(sleep_time),
           sb_ptr_(sb_ptr),
-          rdg_(seed),
           rsq_ptr_(result_queue_ptr)
     {}
 
@@ -546,7 +543,7 @@ private:
     unsigned    number_;//thread identification
     unsigned    sleep_time_;//[s]
     sync_barriers* sb_ptr_;
-    RandomDataGenerator rdg_;
+    Random::Generator rdg_;
     ThreadResultQueue* rsq_ptr_; //result queue non-owning pointer
 };
 

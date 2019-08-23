@@ -21,6 +21,7 @@
  *  integration tests for UpdateContactCheck operation
  */
 
+#include <limits>
 #include <vector>
 #include <utility>
 #include <string>
@@ -32,7 +33,7 @@
 #include "libfred/registrable_object/contact/create_contact.hh"
 #include "libfred/db_settings.hh"
 #include "util/optional_value.hh"
-#include "util/random_data_generator.hh"
+#include "util/random/random.hh"
 
 #include "test/libfred/contact/verification/setup_utils.hh"
 #include "test/setup/fixtures.hh"
@@ -309,9 +310,11 @@ BOOST_AUTO_TEST_CASE(test_request1_to_statusX_logd_request1)
 {
     setup_check_status status;
 
-    Optional<unsigned long long> logd_request_id1 = RandomDataGenerator().xuint();
-    Optional<unsigned long long> logd_request_id2 = RandomDataGenerator().xuint();
-    Optional<unsigned long long> logd_request_id3 = RandomDataGenerator().xuint();
+    auto min = std::numeric_limits<unsigned long long>::min();
+    auto max = std::numeric_limits<unsigned long long>::max();
+    Optional<unsigned long long> logd_request_id1 = Random::Generator().get(min, max);
+    Optional<unsigned long long> logd_request_id2 = Random::Generator().get(min, max);
+    Optional<unsigned long long> logd_request_id3 = Random::Generator().get(min, max);
 
     setup_create_update_check testcase1(
         ::LibFred::ContactCheckStatus::ENQUEUE_REQ,
@@ -335,9 +338,11 @@ BOOST_AUTO_TEST_CASE(test_request1_to_statusY_logd_request1)
     setup_check_status status1;
     setup_check_status status2;
 
-    Optional<unsigned long long> logd_request_id1 = RandomDataGenerator().xuint();
-    Optional<unsigned long long> logd_request_id2 = RandomDataGenerator().xuint();
-    Optional<unsigned long long> logd_request_id3 = RandomDataGenerator().xuint();
+    auto min = std::numeric_limits<unsigned long long>::min();
+    auto max = std::numeric_limits<unsigned long long>::max();
+    Optional<unsigned long long> logd_request_id1 = Random::Generator().get(min, max);
+    Optional<unsigned long long> logd_request_id2 = Random::Generator().get(min, max);
+    Optional<unsigned long long> logd_request_id3 = Random::Generator().get(min, max);
 
     setup_create_update_check testcase1(
         status2.status_handle,
@@ -359,8 +364,10 @@ BOOST_AUTO_TEST_CASE(test_request1_to_statusX_logd_requestNULL)
 {
     setup_check_status status;
 
-    Optional<unsigned long long> logd_request_id1 = RandomDataGenerator().xuint();
-    Optional<unsigned long long> logd_request_id2 = RandomDataGenerator().xuint();
+    auto min = std::numeric_limits<unsigned long long>::min();
+    auto max = std::numeric_limits<unsigned long long>::max();
+    Optional<unsigned long long> logd_request_id1 = Random::Generator().get(min, max);
+    Optional<unsigned long long> logd_request_id2 = Random::Generator().get(min, max);
 
     setup_create_update_check testcase1(
         ::LibFred::ContactCheckStatus::ENQUEUE_REQ,
@@ -384,8 +391,10 @@ BOOST_AUTO_TEST_CASE(test_request1_to_statusY_logd_requestNULL)
     setup_check_status status1;
     setup_check_status status2;
 
-    Optional<unsigned long long> logd_request_id1 = RandomDataGenerator().xuint();
-    Optional<unsigned long long> logd_request_id2 = RandomDataGenerator().xuint();
+    auto min = std::numeric_limits<unsigned long long>::min();
+    auto max = std::numeric_limits<unsigned long long>::max();
+    Optional<unsigned long long> logd_request_id1 = Random::Generator().get(min, max);
+    Optional<unsigned long long> logd_request_id2 = Random::Generator().get(min, max);
 
     setup_create_update_check testcase1(
         status1.status_handle,
@@ -408,9 +417,11 @@ BOOST_AUTO_TEST_CASE(test_requestNULL_to_statusX_logd_request1)
 {
     setup_check_status status;
 
-    Optional<unsigned long long> logd_request_id1 = RandomDataGenerator().xuint();
-    Optional<unsigned long long> logd_request_id2 = RandomDataGenerator().xuint();
-    Optional<unsigned long long> logd_request_id3 = RandomDataGenerator().xuint();
+    auto min = std::numeric_limits<unsigned long long>::min();
+    auto max = std::numeric_limits<unsigned long long>::max();
+    Optional<unsigned long long> logd_request_id1 = Random::Generator().get(min, max);
+    Optional<unsigned long long> logd_request_id2 = Random::Generator().get(min, max);
+    Optional<unsigned long long> logd_request_id3 = Random::Generator().get(min, max);
 
     setup_create_update_check testcase1(
         ::LibFred::ContactCheckStatus::ENQUEUE_REQ,
@@ -435,9 +446,11 @@ BOOST_AUTO_TEST_CASE(test_requestNULL_to_statusY_logd_request1)
     setup_check_status status1;
     setup_check_status status2;
 
-    Optional<unsigned long long> logd_request_id1 = RandomDataGenerator().xuint();
-    Optional<unsigned long long> logd_request_id2 = RandomDataGenerator().xuint();
-    Optional<unsigned long long> logd_request_id3 = RandomDataGenerator().xuint();
+    auto min = std::numeric_limits<unsigned long long>::min();
+    auto max = std::numeric_limits<unsigned long long>::max();
+    Optional<unsigned long long> logd_request_id1 = Random::Generator().get(min, max);
+    Optional<unsigned long long> logd_request_id2 = Random::Generator().get(min, max);
+    Optional<unsigned long long> logd_request_id3 = Random::Generator().get(min, max);
 
     setup_create_update_check testcase1(
         status1.status_handle,
@@ -458,7 +471,9 @@ BOOST_AUTO_TEST_CASE(test_requestNULL_to_statusY_logd_request1)
 BOOST_AUTO_TEST_CASE(test_requestNULL_to_statusX_logd_requestNULL)
 {
     setup_check_status status;
-    Optional<unsigned long long> logd_request_id1 = RandomDataGenerator().xuint();
+    auto min = std::numeric_limits<unsigned long long>::min();
+    auto max = std::numeric_limits<unsigned long long>::max();
+    Optional<unsigned long long> logd_request_id1 = Random::Generator().get(min, max);
 
     setup_create_update_check testcase1(
         ::LibFred::ContactCheckStatus::ENQUEUE_REQ,
@@ -481,7 +496,9 @@ BOOST_AUTO_TEST_CASE(test_requestNULL_to_statusY_logd_requestNULL)
 {
     setup_check_status status1;
     setup_check_status status2;
-    Optional<unsigned long long> logd_request_id1 = RandomDataGenerator().xuint();
+    auto min = std::numeric_limits<unsigned long long>::min();
+    auto max = std::numeric_limits<unsigned long long>::max();
+    Optional<unsigned long long> logd_request_id1 = Random::Generator().get(min, max);
 
     setup_create_update_check testcase1(
         status1.status_handle,

@@ -19,7 +19,7 @@
 #include "src/backend/mojeid/mojeid_public_request.hh"
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/handle_mojeid_args.hh"
-#include "util/random.hh"
+#include "util/random/random.hh"
 
 #include <utility>
 
@@ -32,10 +32,10 @@ const ::size_t chunk_length = 8;
 
 std::string generate(::size_t _length = chunk_length)
 {
-    const std::string set_of_possible_values = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
-    return Random::string_from(
-            _length,
-            set_of_possible_values);
+    const char set_of_possible_values[] = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+    return Random::Generator().get_seq(
+            set_of_possible_values,
+            _length);
 }
 
 

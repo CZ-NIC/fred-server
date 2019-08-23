@@ -28,6 +28,9 @@
 
 #include "test/backend/admin/contact/verification/setup_utils.hh"
 #include "test/setup/fixtures.hh"
+#include "util/random/random.hh"
+
+#include <limits>
 
 
 BOOST_AUTO_TEST_SUITE(TestContactVerification)
@@ -48,7 +51,9 @@ BOOST_AUTO_TEST_CASE(test_Ids_of_added_related_mail)
     std::set<unsigned long long> added_mail_archive_ids;
 
     for(int i=0; i<20; ++i) {
-        added_mail_archive_ids.insert(RandomDataGenerator().xuint());
+        added_mail_archive_ids.insert(Random::Generator().get(
+                    std::numeric_limits<unsigned>::min(), 
+                    std::numeric_limits<unsigned>::max()));
     }
 
     ::LibFred::OperationContextCreator ctx;
@@ -97,7 +102,9 @@ BOOST_AUTO_TEST_CASE(test_Ids_of_added_related_messages)
     std::set<unsigned long long> added_message_archive_ids;
 
     for(int i=0; i<20; ++i) {
-        added_message_archive_ids.insert(RandomDataGenerator().xuint());
+        added_message_archive_ids.insert(Random::Generator().get(
+                    std::numeric_limits<unsigned>::min(), 
+                    std::numeric_limits<unsigned>::max()));
     }
 
     ::LibFred::OperationContextCreator ctx;
@@ -146,7 +153,9 @@ BOOST_AUTO_TEST_CASE(test_Ids_of_added_related_object_state_request)
     std::set<unsigned long long> added_object_state_request_ids;
 
     for(int i=0; i<20; ++i) {
-        added_object_state_request_ids.insert(RandomDataGenerator().xuint());
+        added_object_state_request_ids.insert(Random::Generator().get(
+                    std::numeric_limits<unsigned>::min(), 
+                    std::numeric_limits<unsigned>::max()));
     }
 
     ::LibFred::OperationContextCreator ctx;

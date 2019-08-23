@@ -45,7 +45,7 @@
 #include "libfred/registrar/info_registrar.hh"
 #include "libfred/registrar/info_registrar_output.hh"
 #include "util/log/context.hh"
-#include "util/random.hh"
+#include "util/random/random.hh"
 
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
@@ -104,7 +104,7 @@ std::string get_output_timezone() { static const std::string timezone("UTC"); re
 
 std::string create_ctx_name(const std::string &_name)
 {
-    return boost::str(boost::format("%1%-<%2%>") % _name % Random::integer(0, 10000));
+    return boost::str(boost::format("%1%-<%2%>") % _name % Random::Generator().get(0, 10000));
 }
 
 std::string create_ctx_function_name(const char *fnc)

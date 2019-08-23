@@ -32,7 +32,8 @@
 #include "libfred/registrable_object/keyset/info_keyset_diff.hh"
 #include "libfred/registrable_object/keyset/info_keyset_impl.hh"
 #include "libfred/registrable_object/keyset/update_keyset.hh"
-#include "util/random_data_generator.hh"
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
 #include "test/setup/fixtures.hh"
 
 #include <boost/test/unit_test.hpp>
@@ -55,7 +56,7 @@ struct info_keyset_fixture : public Test::instantiate_db_template
     ::LibFred::InfoKeysetOutput test_info_keyset_output;
 
     info_keyset_fixture()
-    :xmark(RandomDataGenerator().xnumstring(6))
+    :xmark(Random::Generator().get_seq(Random::CharSet::digits(), 6))
     , admin_contact4_handle(std::string("TEST-ADMIN-CONTACT4-HANDLE")+xmark)
     , admin_contact5_handle(std::string("TEST-ADMIN-CONTACT5-HANDLE")+xmark)
     , admin_contact6_handle(std::string("e70a23bd-0727-4240-8bdd-d72af02f0a56")+xmark)

@@ -41,7 +41,8 @@
 #include "libfred/registrar/create_registrar.hh"
 #include "libfred/registrar/info_registrar.hh"
 #include "libfred/registrar/info_registrar_diff.hh"
-#include "util/random_data_generator.hh"
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
 #include "test/setup/fixtures.hh"
 
 #include <boost/test/unit_test.hpp>
@@ -64,7 +65,7 @@ struct check_handle_fixture : public Test::instantiate_db_template
     std::string test_keyset_handle_rem;
 
     check_handle_fixture()
-    : xmark(RandomDataGenerator().xnumstring(6))
+    : xmark(Random::Generator().get_seq(Random::CharSet::digits(), 6))
     , admin_contact_handle(std::string("TEST-ADMIN-C-") + xmark)
     , admin_contact_handle_rem(std::string("TEST-ADMIN-C-") + xmark + "-REM")
     , test_nsset_handle(std::string("TEST-NSSET-") + xmark)

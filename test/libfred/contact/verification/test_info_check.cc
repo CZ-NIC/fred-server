@@ -36,7 +36,7 @@
 #include "libfred/db_settings.hh"
 #include "util/optional_value.hh"
 #include "util/is_equal_optional_nullable.hh"
-#include "util/random_data_generator.hh"
+#include "util/random/random.hh"
 
 #include "test/libfred/contact/verification/setup_utils.hh"
 #include "test/setup/fixtures.hh"
@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(test_Exec)
     int test_count = 5;
     vector<int> tests_history_steps;
     for(int i=0; i<test_count; ++i) {
-        tests_history_steps.push_back(RandomDataGenerator().xnum1_6());
+        tests_history_steps.push_back(Random::Generator().get(1, 6));
     }
 
     vector<string> check_status_history;

@@ -27,7 +27,6 @@
 #include "src/util/cfg/handle_corbanameservice_args.hh"
 #include "src/util/cfg/handle_createexpireddomain_args.hh"
 #include "src/util/corba_wrapper_decl.hh"
-#include "util/random_data_generator.hh"
 #include "test/mockup/logger_client_dummy.hh"
 #include "test/setup/fixtures.hh"
 #include "test/setup/fixtures_utils.hh"

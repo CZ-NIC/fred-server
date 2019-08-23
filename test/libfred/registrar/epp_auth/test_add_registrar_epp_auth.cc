@@ -18,7 +18,8 @@
  */
 #include "libfred/registrar/epp_auth/add_registrar_epp_auth.hh"
 #include "libfred/registrar/epp_auth/exceptions.hh"
-#include "util/random_data_generator.hh"
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
 #include "test/libfred/registrar/epp_auth/util.hh"
 #include "test/libfred/util.hh"
 #include "test/setup/fixtures.hh"
@@ -37,8 +38,8 @@ struct AddRegistrarEppAuthFixture : has_registrar
 
     AddRegistrarEppAuthFixture()
         : registrar_handle(registrar.handle),
-          certificate_fingerprint(RandomDataGenerator().xstring(20)),
-          plain_password(RandomDataGenerator().xstring(10))
+          certificate_fingerprint(Random::Generator().get_seq(Random::CharSet::letters(), 20)),
+          plain_password(Random::Generator().get_seq(Random::CharSet::letters(), 10))
     {
     }
 };
@@ -47,7 +48,7 @@ BOOST_FIXTURE_TEST_SUITE(TestAddRegistrarEppAuth, AddRegistrarEppAuthFixture)
 
 BOOST_AUTO_TEST_CASE(set_nonexistent_registrar)
 {
-    registrar_handle = RandomDataGenerator().xstring(20);
+    registrar_handle = Random::Generator().get_seq(Random::CharSet::letters(), 20);
     BOOST_CHECK_THROW(
             ::LibFred::Registrar::EppAuth::AddRegistrarEppAuth(
                     registrar_handle, certificate_fingerprint, plain_password).exec(ctx),

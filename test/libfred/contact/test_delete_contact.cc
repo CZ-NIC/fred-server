@@ -31,7 +31,8 @@
 #include "libfred/registrable_object/nsset/info_nsset.hh"
 #include "libfred/registrable_object/nsset/info_nsset_diff.hh"
 #include "libfred/registrable_object/nsset/update_nsset.hh"
-#include "util/random_data_generator.hh"
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
 #include "test/setup/fixtures.hh"
 
 #include <boost/asio/ip/address.hpp>
@@ -48,7 +49,7 @@ struct test_contact_fixture  : public Test::instantiate_db_template
     std::string test_contact_handle;
 
     test_contact_fixture()
-    :xmark(RandomDataGenerator().xnumstring(6))
+    :xmark(Random::Generator().get_seq(Random::CharSet::digits(), 6))
     , test_contact_handle(std::string("TEST-CONTACT-HANDLE")+xmark)
     {
         ::LibFred::OperationContextCreator ctx;

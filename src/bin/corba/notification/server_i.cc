@@ -31,6 +31,8 @@
 
 #include "src/bin/corba/notification/server_i.hh"
 
+#include "util/random/random.hh"
+
 namespace Registry {
 namespace Notification {
 
@@ -40,7 +42,7 @@ namespace Notification {
  */
 static const std::string create_ctx_name(const std::string &server_name)
 {
-    return boost::str(boost::format("%1%-<%2%>")% server_name % Random::integer(0, 10000));
+    return boost::str(boost::format("%1%-<%2%>")% server_name % Random::Generator().get(0, 10000));
 }
 
 Server_i::Server_i(const std::string &server_name)

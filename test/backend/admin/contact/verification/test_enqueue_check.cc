@@ -28,6 +28,9 @@
 
 #include "test/backend/admin/contact/verification/setup_utils.hh"
 #include "test/setup/fixtures.hh"
+#include "util/random/random.hh"
+
+#include <limits>
 
 BOOST_AUTO_TEST_SUITE(TestContactVerification)
 BOOST_FIXTURE_TEST_SUITE(TestEnqueueCheck, Test::instantiate_db_template)
@@ -44,7 +47,9 @@ BOOST_AUTO_TEST_CASE(test_Enqueued_check_data)
 {
     setup_testsuite testsuite;
     Test::contact contact;
-    unsigned long long logd_request_id = RandomDataGenerator().xuint();
+    unsigned long long logd_request_id = Random::Generator().get(
+            std::numeric_limits<unsigned>::min(),
+            std::numeric_limits<unsigned>::max());
 
     ::LibFred::OperationContextCreator ctx;
     std::string check_handle = Fred::Backend::Admin::Contact::Verification::enqueue_check(
@@ -103,7 +108,7 @@ BOOST_AUTO_TEST_CASE(test_Invalidating_old_checks)
             ctx,
             contact.info_data.id,
             testsuite.testsuite_handle,
-            RandomDataGenerator().xuint()
+            Random::Generator().get(std::numeric_limits<unsigned>::min(), std::numeric_limits<unsigned>::max())
     ));
 
     Fred::Backend::Admin::Contact::Verification::confirm_check_enqueueing(

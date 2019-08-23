@@ -18,6 +18,8 @@
  */
 #include <utility>
 
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
 #include "test/deprecated/test_file_manager_client.hh"
 
 BOOST_AUTO_TEST_SUITE(Files)
@@ -26,9 +28,9 @@ BOOST_AUTO_TEST_CASE( file_manager_client_simple )
 {
 
     //test data
-    RandomDataGenerator rdg(0);
+    Random::Generator rnd;
 
-    std::string test_data_str = rdg.xstring(1024*1024);
+    std::string test_data_str = rnd.get_seq(Random::CharSet::letters(), 1024*1024);
     std::vector<char> in_test_data_vect(test_data_str.begin(), test_data_str.end());
 
 

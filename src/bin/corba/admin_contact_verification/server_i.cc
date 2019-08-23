@@ -57,7 +57,8 @@
 #include "libfred/registrable_object/contact/verification/update_check.hh"
 #include "libfred/registrable_object/contact/verification/update_test.hh"
 #include "util/log/context.hh"
-#include "util/random_data_generator.hh"
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
 #include "src/util/tz/utc.hh"
 #include "src/util/tz/get_psql_handle_of.hh"
 #include "util/uuid.hh"
@@ -68,7 +69,7 @@
 
 static inline std::string create_log_server_id(const std::string& _server_name)
 {
-    return _server_name + "-" + RandomDataGenerator().xnumstring(5);
+    return _server_name + "-" + Random::Generator().get_seq(Random::CharSet::digits(), 5);
 }
 
 namespace CorbaConversion {

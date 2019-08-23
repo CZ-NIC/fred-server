@@ -39,7 +39,8 @@
 #include "libfred/registrable_object/nsset/info_nsset.hh"
 #include "libfred/registrable_object/nsset/info_nsset_diff.hh"
 #include "libfred/registrable_object/nsset/update_nsset.hh"
-#include "util/random_data_generator.hh"
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
 #include "test/setup/fixtures.hh"
 
 #include <boost/test/unit_test.hpp>
@@ -58,7 +59,7 @@ struct delete_nsset_fixture : public Test::instantiate_db_template
     std::string test_domain_fqdn;
 
     delete_nsset_fixture()
-    :xmark(RandomDataGenerator().xnumstring(6))
+    :xmark(Random::Generator().get_seq(Random::CharSet::digits(), 6))
     , admin_contact_handle(std::string("TEST-ADMIN-CONTACT3-HANDLE")+xmark)
     , test_nsset_handle ( std::string("TEST-DEL-NSSET-")+xmark+"-HANDLE")
     , test_domain_fqdn ( std::string("fred")+xmark+".cz")

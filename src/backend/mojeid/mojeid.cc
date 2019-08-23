@@ -58,7 +58,7 @@
 #include "libfred/registrar/check_registrar.hh"
 
 #include "util/case_insensitive.hh"
-#include "util/random.hh"
+#include "util/random/random.hh"
 #include "util/log/context.hh"
 
 #include "src/util/cfg/config_handler_decl.hh"
@@ -132,7 +132,7 @@ namespace {
 
 std::string create_ctx_name(const std::string& _name)
 {
-    return str(boost::format("%1%-<%2%>") % _name % Random::integer(0, 10000));
+    return str(boost::format("%1%-<%2%>") % _name % Random::Generator().get(0, 10000));
 }
 
 std::string create_ctx_function_name(const char* fnc)

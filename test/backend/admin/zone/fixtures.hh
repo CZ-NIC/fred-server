@@ -22,9 +22,9 @@
 #include "libfred/object_state/perform_object_state_request.hh"
 #include "libfred/opcontext.hh"
 #include "libfred/zone/create_zone.hh"
-#include "util/random_data_generator.hh"
 #include "test/setup/fixtures.hh"
 #include "test/setup/fixtures_utils.hh"
+#include "util/random/random.hh"
 
 #include <boost/asio.hpp>
 #include <string>
@@ -88,7 +88,7 @@ struct EnumZone
     {
         while (max_lenght != 0)
         {
-            fqdn += RandomDataGenerator().xnumstring(1) + ".";
+            fqdn += Random::Generator().get_seq(Random::CharSet::digits(), 1) + ".";
             --max_lenght;
         }
         fqdn += "e164.arpa";

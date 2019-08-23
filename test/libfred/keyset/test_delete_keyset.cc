@@ -39,7 +39,8 @@
 #include "libfred/registrable_object/keyset/info_keyset.hh"
 #include "libfred/registrable_object/keyset/info_keyset_diff.hh"
 #include "libfred/registrable_object/keyset/update_keyset.hh"
-#include "util/random_data_generator.hh"
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
 #include "test/setup/fixtures.hh"
 
 #include <boost/test/unit_test.hpp>
@@ -57,7 +58,7 @@ struct delete_keyset_fixture : public Test::instantiate_db_template
     std::string test_domain_fqdn;
 
     delete_keyset_fixture()
-    :xmark(RandomDataGenerator().xnumstring(6))
+    :xmark(Random::Generator().get_seq(Random::CharSet::digits(), 6))
     , admin_contact_handle(std::string("TEST-ADMIN-CONTACT3-HANDLE")+xmark)
     , test_keyset_handle ( std::string("TEST-DEL-KEYSET-")+xmark+"-HANDLE")
     , test_domain_fqdn ( std::string("fred")+xmark+".cz")

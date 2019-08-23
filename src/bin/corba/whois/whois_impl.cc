@@ -24,7 +24,7 @@
 
 #include "util/log/logger.hh"
 #include "util/log/context.hh"
-#include "util/random.hh"
+#include "util/random/random.hh"
 
 #include "src/bin/corba/connection_releaser.hh"
 
@@ -34,7 +34,7 @@
 
 static const std::string create_ctx_name(const std::string &_name)
 {
-    return str(boost::format("%1%-<%2%>")% _name % Random::integer(0, 10000));
+    return str(boost::format("%1%-<%2%>")% _name % Random::Generator().get(0, 10000));
 }
 
 ccReg_Whois_i::ccReg_Whois_i(const std::string& _database

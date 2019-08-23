@@ -52,7 +52,8 @@
 #include "util/factory_check.hh"
 #include "util/log/logger.hh"
 #include "util/log/context.hh"
-#include "util/random.hh"
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
 #include "src/bin/corba/connection_releaser.hh"
 #include "src/bin/corba/epp_corba_client_impl.hh"
 #include "src/bin/corba/util/corba_conversions_string.hh"
@@ -291,7 +292,7 @@ char* ccReg_Admin_i::createSession(const char* username) {
 
   ccReg_User_i *user_info = new ccReg_User_i(1 /* dummy id until user management */, username, username, username);
 
-  std::string session_id = "sessid#" + Random::string_alphanum(5) + "-" + username;
+  std::string session_id = "sessid#" + Random::Generator().get_seq(Random::CharSet::letters_and_digits(), 5) + "-" + username;
 
 
   ccReg_Session_i *session = new ccReg_Session_i(session_id, m_connection_string, ns,

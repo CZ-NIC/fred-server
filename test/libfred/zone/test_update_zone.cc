@@ -22,7 +22,8 @@
 #include "libfred/zone/info_zone.hh"
 #include "libfred/zone/update_zone.hh"
 #include "libfred/zone/exceptions.hh"
-#include "util/random_data_generator.hh"
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
 #include "test/libfred/zone/util.hh"
 #include "test/setup/fixtures.hh"
 
@@ -39,7 +40,7 @@ struct update_zone_fixture
 
     update_zone_fixture(::LibFred::OperationContext& _ctx)
     {
-        non_enum_zone.fqdn = RandomDataGenerator().xstring(3);
+        non_enum_zone.fqdn = Random::Generator().get_seq(Random::CharSet::letters(), 3);
         non_enum_zone.expiration_period_min_in_months = 1;
         non_enum_zone.expiration_period_max_in_months = 2;
         non_enum_zone.dots_max = 1;

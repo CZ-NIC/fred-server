@@ -21,7 +21,8 @@
 #include "libfred/public_request/public_request_auth_type_iface.hh"
 #include "libfred/registrable_object/contact/create_contact.hh"
 
-#include "util/random_data_generator.hh"
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
 #include "test/setup/fixtures.hh"
 #include "test/setup/fixtures_utils.hh"
 #include "test/libfred/util.hh"
@@ -67,7 +68,7 @@ struct update_public_request_fixture : virtual Test::instantiate_db_template,
                                        PublicRequestAuthTypeFake
 {
     update_public_request_fixture()
-    :   xmark(RandomDataGenerator().xnumstring(6)),
+    :   xmark(Random::Generator().get_seq(Random::CharSet::digits(), 6)),
         public_request_type(*this)
     {
         ::LibFred::OperationContextCreator ctx;

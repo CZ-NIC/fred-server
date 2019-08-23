@@ -26,7 +26,8 @@
 #include "libfred/registrable_object/contact/info_contact_impl.hh"
 #include "libfred/registrable_object/contact/merge_contact.hh"
 #include "libfred/registrable_object/contact/update_contact.hh"
-#include "util/random_data_generator.hh"
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
 #include "test/setup/fixtures.hh"
 
 #include <boost/test/unit_test.hpp>
@@ -45,7 +46,7 @@ struct test_contact_fixture_6da88b63b0bc46e29f6d0ce3181fd5d8 : public Test::inst
     std::string test_contact_history_handle;
 
     test_contact_fixture_6da88b63b0bc46e29f6d0ce3181fd5d8()
-    :xmark(RandomDataGenerator().xnumstring(6))
+    :xmark(Random::Generator().get_seq(Random::CharSet::digits(), 6))
     , test_contact_handle(std::string("TEST-CONTACT-HANDLE")+xmark)
     , test_contact_history_handle(std::string("TEST-CONTACT-HISTORY-HANDLE")+xmark)
     {

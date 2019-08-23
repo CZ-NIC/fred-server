@@ -18,7 +18,8 @@
  */
 #include "libfred/registrar/epp_auth/get_registrar_epp_auth.hh"
 #include "libfred/registrar/epp_auth/registrar_epp_auth_data.hh"
-#include "util/random_data_generator.hh"
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
 #include "test/libfred/registrar/epp_auth/util.hh"
 #include "test/libfred/util.hh"
 #include "test/setup/fixtures.hh"
@@ -37,8 +38,8 @@ struct GetRegistrarEppAuthFixture : has_registrar
 
     GetRegistrarEppAuthFixture()
         : registrar_handle(registrar.handle),
-          certificate_fingerprint(RandomDataGenerator().xstring(20)),
-          plain_password(RandomDataGenerator().xstring(10))
+          certificate_fingerprint(Random::Generator().get_seq(Random::CharSet::letters(), 20)),
+          plain_password(Random::Generator().get_seq(Random::CharSet::letters(), 10))
     {
     }
 };
@@ -47,7 +48,7 @@ BOOST_FIXTURE_TEST_SUITE(TestGetRegistrarEppAuth, GetRegistrarEppAuthFixture)
 
 BOOST_AUTO_TEST_CASE(set_nonexistent_registrar)
 {
-    const std::string nonexistent_registrar = RandomDataGenerator().xstring(10);
+    const std::string nonexistent_registrar = Random::Generator().get_seq(Random::CharSet::letters(), 10);
     ::LibFred::Registrar::EppAuth::RegistrarEppAuthData epp_auth_data =
             ::LibFred::Registrar::EppAuth::GetRegistrarEppAuth(nonexistent_registrar).exec(ctx);
     BOOST_CHECK_EQUAL(epp_auth_data.epp_auth_records.size(), 0);
