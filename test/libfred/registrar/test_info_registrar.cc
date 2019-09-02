@@ -30,7 +30,8 @@
 #include "libfred/opcontext.hh"
 #include "util/util.hh"
 
-#include "util/random_data_generator.hh"
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
 
 /**
  *  @file
@@ -49,7 +50,7 @@ struct test_info_registrar_fixture : virtual public Test::instantiate_db_templat
     ::LibFred::InfoRegistrarData test_registrar_data_2;
 
     test_info_registrar_fixture()
-    :xmark(RandomDataGenerator().xnumstring(6))
+    :xmark(Random::Generator().get_seq(Random::CharSet::digits(), 6))
     {
         test_registrar_data_1.handle = std::string("TEST-REGISTRAR1-HANDLE")+xmark;
         test_registrar_data_1.name = std::string("TEST-REGISTRAR NAME1")+xmark;

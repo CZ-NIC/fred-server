@@ -28,9 +28,10 @@
 #include "src/backend/admin_block/administrativeblocking.hh"
 #include "test/setup/fixtures.hh"
 #include "test/setup/fixtures_utils.hh"
-#include "util/random_data_generator.hh"
+#include "util/random/random.hh"
 
 #include <boost/date_time/gregorian/gregorian.hpp>
+#include <limits>
 #include <set>
 #include <string>
 
@@ -204,7 +205,9 @@ struct HasContactMojeId : DomainList, StatusList
               owner_block_mode(::Fred::Backend::AdministrativeBlocking::OWNER_BLOCK_MODE_BLOCK_OWNER),
               block_to_date(),
               reason("ContactMojeId"),
-              log_req_id(RandomDataGenerator().xuint())
+              log_req_id(Random::Generator().get(
+                          std::numeric_limits<unsigned>::min(), 
+                          std::numeric_limits<unsigned>::max()))
     {
         const auto owner = owner_list.begin();
         ::LibFred::StatusList status_moje_id;
@@ -229,7 +232,9 @@ struct HasOneDomain : DomainList, StatusList
               owner_block_mode(::Fred::Backend::AdministrativeBlocking::OWNER_BLOCK_MODE_KEEP_OWNER),
               block_to_date(),
               reason("One Domain"),
-              log_req_id(RandomDataGenerator().xuint())
+              log_req_id(Random::Generator().get(
+                          std::numeric_limits<unsigned>::min(), 
+                          std::numeric_limits<unsigned>::max()))
     {
     }
 };
@@ -249,7 +254,9 @@ struct HasMoreDomains : DomainList, StatusList
               owner_block_mode(::Fred::Backend::AdministrativeBlocking::OWNER_BLOCK_MODE_BLOCK_OWNER),
               block_to_date(),
               reason("More Domains"),
-              log_req_id(RandomDataGenerator().xuint())
+              log_req_id(Random::Generator().get(
+                          std::numeric_limits<unsigned>::min(), 
+                          std::numeric_limits<unsigned>::max()))
     {
     }
 };
@@ -269,7 +276,9 @@ struct HasMoreOwnersMoreDomains : DomainList, StatusList
               owner_block_mode(::Fred::Backend::AdministrativeBlocking::OWNER_BLOCK_MODE_BLOCK_OWNER_COPY),
               block_to_date(),
               reason("MoreOwnersMoreDomains"),
-              log_req_id(RandomDataGenerator().xuint())
+              log_req_id(Random::Generator().get(
+                          std::numeric_limits<unsigned>::min(), 
+                          std::numeric_limits<unsigned>::max()))
     {
         for (const auto& owner : owner_list)
         {

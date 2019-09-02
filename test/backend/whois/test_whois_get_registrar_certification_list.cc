@@ -19,7 +19,7 @@
 #include "test/backend/whois/fixture_common.hh"
 
 #include "libfred/db_settings.hh"
-#include "util/random_data_generator.hh"
+#include "util/random/random.hh"
 #include "src/backend/whois/registrar_certification.hh"
 
 BOOST_AUTO_TEST_SUITE(TestWhois)
@@ -37,10 +37,10 @@ struct certification_list_fixture
         for (int i = 0; i < 5; ++i) //XXX
         {
             std::string name("test-certification");
-            RandomDataGenerator rdg;
-            name += rdg.xnumstring(6);
+            Random::Generator rdg;
+            name += rdg.get_seq(Random::CharSet::digits(), 6);
             const LibFred::InfoRegistrarData& data = Test::registrar::make(ctx);
-            Fred::Backend::Whois::RegistrarCertificationData rcd(data.handle, rdg.xuint() % 4 + 1, 1); // XXX
+            Fred::Backend::Whois::RegistrarCertificationData rcd(data.handle, rdg.get<unsigned int>(1, 4), 1); // XXX
             ctx.get_conn().exec_params(
                     "INSERT INTO registrar_certification (registrar_id, valid_from, valid_until, classification, eval_file_id) "
                     "VALUES ($1::bigint, now()::date, now()::date, $2::int, 1) ", // XXX

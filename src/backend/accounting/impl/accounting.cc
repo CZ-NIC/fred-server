@@ -40,7 +40,6 @@
 #include "libfred/registrar/credit/exceptions.hh"
 #include "libfred/zone/exceptions.hh"
 #include "util/log/context.hh"
-#include "util/random.hh"
 #include "src/util/subprocess.hh"
 #include "util/util.hh"
 

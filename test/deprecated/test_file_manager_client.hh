@@ -43,7 +43,6 @@
 #include "util/log/logger.hh"
 #include "util/log/context.hh"
 
-#include "util/random_data_generator.hh"
 #include "src/util/concurrent_queue.hh"
 #include "util/types/common.hh"
 

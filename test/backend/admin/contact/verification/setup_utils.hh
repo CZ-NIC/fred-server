@@ -48,7 +48,7 @@
 #include "libfred/registrable_object/contact/verification/update_check.hh"
 #include "libfred/registrable_object/contact/verification/update_test.hh"
 #include "util/db/nullable.hh"
-#include "util/random_data_generator.hh"
+#include "util/random/random.hh"
 
 #include <string>
 #include <utility>
@@ -67,7 +67,7 @@ class DummyTestReturning: public Fred::Backend::Admin::Contact::Verification::Te
             // prevent name collisions
             while(true) {
                 try {
-                    handle = "DUMMY_TEST_" + return_status + "_" + RandomDataGenerator().xnumstring(15);
+                    handle = "DUMMY_TEST_" + return_status + "_" + Random::Generator().get_seq(Random::CharSet::digits(), 15);
                     description = handle + "_DESCRIPTION";
 
                     ::LibFred::OperationContextCreator ctx;
@@ -75,7 +75,7 @@ class DummyTestReturning: public Fred::Backend::Admin::Contact::Verification::Te
                          ctx.get_conn().exec(
                              "INSERT INTO enum_contact_test "
                              "   (id, handle) "
-                             "   VALUES ("+RandomDataGenerator().xnumstring(9)+", '" + handle + "') "
+                             "   VALUES ("+Random::Generator().get_seq(Random::CharSet::digits(), 9)+", '" + handle + "') "
                              "   RETURNING id;"
                          )[0]["id"]
                     );
@@ -108,12 +108,12 @@ class DummyThrowingTest: public Fred::Backend::Admin::Contact::Verification::Tes
                 try {
                     ::LibFred::OperationContextCreator ctx;
 
-                    handle_ = "DUMMY_THROWING_TEST_" + RandomDataGenerator().xnumstring(15);
+                    handle_ = "DUMMY_THROWING_TEST_" + Random::Generator().get_seq(Random::CharSet::digits(), 15);
                     description_ = handle_ + "_DESCRIPTION";
                     res = ctx.get_conn().exec(
                         "INSERT INTO enum_contact_test "
                         "   (id, handle) "
-                        "   VALUES ("+RandomDataGenerator().xnumstring(9)+", '" + handle_ + "') "
+                        "   VALUES ("+Random::Generator().get_seq(Random::CharSet::digits(), 9)+", '" + handle_ + "') "
                         "   RETURNING id AS id_; ");
 
                     if(res.size()==0) {

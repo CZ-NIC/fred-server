@@ -28,9 +28,10 @@
 #include "libfred/registrar/info_registrar_data.hh"
 #include "libfred/registrar/zone_access/add_registrar_zone_access.hh"
 #include "libfred/zone/create_zone.hh"
-#include "util/random_data_generator.hh"
 #include "test/setup/fixtures.hh"
 #include "test/setup/fixtures_utils.hh"
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <string>
@@ -545,7 +546,7 @@ struct ExistingEppAuth : NonexistentEppAuth
     ExistingEppAuth(::LibFred::OperationContext& _ctx, const std::string& _registrar_handle)
             : NonexistentEppAuth(_ctx)
     {
-        auth.plain_password = RandomDataGenerator().xstring(20);
+        auth.plain_password = Random::Generator().get_seq(Random::CharSet::letters(), 20);
         auth.id = ::LibFred::Registrar::EppAuth::AddRegistrarEppAuth(_registrar_handle,
                     auth.certificate_fingerprint,
                     auth.plain_password)
@@ -563,7 +564,7 @@ struct HasEppAuthWithNonexistentRegistrar : NonexistentRegistrar
               epp_auth(_ctx)
     {
         epp_auth_data.registrar_handle = registrar.handle;
-        epp_auth.auth.plain_password = RandomDataGenerator().xstring(20);
+        epp_auth.auth.plain_password = Random::Generator().get_seq(Random::CharSet::letters(), 20);
         epp_auth_data.epp_auth_records.push_back(epp_auth.auth);
     }
 };
@@ -683,7 +684,7 @@ struct HasEppAuthAddWithDelete : ExistingRegistrar
               auth_for_delete(_ctx, registrar.handle)
     {
         epp_auth_data.registrar_handle = registrar.handle;
-        nonexistent_auth.auth.plain_password = RandomDataGenerator().xstring(10);
+        nonexistent_auth.auth.plain_password = Random::Generator().get_seq(Random::CharSet::letters(), 10);
         epp_auth_data.epp_auth_records.push_back(nonexistent_auth.auth);
         epp_auth_data.epp_auth_records.push_back(existing_auth.auth);
     }
@@ -702,7 +703,7 @@ struct HasEppAuthUpdateWithDelete : ExistingRegistrar
               update_pass(_ctx, registrar.handle),
               update_cert(_ctx, registrar.handle)
     {
-        update_pass.auth.plain_password = RandomDataGenerator().xstring(10);
+        update_pass.auth.plain_password = Random::Generator().get_seq(Random::CharSet::letters(), 10);
         update_cert.auth.certificate_fingerprint =
                 Test::get_nonexistent_value(_ctx, "registraracl", "cert", "text", generate_random_handle);
         epp_auth_data.registrar_handle = registrar.handle;
@@ -722,7 +723,7 @@ struct HasEppAuthCloneWithDelete : ExistingRegistrar
               auth_for_delete(_ctx, registrar.handle),
               new_epp_auth(_ctx)
     {
-        new_epp_auth.auth.plain_password = RandomDataGenerator().xstring(10);
+        new_epp_auth.auth.plain_password = Random::Generator().get_seq(Random::CharSet::letters(), 10);
         new_epp_auth.auth.new_certificate_fingerprint =
                 Test::get_nonexistent_value(_ctx, "registraracl", "cert", "text", generate_random_handle);
         epp_auth_data.registrar_handle = registrar.handle;
@@ -740,17 +741,17 @@ struct HasMoreEppAuthData : ExistingRegistrar
         ExistingEppAuth auth_for_delete(_ctx, registrar.handle);
 
         NonexistentEppAuth auth_for_add(_ctx);
-        auth_for_add.auth.plain_password = RandomDataGenerator().xstring(10);
+        auth_for_add.auth.plain_password = Random::Generator().get_seq(Random::CharSet::letters(), 10);
         epp_auth_data.epp_auth_records.push_back(auth_for_add.auth);
 
         NonexistentEppAuth auth_for_clone(_ctx);
-        auth_for_clone.auth.plain_password = RandomDataGenerator().xstring(10);
+        auth_for_clone.auth.plain_password = Random::Generator().get_seq(Random::CharSet::letters(), 10);
         auth_for_clone.auth.new_certificate_fingerprint =
                 Test::get_nonexistent_value(_ctx, "registraracl", "cert", "text", generate_random_handle);
         epp_auth_data.epp_auth_records.push_back(auth_for_clone.auth);
 
         ExistingEppAuth pass_for_update(_ctx, registrar.handle);
-        pass_for_update.auth.plain_password = RandomDataGenerator().xstring(10);
+        pass_for_update.auth.plain_password = Random::Generator().get_seq(Random::CharSet::letters(), 10);
         epp_auth_data.epp_auth_records.push_back(pass_for_update.auth);
 
         ExistingEppAuth cert_for_update(_ctx, registrar.handle);
@@ -759,7 +760,7 @@ struct HasMoreEppAuthData : ExistingRegistrar
         epp_auth_data.epp_auth_records.push_back(cert_for_update.auth);
 
         ExistingEppAuth update_all(_ctx, registrar.handle);
-        update_all.auth.plain_password = RandomDataGenerator().xstring(10);
+        update_all.auth.plain_password = Random::Generator().get_seq(Random::CharSet::letters(), 10);
         update_all.auth.certificate_fingerprint =
                 Test::get_nonexistent_value(_ctx, "registraracl", "cert", "text", generate_random_handle);
         epp_auth_data.epp_auth_records.push_back(update_all.auth);

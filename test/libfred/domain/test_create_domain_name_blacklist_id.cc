@@ -33,7 +33,8 @@
 #include "libfred/registrable_object/domain/info_domain_diff.hh"
 #include "libfred/registrable_object/domain/renew_domain.hh"
 #include "libfred/registrable_object/domain/update_domain.hh"
-#include "util/random_data_generator.hh"
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
 #include "test/setup/fixtures.hh"
 
 #include <boost/test/unit_test.hpp>
@@ -53,7 +54,7 @@ struct create_domain_name_blacklist_id_fixture : public Test::instantiate_db_tem
     ::LibFred::ObjectId test_domain_id;
 
     create_domain_name_blacklist_id_fixture()
-    :xmark(RandomDataGenerator().xnumstring(6))
+    :xmark(Random::Generator().get_seq(Random::CharSet::digits(), 6))
     , admin_contact2_handle(std::string("TEST-CDNB-ADMIN-CONTACT-HANDLE") + xmark)
     , registrant_contact_handle(std::string("TEST-CDNB-REGISTRANT-CONTACT-HANDLE") + xmark)
     , test_domain_fqdn(std::string("fred") + xmark + ".cz")

@@ -35,7 +35,8 @@
 #include "libfred/registrable_object/domain/info_domain_diff.hh"
 #include "libfred/registrable_object/domain/renew_domain.hh"
 #include "libfred/registrable_object/domain/update_domain.hh"
-#include "util/random_data_generator.hh"
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
 #include "test/setup/fixtures.hh"
 
 #include <boost/test/unit_test.hpp>
@@ -56,7 +57,7 @@ struct create_admin_object_state_restore_request_id_fixture : public Test::insta
     const ::LibFred::ObjectId logd_request_id;
 
     create_admin_object_state_restore_request_id_fixture()
-    :   xmark(RandomDataGenerator().xnumstring(6)),
+    :   xmark(Random::Generator().get_seq(Random::CharSet::digits(), 6)),
         admin_contact2_handle(std::string("TEST-CAOSRR-ADMIN-CONTACT-HANDLE") + xmark),
         registrant_contact_handle(std::string("TEST-CAOSRR-REGISTRANT-CONTACT-HANDLE") + xmark),
         test_domain_fqdn(std::string("fred") + xmark + ".cz"),

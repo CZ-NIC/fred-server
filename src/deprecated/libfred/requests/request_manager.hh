@@ -29,7 +29,7 @@
 
 #include <stdexcept>
 
-#include "util/random.hh"
+#include "util/random/random.hh"
 
 namespace LibFred {
 namespace Logger {
@@ -38,7 +38,7 @@ namespace Logger {
 class logd_ctx_init {
 public:
     inline logd_ctx_init() :
-        ctx( (boost::format("logd-<%1%>") % Random::integer(0, 100000000)).str() )
+        ctx( (boost::format("logd-<%1%>") % Random::Generator().get(0, 100000000)).str() )
     {}
 
 private:

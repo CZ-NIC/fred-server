@@ -22,7 +22,8 @@
 #include "libfred/zone/info_zone_data.hh"
 #include "libfred/zone/info_zone.hh"
 #include "libfred/zone/exceptions.hh"
-#include "util/random_data_generator.hh"
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
 #include "test/libfred/zone/util.hh"
 #include "test/setup/fixtures.hh"
 
@@ -75,7 +76,7 @@ BOOST_FIXTURE_TEST_SUITE(TestInfoZone, SupplyFixtureCtx<info_zone_fixture>)
 
 BOOST_AUTO_TEST_CASE(set_nonexistent_zone)
 {
-    std::string fqdn = RandomDataGenerator().xstring(5);
+    std::string fqdn = Random::Generator().get_seq(Random::CharSet::letters(), 5);
     BOOST_CHECK_THROW(::LibFred::Zone::InfoZone(fqdn)
                 .exec(ctx),
            ::LibFred::Zone::NonExistentZone);

@@ -21,7 +21,8 @@
 #include "src/deprecated/libfred/object_states.hh"
 #include "libfred/db_settings.hh"
 #include "src/util/types/birthdate.hh"
-#include "util/random.hh"
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
 #include <map>
 
 
@@ -567,7 +568,10 @@ unsigned long long contact_create(const unsigned long long &_request_id,
                                   Contact &_data)
 {
     transform_ssn_birthday_value(_data);
-    _data.id = db_contact_object_create(_registrar_id, _data.handle, Random::string_alphanum(8));
+    _data.id = db_contact_object_create(
+            _registrar_id,
+            _data.handle,
+            Random::Generator().get_seq(Random::CharSet::letters_and_digits(), 8));
     db_contact_insert(_data);
     unsigned long long hid = db_contact_insert_history(_request_id, _data.id);
     Database::Connection conn = Database::Manager::acquire();
@@ -587,7 +591,7 @@ unsigned long long contact_transfer(const unsigned long long &_request_id,
                      " authinfopw = $2::text WHERE id = $3::integer",
                      Database::query_param_list
                          (_registrar_id)
-                         (Random::string_alphanum(8))
+                         (Random::Generator().get_seq(Random::CharSet::letters_and_digits(), 8))
                          (_contact_id));
     unsigned long long hid = db_contact_insert_history(_request_id, _contact_id);
 

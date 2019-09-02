@@ -38,7 +38,8 @@
 #include <boost/assign/list_of.hpp>
 
 #include "src/util/time_clock.hh"
-#include "util/random_data_generator.hh"
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
 #include "src/util/concurrent_queue.hh"
 
 #include "src/backend/contact_verification/public_request_contact_verification_impl.hh"
@@ -322,10 +323,10 @@ BOOST_AUTO_TEST_CASE(test_contact_verification)
         }
         const unsigned long long registrar_id = static_cast<unsigned long long>(res_reg[0][0]);
 
-        RandomDataGenerator rdg;
+        Random::Generator rdg;
 
         //create test contact
-        const std::string xmark = rdg.xnumstring(6);
+        const std::string xmark = rdg.get_seq(Random::CharSet::digits(), 6);
         fcvc.handle = "TESTCV-HANDLE" + xmark;
         fcvc.name = "TESTCV NAME" + xmark;
         fcvc.organization = "TESTCV-ORG" + xmark;
@@ -337,7 +338,7 @@ BOOST_AUTO_TEST_CASE(test_contact_verification)
         fcvc.email = "test" + xmark + "@nic.cz";
         fcvc.ssn = "1980-01-01";
         fcvc.ssntype = "BIRTHDAY";
-        fcvc.auth_info = rdg.xnstring(8);
+        fcvc.auth_info = rdg.get_seq(Random::CharSet::letters_and_digits(), 8);
         //unsigned long long contact_hid =
 
         fcvc.disclosename = true;
@@ -563,10 +564,10 @@ struct Case_contact_verification_in_threads_Fixture
 
             registrar_id = static_cast<unsigned long long>(res_reg[0][0]);
 
-            RandomDataGenerator rdg;
+            Random::Generator rdg;
 
             //create test contact
-            const std::string xmark = rdg.xnumstring(6);
+            const std::string xmark = rdg.get_seq(Random::CharSet::digits(), 6);
             fcvc.handle = "TESTCVT-HANDLE" + xmark;
             fcvc.name = "TESTCVT NAME" + xmark;
             fcvc.organization = "TESTCVT-ORG" + xmark;
@@ -578,7 +579,7 @@ struct Case_contact_verification_in_threads_Fixture
             fcvc.email = "test" + xmark + "@nic.cz";
             fcvc.ssn = "1980-01-01";
             fcvc.ssntype = "BIRTHDAY";
-            fcvc.auth_info = rdg.xnstring(8);
+            fcvc.auth_info = rdg.get_seq(Random::CharSet::letters_and_digits(), 8);
 
             fcvc.disclosename = true;
             fcvc.discloseorganization = true;
@@ -637,13 +638,11 @@ public:
             unsigned sleep_time,
             sync_barriers* sb_ptr,
             Case_contact_verification_in_threads_Fixture* fixture_ptr,
-            ThreadResultQueue* result_queue_ptr = nullptr,
-            unsigned seed = 0)
+            ThreadResultQueue* result_queue_ptr = nullptr)
         : number_(number),
           sleep_time_(sleep_time),
           sb_ptr_(sb_ptr),
           fixture_ptr_(fixture_ptr),
-          rdg_(seed),
           rsq_ptr_(result_queue_ptr)
     {}
 
@@ -942,7 +941,7 @@ private:
     unsigned sleep_time_;//[s]
     sync_barriers* sb_ptr_;
     Case_contact_verification_in_threads_Fixture* fixture_ptr_;
-    RandomDataGenerator rdg_;
+    Random::Generator rdg_;
     ThreadResultQueue* rsq_ptr_; //result queue non-owning pointer
 };
 
@@ -1022,11 +1021,11 @@ BOOST_AUTO_TEST_CASE(test_contact_create_update_info)
     }
     const unsigned long long registrar_id = static_cast< unsigned long long >(res_reg[0][0]);
 
-    RandomDataGenerator rdg;
+    Random::Generator rdg;
 
     //create test contact
     ::LibFred::Contact::Verification::Contact fcvc;
-    const std::string xmark = rdg.xnumstring(6);
+    const std::string xmark = rdg.get_seq(Random::CharSet::digits(), 6);
     fcvc.handle = "TESTCCUI-HANDLE" + xmark;
     fcvc.name = "TESTCCUI NAME" + xmark;
     fcvc.organization = "TESTCCUI-ORG" + xmark;
@@ -1038,7 +1037,7 @@ BOOST_AUTO_TEST_CASE(test_contact_create_update_info)
     fcvc.email = "test" + xmark + "@nic.cz";
     fcvc.ssn = "1980-01-01";
     fcvc.ssntype = "BIRTHDAY";
-    fcvc.auth_info = rdg.xnstring(8);
+    fcvc.auth_info = rdg.get_seq(Random::CharSet::letters_and_digits(), 8);
 
     fcvc.disclosename = true;
     fcvc.discloseorganization = true;

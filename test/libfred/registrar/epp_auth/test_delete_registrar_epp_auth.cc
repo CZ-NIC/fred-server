@@ -18,13 +18,15 @@
  */
 #include "libfred/registrar/epp_auth/delete_registrar_epp_auth.hh"
 #include "libfred/registrar/epp_auth/exceptions.hh"
-#include "util/random_data_generator.hh"
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
 #include "test/libfred/registrar/epp_auth/util.hh"
 #include "test/libfred/util.hh"
 #include "test/setup/fixtures.hh"
 
 #include <boost/test/test_tools.hpp>
 #include <boost/test/unit_test.hpp>
+#include <limits>
 #include <string>
 
 namespace Test{
@@ -37,8 +39,8 @@ struct DeleteRegistrarEppAuthFixture : has_registrar
 
     DeleteRegistrarEppAuthFixture()
         : registrar_handle(registrar.handle),
-          certificate_fingerprint(RandomDataGenerator().xstring(20)),
-          plain_password(RandomDataGenerator().xstring(10))
+          certificate_fingerprint(Random::Generator().get_seq(Random::CharSet::letters(), 20)),
+          plain_password(Random::Generator().get_seq(Random::CharSet::letters(), 10))
     {
     }
 };
@@ -47,7 +49,9 @@ BOOST_FIXTURE_TEST_SUITE(TestDeleteRegistrarEppAuth, DeleteRegistrarEppAuthFixtu
 
 BOOST_AUTO_TEST_CASE(set_nonexistent_registrar_epp_auth)
 {
-    const unsigned long long id = RandomDataGenerator().xuint();
+    const unsigned long long id = Random::Generator().get(
+            std::numeric_limits<unsigned>::min(), 
+            std::numeric_limits<unsigned>::max());
     BOOST_CHECK_THROW(
             ::LibFred::Registrar::EppAuth::DeleteRegistrarEppAuth(id).exec(ctx),
             ::LibFred::Registrar::EppAuth::NonexistentRegistrarEppAuth);

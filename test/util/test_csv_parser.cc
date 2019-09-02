@@ -21,7 +21,7 @@
 #include "util/util.hh"
 #include "util/printable.hh"
 #include "src/util/csv_parser.hh"
-#include "util/random_data_generator.hh"
+#include "util/random/random.hh"
 
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN
@@ -664,13 +664,13 @@ BOOST_AUTO_TEST_CASE(test_err_nodata_lf)
 
 BOOST_AUTO_TEST_CASE(test_err_big_random_data)
 {
-    RandomDataGenerator rnd;
+    Random::Generator rnd;
     std::string csv_file(1000000,'a');
     std::string alphabet ="a;\"\r\n";
 
     for(unsigned long long j = 0; j < 1000; ++j)
     {
-        for(unsigned long long i = 0 ; i < 1000000; ++i) csv_file.at(i) = alphabet.at(rnd.xnum1_5() - 1);
+        for(unsigned long long i = 0 ; i < 1000000; ++i) csv_file.at(i) = alphabet.at(rnd.get(1, 5) - 1);
 
         try
         {

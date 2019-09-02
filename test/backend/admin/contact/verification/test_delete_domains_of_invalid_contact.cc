@@ -55,9 +55,9 @@ BOOST_AUTO_TEST_CASE(test_Deleting_domains)
 
     std::vector<std::string> domain_names;
 
-    domain_names.push_back("hokus" + RandomDataGenerator().xnumstring(10) + "1pokus.cz");
-    domain_names.push_back("hokus" + RandomDataGenerator().xnumstring(10) + "2pokus.cz");
-    domain_names.push_back("hokus" + RandomDataGenerator().xnumstring(10) + "3pokus.cz");
+    domain_names.push_back("hokus" + Random::Generator().get_seq(Random::CharSet::digits(), 10) + "1pokus.cz");
+    domain_names.push_back("hokus" + Random::Generator().get_seq(Random::CharSet::digits(), 10) + "2pokus.cz");
+    domain_names.push_back("hokus" + Random::Generator().get_seq(Random::CharSet::digits(), 10) + "3pokus.cz");
 
     for(std::vector<std::string>::const_iterator it = domain_names.begin();
         it != domain_names.end();

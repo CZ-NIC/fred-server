@@ -27,6 +27,7 @@
 #include "libfred/db_settings.hh"
 #include "util/log/logger.hh"
 #include "util/map_at.hh"
+#include "util/random/random.hh"
 #include "util/util.hh"
 #include "src/util/xmlgen.hh"
 
@@ -274,8 +275,9 @@ void ContactVerificationPassword::sendSmsPassword(const boost::format& sms_templ
 
 std::string ContactVerificationPassword::generateRandomPassword(const size_t _length)
 {
-    return Random::string_from(_length,
-            "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789");
+    return Random::Generator().get_seq(
+            "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789",
+            _length);
 }
 
 

@@ -23,7 +23,8 @@
 #include "libfred/registrar/info_registrar_data.hh"
 #include "libfred/registrar/info_registrar.hh"
 #include "libfred/registrar/update_registrar.hh"
-#include "util/random_data_generator.hh"
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
 #include "test/libfred/registrar/util.hh"
 #include "test/setup/fixtures.hh"
 
@@ -39,7 +40,7 @@ struct update_registrar_fixture
 
     update_registrar_fixture(::LibFred::OperationContext& _ctx)
     {
-        registrar.handle = RandomDataGenerator().xstring(12);
+        registrar.handle = Random::Generator().get_seq(Random::CharSet::letters(), 12);
         registrar.name = Nullable<std::string>("Testname");
         registrar.system = false;
         registrar.vat_payer = true;
@@ -55,7 +56,7 @@ BOOST_FIXTURE_TEST_SUITE(TestUpdateRegistrar, SupplyFixtureCtx<update_registrar_
 
 BOOST_AUTO_TEST_CASE(set_nonexistent_registrar)
 {
-    const std::string nonexistentRegistrar = RandomDataGenerator().xstring(13);
+    const std::string nonexistentRegistrar = Random::Generator().get_seq(Random::CharSet::letters(), 13);
     BOOST_CHECK_THROW(::LibFred::Registrar::UpdateRegistrarById(nonexistentRegistrar)
             .set_name(registrar.name.get_value())
             .exec(ctx),

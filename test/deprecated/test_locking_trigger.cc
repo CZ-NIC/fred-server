@@ -20,8 +20,9 @@
 
 #include "src/util/setup_server_decl.hh"
 #include "src/util/time_clock.hh"
-#include "util/random_data_generator.hh"
 #include "src/util/concurrent_queue.hh"
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
 
 #include "src/deprecated/libfred/registry.hh"
 #include "libfred/registrable_object/contact/create_contact.hh"
@@ -115,10 +116,10 @@ struct Case_locking_trigger_threaded_Fixture
 
             registrar_id = static_cast<unsigned long long>(res_reg[0][0]);
 
-            RandomDataGenerator rdg;
+            Random::Generator rdg;
 
             //create test contact
-            const std::string xmark = rdg.xnumstring(6);
+            const std::string xmark = rdg.get_seq(Random::CharSet::digits(), 6);
             fcvc.handle = "TESTLT-HANDLE" + xmark;
             fcvc.name = "TESTLT NAME" + xmark;
             fcvc.organization = "TESTLT-ORG" + xmark;
@@ -130,7 +131,7 @@ struct Case_locking_trigger_threaded_Fixture
             fcvc.email = "test" + xmark + "@nic.cz";
             fcvc.ssn = "1980-01-01";
             fcvc.ssntype = "BIRTHDAY";
-            fcvc.auth_info = rdg.xnstring(8);
+            fcvc.auth_info = rdg.get_seq(Random::CharSet::letters_and_digits(), 8);
             //unsigned long long contact_hid =
 
             fcvc.disclosename = true;
@@ -188,13 +189,11 @@ public:
             unsigned sleep_time,
             sync_barriers* sb_ptr,
             Case_locking_trigger_threaded_Fixture* fixture_ptr,
-            ThreadResultQueue* result_queue_ptr = nullptr,
-            unsigned seed = 0)
+            ThreadResultQueue* result_queue_ptr = nullptr)
         : number_(number),
           sleep_time_(sleep_time),
           sb_ptr_(sb_ptr),
           fixture_ptr_(fixture_ptr),
-          rdg_(seed),
           rsq_ptr_(result_queue_ptr)
     {}
 
@@ -267,7 +266,7 @@ private:
     unsigned sleep_time_;//[s]
     sync_barriers* sb_ptr_;
     Case_locking_trigger_threaded_Fixture* fixture_ptr_;
-    RandomDataGenerator rdg_;
+    Random::Generator rdg_;
     ThreadResultQueue* rsq_ptr_; //result queue non-owning pointer
 };
 
@@ -345,7 +344,7 @@ struct Locking_object_state_request_fixture
                 "FROM registrar "
                 "WHERE system "
                 "ORDER BY id LIMIT 1")[0][0])),
-          xmark(RandomDataGenerator().xnumstring(6)),
+          xmark(Random::Generator().get_seq(Random::CharSet::digits(), 6)),
           contact_handle("TEST-OBJECT-STATE-REQUEST-CONTACT-HANDLE" + xmark),
           info_contact_id(0)
     {
@@ -403,13 +402,11 @@ public:
             unsigned sleep_time,
             sync_barriers* sb_ptr,
             Locking_object_state_request_fixture* fixture_ptr,
-            ThreadResultQueue* result_queue_ptr = nullptr,
-            unsigned seed = 0)
+            ThreadResultQueue* result_queue_ptr = nullptr)
         : number_(number),
           sleep_time_(sleep_time),
           sb_ptr_(sb_ptr),
           fixture_ptr_(fixture_ptr),
-          rdg_(seed),
           rsq_ptr_(result_queue_ptr)
     {}
 
@@ -489,7 +486,7 @@ private:
     unsigned sleep_time_;//[s]
     sync_barriers* sb_ptr_;
     Locking_object_state_request_fixture* fixture_ptr_;
-    RandomDataGenerator rdg_;
+    Random::Generator rdg_;
     ThreadResultQueue* rsq_ptr_; //result queue non-owning pointer
 };
 
@@ -566,7 +563,7 @@ public:
           registrar_id(static_cast<unsigned long long>(ctx_.get_conn().exec_params(
                 "SELECT id FROM registrar WHERE handle=$1::text",
                 Database::query_param_list(registrar_handle))[0][0])),
-          xmark(RandomDataGenerator().xnumstring(6)),
+          xmark(Random::Generator().get_seq(Random::CharSet::digits(), 6)),
           contact_handle("TEST-PUBLIC-REQUEST-CONTACT-HANDLE" + xmark),
           contact_id(0),
           preq_id(0)
@@ -687,13 +684,11 @@ public:
             unsigned sleep_time,
             sync_barriers* sb_ptr,
             Locking_public_request_fixture* fixture_ptr,
-            ThreadResultQueue* result_queue_ptr = nullptr,
-            unsigned seed = 0)
+            ThreadResultQueue* result_queue_ptr = nullptr)
         : number_(number),
           sleep_time_(sleep_time),
           sb_ptr_(sb_ptr),
           fixture_ptr_(fixture_ptr),
-          rdg_(seed),
           rsq_ptr_(result_queue_ptr)
     {}
 
@@ -770,7 +765,7 @@ private:
     unsigned sleep_time_;//[s]
     sync_barriers* sb_ptr_;
     Locking_public_request_fixture* fixture_ptr_;
-    RandomDataGenerator rdg_;
+    Random::Generator rdg_;
     ThreadResultQueue* rsq_ptr_; //result queue non-owning pointer
 };
 

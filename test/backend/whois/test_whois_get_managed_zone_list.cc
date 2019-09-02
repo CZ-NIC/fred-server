@@ -20,7 +20,8 @@
 
 #include "src/backend/whois/zone_list.hh"
 #include "libfred/db_settings.hh"
-#include "util/random_data_generator.hh"
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
 
 BOOST_AUTO_TEST_SUITE(TestWhois)
 BOOST_AUTO_TEST_SUITE(get_managed_zone_list)
@@ -34,10 +35,10 @@ struct managed_zone_list_fixture
     {
         ::LibFred::OperationContextCreator ctx;
         fixture_zones = Fred::Backend::Whois::get_managed_zone_list(ctx);
-        RandomDataGenerator rdg;
+        Random::Generator rdn;
         for (int i = 0; i < 5; ++i)
         {
-            std::string name = rdg.xstring(3);
+            std::string name = rdn.get_seq(Random::CharSet::letters(), 3);
             ctx.get_conn().exec_params(
                 "INSERT INTO zone (fqdn, ex_period_min, ex_period_max, val_period) "
                 "VALUES ($1::text, 12, 120, 0) ", // XXX

@@ -32,10 +32,10 @@
 #include "src/deprecated/util/util.hh"
 #include "util/log/logger.hh"
 #include "src/bin/corba/epp/action.hh"
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
 
-#include "util/random_data_generator.hh"
-
-RandomDataGenerator rdg;
+Random::Generator rdn;
 
 // generate randoma password contains characters  [a-z] [A-Z] and [0-9] with length PASS_LEN
 void random_pass(
@@ -47,7 +47,7 @@ void random_pass(
 
 
   for (i = 0; i < len;) {
-    c = rdg.xnletter();//32+(int) (96.0*rand()/(RAND_MAX+1.0));
+    c = rdn.get(Random::CharSet::letters_and_digits());//32+(int) (96.0*rand()/(RAND_MAX+1.0));
 
     if (isalnum(c) ) {
       str[i] = c;

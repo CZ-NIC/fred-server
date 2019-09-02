@@ -34,7 +34,7 @@
 #include "src/util/cfg/handle_registry_args.hh"
 #include "util/factory_check.hh"
 #include "util/log/logger.hh"
-#include "util/random.hh"
+#include "util/random/random.hh"
 #include "src/util/types/birthdate.hh"
 #include "src/util/types/stringify.hh"
 #include "util/util.hh"
@@ -52,7 +52,7 @@
 
 static const std::string create_ctx_name(const std::string& _name)
 {
-    return str(boost::format("%1%-<%2%>") % _name % Random::integer(0, 10000));
+    return str(boost::format("%1%-<%2%>") % _name % Random::Generator().get(0, 10000));
 }
 
 

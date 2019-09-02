@@ -21,14 +21,17 @@
 #include "libfred/registrar/zone_access/exceptions.hh"
 #include "libfred/registrar/zone_access/update_registrar_zone_access.hh"
 #include "libfred/zone/create_zone.hh"
-#include "util/random_data_generator.hh"
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
 #include "test/libfred/registrar/util.hh"
 #include "test/libfred/registrar/zone_access/util.hh"
 #include "test/setup/fixtures.hh"
 
-#include <boost/date_time/gregorian/gregorian_types.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/test/test_tools.hpp>
 #include <boost/test/unit_test.hpp>
+
+#include <limits>
 #include <string>
 
 namespace Test {
@@ -44,12 +47,16 @@ struct UpdateRegistrarZoneAccessFixture
     boost::gregorian::date to_date;
 
     UpdateRegistrarZoneAccessFixture(::LibFred::OperationContext& _ctx)
-        : registrar_handle(RandomDataGenerator().xstring(10)),
-          zone_fqdn(RandomDataGenerator().xstring(3)),
-          ex_period_min(RandomDataGenerator().xnum1_5()),
-          ex_period_max(RandomDataGenerator().xnum1_5() + 5),
-          from_date(RandomDataGenerator().xdate()),
-          to_date(RandomDataGenerator().xdate())
+        : registrar_handle(Random::Generator().get_seq(Random::CharSet::letters(), 10)),
+          zone_fqdn(Random::Generator().get_seq(Random::CharSet::letters(), 3)),
+          ex_period_min(Random::Generator().get(1, 5)),
+          ex_period_max(Random::Generator().get(6, 10)),
+          from_date(Random::Generator().xdate(
+                  boost::gregorian::from_simple_string("1990-01-01");
+                  boost::gregorian::from_simple_string("2038-01-19"))),
+          to_date(Random::Generator().xdate(
+                  boost::gregorian::from_simple_string("1990-01-01");
+                  boost::gregorian::from_simple_string("2038-01-19")))
     {
         ::LibFred::CreateRegistrar(registrar_handle).exec(_ctx);
         ::LibFred::Zone::CreateZone(zone_fqdn, ex_period_min, ex_period_max).exec(_ctx);
@@ -69,7 +76,9 @@ BOOST_AUTO_TEST_CASE(set_no_update_data)
 
 BOOST_AUTO_TEST_CASE(set_nonexistent_zone_access)
 {
-    const unsigned long long nonexistent_id = RandomDataGenerator().xuint();
+    const unsigned long long nonexistent_id = Random::Generator().get(
+            std::numeric_limits<unsigned>::min(), 
+            std::numeric_limits<unsigned>::max());
     BOOST_CHECK_THROW(
             ::LibFred::Registrar::ZoneAccess::UpdateRegistrarZoneAccess(nonexistent_id)
                     .set_to_date(to_date)
@@ -87,7 +96,9 @@ BOOST_AUTO_TEST_CASE(set_zone_access_to_date)
 
 BOOST_AUTO_TEST_CASE(set_zone_access_from_and_to_date)
 {
-    from_date = RandomDataGenerator().xdate();
+    from_date = Random::Generator().xdate(
+                  boost::gregorian::from_simple_string("1990-01-01");
+                  boost::gregorian::from_simple_string("2038-01-19"));
     ::LibFred::Registrar::ZoneAccess::UpdateRegistrarZoneAccess(zone_access_id)
             .set_from_date(from_date)
             .set_to_date(to_date)

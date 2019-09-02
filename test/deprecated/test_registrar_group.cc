@@ -238,12 +238,10 @@ public:
             unsigned sleep_time,
             sync_barriers* sb_ptr,
             std::size_t thread_group_divisor,
-            ThreadResultQueue* result_queue_ptr = nullptr,
-            unsigned seed = 0)
+            ThreadResultQueue* result_queue_ptr = nullptr)
         : number_(number),
           sleep_time_(sleep_time),
           sb_ptr_(sb_ptr),
-          rdg_(seed),
           tgd_(thread_group_divisor),
           rsq_ptr(result_queue_ptr)
     {}
@@ -335,7 +333,7 @@ private:
     unsigned number_;//thred identification
     unsigned sleep_time_;//[s]
     sync_barriers* sb_ptr_;
-    RandomDataGenerator rdg_;
+    Random::Generator rdg_;
     std::size_t tgd_;//thread group divisor
     ThreadResultQueue* rsq_ptr; //result queue non-owning pointer
 };//class TestThreadWorker

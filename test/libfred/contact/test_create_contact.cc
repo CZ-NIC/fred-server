@@ -25,7 +25,8 @@
 #include "libfred/registrable_object/contact/info_contact_diff.hh"
 #include "libfred/registrable_object/contact/merge_contact.hh"
 #include "libfred/registrable_object/contact/update_contact.hh"
-#include "util/random_data_generator.hh"
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
 #include "test/libfred/util.hh"
 #include "test/setup/fixtures.hh"
 #include "test/setup/fixtures_utils.hh"
@@ -46,7 +47,7 @@ struct create_contact_fixture : public virtual Test::instantiate_db_template
     ::LibFred::ContactAddressList addresses;
 
     create_contact_fixture()
-    : xmark(RandomDataGenerator().xnumstring(6))
+    : xmark(Random::Generator().get_seq(Random::CharSet::digits(), 6))
     , create_contact_handle(std::string("TEST-CREATE-CONTACT-HANDLE") + xmark)
     , contact_name(std::string("TEST-CREATE-CONTACT NAME") + xmark)
     {

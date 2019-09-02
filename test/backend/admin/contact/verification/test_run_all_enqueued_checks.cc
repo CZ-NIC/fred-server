@@ -35,7 +35,7 @@
 #include "libfred/registrable_object/contact/verification/list_enum_objects.hh"
 #include "libfred/registrable_object/contact/verification/update_check.hh"
 #include "libfred/registrable_object/contact/verification/update_test.hh"
-#include "util/random.hh"
+#include "util/random/random.hh"
 #include "test/backend/admin/contact/verification/setup_utils.hh"
 #include "test/setup/fixtures.hh"
 
@@ -44,6 +44,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <map>
+#include <limits>
 
 struct dummy_testsuite : public setup_empty_testsuite {
 
@@ -385,7 +386,7 @@ BOOST_AUTO_TEST_CASE(test_Logd_request_id_of_related_changes)
 
     // effectively creates tests and updates check at once
     Fred::Backend::Admin::Contact::Verification::Queue::fill_check_queue(testsuite.testsuite_handle, 1).exec();
-    unsigned long long logd_request_id = Random::integer(0, 2147483647);
+    unsigned long long logd_request_id = Random::Generator().get(0, std::numeric_limits<int>::max());
     run_all_enqueued_checks(test_impls_, logd_request_id);
 
     ::LibFred::InfoContactCheck info_op( uuid::from_string( check.check_handle_) );

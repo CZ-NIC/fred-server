@@ -33,7 +33,8 @@
 #include "libfred/registrable_object/keyset/info_keyset_impl.hh"
 #include "libfred/registrable_object/keyset/update_keyset.hh"
 #include "libfred/registrable_object/uuid.hh"
-#include "util/random_data_generator.hh"
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
 #include "test/setup/fixtures.hh"
 
 #include <boost/test/unit_test.hpp>
@@ -53,7 +54,7 @@ struct update_keyset_fixture : public Test::instantiate_db_template
     std::string test_keyset_handle;
 
     update_keyset_fixture()
-    : xmark(RandomDataGenerator().xnumstring(6))
+    : xmark(Random::Generator().get_seq(Random::CharSet::digits(), 6))
     , admin_contact4_handle(std::string("TEST-ADMIN-CONTACT4-HANDLE")+xmark)
     , admin_contact5_handle(std::string("TEST-ADMIN-CONTACT5-HANDLE")+xmark)
     , admin_contact6_handle(std::string("TEST-ADMIN-CONTACT6-HANDLE")+xmark)

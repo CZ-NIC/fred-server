@@ -32,7 +32,8 @@
 #include "libfred/registrable_object/nsset/info_nsset_diff.hh"
 #include "libfred/registrable_object/nsset/info_nsset_impl.hh"
 #include "libfred/registrable_object/nsset/update_nsset.hh"
-#include "util/random_data_generator.hh"
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
 #include "test/setup/fixtures.hh"
 
 #include <boost/test/unit_test.hpp>
@@ -56,7 +57,7 @@ BOOST_AUTO_TEST_CASE(info_nsset)
             ctx.get_conn().exec("SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
     BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
 
-    std::string xmark = RandomDataGenerator().xnumstring(6);
+    std::string xmark = Random::Generator().get_seq(Random::CharSet::digits(), 6);
 
     std::string admin_contact2_handle = std::string("TEST-ADMIN-CONTACT2-HANDLE")+xmark;
     ::LibFred::Contact::PlaceAddress place;
@@ -102,7 +103,7 @@ struct update_nsset_fixture : public Test::instantiate_db_template
     std::string test_nsset_handle;
 
     update_nsset_fixture()
-    : xmark(RandomDataGenerator().xnumstring(6))
+    : xmark(Random::Generator().get_seq(Random::CharSet::digits(), 6))
     , admin_contact2_handle(std::string("TEST-ADMIN-CONTACT2-HANDLE")+xmark)
     , admin_contact3_handle(std::string("TEST-ADMIN-CONTACT3-HANDLE")+xmark)
     , test_nsset_handle ( std::string("TEST-NSSET-HANDLE")+xmark)

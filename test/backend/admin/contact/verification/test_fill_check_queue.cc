@@ -536,7 +536,7 @@ void setup_contact_as_technical(const setup_special_contact& contact_) {
         try {
             ::LibFred::OperationContextCreator ctx1;
 
-            nsset_handle_ = "NSSET_" + RandomDataGenerator().xnumstring(15);
+            nsset_handle_ = "NSSET_" + Random::Generator().get_seq(Random::CharSet::digits(), 15);
             ::LibFred::CreateNsset(nsset_handle_, contact_.registrar_.info_data.handle).exec(ctx1);
 
             ctx1.commit_transaction();
@@ -563,7 +563,7 @@ void setup_contact_as_owner(const setup_special_contact& contact_) {
         try {
             ::LibFred::OperationContextCreator ctx1;
 
-            domain_fqdn_ = "DOMAIN" + RandomDataGenerator().xnumstring(15) + ".cz";
+            domain_fqdn_ = "DOMAIN" + Random::Generator().get_seq(Random::CharSet::digits(), 15) + ".cz";
 
             ::LibFred::CreateDomain(domain_fqdn_, contact_.registrar_.info_data.handle, contact_.contact_handle_).exec(ctx1);
 
@@ -600,7 +600,7 @@ setup_special_contact::setup_special_contact(
         try {
             ::LibFred::OperationContextCreator ctx;
 
-            contact_handle_ = "CONTACT_" + RandomDataGenerator().xnumstring(10);
+            contact_handle_ = "CONTACT_" + Random::Generator().get_seq(Random::CharSet::digits(), 10);
             ::LibFred::CreateContact create(contact_handle_, registrar_.info_data.handle);
             if(country_code_.isset()) {
                 ::LibFred::Contact::PlaceAddress place;

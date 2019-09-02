@@ -19,7 +19,7 @@
 #include <boost/thread.hpp>
 #include <boost/thread/barrier.hpp>
 
-#include "util/random.hh"
+#include "util/random/random.hh"
 #include "src/deprecated/libfred/requests/session_cache.hh"
 #include "test/setup/tests_common.hh"
 
@@ -169,12 +169,12 @@ public:
         if (number%3) {
             std::shared_ptr<ModelSession> n(new ModelSession());
 
-            unsigned id = Random::integer(1, max_id);
+            unsigned id = Random::Generator().get(1u, max_id);
             n->setId(id);
             n->setUserId(id);
             scache.add(id, n);
         } else {
-            unsigned id = Random::integer(1, max_id);
+            unsigned id = Random::Generator().get(1u, max_id);
 
             scache.remove(id);
         }

@@ -22,7 +22,8 @@
 #include "libfred/db_settings.hh"
 #include "util/types/convert_sql_db_types.hh"
 #include "util/types/sqlize.hh"
-#include "util/random.hh"
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
 #include "src/deprecated/libfred/object_states.hh"
 #include "src/deprecated/libfred/messages/messages_impl.hh"
 
@@ -661,7 +662,7 @@ Manager* PublicRequestImpl::getPublicRequestManager() const
 PublicRequestAuthImpl::PublicRequestAuthImpl()
     : PublicRequestImpl(), authenticated_(false)
 {
-    identification_ = Random::string_alpha(32);
+    identification_ = Random::Generator().get_seq(Random::CharSet::letters(), 32);
 }
 
 

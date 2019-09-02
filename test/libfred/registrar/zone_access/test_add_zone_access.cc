@@ -20,12 +20,13 @@
 #include "libfred/registrar/zone_access/add_registrar_zone_access.hh"
 #include "libfred/registrar/zone_access/exceptions.hh"
 #include "libfred/zone/create_zone.hh"
-#include "util/random_data_generator.hh"
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
 #include "test/libfred/registrar/util.hh"
 #include "test/libfred/registrar/zone_access/util.hh"
 #include "test/setup/fixtures.hh"
 
-#include <boost/date_time/gregorian/gregorian_types.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/test/test_tools.hpp>
 #include <boost/test/unit_test.hpp>
 #include <string>
@@ -42,11 +43,13 @@ struct AddRegistrarZoneAccessFixture
     boost::gregorian::date to_date;
 
     AddRegistrarZoneAccessFixture(::LibFred::OperationContext& _ctx)
-        : registrar_handle(RandomDataGenerator().xstring(10)),
-          zone_fqdn(RandomDataGenerator().xstring(3)),
-          ex_period_min(RandomDataGenerator().xnum1_5()),
-          ex_period_max(RandomDataGenerator().xnum1_5() + 5),
-          from_date(RandomDataGenerator().xdate()),
+        : registrar_handle(Random::Generator().get_seq(Random::CharSet::letters(), 10)),
+          zone_fqdn(Random::Generator().get_seq(Random::CharSet::letters(), 3)),
+          ex_period_min(Random::Generator().get(1, 5)),
+          ex_period_max(Random::Generator().get(6, 10)),
+          from_date(Random::Generator().xdate(
+                  boost::gregorian::from_simple_string("1990-01-01");
+                  boost::gregorian::from_simple_string("2038-01-19"))),
           to_date(not_a_date_time)
     {
         ::LibFred::CreateRegistrar(registrar_handle).exec(_ctx);
@@ -58,7 +61,7 @@ BOOST_FIXTURE_TEST_SUITE(TestAddRegistrarZoneAccess, SupplyFixtureCtx<AddRegistr
 
 BOOST_AUTO_TEST_CASE(set_nonexistent_registrar)
 {
-    const std::string nonexistent_registrar = "noreg" + RandomDataGenerator().xstring(3);
+    const std::string nonexistent_registrar = "noreg" + Random::Generator().get_seq(Random::CharSet::letters(), 3);
     BOOST_CHECK_THROW(
             ::LibFred::Registrar::ZoneAccess::AddRegistrarZoneAccess(
                     nonexistent_registrar,
@@ -70,7 +73,7 @@ BOOST_AUTO_TEST_CASE(set_nonexistent_registrar)
 
 BOOST_AUTO_TEST_CASE(set_nonexistent_zone)
 {
-    const std::string nonexistent_zone = "nozone" + RandomDataGenerator().xstring(3);
+    const std::string nonexistent_zone = "nozone" + Random::Generator().get_seq(Random::CharSet::letters(), 3);
     BOOST_CHECK_THROW(
             ::LibFred::Registrar::ZoneAccess::AddRegistrarZoneAccess(
                     registrar_handle,
@@ -118,7 +121,9 @@ BOOST_AUTO_TEST_CASE(set_min_add_registrar_zone)
 
 BOOST_AUTO_TEST_CASE(set_max_add_registrar_zone)
 {
-    to_date = RandomDataGenerator().xdate();
+    to_date = Random::Generator().xdate(
+                  boost::gregorian::from_simple_string("1990-01-01");
+                  boost::gregorian::from_simple_string("2038-01-19"));
     const unsigned long long id =
             ::LibFred::Registrar::ZoneAccess::AddRegistrarZoneAccess(registrar_handle, zone_fqdn, from_date)
                     .set_to_date(to_date)

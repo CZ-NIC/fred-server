@@ -17,16 +17,20 @@
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include "test/setup/fixtures_utils.hh"
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
+
 #include <cmath>
+#include <limits>
 
 namespace Test {
 
     unsigned long long generate_random_bigserial() {
-        return std::abs(RandomDataGenerator().xint());
+        return Random::Generator().get(0, std::numeric_limits<int>::max());
     }
 
     std::string generate_random_handle() {
-        return RandomDataGenerator().xnumstring(20);
+        return Random::Generator().get_seq(Random::CharSet::digits(), 20);
     }
 
     unsigned long long get_nonexistent_object_id(::LibFred::OperationContext& ctx) {

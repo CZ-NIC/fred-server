@@ -20,7 +20,8 @@
 #include "libfred/opexception.hh"
 #include "libfred/zone/create_zone.hh"
 #include "libfred/zone/exceptions.hh"
-#include "util/random_data_generator.hh"
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
 #include "test/libfred/zone/util.hh"
 #include "test/setup/fixtures.hh"
 
@@ -37,7 +38,7 @@ struct create_zone_fixture
     int ex_period_max;
 
     create_zone_fixture(::LibFred::OperationContext& _ctx)
-        : fqdn(RandomDataGenerator().xstring(3)),
+        : fqdn(Random::Generator().get_seq(Random::CharSet::letters(), 3)),
           ex_period_min(6),
           ex_period_max(12)
     {}

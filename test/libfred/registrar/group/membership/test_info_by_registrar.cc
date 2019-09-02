@@ -25,6 +25,8 @@
 #include "libfred/db_settings.hh"
 #include "test/setup/fixtures.hh"
 #include "test/setup/fixtures_utils.hh"
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
 
 #include <boost/test/unit_test.hpp>
 #include <map>
@@ -42,11 +44,11 @@ struct test_membership_by_registrar_fixture : virtual public Test::instantiate_d
     {
         LibFred::OperationContextCreator ctx;
         reg = Test::registrar::make(ctx);
-        RandomDataGenerator rdg;
+        Random::Generator rdg;
         for (int i = 0; i < 5; ++i)
         {
             const unsigned long long group_id =
-                LibFred::Registrar::CreateRegistrarGroup(std::string("test_reg_grp_") + rdg.xnumstring(6)).exec(ctx);
+                LibFred::Registrar::CreateRegistrarGroup(std::string("test_reg_grp_") + rdg.get_seq(Random::CharSet::digits(), 6)).exec(ctx);
             mem_map[LibFred::Registrar::CreateRegistrarGroupMembership(reg.id, group_id, today).exec(ctx)] = group_id;
         }
         LibFred::Registrar::CreateRegistrarGroupMembership(

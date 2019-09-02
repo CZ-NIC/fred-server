@@ -23,7 +23,6 @@
 #include "util/map_at.hh"
 #include "src/util/subprocess.hh"
 #include "util/printable.hh"
-#include "util/random_data_generator.hh"
 #include "src/util/cfg/config_handler_decl.hh"
 
 #include "test/setup/fixtures.hh"

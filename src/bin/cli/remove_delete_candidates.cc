@@ -26,8 +26,9 @@
 #include "libfred/registrable_object/nsset/delete_nsset.hh"
 
 #include "util/enum_conversion.hh"
-#include "util/random.hh"
 #include "util/log/context.hh"
+#include "util/random/algorithm/floating_point.hh"
+#include "util/random/random.hh"
 
 #include <algorithm>
 #include <chrono>
@@ -512,22 +513,20 @@ void delete_objects_marked_as_delete_candidate(
             ? static_cast<unsigned>(number_of_objects_to_delete_now)
             : static_cast<unsigned>(number_of_objects_to_delete_now) + 1;
 
-    std::random_device source_of_randomness;
-    typedef std::mt19937 RandomNumberGenerator;
-    RandomNumberGenerator rnd_gen(source_of_randomness());
-    std::shuffle(domains.begin(), domains.end(), rnd_gen);
+    Random::Generator rnd_get;
+    rnd_get.shuffle(domains.begin(), domains.end());
     const bool delete_more_than_domains = domains.size() < max_number_of_deletions;
     if (delete_more_than_domains)
     {
-        std::shuffle(nssets.begin(), nssets.end(), rnd_gen);
+        rnd_get.shuffle(nssets.begin(), nssets.end());
         const bool delete_more_than_nssets = (domains.size() + nssets.size()) < max_number_of_deletions;
         if (delete_more_than_nssets)
         {
-            std::shuffle(keysets.begin(), keysets.end(), rnd_gen);
+            rnd_get.shuffle(keysets.begin(), keysets.end());
             const bool delete_more_than_keysets = (domains.size() + nssets.size() + keysets.size()) < max_number_of_deletions;
             if (delete_more_than_keysets)
             {
-                std::shuffle(contacts.begin(), contacts.end(), rnd_gen);
+                rnd_get.shuffle(contacts.begin(), contacts.end());
             }
         }
     }
@@ -536,10 +535,7 @@ void delete_objects_marked_as_delete_candidate(
     relative_times_of_deletions.reserve(max_number_of_deletions);
     for (unsigned idx = 0; idx < max_number_of_deletions; ++idx)
     {
-        static const auto number_of_possibilities = (1.0 + rnd_gen.max()) - rnd_gen.min();
-        const auto current_possibility = rnd_gen() - rnd_gen.min();
-        const auto normalized_random_number = current_possibility / number_of_possibilities;
-        const auto relative_time_of_deletion = (idx + normalized_random_number) * relative_duration_of_one_deletion;
+        const auto relative_time_of_deletion = (idx + rnd_get.get(0.0, 1.0)) * relative_duration_of_one_deletion;
         if (relative_time_of_deletion <= 1.0)
         {
             relative_times_of_deletions.push_back(relative_time_of_deletion);

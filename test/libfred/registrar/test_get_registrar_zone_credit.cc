@@ -22,7 +22,8 @@
 #include "libfred/opexception.hh"
 #include "libfred/opcontext.hh"
 #include "util/util.hh"
-#include "util/random_data_generator.hh"
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
 
 #include "test/setup/fixtures.hh"
 
@@ -35,7 +36,7 @@ namespace {
 struct test_get_registrar_zone_credit_fixture:Test::instantiate_db_template
 {
     test_get_registrar_zone_credit_fixture()
-        : xmark(RandomDataGenerator().xnumstring(6)),
+        : xmark(Random::Generator().get_seq(Random::CharSet::digits(), 6)),
           registrar_1_handle("TEST-REGISTRAR1-HANDLE" + xmark),
           registrar_2_handle("TEST-REGISTRAR2-HANDLE" + xmark)
     {

@@ -44,7 +44,8 @@
 #include "util/util.hh"
 #include "util/map_at.hh"
 
-#include "util/random_data_generator.hh"
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
 
 #include "src/util/cfg/handle_mojeid_args.hh"
 #include "src/util/cfg/handle_domainbrowser_args.hh"
@@ -105,7 +106,7 @@ struct user_contact_handle_fixture
     std::string user_contact_handle;
 
     user_contact_handle_fixture()
-    :xmark(RandomDataGenerator().xnumstring(6))
+    :xmark(Random::Generator().get_seq(Random::CharSet::digits(), 6))
     , user_contact_handle(std::string("USER-CONTACT-HANDLE-")+xmark)
     {
         BOOST_TEST_MESSAGE(user_contact_handle);
@@ -165,7 +166,7 @@ struct test_registrar_fixture
     std::string test_registrar_handle;
 
     test_registrar_fixture()
-    :xmark(RandomDataGenerator().xnumstring(6))
+    :xmark(Random::Generator().get_seq(Random::CharSet::digits(), 6))
     , test_registrar_handle(std::string("TEST-REGISTRAR-HANDLE")+xmark)
     {
         ::LibFred::OperationContextCreator ctx;

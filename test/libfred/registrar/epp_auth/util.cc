@@ -20,7 +20,8 @@
 #include "libfred/registrar/epp_auth/add_registrar_epp_auth.hh"
 #include "util/password_storage.hh"
 #include "util/password_storage/password_data.hh"
-#include "util/random_data_generator.hh"
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
 #include "test/libfred/registrar/epp_auth/util.hh"
 
 #include <stdexcept>
@@ -71,11 +72,11 @@ unsigned long long add_epp_authentications(
             _certificate_fingerprint,
             _plain_password).exec(_ctx);
 
-    const unsigned size = RandomDataGenerator().xnum1_6();
+    const unsigned size = Random::Generator().get(1, 6);
     for (unsigned i = 0; i < size; ++i)
     {
-        const std::string cert = RandomDataGenerator().xstring(20);
-        const std::string pass = RandomDataGenerator().xstring(10);
+        const std::string cert = Random::Generator().get_seq(Random::CharSet::letters(), 20);
+        const std::string pass = Random::Generator().get_seq(Random::CharSet::letters(), 10);
         ::LibFred::Registrar::EppAuth::AddRegistrarEppAuth(_registrar_handle, cert, pass).exec(_ctx);
     }
     return id;

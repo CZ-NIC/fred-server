@@ -35,7 +35,6 @@
 #include <boost/assign/list_of.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include "util/random_data_generator.hh"
 #include "src/util/concurrent_queue.hh"
 
 #include "test/util/exception_test.hh"

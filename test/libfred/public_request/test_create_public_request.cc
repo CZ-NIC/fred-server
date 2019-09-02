@@ -21,7 +21,8 @@
 #include "libfred/public_request/public_request_type_iface.hh"
 #include "libfred/registrable_object/contact/create_contact.hh"
 
-#include "util/random_data_generator.hh"
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
 #include "test/setup/fixtures.hh"
 #include "test/setup/fixtures_utils.hh"
 #include "test/libfred/util.hh"
@@ -34,7 +35,7 @@ const std::string server_name = "test-create-public-request";
 struct create_public_request_fixture : public virtual Test::instantiate_db_template
 {
     create_public_request_fixture()
-    :   xmark(RandomDataGenerator().xnumstring(6))
+    :   xmark(Random::Generator().get_seq(Random::CharSet::digits(), 6))
     {
         ::LibFred::OperationContextCreator ctx;
         Database::Result dbres = ctx.get_conn().exec(

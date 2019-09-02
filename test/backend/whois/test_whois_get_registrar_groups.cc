@@ -20,7 +20,7 @@
 #include "src/backend/whois/registrar_group.hh"
 
 #include "libfred/db_settings.hh"
-#include "util/random_data_generator.hh"
+#include "util/random/random.hh"
 
 BOOST_AUTO_TEST_SUITE(TestWhois)
 BOOST_AUTO_TEST_SUITE(get_registrar_groups)
@@ -37,14 +37,14 @@ struct get_registrar_groups_fixture
         for(int i = 0; i < 5; ++i) //XXX
         {
             std::string name("test-group");
-            RandomDataGenerator rdg;
-            name += rdg.xnumstring(6);
+            Random::Generator rdg;
+            name += rdg.get_seq(Random::CharSet::digits(), 6);
             std::vector<std::string> registrars;
             Database::Result group = ctx.get_conn().exec_params(
                     "INSERT INTO registrar_group (short_name) "
                     "VALUES ($1::text) RETURNING ID ",
                     Database::query_param_list(name));
-            for (unsigned int y = 0; y < rdg.xuint() % 2 + 1; ++y)
+            for (unsigned int y = 0; y < rdg.get(1, 2); ++y)
             {
                 const LibFred::InfoRegistrarData& data = Test::registrar::make(ctx);
                 ctx.get_conn().exec_params(
