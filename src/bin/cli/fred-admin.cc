@@ -23,6 +23,7 @@
 #include "util/log/context.hh"
 #include "src/bin/corba/connection_releaser.hh"
 
+#include "src/bin/cli/charge_registry_access_fee_impl.hh"
 #include "src/bin/cli/domain_client_impl.hh"
 #include "src/bin/cli/keyset_client_impl.hh"
 #include "src/bin/cli/contact_client_impl.hh"
@@ -38,7 +39,6 @@
 #include "src/bin/cli/charge_client_impl.hh"
 #include "src/bin/cli/domain_name_validation_init.hh"
 #include "src/bin/cli/public_request_impl.hh"
-
 
 #include "src/util/cfg/handle_general_args.hh"
 #include "src/util/cfg/handle_logging_args.hh"
@@ -140,7 +140,9 @@ CommandHandlerPtrVector chpv = boost::assign::list_of
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleContactVerificationStartEnqueuedChecksArgsGrp), contact_verification_start_enqueued_checks_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleSendObjectEventNotificationEmailsArgsGrp), send_object_event_notification_emails_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientCreateExpiredDomainArgsGrp), create_expired_domain_impl()))
-    (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientProcessPublicRequestsArgsGrp), process_public_requests_impl()));
+    (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientProcessPublicRequestsArgsGrp), process_public_requests_impl()))
+    (CommandHandlerParam(HandleCommandArgsPtr(new HandleChargeRegistryAccessFeeAnnualArgsGrp), charge_registry_access_fee_annual_impl))
+    (CommandHandlerParam(HandleCommandArgsPtr(new HandleChargeRegistryAccessFeeMonthlyArgsGrp), charge_registry_access_fee_monthly_impl));
 
 CommandOptionGroups cog(chpv);
 
@@ -309,7 +311,7 @@ int main(int argc, char* argv[])
         std::cerr << "Error: " << e.what() << std::endl;
         return EXIT_FAILURE;
     }
-    catch(...)
+    catch (...)
     {
         Logging::Manager::instance_ref().error("Unknown Error");
         std::cerr << "Unknown Error" << std::endl;

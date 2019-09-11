@@ -579,6 +579,7 @@ prepare_object_files(
     src/backend/whois/zone_list.cc
     src/bin/cli/bankclient.cc
     src/bin/cli/chargeclient.cc
+    src/bin/cli/charge_registry_access_fee.cc
     src/bin/cli/commonclient.cc
     src/bin/cli/contactclient.cc
     src/bin/cli/domainclient.cc
@@ -1996,6 +1997,7 @@ prepare_executable(fred-admin
     src/backend/buffer.cc
     src/bin/cli/bankclient.cc
     src/bin/cli/chargeclient.cc
+    src/bin/cli/charge_registry_access_fee.cc
     src/bin/cli/commonclient.cc
     src/bin/cli/contactclient.cc
     src/bin/cli/domainclient.cc
