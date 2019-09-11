@@ -1,3 +1,19 @@
+2019-09-11 (2.42.0)
+
+  * fred-admin
+    - new commands for charging registrar access fee
+      - `charge_registry_access_fee_annual`
+      - `charge_registry_access_fee_monthly`
+    - fix `registrar_add_zone` command - prevent duplicate records
+    - fix `registrar_add` command - unhandled exception on invalid varsymbol
+
+  * Adapt to new random data generator interface
+
+  * Registrar credit manipulation and initialization using new
+    libfred `CreateRegistrarCreditTransaction` operation
+
+  * adifd - return possibility to change registrar handle
+
 2019-07-18 (2.41.0)
 
   * Epp - create poll message when contact or domain is deleted administratively (to notify sponsoring registrar)
