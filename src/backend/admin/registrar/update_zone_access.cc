@@ -115,7 +115,7 @@ void update_zone_access(const LibFred::Registrar::ZoneAccess::RegistrarZoneAcces
             }
             try
             {
-                const unsigned long long zone_access_id =
+                const unsigned long long zone_access_id [[gnu::unused]] =
                         LibFred::Registrar::ZoneAccess::AddRegistrarZoneAccess(_zones.registrar_handle,
                                 zone.zone_fqdn,
                                 zone.from_date)
