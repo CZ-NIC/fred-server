@@ -90,7 +90,7 @@ LibFred::Logger::RequestProperties *epp_property_push(LibFred::Logger::RequestPr
 
 LibFred::Logger::RequestProperties *epp_property_push_qhead(LibFred::Logger::RequestProperties *c_props, qhead *list, const char *list_name, bool child)
 {
-	LibFred::Logger::RequestProperties *ret;
+	LibFred::Logger::RequestProperties *ret = NULL;
 
 	if (list->count == 0) {
 		return c_props;

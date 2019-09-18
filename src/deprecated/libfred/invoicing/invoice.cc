@@ -100,12 +100,16 @@ struct RegistrarZoneAccess
     const boost::gregorian::date date_to;
 };
 
+#if BOOST_VERSION && BOOST_VERSION < 105600
+
 // needed for boost::optional at CentOS 7
-[[gnu::unused]] bool operator==(const RegistrarZoneAccess& _lhs, const RegistrarZoneAccess& _rhs)
+bool operator==(const RegistrarZoneAccess& _lhs, const RegistrarZoneAccess& _rhs)
 {
     return _lhs.date_from == _rhs.date_from &&
            _lhs.date_to == _rhs.date_to;
 }
+
+#endif
 
 boost::optional<RegistrarZoneAccess> registrar_access_to_the_zone(
         const Database::ID& _registrar_id,
