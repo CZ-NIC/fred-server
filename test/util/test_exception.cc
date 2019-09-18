@@ -247,12 +247,22 @@ void operator delete(void* ptr) noexcept
     std::free(ptr);
 }
 
+void operator delete(void* ptr, std::size_t) noexcept
+{
+    std::free(ptr);
+}
+
 void operator delete(void* ptr, const std::nothrow_t&) noexcept
 {
     std::free(ptr);
 }
 
 void operator delete[](void* ptr) noexcept
+{
+    operator delete(ptr);
+}
+
+void operator delete[](void* ptr, std::size_t) noexcept
 {
     operator delete(ptr);
 }
