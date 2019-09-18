@@ -713,7 +713,7 @@ public:
                 DateTime    time_begin      = *(++col);
                 DateTime    time_end    = *(++col);
                 std::string             serv_type  = *(++col);
-                                int serv_id;
+                                int serv_id = 0;
                                 if(!partialLoad) {
                                                         serv_id         = *(++col);
                                 }
