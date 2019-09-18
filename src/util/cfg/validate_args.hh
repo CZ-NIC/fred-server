@@ -68,7 +68,7 @@ namespace boost
         //overload of the 'validate' function for the user-defined class
         void validate(boost::any& v,
                       const std::vector<std::string>& values,
-                      Checked::string* target_type, int)
+                      Checked::string*, int)
         {
             using namespace boost;
             using namespace boost::program_options;
@@ -111,7 +111,7 @@ namespace boost
         //overload of the 'validate' function for the user-defined class
         void validate(boost::any& v,
                       const std::vector<std::string>& values,
-                      Checked::ulonglong* target_type, int)
+                      Checked::ulonglong*, int)
         {
             using namespace boost;
             using namespace boost::program_options;
@@ -198,7 +198,7 @@ namespace boost
         //overload of the 'validate' function for the user-defined class
         void validate(boost::any& v,
                       const std::vector<std::string>& values,
-                      Checked::ulong* target_type, int)
+                      Checked::ulong*, int)
         {
             using namespace boost;
             using namespace boost::program_options;
@@ -287,7 +287,7 @@ namespace boost
         //overload of the 'validate' function for the user-defined class
         void validate(boost::any& v,
                       const std::vector<std::string>& values,
-                      Checked::fpnumber* target_type, int)
+                      Checked::fpnumber*, int)
         {
             using namespace boost;
             using namespace boost::program_options;
@@ -377,7 +377,7 @@ namespace boost
 
         void validate(boost::any& v,
                       const std::vector<std::string>& values,
-                      Checked::string_fpnumber* target_type, int)
+                      Checked::string_fpnumber*, int)
         {
             using namespace boost;
             using namespace boost::program_options;
@@ -467,7 +467,7 @@ namespace boost
 
         void validate(boost::any& v,
                       const std::vector<std::string>& values,
-                      Checked::date* target_type, int)
+                      Checked::date*, int)
         {
             using namespace boost;
             using namespace boost::program_options;
@@ -561,7 +561,7 @@ namespace boost
 
         void validate(boost::any& v,
                       const std::vector<std::string>& values,
-                      Checked::ptime* target_type, int)
+                      Checked::ptime*, int)
         {
             using namespace boost;
             using namespace boost::program_options;

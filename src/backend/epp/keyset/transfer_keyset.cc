@@ -46,7 +46,7 @@ unsigned long long transfer_keyset(
         LibFred::OperationContext& _ctx,
         const std::string& _keyset_handle,
         const std::string& _authinfopw,
-        const TransferKeysetConfigData& _transfer_keyset_config_data,
+        const TransferKeysetConfigData&,
         const SessionData& _session_data)
 {
 

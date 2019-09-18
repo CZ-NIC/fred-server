@@ -567,8 +567,8 @@ struct generate_message<CommChannel::sms,
             Multimanager& _multimanager,
             const LibFred::LockedPublicRequest& _locked_request,
             const LibFred::LockedPublicRequestsOfObject& _locked_contact,
-            const Generate::message_checker& _check_message_limits,
-            const std::string& _link_hostname_part,
+            const Generate::message_checker& _check_message_limits [[gnu::unused]],
+            const std::string& _link_hostname_part [[gnu::unused]],
             const Optional<GeneralId>& _contact_history_id)
     {
         const Database::Result dbres = _ctx.get_conn().exec_params(
@@ -770,7 +770,7 @@ struct generate_message<CommChannel::letter, Fred::Backend::MojeId::PublicReques
             const LibFred::LockedPublicRequest& _locked_request,
             const LibFred::LockedPublicRequestsOfObject& _locked_contact,
             const Generate::message_checker& _check_message_limits,
-            const std::string& _link_hostname_part,
+            const std::string& _link_hostname_part [[gnu::unused]],
             const Optional<GeneralId>& _contact_history_id)
     {
 
@@ -864,7 +864,7 @@ struct generate_message<CommChannel::letter, Fred::Backend::MojeId::PublicReques
             const LibFred::LockedPublicRequest& _locked_request,
             const LibFred::LockedPublicRequestsOfObject& _locked_contact,
             const Generate::message_checker& _check_message_limits,
-            const std::string& _link_hostname_part,
+            const std::string& _link_hostname_part [[gnu::unused]],
             const Optional<GeneralId>& _contact_history_id)
     {
 
@@ -1005,7 +1005,7 @@ Generate::MessageId send_email(
         Multimanager& _multimanager,
         const LibFred::LockedPublicRequest& _locked_request,
         const LibFred::LockedPublicRequestsOfObject& _locked_contact,
-        const Generate::message_checker& _check_message_limits,
+        const Generate::message_checker& _check_message_limits [[gnu::unused]],
         const std::string& _link_hostname_part,
         const Optional<GeneralId>& _contact_history_id)
 {

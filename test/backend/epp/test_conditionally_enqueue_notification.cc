@@ -93,7 +93,7 @@ struct MockMailerManager : public ::LibFred::Mailer::Manager {
         return 0;
     }
 
-    virtual bool checkEmailList(std::string &_email_list) const { return true; }
+    virtual bool checkEmailList(std::string &) const { return true; }
 };
 
 template<bool SystemReg>struct has_updated_contact_and_empty_notification_queue : virtual Test::instantiate_db_template {

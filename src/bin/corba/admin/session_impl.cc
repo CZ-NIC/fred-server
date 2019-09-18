@@ -55,7 +55,7 @@
 #include <set>
 
 ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
-                                 const std::string& database,
+                                 const std::string& database [[gnu::unused]],
                                  NameService *ns,
 
                                  bool restricted_handles,

@@ -454,7 +454,7 @@ ID ManagerImpl::i_createRequest(const char *sourceIP, ServiceType service, const
 }
 
 // optimization
-void ManagerImpl::getSessionUser(Connection &conn, ID session_id, std::string *user_name, Database::ID *user_id)
+void ManagerImpl::getSessionUser(Connection &conn [[gnu::unused]], ID session_id, std::string *user_name, Database::ID *user_id)
 {
         TRACE("[CALL] LibFred::Logger::ManagerImpl::getSessionUser");
 
@@ -1027,7 +1027,7 @@ Manager* Manager::create() {
     return new ManagerImpl();
 }
 
-Manager *Manager::create(const std::string conn_db, const std::string &monitoring_hosts_file) {
+Manager *Manager::create(const std::string conn_db [[gnu::unused]], const std::string &monitoring_hosts_file) {
     TRACE("[CALL] LibFred::Logger::Manager::create(std::string, std::string)");
     return new ManagerImpl(monitoring_hosts_file);
 }

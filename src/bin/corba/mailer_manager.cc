@@ -39,7 +39,7 @@ LibFred::TID
 MailerManager::sendEmail(
   const std::string& from,
   const std::string& to,
-  const std::string& subject,
+  const std::string& subject [[gnu::unused]],
   const std::string& mailTemplate,
   const LibFred::Mailer::Parameters &params,
   const LibFred::Mailer::Handles &handles,

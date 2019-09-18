@@ -51,7 +51,7 @@ bool presents(
 unsigned long long delete_keyset(
         LibFred::OperationContext& _ctx,
         const std::string& _keyset_handle,
-        const DeleteKeysetConfigData& _delete_keyset_config_data,
+        const DeleteKeysetConfigData&,
         const SessionData& _session_data)
 {
 

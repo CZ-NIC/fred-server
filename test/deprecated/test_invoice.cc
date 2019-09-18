@@ -1127,8 +1127,9 @@ BOOST_AUTO_TEST_CASE( chargeDomain )
 
 }
 
-void testCharge2InvoicesWorker(Database::ID zone_id, unsigned op, unsigned period,
+void testCharge2InvoicesWorker(Database::ID zone_id, unsigned /*op*/, unsigned period,
         Database::Date taxdate, Database::Date exdate, Money amount, bool should_succ)
+   
 {
     // registrar
     ::LibFred::Registrar::Registrar::AutoPtr reg = createTestRegistrarClass();

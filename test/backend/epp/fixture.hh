@@ -82,7 +82,7 @@ struct Session
     SessionData data;
 
     Session(
-            ::LibFred::OperationContext& _ctx,
+            ::LibFred::OperationContext&,
             const unsigned long long _registrar_id)
         : data(_registrar_id)
     {

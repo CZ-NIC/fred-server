@@ -408,7 +408,7 @@ LibFred::Logger::RequestProperties *epp_property_push_dnskey(LibFred::Logger::Re
  *
  * @return  status
  */
-unique_ptr<LibFred::Logger::RequestProperties> log_epp_command(epp_command_data *cdata, epp_red_command_type cmdtype, int sessionid, epp_action_type *request_type_id)
+unique_ptr<LibFred::Logger::RequestProperties> log_epp_command(epp_command_data *cdata, epp_red_command_type cmdtype, int /*sessionid*/, epp_action_type *request_type_id)
 {
 #define PUSH_PROPERTY(seq, name, value)								\
 	seq = epp_property_push(seq, name, value, false);	\

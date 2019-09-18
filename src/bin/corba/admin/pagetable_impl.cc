@@ -63,7 +63,7 @@ ccReg_PageTable_i::setPage(CORBA::Short _v)
 }
 
 void 
-ccReg_PageTable_i::setOffset(CORBA::Long _offset)
+ccReg_PageTable_i::setOffset(CORBA::Long _offset [[gnu::unused]])
 {}
 
 void 
@@ -154,7 +154,7 @@ ccReg_PageTable_i::loadFilter(ccReg::TID _id) {
 }
 
 void
-ccReg_PageTable_i::saveFilter(const char*  _name) {
+ccReg_PageTable_i::saveFilter(const char*  _name [[gnu::unused]]) {
 }
 
 void ccReg_PageTable_i::sortByColumn(CORBA::Short _column, CORBA::Boolean _dir) {

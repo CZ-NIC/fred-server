@@ -97,38 +97,6 @@ private:
     }
 };
 
-void change_zone_credit_of_registrar(
-        LibFred::OperationContext& _ctx,
-        const std::string& _transaction_ident,
-        const std::string& _registrar_handle,
-        const std::string& _zone,
-        const Credit& _credit_amount_to_add)
-{
-    if (_credit_amount_to_add.value.is_special())
-    {
-        throw InvalidCreditValue();
-    }
-
-    try {
-        LibFred::Registrar::Credit::CreateRegistrarCreditTransaction(_registrar_handle,
-                    _zone,
-                    _credit_amount_to_add.value)
-                .exec(_ctx);
-    }
-    catch (const LibFred::Registrar::Credit::NonexistentRegistrar&)
-    {
-        throw RegistrarNotFound();
-    }
-    catch (const LibFred::Zone::NonExistentZone&)
-    {
-        throw ZoneNotFound();
-    }
-    catch (const LibFred::Registrar::Credit::NonexistentZoneAccess&)
-    {
-        throw ;
-    }
-}
-
 Fred::Backend::Accounting::Registrar get_registrar_by_payment(
         LibFred::OperationContext& _ctx,
         const PaymentData& _payment_data)

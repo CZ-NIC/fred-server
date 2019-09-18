@@ -60,10 +60,10 @@ Registry::Administrative::StatusDescList* Server_i::getBlockingStatusDescList(co
 }
 
 Registry::Administrative::DomainOwnerChangeList* Server_i::blockDomains(
-        const Registry::Administrative::DomainList& domain_list,
-        const Registry::Administrative::StatusList& status_list,
-        Registry::Administrative::OwnerBlockMode owner_block_mode,
-        const char* reason)
+        const Registry::Administrative::DomainList& domain_list [[gnu::unused]],
+        const Registry::Administrative::StatusList& status_list [[gnu::unused]],
+        Registry::Administrative::OwnerBlockMode owner_block_mode [[gnu::unused]],
+        const char* reason [[gnu::unused]])
 {
     throw std::runtime_error("blockDomains not implemented");
 }
@@ -112,9 +112,9 @@ Registry::Administrative::DomainIdHandleOwnerChangeList* Server_i::blockDomainsI
 }
 
 void Server_i::updateBlockDomains(
-        const Registry::Administrative::DomainList& domain_list,
-        const Registry::Administrative::StatusList& status_list,
-        const char* reason)
+        const Registry::Administrative::DomainList& domain_list [[gnu::unused]],
+        const Registry::Administrative::StatusList& status_list [[gnu::unused]],
+        const char* reason [[gnu::unused]])
 {
     throw std::runtime_error("updateBlockDomains not implemented");
 }
@@ -149,9 +149,9 @@ void Server_i::updateBlockDomainsId(
 }
 
 void Server_i::restorePreAdministrativeBlockStates(
-        const Registry::Administrative::DomainList& domain_list,
-        Registry::Administrative::NullableString* new_owner,
-        const char* reason)
+        const Registry::Administrative::DomainList& domain_list [[gnu::unused]],
+        Registry::Administrative::NullableString* new_owner [[gnu::unused]],
+        const char* reason [[gnu::unused]])
 {
     throw std::runtime_error("restorePreAdministrativeBlockStates not implemented");
 }
@@ -188,10 +188,10 @@ void Server_i::restorePreAdministrativeBlockStatesId(
 }
 
 void Server_i::unblockDomains(
-        const Registry::Administrative::DomainList& domain_list,
-        Registry::Administrative::NullableString* new_owner,
-        CORBA::Boolean remove_admin_c,
-        const char* reason)
+        const Registry::Administrative::DomainList& domain_list [[gnu::unused]],
+        Registry::Administrative::NullableString* new_owner [[gnu::unused]],
+        CORBA::Boolean remove_admin_c [[gnu::unused]],
+        const char* reason [[gnu::unused]])
 {
     throw std::runtime_error("unblockDomains not implemented");
 }
@@ -230,8 +230,8 @@ void Server_i::unblockDomainsId(
 }
 
 void Server_i::blacklistAndDeleteDomains(
-        const Registry::Administrative::DomainList& domain_list,
-        Registry::NullableIsoDate* blacklist_to_date)
+        const Registry::Administrative::DomainList& domain_list [[gnu::unused]],
+        Registry::NullableIsoDate* blacklist_to_date [[gnu::unused]])
 {
     throw std::runtime_error("blacklistAndDeleteDomains not implemented");
 }
@@ -260,9 +260,9 @@ void Server_i::blacklistAndDeleteDomainsId(
 }
 
 void Server_i::blacklistDomains(
-        const Registry::Administrative::DomainList& domain_list,
-        Registry::NullableIsoDate* blacklist_to_date,
-        CORBA::Boolean with_delete)
+        const Registry::Administrative::DomainList& domain_list [[gnu::unused]],
+        Registry::NullableIsoDate* blacklist_to_date [[gnu::unused]],
+        CORBA::Boolean with_delete [[gnu::unused]])
 {
     throw std::runtime_error("blacklistDomains not implemented");
 }
@@ -291,8 +291,8 @@ void Server_i::blacklistDomainsId(
 }
 
 void Server_i::unblacklistAndCreateDomains(
-        const Registry::Administrative::DomainList& domain_list,
-        const char* owner)
+        const Registry::Administrative::DomainList& domain_list [[gnu::unused]],
+        const char* owner [[gnu::unused]])
 {
     throw std::runtime_error("unblacklistAndCreateDomains not implemented");
 }

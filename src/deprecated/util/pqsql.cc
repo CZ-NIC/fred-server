@@ -49,8 +49,7 @@ PQ::~PQ()
   FreeSelect();
 }
 
-static void noActionNoticeReceiver(
-  void *arg, const PGresult *res)
+static void noActionNoticeReceiver(void* /*arg*/, const PGresult* /*res*/)
 {
 }
 

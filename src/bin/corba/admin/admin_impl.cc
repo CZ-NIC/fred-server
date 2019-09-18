@@ -249,7 +249,7 @@ void ccReg_Admin_i::garbageSession() {
 }
 
 void ccReg_Admin_i::authenticateUser(const char* _username,
-                                     const char* _password)
+                                     const char* _password [[gnu::unused]])
 {
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;

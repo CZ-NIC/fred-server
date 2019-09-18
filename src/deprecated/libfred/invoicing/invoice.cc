@@ -143,9 +143,9 @@ boost::optional<RegistrarZoneAccess> registrar_access_to_the_zone(
 
 bool was_registrar_charged(
         const Database::ID& _registrar_id,
-        unsigned long long _zone_id,
+        unsigned long long _zone_id [[gnu::unused]],
         const boost::gregorian::date _date_from,
-        const boost::gregorian::date _date_to)
+        const boost::gregorian::date _date_to [[gnu::unused]])
 {
     Database::Connection conn = Database::Manager::acquire();
 
@@ -3556,7 +3556,7 @@ public:
   }
   
   InvoiceIdVect ManagerImpl::archiveInvoices(bool send
-          , InvoiceIdVect archive_only_this_if_set) {
+          , InvoiceIdVect archive_only_this_if_set [[gnu::unused]]) {
       
       if(docman == NULL || mailman == NULL) {
         LOGGER.error("archiveInvoices: No docman or mailman specified in c-tor. ");

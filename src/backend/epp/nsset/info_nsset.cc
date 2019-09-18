@@ -66,7 +66,7 @@ InfoNssetOutputData::InfoNssetOutputData(
 InfoNssetOutputData info_nsset(
         LibFred::OperationContext& _ctx,
         const std::string& _nsset_handle,
-        const InfoNssetConfigData& _info_nsset_config_data,
+        const InfoNssetConfigData&,
         const SessionData& _session_data)
 {
 

@@ -76,7 +76,7 @@ std::string ObjectType2Str(ObjectType type)
 
 
 void insertNewStateRequest(
-        Database::ID blockRequestID,
+        Database::ID blockRequestID [[gnu::unused]],
         Database::ID objectId,
         const std::string & state_name)
 {
@@ -599,7 +599,7 @@ TID PublicRequestImpl::sendEmail() const
 
 
 /// concrete resolution action
-void PublicRequestImpl::processAction(bool check)
+void PublicRequestImpl::processAction(bool check [[gnu::unused]])
 {
     // default is to do nothing special
 }
@@ -790,7 +790,7 @@ std::string PublicRequestAuthImpl::getTemplateName() const
 }
 
 
-void PublicRequestAuthImpl::fillTemplateParams(Mailer::Parameters& params) const
+void PublicRequestAuthImpl::fillTemplateParams(Mailer::Parameters& params [[gnu::unused]]) const
 {
 }
 

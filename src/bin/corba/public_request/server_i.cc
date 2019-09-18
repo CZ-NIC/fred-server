@@ -77,7 +77,7 @@ Optional<unsigned long long> unwrap_nullableulonglong_to_optional_unsigned_long_
 
 } // namespace CorbaConversion::PublicRequest::{anonymous}
 
-Server_i::Server_i(const std::string& _server_name)
+Server_i::Server_i(const std::string& _server_name [[gnu::unused]])
 {
 }
 

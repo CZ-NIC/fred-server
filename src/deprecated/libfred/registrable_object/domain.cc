@@ -293,10 +293,10 @@ public:
             throw;
         }//catch(...)
   }//getAdminPhoneByIdx
-  virtual void removeAdminId(TID id) {
+  virtual void removeAdminId(TID id [[gnu::unused]]) {
     // find id in list and delete
   }
-  virtual void insertAdminId(TID id) {
+  virtual void insertAdminId(TID id [[gnu::unused]]) {
     // check existance of id
   }
   /// id lookup function

@@ -302,8 +302,8 @@ static std::string evaluate_check_status_after_tests_finished(
 
 
 static void preprocess_automatic_check(
-        LibFred::OperationContext& _ctx,
-        const uuid& _check_handle)
+        LibFred::OperationContext& _ctx [[gnu::unused]],
+        const uuid& _check_handle [[gnu::unused]])
 {
     // in case of need feel free to express yourself...
 }
