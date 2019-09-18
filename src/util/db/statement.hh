@@ -68,7 +68,7 @@ public:
   }
 
 
-  virtual std::string toSql(escape_function_type _esc_func) {
+  virtual std::string toSql(escape_function_type) {
     return buffer_;
   }
 

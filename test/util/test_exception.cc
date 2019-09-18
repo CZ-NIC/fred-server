@@ -264,7 +264,7 @@ void operator delete[](void* ptr, const std::nothrow_t&) noexcept
 
 
 
-int main(int argc, char * argv[])
+int main()
 {
     test_decimal_wrapper_exceptions test_decimal_wrapper_exceptions_instance;
     return 0;

@@ -327,7 +327,7 @@ Success check_dns_keys(
 CreateKeysetResult create_keyset(
         LibFred::OperationContext& _ctx,
         const CreateKeysetInputData& _keyset_data,
-        const CreateKeysetConfigData& _create_keyset_config_data,
+        const CreateKeysetConfigData&,
         const SessionData& _session_data)
 {
 

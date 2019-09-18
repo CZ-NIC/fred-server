@@ -47,7 +47,7 @@ InvoiceClient::runMethod()
 }
 
 
-void InvoiceClient::filter_reload_invoices(LibFred::Invoicing::Manager *invMan, LibFred::Invoicing::List *invList)
+void InvoiceClient::filter_reload_invoices(LibFred::Invoicing::Manager *invMan [[gnu::unused]], LibFred::Invoicing::List *invList)
 {     
     Database::Filters::Invoice *invFilter;
     invFilter = new Database::Filters::InvoiceImpl();

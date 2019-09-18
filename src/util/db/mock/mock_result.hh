@@ -211,7 +211,7 @@ private:
    * @param  _c column name
    * @return    value from result at position [_r, _c]
    */
-  std::string value_(size_type _r, const std::string _c) const /* throw(NoSuchField) */{
+  std::string value_(size_type _r [[gnu::unused]], const std::string _c [[gnu::unused]]) const /* throw(NoSuchField) */{
 	  /*mock
     int field = PQfnumber(psql_result_.get(), _c.c_str());
     if (field == -1) {
@@ -226,7 +226,7 @@ private:
    * @param  _c column name
    * @return    true if value from result at position [_r, _c] is null, false otherwise
    */
-  bool value_is_null_(size_type _r, const std::string _c) const /* throw(NoSuchField) */{
+  bool value_is_null_(size_type _r [[gnu::unused]], const std::string _c [[gnu::unused]]) const /* throw(NoSuchField) */{
 	  /*mock
     int field = PQfnumber(psql_result_.get(), _c.c_str());
     if (field == -1) {

@@ -69,7 +69,7 @@ void exec_and_print(Database::SelectQuery& _q, Database::Filters::Union& _f)
     std::cout << "(" << result.size() << " rows)" << std::endl << std::endl;
 }
 
-int main(int argc, char* argv[])
+int main()
 {
     try
     {

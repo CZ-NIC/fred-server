@@ -40,7 +40,7 @@ namespace Contact {
 unsigned long long delete_contact(
         LibFred::OperationContext& _ctx,
         const std::string& _contact_handle,
-        const DeleteContactConfigData& _delete_contact_config_data,
+        const DeleteContactConfigData&,
         const SessionData& _session_data)
 {
 

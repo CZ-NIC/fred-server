@@ -49,8 +49,7 @@ public:
     {
         throw NO_OPTIONS();
     }//get_options_description
-    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
-            , std::size_t option_group_index)
+    std::size_t handle( int, char*[],  FakedArgs&, std::size_t option_group_index)
     {
         std::cerr << "HandleWrongPathGrp - configuration processing implementation error option_group_index: "
                 <<option_group_index << std::endl;

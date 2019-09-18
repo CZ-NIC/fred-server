@@ -89,7 +89,7 @@ public:
 	}
 
 
-	virtual void make(escape_function_type _esc_func = &Util::escape2) {
+	virtual void make(escape_function_type _esc_func [[gnu::unused]] = &Util::escape2) {
     finalize();
   };
 

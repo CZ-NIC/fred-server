@@ -48,7 +48,7 @@ unsigned long long transfer_contact(
         LibFred::OperationContext& _ctx,
         const std::string& _contact_handle,
         const std::string& _authinfopw,
-        const TransferContactConfigData& _transfer_contact_config_data,
+        const TransferContactConfigData&,
         const SessionData& _session_data)
 {
 

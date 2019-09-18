@@ -149,7 +149,7 @@ public:
         this->get_answer_email_id() = this->sendEmail();
     }
 
-    void processAction(bool _check)
+    void processAction(bool _check [[gnu::unused]])
     {
         LOGGER.debug(boost::format("processing validation request id=%1%") % this->getId());
 

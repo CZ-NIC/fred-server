@@ -70,7 +70,7 @@
  */
 
 
-int q_add(void *pool, qhead *head, void *data)
+int q_add(void * /*pool*/, qhead *head, void *data)
 {
         qitem   *item;
 
@@ -99,7 +99,7 @@ int q_add(void *pool, qhead *head, void *data)
         return 0;
 }
 
-void *epp_calloc(void *pool, unsigned size)
+void *epp_calloc(void * /*pool*/, unsigned size)
 {
 	void *ptr;
 	ptr = malloc(size);
@@ -237,7 +237,7 @@ xpath_count(xmlXPathContextPtr ctx, const char *expr, int *xerr)
  * @return       String with content of xml element allocated from pool.
  */
 static char *
-xpath_get1(void *pool,
+xpath_get1(void * /*pool*/,
 		xmlXPathContextPtr ctx,
 		const char *expr,
 		int req,
@@ -351,7 +351,7 @@ xpath_getn(void *pool,
  * @return       String with content of xml element allocated from pool.
  */
 static char *
-xpath_get_attr(void *pool,
+xpath_get_attr(void * /*pool*/,
 		xmlXPathContextPtr ctx,
 		const char *expr,
 		const char *attr,

@@ -94,7 +94,8 @@ public:
   
   friend class boost::serialization::access;
   template<class Archive>
-  void serialize(Archive& _ar, const unsigned int _version) {
+  void serialize(Archive& _ar, const unsigned int /*_version*/) 
+  {
     _ar & BOOST_SERIALIZATION_NVP(neg);
     _ar & BOOST_SERIALIZATION_NVP(active);
     _ar & BOOST_SERIALIZATION_NVP(conj);

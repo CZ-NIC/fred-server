@@ -77,7 +77,7 @@ public:
 
     friend class boost::serialization::access;
     template<class Archive> void serialize(Archive& _ar,
-            const unsigned int _version)
+            const unsigned int)
     {
         _ar & BOOST_SERIALIZATION_BASE_TEMPLATE(
                 "Value_long_ServiceType",
@@ -105,7 +105,7 @@ public:
 
     friend class boost::serialization::access;
     template<class Archive> void serialize(Archive& _ar,
-            const unsigned int _version)
+            const unsigned int)
     {
         _ar & BOOST_SERIALIZATION_BASE_TEMPLATE(
                 "Value_long_ActionType",
@@ -205,7 +205,7 @@ class RequestPropertyValue : virtual public Compound
 
     friend class boost::serialization::access;
     template<class Archive> void serialize(Archive& _ar,
-        const unsigned int _version) {
+        const unsigned int) {
       _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Compound);
     }
 
@@ -227,7 +227,7 @@ public:
 
 	friend class boost::serialization::access;
 	template<class Archive> void serialize(Archive& _ar,
-		const unsigned int _version) {
+		const unsigned int) {
 	  _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(RequestPropertyValue);
 	}
 };
@@ -244,7 +244,7 @@ public:
 
 	friend class boost::serialization::access;
 	template<class Archive> void serialize(Archive& _ar,
-	    const unsigned int _version) {
+	    const unsigned int) {
 	  _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Compound);
 	}
 
@@ -263,7 +263,7 @@ public:
 
 	friend class boost::serialization::access;
 	template<class Archive> void serialize(Archive& _ar,
-		const unsigned int _version) {
+		const unsigned int) {
 	  _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(RequestData);
 	}
 };
@@ -292,7 +292,7 @@ public:
 
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
-      const unsigned int _version) {
+      const unsigned int) {
     _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Compound);
   }
 
@@ -322,7 +322,7 @@ public:
 
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
-      const unsigned int _version) {
+      const unsigned int) {
     _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Request);
   }
 

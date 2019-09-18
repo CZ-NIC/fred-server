@@ -437,7 +437,7 @@ Whois::NSSet Server_impl::get_nsset_by_handle(const std::string& handle)
 static NSSetSeq get_nssets_by_(
     LibFred::OperationContext& ctx,
     const std::vector<LibFred::InfoNssetOutput>& nss_info,
-    const std::string& handle,
+    const std::string& handle [[gnu::unused]],
     unsigned long limit)
 {
     NSSetSeq nss_seq;

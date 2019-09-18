@@ -29,6 +29,6 @@ ccReg_User_i::ccReg_User_i(ccReg::TID _id, const std::string& _username,
 			m_surname(_surname) {
 }
 
-CORBA::Boolean ccReg_User_i::hasNPermission(const char* _np) {
+CORBA::Boolean ccReg_User_i::hasNPermission(const char* _np [[gnu::unused]]) {
 	return false;
 }

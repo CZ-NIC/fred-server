@@ -50,7 +50,7 @@ void handle_epp_exception(ccReg::EPP::EppError &ex)
     throw CreateDomainFailed(msg.str());
 }
 
-void EPP_backend_init(ccReg_EPP_i *epp_i, HandleRifdArgs *rifd_args_ptr)
+void EPP_backend_init(ccReg_EPP_i *epp_i, HandleRifdArgs* )
 {
     // load error messages to memory
     if (epp_i->LoadErrorMessages() <= 0) {

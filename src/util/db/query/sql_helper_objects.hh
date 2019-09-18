@@ -59,7 +59,7 @@ public:
 
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
-      const unsigned int _version) {
+      const unsigned int) {
     _ar & BOOST_SERIALIZATION_NVP(name);
     _ar & BOOST_SERIALIZATION_NVP(alias);
   }
@@ -113,7 +113,7 @@ public:
 
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
-      const unsigned int _version) {
+      const unsigned int) {
     _ar & BOOST_SERIALIZATION_NVP(name);
     _ar & BOOST_SERIALIZATION_NVP(table);
     _ar & BOOST_SERIALIZATION_NVP(funct);
@@ -154,7 +154,7 @@ public:
 
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
-      const unsigned int _version) {
+      const unsigned int) {
     _ar & BOOST_SERIALIZATION_NVP(left);
     _ar & BOOST_SERIALIZATION_NVP(op);
     _ar & BOOST_SERIALIZATION_NVP(right);
@@ -186,7 +186,7 @@ public:
 
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
-      const unsigned int _version) {
+      const unsigned int) {
     _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Condition);
     _ar & BOOST_SERIALIZATION_NVP(join_type);
   }

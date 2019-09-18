@@ -144,7 +144,7 @@ public:
   }
 
 
-  void serialize(::Model::JobQueue &_jobs, Database::InsertQuery &_query, class_name *_object) {
+  void serialize(::Model::JobQueue &_jobs [[gnu::unused]], Database::InsertQuery &_query, class_name *_object) {
     if (!value_(*_object).isChanged()) {
       if (this->attrs_.isNotNull() && !this->attrs_.isDefault()) {
         throw SerializationError("INSERT", this->getTableName(), this->getName(),
@@ -163,7 +163,7 @@ public:
   }
 
 
-  void serialize(::Model::JobQueue &_jobs, Database::UpdateQuery &_query, class_name *_object) {
+  void serialize(::Model::JobQueue &_jobs [[gnu::unused]], Database::UpdateQuery &_query, class_name *_object) {
     if (value_(*_object).isChanged()) {
       _query.add(this->getName(), Database::Value(value_(*_object)));
     }
@@ -225,7 +225,7 @@ public:
   virtual ~PrimaryKey() { }
 
 
-  void serialize(::Model::JobQueue &_jobs, Database::InsertQuery &_query, class_name *_object) {
+  void serialize(::Model::JobQueue &_jobs [[gnu::unused]], Database::InsertQuery &_query, class_name *_object) {
     if (!this->value_(*_object).isChanged()) {
       if (!this->attrs_.isDefault()) {
         throw SerializationError("INSERT", this->getTableName(), this->getName(), "attrs { !isDefault } && value { !isChanged }");
@@ -239,7 +239,7 @@ public:
   }
 
 
-  void serialize(::Model::JobQueue &_jobs, Database::UpdateQuery &_query, class_name *_object) {
+  void serialize(::Model::JobQueue &_jobs [[gnu::unused]], Database::UpdateQuery &_query, class_name *_object) {
     if (!this->value_(*_object).isChanged()) {
       throw SerializationError("UPDATE", this->getTableName(), this->getName(), "value { !isChanged }");
     }
@@ -253,7 +253,7 @@ public:
   }
 
 
-  virtual void setValue(class_name *_object, const value_type &_value, bool _is_set) {
+  virtual void setValue(class_name *_object, const value_type &_value, bool _is_set [[gnu::unused]]) {
     this->value_(*_object) = _value;
   }
 

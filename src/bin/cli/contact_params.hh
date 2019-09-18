@@ -121,7 +121,7 @@ struct ContactMergeDuplicateAutoArgs
     ContactMergeDuplicateAutoArgs(
             const optional_string &_registrar,
             const std::vector<std::string> &_except_registrar,
-            const optional_ulonglong &_limit,
+            const optional_ulonglong &_limit [[gnu::unused]],
             bool _dry_run,
             const std::vector<std::string> &_selection_filter_order,
             const optional_ushort &_verbose)

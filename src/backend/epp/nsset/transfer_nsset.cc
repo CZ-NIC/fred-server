@@ -49,7 +49,7 @@ unsigned long long transfer_nsset(
         LibFred::OperationContext& _ctx,
         const std::string& _nsset_handle,
         const std::string& _authinfopw,
-        const TransferNssetConfigData& _transfer_nsset_config_data,
+        const TransferNssetConfigData&,
         const SessionData& _session_data)
 {
     if (!is_session_registrar_valid(_session_data))

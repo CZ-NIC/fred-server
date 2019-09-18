@@ -1831,7 +1831,7 @@ ccReg::Response* ccReg_EPP_i::KeySetCheck(
 
 ccReg::Response* ccReg_EPP_i::ContactInfo(
         const char* const _contact_handle,
-        const ccReg::ControlledPrivacyDataMask& _available_disclose_flags,
+        const ccReg::ControlledPrivacyDataMask& _available_disclose_flags [[gnu::unused]],
         ccReg::Contact_out _contact_info,
         const ccReg::EppParams& _epp_params)
 {
@@ -3102,7 +3102,7 @@ ccReg::Response* ccReg_EPP_i::KeySetUpdate(
 
 // primitive list of objects
 ccReg::Response *
-ccReg_EPP_i::FullList(short act, const char *table, const char *fname,
+ccReg_EPP_i::FullList(short act, const char *table, const char *fname [[gnu::unused]],
         ccReg::Lists_out list, const ccReg::EppParams &params)
 {
     int rows =0, i;
