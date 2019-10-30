@@ -470,7 +470,7 @@ void ManagerImpl::getSessionUser(Connection &conn [[gnu::unused]], ID session_id
         *user_name = sess->getUserName();
         *user_id = sess->getUserId();
 
-    } catch (CACHE_MISS) {
+    } catch (const CACHE_MISS&) {
         std::shared_ptr<ModelSession> sess(new ModelSession());
 
         sess->setId(session_id);
@@ -530,7 +530,7 @@ bool ManagerImpl::i_closeRequest(
         // it must be removed here, if not, the cache leaks
         rcache.remove(id);
     }
-    catch (RequestCache::NOT_EXISTS)
+    catch (const RequestCache::NOT_EXISTS&)
     {
         boost::format select = boost::format(
                 "SELECT time_begin, time_end, service_id, is_monitoring, "

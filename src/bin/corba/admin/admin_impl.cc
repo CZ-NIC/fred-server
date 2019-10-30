@@ -407,7 +407,7 @@ ccReg::RegistrarList* ccReg_Admin_i::getRegistrars()
     fillRegistrar((*reglist)[i],rl->get(i));
     return reglist;
   }
-  catch (LibFred::SQL_ERROR) {
+  catch (const LibFred::SQL_ERROR&) {
     throw ccReg::Admin::SQL_ERROR();
   }
 }
@@ -445,7 +445,7 @@ ccReg::AdminRegistrar* ccReg_Admin_i::getRegistrarById(ccReg::TID id)
     fillRegistrar(*creg,rl->get(0));
     return creg;
   }
-  catch (LibFred::SQL_ERROR) {
+  catch (const LibFred::SQL_ERROR&) {
     throw ccReg::Admin::SQL_ERROR();
   }
 }
@@ -763,10 +763,10 @@ ccReg::TID ccReg_Admin_i::createPublicRequest(Registry::PublicRequest::Type _typ
     new_request->save();
     return new_request->getId();
   }
-  catch (ccReg::Admin::REQUEST_BLOCKED) {
+  catch (const ccReg::Admin::REQUEST_BLOCKED&) {
     throw;
   }
-  catch (ccReg::Admin::OBJECT_NOT_FOUND) {
+  catch (const ccReg::Admin::OBJECT_NOT_FOUND&) {
     throw;
   }
   catch (...) {
@@ -818,16 +818,16 @@ void ccReg_Admin_i::processPublicRequest(ccReg::TID id, CORBA::Boolean invalid)
   try {
     request_manager->processRequest(id,invalid,true);
   }
-  catch (LibFred::SQL_ERROR) {
+  catch (const LibFred::SQL_ERROR&) {
     throw ccReg::Admin::SQL_ERROR();
   }
-  catch (LibFred::NOT_FOUND) {
+  catch (const LibFred::NOT_FOUND&) {
     throw ccReg::Admin::OBJECT_NOT_FOUND();
   }
-  catch (LibFred::Mailer::NOT_SEND) {
+  catch (const LibFred::Mailer::NOT_SEND&) {
     throw ccReg::Admin::MAILER_ERROR();
   }
-  catch (LibFred::PublicRequest::REQUEST_BLOCKED) {
+  catch (const LibFred::PublicRequest::REQUEST_BLOCKED&) {
     throw ccReg::Admin::REQUEST_BLOCKED();
   }
   catch (...) {
@@ -894,10 +894,10 @@ ccReg::Admin::Buffer* ccReg_Admin_i::getPublicRequestPDF(ccReg::TID id,
                          id % lang);
     return output;
   }
-  catch (LibFred::SQL_ERROR) {
+  catch (const LibFred::SQL_ERROR&) {
     throw ccReg::Admin::SQL_ERROR();
   }
-  catch (LibFred::NOT_FOUND) {
+  catch (const LibFred::NOT_FOUND&) {
     throw ccReg::Admin::OBJECT_NOT_FOUND();
   }
 }

@@ -284,7 +284,7 @@ LibFred::Domain::Domain* ccReg_Domains_i::findId(ccReg::TID _id) {
     }
     return 0;
   }
-  catch (LibFred::NOT_FOUND) {
+  catch (const LibFred::NOT_FOUND&) {
     return 0;
   }
 }

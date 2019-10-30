@@ -177,7 +177,7 @@ LibFred::PublicRequest::PublicRequest* ccReg_PublicRequests_i::findId(ccReg::TID
     }
     return 0;
   }
-  catch (LibFred::NOT_FOUND) {
+  catch (const LibFred::NOT_FOUND&) {
     return 0;
   }
 }

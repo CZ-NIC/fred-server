@@ -3248,15 +3248,15 @@ ccReg::Response* ccReg_EPP_i::nssetTest(
           try {
             tc.checkFromRegistrar(regHandle,handle,level,ifqdns,params.clTRID);
           }
-          catch (TechCheckManager::INTERNAL_ERROR) {
+          catch (const TechCheckManager::INTERNAL_ERROR&) {
             LOG<Logging::Log::Severity::err>("Tech check internal error nsset [%s] clientID -> %llu clTRID [%s] " , handle , params.loginID , static_cast<const char*>(params.clTRID) );
             internalError = true;
           }
-          catch (TechCheckManager::REGISTRAR_NOT_FOUND) {
+          catch (const TechCheckManager::REGISTRAR_NOT_FOUND&) {
             LOG<Logging::Log::Severity::err>("Tech check reg not found nsset [%s] clientID -> %llu clTRID [%s] " , handle , params.loginID , static_cast<const char*>(params.clTRID) );
             internalError = true;
           }
-          catch (TechCheckManager::NSSET_NOT_FOUND) {
+          catch (const TechCheckManager::NSSET_NOT_FOUND&) {
             LOG<Logging::Log::Severity::err>("Tech check nsset not found nset [%s] clientID -> %llu clTRID [%s] " , handle , params.loginID , static_cast<const char*>(params.clTRID) );
             internalError = true;
           }
