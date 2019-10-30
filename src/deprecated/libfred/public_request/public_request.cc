@@ -49,7 +49,7 @@ public:
         return request;
       else
         throw std::runtime_error("Wrong object type of public reuqest data from DB.");
-    } catch (std::exception) {
+    } catch (const std::exception&) {
         throw;
     } catch (...) {
       throw std::runtime_error("Unknown exception when retrieving public reuqest data from DB.");
@@ -332,7 +332,7 @@ public:
       l->get(0)->process(_invalidate, check, _request_id);
       tx.commit();
     }
-    catch (Database::Exception) { throw SQL_ERROR(); }
+    catch (const Database::Exception&) { throw SQL_ERROR(); }
   }
 
   virtual unsigned long long processAuthRequest(

@@ -3489,7 +3489,7 @@ public:
             continue;
         }
         store(i);
-          } catch (std::exception ex)
+          } catch (const std::exception& ex)
           {
               LOGGER.error(
                       std::string(" std exception while send mail in Mails class what: ")

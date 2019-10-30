@@ -348,10 +348,10 @@ CORBA::Any* ccReg_Session_i::getDetail(ccReg::FilterType _type, ccReg::TID _id) 
         LOGGER.warning("ccReg_Session_i::getDetail ex: ccReg::Admin::ObjectNotFound");
         throw;
     }
-    catch (ccReg::Logger::OBJECT_NOT_FOUND) {
+    catch (const ccReg::Logger::OBJECT_NOT_FOUND&) {
         throw ccReg::Admin::ObjectNotFound();
     }
-    catch (ccReg::Logger::INTERNAL_SERVER_ERROR) {
+    catch (const ccReg::Logger::INTERNAL_SERVER_ERROR&) {
         throw ccReg::Admin::ServiceUnavailable();
     }
     catch(std::exception& ex)
@@ -775,7 +775,7 @@ Registry::Domain::Detail* ccReg_Session_i::createHistoryDomainDetail(LibFred::Do
         MODIFY_LAST_HISTORY_RECORD(admins)
       }
     }
-    catch (LibFred::NOT_FOUND) {
+    catch (const LibFred::NOT_FOUND&) {
       LOGGER.error(boost::format("domain id=%1% detail lib -> CORBA: request for admin contact out of range 0..%2%")
                                            % act->getId() % act->getAdminCount(1));
     }
@@ -803,7 +803,7 @@ Registry::Domain::Detail* ccReg_Session_i::createHistoryDomainDetail(LibFred::Do
         MODIFY_LAST_HISTORY_RECORD(temps)
       }
     }
-    catch (LibFred::NOT_FOUND) {
+    catch (const LibFred::NOT_FOUND&) {
       LOGGER.error(boost::format("domain id=%1% detail lib -> CORBA: request for temp contact out of range 0..%2%")
                                            % act->getId() % act->getAdminCount(2));
     }
@@ -932,7 +932,7 @@ LOGGER.debug(boost::format("history detail -- (id=%1%) checking state %2%") % tm
         MODIFY_LAST_HISTORY_RECORD(addresses)
       }
     }
-    catch (LibFred::NOT_FOUND) {
+    catch (const LibFred::NOT_FOUND&) {
       LOGGER.error(boost::format("contact id=%1% detail lib -> CORBA: request for address out of range 0..%2%")
                                            % act->getId() % act->getAddressCount());
     }
@@ -1022,7 +1022,7 @@ Registry::NSSet::Detail* ccReg_Session_i::createHistoryNSSetDetail(LibFred::Nsse
 
       MAP_HISTORY_STRING(reportLevel, getCheckLevel)
     }
-    catch (LibFred::NOT_FOUND) {
+    catch (const LibFred::NOT_FOUND&) {
       LOGGER.error(boost::format("nsset id=%1% detail lib -> CORBA: request for admin contact out of range 0..%2%")
                                            % act->getId() % act->getAdminCount());
     }
@@ -1054,7 +1054,7 @@ Registry::NSSet::Detail* ccReg_Session_i::createHistoryNSSetDetail(LibFred::Nsse
         MODIFY_LAST_HISTORY_RECORD(hosts)
       }
     }
-    catch (LibFred::NOT_FOUND) {
+    catch (const LibFred::NOT_FOUND&) {
       LOGGER.error(boost::format("nsset id=%1% detail lib -> CORBA: request for host out of range 0..%2%")
                                            % act->getId() % act->getHostCount());
     }
@@ -1144,7 +1144,7 @@ Registry::KeySet::Detail* ccReg_Session_i::createHistoryKeySetDetail(LibFred::Ke
         MODIFY_LAST_HISTORY_RECORD(admins)
       }
     }
-    catch (LibFred::NOT_FOUND) {
+    catch (const LibFred::NOT_FOUND&) {
       LOGGER.error(boost::format("keyset id=%1% detail lib -> CORBA: request for admin contact out of range 0..%2%")
                                            % act->getId() % act->getAdminCount());
     }
@@ -1174,7 +1174,7 @@ Registry::KeySet::Detail* ccReg_Session_i::createHistoryKeySetDetail(LibFred::Ke
         MODIFY_LAST_HISTORY_RECORD(dsrecords)
       }
     }
-    catch (LibFred::NOT_FOUND) {
+    catch (const LibFred::NOT_FOUND&) {
       LOGGER.error(boost::format("keyset id=%1% detail lib -> CORBA: request for dsrecord out of range 0..%2%")
                                            % act->getId() % act->getDSRecordCount());
     }
@@ -1210,7 +1210,7 @@ Registry::KeySet::Detail* ccReg_Session_i::createHistoryKeySetDetail(LibFred::Ke
         MODIFY_LAST_HISTORY_RECORD(dnskeys)
       }
     }
-    catch (LibFred::NOT_FOUND) {
+    catch (const LibFred::NOT_FOUND&) {
       LOGGER.error(boost::format("keyset id=%1% detail lib -> CORBA: request for dnskey out of range 0..%2%")
                                            % act->getId() % act->getDNSKeyCount());
     }
