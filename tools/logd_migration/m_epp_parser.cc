@@ -3189,23 +3189,27 @@ epp_parse_command(
 	 * See what we have. <hello>, <command>, <extension> are admittable.
 	 * NOTE: Recognition is optimized, we exploit the difference in first
 	 * letter of valid elements.
+	 * Not all documents which are valid are commands
+	 * (e.g. greeting and response). EPP standard does
+	 * not describe any error which should be returned in
+	 * that case. Therefore we will silently close
+	 * connection in that case.
 	 */
+	ret = PARSER_NOT_COMMAND;
 	switch (elemname[0]) {
 		case 'h':
 			/* It is a <hello> element. */
 			if (!strcmp(elemname, "hello")) {
 				ret = PARSER_HELLO;
-				break;
 			}
-			/* fall through if not matched */
+			break;
 		case 'c':
 			/* It is a <command> element. */
 			if (!strcmp(elemname, "command")) {
 				ret = parse_command(NULL,
 						cdata, cmd_type, xpathCtx);
-				break;
 			}
-			/* fall through if not matched */
+			break;
 		case 'e':
 			/* It is an <extension> element. */
 			if (!strcmp(elemname, "extension")) {
@@ -3222,22 +3226,9 @@ epp_parse_command(
 					ret = parse_extension(NULL,
 							cdata, xpathCtx);
 				}
-				break;
 			}
-			/* fall through if not matched */
-		default:
-			/*
-			 * not all documents which are valid are commands
-			 * (e.g. greeting and response). EPP standard does
-			 * not describe any error which should be returned in
-			 * that case. Therefore we will silently close
-			 * connection in that case.
-			 */
-			ret = PARSER_NOT_COMMAND;
 			break;
 	}
-
-	
 
 	return ret;
 }
