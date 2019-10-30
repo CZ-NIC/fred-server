@@ -1222,7 +1222,7 @@ ccReg::EnumDictList* ccReg_Admin_i::getEnumDomainsByRegistrant(const char* name,
         ::CORBA::Boolean by_person, ::CORBA::Boolean by_org,
         ::CORBA::Long offset, ::CORBA::Long limit)
 {
-  Logging::Context(server_name_);
+  Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
   try {
@@ -1839,7 +1839,7 @@ ccReg::RegistrarRequestCountInfo* ccReg_Admin_i::getRegistrarRequestCount(const 
 bool ccReg_Admin_i::isRegistrarBlocked(ccReg::TID reg_id)
 {
     try {
-        Logging::Context(server_name_);
+        Logging::Context ctx(server_name_);
         ConnectionReleaser release;
         TRACE(boost::format("[CALL] ccReg_Admin_i::isRegistrarBlocked(%1%)") % reg_id);
 
@@ -1864,7 +1864,7 @@ bool ccReg_Admin_i::isRegistrarBlocked(ccReg::TID reg_id)
 bool ccReg_Admin_i::blockRegistrar(ccReg::TID reg_id)
 {
     try {
-        Logging::Context(server_name_);
+        Logging::Context ctx(server_name_);
         ConnectionReleaser release;
         TRACE(boost::format("[CALL] ccReg_Admin_i::blockRegistrar(%1%)") % reg_id);
 
@@ -1891,7 +1891,7 @@ bool ccReg_Admin_i::blockRegistrar(ccReg::TID reg_id)
 void ccReg_Admin_i::unblockRegistrar(ccReg::TID reg_id, ccReg::TID request_id)
 {
     try {
-        Logging::Context(server_name_);
+        Logging::Context ctx(server_name_);
         ConnectionReleaser release;
         TRACE(boost::format("[CALL] ccReg_Admin_i::unblockRegistrar(%1%, %2%)") % reg_id % request_id);
 
@@ -1917,7 +1917,7 @@ void ccReg_Admin_i::unblockRegistrar(ccReg::TID reg_id, ccReg::TID request_id)
 ccReg::ULLSeq* ccReg_Admin_i::getSummaryOfExpiredDomains(const char *registrar_handle, const ccReg::DatePeriodList &date_intervals)
 {
     try {
-        Logging::Context(server_name_);
+        Logging::Context ctx(server_name_);
         ConnectionReleaser release;
         TRACE(boost::format("[CALL] ccReg_Admin_i::getSummaryOfExpiredDomains(%1%, date_intervals") % registrar_handle );
 
