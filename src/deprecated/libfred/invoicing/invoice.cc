@@ -1520,7 +1520,7 @@ bool do_use_coef(boost::posix_time::ptime crtime, Decimal vat_rate, Money total_
   }
 
   const auto total_possibly_using_coef = total_without_vat + total_vat;
-  const auto total_using_math = total_without_vat + total_without_vat * (vat_rate / Money("100"));
+  const auto total_using_math = total_without_vat + total_without_vat * (vat_rate / Decimal("100"));
   static const auto round_err_max = Money("0.01");
   const auto total_definitely_used_coef = (total_possibly_using_coef - total_using_math).abs() > round_err_max;
 
@@ -2090,21 +2090,56 @@ public:
 
       Database::Connection conn = Database::Manager::acquire();
 
-      bool added_price = false;
-      for (unsigned j=0; j<i->getPaymentCount(); j++) {
-        const Payment *p = i->getPaymentByIdx(j);
+      Database::Result result =
+              conn.exec_params(
+                      annual_partitioning_query,
+                      Database::query_param_list(i->getId()));
 
-        if(added_price == false && (i->getVatRate() == p->getVatRate()) && (i->getType() == IT_ACCOUNT))
+      using MoneyRecord = std::array<Money, 3>;
+      using YearRecord = std::map<unsigned, MoneyRecord>;
+      using VatrateRecord = std::map<Decimal, YearRecord>;
+      VatrateRecord records;
+
+      for (std::size_t i = 0; i < result.size(); ++i) {
+          const auto year = static_cast<unsigned>(result[i][0]);
+          const auto vat_rate = Decimal(static_cast<std::string>(result[i][1]));
+          const auto price_without_vat = Money(static_cast<std::string>(result[i][2]));
+          const auto price_with_vat = Money(static_cast<std::string>(result[i][3]));
+          const auto vat = Money(static_cast<std::string>(result[i][4]));
+          if (records[vat_rate][year][0].is_special())
+          {
+              records[vat_rate][year][0] = Money("0");
+              records[vat_rate][year][1] = Money("0");
+              records[vat_rate][year][2] = Money("0");
+          }
+          records[vat_rate][year][0] += price_without_vat;
+          records[vat_rate][year][1] += price_with_vat;
+          records[vat_rate][year][2] += vat;
+      }
+
+      bool added_price = false;
+      for (const auto& record : records) {
+        const auto vat_rate = record.first;
+        Money price_without_vat = Money("0");
+        Money price_with_vat = Money("0");
+        Money vat = Money("0");
+        for (const auto& year_record : record.second) {
+            price_without_vat += year_record.second[0];
+            price_with_vat += year_record.second[1];
+            vat += year_record.second[2];
+        }
+
+        if(added_price == false && (i->getVatRate() == vat_rate) && (i->getType() == IT_ACCOUNT))
         {//add ac invoice to vat details
 
             out << TAGSTART(entry)
-            << TAG(vatperc,p->getVatRate())
+            << TAG(vatperc, vat_rate)
             << TAG(basetax,OUTMONEY(i->getTotal()))
             << TAG(vat,OUTMONEY(i->getTotalVAT()))
-            << TAG(total,OUTMONEY( (p->getPriceWithVat() + i->getTotal() + i->getTotalVAT()) ))
-            << TAG(totalvat,OUTMONEY( (p->getVat() + i->getTotalVAT()) ))
-            << TAG(paid,OUTMONEY(p->getPriceWithVat()))
-            << TAG(paidvat,OUTMONEY(p->getVat()))
+            << TAG(total,OUTMONEY( (price_with_vat + i->getTotal() + i->getTotalVAT()) ))
+            << TAG(totalvat,OUTMONEY( (vat + i->getTotalVAT()) ))
+            << TAG(paid,OUTMONEY(price_with_vat))
+            << TAG(paidvat,OUTMONEY(vat))
             << TAGSTART(years);
 
             added_price = true;
@@ -2112,44 +2147,17 @@ public:
         else
         {
             out << TAGSTART(entry)
-            << TAG(vatperc,p->getVatRate())
-            << TAG(basetax,OUTMONEY(p->getPrice()))
-            << TAG(vat,OUTMONEY(p->getVat()))
-            << TAG(total,OUTMONEY(p->getPriceWithVat()))
-            << TAG(totalvat,OUTMONEY(p->getVat()))
-            << TAG(paid,OUTMONEY(p->getPriceWithVat()))
-            << TAG(paidvat,OUTMONEY(p->getVat()))
+            << TAG(vatperc, vat_rate)
+            << TAG(basetax,OUTMONEY(price_without_vat))
+            << TAG(vat,OUTMONEY(vat))
+            << TAG(total,OUTMONEY(price_with_vat))
+            << TAG(totalvat,OUTMONEY(vat))
+            << TAG(paid,OUTMONEY(price_with_vat))
+            << TAG(paidvat,OUTMONEY(vat))
             << TAGSTART(years);
         }
 
-        Database::Result result =
-                conn.exec_params(
-                        annual_partitioning_query,
-                        Database::query_param_list(i->getId()));
-
-        using MoneyRecord = std::array<Money, 3>;
-        using YearRecord = std::map<unsigned, MoneyRecord>;
-        using VatrateRecord = std::map<Decimal, YearRecord>;
-        VatrateRecord records;
-
-        for (std::size_t i = 0; i < result.size(); ++i) {
-            const auto year = static_cast<unsigned>(result[i][0]);
-            const auto vat_rate = Decimal(static_cast<std::string>(result[i][1]));
-            const auto price_without_vat = Money(static_cast<std::string>(result[i][2]));
-            const auto price_with_vat = Money(static_cast<std::string>(result[i][3]));
-            const auto vat = Money(static_cast<std::string>(result[i][4]));
-            if (records[vat_rate][year][0].is_special())
-            {
-                records[vat_rate][year][0] = Money("0");
-                records[vat_rate][year][1] = Money("0");
-                records[vat_rate][year][2] = Money("0");
-            }
-            records[vat_rate][year][0] += price_without_vat;
-            records[vat_rate][year][1] += price_with_vat;
-            records[vat_rate][year][2] += vat;
-        }
-
-        for (const auto& year_record : records[p->getVatRate()])
+        for (const auto& year_record : records[vat_rate])
         {
             const auto year = year_record.first;
             const auto price_without_vat = year_record.second[0];
