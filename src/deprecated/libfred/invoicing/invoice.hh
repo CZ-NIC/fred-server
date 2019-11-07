@@ -168,22 +168,6 @@ public:
   //// new interface - implement
   virtual std::string getActionStr() const = 0;
 };
-/// iterator over list of total price partitioned by years
-class AnnualPartitioning : virtual public Payment {
-protected:
-  virtual ~AnnualPartitioning() {
-  }
-public:
-  /// reset iterator to first record
-  virtual void resetIterator(Decimal vatRate) = 0;
-  /// test whether there are any records left 
-  virtual bool end() const = 0;
-  /// pass to next record
-  virtual void next() = 0;
-  /// access method for year at current record 
-  virtual unsigned getYear() const = 0;
-};
-
 class Invoice : virtual public LibFred::CommonObject {
 public:
   virtual ~Invoice() {
@@ -212,7 +196,6 @@ public:
   virtual const PaymentSource *getSource(unsigned idx) const = 0;
   virtual unsigned getActionCount() const = 0;
   virtual const PaymentAction *getAction(unsigned idx) const = 0;
-  virtual AnnualPartitioning *getAnnualPartitioning() = 0;
   virtual unsigned getPaymentCount() const = 0;
   virtual const Payment *getPaymentByIdx(unsigned idx) const = 0;
 

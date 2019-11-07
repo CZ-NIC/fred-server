@@ -1494,129 +1494,6 @@ public:
         return "UNKNOWN";
     }
 };
-/// hold list of sum of proportional parts of prices for every year
-class AnnualPartitioningImpl : public virtual AnnualPartitioning {
-  /// type for mapping year to sum of money
-  typedef std::map<unsigned, Money> RecordsType;
-  RecordsType::const_iterator i; ///< for walkthrough in results 
-  typedef std::map<Decimal, RecordsType> vatRatesRecordsType;
-  vatRatesRecordsType::const_iterator j; ///< for walkthrough in results 
-  vatRatesRecordsType records; ///< list of years by vat rate
-  ManagerImpl *man; ///< need to count vat
-  bool noVatRate; ///< there is not vat rate asked in resetIterator()
-public:
-  AnnualPartitioningImpl(ManagerImpl* _man) :
-    man(_man), noVatRate(true) {
-  }
-  /** for every year in period from exdate-unitsCount to exdate 
-   * count proportional part of price according to days that belong 
-   * to relevant year */
-  /// partition action prices into years
-  void addAction(PaymentAction *pa) {
-      Logging::Context ctx("AnnualPartitioningImpl::addAction");
-      try
-      {
-    	//check fromdate
-        if (pa->getFromDate().is_special())
-          throw std::runtime_error(
-        		  "AnnualPartitioningImpl::addAction: from date is special");
-        // lastdate will be subtracted down in every iteration
-        // non periodical actions shell not be ignored
-
-        date lastdate = pa->getExDate().is_special()
-        		? pa->getFromDate() : pa->getExDate();
-        // firstdate is for detection when to stop and for portion counting
-        date firstdate = pa->getFromDate();
-        // money that still need to be partitioned
-        Money remains = pa->getPrice();
-        while (remains != Money("0")) {
-          Money part;
-          unsigned year = lastdate.year();
-          if (year == firstdate.year())
-            // last year just take what remains
-            part = remains;
-          else {
-            // count portion of remains and update lastdate
-            date newdate = date(year, 1, 1) - days(1);
-            part = remains *
-                    Decimal(boost::lexical_cast<std::string>(
-                            (lastdate - newdate).days()))
-                  / Decimal(boost::lexical_cast<std::string>(
-                          (lastdate - firstdate).days()));
-            lastdate = newdate;
-          }
-          if(part.is_special()) throw std::runtime_error("addAction part is special");
-          if(pa->getVatRate().is_special()) throw std::runtime_error("pa->getVatRate() is special");
-
-          vatRatesRecordsType::const_iterator vrrti =
-          records.find(pa->getVatRate());
-          Money tmp_part ("0");
-          if(vrrti != records.end())
-          {
-              RecordsType::const_iterator rt =
-              (vrrti->second).find(year);
-                if(rt != (vrrti->second).end())
-                {
-                    if(!((rt->second).is_special()))//if not special
-                        tmp_part = rt->second;//set if found, otherwise 0 above
-                }
-          }
-          remains -= part;
-          records[pa->getVatRate()][year] = tmp_part + part;
-        }//while remains
-      }//try
-      catch(const std::exception& ex)
-      {
-          LOGGER.debug(ex.what());
-          throw;
-      }
-  }
-  void resetIterator(Decimal vatRate) {
-    j = records.find(vatRate);
-    if (j == records.end())
-      noVatRate = true;
-    else {
-      noVatRate = false;
-      i = j->second.begin();
-    }
-  }
-  bool end() const {
-    return noVatRate || i == j->second.end();
-  }
-  void next() {
-    i++;
-  }
-  unsigned getYear() const {
-    return end() ? 0 : i->first;
-  }
-  Money getPrice() const {
-    return end() ? Money("0") : i->second;
-  }
-  Decimal getVatRate() const {
-    return end() ? Decimal("0") : j->first;
-  }
-  Money getVat() const {
-      const constexpr bool use_coef = false;
-      Money vat = man->countVAT(getPrice(), getVatRate(), use_coef);
-      LOGGER.debug(std::string("AnnualPartitioningImpl::getVat: ")+ vat.get_string());
-    return vat;
-  }
-  Money getPriceWithVat() const {
-
-      Money price = getPrice();
-      Money vat = getVat();
-
-      Money price_with_vat = price + vat;
-
-      LOGGER.debug(std::string(
-              "AnnualPartitioningImpl::getPriceWithVat: ")
-              + price_with_vat.get_string()
-              + " price: " + price.get_string()
-              + " vat: " + vat.get_string());
-
-    return price_with_vat;
-  }
-};
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 //   Exporter
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -1684,7 +1561,6 @@ class InvoiceImpl : public LibFred::CommonObjectImpl,
   std::vector<PaymentSourceImpl *> sources;
   std::vector<PaymentActionImpl *> actions;
   bool storeFileFlag; ///< ready for saving link to generated file
-  AnnualPartitioningImpl ap; ///< total prices partitioned by year
   std::vector<PaymentImpl> paid; ///< list of paid vat rates
   ManagerImpl *man; ///< backlink to manager for VAT and others
   TID id;
@@ -1724,7 +1600,6 @@ public:
                                        filepdf_name(_filepdf_name),
                                        filexml_name(_filexml_name),
                                        storeFileFlag(false),
-                                       ap(_manager),
                                        man(_manager),
                                        id(_id) {
       LOGGER.debug ( boost::format(
@@ -1935,7 +1810,6 @@ public:
                                                           price_per_unit,
                                                           id);
     actions.push_back(new_action);
-    ap.addAction(actions.back());
   }
   /// initialize list of sources from sql result
 
@@ -1956,7 +1830,7 @@ public:
     Money total_vat(_total_vat);
 
     const bool use_coef = do_use_coef(crtime.get(), vat_rate, total_price, total_vat);
-    
+
     LOGGER.debug(
         boost::format(
         "addSource _price %1% _vat_rate %2% number %3% _credit %4%"
@@ -1992,9 +1866,6 @@ public:
       paid.push_back(PaymentImpl(new_source));    
   }
   
-  virtual AnnualPartitioning *getAnnualPartitioning() {
-    return &ap;
-  }
   virtual unsigned getPaymentCount() const {
     // virtualize advance payment into list of payments to
     // provide single point of data
@@ -2082,6 +1953,61 @@ SubjectImpl
 class ExporterXML : public Exporter {
   std::ostream& out;
   bool xmlDec; ///< whether to include xml declaration 
+  static const constexpr char* annual_partitioning_query = \
+ "SELECT moo.year, "
+       "moo.adi_vat_rate, "
+       "SUM(moo.price_novat)::NUMERIC(10,2) AS price_novat, "
+       "SUM(moo.price_vat)::NUMERIC(10,2) AS price_vat, "
+       "SUM(moo.price_vat)::NUMERIC(10,2) - SUM(moo.price_novat)::NUMERIC(10,2) AS vat "
+  "FROM ( "
+        "SELECT baz.year, "
+               "baz.adi_vat_rate, "
+               "baz.adi_vat_alg, "
+               "baz.price_novat, "
+               "CASE WHEN baz.adi_vat_alg = 'coef' "
+                    "THEN baz.price_novat * (1 / (1 - (SELECT koef FROM price_vat WHERE vat = baz.adi_vat_rate))) "
+                    "WHEN baz.adi_vat_alg = 'math' "
+                    "THEN baz.price_novat * (1 + (baz.adi_vat_rate / 100)) "
+                    "WHEN baz.adi_vat_alg = 'novat' "
+                    "THEN 0 "
+               "end AS price_vat "
+          "FROM ( "
+                "SELECT bar.year, bar.adi_vat_rate, bar.adi_vat_alg, SUM(bar.price_novat) AS price_novat "
+                  "FROM ( "
+                        "SELECT foo.invoice_operation_id, "
+                               "foo.ad_invoice_id, "
+                               "foo.adi_vat_rate, "
+                               "foo.adi_vat_alg, "
+                               "foo.year, "
+                               "foo.price * (foo.days_per_year / (SUM(foo.days_per_year) OVER (partition by foo.invoice_operation_id, foo.ad_invoice_id))) AS price_novat "
+                          "FROM ( "
+                                "SELECT iocm.invoice_operation_id, "
+                                       "iocm.invoice_id AS ad_invoice_id, "
+                                       "iocm.price, "
+                                       "adi.vat AS adi_vat_rate, "
+                                       "CASE WHEN adi.vat > 0 "
+                                            "THEN CASE WHEN adi.crdate < (('2019-10-01 00:00:00' AT TIME ZONE 'UTC') AT TIME ZONE 'Europe/Prague') "
+                                                           "or abs(((adi.total + adi.totalvat) * (1 - 1/(1 + adi.vat/100)))::NUMERIC(10,2) - adi.totalvat) > 0.01 "
+                                                      "THEN 'coef' "
+                                                      "ELSE 'math' "
+                                                 "end "
+                                            "ELSE 'novat' "
+                                       "end AS adi_vat_alg, "
+                                       "EXTRACT(YEAR FROM generate_series(io.date_from + '1 day'::INTERVAL, io.date_to, '1 day'::INTERVAL)) AS year, "
+                                       "COUNT(*) AS days_per_year "
+                                  "FROM invoice_operation io "
+                                  "JOIN invoice_operation_charge_map iocm ON iocm.invoice_operation_id = io.id "
+                                  "JOIN invoice adi ON adi.id = iocm.invoice_id "
+                                 "WHERE io.ac_invoice_id = $1::BIGINT "
+                                 "GROUP BY 1,2,3,4,5,6 "
+                                ") AS foo "
+                       ") AS bar "
+                   "GROUP BY 1,2,3 "
+                   "ORDER BY 1,2,3 "
+               ") AS baz "
+       ") AS moo "
+ "group by 1,2;";
+
 public:
   ExporterXML(std::ostream& _out, bool _xmlDec) :
     out(_out), xmlDec(_xmlDec) {
@@ -2162,8 +2088,9 @@ public:
       << TAGSTART(vat_rates);
 
 
-      bool added_price = false;
+      Database::Connection conn = Database::Manager::acquire();
 
+      bool added_price = false;
       for (unsigned j=0; j<i->getPaymentCount(); j++) {
         const Payment *p = i->getPaymentByIdx(j);
 
@@ -2195,19 +2122,48 @@ public:
             << TAGSTART(years);
         }
 
-        for (
-            i->getAnnualPartitioning()->resetIterator(p->getVatRate());
-            !i->getAnnualPartitioning()->end();
-            i->getAnnualPartitioning()->next()
-        ) {
-          AnnualPartitioning *ap = i->getAnnualPartitioning();
-          out << TAGSTART(entry)
-          << TAG(year,ap->getYear())
-          << TAG(price,OUTMONEY(ap->getPrice()))
-          << TAG(vat,OUTMONEY(ap->getVat())) // FIXME
-          << TAG(total,OUTMONEY(ap->getPriceWithVat()))
-          << TAGEND(entry);
+        Database::Result result =
+                conn.exec_params(
+                        annual_partitioning_query,
+                        Database::query_param_list(i->getId()));
+
+        using MoneyRecord = std::array<Money, 3>;
+        using YearRecord = std::map<unsigned, MoneyRecord>;
+        using VatrateRecord = std::map<Decimal, YearRecord>;
+        VatrateRecord records;
+
+        for (std::size_t i = 0; i < result.size(); ++i) {
+            const auto year = static_cast<unsigned>(result[i][0]);
+            const auto vat_rate = Decimal(static_cast<std::string>(result[i][1]));
+            const auto price_without_vat = Money(static_cast<std::string>(result[i][2]));
+            const auto price_with_vat = Money(static_cast<std::string>(result[i][3]));
+            const auto vat = Money(static_cast<std::string>(result[i][4]));
+            if (records[vat_rate][year][0].is_special())
+            {
+                records[vat_rate][year][0] = Money("0");
+                records[vat_rate][year][1] = Money("0");
+                records[vat_rate][year][2] = Money("0");
+            }
+            records[vat_rate][year][0] += price_without_vat;
+            records[vat_rate][year][1] += price_with_vat;
+            records[vat_rate][year][2] += vat;
         }
+
+        for (const auto& year_record : records[p->getVatRate()])
+        {
+            const auto year = year_record.first;
+            const auto price_without_vat = year_record.second[0];
+            const auto price_with_vat = year_record.second[1];
+            const auto vat = year_record.second[2];
+
+            out << TAGSTART(entry)
+            << TAG(year, year)
+            << TAG(price,OUTMONEY(price_without_vat))
+            << TAG(vat,OUTMONEY(vat))
+            << TAG(total,OUTMONEY(price_with_vat))
+            << TAGEND(entry);
+        }
+
         out << TAGEND(years)
         << TAGEND(entry);
       }//for payment count
@@ -3288,7 +3244,6 @@ public:
           ));
     }//load
   }; // Mails
-  
 
   void ManagerImpl::initVATList()  {
 
