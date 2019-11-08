@@ -1954,12 +1954,15 @@ class ExporterXML : public Exporter {
   std::ostream& out;
   bool xmlDec; ///< whether to include xml declaration 
 
+  static const constexpr char* advance_invoice_query =
+  "SELECT vat, total, totalvat FROM invoice WHERE id=$1::BIGINT";
+
   static const constexpr char* account_invoice_with_annual_partitioning_query =
  "SELECT moo.year, "
        "moo.adi_vat_rate, "
-       "SUM(moo.price_novat)::NUMERIC(10,2) AS price_novat, "
-       "SUM(moo.price_vat)::NUMERIC(10,2) AS price_vat, "
-       "SUM(moo.price_vat)::NUMERIC(10,2) - SUM(moo.price_novat)::NUMERIC(10,2) AS vat "
+       "SUM(moo.price_novat) AS price_novat, "
+       "SUM(moo.price_vat) AS price_vat, "
+       "SUM(moo.price_vat) - SUM(moo.price_novat) AS vat "
   "FROM ( "
         "SELECT baz.year, "
                "baz.adi_vat_rate, "
@@ -1970,8 +1973,8 @@ class ExporterXML : public Exporter {
                     "WHEN baz.adi_vat_alg = 'math' "
                     "THEN baz.price_novat * (1 + (baz.adi_vat_rate / 100)) "
                     "WHEN baz.adi_vat_alg = 'novat' "
-                    "THEN 0 "
-               "end AS price_vat "
+                    "THEN baz.price_novat "
+               "END AS price_vat "
           "FROM ( "
                 "SELECT bar.year, bar.adi_vat_rate, bar.adi_vat_alg, SUM(bar.price_novat) AS price_novat "
                   "FROM ( "
@@ -1991,9 +1994,9 @@ class ExporterXML : public Exporter {
                                                            "or abs(((adi.total + adi.totalvat) * (1 - 1/(1 + adi.vat/100)))::NUMERIC(10,2) - adi.totalvat) > 0.01 "
                                                       "THEN 'coef' "
                                                       "ELSE 'math' "
-                                                 "end "
+                                                 "END "
                                             "ELSE 'novat' "
-                                       "end AS adi_vat_alg, "
+                                       "END AS adi_vat_alg, "
                                        "EXTRACT(YEAR FROM generate_series(io.date_from + '1 day'::INTERVAL, io.date_to, '1 day'::INTERVAL)) AS year, "
                                        "COUNT(*) AS days_per_year "
                                   "FROM invoice_operation io "
@@ -2089,21 +2092,26 @@ public:
       << TAGSTART(vat_rates);
 
       bool added_price = false;
+      Database::Connection conn = Database::Manager::acquire();
+      struct MoneyRecord
+      {
+          Money price_without_vat;
+          Money price_with_vat;
+          Money vat;
+      };
+
       if (i->getType() == IT_ACCOUNT)
       {
-          Database::Connection conn = Database::Manager::acquire();
-
           Database::Result result =
                   conn.exec_params(
                           account_invoice_with_annual_partitioning_query,
                           Database::query_param_list(i->getId()));
 
-          struct MoneyRecord
+          if (result.size() < 1)
           {
-              Money price_without_vat;
-              Money price_with_vat;
-              Money vat;
-          };
+              throw std::runtime_error("ExporterArchiver::doExport IT_ACCOUNT query failed");
+          }
+
           using YearRecord = std::map<unsigned, MoneyRecord>;
           using VatrateRecord = std::map<Decimal, YearRecord>;
           VatrateRecord records;
@@ -2177,20 +2185,36 @@ public:
           }//for payment count
       }
       else {
-         const Payment *p = i->getPaymentByIdx(0);
+          Database::Result result =
+                  conn.exec_params(
+                          advance_invoice_query,
+                          Database::query_param_list(i->getId()));
 
-         out << TAGSTART(entry)
-         << TAG(vatperc,p->getVatRate())
-         << TAG(basetax,OUTMONEY(p->getPrice()))
-         << TAG(vat,OUTMONEY(p->getVat()))
-         << TAG(total,OUTMONEY(p->getPriceWithVat()))
-         << TAG(totalvat,OUTMONEY(p->getVat()))
-         << TAG(paid,OUTMONEY(p->getPriceWithVat()))
-         << TAG(paidvat,OUTMONEY(p->getVat()))
-         << TAGSTART(years);
+          if (result.size() != 1)
+          {
+              throw std::runtime_error("ExporterArchiver::doExport IT_DEPOSIT query failed");
+          }
 
-         out << TAGEND(years)
-         << TAGEND(entry);
+          MoneyRecord money_record;
+
+          const auto row = 0;
+          const auto vat_rate = Decimal(static_cast<std::string>(result[row][0]));
+          money_record.price_without_vat = Money(static_cast<std::string>(result[row][1]));
+          money_record.vat = Money(static_cast<std::string>(result[row][2]));
+          money_record.price_with_vat = money_record.price_without_vat + money_record.vat;
+
+          out << TAGSTART(entry)
+          << TAG(vatperc,vat_rate)
+          << TAG(basetax,OUTMONEY(money_record.price_without_vat))
+          << TAG(vat,OUTMONEY(money_record.vat))
+          << TAG(total,OUTMONEY(money_record.price_with_vat))
+          << TAG(totalvat,OUTMONEY(money_record.vat))
+          << TAG(paid,OUTMONEY(money_record.price_with_vat))
+          << TAG(paidvat,OUTMONEY(money_record.vat))
+          << TAGSTART(years);
+
+          out << TAGEND(years)
+          << TAGEND(entry);
       }
 
       if((added_price == false) && (i->getTotal() != Money("0")) && (i->getType() == IT_ACCOUNT))
