@@ -14,6 +14,10 @@
 
   * adifd - return possibility to change registrar handle
 
+2019-11-08 (2.41.1)
+
+  * VAT calculation changes
+
 2019-07-18 (2.41.0)
 
   * Epp - create poll message when contact or domain is deleted administratively (to notify sponsoring registrar)
