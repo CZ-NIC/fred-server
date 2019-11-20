@@ -14,6 +14,8 @@
 
   * adifd - return possibility to change registrar handle
 
+  * Update spec file for F31 and Centos/RHEL 8
+
 2019-11-08 (2.41.1)
 
   * VAT calculation changes
