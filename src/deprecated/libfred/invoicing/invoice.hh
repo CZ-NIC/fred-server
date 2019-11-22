@@ -140,6 +140,7 @@ enum PaymentActionType {
   , PAT_REQUESTS_OVER_LIMIT
   , PAT_FINE
   , PAT_FEE
+  , PAT_MONTHLY_FEE
 };
 std::string PaymentActionType2Str(PaymentActionType type);
 
