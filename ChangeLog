@@ -1,3 +1,9 @@
+2019-11-27 (2.41.2)
+
+  * Add Fee and Fine operations to invoice export
+
+  * Fix export for account invoices with not paid amount
+
 2019-11-08 (2.41.1)
 
   * VAT calculation changes
