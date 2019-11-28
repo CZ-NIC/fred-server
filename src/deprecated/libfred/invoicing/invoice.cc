@@ -34,6 +34,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/posix_time/time_parsers.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 
 #include <algorithm>
@@ -685,12 +686,16 @@ unsigned long long insert_account_invoice(
     Database::Connection conn = Database::Manager::acquire();
     Database::Transaction tx(conn);
 
-    if (invoice_date.date() < tax_date ||
-       (invoice_date.date() - tax_date > boost::gregorian::days(15)))
+    if (invoice_date.date() < tax_date)
     {
-        throw std::runtime_error(
-            "insert_account_invoice: invoice_date is more than"
-            " 15 days later than tax_date");
+        throw std::runtime_error(boost::str(boost::format(
+            "insert_account_invoice: invoice_date %1% is before tax_date %2%") % invoice_date.date() % tax_date));
+    }
+    if (invoice_date.date() - tax_date > boost::gregorian::days(15))
+    {
+        throw std::runtime_error(boost::str(boost::format(
+            "insert_account_invoice: invoice_date %1% is more than"
+            " 15 days later than tax_date %2%") % invoice_date.date() % tax_date));
     }
 
     Database::Result rvat_result = conn.exec_params(
@@ -906,7 +911,7 @@ unsigned long long create_account_invoice
     //adi_list = get_advance_invoices(registrar, zone, tax_date) , 0 as credit_change
     Database::Result advance_invoices_result = conn.exec_params(
     "SELECT i.id, i.balance FROM invoice i JOIN invoice_prefix ip ON i.invoice_prefix_id = ip.id "
-        " WHERE ip.typ = 0 " //--IT_ADVANCE
+        " WHERE ip.typ = 0 " //--IT_DEPOSIT
         " AND i.zone_id = $1::bigint AND i.registrar_id = $2::bigint AND i.balance > 0 AND i.taxdate <= $3::date "
         " ORDER BY i.crdate, i.id "
     , Database::query_param_list(zone_id)(registrar_id)(tax_date));
@@ -2113,60 +2118,61 @@ SubjectImpl
 #define TAGEND(tag) "</"#tag">"
 #define TAG(tag,f) TAGSTART(tag) \
                        << "<![CDATA[" << f << "]]>" << TAGEND(tag)
-#define OUTMONEY(f) f.get_string(".2f")
+#define OUTMONEY(f) (f).get_string(".2f")
 // builder that export xml of invoice into given stream
 class ExporterXML : public Exporter {
   std::ostream& out;
   bool xmlDec; ///< whether to include xml declaration 
 
-  static const constexpr char* advance_invoice_query =
-  "SELECT vat, total, totalvat FROM invoice WHERE id=$1::BIGINT";
+  static const constexpr char* invoice_query =
+  "SELECT vat, total, totalvat, operations_price FROM invoice WHERE id=$1::BIGINT";
 
   static const constexpr char* account_invoice_with_annual_partitioning_query =
  "SELECT moo.year, "
-       "moo.adi_vat_rate, "
-       "SUM(moo.price_novat) AS price_novat, "
-       "SUM(moo.price_vat) AS price_vat, "
-       "SUM(moo.price_vat) - SUM(moo.price_novat) AS vat "
+       "moo.chi_vat_rate, "
+       "SUM(moo.chi_price_novat) AS chi_price_novat, "
+       "SUM(moo.chi_price_vat) AS chi_price_vat, "
+       "SUM(moo.chi_price_vat) - SUM(moo.chi_price_novat) AS chi_vat "
   "FROM ( "
         "SELECT baz.year, "
-               "baz.adi_vat_rate, "
-               "baz.adi_vat_alg, "
-               "baz.price_novat, "
-               "CASE WHEN baz.adi_vat_alg = 'coef' "
-                    "THEN baz.price_novat * (1 / (1 - (SELECT koef FROM price_vat WHERE vat = baz.adi_vat_rate))) "
-                    "WHEN baz.adi_vat_alg = 'math' "
-                    "THEN baz.price_novat * (1 + (baz.adi_vat_rate / 100)) "
-                    "WHEN baz.adi_vat_alg = 'novat' "
-                    "THEN baz.price_novat "
-               "END AS price_vat "
+               "baz.chi_vat_rate, "
+               "baz.chi_vat_alg, "
+               "baz.chi_price_novat, "
+               "CASE WHEN baz.chi_vat_alg = 'coef' "
+                    "THEN baz.chi_price_novat * (1 / (1 - (SELECT koef FROM price_vat WHERE vat = baz.chi_vat_rate))) "
+                    "WHEN baz.chi_vat_alg = 'math' "
+                    "THEN baz.chi_price_novat * (1 + (baz.chi_vat_rate / 100)) "
+                    "WHEN baz.chi_vat_alg = 'novat' "
+                    "THEN baz.chi_price_novat "
+               "END AS chi_price_vat "
           "FROM ( "
-                "SELECT bar.year, bar.adi_vat_rate, bar.adi_vat_alg, SUM(bar.price_novat) AS price_novat "
+                "SELECT bar.year, bar.chi_vat_rate, bar.chi_vat_alg, SUM(bar.chi_price_novat) AS chi_price_novat "
                   "FROM ( "
                         "SELECT foo.invoice_operation_id, "
                                "foo.ad_invoice_id, "
-                               "foo.adi_vat_rate, "
-                               "foo.adi_vat_alg, "
+                               "foo.chi_vat_rate, "
+                               "foo.chi_vat_alg, "
                                "foo.year, "
-                               "foo.price * (foo.days_per_year / (SUM(foo.days_per_year) OVER (PARTITION BY foo.invoice_operation_id, foo.ad_invoice_id))) AS price_novat "
+                               "foo.price * (foo.days_per_year / (SUM(foo.days_per_year) OVER (PARTITION BY foo.invoice_operation_id, foo.ad_invoice_id))) AS chi_price_novat "
                           "FROM ( "
                                 "SELECT iocm.invoice_operation_id, "
                                        "iocm.invoice_id AS ad_invoice_id, "
                                        "iocm.price, "
-                                       "adi.vat AS adi_vat_rate, "
-                                       "CASE WHEN adi.vat > 0 "
-                                            "THEN CASE WHEN adi.crdate < (('2019-10-01 00:00:00' AT TIME ZONE 'UTC') AT TIME ZONE 'Europe/Prague') "
-                                                           "or abs(((adi.total + adi.totalvat) * (1 - 1/(1 + adi.vat/100)))::NUMERIC(10,2) - adi.totalvat) > 0.01 "
+                                       "chi.vat AS chi_vat_rate, "
+                                       "CASE WHEN chi.vat > 0 "
+                                            "THEN CASE WHEN chi.crdate < (('2019-10-01 00:00:00' AT TIME ZONE 'UTC') AT TIME ZONE 'Europe/Prague') "
+                                                           "or abs(((chi.total + chi.totalvat) * (1 - 1/(1 + chi.vat/100)))::NUMERIC(10,2) - chi.totalvat) > 0.01 "
                                                       "THEN 'coef' "
                                                       "ELSE 'math' "
                                                  "END "
                                             "ELSE 'novat' "
-                                       "END AS adi_vat_alg, "
+                                       "END AS chi_vat_alg, "
                                        "EXTRACT(YEAR FROM generate_series(io.date_from + '1 day'::INTERVAL, io.date_to, '1 day'::INTERVAL)) AS year, "
                                        "COUNT(*) AS days_per_year "
                                   "FROM invoice_operation io "
                                   "JOIN invoice_operation_charge_map iocm ON iocm.invoice_operation_id = io.id "
-                                  "JOIN invoice adi ON adi.id = iocm.invoice_id "
+                                  "JOIN invoice chi ON chi.id = iocm.invoice_id " // chi can be advance or account invoice
+                                  "JOIN invoice_prefix ip ON chi.invoice_prefix_id = ip.id "
                                  "WHERE io.ac_invoice_id = $1::BIGINT "
                                  "GROUP BY 1,2,3,4,5,6 "
                                 ") AS foo "
@@ -2256,8 +2262,6 @@ public:
       << TAGSTART(delivery)
       << TAGSTART(vat_rates);
 
-      bool added_price = false;
-      Database::Connection conn = Database::Manager::acquire();
       struct MoneyRecord
       {
           Money price_without_vat;
@@ -2267,92 +2271,122 @@ public:
 
       if (i->getType() == IT_ACCOUNT)
       {
-          Database::Result result =
+          struct AccountInvoiceRecord
+          {
+              Decimal vat_rate;
+              MoneyRecord self;
+              Money operations_price;
+              using YearRecord = std::map<unsigned, MoneyRecord>;
+              using VatrateRecord = std::map<Decimal, YearRecord>;
+              VatrateRecord records;
+          };
+
+          Database::Connection conn = Database::Manager::acquire();
+          AccountInvoiceRecord account_invoice_record;
+          {
+              const Database::Result result =
+                      conn.exec_params(
+                              invoice_query,
+                              Database::query_param_list(i->getId()));
+
+              if (result.size() < 1)
+              {
+                  throw std::runtime_error("ExporterArchiver::doExport IT_ACCOUNT query failed");
+              }
+              constexpr auto row = 0;
+              account_invoice_record.vat_rate = Decimal(static_cast<std::string>(result[row][0]));
+              account_invoice_record.self.price_without_vat = Money(static_cast<std::string>(result[row][1]));
+              account_invoice_record.self.vat = Money(static_cast<std::string>(result[row][2]));
+              account_invoice_record.self.price_with_vat = account_invoice_record.self.price_without_vat + account_invoice_record.self.vat;
+              account_invoice_record.operations_price = Decimal(static_cast<std::string>(result[row][3]));
+          }
+
+          const Database::Result result =
                   conn.exec_params(
                           account_invoice_with_annual_partitioning_query,
                           Database::query_param_list(i->getId()));
 
-          if (result.size() < 1)
-          {
-              throw std::runtime_error("ExporterArchiver::doExport IT_ACCOUNT query failed");
-          }
+          if (result.size() > 0) {
 
-          using YearRecord = std::map<unsigned, MoneyRecord>;
-          using VatrateRecord = std::map<Decimal, YearRecord>;
-          VatrateRecord records;
+              for (std::size_t row = 0; row < result.size(); ++row) {
+                  const auto year = static_cast<unsigned>(result[row][0]);
+                  const auto vat_rate = Decimal(static_cast<std::string>(result[row][1]));
+                  account_invoice_record.records[vat_rate][year].price_without_vat = Money(static_cast<std::string>(result[row][2]));
+                  account_invoice_record.records[vat_rate][year].price_with_vat = Money(static_cast<std::string>(result[row][3]));
+                  account_invoice_record.records[vat_rate][year].vat = Money(static_cast<std::string>(result[row][4]));
+              }
 
-          for (std::size_t row = 0; row < result.size(); ++row) {
-              const auto year = static_cast<unsigned>(result[row][0]);
-              const auto vat_rate = Decimal(static_cast<std::string>(result[row][1]));
-              records[vat_rate][year].price_without_vat = Money(static_cast<std::string>(result[row][2]));
-              records[vat_rate][year].price_with_vat = Money(static_cast<std::string>(result[row][3]));
-              records[vat_rate][year].vat = Money(static_cast<std::string>(result[row][4]));
-          }
+              for (const auto& vat_rate_record : account_invoice_record.records) {
+                const auto vat_rate = vat_rate_record.first;
 
-          for (const auto& vat_rate_record : records) {
-            const auto vat_rate = vat_rate_record.first;
-            Money price_without_vat = Money("0");
-            Money price_with_vat = Money("0");
-            Money vat = Money("0");
-            for (const auto& year_record : vat_rate_record.second) {
-                const auto money_record = year_record.second;
-                price_without_vat += money_record.price_without_vat;
-                price_with_vat += money_record.price_with_vat;
-                vat += money_record.vat;
-            }
+                MoneyRecord all_years_money_record{Money("0"), Money("0"), Money("0")};
+                for (const auto& year_record : vat_rate_record.second) {
+                    const auto year_money_record = year_record.second;
+                    all_years_money_record.price_without_vat += year_money_record.price_without_vat;
+                    all_years_money_record.price_with_vat += year_money_record.price_with_vat;
+                    all_years_money_record.vat += year_money_record.vat;
+                }
 
-            if(added_price == false && (i->getVatRate() == vat_rate) && (i->getType() == IT_ACCOUNT))
-            {//add ac invoice to vat details
+                out << TAGSTART(entry);
+                if (account_invoice_record.vat_rate == vat_rate) // add account invoice to vat details
+                {
+                    out << TAG(vatperc, account_invoice_record.vat_rate)
+                    << TAG(basetax, OUTMONEY(account_invoice_record.self.price_without_vat))
+                    << TAG(vat, OUTMONEY(account_invoice_record.self.vat))
+                    << TAG(total, OUTMONEY(all_years_money_record.price_with_vat))
+                    << TAG(totalvat, OUTMONEY(all_years_money_record.vat))
+                    << TAG(paid, OUTMONEY(all_years_money_record.price_with_vat - account_invoice_record.self.price_with_vat))
+                    << TAG(paidvat, OUTMONEY(all_years_money_record.vat - account_invoice_record.self.vat));
+                }
+                else
+                {
+                    out << TAG(vatperc, vat_rate)
+                    << TAG(basetax, OUTMONEY(all_years_money_record.price_without_vat))
+                    << TAG(vat, OUTMONEY(all_years_money_record.vat))
+                    << TAG(total, OUTMONEY(all_years_money_record.price_with_vat))
+                    << TAG(totalvat, OUTMONEY(all_years_money_record.vat))
+                    << TAG(paid, OUTMONEY(all_years_money_record.price_with_vat))
+                    << TAG(paidvat, OUTMONEY(all_years_money_record.vat));
+                }
 
-                out << TAGSTART(entry)
-                << TAG(vatperc, vat_rate)
-                << TAG(basetax,OUTMONEY(i->getTotal()))
-                << TAG(vat,OUTMONEY(i->getTotalVAT()))
-                << TAG(total,OUTMONEY( (price_with_vat + i->getTotal() + i->getTotalVAT()) ))
-                << TAG(totalvat,OUTMONEY( (vat + i->getTotalVAT()) ))
-                << TAG(paid,OUTMONEY(price_with_vat))
-                << TAG(paidvat,OUTMONEY(vat))
-                << TAGSTART(years);
+                out << TAGSTART(years);
+                for (const auto& year_record : account_invoice_record.records[vat_rate])
+                {
+                    const auto year = year_record.first;
+                    const auto year_money_record = year_record.second;
 
-                added_price = true;
-            }
-            else
-            {
-                out << TAGSTART(entry)
-                << TAG(vatperc, vat_rate)
-                << TAG(basetax,OUTMONEY(price_without_vat))
-                << TAG(vat,OUTMONEY(vat))
-                << TAG(total,OUTMONEY(price_with_vat))
-                << TAG(totalvat,OUTMONEY(vat))
-                << TAG(paid,OUTMONEY(price_with_vat))
-                << TAG(paidvat,OUTMONEY(vat))
-                << TAGSTART(years);
-            }
-
-            for (const auto& year_record : records[vat_rate])
-            {
-                const auto year = year_record.first;
-                const auto money_record = year_record.second;
-                const auto price_without_vat = money_record.price_without_vat;
-                const auto price_with_vat = money_record.price_with_vat;
-                const auto vat = money_record.vat;
-
-                out << TAGSTART(entry)
-                << TAG(year, year)
-                << TAG(price,OUTMONEY(price_without_vat))
-                << TAG(vat,OUTMONEY(vat))
-                << TAG(total,OUTMONEY(price_with_vat))
+                    out << TAGSTART(entry)
+                    << TAG(year, year)
+                    << TAG(price, OUTMONEY(year_money_record.price_without_vat))
+                    << TAG(vat, OUTMONEY(year_money_record.vat))
+                    << TAG(total, OUTMONEY(year_money_record.price_with_vat))
+                    << TAGEND(entry);
+                }
+                out << TAGEND(years)
                 << TAGEND(entry);
-            }
+              }
+          }
 
-            out << TAGEND(years)
-            << TAGEND(entry);
-          }//for payment count
+          out << TAGEND(vat_rates)
+          << TAGSTART(sumarize)
+          << TAG(total, OUTMONEY(account_invoice_record.operations_price))
+          << TAG(paid, OUTMONEY(account_invoice_record.self.price_without_vat - account_invoice_record.operations_price))
+          << TAG(to_be_paid, OUTMONEY(account_invoice_record.self.price_with_vat))
+          << TAGEND(sumarize)
+          << TAGEND(delivery);
       }
-      else {
+      else // IT_DEPOSIT
+      {
+          struct AdvanceInvoiceRecord
+          {
+              MoneyRecord self;
+              Money operations_price;
+          };
+
+          Database::Connection conn = Database::Manager::acquire();
           Database::Result result =
                   conn.exec_params(
-                          advance_invoice_query,
+                          invoice_query,
                           Database::query_param_list(i->getId()));
 
           if (result.size() != 1)
@@ -2360,66 +2394,52 @@ public:
               throw std::runtime_error("ExporterArchiver::doExport IT_DEPOSIT query failed");
           }
 
-          MoneyRecord money_record;
+          AdvanceInvoiceRecord advance_invoice_record;
 
-          const auto row = 0;
+          constexpr auto row = 0;
           const auto vat_rate = Decimal(static_cast<std::string>(result[row][0]));
-          money_record.price_without_vat = Money(static_cast<std::string>(result[row][1]));
-          money_record.vat = Money(static_cast<std::string>(result[row][2]));
-          money_record.price_with_vat = money_record.price_without_vat + money_record.vat;
+          advance_invoice_record.self.price_without_vat = Money(static_cast<std::string>(result[row][1]));
+          advance_invoice_record.self.vat = Money(static_cast<std::string>(result[row][2]));
+          advance_invoice_record.self.price_with_vat = advance_invoice_record.self.price_without_vat + advance_invoice_record.self.vat;
+          advance_invoice_record.operations_price = Decimal(static_cast<std::string>(result[row][3]));
 
           out << TAGSTART(entry)
-          << TAG(vatperc,vat_rate)
-          << TAG(basetax,OUTMONEY(money_record.price_without_vat))
-          << TAG(vat,OUTMONEY(money_record.vat))
-          << TAG(total,OUTMONEY(money_record.price_with_vat))
-          << TAG(totalvat,OUTMONEY(money_record.vat))
-          << TAG(paid,OUTMONEY(money_record.price_with_vat))
-          << TAG(paidvat,OUTMONEY(money_record.vat))
-          << TAGSTART(years);
-
-          out << TAGEND(years)
+          << TAG(vatperc, vat_rate)
+          << TAG(basetax, OUTMONEY(advance_invoice_record.self.price_without_vat))
+          << TAG(vat, OUTMONEY(advance_invoice_record.self.vat))
+          << TAG(total, OUTMONEY(advance_invoice_record.self.price_with_vat))
+          << TAG(totalvat, OUTMONEY(advance_invoice_record.self.vat))
+          << TAG(paid, OUTMONEY(advance_invoice_record.self.price_with_vat))
+          << TAG(paidvat, OUTMONEY(advance_invoice_record.self.vat))
+          << TAGSTART(years)
+          << TAGEND(years)
           << TAGEND(entry);
+
+          out << TAGEND(vat_rates)
+          << TAGSTART(sumarize)
+          << TAG(total, OUTMONEY(advance_invoice_record.operations_price))
+          << TAG(paid, OUTMONEY(Money("0")))
+          << TAG(to_be_paid, OUTMONEY(Money("0")))
+          << TAGEND(sumarize)
+          << TAGEND(delivery);
       }
 
-      if((added_price == false) && (i->getTotal() != Money("0")) && (i->getType() == IT_ACCOUNT))
-      {//add ac invoice to vat details
-        out << TAGSTART(entry)
-        << TAG(vatperc,i->getVatRate())
-        << TAG(basetax,OUTMONEY(i->getTotal()))
-        << TAG(vat,OUTMONEY(i->getTotalVAT()))
-        << TAG(total,OUTMONEY( (i->getTotal() + i->getTotalVAT()) ))
-        << TAG(totalvat,OUTMONEY(i->getTotalVAT()))
-        << TAG(paid,OUTMONEY(Money("0")))
-        << TAG(paidvat,OUTMONEY(Money("0")))
-        << TAGEND(entry);
-        added_price = true;
-       }
-
-      out << TAGEND(vat_rates)
-      << TAGSTART(sumarize)
-      << TAG(total,OUTMONEY(i->getPrice()))
-      << TAG(paid,
-          OUTMONEY((i->getType() == IT_DEPOSIT ? Money("0") : ((i->getPrice() - i->getTotal() )*Money("-1")) )))
-      << TAG(to_be_paid,OUTMONEY( (i->getType() == IT_DEPOSIT ? Money("0") : i->getTotal() + i->getTotalVAT()) ))
-      << TAGEND(sumarize)
-      << TAGEND(delivery);
       if (i->getSourceCount()) {
         out << TAGSTART(advance_payment)
         << TAGSTART(applied_invoices);
         for (unsigned k=0; k<i->getSourceCount(); k++) {
           const PaymentSource *ps = i->getSource(k);
           out << TAGSTART(consumed)
-          << TAG(number,ps->getNumber())
-          << TAG(price,OUTMONEY(ps->getPrice()))
-          << TAG(balance,OUTMONEY(ps->getCredit()))
-          << TAG(vat,OUTMONEY(ps->getVat()))
-          << TAG(vat_rate,ps->getVatRate())
-          << TAG(pricevat,OUTMONEY(ps->getPriceWithVat()))
-          << TAG(total,OUTMONEY(ps->getTotalPrice()))
-          << TAG(total_vat,OUTMONEY(ps->getTotalVat()))
-          << TAG(total_with_vat,OUTMONEY(ps->getTotalPriceWithVat()))
-          << TAG(crtime,ps->getCrTime())
+          << TAG(number, ps->getNumber())
+          << TAG(price, OUTMONEY(ps->getPrice()))
+          << TAG(balance, OUTMONEY(ps->getCredit()))
+          << TAG(vat, OUTMONEY(ps->getVat()))
+          << TAG(vat_rate, ps->getVatRate())
+          << TAG(pricevat, OUTMONEY(ps->getPriceWithVat()))
+          << TAG(total, OUTMONEY(ps->getTotalPrice()))
+          << TAG(total_vat, OUTMONEY(ps->getTotalVat()))
+          << TAG(total_with_vat, OUTMONEY(ps->getTotalPriceWithVat()))
+          << TAG(crtime, ps->getCrTime())
           << TAGEND(consumed);
         }
         out << TAGEND(applied_invoices)
@@ -2457,7 +2477,7 @@ public:
         }
         out << TAGEND(items)
         << TAGSTART(sumarize_items)
-        << TAG(total,OUTMONEY(i->getPrice()))
+        << TAG(total, OUTMONEY(i->getPrice()))
         << TAGEND(sumarize_items)
         << TAGEND(appendix);
       }
