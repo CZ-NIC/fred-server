@@ -36,7 +36,7 @@ void charge_registry_access_fee_annual_impl()
     const auto date_from = boost::gregorian::from_string(params.year + "-01-01");
     const auto date_to = date_from + boost::gregorian::years(1) - boost::gregorian::days(1);
 
-    Admin::chargeRegistryAccessFee(params.all_registrars, params.registrars, params.except_registrars, date_from, date_to);
+    Admin::chargeRegistryAccessFee(params.all_registrars, params.registrars, params.except_registrars, date_from, date_to, params.zone);
 }
 
 void charge_registry_access_fee_monthly_impl()
@@ -46,7 +46,7 @@ void charge_registry_access_fee_monthly_impl()
     const auto date_from = boost::gregorian::from_string(params.year_month + "-01");
     const auto date_to = date_from + boost::gregorian::months(1) - boost::gregorian::days(1);
 
-    Admin::chargeRegistryAccessFee(params.all_registrars, params.registrars, params.except_registrars, date_from, date_to);
+    Admin::chargeRegistryAccessFee(params.all_registrars, params.registrars, params.except_registrars, date_from, date_to, params.zone);
 }
 
 #endif

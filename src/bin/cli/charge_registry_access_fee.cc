@@ -42,6 +42,21 @@ unsigned long long getRegistrarID(const std::string &handle) {
     return static_cast<unsigned long long>(result[0][0]);
 }
 
+unsigned long long getZoneId(const std::string &fqdn) {
+    Database::Connection conn = Database::Manager::acquire();
+    const Database::Result result = conn.exec_params(
+            "SELECT id FROM zone WHERE fqdn = $1::TEXT",
+            Database::query_param_list(fqdn));
+
+    if (result.size() == 0) {
+        throw std::runtime_error((boost::format("Zone with FQDN %1% not found in database.") % fqdn).str());
+    }
+    if (result.size() > 1) {
+        throw std::runtime_error((boost::format("Too many zones with FQDN %1% found in database.") % fqdn).str());
+    }
+    return static_cast<unsigned long long>(result[0][0]);
+}
+
 } // namespace Admin::{anonymous}
 
 void chargeRegistryAccessFee(
@@ -49,7 +64,8 @@ void chargeRegistryAccessFee(
         const std::vector<std::string>& _only_registrars,
         const std::vector<std::string>& _except_registrars,
         const boost::gregorian::date& _date_from,
-        const boost::gregorian::date& _date_to)
+        const boost::gregorian::date& _date_to,
+        const std::string& _zone)
 {
     struct MutuallyExclusiveArguments
     {
@@ -64,13 +80,7 @@ void chargeRegistryAccessFee(
         throw std::runtime_error("invalid option(s)");
     }
 
-    const std::unique_ptr<LibFred::Invoicing::Manager> invMan(
-    LibFred::Invoicing::Manager::create());
-
-    Database::Connection conn = Database::Manager::acquire();
-
-    unsigned zone_id;
-    LibFred::Invoicing::getRequestFeeParams(&zone_id);
+    const auto zone_id = getZoneId(_zone);
 
     std::vector<Database::ID> only_registrars_ids;
     for (const auto& registrar : _only_registrars)
@@ -103,6 +113,7 @@ void chargeRegistryAccessFee(
         params.add(except_registrars_id_array);
     }
 
+    Database::Connection conn = Database::Manager::acquire();
     const auto result = conn.exec_params(
             "SELECT r.id "
             "FROM registrar r "
@@ -119,6 +130,8 @@ void chargeRegistryAccessFee(
             params);
 
     Database::Transaction tx(conn);
+
+    const std::unique_ptr<LibFred::Invoicing::Manager> invMan(LibFred::Invoicing::Manager::create());
 
     for (unsigned i = 0; i < result.size(); ++i)
     {
