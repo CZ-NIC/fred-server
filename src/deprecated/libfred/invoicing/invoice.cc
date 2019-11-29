@@ -509,7 +509,7 @@ public:
       {
           const std::string operation = "MonthlyFee";
           const unsigned long long not_related_to_any_object_id = 0;
-          const auto crdate = boost::posix_time::ptime(_date_to) + boost::gregorian::days(1) - boost::posix_time::seconds(1);
+          const auto crdate = boost::posix_time::second_clock::universal_time();
           return charge_operation_auto_price(
                   operation,
                   _zone_id,
