@@ -98,7 +98,7 @@ void update_registrar(const unsigned long long _id,
 {
     LOGGING_CONTEXT(log_ctx);
     LOGGER.debug("Registrar id: " + _id);
-    const std::string operation_name = "LibFred::Registrar::UpdateRegistrarById()";
+    const std::string operation_name = "LibFred::Registrar::UpdateRegistrarById() ";
 
     LibFred::OperationContextCreator ctx;
 
