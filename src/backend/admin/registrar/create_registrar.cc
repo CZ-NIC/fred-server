@@ -81,7 +81,7 @@ unsigned long long create_registrar(const std::string& _handle,
 {
     LOGGING_CONTEXT(log_ctx);
     LOGGER.debug("Registrar handle: " + _handle);
-    const std::string operation_name = "LibFred::CreateRegistrar()";
+    const std::string operation_name = "LibFred::CreateRegistrar() ";
 
     LibFred::OperationContextCreator ctx;
 

@@ -56,12 +56,12 @@ const char* UpdateRegistrarNonexistent::what() const noexcept
 
 const char* UpdateRegistrarInvalidVarSymb::what() const noexcept
 {
-    return "Failed to update registrar bacause the variable symbol already exists.";
+    return "Failed to update registrar because the variable symbol already exists.";
 }
 
 const char* UpdateRegistrarInvalidHandle::what() const noexcept
 {
-    return "Failed to update registrar bacause the handle already exists.";
+    return "Failed to update registrar because the handle already exists.";
 }
 
 const char* UpdateRegistrarNoUpdateData::what() const noexcept
@@ -98,7 +98,7 @@ void update_registrar(const unsigned long long _id,
 {
     LOGGING_CONTEXT(log_ctx);
     LOGGER.debug("Registrar id: " + _id);
-    const std::string operation_name = "LibFred::Registrar::UpdateRegistrarById()";
+    const std::string operation_name = "LibFred::Registrar::UpdateRegistrarById() ";
 
     LibFred::OperationContextCreator ctx;
 
