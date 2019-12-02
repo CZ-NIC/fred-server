@@ -117,12 +117,12 @@ void update_epp_auth(const EppAuthData& _auth_data)
 
         if (is_new_acl_record)
         {
-            const std::string operation_name = "Libfred::Registrar::EppAuth::AddRegistrarEppAuth()";
+            const std::string operation_name = "Libfred::Registrar::EppAuth::AddRegistrarEppAuth() ";
 
             const bool has_mandatory_data = !password.empty() && !certificate.empty();
             if (!has_mandatory_data)
             {
-                LOGGER.warning(operation_name + " Missing mandatory params: " +
+                LOGGER.warning(operation_name + "Missing mandatory params: " +
                         (password.empty()? "password ": "") + (certificate.empty()? "certificate": ""));
                 throw EppAuthMissingParameters();
             }
@@ -153,7 +153,7 @@ void update_epp_auth(const EppAuthData& _auth_data)
         }
         else
         {
-            const std::string operation_name = "Libfred::Registrar::EppAuth::UpdateRegistrarEppAuth()";
+            const std::string operation_name = "Libfred::Registrar::EppAuth::UpdateRegistrarEppAuth() ";
             const bool has_mandatory_data = !certificate.empty();
             if (!has_mandatory_data)
             {
@@ -189,7 +189,7 @@ void update_epp_auth(const EppAuthData& _auth_data)
         }
         if (!second_cert.empty())
         {
-            const std::string operation_name = "Libfred::Registrar::EppAuth::CloneRegistrarEppAuth()";
+            const std::string operation_name = "Libfred::Registrar::EppAuth::CloneRegistrarEppAuth() ";
             try
             {
                 TRACE("[CALL] " + operation_name);
@@ -210,7 +210,7 @@ void update_epp_auth(const EppAuthData& _auth_data)
 
     for (const auto id : auth_ids)
     {
-        const std::string operation_name = "Libfred::Registrar::EppAuth::DeleteRegistrarEppAuth()";
+        const std::string operation_name = "Libfred::Registrar::EppAuth::DeleteRegistrarEppAuth() ";
         try
         {
             TRACE("[CALL] " + operation_name);
