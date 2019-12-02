@@ -115,32 +115,33 @@ void chargeRegistryAccessFee(
 
     Database::Connection conn = Database::Manager::acquire();
     const auto result = conn.exec_params(
-            "SELECT r.id "
-            "FROM registrar r "
-            "JOIN registrarinvoice ri "
+            "SELECT DISTINCT r.id "
+              "FROM registrar r "
+              "JOIN registrarinvoice ri "
                 "ON ri.registrarid = r.id "
-                "AND ( "
-                    "($1::date <= ri.fromdate AND $2::date > ri.fromdate) "
-                    "OR ($1::date >= ri.fromdate AND  ((ri.todate IS NULL) OR (ri.todate >= $1::date))) "
-                ") "
-            "WHERE r.system  = false "
-                "AND ri.zone=$3::integer " +
+                    "AND ( "
+                        "($1::date <= ri.fromdate AND $2::date > ri.fromdate) "
+                        "OR ($1::date >= ri.fromdate AND  ((ri.todate IS NULL) OR (ri.todate >= $1::date))) "
+                    ") "
+             "WHERE r.system  = false "
+               "AND ri.zone=$3::integer " +
                 condition +
-            "ORDER BY r.id",
+             "ORDER BY r.id",
             params);
 
     Database::Transaction tx(conn);
 
     const std::unique_ptr<LibFred::Invoicing::Manager> invMan(LibFred::Invoicing::Manager::create());
 
-    for (unsigned i = 0; i < result.size(); ++i)
+    for (std::size_t i = 0; i < result.size(); ++i)
     {
-        // let exceptions in charging terminate the whole transaction
-        if (!invMan->chargeRegistryAccessFee(result[i][0], zone_id, _date_from, _date_to))
+        const auto registrar_id = result[i][0];
+        if (!invMan->chargeRegistryAccessFee(registrar_id, zone_id, _date_from, _date_to))
         {
             boost::format msg("Balance not sufficient for charging fee for registrar ID %1%");
             msg % result[i][0];
             LOGGER.error(msg);
+            // let exceptions in charging terminate the whole transaction
             throw std::runtime_error(msg.str());
         }
     }
