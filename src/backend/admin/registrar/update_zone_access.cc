@@ -132,6 +132,11 @@ void update_zone_access(const LibFred::Registrar::ZoneAccess::RegistrarZoneAcces
                 LOGGER.warning(operation_name + e.what());
                 throw NonexistentZone();
             }
+            catch (const LibFred::Registrar::ZoneAccess::OverlappingZoneAccessRange& e)
+            {
+                LOGGER.warning(operation_name + e.what());
+                throw OverlappingZoneAccessRange();
+            }
             catch (const std::exception& e)
             {
                 LOGGER.error(operation_name + e.what());
@@ -170,6 +175,11 @@ const char* ZoneAccessNonexistentRegistrar::what() const noexcept
 const char* NonexistentZone::what() const noexcept
 {
     return "Failed to add registrar zone access because the zone doesn't exist.";
+}
+
+const char* OverlappingZoneAccessRange::what() const noexcept
+{
+    return "Failed to add registrar zone access because it overlaps with existing record.";
 }
 
 } // namespace Admin::Registrar
