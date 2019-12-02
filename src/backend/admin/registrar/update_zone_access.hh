@@ -60,6 +60,11 @@ struct NonexistentZone : std::exception
     const char* what() const noexcept override;
 };
 
+struct OverlappingZoneAccessRange : std::exception
+{
+    const char* what() const noexcept override;
+};
+
 } // namespace Admin::Registrar
 } // namespace Admin
 
