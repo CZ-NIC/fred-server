@@ -56,12 +56,12 @@ const char* UpdateRegistrarNonexistent::what() const noexcept
 
 const char* UpdateRegistrarInvalidVarSymb::what() const noexcept
 {
-    return "Failed to update registrar bacause the variable symbol already exists.";
+    return "Failed to update registrar because the variable symbol already exists.";
 }
 
 const char* UpdateRegistrarInvalidHandle::what() const noexcept
 {
-    return "Failed to update registrar bacause the handle already exists.";
+    return "Failed to update registrar because the handle already exists.";
 }
 
 const char* UpdateRegistrarNoUpdateData::what() const noexcept
