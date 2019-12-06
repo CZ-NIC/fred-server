@@ -52,11 +52,21 @@ namespace LibFred
              }
              else
              {
+                 conn.exec("LOCK TABLE registrar_credit IN ACCESS EXCLUSIVE MODE");
                  Database::Result init_credit_result = conn.exec_params(
-                             "INSERT INTO registrar_credit (credit, registrar_id, zone_id) "
-                             "VALUES (0, $1::bigint, $2::bigint) "
-                             "RETURNING id ",
-                             Database::query_param_list(registrar_id)(zone_id));
+                     "WITH cte AS ("
+                         "INSERT INTO registrar_credit (credit, registrar_id, zone_id) "
+                         "VALUES (0, $1::bigint, $2::bigint) "
+                         "ON CONFLICT DO NOTHING "
+                         "RETURNING id) "
+                     "SELECT id FROM cte "
+                      "WHERE EXISTS (SELECT 1 FROM cte) "
+                      "UNION ALL "
+                     "SELECT rc.id FROM registrar_credit rc "
+                      "WHERE NOT EXISTS (SELECT 1 FROM cte) "
+                        "AND rc.registrar_id = $1::bigint "
+                        "AND rc.zone_id = $2::bigint",
+                    Database::query_param_list(registrar_id)(zone_id));
                  registrar_credit_id = static_cast<unsigned long long>(init_credit_result[0][0]);
              }
 
