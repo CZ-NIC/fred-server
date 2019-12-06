@@ -91,14 +91,15 @@ void create_domain_bill_item(
 
     if (locked_registrar_credit_result.size() != 1)
     {
-        std::cout << locked_registrar_credit_result.size() << std::endl;
         _ctx.get_log().error("unable to get registrar_credit");
         throw std::runtime_error("unable to get registrar_credit");
     }
 
     const std::string registrar_handle = static_cast<std::string>(locked_registrar_credit_result[0][0]);
     const std::string zone_fqdn = static_cast<std::string>(locked_registrar_credit_result[0][1]);
-    const Decimal registrar_credit_balance = static_cast<std::string>(locked_registrar_credit_result[0][2]);
+    const Decimal registrar_credit_balance = (locked_registrar_credit_result[0][2].isnull()
+                                                    ? "0.00"
+                                                    : static_cast<std::string>(locked_registrar_credit_result[0][2]));
 
     if ((price != Decimal("0"))
         && (registrar_credit_balance < price)
@@ -229,14 +230,15 @@ void renew_domain_bill_item(
 
     if (locked_registrar_credit_result.size() != 1)
     {
-        std::cout << locked_registrar_credit_result.size() << std::endl;
         _ctx.get_log().error("unable to get registrar_credit");
         throw std::runtime_error("unable to get registrar_credit");
     }
 
     const std::string registrar_handle = static_cast<std::string>(locked_registrar_credit_result[0][0]);
     const std::string zone_fqdn = static_cast<std::string>(locked_registrar_credit_result[0][1]);
-    const Decimal registrar_credit_balance = static_cast<std::string>(locked_registrar_credit_result[0][2]);
+    const Decimal registrar_credit_balance = (locked_registrar_credit_result[0][2].isnull()
+                                                    ? "0.00"
+                                                    : static_cast<std::string>(locked_registrar_credit_result[0][2]));
 
     if ((price != Decimal("0"))
         && (registrar_credit_balance < price)
