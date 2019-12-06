@@ -352,12 +352,16 @@ InvoiceClient::credit()
         taxDate = local_current_timestamp.date();
     }
 
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Transaction tx(conn);
+
     Money out_credit;
     unsigned long long invoice_id
         = invMan->createDepositInvoice(taxDate, zoneId, regId, price, local_current_timestamp, out_credit);
 
     LibFred::Credit::add_credit_to_invoice( regId,  zoneId, out_credit, invoice_id);
 
+    tx.commit();
 }
 
 
