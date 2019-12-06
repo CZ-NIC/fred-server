@@ -52,7 +52,7 @@ namespace LibFred
              }
              else
              {
-                 conn.exec("LOCK TABLE registrar_credit IN ACCESS EXCLUSIVE MODE");
+                 conn.exec("LOCK TABLE registrar_credit IN EXCLUSIVE MODE");
                  Database::Result init_credit_result = conn.exec_params(
                      "WITH cte AS ("
                          "INSERT INTO registrar_credit (credit, registrar_id, zone_id) "
