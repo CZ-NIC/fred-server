@@ -91,7 +91,6 @@ void create_domain_bill_item(
 
     if (locked_registrar_credit_result.size() != 1)
     {
-        std::cout << locked_registrar_credit_result.size() << std::endl;
         _ctx.get_log().error("unable to get registrar_credit");
         throw std::runtime_error("unable to get registrar_credit");
     }
@@ -231,7 +230,6 @@ void renew_domain_bill_item(
 
     if (locked_registrar_credit_result.size() != 1)
     {
-        std::cout << locked_registrar_credit_result.size() << std::endl;
         _ctx.get_log().error("unable to get registrar_credit");
         throw std::runtime_error("unable to get registrar_credit");
     }
