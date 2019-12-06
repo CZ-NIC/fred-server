@@ -16,12 +16,13 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
-#include "src/deprecated/util/dbsql.hh"
+#include "src/deprecated/libfred/invoicing/invoice.hh"
+#include "libfred/poll/get_request_fee_message.hh"
 #include "src/deprecated/libfred/common_impl.hh"
 #include "src/deprecated/libfred/documents.hh"
 #include "src/deprecated/libfred/invoicing/exceptions.hh"
-#include "src/deprecated/libfred/invoicing/invoice.hh"
-#include "libfred/poll/get_request_fee_message.hh"
+#include "src/deprecated/util/dbsql.hh"
+#include "util/db/result.hh"
 #include "util/log/context.hh"
 #include "util/log/logger.hh"
 #include "util/types/convert_sql_db_types.hh"
@@ -100,7 +101,7 @@ struct RegistrarZoneAccess
 };
 
 // needed for boost::optional at CentOS 7
-bool operator==(const RegistrarZoneAccess& _lhs, const RegistrarZoneAccess& _rhs)
+[[gnu::unused]] bool operator==(const RegistrarZoneAccess& _lhs, const RegistrarZoneAccess& _rhs)
 {
     return _lhs.date_from == _rhs.date_from &&
            _lhs.date_to == _rhs.date_to;
@@ -152,17 +153,20 @@ bool was_registrar_charged(
             // clang-format off
             "SELECT io.id "
               "FROM invoice_operation io "
-              "JOIN enum_operation eo ON eo.id = io.operation_id  "
+              "JOIN enum_operation eo ON eo.id = io.operation_id "
              "WHERE eo.operation = $1::text "
-               "AND registrar_id = $2::bigint "
-               "AND $3::date >= date_from "
-               "AND $3::date <= date_to ",
+               "AND io.registrar_id = $2::bigint "
+               "AND io.zone_id = $3::bigint "
+               // <io.date_from, io.dat_to> overlaps <_date_from, _date_to>
+               "AND (io.date_from <= $5::date OR io.date_from IS NULL) "
+               "AND (io.date_to >= $4::date OR io.date_to IS NULL)",
             // clang-format on
             Database::query_param_list
                     ("MonthlyFee")
                     (_registrar_id)
-                    (_date_from));
-                    //(_date_to));
+                    (_zone_id)
+                    (_date_from)
+                    (_date_to));
     if (res.size() > 0)
     {
         return true;
@@ -470,9 +474,6 @@ public:
           throw std::logic_error("requested fee interval not supported");
       }
 
-      boost::optional<boost::gregorian::date> invoice_date_from;
-      boost::gregorian::date invoice_date_to = _date_to;
-      int quantity = 0;
       for (boost::gregorian::date date_from = _date_from;
            date_from < _date_to;
            date_from += boost::gregorian::months(1))
@@ -481,44 +482,47 @@ public:
 
           const auto zone_access = registrar_access_to_the_zone(_registrar_id, _zone_id, date_from, date_to);
           const bool has_access = zone_access != boost::none;
-          if (!has_access)
+          const bool was_already_charged = was_registrar_charged(_registrar_id, _zone_id, date_from, date_to);
+          if (has_access)
+          {
+              if (!was_already_charged)
+              {
+                  LOGGER.info(boost::format("Registrar %1% did have an access to the zone %2% in period %3% to %4% (access: %5% to %6%) and was not yet charged, charging.")
+                  % _registrar_id % _zone_id % date_from % date_to % zone_access->date_from % zone_access->date_to);
+                  const std::string operation = "MonthlyFee";
+                  const unsigned long long not_related_to_any_object_id = 0;
+                  const auto crdate = boost::posix_time::second_clock::universal_time();
+                  const boost::optional<boost::gregorian::date> invoice_date_from = std::max({(*zone_access).date_from, date_from, _date_from});
+                  const boost::gregorian::date invoice_date_to = std::min({(*zone_access).date_to, date_to, _date_to});
+                  const auto quantity = Decimal("1");
+
+                  const bool charging_succeeded =
+                          charge_operation_auto_price(
+                                  operation,
+                                  _zone_id,
+                                  _registrar_id,
+                                  not_related_to_any_object_id,
+                                  crdate,
+                                  *invoice_date_from,
+                                  invoice_date_to,
+                                  quantity);
+                  if (!charging_succeeded)
+                  {
+                      return false;
+                  }
+              }
+              else
+              {
+                  LOGGER.info(boost::format("Registrar %1% did have an access to the zone %2% in period %3% to %4% (access: %5% to %6%) but was already charged, not charging.")
+                  % _registrar_id % _zone_id % date_from % date_to % zone_access->date_from % zone_access->date_to);
+              }
+          }
+          else
           {
               LOGGER.info(boost::format("Registrar %1% did not have an access to the zone %2% in period %3% to %4%, not charging.")
-              % _registrar_id % _zone_id % _date_from % _date_to);
+              % _registrar_id % _zone_id % date_from % date_to);
           }
 
-          const bool was_already_charged = was_registrar_charged(_registrar_id, _zone_id, date_from, date_to);
-          if (was_already_charged)
-          {
-              LOGGER.info(boost::format("Registrar %1% was already charged for fee in period %2% to %3% (overlaps %4% to %5%), not charging.")
-              % _registrar_id % date_from % date_to % _date_from % _date_to);
-          }
-          if (has_access && !was_already_charged)
-          {
-              quantity++;
-
-              if (invoice_date_from == boost::none)
-              {
-                  invoice_date_from = std::max({(*zone_access).date_from, date_from, _date_from});
-              }
-              invoice_date_to = std::min((*zone_access).date_to, _date_to);
-          }
-      }
-
-      if (quantity > 0)
-      {
-          const std::string operation = "MonthlyFee";
-          const unsigned long long not_related_to_any_object_id = 0;
-          const auto crdate = boost::posix_time::second_clock::universal_time();
-          return charge_operation_auto_price(
-                  operation,
-                  _zone_id,
-                  _registrar_id,
-                  not_related_to_any_object_id,
-                  crdate,
-                  *invoice_date_from,
-                  invoice_date_to,
-                  Decimal(boost::lexical_cast<std::string>(quantity)));
       }
       return true;
   }

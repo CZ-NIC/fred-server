@@ -21,6 +21,7 @@
 
 #include "src/deprecated/libfred/db_settings.hh"
 #include "src/deprecated/libfred/invoicing/invoice.hh"
+#include "util/db/result.hh"
 #include "util/util.hh"
 
 namespace Admin {
