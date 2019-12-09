@@ -333,9 +333,10 @@ public:
             , unsigned long long zone_id
             , unsigned long long registrar_id
             , unsigned long long object_id
-            , boost::posix_time::ptime crdate //local timestamp
+            , boost::posix_time::ptime crdate //utc timestamp
             , boost::gregorian::date date_from //local date
             , boost::gregorian::date date_to //local date
+            , boost::posix_time::ptime price_timestamp //utc timestamp
             , Decimal quantity) = 0;
 
   virtual bool chargeRequestFee(
@@ -346,7 +347,8 @@ public:
           const Database::ID &registrar_id,
           unsigned long long zone_id,
           const boost::gregorian::date& date_from,
-          const boost::gregorian::date& date_to) = 0;
+          const boost::gregorian::date& date_to,
+          const std::string& registry_timezone) = 0;
 
   virtual void createAccountInvoices(
           const std::string& zone_fqdn

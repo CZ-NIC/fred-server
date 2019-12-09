@@ -669,7 +669,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
     std::vector<registrar_credit_item> registrar_novat_credit_vect;
 
     {//get registrar novat credit
-        registrar_credit_item ci={1400,"0.00",0,"0.00", "0.00"};
+        registrar_credit_item ci={1400,"0.00",0,"0.00", "0.00", Database::Date(1400,1,1)};
 
         Database::Result credit_res = conn.exec_params(zone_registrar_credit_query
                 , Database::query_param_list(zone_cz_id)(registrar_novat_inv_id));
@@ -700,7 +700,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
             ::LibFred::Credit::add_credit_to_invoice( registrar_novat_inv_id,  zone_cz_id, out_credit, invoiceid);
 
             //get registrar credit
-            registrar_credit_item ci={year,"0.00",0,"0.00", "200.00"};
+            registrar_credit_item ci={year,"0.00",0,"0.00", "200.00", Database::Date(1400,1,1)};
 
             Database::Result credit_res = conn.exec_params(zone_registrar_credit_query
                     , Database::query_param_list(zone_cz_id)(registrar_novat_inv_id));
@@ -722,7 +722,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
             ::LibFred::Credit::add_credit_to_invoice( registrar_novat_inv_id,  zone_cz_id, out_credit, invoiceid);
 
             //get registrar credit
-            registrar_credit_item ci={year,"0.00",0,"0.00", "200.00"};
+            registrar_credit_item ci={year,"0.00",0,"0.00", "200.00", Database::Date(1400,1,1)};
 
             Database::Result credit_res = conn.exec_params(zone_registrar_credit_query
                     , Database::query_param_list(zone_cz_id)(registrar_novat_inv_id));
@@ -1160,14 +1160,17 @@ void testCharge2InvoicesWorker(Database::ID zone_id, unsigned op, unsigned perio
     // zone IDs
     unsigned long long zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
 
+    const auto crdate = boost::posix_time::second_clock::universal_time();
+    const auto price_timestamp = crdate;
     invMan->charge_operation_auto_price(
               "GeneralEppOperation"
               , zone_cz_id
               , reg->getId()
               , 0 //object_id
-              , boost::posix_time::second_clock::universal_time() //crdate //utc timestamp
+              , crdate
               , exdate.get() - boost::gregorian::months(1)//date_from //local date
               , exdate.get()// date_to //local date
+              , price_timestamp
               , Decimal ("900000"));
 }
 
@@ -1453,15 +1456,18 @@ BOOST_AUTO_TEST_CASE(make_debt)
 
     Decimal credit_before = get_credit(reg_id, zone_id);
 
+    const auto crdate = boost::posix_time::second_clock::universal_time();
+    const auto price_timestamp = crdate;
     BOOST_CHECK(
             invMan->charge_operation_auto_price(
          "GeneralEppOperation"
          , zone_id
          , reg_id
          , 0 //object_id
-         , boost::posix_time::second_clock::universal_time() //crdate //utc timestamp
+         , crdate
          , today - boost::gregorian::months(1)//date_from //local date
          , today // date_to //local date
+         , price_timestamp
          , postpaid_op_price )
     );
 
@@ -1503,6 +1509,8 @@ BOOST_AUTO_TEST_CASE(lower_debt)
     BOOST_CHECK_EQUAL(invoiceid != 0,true);
     ::LibFred::Credit::add_credit_to_invoice( reg_id,  zone_id, out_credit, invoiceid);
 
+    const auto crdate = boost::posix_time::second_clock::universal_time();
+    const auto price_timestamp = crdate;
 // assuming that price of request is 0.1
     BOOST_CHECK(
             invMan->charge_operation_auto_price(
@@ -1510,9 +1518,10 @@ BOOST_AUTO_TEST_CASE(lower_debt)
          , zone_id
          , reg_id
          , 0 //object_id
-         , boost::posix_time::second_clock::universal_time() //crdate //utc timestamp
+         , crdate
          , today - boost::gregorian::months(1)//date_from //local date
          , today // date_to //local date
+         , price_timestamp
          , postpaid_operation )
     );
 

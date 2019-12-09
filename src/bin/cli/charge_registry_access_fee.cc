@@ -66,7 +66,8 @@ void chargeRegistryAccessFee(
         const std::vector<std::string>& _except_registrars,
         const boost::gregorian::date& _date_from,
         const boost::gregorian::date& _date_to,
-        const std::string& _zone)
+        const std::string& _zone,
+        const std::string& _registry_timezone)
 {
     struct MutuallyExclusiveArguments
     {
@@ -137,7 +138,7 @@ void chargeRegistryAccessFee(
     for (std::size_t i = 0; i < result.size(); ++i)
     {
         const auto registrar_id = result[i][0];
-        if (!invMan->chargeRegistryAccessFee(registrar_id, zone_id, _date_from, _date_to))
+        if (!invMan->chargeRegistryAccessFee(registrar_id, zone_id, _date_from, _date_to, _registry_timezone))
         {
             boost::format msg("Balance not sufficient for charging fee for registrar ID %1%");
             msg % result[i][0];
