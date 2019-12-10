@@ -23,6 +23,7 @@
 #include "src/bin/cli/charge_registry_access_fee.hh"
 #include "src/bin/cli/handle_adminclientselection_args.hh"
 #include "src/util/cfg/config_handler_decl.hh"
+#include "src/util/cfg/handle_registry_args.hh"
 #include "util/log/context.hh"
 
 #include <boost/date_time/gregorian/gregorian.hpp>
@@ -32,21 +33,23 @@
 void charge_registry_access_fee_annual_impl()
 {
     Logging::Context ctx("charge_registry_access_fee_annual_impl");
+    const auto registry_timezone = CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_registry_timezone();
     const auto params = CfgArgGroups::instance()->get_handler_ptr_by_type<HandleChargeRegistryAccessFeeAnnualArgsGrp>()->params;
     const auto date_from = boost::gregorian::from_string(params.year + "-01-01");
     const auto date_to = date_from + boost::gregorian::years(1) - boost::gregorian::days(1);
 
-    Admin::chargeRegistryAccessFee(params.all_registrars, params.registrars, params.except_registrars, date_from, date_to, params.zone);
+    Admin::chargeRegistryAccessFee(params.all_registrars, params.registrars, params.except_registrars, date_from, date_to, params.zone, registry_timezone);
 }
 
 void charge_registry_access_fee_monthly_impl()
 {
     Logging::Context ctx("charge_registry_access_fee_monthly_impl");
+    const auto registry_timezone = CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_registry_timezone();
     const auto params = CfgArgGroups::instance()->get_handler_ptr_by_type<HandleChargeRegistryAccessFeeMonthlyArgsGrp>()->params;
     const auto date_from = boost::gregorian::from_string(params.year_month + "-01");
     const auto date_to = date_from + boost::gregorian::months(1) - boost::gregorian::days(1);
 
-    Admin::chargeRegistryAccessFee(params.all_registrars, params.registrars, params.except_registrars, date_from, date_to, params.zone);
+    Admin::chargeRegistryAccessFee(params.all_registrars, params.registrars, params.except_registrars, date_from, date_to, params.zone, registry_timezone);
 }
 
 #endif

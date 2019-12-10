@@ -241,6 +241,7 @@ public:
       , boost::posix_time::ptime crdate //utc timestamp
       , boost::gregorian::date date_from //local date included in interval
       , boost::gregorian::date date_to //local date not included in interval, can be unspecified
+      , boost::posix_time::ptime price_timestamp //utc timestamp to lookup relevant price
       , Decimal quantity)
   {
       //if (registrar is "system registrar") return ok //no charging
@@ -271,12 +272,12 @@ public:
               " FROM price_list pl "
                   " JOIN enum_operation eo ON pl.operation_id = eo.id "
                   " JOIN zone z ON z.id = pl.zone_id "
-              " WHERE pl.valid_from < $1::timestamp "
+              " WHERE pl.valid_from <= $1::timestamp "
                     " AND (pl.valid_to is NULL OR pl.valid_to > $1::timestamp ) "
               " AND pl.zone_id = $2::bigint AND eo.operation = $3::text "
               " ORDER BY pl.valid_from DESC "
               " LIMIT 1 "
-          , Database::query_param_list(crdate)(zone_id)(operation));
+          , Database::query_param_list(price_timestamp)(zone_id)(operation));
 
       if(operation_price_list_result.size() != 1)
       {
@@ -442,13 +443,16 @@ public:
 
           LOGGER.info(msg);
 
+          const auto crdate = rfi.to - boost::posix_time::seconds(1);
+          const auto price_timestamp = crdate;
           return charge_operation_auto_price("GeneralEppOperation",//const std::string& operation
                 charge_zone_id,//unsigned long long zone_id
                 registrar_id, //unsigned long long registrar_id
                 0, //unsigned long long object_id
-                rfi.to - boost::posix_time::seconds(1), //boost::posix_time::ptime crdate
+                crdate,
                 boost::date_time::c_local_adjustor<ptime>::utc_to_local (rfi.from).date(), //boost::gregorian::date date_from
                 boost::date_time::c_local_adjustor<ptime>::utc_to_local (rfi.to).date(), //boost::gregorian::date date_to
+                price_timestamp,
                 Decimal(boost::lexical_cast<std::string>(paid_requests)) //unsigned long quantity - for renew in years
                 );
       }
@@ -458,7 +462,8 @@ public:
           const Database::ID &_registrar_id,
           unsigned long long _zone_id,
           const boost::gregorian::date& _date_from,
-          const boost::gregorian::date& _date_to)
+          const boost::gregorian::date& _date_to,
+          const std::string& _registry_timezone)
   {
       TRACE("[CALL] LibFred::Invoicing::Manager::chargeRegistryAccessFee()");
 
@@ -492,8 +497,25 @@ public:
                   const std::string operation = "MonthlyFee";
                   const unsigned long long not_related_to_any_object_id = 0;
                   const auto crdate = boost::posix_time::second_clock::universal_time();
-                  const boost::optional<boost::gregorian::date> invoice_date_from = std::max({(*zone_access).date_from, date_from, _date_from});
+                  const auto invoice_date_from = std::max({(*zone_access).date_from, date_from, _date_from});
                   const boost::gregorian::date invoice_date_to = std::min({(*zone_access).date_to, date_to, _date_to});
+                  struct LocalToUtc
+                  {
+                      static boost::posix_time::ptime local_date(const boost::gregorian::date& _local_date, const std::string& _local_timezone)
+                      {
+                          Database::Connection conn = Database::Manager::acquire();
+                          const Database::Result result =
+                                  conn.exec_params("SELECT $1::TIMESTAMP AT TIME ZONE $2::TEXT AT TIME ZONE 'UTC'",
+                                          Database::query_param_list(_local_date)(_local_timezone));
+                          if (result.size() != 1)
+                          {
+                              throw std::runtime_error("database time conversion failed");
+                          }
+                          const std::string utc_time = static_cast<std::string>(result[0][0]);
+                          return boost::posix_time::time_from_string(utc_time);
+                      }
+                  };
+                  const auto price_timestamp = LocalToUtc::local_date(invoice_date_from, _registry_timezone);
                   const auto quantity = Decimal("1");
 
                   const bool charging_succeeded =
@@ -503,8 +525,9 @@ public:
                                   _registrar_id,
                                   not_related_to_any_object_id,
                                   crdate,
-                                  *invoice_date_from,
+                                  invoice_date_from,
                                   invoice_date_to,
+                                  price_timestamp,
                                   quantity);
                   if (!charging_succeeded)
                   {

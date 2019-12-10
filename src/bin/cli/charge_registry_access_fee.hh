@@ -33,7 +33,8 @@ void chargeRegistryAccessFee(
         const std::vector<std::string>& _except_registrars,
         const boost::gregorian::date& _date_from,
         const boost::gregorian::date& _date_to,
-        const std::string& _zone);
+        const std::string& _zone,
+        const std::string& _registry_timezone);
 
 } // namespace Admin
 

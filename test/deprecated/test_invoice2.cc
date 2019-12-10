@@ -1294,14 +1294,17 @@ struct create_geneppoperation_fixture
 
                     //if(std::string(zone_result[zone_i][1]).find("cz") != std::string::npos)
                     {
+                      const auto crdate = boost::posix_time::second_clock::universal_time();
+                      const auto price_timestamp = crdate;
                       invMan->charge_operation_auto_price(
                                 "GeneralEppOperation"
                                 , zone_id
                                 , registrar_id
                                 , 0 //object_id
-                                , boost::posix_time::second_clock::universal_time() //crdate //utc timestamp
+                                , crdate
                                 , first_day_of_last_month//date_from //local date
                                 , last_day_of_last_month// date_to //local date
+                                , price_timestamp
                                 , Decimal ("900000"));
                     }
                   }//for zone_i
@@ -1315,14 +1318,17 @@ struct create_geneppoperation_fixture
                       unsigned long long zone_id ( zone_result[zone_i][0]);
                       //if(std::string(zone_result[zone_i][1]).find("cz") != std::string::npos)
                       {
+                        const auto crdate = boost::posix_time::second_clock::universal_time();
+                        const auto price_timestamp = crdate;
                         invMan->charge_operation_auto_price(
                                   "GeneralEppOperation"
                                   , zone_id
                                   , registrar_id
                                   , 0 //object_id
-                                  , boost::posix_time::second_clock::universal_time() //crdate //utc timestamp
+                                  , crdate
                                 , first_day_of_last_month//date_from //local date
                                 , last_day_of_last_month// date_to //local date
+                                  , price_timestamp
                                   , Decimal ("800000"));
                       }
 
@@ -1340,14 +1346,17 @@ struct create_geneppoperation_fixture
 
                       //if(std::string(zone_result[zone_i][1]).find("cz") != std::string::npos)
                       {
+                        const auto crdate = boost::posix_time::second_clock::universal_time();
+                        const auto price_timestamp = crdate;
                         invMan->charge_operation_auto_price(
                                   "GeneralEppOperation"
                                   , zone_id
                                   , registrar_id
                                   , 0 //object_id
-                                  , boost::posix_time::second_clock::universal_time() //crdate //utc timestamp
+                                  , crdate
                                 , first_day_of_last_month//date_from //local date
                                 , last_day_of_last_month// date_to //local date
+                                  , price_timestamp
                                   , Decimal ("700000"));
                       }
                   }//for zone_i
@@ -1363,14 +1372,17 @@ struct create_geneppoperation_fixture
 
                       //if(std::string(zone_result[zone_i][1]).find("cz") != std::string::npos)
                       {
+                        const auto crdate = boost::posix_time::second_clock::universal_time();
+                        const auto price_timestamp = crdate;
                         invMan->charge_operation_auto_price(
                                   "GeneralEppOperation"
                                   , zone_id
                                   , registrar_id
                                   , 0 //object_id
-                                  , boost::posix_time::second_clock::universal_time() //crdate //utc timestamp
+                                  , crdate
                                 , first_day_of_last_month//date_from //local date
                                 , last_day_of_last_month// date_to //local date
+                                  , price_timestamp
                                   , Decimal ("600000"));
                       }
 
@@ -1385,14 +1397,17 @@ struct create_geneppoperation_fixture
 
                   //if(std::string(zone_result[zone_i][1]).find("cz") != std::string::npos)
                   {
+                    const auto crdate = boost::posix_time::second_clock::universal_time();
+                    const auto price_timestamp = crdate;
                     invMan->charge_operation_auto_price(
                               "GeneralEppOperation"
                               , zone_id
                               , registrar_id
                               , 0 //object_id
-                              , boost::posix_time::second_clock::universal_time() //crdate //utc timestamp
+                              , crdate
                             , first_day_of_last_month//date_from //local date
                             , last_day_of_last_month// date_to //local date
+                              , price_timestamp
                               , Decimal ("500000"));
                   }
 

@@ -222,14 +222,17 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request1 )
         boost::gregorian::date taxdate(todate);
 
 
+        const auto crdate = boost::posix_time::second_clock::universal_time(); //crdate //utc timestamp
+        const auto price_timestamp = crdate;
         invMan->charge_operation_auto_price(
                          "GeneralEppOperation"
                          , zone_cz_id
                          , registrar_inv_id
                          , 0 //object_id
-                         , boost::posix_time::second_clock::universal_time() //crdate //utc timestamp
+                         , crdate
                          , todate - boost::gregorian::months(1)//date_from //local date
                          , todate// date_to //local date
+                         , price_timestamp
                          , Decimal ("100000"));
 
 
@@ -389,14 +392,17 @@ BOOST_AUTO_TEST_CASE(archiveAccountInvoice)
 
                 ctx.commit_transaction();
 
+                const auto crdate = boost::posix_time::second_clock::universal_time(); //crdate //utc timestamp
+                const auto price_timestamp = crdate;
                 invMan->charge_operation_auto_price(
                                  "CreateDomain"
                                  , zone_cz_id
                                  , registrar_inv_id
                                  , domain_id //object_id
-                                 , boost::posix_time::second_clock::universal_time() //crdate //utc timestamp
+                                 , crdate
                                  , day_clock::local_day() - boost::gregorian::months(1)//date_from //local date
                                  , boost::gregorian::date()// date_to //local date
+                                 , price_timestamp
                                  , Decimal ("1"));//1 year
 
                 invMan->charge_operation_auto_price(
@@ -404,22 +410,26 @@ BOOST_AUTO_TEST_CASE(archiveAccountInvoice)
                                  , zone_cz_id
                                  , registrar_inv_id
                                  , domain_id //object_id
-                                 , boost::posix_time::second_clock::universal_time() //crdate //utc timestamp
+                                 , crdate
                                  , day_clock::local_day() - boost::gregorian::months(1)//date_from //local date
                                  , day_clock::local_day() + boost::gregorian::months(11)// date_to //local date
+                                 , price_timestamp
                                  , Decimal ("1"));//1 year
 
 
 
             }
+            const auto crdate = boost::posix_time::second_clock::universal_time(); //crdate //utc timestamp
+            const auto price_timestamp = crdate;
             invMan->charge_operation_auto_price(
                       "GeneralEppOperation"
                       , zone_cz_id
                       , registrar_inv_id
                       , 0 //object_id
-                      , boost::posix_time::second_clock::universal_time() //crdate //utc timestamp
+                      , crdate
                       , day_clock::local_day() - boost::gregorian::months(12) - boost::gregorian::months(1)//date_from //local date
                       , day_clock::local_day()// date_to //local date
+                      , price_timestamp
                       , Decimal ("90"));
         }
         catch(boost::exception& ex)
@@ -595,14 +605,17 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request2 )
         boost::gregorian::date fromdate( todate - months(1) );
         boost::gregorian::date taxdate(todate);
 
+        const auto crdate = boost::posix_time::second_clock::universal_time(); //crdate //utc timestamp
+        const auto price_timestamp = crdate;
         invMan->charge_operation_auto_price(
                          "GeneralEppOperation"
                          , zone_cz_id
                          , registrar_inv_id
                          , 0 //object_id
-                         , boost::posix_time::second_clock::universal_time() //crdate //utc timestamp
+                         , crdate
                          , todate - boost::gregorian::months(1)//date_from //local date
                          , todate// date_to //local date
+                         , price_timestamp
                          , Decimal ("490000"));
 
 
