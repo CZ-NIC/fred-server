@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2007-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -138,7 +138,7 @@ enum PaymentActionType {
   PAT_CREATE_DOMAIN
   , PAT_RENEW_DOMAIN
   , PAT_REQUESTS_OVER_LIMIT
-  , PAT_FINE
+  , PAT_ADMINISTRATIVE_FEE
   , PAT_FEE
   , PAT_MONTHLY_FEE
 };

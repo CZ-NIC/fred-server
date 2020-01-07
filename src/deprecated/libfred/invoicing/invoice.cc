@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2007-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -1674,8 +1674,8 @@ public:
             case PAT_REQUESTS_OVER_LIMIT:
                 return "REQ";
                 break;
-            case PAT_FINE:
-                return "RPOK";
+            case PAT_ADMINISTRATIVE_FEE:
+                return "RPOA";
                 break;
             case PAT_FEE:
                 return "RPOP";
@@ -2483,7 +2483,7 @@ public:
               (pa->getAction() == PAT_CREATE_DOMAIN ? "RREG"
               : (pa->getAction() == PAT_RENEW_DOMAIN ? "RUDR"
                 : (pa->getAction() == PAT_REQUESTS_OVER_LIMIT ? "REPP"
-                  : (pa->getAction() == PAT_FINE ? "RPOK"
+                  : (pa->getAction() == PAT_ADMINISTRATIVE_FEE ? "RPOA"
                     : (pa->getAction() == PAT_FEE ? "RPOP"
                       : (pa->getAction() == PAT_MONTHLY_FEE ? "RPOP"
                         : "RUNK")
