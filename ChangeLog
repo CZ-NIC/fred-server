@@ -1,3 +1,9 @@
+2020-01-08 (2.42.1)
+
+  * Invoice export
+    - add administrative fee operation
+    - remove generic fine operation
+
 2019-09-11 (2.42.0)
 
   * fred-admin
