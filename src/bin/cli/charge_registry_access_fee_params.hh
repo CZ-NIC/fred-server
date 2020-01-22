@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2019-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -33,6 +33,7 @@ struct ChargeRegistryAccessFeeAnnualArgs
     bool all_registrars;
     std::string zone;
     std::string year;
+    bool charge_to_end_of_previous_month;
 
     ChargeRegistryAccessFeeAnnualArgs() = default;
 
@@ -41,13 +42,15 @@ struct ChargeRegistryAccessFeeAnnualArgs
             const std::vector<std::string>& _except_registrars,
             const bool _all_registrars,
             const std::string& _zone,
-            const std::string& _year
+            const std::string& _year,
+            const bool _charge_to_end_of_previous_month
             ) :
         registrars(_registrars),
         except_registrars(_except_registrars),
         all_registrars(_all_registrars),
         zone(_zone),
-        year(_year)
+        year(_year),
+        charge_to_end_of_previous_month(_charge_to_end_of_previous_month)
     {
     }
 };
@@ -59,6 +62,7 @@ struct ChargeRegistryAccessFeeMonthlyArgs
     bool all_registrars;
     std::string zone;
     std::string year_month;
+    bool charge_to_end_of_previous_month;
 
     ChargeRegistryAccessFeeMonthlyArgs() = default;
 
@@ -67,13 +71,15 @@ struct ChargeRegistryAccessFeeMonthlyArgs
             const std::vector<std::string>& _except_registrars,
             const bool _all_registrars,
             const std::string& _zone,
-            const std::string& _year_month
+            const std::string& _year_month,
+            const bool _charge_to_end_of_previous_month
             ) :
         registrars(_registrars),
         except_registrars(_except_registrars),
         all_registrars(_all_registrars),
         zone(_zone),
-        year_month(_year_month)
+        year_month(_year_month),
+        charge_to_end_of_previous_month(_charge_to_end_of_previous_month)
     {
     }
 };

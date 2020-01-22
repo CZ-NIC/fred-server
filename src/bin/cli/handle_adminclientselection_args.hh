@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2008-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -2667,7 +2667,10 @@ struct HandleChargeRegistryAccessFeeAnnualArgsGrp : HandleCommandGrpArgs
                    "zone fqdn (for example 'cz')")
                ("year", boost::program_options::value<std::string>()->required()
                    ->notifier(save_arg<std::string>(params.year)),
-                   "year [YYYY]");
+                   "year [YYYY]")
+               ("charge-to-end-of-previous-month", boost::program_options::value<bool>()
+                   ->notifier(save_arg<bool>(params.charge_to_end_of_previous_month)),
+                   "timestamp of creation will not be the current time, but the last second of previous month (current month is based on system local date)");
         return cfg_opts;
     }
 
@@ -2714,7 +2717,10 @@ struct HandleChargeRegistryAccessFeeMonthlyArgsGrp : HandleCommandGrpArgs
                    "zone fqdn (for example 'cz')")
                ("month", boost::program_options::value<std::string>()->required()
                    ->notifier(save_arg<std::string>(params.year_month)),
-                   "month [YYYY-MM]");
+                   "month [YYYY-MM]")
+               ("charge-to-end-of-previous-month", boost::program_options::value<bool>()
+                   ->notifier(save_arg<bool>(params.charge_to_end_of_previous_month)),
+                   "timestamp of creation will not be the current time, but the last second of previous month (current month is based on system local date)");
         return cfg_opts;
     }
 

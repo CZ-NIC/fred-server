@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2019-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -58,6 +58,19 @@ unsigned long long getZoneId(const std::string &fqdn) {
     return static_cast<unsigned long long>(result[0][0]);
 }
 
+LibFred::Invoicing::ChargingTimestampPolicy to_libfred(
+        const ChargingTimestampPolicy _charging_timestamp_policy)
+{
+    switch (_charging_timestamp_policy)
+    {
+        case ChargingTimestampPolicy::current_timestamp:
+            return LibFred::Invoicing::ChargingTimestampPolicy::current_timestamp;
+        case ChargingTimestampPolicy::end_of_previous_month:
+            return LibFred::Invoicing::ChargingTimestampPolicy::end_of_previous_month;
+    }
+    throw std::logic_error("Unexpected ChargingTimestampPolicy enum value");
+}
+
 } // namespace Admin::{anonymous}
 
 void chargeRegistryAccessFee(
@@ -67,7 +80,8 @@ void chargeRegistryAccessFee(
         const boost::gregorian::date& _date_from,
         const boost::gregorian::date& _date_to,
         const std::string& _zone,
-        const std::string& _registry_timezone)
+        const std::string& _registry_timezone,
+        const ChargingTimestampPolicy _charging_timestamp_policy)
 {
     struct MutuallyExclusiveArguments
     {
@@ -138,7 +152,7 @@ void chargeRegistryAccessFee(
     for (std::size_t i = 0; i < result.size(); ++i)
     {
         const auto registrar_id = result[i][0];
-        if (!invMan->chargeRegistryAccessFee(registrar_id, zone_id, _date_from, _date_to, _registry_timezone))
+        if (!invMan->chargeRegistryAccessFee(registrar_id, zone_id, _date_from, _date_to, _registry_timezone, to_libfred(_charging_timestamp_policy)))
         {
             boost::format msg("Balance not sufficient for charging fee for registrar ID %1%");
             msg % result[i][0];
