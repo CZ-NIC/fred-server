@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -540,20 +540,25 @@ NameserversDomains AutomaticKeysetManagementImpl::get_nameservers_with_insecure_
         }
 
         // clang-format off
-        Database::ParamQuery sql(
-                "SELECT ns.fqdn AS nameserver, oreg.name AS domain_fqdn, oreg.id AS domain_id "
-                  "FROM host ns "
-                  "JOIN domain d ON d.nsset = ns.nssetid "
-                  "JOIN object_registry oreg ON oreg.id = d.id "
-                  "JOIN zone z ON z.id = d.zone "
-                 "WHERE d.keyset IS NULL "
-                   "AND z.fqdn IN (");
+        Database::ParamQuery sql;
+        sql("SELECT ns.fqdn AS nameserver, oreg.name AS domain_fqdn, oreg.id AS domain_id "
+              "FROM host ns "
+              "JOIN domain d ON d.nsset = ns.nssetid "
+              "JOIN object_registry oreg ON oreg.id = d.id "
+              "JOIN zone z ON z.id = d.zone "
+             "WHERE d.keyset IS NULL "
+               "AND z.fqdn IN (");
         Util::HeadSeparator in_separator("", ", ");
         for (const auto& automatically_managed_keyset_zone : automatically_managed_keyset_zones_)
         {
              sql(in_separator.get()).param_text(automatically_managed_keyset_zone);
         }
-        sql(") ORDER BY ns.fqdn");
+        sql(")  AND NOT EXISTS( "
+                        "SELECT * "
+                          "FROM object_state os "
+                          "JOIN enum_object_states eos ON eos.id = os.state_id AND eos.name = 'outzone' "
+                         "WHERE os.object_id = oreg.id AND os.valid_to IS NULL) "
+             "ORDER BY ns.fqdn");
         // clang-format on
 
         const Database::Result db_result = ctx.get_conn().exec_params(sql);
@@ -596,27 +601,31 @@ NameserversDomains AutomaticKeysetManagementImpl::get_nameservers_with_secure_au
 
         // clang-format off
         Database::ParamQuery sql;
-        sql(
-               "SELECT ns.fqdn AS nameserver, oreg.name AS domain_fqdn, oreg.id AS domain_id "
-                 "FROM host ns "
-                 "JOIN domain d ON d.nsset = ns.nssetid "
-                 "JOIN object_registry oreg ON oreg.id = d.id "
-                 "JOIN object ok ON ok.id = d.keyset "
-                 "JOIN object_registry oregk ON oregk.id = ok.id "
-                 "JOIN registrar r ON r.id = ok.clid "
-                 "JOIN zone z ON z.id = d.zone "
-                "WHERE NOT ( "
-                    "r.handle = UPPER(").param_text(automatically_managed_keyset_registrar_)(") "
-                    "AND UPPER(oregk.name) LIKE UPPER(").param_text(automatically_managed_keyset_prefix_ + "%")(")) "
-                  "AND oregk.erdate IS NULL "
-                  "AND oregk.type = get_object_type_id('keyset') "
-                  "AND z.fqdn IN (");
+        sql("SELECT ns.fqdn AS nameserver, oreg.name AS domain_fqdn, oreg.id AS domain_id "
+              "FROM host ns "
+              "JOIN domain d ON d.nsset = ns.nssetid "
+              "JOIN object_registry oreg ON oreg.id = d.id "
+              "JOIN object ok ON ok.id = d.keyset "
+              "JOIN object_registry oregk ON oregk.id = ok.id "
+              "JOIN registrar r ON r.id = ok.clid "
+              "JOIN zone z ON z.id = d.zone "
+             "WHERE NOT ( "
+                 "r.handle = UPPER(").param_text(automatically_managed_keyset_registrar_)(") "
+                 "AND UPPER(oregk.name) LIKE UPPER(").param_text(automatically_managed_keyset_prefix_ + "%")(")) "
+               "AND oregk.erdate IS NULL "
+               "AND oregk.type = get_object_type_id('keyset') "
+               "AND z.fqdn IN (");
         Util::HeadSeparator in_separator("", ", ");
         for (const auto& automatically_managed_keyset_zone : automatically_managed_keyset_zones_)
         {
              sql(in_separator.get()).param_text(automatically_managed_keyset_zone);
         }
-        sql(") ORDER BY ns.fqdn");
+        sql(")  AND NOT EXISTS( "
+                        "SELECT * "
+                          "FROM object_state os "
+                          "JOIN enum_object_states eos ON eos.id = os.state_id AND eos.name = 'outzone' "
+                         "WHERE os.object_id = oreg.id AND os.valid_to IS NULL) "
+             "ORDER BY ns.fqdn");
         // clang-format on
 
         const Database::Result db_result = ctx.get_conn().exec_params(sql);
@@ -658,26 +667,30 @@ NameserversDomains AutomaticKeysetManagementImpl::get_nameservers_with_automatic
 
         // clang-format off
         Database::ParamQuery sql;
-        sql(
-               "SELECT ns.fqdn AS nameserver, oreg.name AS domain_fqdn, oreg.id AS domain_id "
-                 "FROM host ns "
-                 "JOIN domain d ON d.nsset = ns.nssetid "
-                 "JOIN object_registry oreg ON oreg.id = d.id "
-                 "JOIN object ok ON ok.id = d.keyset "
-                 "JOIN object_registry oregk ON oregk.id = ok.id "
-                 "JOIN registrar r ON r.id = ok.clid "
-                 "JOIN zone z ON z.id = d.zone "
-                "WHERE r.handle = UPPER(").param_text(automatically_managed_keyset_registrar_)(") "
-                  "AND UPPER(oregk.name) LIKE UPPER(").param_text(automatically_managed_keyset_prefix_ + "%")(") "
-                  "AND oregk.erdate IS NULL "
-                  "AND oregk.type = get_object_type_id('keyset') "
-                  "AND z.fqdn IN (");
+        sql("SELECT ns.fqdn AS nameserver, oreg.name AS domain_fqdn, oreg.id AS domain_id "
+              "FROM host ns "
+              "JOIN domain d ON d.nsset = ns.nssetid "
+              "JOIN object_registry oreg ON oreg.id = d.id "
+              "JOIN object ok ON ok.id = d.keyset "
+              "JOIN object_registry oregk ON oregk.id = ok.id "
+              "JOIN registrar r ON r.id = ok.clid "
+              "JOIN zone z ON z.id = d.zone "
+             "WHERE r.handle = UPPER(").param_text(automatically_managed_keyset_registrar_)(") "
+               "AND UPPER(oregk.name) LIKE UPPER(").param_text(automatically_managed_keyset_prefix_ + "%")(") "
+               "AND oregk.erdate IS NULL "
+               "AND oregk.type = get_object_type_id('keyset') "
+               "AND z.fqdn IN (");
         Util::HeadSeparator in_separator("", ", ");
         for (const auto& automatically_managed_keyset_zone : automatically_managed_keyset_zones_)
         {
              sql(in_separator.get()).param_text(automatically_managed_keyset_zone);
         }
-        sql(") ORDER BY ns.fqdn");
+        sql(")  AND NOT EXISTS( "
+                        "SELECT * "
+                          "FROM object_state os "
+                          "JOIN enum_object_states eos ON eos.id = os.state_id AND eos.name = 'outzone' "
+                         "WHERE os.object_id = oreg.id AND os.valid_to IS NULL) "
+             "ORDER BY ns.fqdn");
         // clang-format on
 
         const Database::Result db_result = ctx.get_conn().exec_params(sql);
