@@ -108,7 +108,7 @@ public:
   }
 
 
-  virtual inline result_type exec(const std::string& _query) /*throw (ResultFailed)*/ {
+  virtual inline result_type exec(const std::string& _query [[gnu::unused]]) /*throw (ResultFailed)*/ {
     DummyResult *tmp = 0;//mock PQexec(psql_conn_, _query.c_str());
     /*mock
     ExecStatusType status = PQresultStatus(tmp);
@@ -122,16 +122,16 @@ public:
     */ return MockResult(tmp);
   }
 
-  virtual inline result_type exec_params(const std::string& _query,//one command query
-          const std::vector<std::string>& params //pointer to memory with parameters data
+  virtual inline result_type exec_params(const std::string& _query [[gnu::unused]],//one command query
+          const std::vector<std::string>& params [[gnu::unused]] //pointer to memory with parameters data
           )
   {
       DummyResult *tmp = 0;
       return MockResult(tmp);
   }
 
-  virtual inline result_type exec_params(const std::string& _query,//one command query
-          const QueryParams& params //parameters data
+  virtual inline result_type exec_params(const std::string& _query [[gnu::unused]],//one command query
+          const QueryParams& params [[gnu::unused]] //parameters data
       )
   {
       DummyResult *tmp = 0;

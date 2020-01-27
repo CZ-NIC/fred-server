@@ -32,7 +32,7 @@ namespace Contact {
 std::map<std::string, Nullable<ContactHandleRegistrationObstruction::Enum> > check_contact(
         LibFred::OperationContext& _ctx,
         const std::set<std::string>& _contact_handles,
-        const CheckContactConfigData& _check_contact_config_data,
+        const CheckContactConfigData&,
         const SessionData& _session_data)
 {
 

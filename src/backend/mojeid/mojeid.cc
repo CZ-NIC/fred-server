@@ -3260,7 +3260,7 @@ MojeIdImpl::MessageId MojeIdImpl::send_mojeid_card(
         const LibFred::InfoContactData& _data,
         unsigned _limit_count,
         unsigned _limit_interval,
-        MojeIdImpl::LogRequestId _log_request_id,
+        MojeIdImpl::LogRequestId,
         const Optional<boost::posix_time::ptime>& _letter_time,
         const Optional<bool>& _validated_contact)
 {

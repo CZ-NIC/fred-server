@@ -108,11 +108,10 @@ create_expired_domain(
         throw InvalidFQDNSyntax();
     }
 
-    boost::optional<unsigned long long> existing_domain_id;
-    if (domain_registrability == LibFred::Domain::DomainRegistrability::registered)
-    {
-        existing_domain_id = get_id_by_handle<LibFred::Object_Type::domain>(ctx, LibFred::Zone::rem_trailing_dot(_fqdn));
-    }
+    const boost::optional<unsigned long long> existing_domain_id =
+               domain_registrability == LibFred::Domain::DomainRegistrability::registered
+                        ? get_id_by_handle<LibFred::Object_Type::domain>(ctx, LibFred::Zone::rem_trailing_dot(_fqdn))
+                        : boost::none;
 
     if (existing_domain_id && !_delete_existing)
     {

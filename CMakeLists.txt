@@ -271,11 +271,19 @@ function(set_common_properties_on_targets)
             PUBLIC "-grecord-gcc-switches"
             PUBLIC "-Wall"
             PUBLIC "-Wextra"
-            PUBLIC "-Wno-unused-parameter"
             PUBLIC "-fdiagnostics-color=always")
         target_include_directories(${target_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
         target_include_directories(${target_name} PUBLIC ${CMAKE_BINARY_DIR})
         target_include_directories(${target_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/external/lib/libfred/src)
+    endforeach()
+endfunction()
+
+function(set_corba_properties_on_targets)
+    foreach(target_name ${ARGN})
+       message(STATUS "setting -Wno-unused-variable flag on: " ${target_name})
+       target_compile_options(${target_name}
+            PUBLIC "-Wno-unused-variable"
+            PUBLIC "-Wno-unused-parameter")
     endforeach()
 endfunction()
 
@@ -292,6 +300,9 @@ function(prepare_object_files)
         string(REGEX REPLACE "\/" "_" name ${name})
         add_library(${name} OBJECT ${src_files})
         set_common_properties_on_targets(${name})
+        if(${name} MATCHES "^src_bin_corba")
+           set_corba_properties_on_targets(${name})
+        endif()
         include_boost_in_targets(${name})
         include_libxml2_in_targets(${name})
         include_postgres_in_targets(${name})

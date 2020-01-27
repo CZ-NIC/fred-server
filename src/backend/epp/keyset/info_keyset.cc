@@ -34,7 +34,7 @@ namespace Keyset {
 InfoKeysetOutputData info_keyset(
         LibFred::OperationContext& _ctx,
         const std::string& _keyset_handle,
-        const InfoKeysetConfigData& _info_keyset_config_data,
+        const InfoKeysetConfigData&,
         const SessionData& _session_data)
 {
     if (!is_session_registrar_valid(_session_data))

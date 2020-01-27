@@ -36,7 +36,7 @@ namespace Domain {
 InfoDomainOutputData info_domain(
         LibFred::OperationContext& _ctx,
         const std::string& _fqdn,
-        const InfoDomainConfigData& _info_domain_config_data,
+        const InfoDomainConfigData&,
         const SessionData& _session_data)
 {
     if (!is_session_registrar_valid(_session_data))

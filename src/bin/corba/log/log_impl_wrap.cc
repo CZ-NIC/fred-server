@@ -345,9 +345,9 @@ ccReg::Logger::Detail*  ccReg_Log_i::getDetail(ccReg::TID _id)
             throw ccReg::Logger::OBJECT_NOT_FOUND();
         }
         return createRequestDetail(request_list->get(0));
-    } catch (Registry::SqlQueryTimeout) {
+    } catch (const Registry::SqlQueryTimeout&) {
         throw;
-    } catch (ccReg::Logger::OBJECT_NOT_FOUND) {
+    } catch (const ccReg::Logger::OBJECT_NOT_FOUND&) {
         throw;
     } catch (...) {
         Logger_common_exception_handler("getDetail");

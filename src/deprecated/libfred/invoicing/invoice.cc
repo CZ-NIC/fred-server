@@ -100,12 +100,16 @@ struct RegistrarZoneAccess
     const boost::gregorian::date date_to;
 };
 
+#if BOOST_VERSION && BOOST_VERSION < 105600
+
 // needed for boost::optional at CentOS 7
-[[gnu::unused]] bool operator==(const RegistrarZoneAccess& _lhs, const RegistrarZoneAccess& _rhs)
+bool operator==(const RegistrarZoneAccess& _lhs, const RegistrarZoneAccess& _rhs)
 {
     return _lhs.date_from == _rhs.date_from &&
            _lhs.date_to == _rhs.date_to;
 }
+
+#endif
 
 boost::optional<RegistrarZoneAccess> registrar_access_to_the_zone(
         const Database::ID& _registrar_id,
@@ -143,9 +147,9 @@ boost::optional<RegistrarZoneAccess> registrar_access_to_the_zone(
 
 bool was_registrar_charged(
         const Database::ID& _registrar_id,
-        unsigned long long _zone_id,
+        unsigned long long _zone_id [[gnu::unused]],
         const boost::gregorian::date _date_from,
-        const boost::gregorian::date _date_to)
+        const boost::gregorian::date _date_to [[gnu::unused]])
 {
     Database::Connection conn = Database::Manager::acquire();
 
@@ -3456,7 +3460,7 @@ public:
             continue;
         }
         store(i);
-          } catch (std::exception ex)
+          } catch (const std::exception& ex)
           {
               LOGGER.error(
                       std::string(" std exception while send mail in Mails class what: ")
@@ -3556,7 +3560,7 @@ public:
   }
   
   InvoiceIdVect ManagerImpl::archiveInvoices(bool send
-          , InvoiceIdVect archive_only_this_if_set) {
+          , InvoiceIdVect archive_only_this_if_set [[gnu::unused]]) {
       
       if(docman == NULL || mailman == NULL) {
         LOGGER.error("archiveInvoices: No docman or mailman specified in c-tor. ");

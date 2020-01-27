@@ -76,7 +76,7 @@ Nullable<DomainRegistrationObstruction::Enum> domain_get_registration_obstructio
 std::map<std::string, Nullable<DomainRegistrationObstruction::Enum> > check_domain(
         LibFred::OperationContext& _ctx,
         const std::set<std::string>& _fqdn,
-        const CheckDomainConfigData& _check_domain_config_data,
+        const CheckDomainConfigData&,
         const SessionData& _session_data)
 {
 

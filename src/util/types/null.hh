@@ -72,7 +72,7 @@ public:
 
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
-      const unsigned int _version) {
+      const unsigned int) {
     _ar & BOOST_SERIALIZATION_NVP(is_null);
     _ar & BOOST_SERIALIZATION_NVP(t_value);
   }
@@ -89,7 +89,7 @@ public:
   }
   virtual ~Null() {
   }
-  friend std::ostream& operator<<(std::ostream& _os, const Null<void>& _v) {
+  friend std::ostream& operator<<(std::ostream& _os, const Null<void>&) {
     return NullStrRep::toStr(_os);
   }
   virtual bool isNull() {

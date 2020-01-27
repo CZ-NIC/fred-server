@@ -68,7 +68,7 @@ void ContactIdentificationImpl::pre_save_check()
     }
 }
 
-void ContactIdentificationImpl::pre_process_check(bool _check)
+void ContactIdentificationImpl::pre_process_check(bool _check [[gnu::unused]])
 {
     const unsigned long long contact_id = pra_impl_ptr_->getObject(0).id;
     const State contact_state = get_contact_verification_state(contact_id);
@@ -82,7 +82,7 @@ void ContactIdentificationImpl::pre_process_check(bool _check)
     contact_validator_.check(cdata);
 }
 
-void ContactIdentificationImpl::process_action(bool _check)
+void ContactIdentificationImpl::process_action(bool _check [[gnu::unused]])
 {
         LibFred::PublicRequest::insertNewStateRequest(
                 pra_impl_ptr_->getId(),

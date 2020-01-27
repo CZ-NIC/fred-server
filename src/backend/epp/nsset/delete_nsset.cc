@@ -42,7 +42,7 @@ namespace Nsset {
 unsigned long long delete_nsset(
         LibFred::OperationContext& _ctx,
         const std::string& _nsset_handle,
-        const DeleteNssetConfigData& _delete_nsset_config_data,
+        const DeleteNssetConfigData&,
         const SessionData& _session_data)
 {
     if (!is_session_registrar_valid(_session_data))

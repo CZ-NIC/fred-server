@@ -62,7 +62,7 @@ public:
   }
 
 
-  std::string toSql(boost::function<std::string(std::string)> _esc_func) const {
+  std::string toSql(boost::function<std::string(std::string)> _esc_func [[gnu::unused]]) const {
     return (alias_.empty() ? name_ : name_ + " " + alias_);
   }
 
@@ -114,7 +114,7 @@ public:
   }
 
 
-  std::string toSql(boost::function<std::string(std::string)> _esc_func) const {
+  std::string toSql(boost::function<std::string(std::string)> _esc_func [[gnu::unused]]) const {
     std::string alias = table_->getAlias();
     return (alias.empty() ? name_ : alias + "." + name_);
   }

@@ -33,11 +33,11 @@ public:
 
 
     DsRecord(
-            long _key_tag,
-            long _alg,
-            long _digest_type,
-            const std::string& _digest,
-            long _max_sig_life)
+            long _key_tag [[gnu::unused]],
+            long _alg [[gnu::unused]],
+            long _digest_type [[gnu::unused]],
+            const std::string& _digest [[gnu::unused]],
+            long _max_sig_life [[gnu::unused]])
         : key_tag_(),
           alg_(),
           digest_type_(),

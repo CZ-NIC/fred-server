@@ -72,7 +72,7 @@ public:
     allowed_wildcard = false;
   }
   
-  virtual void serialize(Database::SelectQuery& _sq, const Settings *_settings) {
+  virtual void serialize(Database::SelectQuery&, const Settings*) {
   }
   
   virtual void addPostValueString(const std::string& _str) {
@@ -86,7 +86,7 @@ public:
   
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
-      const unsigned int _version) {
+      const unsigned int) {
     _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Filter);
     _ar & BOOST_SERIALIZATION_NVP(allowed_wildcard);
     _ar & BOOST_SERIALIZATION_NVP(value_post_);

@@ -126,7 +126,7 @@ public:
 
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
-      const unsigned int _version) {
+      const unsigned int) {
     _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Simple);
     _ar & BOOST_SERIALIZATION_NVP(column);
     _ar & BOOST_SERIALIZATION_NVP(value_beg);
@@ -181,7 +181,7 @@ public:
     }
   }
 
-  virtual void serialize(Database::SelectQuery& _sq, const Settings *_settings, bool plain_date = false) {
+  virtual void serialize(Database::SelectQuery& _sq, const Settings*, bool plain_date = false) {
     TRACE("[CALL] _BaseDTInterval::serialize()");
     Database::SelectQuery::prepared_values_string  &prep  = _sq.where_prepared_string();
     Database::SelectQuery::prepared_values_storage &store = _sq.where_prepared_values();
@@ -231,7 +231,7 @@ public:
 
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
-      const unsigned int _version) {
+      const unsigned int) {
     _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Simple);
     _ar & BOOST_SERIALIZATION_NVP(column);
     _ar & BOOST_SERIALIZATION_NVP(value);
@@ -276,7 +276,7 @@ public:
     active = true;
   }
   
-  void serialize(Database::SelectQuery& _sq, const Settings *_settings) {
+  void serialize(Database::SelectQuery& _sq, const Settings*) {
     TRACE("[CALL] Interval<DateTime>::serialize()");
     Database::SelectQuery::prepared_values_string  &prep  = _sq.where_prepared_string();
     Database::SelectQuery::prepared_values_storage &store = _sq.where_prepared_values();
@@ -361,7 +361,7 @@ public:
 
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
-      const unsigned int _version) {
+      const unsigned int) {
     _ar & BOOST_SERIALIZATION_BASE_TEMPLATE(
         "_BaseDTInterval_DateTimeInterval",
         _BaseDTInterval<DateTimeInterval>);
@@ -436,7 +436,7 @@ public:
   
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
-      const unsigned int _version) {
+      const unsigned int) {
     _ar & BOOST_SERIALIZATION_BASE_TEMPLATE(
         "_BaseDTInterval_DateInterval",
         _BaseDTInterval<DateInterval>);
@@ -495,7 +495,7 @@ public:
     return 0;
   }
 
-  virtual void serialize(Database::SelectQuery& _sq, const Settings *_settings) {
+  virtual void serialize(Database::SelectQuery& _sq, const Settings*) {
     Database::SelectQuery::prepared_values_string  &prep  = _sq.where_prepared_string();
     Database::SelectQuery::prepared_values_storage &store = _sq.where_prepared_values();
 
@@ -511,7 +511,7 @@ public:
 
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
-      const unsigned int _version) {
+      const unsigned int) {
     _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Simple);
     _ar & BOOST_SERIALIZATION_NVP(column);
     _ar & BOOST_SERIALIZATION_NVP(op);
@@ -566,7 +566,7 @@ public:
     return 0;
   }
 
-  virtual void serialize(Database::SelectQuery& _sq, const Settings *_settings) {
+  virtual void serialize(Database::SelectQuery& _sq, const Settings *) {
     Database::SelectQuery::prepared_values_string  &prep  = _sq.where_prepared_string();
     Database::SelectQuery::prepared_values_storage &store = _sq.where_prepared_values();
 
@@ -590,7 +590,7 @@ public:
 
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
-      const unsigned int _version) {
+      const unsigned int) {
     _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Simple);
     _ar & BOOST_SERIALIZATION_NVP(column);
     _ar & BOOST_SERIALIZATION_NVP(op);

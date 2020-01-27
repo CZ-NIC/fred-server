@@ -163,7 +163,7 @@ void ccReg_Whois_i::fillNSSet(ccReg::NSSetDetail* cn, LibFred::Nsset::Nsset* n)
     for (unsigned i=0; i<n->getAdminCount(); i++)
     cn->admins[i] = DUPSTRC(n->getAdminByIdx(i));
   }
-  catch (LibFred::NOT_FOUND) {
+  catch (const LibFred::NOT_FOUND&) {
     /// some implementation error - index is out of bound - WHAT TO DO?
   }
   cn->hosts.length(n->getHostCount());
@@ -205,7 +205,7 @@ void ccReg_Whois_i::fillKeySet(ccReg::KeySetDetail *ck
         for (unsigned int i = 0; i < k->getAdminCount(); i++)
             ck->admins[i] = DUPSTRC(k->getAdminByIdx(i));
     }
-    catch (LibFred::NOT_FOUND) {
+    catch (const LibFred::NOT_FOUND&) {
         // TODO implement error handling
     }
 
@@ -273,7 +273,7 @@ void ccReg_Whois_i::fillDomain(ccReg::DomainDetail* cd,
     for (unsigned i=0; i<d->getAdminCount(2); i++)
     cd->temps[i] = DUPSTRC(d->getAdminHandleByIdx(i,2));
   }
-  catch (LibFred::NOT_FOUND) {
+  catch (const LibFred::NOT_FOUND&) {
     /// some implementation error - index is out of bound - WHAT TO DO?
   }
 }//ccReg_Whois_i::fillDomain
@@ -316,7 +316,7 @@ ccReg::WhoisRegistrar* ccReg_Whois_i::getRegistrarByHandle(const char* handle)
         fillRegistrar(*creg,rl->get(0));
         return creg;
         }
-        catch (LibFred::SQL_ERROR) {
+        catch (const LibFred::SQL_ERROR&) {
         throw ccReg::Whois::InternalServerError();
         }
     }
@@ -377,7 +377,7 @@ ccReg::WhoisRegistrarList* ccReg_Whois_i::getRegistrarsByZone(const char *zone)
     }
     return reglist;
   }
-  catch (LibFred::SQL_ERROR)
+  catch (const LibFred::SQL_ERROR&)
   {
       LOGGER.error("getRegistrarsByZone: LibFred::SQL_ERROR exception");
       throw ccReg::Whois::InternalServerError();

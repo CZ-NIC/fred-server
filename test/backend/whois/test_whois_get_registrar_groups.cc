@@ -44,7 +44,7 @@ struct get_registrar_groups_fixture
                     "INSERT INTO registrar_group (short_name) "
                     "VALUES ($1::text) RETURNING ID ",
                     Database::query_param_list(name));
-            for (unsigned int y = 0; y < rdg.get(1, 2); ++y)
+            for (int y = 0; y < rdg.get(1, 2); ++y)
             {
                 const LibFred::InfoRegistrarData& data = Test::registrar::make(ctx);
                 ctx.get_conn().exec_params(

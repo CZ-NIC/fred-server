@@ -86,7 +86,7 @@ public:
 
     virtual std::unique_ptr<::LibFred::Document::Generator> createOutputGenerator(
         LibFred::Document::GenerationType type,
-        std::ostream& output,
+        std::ostream&,
         const std::string& lang) const
     {
         if (type != LibFred::Document::GT_PUBLIC_REQUEST_PDF)
