@@ -1,3 +1,7 @@
+2020-01-28 (2.42.2)
+
+  * fred-admin - add `--charge-to-end-of-previous-month` option to `charge_registry_access_fee_*` commands
+
 2020-01-08 (2.42.1)
 
   * Invoice export
