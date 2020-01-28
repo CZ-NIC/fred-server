@@ -2669,6 +2669,7 @@ struct HandleChargeRegistryAccessFeeAnnualArgsGrp : HandleCommandGrpArgs
                    ->notifier(save_arg<std::string>(params.year)),
                    "year [YYYY]")
                ("charge-to-end-of-previous-month", boost::program_options::value<bool>()
+                   ->default_value(false)->zero_tokens()
                    ->notifier(save_arg<bool>(params.charge_to_end_of_previous_month)),
                    "timestamp of creation will not be the current time, but the last second of previous month (current month is based on system local date)");
         return cfg_opts;
@@ -2719,6 +2720,7 @@ struct HandleChargeRegistryAccessFeeMonthlyArgsGrp : HandleCommandGrpArgs
                    ->notifier(save_arg<std::string>(params.year_month)),
                    "month [YYYY-MM]")
                ("charge-to-end-of-previous-month", boost::program_options::value<bool>()
+                   ->default_value(false)->zero_tokens()
                    ->notifier(save_arg<bool>(params.charge_to_end_of_previous_month)),
                    "timestamp of creation will not be the current time, but the last second of previous month (current month is based on system local date)");
         return cfg_opts;
