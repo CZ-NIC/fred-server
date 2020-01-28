@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2019-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -37,8 +37,19 @@ void charge_registry_access_fee_annual_impl()
     const auto params = CfgArgGroups::instance()->get_handler_ptr_by_type<HandleChargeRegistryAccessFeeAnnualArgsGrp>()->params;
     const auto date_from = boost::gregorian::from_string(params.year + "-01-01");
     const auto date_to = date_from + boost::gregorian::years(1) - boost::gregorian::days(1);
+    const auto charging_timestamp_policy = params.charge_to_end_of_previous_month
+                                                     ? Admin::ChargingTimestampPolicy::end_of_previous_month
+                                                     : Admin::ChargingTimestampPolicy::current_timestamp;
 
-    Admin::chargeRegistryAccessFee(params.all_registrars, params.registrars, params.except_registrars, date_from, date_to, params.zone, registry_timezone);
+    Admin::chargeRegistryAccessFee(
+            params.all_registrars,
+            params.registrars,
+            params.except_registrars,
+            date_from,
+            date_to,
+            params.zone,
+            registry_timezone,
+            charging_timestamp_policy);
 }
 
 void charge_registry_access_fee_monthly_impl()
@@ -48,8 +59,19 @@ void charge_registry_access_fee_monthly_impl()
     const auto params = CfgArgGroups::instance()->get_handler_ptr_by_type<HandleChargeRegistryAccessFeeMonthlyArgsGrp>()->params;
     const auto date_from = boost::gregorian::from_string(params.year_month + "-01");
     const auto date_to = date_from + boost::gregorian::months(1) - boost::gregorian::days(1);
+    const auto charging_timestamp_policy = params.charge_to_end_of_previous_month
+                                                     ? Admin::ChargingTimestampPolicy::end_of_previous_month
+                                                     : Admin::ChargingTimestampPolicy::current_timestamp;
 
-    Admin::chargeRegistryAccessFee(params.all_registrars, params.registrars, params.except_registrars, date_from, date_to, params.zone, registry_timezone);
+    Admin::chargeRegistryAccessFee(
+            params.all_registrars,
+            params.registrars,
+            params.except_registrars,
+            date_from,
+            date_to,
+            params.zone,
+            registry_timezone,
+            charging_timestamp_policy);
 }
 
 #endif

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2019-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -27,6 +27,12 @@
 
 namespace Admin {
 
+enum struct ChargingTimestampPolicy
+{
+    current_timestamp,
+    end_of_previous_month
+};
+
 void chargeRegistryAccessFee(
         bool _all_registrars,
         const std::vector<std::string>& _only_registrars,
@@ -34,7 +40,8 @@ void chargeRegistryAccessFee(
         const boost::gregorian::date& _date_from,
         const boost::gregorian::date& _date_to,
         const std::string& _zone,
-        const std::string& _registry_timezone);
+        const std::string& _registry_timezone,
+        ChargingTimestampPolicy _charging_timestamp_policy);
 
 } // namespace Admin
 

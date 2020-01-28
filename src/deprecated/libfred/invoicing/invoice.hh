@@ -295,6 +295,12 @@ struct unpaid_account_invoice
     Decimal vat;
 };
 
+enum struct ChargingTimestampPolicy
+{
+    current_timestamp,
+    end_of_previous_month
+};
+
 /// facade of invoicing subsystem
 class Manager {
 public:
@@ -348,7 +354,8 @@ public:
           unsigned long long zone_id,
           const boost::gregorian::date& date_from,
           const boost::gregorian::date& date_to,
-          const std::string& registry_timezone) = 0;
+          const std::string& registry_timezone,
+          ChargingTimestampPolicy _charging_timestamp_policy) = 0;
 
   virtual void createAccountInvoices(
           const std::string& zone_fqdn
