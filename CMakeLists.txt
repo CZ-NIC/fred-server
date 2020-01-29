@@ -953,6 +953,8 @@ prepare_object_files(
     test/backend/whois/test_whois_get_registrar_certification_list.cc
     test/backend/whois/test_whois_get_registrar_groups.cc
     test/backend/whois/test_whois_get_registrars.cc
+    test/backend/mojeid/test_mojeid_checkers.cc
+    test/backend/mojeid/main.cc
     test/deprecated/test_admin.cc
     test/deprecated/test_cache.cc
     test/deprecated/test_common_registry.cc
@@ -2971,6 +2973,30 @@ target_link_external_libraries(test-delete-objects-marked-as-delete-candidate
     mpdec
     rt
     resolv)
+
+# test mojeid
+prepare_executable(test-mojeid
+    src/util/types/birthdate.cc
+    test/backend/mojeid/main.cc
+    test/backend/mojeid/test_mojeid_checkers.cc
+    test/setup/fixtures.cc
+    test/setup/fixtures_utils.cc)
+target_link_libraries(test-mojeid
+    db
+    types
+    fred-deprecated
+    util
+    fred-static::library)
+target_link_external_libraries(test-mojeid
+    boost_random
+    boost_system
+    boost_regex
+    boost_date_time
+    boost_unit_test_framework
+    boost_program_options
+    libidn
+    postgres)
+
 
 install(TARGETS fred-accifd DESTINATION ${SBINDIR})
 install(TARGETS fred-adifd DESTINATION ${SBINDIR})
