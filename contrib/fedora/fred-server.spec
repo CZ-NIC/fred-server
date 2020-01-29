@@ -22,7 +22,13 @@ BuildRequires: libpq-devel, postgresql-server-devel, minizip-compat-devel
 BuildRequires: minizip-devel
 %endif
 
-Requires: omniORB, boost, postgresql-libs >= 9.6, libxml2, libcurl, libidn, fred-pyfred, fred-doc2pdf, fred-db, redhat-lsb, mpdecimal, openssl-libs, libxslt
+Requires: omniORB, boost, libxml2, libcurl, libidn, fred-pyfred, fred-doc2pdf, fred-db, redhat-lsb, mpdecimal, openssl-libs, libxslt
+
+%if 0%{?el8} || 0%{?fedora} >= 30
+Requires: libpq
+%else
+Requires: postgresql-libs > 9.6
+%endif
 
 %description
 FRED (Free Registry for Enum and Domain) is free registry system for 
