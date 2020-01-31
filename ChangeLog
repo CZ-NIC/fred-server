@@ -1,3 +1,7 @@
+2020-01-31 (2.42.3)
+
+  * Fix rpm for RHEL8 and F31
+
 2020-01-28 (2.42.2)
 
   * fred-admin - add `--charge-to-end-of-previous-month` option to `charge_registry_access_fee_*` commands
