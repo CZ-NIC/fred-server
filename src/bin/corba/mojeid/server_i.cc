@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2012-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -500,6 +500,10 @@ void Server_i::send_new_pin3(
     catch (const Fred::Backend::MojeIdImplData::MessageLimitExceeded& e)
     {
         CorbaConversion::raise_MESSAGE_LIMIT_EXCEEDED(e);
+    }
+    catch (const Fred::Backend::MojeIdImplData::IdentificationAlreadyProcessed&)
+    {
+        throw IDL::IDENTIFICATION_ALREADY_PROCESSED();
     }
     catch (const Fred::Backend::MojeIdImplData::IdentificationRequestDoesntExist&)
     {
