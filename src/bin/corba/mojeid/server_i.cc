@@ -505,10 +505,6 @@ void Server_i::send_new_pin3(
     {
         throw IDL::IDENTIFICATION_ALREADY_PROCESSED();
     }
-    catch (const Fred::Backend::MojeIdImplData::IdentificationRequestDoesntExist&)
-    {
-        throw IDL::IDENTIFICATION_REQUEST_NOT_EXISTS();
-    }
     catch (const Fred::Backend::MojeIdImplData::ObjectDoesntExist&)
     {
         throw IDL::OBJECT_NOT_EXISTS();

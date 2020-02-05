@@ -3040,11 +3040,6 @@ void MojeIdImpl::send_new_pin3(
         LOGGER.info("IdentificationAlreadyProcessed");
         throw;
     }
-    catch (const MojeIdImplData::IdentificationRequestDoesntExist&)
-    {
-        LOGGER.info("IdentificationRequestDoesntExist");
-        throw;
-    }
     catch (const std::exception& e)
     {
         LOGGER.error(e.what());
