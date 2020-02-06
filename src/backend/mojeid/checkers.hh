@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2015-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -49,15 +49,11 @@ namespace GeneralCheck {
  */
 struct contact_name
 {
-
-
     /**
      * Executes check.
      * @param _name contact name to verify
      */
     contact_name(const Nullable<std::string>& _name);
-
-
     /**
      * Executes check.
      * @param _first_name contact first name to verify
@@ -66,8 +62,6 @@ struct contact_name
     contact_name(
             const std::string& _first_name,
             const std::string& _last_name);
-
-
     /**
      * All checks successfully done.
      * @return true if check was successfully
@@ -76,10 +70,8 @@ struct contact_name
     {
         return !(first_name_absent || last_name_absent);
     }
-
     bool first_name_absent : 1; ///< contact doesn't have first name
     bool last_name_absent : 1; ///< contact doesn't have last name
-
 };
 
 /**
@@ -87,15 +79,11 @@ struct contact_name
  */
 struct contact_optional_address
 {
-
-
     /**
      * All checks set.
      * @param _success result of all checks
      */
     contact_optional_address(bool _success);
-
-
     /**
      * Executes check.
      * @param _street1 contact address part to verify
@@ -109,8 +97,6 @@ struct contact_optional_address
             const std::string& _city,
             const std::string& _postalcode,
             const std::string& _country);
-
-
     /**
      * All checks successfully done.
      * @return true if check was successfully
@@ -124,7 +110,6 @@ struct contact_optional_address
     bool city_absent : 1;      ///< contact doesn't have city entry
     bool postalcode_absent : 1; ///< contact doesn't have postal code entry
     bool country_absent : 1;   ///< contact doesn't have country entry
-
 };
 
 /**
@@ -133,8 +118,6 @@ struct contact_optional_address
 struct contact_address
     : contact_optional_address
 {
-
-
     /**
      * Executes check.
      * @param _street1 contact address part to verify
@@ -147,8 +130,6 @@ struct contact_address
             const std::string& _city,
             const std::string& _postalcode,
             const std::string& _country);
-
-
 };
 
 /**
@@ -156,15 +137,11 @@ struct contact_address
  */
 struct contact_email_presence
 {
-
-
     /**
      * Executes check.
      * @param _email contact email to verify
      */
     contact_email_presence(const Nullable<std::string>& _email);
-
-
     /**
      * Contact e-mail presents.
      * @return true if check was successfully
@@ -173,9 +150,7 @@ struct contact_email_presence
     {
         return !absent;
     }
-
     bool absent : 1; ///< contact e-mail doesn't present
-
 };
 
 /**
@@ -183,15 +158,11 @@ struct contact_email_presence
  */
 struct contact_email_validity
 {
-
-
     /**
      * Executes check.
      * @param _email contact email to verify
      */
     contact_email_validity(const Nullable<std::string>& _email);
-
-
     /**
      * Contact e-mail is valid or doesn't present.
      * @return true if check was successfully
@@ -200,9 +171,7 @@ struct contact_email_validity
     {
         return !invalid;
     }
-
     bool invalid : 1; ///< contact e-mail presents but format fails to meet the requirements
-
 };
 
 /**
@@ -210,8 +179,6 @@ struct contact_email_validity
  */
 struct contact_email_availability
 {
-
-
     /**
      * Executes check.
      * @param _email contact email to verify
@@ -222,8 +189,6 @@ struct contact_email_availability
             const Nullable<std::string>& _email,
             unsigned long long _id,
             LibFred::OperationContext& _ctx);
-
-
     /**
      * Contact e-mail is available for using in next identification request.
      * @return true if check was successfully
@@ -232,10 +197,8 @@ struct contact_email_availability
     {
         return !(absent || used_recently);
     }
-
     bool absent : 1;       ///< contact e-mail doesn't present
     bool used_recently : 1; ///< contact e-mail used for identification request recently
-
 };
 
 /**
@@ -243,15 +206,11 @@ struct contact_email_availability
  */
 struct contact_notifyemail_validity
 {
-
-
     /**
      * Executes check.
      * @param _notifyemail contact email to verify
      */
     contact_notifyemail_validity(const Nullable<std::string>& _notifyemail);
-
-
     /**
      * Contact notify e-mail is valid or doesn't present.
      * @return true if check was successfully
@@ -260,9 +219,7 @@ struct contact_notifyemail_validity
     {
         return !invalid;
     }
-
     bool invalid : 1; ///< contact notify e-mail presents and its format fails to meet the requirements
-
 };
 
 /**
@@ -270,15 +227,11 @@ struct contact_notifyemail_validity
  */
 struct contact_phone_presence
 {
-
-
     /**
      * Executes check.
      * @param _telephone contact phone number to verify
      */
     contact_phone_presence(const Nullable<std::string>& _telephone);
-
-
     /**
      * Contact phone presents.
      * @return true if check was successfully
@@ -287,9 +240,7 @@ struct contact_phone_presence
     {
         return !absent;
     }
-
     bool absent : 1; ///< contact phone doesn't present
-
 };
 
 /**
@@ -297,15 +248,11 @@ struct contact_phone_presence
  */
 struct contact_phone_validity
 {
-
-
     /**
      * Executes check.
      * @param _telephone contact phone number to verify
      */
     contact_phone_validity(const Nullable<std::string>& _telephone);
-
-
     /**
      * Contact phone is valid.
      * @return true if check was successfully
@@ -314,9 +261,7 @@ struct contact_phone_validity
     {
         return !invalid;
     }
-
     bool invalid : 1; ///< contact phone format fails to meet the requirements
-
 };
 
 /**
@@ -324,8 +269,6 @@ struct contact_phone_validity
  */
 struct contact_phone_availability
 {
-
-
     /**
      * Executes check.
      * @param _telephone contact phone number to verify
@@ -336,8 +279,6 @@ struct contact_phone_availability
             const Nullable<std::string>& _telephone,
             unsigned long long _id,
             LibFred::OperationContext& _ctx);
-
-
     /**
      * Contact phone is available for using in next identification request.
      * @return true if check was successfully
@@ -346,10 +287,8 @@ struct contact_phone_availability
     {
         return !(absent || used_recently);
     }
-
     bool absent : 1;       ///< contact phone doesn't present
     bool used_recently : 1; ///< contact phone used for identification request recently
-
 };
 
 /**
@@ -357,15 +296,11 @@ struct contact_phone_availability
  */
 struct contact_fax_validity
 {
-
-
     /**
      * Executes check.
      * @param _fax contact fax number to verify
      */
     contact_fax_validity(const Nullable<std::string>& _fax);
-
-
     /**
      * Contact fax is valid.
      * @return true if check was successfully
@@ -374,9 +309,7 @@ struct contact_fax_validity
     {
         return !invalid;
     }
-
     bool invalid : 1; ///< contact fax format fails to meet the requirements
-
 };
 
 /// MojeId
@@ -385,7 +318,6 @@ namespace MojeId {
 enum
 {
     USERNAME_LENGTH_LIMIT = 30
-
 };
 
 /**
@@ -399,15 +331,11 @@ extern const boost::regex username_pattern;
  */
 struct contact_username
 {
-
-
     /**
      * Executes check.
      * @param _handle contact handle to verify
      */
     contact_username(const std::string& _handle);
-
-
     /**
      * All checks successfully done.
      * @return true if check was successfully
@@ -416,10 +344,8 @@ struct contact_username
     {
         return !(absent || invalid);
     }
-
     bool absent : 1; ///< mojeID contact handle doesn't present
     bool invalid : 1; ///< mojeID contact handle format fails to meet the requirements
-
 };
 
 /**
@@ -427,8 +353,6 @@ struct contact_username
  */
 struct contact_username_availability
 {
-
-
     /**
      * Executes check.
      * @param _handle contact handle to verify
@@ -437,8 +361,6 @@ struct contact_username_availability
     contact_username_availability(
             const std::string& _handle,
             LibFred::OperationContext& _ctx);
-
-
     /**
      * All checks successfully done.
      * @return true if check was successfully
@@ -447,10 +369,8 @@ struct contact_username_availability
     {
         return !(taken || used_recently);
     }
-
     bool taken : 1;        ///< contact handle already exists
     bool used_recently : 1; ///< contact used recently, isn't available so far
-
 };
 
 /**
@@ -458,8 +378,6 @@ struct contact_username_availability
  */
 struct contact_birthday
 {
-
-
     /**
      * Executes check.
      * @param _ssntype type of personal identification
@@ -468,8 +386,6 @@ struct contact_birthday
     contact_birthday(
             const Nullable<std::string>& _ssntype,
             const Nullable<std::string>& _ssn);
-
-
     /**
      * MojeId contact birthday presents and is correct.
      * @return true if check was successfully
@@ -478,10 +394,8 @@ struct contact_birthday
     {
         return !(absent || invalid);
     }
-
     bool absent : 1; ///< mojeID contact birthday doesn't present
     bool invalid : 1; ///< mojeID contact birthday format fails to meet the requirements
-
 };
 
 /**
@@ -489,8 +403,6 @@ struct contact_birthday
  */
 struct contact_birthday_validity
 {
-
-
     /**
      * Executes check.
      * @param _ssntype type of personal identification
@@ -499,8 +411,6 @@ struct contact_birthday_validity
     contact_birthday_validity(
             const Nullable<std::string>& _ssntype,
             const Nullable<std::string>& _ssn);
-
-
     /**
      * MojeId contact birthday is valid or doesn't present.
      * @return true if check was successfully
@@ -509,9 +419,7 @@ struct contact_birthday_validity
     {
         return !invalid;
     }
-
     bool invalid : 1; ///< mojeID contact birthday format fails to meet the requirements
-
 };
 
 /**
@@ -519,8 +427,6 @@ struct contact_birthday_validity
  */
 struct contact_vat_id_presence
 {
-
-
     /**
      * Executes check.
      * @param _ssntype type of personal identification
@@ -529,8 +435,6 @@ struct contact_vat_id_presence
     contact_vat_id_presence(
             const Nullable<std::string>& _ssntype,
             const Nullable<std::string>& _ssn);
-
-
     /**
      * MojeId contact vat_id presents.
      * @return true if check was successfully
@@ -539,9 +443,7 @@ struct contact_vat_id_presence
     {
         return !absent;
     }
-
     bool absent : 1; ///< mojeID contact vat_id doesn't present
-
 };
 
 } // Fred::Backend::GeneralCheck::MojeId
@@ -550,20 +452,15 @@ struct contact_vat_id_presence
 struct check_contact_name
     : GeneralCheck::contact_name
 {
-
-
     check_contact_name(const LibFred::InfoContactData& _data)
         : GeneralCheck::contact_name(_data.name)
     {
     }
-
 };
 
 struct check_place_address
     : GeneralCheck::contact_address
 {
-
-
     check_place_address(const LibFred::Contact::PlaceAddress& _data)
         : GeneralCheck::contact_address(
                   _data.street1,
@@ -572,208 +469,155 @@ struct check_place_address
                   _data.country)
     {
     }
-
 };
 
 struct check_contact_mailing_address
     : check_place_address
 {
-
-
     check_contact_mailing_address(const LibFred::InfoContactData& _data)
         : check_place_address(_data.get_address<LibFred::ContactAddressType::MAILING>())
     {
     }
-
 };
 
 struct check_contact_place_address
     : GeneralCheck::contact_optional_address
 {
-
-
     check_contact_place_address(const LibFred::InfoContactData& _data);
-
-
     bool success() const
     {
         return !(absent || !this->GeneralCheck::contact_optional_address::success());
     }
-
     bool absent : 1; ///< contact place address doesn't present
-
 };
 
 struct check_contact_addresses
     : GeneralCheck::contact_optional_address
 {
-
-
     check_contact_addresses(
             const LibFred::InfoContactData& _data,
             LibFred::ContactAddressType _address_type);
-
-
 };
 
 struct check_contact_addresses_mailing
     : check_contact_addresses
 {
-
-
     check_contact_addresses_mailing(const LibFred::InfoContactData& _data)
         : check_contact_addresses(_data, LibFred::ContactAddressType::MAILING)
     {
     }
-
 };
 
 struct check_contact_addresses_billing
     : check_contact_addresses
 {
-
-
     check_contact_addresses_billing(const LibFred::InfoContactData& _data)
         : check_contact_addresses(_data, LibFred::ContactAddressType::BILLING)
     {
     }
-
 };
 
 struct check_contact_addresses_shipping
     : check_contact_addresses
 {
-
-
     check_contact_addresses_shipping(const LibFred::InfoContactData& _data)
         : check_contact_addresses(_data, LibFred::ContactAddressType::SHIPPING)
     {
     }
-
 };
 
 struct check_contact_addresses_shipping2
     : check_contact_addresses
 {
-
-
     check_contact_addresses_shipping2(const LibFred::InfoContactData& _data)
         : check_contact_addresses(_data, LibFred::ContactAddressType::SHIPPING_2)
     {
     }
-
 };
 
 struct check_contact_addresses_shipping3
     : check_contact_addresses
 {
-
-
     check_contact_addresses_shipping3(const LibFred::InfoContactData& _data)
         : check_contact_addresses(_data, LibFred::ContactAddressType::SHIPPING_3)
     {
     }
-
 };
 
 struct check_contact_email_presence
     : GeneralCheck::contact_email_presence
 {
-
-
     check_contact_email_presence(const LibFred::InfoContactData& _data)
         : GeneralCheck::contact_email_presence(_data.email)
     {
     }
-
 };
 
 struct check_contact_email_validity
     : GeneralCheck::contact_email_validity
 {
-
-
     check_contact_email_validity(const LibFred::InfoContactData& _data)
         : GeneralCheck::contact_email_validity(_data.email)
     {
     }
-
 };
 
 struct check_contact_email_availability
     : GeneralCheck::contact_email_availability
 {
-
-
     check_contact_email_availability(
             const LibFred::InfoContactData& _data,
             LibFred::OperationContext& _ctx)
         : GeneralCheck::contact_email_availability(_data.email, _data.id, _ctx)
     {
     }
-
 };
 
 struct check_contact_notifyemail_validity
     : GeneralCheck::contact_notifyemail_validity
 {
-
-
     check_contact_notifyemail_validity(const LibFred::InfoContactData& _data)
         : GeneralCheck::contact_notifyemail_validity(_data.notifyemail)
     {
     }
-
 };
 
 struct check_contact_phone_presence
     : GeneralCheck::contact_phone_presence
 {
-
-
     check_contact_phone_presence(const LibFred::InfoContactData& _data)
         : GeneralCheck::contact_phone_presence(_data.telephone)
     {
     }
-
 };
 
 struct check_contact_phone_validity
     : GeneralCheck::contact_phone_validity
 {
-
-
     check_contact_phone_validity(const LibFred::InfoContactData& _data)
         : GeneralCheck::contact_phone_validity(_data.telephone)
     {
     }
-
 };
 
 struct check_contact_phone_availability
     : GeneralCheck::contact_phone_availability
 {
-
-
     check_contact_phone_availability(
             const LibFred::InfoContactData& _data,
             LibFred::OperationContext& _ctx)
         : GeneralCheck::contact_phone_availability(_data.telephone, _data.id, _ctx)
     {
     }
-
 };
 
 struct check_contact_fax_validity
     : GeneralCheck::contact_fax_validity
 {
-
-
     check_contact_fax_validity(const LibFred::InfoContactData& _data)
         : GeneralCheck::contact_fax_validity(_data.fax)
     {
     }
-
 };
 
 /// MojeId
@@ -782,87 +626,66 @@ namespace MojeId {
 struct check_contact_username
     : GeneralCheck::MojeId::contact_username
 {
-
-
     check_contact_username(const LibFred::InfoContactData& _data)
         : GeneralCheck::MojeId::contact_username(_data.handle)
     {
     }
-
 };
 
 struct check_contact_username_availability
     : GeneralCheck::MojeId::contact_username_availability
 {
-
-
     check_contact_username_availability(
             const LibFred::InfoContactData& _data,
             LibFred::OperationContext& _ctx)
         : GeneralCheck::MojeId::contact_username_availability(_data.handle, _ctx)
     {
     }
-
 };
 
 struct check_contact_birthday
     : GeneralCheck::MojeId::contact_birthday
 {
-
-
     check_contact_birthday(const LibFred::InfoContactData& _data)
         : GeneralCheck::MojeId::contact_birthday(_data.ssntype, _data.ssn)
     {
     }
-
 };
 
 struct check_contact_birthday_validity
     : GeneralCheck::MojeId::contact_birthday_validity
 {
-
-
     check_contact_birthday_validity(const LibFred::InfoContactData& _data)
         : GeneralCheck::MojeId::contact_birthday_validity(_data.ssntype, _data.ssn)
     {
     }
-
 };
 
 struct check_contact_vat_id_presence
     : GeneralCheck::MojeId::contact_vat_id_presence
 {
-
-
     check_contact_vat_id_presence(const LibFred::InfoContactData& _data)
         : GeneralCheck::MojeId::contact_vat_id_presence(_data.ssntype, _data.ssn)
     {
     }
-
 };
 
 struct check_contact_ssn
 {
-
-
     check_contact_ssn(const LibFred::InfoContactData& _data);
-
-
     bool success() const
     {
         return !(birthdate_absent || birthdate_invalid ||
                  vat_id_num_absent || vat_id_num_invalid);
     }
-
     bool birthdate_absent : 1;
     bool birthdate_invalid : 1;
     bool vat_id_num_absent : 1;
     bool vat_id_num_invalid : 1;
-
 };
 
 } // namespace Fred::Backend::MojeId
 } // namespace Fred::Backend
 } // namespace Fred
 
-#endif
+#endif//CHECKERS_HH_1C4A77A46C944F69B5D59D1B75B30116

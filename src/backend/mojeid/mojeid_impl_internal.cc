@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -316,6 +316,16 @@ void raise(const CheckUpdateContactPrepare& result)
     set_permanent_address_validation_result(result, e);
     set_optional_addresses_validation_result(result, e);
 
+    throw e;
+}
+
+void raise(const CheckUpdateValidatedContactPrepare& result)
+{
+    MojeIdImplData::UpdateValidatedContactPrepareValidationResult e;
+
+    set_contact_name_result(result, e);
+    set_validity_result(result.Fred::Backend::MojeId::check_contact_birthday_validity::success(), e.birth_date);
+    set_permanent_address_validation_result(result, e);
     throw e;
 }
 

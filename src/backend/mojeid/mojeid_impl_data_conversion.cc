@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -308,6 +308,14 @@ void from_into(const UpdateContact& src, LibFred::InfoContactData& dst)
 {
     common_conversion_into_fred(src, dst);
     dst.telephone = src.telephone;
+}
+
+void from_into(const ValidatedContactData& src, LibFred::InfoContactData& dst)
+{
+    dst.name = src.name;
+    dst.ssntype = Conversion::Enums::to_db_handle(LibFred::SSNType::birthday);
+    dst.ssn = src.birth_date.value;
+    from_into_nullable(src.permanent, dst.place);
 }
 
 void from_into(const UpdateTransferContact& src, LibFred::InfoContactData& dst)
