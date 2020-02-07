@@ -15,6 +15,12 @@ stages:
   tags:
     - dind
 
+docker:man:
+  <<: *image
+  variables:
+    IMAGE_NAME: man
+    IMAGE_TAG: $CI_REGISTRY_IMAGE/$IMAGE_NAME
+
 docker:server:ubuntu:
   <<: *image
   variables:
@@ -141,6 +147,18 @@ build:centos:amd64:
     - triggers
     - schedules
     - web
+
+
+build:man:
+  image: "$CI_REGISTRY/fred/server/man"
+  stage: build
+  script:
+      - cd man/ && make man SPHINXOPTS=-W
+  tags:
+    - amd64
+    - builder
+    - linux
+
 
 licensing:
   <<: *ubuntu_16_04
