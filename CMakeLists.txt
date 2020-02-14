@@ -869,7 +869,6 @@ prepare_object_files(
     test/backend/admin/contact/verification/test_fill_check_queue.cc
     test/backend/admin/contact/verification/test_related_records.cc
     test/backend/admin/contact/verification/test_resolve_check.cc
-    test/libfred/contact/verification/setup_utils.cc
     test/backend/admin/contact/verification/test_run_all_enqueued_checks.cc
     test/backend/admin/domain/main.cc
     test/backend/admin/domain/test_create_expired_domain.cc
@@ -975,7 +974,6 @@ prepare_object_files(
     test/deprecated/test_registrar_group.cc
     test/deprecated/test_server.cc
     test/deprecated/test_whois.cc
-    test/libfred/registrar/epp_auth/util.cc
     test/setup/fixtures.cc
     test/setup/fixtures_utils.cc
     test/setup/tests_common.cc
@@ -2266,7 +2264,6 @@ target_link_external_libraries(test-admin-contact-automerge
 # test-admin-contact-verification
 prepare_executable(test-admin-contact-verification
     test/backend/admin/contact/verification/main.cc
-    test/libfred/contact/verification/setup_utils.cc
     test/backend/admin/contact/verification/test_run_all_enqueued_checks.cc
     test/backend/admin/contact/verification/test_fill_check_queue.cc
     test/backend/admin/contact/verification/test_resolve_check.cc
@@ -2282,6 +2279,7 @@ target_link_libraries(test-admin-contact-verification
     util
     timezones
     handle_rifd_args
+    fred-test-common-static::library
     fred-static::library)
 target_link_external_libraries(test-admin-contact-verification
     boost_system
@@ -2564,7 +2562,6 @@ prepare_executable(test-admin-registrar
     test/backend/admin/registrar/test_update_epp_auth.cc
     test/backend/admin/registrar/test_update_registrar.cc
     test/backend/admin/registrar/test_update_zone_access.cc
-    test/libfred/registrar/epp_auth/util.cc
     test/setup/fixtures.cc
     test/setup/fixtures_utils.cc)
 target_link_libraries(test-admin-registrar
@@ -2576,6 +2573,7 @@ target_link_libraries(test-admin-registrar
     types
     timezones
     fred-deprecated
+    fred-test-common-static::library
     fred-static::library)
 target_link_external_libraries(test-admin-registrar
     boost_system
