@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -34,6 +34,7 @@ void from_into(const LibFred::ContactAddress& src, ShippingAddress& dst);
 
 void from_into(const CreateContact& src, LibFred::InfoContactData& dst);
 void from_into(const UpdateContact& src, LibFred::InfoContactData& dst);
+void from_into(const ValidatedContactData& src, LibFred::InfoContactData& dst);
 void from_into(const UpdateTransferContact& src, LibFred::InfoContactData& dst);
 
 void from_into(const LibFred::InfoContactData& src, InfoContact& dst);

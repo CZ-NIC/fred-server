@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2012-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -27,7 +27,9 @@
 #include "src/bin/corba/Buffer.hh"
 #include "src/bin/corba/MojeID.hh"
 #include "src/bin/corba/mojeid/service_name.hh"
+
 #include <boost/utility.hpp>
+
 #include <memory>
 #include <string>
 
@@ -57,93 +59,99 @@ public:
             const Registry::MojeID::CreateContact& c,
             const char* trans_id,
             Registry::MojeID::LogRequestId log_request_id,
-            CORBA::String_out ident);
+            CORBA::String_out ident) override;
 
     Registry::MojeID::InfoContact* transfer_contact_prepare(
             const char* handle,
             const char* trans_id,
             Registry::MojeID::LogRequestId log_request_id,
-            CORBA::String_out ident);
+            CORBA::String_out ident) override;
 
     void update_contact_prepare(
             Registry::MojeID::ContactId contact_id,
             const Registry::MojeID::UpdateContact& c,
             const char* trans_id,
-            Registry::MojeID::LogRequestId log_request_id);
+            Registry::MojeID::LogRequestId log_request_id) override;
+
+    void update_validated_contact_prepare(
+            Registry::MojeID::ContactId contact_id,
+            const Registry::MojeID::ValidatedContactData& verified_data,
+            const char* trans_id,
+            Registry::MojeID::LogRequestId log_request_id) override;
 
     Registry::MojeID::InfoContact* update_transfer_contact_prepare(
             const char* username,
             const Registry::MojeID::UpdateTransferContact& contact_data,
             const char* trans_id,
             Registry::MojeID::LogRequestId log_request_id,
-            CORBA::String_out ident);
+            CORBA::String_out ident) override;
 
     Registry::MojeID::InfoContact* info_contact(
-            const char* username);
+            const char* username) override;
 
     Registry::MojeID::InfoContactPublishFlags get_contact_info_publish_flags(
-            Registry::MojeID::ContactId contact_id);
+            Registry::MojeID::ContactId contact_id) override;
 
     Registry::MojeID::ContactId process_registration_request(
             const char* ident_request_id,
             const char* password,
-            Registry::MojeID::LogRequestId log_request_id);
+            Registry::MojeID::LogRequestId log_request_id) override;
 
     void process_identification_request(
             Registry::MojeID::ContactId contact_id,
             const char* password,
-            Registry::MojeID::LogRequestId log_request_id);
+            Registry::MojeID::LogRequestId log_request_id) override;
 
     void commit_prepared_transaction(
-            const char* trans_id);
+            const char* trans_id) override;
 
     void rollback_prepared_transaction(
-            const char* trans_id);
+            const char* trans_id) override;
 
     Registry::Buffer* get_validation_pdf(
-            Registry::MojeID::ContactId contact_id);
+            Registry::MojeID::ContactId contact_id) override;
 
     void create_validation_request(
             Registry::MojeID::ContactId contact_id,
-            Registry::MojeID::LogRequestId log_request_id);
+            Registry::MojeID::LogRequestId log_request_id) override;
 
     void validate_contact(
             Registry::MojeID::ContactId contact_id,
-            Registry::MojeID::LogRequestId log_request_id);
+            Registry::MojeID::LogRequestId log_request_id) override;
 
     Registry::MojeID::ContactStateInfoList* get_contacts_state_changes(
-            CORBA::ULong last_hours);
+            CORBA::ULong last_hours) override;
 
     Registry::MojeID::ContactStateInfo* get_contact_state(
-            Registry::MojeID::ContactId contact_id);
+            Registry::MojeID::ContactId contact_id) override;
 
     void cancel_account_prepare(
             Registry::MojeID::ContactId contact_id,
             const char* trans_id,
-            Registry::MojeID::LogRequestId log_request_id);
+            Registry::MojeID::LogRequestId log_request_id) override;
 
-    Registry::MojeID::ContactHandleList* get_unregistrable_handles();
+    Registry::MojeID::ContactHandleList* get_unregistrable_handles() override;
 
     void send_new_pin3(
             Registry::MojeID::ContactId contact_id,
-            Registry::MojeID::LogRequestId log_request_id);
+            Registry::MojeID::LogRequestId log_request_id) override;
 
     void send_mojeid_card(
             Registry::MojeID::ContactId contact_id,
-            Registry::MojeID::LogRequestId log_request_id);
+            Registry::MojeID::LogRequestId log_request_id) override;
 
     void generate_sms_messages();
-    void enable_sms_messages_generation(CORBA::Boolean enable);
+    void enable_sms_messages_generation(CORBA::Boolean enable) override;
 
     void generate_email_messages();
-    void enable_email_messages_generation(CORBA::Boolean enable);
+    void enable_email_messages_generation(CORBA::Boolean enable) override;
 
     void generate_letter_messages();
-    void enable_letter_messages_generation(CORBA::Boolean enable);
+    void enable_letter_messages_generation(CORBA::Boolean enable) override;
 
 private:
     const std::unique_ptr<Fred::Backend::MojeId::MojeIdImpl> impl_ptr_;
-}; //class Server_i
+};
 
 } // namespace Registry::MojeId
 } // namespace Registry

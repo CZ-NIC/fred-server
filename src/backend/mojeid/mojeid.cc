@@ -1444,6 +1444,103 @@ void MojeIdImpl::update_contact_prepare(
     }
 }
 
+void MojeIdImpl::update_validated_contact_prepare(
+        ContactId contact_id,
+        const MojeIdImplData::ValidatedContactData& verified_data,
+        const std::string& _trans_id,
+        LogRequestId _log_request_id)const
+{
+    LOGGING_CONTEXT(log_ctx, *this);
+
+    try
+    {
+        LibFred::OperationContextTwoPhaseCommitCreator ctx{_trans_id};
+        const LibFred::ObjectStatesInfo states{LibFred::GetObjectStates(contact_id).exec(ctx)};
+        if (states.absents(LibFred::Object_State::mojeid_contact))
+        {
+            throw MojeIdImplData::ObjectDoesntExist{};
+        }
+        LibFred::InfoContactData verified_contact_data_subset;
+        from_into(verified_data, verified_contact_data_subset);
+        {
+            const MojeIdImplInternal::CheckUpdateValidatedContactPrepare check_verified_data(verified_contact_data_subset);
+            if (!check_verified_data.success())
+            {
+                throw check_verified_data;
+            }
+        }
+        LibFred::StatusList to_cancel;
+        const bool manual_verification_done = states.presents(LibFred::Object_State::contact_failed_manual_verification) ||
+                                              states.presents(LibFred::Object_State::contact_passed_manual_verification);
+        if (manual_verification_done)
+        {
+            if (states.presents(LibFred::Object_State::contact_failed_manual_verification))
+            {
+                to_cancel.insert(Conversion::Enums::to_db_handle(LibFred::Object_State::contact_failed_manual_verification));
+            }
+            if (states.presents(LibFred::Object_State::contact_passed_manual_verification))
+            {
+                to_cancel.insert(Conversion::Enums::to_db_handle(LibFred::Object_State::contact_passed_manual_verification));
+            }
+        }
+        const bool object_states_changed = !to_cancel.empty();
+        if (object_states_changed)
+        {
+            LibFred::CancelObjectStateRequestId(contact_id, to_cancel).exec(ctx);
+        }
+        LibFred::UpdateContactById update_contact_op(contact_id, mojeid_registrar_.handle());
+        update_contact_op.set_name(verified_data.name);
+        update_contact_op.set_personal_id(LibFred::PersonalIdUnion::get_BIRTHDAY(verified_data.birth_date.value));
+        update_contact_op.set_place(verified_contact_data_subset.place);
+        if (0 < _log_request_id)
+        {
+            update_contact_op.set_logd_request_id(_log_request_id);
+        }
+        const unsigned long long history_id = update_contact_op.exec(ctx);
+
+        LibFred::Poll::CreateUpdateOperationPollMessage<LibFred::Object_Type::contact>().exec(ctx, history_id);
+        notify(ctx, Notification::updated, mojeid_registrar_.id(), history_id, _log_request_id);
+
+        if (object_states_changed)
+        {
+            prepare_transaction_storage()->store(_trans_id, contact_id);
+        }
+
+        ctx.commit_transaction();
+        return;
+    }
+    catch (const LibFred::InfoContactById::Exception& e)
+    {
+        if (e.is_set_unknown_object_id())
+        {
+            LOGGER.info("request failed (InfoContactById::Exception - unknown_object_id)");
+            throw MojeIdImplData::ObjectDoesntExist();
+        }
+        LOGGER.error("request failed (InfoContactById::Exception)");
+        throw;
+    }
+    catch (const MojeIdImplData::ObjectDoesntExist& e)
+    {
+        LOGGER.info("request failed (ObjectDoesntExist)");
+        throw;
+    }
+    catch (const MojeIdImplInternal::CheckUpdateValidatedContactPrepare& e)
+    {
+        LOGGER.info("request failed (CheckUpdateValidatedContactPrepare)");
+        MojeIdImplInternal::raise(e);
+    }
+    catch (const std::exception& e)
+    {
+        LOGGER.error(boost::format("request failed (%1%)") % e.what());
+        throw;
+    }
+    catch (...)
+    {
+        LOGGER.error("request failed (unknown error)");
+        throw;
+    }
+}
+
 MojeIdImplData::InfoContact MojeIdImpl::update_transfer_contact_prepare(
         const std::string& _username,
         const MojeIdImplData::UpdateTransferContact& _new_data,
