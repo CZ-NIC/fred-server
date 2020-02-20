@@ -1,3 +1,9 @@
+2020-02-20 (2.44.0)
+
+  * MojeID
+    - add new method for validated data update (no mojeid verification states canceling)
+    - fix exception in send_new_pin3 method
+
 2020-02-03 (2.43.0)
 
   * Add man pages for main `fred-admin` commands
