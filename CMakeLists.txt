@@ -2552,7 +2552,6 @@ target_link_libraries(test-admin-registrar
     corba
     corbafilters
     corbadatatypes
-    fred
     db
     util
     types
