@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2015-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -82,6 +82,12 @@ public:
     void update_contact_prepare(
             ContactId contact_id,
             const MojeIdImplData::UpdateContact& _new_data,
+            const std::string& _trans_id,
+            LogRequestId _log_request_id) const;
+
+    void update_validated_contact_prepare(
+            ContactId contact_id,
+            const MojeIdImplData::ValidatedContactData& verified_data,
             const std::string& _trans_id,
             LogRequestId _log_request_id) const;
 

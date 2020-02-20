@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2012-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -149,6 +149,33 @@ void Server_i::update_contact_prepare(
         throw IDL::INTERNAL_SERVER_ERROR();
     }
 } //update_contact_prepared
+
+void Server_i::update_validated_contact_prepare(
+        MojeID::ContactId _contact_id,
+        const MojeID::ValidatedContactData& _verified_data,
+        const char* _trans_id,
+        MojeID::LogRequestId _log_request_id)
+{
+    try
+    {
+        Fred::Backend::MojeIdImplData::ValidatedContactData verified_data;
+        CorbaConversion::unwrap_ValidatedContactData(_verified_data, verified_data);
+        impl_ptr_->update_validated_contact_prepare(_contact_id, verified_data, _trans_id, _log_request_id);
+        return;
+    }
+    catch (const Fred::Backend::MojeIdImplData::UpdateValidatedContactPrepareValidationResult& e)
+    {
+        CorbaConversion::raise_UPDATE_VALIDATED_CONTACT_PREPARE_VALIDATION_ERROR(e);
+    }
+    catch (const Fred::Backend::MojeIdImplData::ObjectDoesntExist&)
+    {
+        throw IDL::OBJECT_NOT_EXISTS();
+    }
+    catch (...)
+    {
+        throw IDL::INTERNAL_SERVER_ERROR();
+    }
+}
 
 MojeID::InfoContact* Server_i::update_transfer_contact_prepare(
         const char* _username,
@@ -501,9 +528,9 @@ void Server_i::send_new_pin3(
     {
         CorbaConversion::raise_MESSAGE_LIMIT_EXCEEDED(e);
     }
-    catch (const Fred::Backend::MojeIdImplData::IdentificationRequestDoesntExist&)
+    catch (const Fred::Backend::MojeIdImplData::IdentificationAlreadyProcessed&)
     {
-        throw IDL::IDENTIFICATION_REQUEST_NOT_EXISTS();
+        throw IDL::IDENTIFICATION_ALREADY_PROCESSED();
     }
     catch (const Fred::Backend::MojeIdImplData::ObjectDoesntExist&)
     {

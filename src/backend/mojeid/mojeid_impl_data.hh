@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -174,6 +174,18 @@ struct UpdateContactPrepareValidationResult
     AddressValidationResult shipping3;
 };
 
+struct UpdateValidatedContactPrepareValidationResult
+{
+    UpdateValidatedContactPrepareValidationResult()
+        : name(ValidationResult::UNKNOWN),
+          birth_date(ValidationResult::UNKNOWN)
+    {
+    }
+    ValidationResult::Value name;
+    ValidationResult::Value birth_date;
+    MandatoryAddressValidationResult permanent;
+};
+
 struct CreateValidationRequestValidationResult
 {
     CreateValidationRequestValidationResult()
@@ -265,6 +277,13 @@ struct UpdateContact
     Nullable<std::string> notify_email;
     Nullable<std::string> telephone;
     Nullable<std::string> fax;
+};
+
+struct ValidatedContactData
+{
+    std::string name;
+    Birthdate birth_date;
+    Address permanent;
 };
 
 struct InfoContact

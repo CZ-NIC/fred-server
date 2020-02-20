@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -125,6 +125,16 @@ typedef boost::mpl::list<Fred::Backend::check_contact_name,
 typedef MojeId::Check<check_update_contact_prepare> CheckUpdateContactPrepare;
 
 void raise(const CheckUpdateContactPrepare& result);
+
+
+typedef boost::mpl::list<Fred::Backend::check_contact_name,
+            Fred::Backend::MojeId::check_contact_birthday_validity,
+            Fred::Backend::check_contact_place_address>
+        check_update_validated_contact_prepare;
+
+typedef MojeId::Check<check_update_validated_contact_prepare> CheckUpdateValidatedContactPrepare;
+
+void raise(const CheckUpdateValidatedContactPrepare& result);
 
 
 typedef boost::mpl::list<Fred::Backend::check_contact_name,

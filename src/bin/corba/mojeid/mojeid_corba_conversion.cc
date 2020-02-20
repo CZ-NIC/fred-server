@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2008-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -325,6 +325,15 @@ void wrap_UpdateContactPrepareValidationResult(const Fred::Backend::MojeIdImplDa
     wrap_AddressValidationResult(src.shipping3, dst.shipping3);
 }
 
+void wrap_UpdateValidatedContactPrepareValidationResult(
+        const Fred::Backend::MojeIdImplData::UpdateValidatedContactPrepareValidationResult& src,
+        Registry::MojeID::Server::UPDATE_VALIDATED_CONTACT_PREPARE_VALIDATION_ERROR& dst)
+{
+    wrap_ValidationResult(src.name, dst.name);
+    wrap_ValidationResult(src.birth_date, dst.birth_date);
+    wrap_MandatoryAddressValidationResult(src.permanent, dst.permanent);
+}
+
 void wrap_CreateValidationRequestValidationResult(const Fred::Backend::MojeIdImplData::CreateValidationRequestValidationResult& src,
         Registry::MojeID::Server::CREATE_VALIDATION_REQUEST_VALIDATION_ERROR& dst)
 {
@@ -432,6 +441,15 @@ void unwrap_UpdateContact(const Registry::MojeID::UpdateContact& src, Fred::Back
     unwrap_NullableString(src.notify_email.in(), dst.notify_email);
     unwrap_NullableString(src.telephone.in(), dst.telephone);
     unwrap_NullableString(src.fax.in(), dst.fax);
+}
+
+void unwrap_ValidatedContactData(
+        const Registry::MojeID::ValidatedContactData& src,
+        Fred::Backend::MojeIdImplData::ValidatedContactData& dst)
+{
+    dst.name = src.name.in();
+    unwrap_Date_to_Birthdate(src.birth_date, dst.birth_date);
+    unwrap_Address(src.permanent, dst.permanent);
 }
 
 Registry::MojeID::InfoContact_var wrap_InfoContact(const Fred::Backend::MojeIdImplData::InfoContact& src)
@@ -564,6 +582,21 @@ void raise_UPDATE_CONTACT_PREPARE_VALIDATION_ERROR(const Fred::Backend::MojeIdIm
     try
     {
         wrap_UpdateContactPrepareValidationResult(src, e);
+    }
+    catch (...)
+    {
+        throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
+    }
+    throw e;
+}
+
+void raise_UPDATE_VALIDATED_CONTACT_PREPARE_VALIDATION_ERROR(
+        const Fred::Backend::MojeIdImplData::UpdateValidatedContactPrepareValidationResult& src)
+{
+    Registry::MojeID::Server::UPDATE_VALIDATED_CONTACT_PREPARE_VALIDATION_ERROR e;
+    try
+    {
+        wrap_UpdateValidatedContactPrepareValidationResult(src, e);
     }
     catch (...)
     {
