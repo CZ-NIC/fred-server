@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2010-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -2941,9 +2941,7 @@ void MojeIdImpl::send_new_pin3(
         const LibFred::ObjectStatesInfo states(LibFred::GetObjectStates(_contact_id).exec(ctx));
         if (states.presents(LibFred::Object_State::identified_contact))
         {
-            // nothing to send if contact is identified
-            // IdentificationRequestDoesntExist isn't error in frontend
-            throw MojeIdImplData::IdentificationRequestDoesntExist();
+            throw MojeIdImplData::IdentificationAlreadyProcessed();
         }
         if (states.absents(LibFred::Object_State::mojeid_contact))
         {
@@ -3037,9 +3035,9 @@ void MojeIdImpl::send_new_pin3(
         LOGGER.error(e.what());
         throw;
     }
-    catch (const MojeIdImplData::IdentificationRequestDoesntExist&)
+    catch (const MojeIdImplData::IdentificationAlreadyProcessed&)
     {
-        LOGGER.info("IdentificationRequestDoesntExist");
+        LOGGER.info("IdentificationAlreadyProcessed");
         throw;
     }
     catch (const std::exception& e)
