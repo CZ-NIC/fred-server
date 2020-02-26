@@ -275,6 +275,7 @@ function(set_common_properties_on_targets)
         target_include_directories(${target_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
         target_include_directories(${target_name} PUBLIC ${CMAKE_BINARY_DIR})
         target_include_directories(${target_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/external/lib/libfred/src)
+        target_include_directories(${target_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/external/lib/libfred/include)
     endforeach()
 endfunction()
 
@@ -864,7 +865,6 @@ prepare_object_files(
     test/backend/admin/contact/verification/test_fill_check_queue.cc
     test/backend/admin/contact/verification/test_related_records.cc
     test/backend/admin/contact/verification/test_resolve_check.cc
-    test/libfred/contact/verification/setup_utils.cc
     test/backend/admin/contact/verification/test_run_all_enqueued_checks.cc
     test/backend/admin/domain/main.cc
     test/backend/admin/domain/test_create_expired_domain.cc
@@ -946,6 +946,8 @@ prepare_object_files(
     test/backend/whois/test_whois_get_registrar_certification_list.cc
     test/backend/whois/test_whois_get_registrar_groups.cc
     test/backend/whois/test_whois_get_registrars.cc
+    test/backend/mojeid/test_mojeid_checkers.cc
+    test/backend/mojeid/main.cc
     test/deprecated/test_admin.cc
     test/deprecated/test_cache.cc
     test/deprecated/test_common_registry.cc
@@ -966,7 +968,6 @@ prepare_object_files(
     test/deprecated/test_registrar_group.cc
     test/deprecated/test_server.cc
     test/deprecated/test_whois.cc
-    test/libfred/registrar/epp_auth/util.cc
     test/setup/fixtures.cc
     test/setup/fixtures_utils.cc
     test/setup/tests_common.cc
@@ -2250,7 +2251,6 @@ target_link_external_libraries(test-admin-contact-automerge
 # test-admin-contact-verification
 prepare_executable(test-admin-contact-verification
     test/backend/admin/contact/verification/main.cc
-    test/libfred/contact/verification/setup_utils.cc
     test/backend/admin/contact/verification/test_run_all_enqueued_checks.cc
     test/backend/admin/contact/verification/test_fill_check_queue.cc
     test/backend/admin/contact/verification/test_resolve_check.cc
@@ -2266,6 +2266,7 @@ target_link_libraries(test-admin-contact-verification
     util
     timezones
     handle_rifd_args
+    fred-test-common-static::library
     fred-static::library)
 target_link_external_libraries(test-admin-contact-verification
     boost_system
@@ -2545,7 +2546,6 @@ prepare_executable(test-admin-registrar
     test/backend/admin/registrar/test_update_epp_auth.cc
     test/backend/admin/registrar/test_update_registrar.cc
     test/backend/admin/registrar/test_update_zone_access.cc
-    test/libfred/registrar/epp_auth/util.cc
     test/setup/fixtures.cc
     test/setup/fixtures_utils.cc)
 target_link_libraries(test-admin-registrar
@@ -2557,6 +2557,7 @@ target_link_libraries(test-admin-registrar
     types
     timezones
     fred-deprecated
+    fred-test-common-static::library
     fred-static::library)
 target_link_external_libraries(test-admin-registrar
     boost_system
@@ -2954,6 +2955,30 @@ target_link_external_libraries(test-delete-objects-marked-as-delete-candidate
     mpdec
     rt
     resolv)
+
+# test mojeid
+prepare_executable(test-mojeid
+    src/util/types/birthdate.cc
+    test/backend/mojeid/main.cc
+    test/backend/mojeid/test_mojeid_checkers.cc
+    test/setup/fixtures.cc
+    test/setup/fixtures_utils.cc)
+target_link_libraries(test-mojeid
+    db
+    types
+    fred-deprecated
+    util
+    fred-static::library)
+target_link_external_libraries(test-mojeid
+    boost_random
+    boost_system
+    boost_regex
+    boost_date_time
+    boost_unit_test_framework
+    boost_program_options
+    libidn
+    postgres)
+
 
 install(TARGETS fred-accifd DESTINATION ${SBINDIR})
 install(TARGETS fred-adifd DESTINATION ${SBINDIR})

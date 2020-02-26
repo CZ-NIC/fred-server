@@ -1,3 +1,7 @@
+UNRELEASED
+
+  * Remove duplicate `libfred` tests
+
 2020-02-20 (2.44.0)
 
   * MojeID
