@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -20,7 +20,7 @@
 #define POLL_CORBA_CONVERSIONS_HH_720E05E6CEB844E586A28DBD31072D7F
 
 #include "src/backend/epp/poll/poll_request.hh"
-#include "src/bin/corba/EPP.hh"
+#include "corba/EPP.hh"
 
 namespace LibFred
 {

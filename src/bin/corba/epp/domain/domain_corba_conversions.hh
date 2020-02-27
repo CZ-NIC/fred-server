@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -19,7 +19,7 @@
 #ifndef DOMAIN_CORBA_CONVERSIONS_HH_C83F184EAE0044F6A19B40F4BB084085
 #define DOMAIN_CORBA_CONVERSIONS_HH_C83F184EAE0044F6A19B40F4BB084085
 
-#include "src/bin/corba/EPP.hh"
+#include "corba/EPP.hh"
 
 #include "src/backend/epp/domain/check_domain_localized.hh"
 #include "src/backend/epp/domain/domain_registration_time.hh"

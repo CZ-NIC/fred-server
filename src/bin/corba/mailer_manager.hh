@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2006-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -25,7 +25,7 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 
-#include "src/bin/corba/Mailer.hh"
+#include "corba/Mailer.hh"
 #include "libfred/mailer.hh"
 #include "src/bin/corba/nameservice.hh"
 

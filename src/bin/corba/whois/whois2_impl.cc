@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2014-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
-#include "src/bin/corba/Whois2.hh"
+#include "corba/Whois2.hh"
 #include "src/bin/corba/whois/whois2_impl.hh"
 #include "src/bin/corba/common_wrappers.hh"
 #include "src/bin/corba/util/corba_conversions_string.hh"

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -19,7 +19,7 @@
 #ifndef KEYSET_CORBA_CONVERSIONS_HH_26FBBF05C7634EEC8B29B07F3AF20127
 #define KEYSET_CORBA_CONVERSIONS_HH_26FBBF05C7634EEC8B29B07F3AF20127
 
-#include "src/bin/corba/EPP.hh"
+#include "corba/EPP.hh"
 
 #include "src/backend/epp/keyset/check_keyset_localized.hh"
 #include "src/backend/epp/keyset/dns_key.hh"

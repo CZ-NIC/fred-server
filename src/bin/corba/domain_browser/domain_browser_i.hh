@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2014-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -26,7 +26,7 @@
 
 
 #include "src/backend/domain_browser/domain_browser.hh"
-#include "src/bin/corba/DomainBrowser.hh"
+#include "corba/DomainBrowser.hh"
 #include <memory>
 
 namespace Fred {

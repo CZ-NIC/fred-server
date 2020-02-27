@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2006-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -26,7 +26,7 @@
 #include "src/deprecated/util/dbsql.hh"
 #include "src/deprecated/libfred/registry.hh"
 
-#include "src/bin/corba/EPP.hh"
+#include "corba/EPP.hh"
 
 #include <vector>
 #include <stdexcept>

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2014-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -24,7 +24,7 @@
 
 #include "src/bin/corba/domain_browser/domain_browser_i.hh"
 #include "src/backend/domain_browser/domain_browser.hh"
-#include "src/bin/corba/DomainBrowser.hh"
+#include "corba/DomainBrowser.hh"
 #include "src/bin/corba/util/corba_conversions_isodate.hh"
 #include "src/bin/corba/util/corba_conversions_isodatetime.hh"
 #include "src/bin/corba/util/corba_conversions_nullableisodate.hh"

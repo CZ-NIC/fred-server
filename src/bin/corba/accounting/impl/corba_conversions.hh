@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2018-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -25,7 +25,7 @@
 #include "src/backend/accounting/registrar.hh"
 #include "src/backend/accounting/registrar_reference.hh"
 #include "src/backend/credit.hh"
-#include "src/bin/corba/Accounting.hh"
+#include "corba/Accounting.hh"
 #include "src/bin/corba/util/corba_conversions_nullableisodate.hh"
 #include "src/util/types/money.hh"
 

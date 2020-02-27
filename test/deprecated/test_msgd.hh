@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2010-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -50,7 +50,7 @@
 #include "util/log/logger.hh"
 #include "util/log/context.hh"
 
-#include "src/bin/corba/Messages.hh"
+#include "corba/Messages.hh"
 
 #include "src/util/cfg/handle_general_args.hh"
 #include "src/util/cfg/handle_database_args.hh"

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2011-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -19,10 +19,12 @@
 #ifndef EPP_CORBA_CLIENT_IMPL_HH_E0FFD7FBE9284C4593DCD9E28A896CCF
 #define EPP_CORBA_CLIENT_IMPL_HH_E0FFD7FBE9284C4593DCD9E28A896CCF
 
-#include <boost/thread/thread.hpp>
-#include <src/bin/corba/EPP.hh>
+#include "corba/EPP.hh"
+
 #include "src/util/corba_wrapper_decl.hh"
 #include "src/deprecated/libfred/epp_corba_client.hh"
+
+#include <boost/thread/thread.hpp>
 
 class EppCorbaClientImpl : public EppCorbaClient
 {
@@ -30,10 +32,8 @@ public:
     EppCorbaClientImpl();
 
     void callDestroyAllRegistrarSessions(Database::ID reg_id) const;
-
 private:
     ccReg::EPP_var epp_ref;
-
     mutable boost::mutex ref_mutex;
 };
 

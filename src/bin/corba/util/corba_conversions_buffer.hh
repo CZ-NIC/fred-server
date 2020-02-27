@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2018-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -20,7 +20,7 @@
 #define CORBA_CONVERSIONS_BUFFER_HH_564E460334484E28B112CEB998F31F83
 
 #include "src/backend/buffer.hh"
-#include "src/bin/corba/Buffer.hh"
+#include "corba/Buffer.hh"
 
 namespace CorbaConversion {
 namespace Util {

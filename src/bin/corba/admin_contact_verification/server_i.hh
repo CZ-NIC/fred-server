@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2013-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -24,7 +24,7 @@
 #define SERVER_I_HH_A8647A097EF94EDE84D4B3AD5B608FDD
 
 // generated from idl
-#include "src/bin/corba/AdminContactVerification.hh"
+#include "corba/AdminContactVerification.hh"
 
 #include <string>
 

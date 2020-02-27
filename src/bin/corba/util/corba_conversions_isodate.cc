@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2018-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -18,7 +18,7 @@
  */
 #include "src/bin/corba/util/corba_conversions_isodate.hh"
 
-#include "src/bin/corba/IsoDate.hh"
+#include "corba/IsoDate.hh"
 #include "src/bin/corba/util/corba_conversions_string.hh"
 #include "util/db/nullable.hh"
 

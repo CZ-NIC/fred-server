@@ -19,7 +19,7 @@
 #include "test/deprecated/test_common_registry.hh"
 
 #include "src/bin/corba/file_manager_client.hh"
-#include "src/bin/corba/Admin.hh"
+#include "corba/Admin.hh"
 
 #include "src/util/setup_server_decl.hh"
 #include "src/util/cfg/handle_general_args.hh"

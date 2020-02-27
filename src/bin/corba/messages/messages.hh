@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2010-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -52,7 +52,7 @@
 
 
 //code for implementing IDL interfaces in file /usr/local/share/idl/fred//Messages.idl
-#include "src/bin/corba/Messages.hh"
+#include "corba/Messages.hh"
 
 //class implementing IDL interface Registry::Messages
 class Registry_Messages_i: public POA_Registry::Messages

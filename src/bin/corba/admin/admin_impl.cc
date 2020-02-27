@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2006-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -27,7 +27,7 @@
 #include <math.h>
 #include <memory>
 #include <iomanip>
-#include "src/bin/corba/Admin.hh"
+#include "corba/Admin.hh"
 
 #include "src/bin/corba/admin/common.hh"
 #include "src/bin/corba/admin/admin_impl.hh"
