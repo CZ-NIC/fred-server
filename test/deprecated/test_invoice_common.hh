@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2011-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -23,7 +23,7 @@
 #include "src/util/cfg/handle_rifd_args.hh"
 #include "src/util/cfg/handle_corbanameservice_args.hh"
 #include "src/bin/corba/mailer_manager.hh"
-#include "src/bin/corba/EPP.hh"
+#include "corba/EPP.hh"
 #include "src/bin/corba/epp/epp_impl.hh"
 
 

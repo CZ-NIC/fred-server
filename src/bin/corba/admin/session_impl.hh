@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2008-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -55,7 +55,7 @@
 
 #include "src/util/settings.hh"
 
-#include "src/bin/corba/Logger.hh"
+#include "corba/Logger.hh"
 
 
 using namespace boost::posix_time;

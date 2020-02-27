@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2014-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -19,7 +19,7 @@
 #ifndef WHOIS2_IMPL_HH_4FB0D9C852264D3F8B9706DFA7E2873E
 #define WHOIS2_IMPL_HH_4FB0D9C852264D3F8B9706DFA7E2873E
 
-#include "src/bin/corba/Whois2.hh"
+#include "corba/Whois2.hh"
 #include "src/backend/whois/whois.hh"
 
 #include <string>

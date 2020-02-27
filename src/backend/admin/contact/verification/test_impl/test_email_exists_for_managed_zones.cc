@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2014-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -23,11 +23,6 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/foreach.hpp>
-
-#include <arpa/nameser.h>
-#include <netinet/in.h>
-#include <resolv.h>
-#include <sys/types.h>
 
 namespace Fred {
 namespace Backend {

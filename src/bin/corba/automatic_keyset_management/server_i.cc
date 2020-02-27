@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -28,7 +28,7 @@
 #include "src/backend/automatic_keyset_management/automatic_keyset_management.hh"
 #include "src/bin/corba/automatic_keyset_management/corba_conversions.hh"
 #include "src/bin/corba/util/corba_conversions_int.hh"
-#include "src/bin/corba/AutomaticKeysetManagement.hh"
+#include "corba/AutomaticKeysetManagement.hh"
 
 #include <iostream>
 

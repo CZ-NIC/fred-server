@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -26,7 +26,7 @@
 #include "src/bin/corba/record_statement/record_statement_i.hh"
 
 #include "src/backend/record_statement/record_statement.hh"
-#include "src/bin/corba/RecordStatement.hh"
+#include "corba/RecordStatement.hh"
 #include "src/bin/corba/util/corba_conversions_buffer.hh"
 #include "src/bin/corba/util/corba_conversions_nullable_types.hh"
 #include "src/bin/corba/util/corba_conversions_string.hh"

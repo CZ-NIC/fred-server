@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -20,7 +20,7 @@
 
 #include "src/bin/corba/epp/corba_conversions.hh"
 
-#include "src/bin/corba/EPP.hh"
+#include "corba/EPP.hh"
 #include "src/bin/corba/util/corba_conversions_string.hh"
 #include "src/backend/epp/nsset/dns_host_input.hh"
 #include "src/backend/epp/nsset/dns_host_output.hh"

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -26,8 +26,8 @@
 #define SERVER_I_HH_4C0DD51687BF47B19E2078C31BF6AA93
 
 #include "src/backend/public_request/exceptions.hh"
-#include "src/bin/corba/Buffer.hh"
-#include "src/bin/corba/PublicRequest.hh"
+#include "corba/Buffer.hh"
+#include "corba/PublicRequest.hh"
 
 #include <memory>
 #include <string>

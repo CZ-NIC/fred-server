@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2009-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -19,7 +19,7 @@
 #ifndef LOG_IMPL_WRAP_HH_0D1DFB40B54E427BBDEC954326FCE2CC
 #define LOG_IMPL_WRAP_HH_0D1DFB40B54E427BBDEC954326FCE2CC
 
-#include "src/bin/corba/Logger.hh"
+#include "corba/Logger.hh"
 
 #include "src/deprecated/libfred/requests/request_manager.hh"
 #include "src/bin/corba/admin/usertype_conv.hh"
