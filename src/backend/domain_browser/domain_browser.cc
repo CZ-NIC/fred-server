@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2014-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -15,10 +15,6 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
- */
-/**
- *  @file
- *  domain browser implementation
  */
 
 #include "src/backend/domain_browser/domain_browser.hh"
@@ -1398,63 +1394,49 @@ DomainList DomainBrowser::getDomainList(
         std::ostringstream sql;
         sql <<
 // clang-format off
-"WITH outzone_period AS ("
-    "SELECT (val||' day')::INTERVAL AS val FROM enum_parameters "
-    "WHERE name='expiration_dns_protection_period'),"
-
-     "delete_period AS ("
-    "SELECT (val||' day')::INTERVAL AS val FROM enum_parameters "
-    "WHERE name='expiration_registration_protection_period'),"
-
-     "domain_list AS ("
-    "WITH domains AS (";
-
+"WITH domain_list AS ("
+    "WITH domains AS ("
+        "SELECT id,exdate,registrant,keyset "
+        "FROM domain "
+        "WHERE ";
                 if(!list_domains_for_nsset_id.isset() && !list_domains_for_keyset_id.isset())
                 {   //select domains related to user_contact_id
                     sql <<
-        "SELECT d.id,d.exdate,d.registrant,d.keyset "
-        "FROM domain d "
-        "LEFT JOIN domain_contact_map dcm ON dcm.domainid=d.id AND "
-                                            "dcm.role=1 AND "
-                                            "dcm.contactid=$" << idx_of_contact_id << "::BIGINT "
-        "WHERE $" << idx_of_contact_id << "::BIGINT IN (dcm.contactid,d.registrant) "
-        "ORDER BY d.exdate,d.id";
+              "registrant=$" << idx_of_contact_id << "::BIGINT OR "
+              "EXISTS (SELECT 0 FROM domain_contact_map WHERE domainid=domain.id AND role=1 AND contactid=$" << idx_of_contact_id << "::BIGINT) ";
                 }
                 else
                 {
-                    sql <<
-        "SELECT id,exdate,registrant,keyset "
-        "FROM domain WHERE ";
-                    if(list_domains_for_nsset_id.isset())
+                    if (list_domains_for_nsset_id.isset())
                     {   //select domains with given nsset
-                        sql << "nsset=$" << idx_of_nsset_id << "::BIGINT";
+                        sql <<
+              "nsset=$" << idx_of_nsset_id << "::BIGINT ";
                     }
-
-                    if(list_domains_for_keyset_id.isset())
+                    if (list_domains_for_keyset_id.isset())
                     {   //select domains with given keyset
-                        if(list_domains_for_nsset_id.isset())
+                        if (list_domains_for_nsset_id.isset())
                         {
-                            sql << " AND ";
+                            sql << "AND ";
                         }
-                        sql << "keyset=$" << idx_of_keyset_id << "::BIGINT";
+                        sql <<
+              "keyset=$" << idx_of_keyset_id << "::BIGINT ";
                     }
-                    sql << " "
-        "ORDER BY exdate,id";
                 }
-                sql << " "
+                sql <<
+        "ORDER BY exdate,id "
         "OFFSET $" << idx_of_offset << "::BIGINT "
         "LIMIT $" << idx_of_limit << "::BIGINT) "
 "SELECT d.id,oreg.name AS fqdn,r.handle AS registrar_handle,"
        "r.name AS registrar_name,d.exdate AS expiration_date,"
-       "d.registrant AS registrant_id,d.keyset IS NOT NULL AS have_keyset "
+       "d.registrant AS registrant_id,d.keyset IS NOT NULL AS has_keyset "
 "FROM domains d "
 "JOIN object_registry oreg ON oreg.id=d.id AND "
-                             "oreg.type=(SELECT id FROM enum_object_type WHERE name='domain') AND "
+                             "oreg.type=get_object_type_id('domain') AND "
                              "oreg.erdate IS NULL "
 "JOIN object o ON o.id=d.id "
 "JOIN registrar r ON r.id=o.clid) "
 "SELECT dl.id,dl.fqdn,dl.registrar_handle,dl.registrar_name,dl.expiration_date AT TIME ZONE 'utc' AT TIME ZONE $"<< idx_timezone << "::text AS expiration_date,"
-       "dl.registrant_id,dl.have_keyset,"
+       "dl.registrant_id,dl.has_keyset,"
        "CASE WHEN dl.registrant_id=$" << idx_of_contact_id << "::BIGINT "
             "THEN 'holder' "
             "WHEN (SELECT role=1 FROM domain_contact_map "
@@ -1462,31 +1444,28 @@ DomainList DomainBrowser::getDomainList(
                         "contactid=$" << idx_of_contact_id << "::BIGINT) "
             "THEN 'admin' "
             "ELSE '' "
-            "END AS user_role,"
+       "END AS user_role,"
        "CURRENT_DATE AS today_date,"
-       "(SELECT (dl.expiration_date AT TIME ZONE 'utc' AT TIME ZONE $"<< idx_timezone << "::text + val)::DATE FROM outzone_period) AS outzone_date,"
-       "(SELECT (dl.expiration_date AT TIME ZONE 'utc' AT TIME ZONE $"<< idx_timezone << "::text + val)::DATE FROM delete_period) AS delete_date,"
+       "(dl.expiration_date AT TIME ZONE 'utc' AT TIME ZONE $"<< idx_timezone << "::text + dlp.expiration_dns_protection_period)::DATE AS outzone_date,"
+       "(dl.expiration_date AT TIME ZONE 'utc' AT TIME ZONE $"<< idx_timezone << "::text + dlp.expiration_registration_protection_period)::DATE AS delete_date,"
        "COALESCE(BIT_OR(eos.external::INTEGER*eos.importance),0) AS external_importance,"
        "COALESCE(BOOL_OR(eos.name='serverBlocked'),false) AS is_server_blocked,"
        "ARRAY_TO_STRING(ARRAY_AGG((CASE WHEN eos.external THEN eos.name "
                                                          "ELSE NULL END) "
                                  "ORDER BY eos.importance)::text[],',') AS state_code "
 "FROM domain_list dl "
+"JOIN domain_lifecycle_parameters dlp ON dlp.valid_from=(SELECT MAX(valid_from) FROM domain_lifecycle_parameters WHERE valid_from<=dl.expiration_date) "
 "LEFT JOIN object_state os ON os.object_id=dl.id AND "
-                             "os.valid_from<=CURRENT_TIMESTAMP AND (CURRENT_TIMESTAMP<os.valid_to OR "
-                                                                   "os.valid_to IS NULL) "
+                             "os.valid_from<=CURRENT_TIMESTAMP AND (CURRENT_TIMESTAMP<os.valid_to OR os.valid_to IS NULL) "
 "LEFT JOIN enum_object_states eos ON eos.id=os.state_id "
-"GROUP BY dl.expiration_date,dl.id,dl.fqdn,dl.registrar_handle,dl.registrar_name,"
-         "dl.registrant_id,dl.have_keyset,user_role "
+"GROUP BY 1,2,3,4,dl.expiration_date,6,7,dlp.id "
 "ORDER BY dl.expiration_date,dl.id";
 // clang-format on
 
-            Database::Result domain_list_result = ctx.get_conn().exec_params(
-                sql.str(),
-                params);
+        const Database::Result domain_list_result = ctx.get_conn().exec_params(sql.str(), params);
 
-        unsigned long long limited_domain_list_size = (domain_list_result.size() > domain_list_limit_)
-                                                      ? domain_list_limit_ : domain_list_result.size();
+        const unsigned long long limited_domain_list_size = domain_list_limit_ < domain_list_result.size() ? domain_list_limit_
+                                                                                                           : domain_list_result.size();
 
         DomainList ret;
         ret.dld.reserve(limited_domain_list_size);
@@ -1496,26 +1475,26 @@ DomainList DomainBrowser::getDomainList(
             dld.id = static_cast<unsigned long long>(domain_list_result[i]["id"]);
             dld.fqdn = static_cast<std::string>(domain_list_result[i]["fqdn"]);
 
-            unsigned long long external_status_importance =
+            const unsigned long long external_status_importance =
                 static_cast<unsigned long long>(domain_list_result[i]["external_importance"]);
             dld.external_importance = external_status_importance ==
                                       0 ? lowest_status_importance_ : external_status_importance;
 
-            boost::gregorian::date today_date =
+            const boost::gregorian::date today_date =
                 domain_list_result[i]["today_date"].isnull() ? boost::gregorian::date()
                                                              : boost::
                 gregorian::from_string(static_cast<std::string>(domain_list_result[i]["today_date"]));
-            boost::gregorian::date expiration_date =
+            const boost::gregorian::date expiration_date =
                 domain_list_result[i]["expiration_date"].isnull() ? boost::gregorian::date()
                                                                   : boost
                 ::gregorian::from_string(
                         static_cast<std::string>(domain_list_result[i][
                                                      "expiration_date"]));
-            boost::gregorian::date outzone_date =
+            const boost::gregorian::date outzone_date =
                 domain_list_result[i]["outzone_date"].isnull() ? boost::gregorian::date()
                                                                : boost::
                 gregorian::from_string(static_cast<std::string>(domain_list_result[i]["outzone_date"]));
-            boost::gregorian::date delete_date =
+            const boost::gregorian::date delete_date =
                 domain_list_result[i]["delete_date"].isnull() ? boost::gregorian::date()
                                                               : boost::
                 gregorian::from_string(static_cast<std::string>(domain_list_result[i]["delete_date"]));
@@ -1526,14 +1505,13 @@ DomainList DomainBrowser::getDomainList(
                     outzone_date,
                     delete_date);
 
-            dld.have_keyset = static_cast<bool>(domain_list_result[i]["have_keyset"]);
+            dld.have_keyset = static_cast<bool>(domain_list_result[i]["has_keyset"]);
             dld.user_role = static_cast<std::string>(domain_list_result[i]["user_role"]);
             dld.registrar_handle = static_cast<std::string>(domain_list_result[i]["registrar_handle"]);
             dld.registrar_name = static_cast<std::string>(domain_list_result[i]["registrar_name"]);
             dld.state_code =
                 split_object_states_string(
-                        static_cast<std::string>(domain_list_result[i]["state_code"
-                                                 ]));
+                        static_cast<std::string>(domain_list_result[i]["state_code"]));
             dld.is_server_blocked = static_cast<bool>(domain_list_result[i]["is_server_blocked"]);
 
             ret.dld.push_back(dld);

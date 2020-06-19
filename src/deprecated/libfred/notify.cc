@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2007-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/deprecated/libfred/notify.hh"
 #include "src/deprecated/util/dbsql.hh"
 #include "src/deprecated/util/log.hh"
@@ -32,16 +33,8 @@
 
 using namespace Database;
 
-namespace LibFred
-{
-  namespace Notify
-  {
-
-    // id of parameter "expiration_dns_protection_period"
-    const int EP_OUTZONE = 4;
-    // id of parameter "expiration_registration_protection_period"
-    const int EP_DELETE = 6;
-
+namespace LibFred {
+namespace Notify {
 
     class ManagerImpl : virtual public Manager
     {
@@ -258,18 +251,15 @@ namespace LibFred
                           "r.handle,"
                           "(SELECT exdate FROM enumval_history WHERE historyid=dobr.historyid),"
                           "dh.exdate,"
-                          "dh.exdate::date+"
-                              "(SELECT val||'day' FROM enum_parameters "
-                               "WHERE id=" << EP_OUTZONE << ")::interval,"
-                          "dh.exdate::date+"
-                              "(SELECT val||'day' FROM enum_parameters "
-                               "WHERE id=" << EP_DELETE << ")::interval,"
+                          "dh.exdate+dlp.expiration_dns_protection_period,"
+                          "dh.exdate+dlp.expiration_registration_protection_period,"
                           "(SELECT fqdn FROM zone WHERE id=dh.zone) "
                    "FROM object_registry dobr "
                    "JOIN object_history doh ON doh.historyid=dobr.historyid "
                    "JOIN registrar r ON r.id=doh.clid "
                    "JOIN domain_history dh ON dh.historyid=dobr.historyid "
                    "JOIN object_registry cobr ON cobr.id=dh.registrant "
+                   "JOIN domain_lifecycle_parameters dlp ON dlp.valid_from=(SELECT MAX(valid_from) FROM domain_lifecycle_parameters WHERE valid_from<=dh.exdate) "
                    "WHERE dobr.id=" << domain_id;
             if (!db->ExecSelect(sql.str().c_str()))
             {
@@ -672,20 +662,22 @@ public:
          // - was not notified so far with the notification letter
          // - belongs to domains whose zone have set warning_letter flag to send
          // - belongs to domains whose owner have set warning_letter flag to send or unspecified
-        const char *fixateStates =
+        static const char* const fixateStates =
           "INSERT INTO tmp_notify_letters "
-          "SELECT s.id FROM object_state s "
+          "SELECT s.id "
+          "FROM object_state s "
           "LEFT JOIN notify_letters nl ON (s.id=nl.state_id) "
-          " JOIN domain_history d      ON d.historyid = s.ohid_from "
-          " JOIN zone z                ON z.id = d.zone "
-          " JOIN object_registry cor ON cor.id=d.registrant "
-          " JOIN contact_history c ON c.historyid=cor.historyid "
-          "WHERE s.state_id = (SELECT id FROM enum_object_states WHERE name = 'deleteWarning') "
-          " AND s.valid_to ISNULL AND nl.state_id ISNULL "
-          " AND s.valid_from > (now() - (((SELECT (val||' day')::interval FROM enum_parameters  WHERE name='expiration_registration_protection_period') "
-          " - (SELECT (val||' day')::interval FROM enum_parameters  WHERE name='expiration_letter_warning_period'))/2)::interval) "
-          " AND z.warning_letter=true "
-          " AND (c.warning_letter IS NULL OR c.warning_letter=true)";
+          "JOIN domain_history d ON d.historyid = s.ohid_from "
+          "JOIN zone z ON z.id = d.zone "
+          "JOIN object_registry cor ON cor.id=d.registrant "
+          "JOIN contact_history c ON c.historyid=cor.historyid "
+          "JOIN domain_lifecycle_parameters dlp ON dlp.valid_from=(SELECT MAX(valid_from) FROM domain_lifecycle_parameters WHERE valid_from<=d.exdate) "
+          "WHERE s.state_id = (SELECT id FROM enum_object_states WHERE name = 'deleteWarning') AND "
+                "s.valid_to IS NULL AND "
+                "nl.state_id IS NULL AND "
+                "(now() - (dlp.expiration_registration_protection_period - dlp.expiration_letter_warning_period)/2) < s.valid_from AND "
+                "z.warning_letter AND "
+                "(c.warning_letter IS NULL OR c.warning_letter)";
 
         conn.exec(fixateStates);
         // select all expiration dates of domain to notify
@@ -707,8 +699,7 @@ public:
           sql <<
 "WITH expirated_domain AS ("
     "SELECT dobr.name AS domain_name,r.name AS registrar_handle,"
-           "d.exdate::date+(SELECT val||' day' FROM enum_parameters "
-                           "WHERE id=" << EP_DELETE << ")::interval AS termination_date,"
+           "d.exdate+dlp.expiration_registration_protection_period AS termination_date,"
            "ca.id IS NOT NULL AS has_mailing_address,"
            "c.name AS contact_name,c.organization,"
            "CASE WHEN ca.id IS NULL THEN c.street1 ELSE ca.street1 END AS street1,"
@@ -730,6 +721,7 @@ public:
     "JOIN contact_history c ON c.historyid=cor.historyid "
     "LEFT JOIN contact_address_history ca ON ca.historyid=cor.historyid AND ca.type='MAILING' "
     "JOIN registrar r ON r.id=doh.clid "
+    "JOIN domain_lifecycle_parameters dlp ON dlp.valid_from=(SELECT MAX(valid_from) FROM domain_lifecycle_parameters WHERE valid_from<=d.exdate) "
     "WHERE d.exdate::date='" << exDates[j] << "') "
 "SELECT ed.domain_name,ed.registrar_handle,CURRENT_DATE,ed.termination_date," // 0 1 2 3
        "ed.contact_name,ed.organization," // 4 5
@@ -844,5 +836,6 @@ public:
     {
       return new ManagerImpl(db,mm,cm,nm, km, dm,docm,rm, msgm);
     }
-  }
-}
+
+}//namespace LibFred::Notify
+}//namespace LibFred

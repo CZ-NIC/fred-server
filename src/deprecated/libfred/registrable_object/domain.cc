@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2008-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,11 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
-#include <sstream>
-#include <memory>
-#include <functional>
-#include <algorithm>
-#include <boost/date_time/posix_time/time_parsers.hpp>
 
 #include "src/deprecated/libfred/registrable_object/domain.hh"
 #include "src/deprecated/libfred/blacklist.hh"
@@ -31,8 +26,16 @@
 #include "util/log/logger.hh"
 #include "src/deprecated/libfred/registrar.hh"
 
+#include <boost/date_time/posix_time/time_parsers.hpp>
+
+#include <algorithm>
+#include <functional>
+#include <memory>
+#include <sstream>
+
 namespace LibFred {
 namespace Domain {
+
 class DomainImpl : public ObjectImpl, public virtual Domain {
   struct AdminInfo
   {
@@ -702,12 +705,31 @@ public:
         % getTempTableName() % tmp_table_query.str());
 
     Database::SelectQuery object_info_query;
-    object_info_query.select() << "t_1.id, tmp.id, t_1.name, t_2.zone, t_2.nsset, t_2.keyset, "
-        << "t_3.id, t_3.name, t_4.name, t_4.organization, t_4.telephone, t_5.clid, "
-        << "t_1.crdate, t_5.trdate, t_5.update, t_1.erdate, t_1.crid, t_5.upid, "
-        << "t_5.authinfopw, t_1.roid, t_2.exdate, "
-        << "(((t_2.exdate + (SELECT val || ' day' FROM enum_parameters WHERE id = 4)::interval)::timestamp + (SELECT val || ' hours' FROM enum_parameters WHERE name = 'regular_day_procedure_period')::interval) AT TIME ZONE (SELECT val FROM enum_parameters WHERE name = 'regular_day_procedure_zone'))::timestamp as outzonedate, "
-        << "(((t_2.exdate + (SELECT val || ' day' FROM enum_parameters WHERE id = 6)::interval)::timestamp + (SELECT val || ' hours' FROM enum_parameters WHERE name = 'regular_day_procedure_period')::interval) AT TIME ZONE (SELECT val FROM enum_parameters WHERE name = 'regular_day_procedure_zone'))::timestamp as canceldate";
+    object_info_query.select() <<
+            "t_1.id,"
+            "tmp.id,"
+            "t_1.name,"
+            "t_2.zone,"
+            "t_2.nsset,"
+            "t_2.keyset,"
+            "t_3.id,"
+            "t_3.name,t_4.name,"
+            "t_4.organization,t_4.telephone,t_5.clid,"
+            "t_1.crdate,"
+            "t_5.trdate,"
+            "t_5.update,"
+            "t_1.erdate,"
+            "t_1.crid,"
+            "t_5.upid,"
+            "t_5.authinfopw,"
+            "t_1.roid,"
+            "t_2.exdate,"
+            "((SELECT t_2.exdate + dlp.expiration_dns_protection_period + (val||'HOURS')::INTERVAL FROM enum_parameters WHERE name = 'regular_day_procedure_period')::TIMESTAMP "
+             "AT TIME ZONE (SELECT val FROM enum_parameters WHERE name = 'regular_day_procedure_zone')"
+            ")::TIMESTAMP AS outzonedate,"
+            "((SELECT t_2.exdate + dlp.expiration_registration_protection_period + (val||'HOURS')::INTERVAL FROM enum_parameters WHERE name = 'regular_day_procedure_period')::TIMESTAMP "
+             "AT TIME ZONE (SELECT val FROM enum_parameters WHERE name = 'regular_day_procedure_zone')"
+            ")::TIMESTAMP AS canceldate ";
     //    object_info_query.from() << getTempTableName()
     //        << " tmp JOIN domain t_2 ON (tmp.id = t_2.id) "
     //        << "JOIN object t_5 ON (t_2.id = t_5.id) "
@@ -715,7 +737,9 @@ public:
     //        << "JOIN object_registry t_3 ON (t_4.id = t_3.id) "
     //        << "JOIN object_registry t_1 ON (t_5.id = t_1.id)";
     object_info_query.from() << getTempTableName()
-        << " tmp JOIN domain_history t_2 ON (tmp.id = t_2.historyid) "
+        << " tmp "
+           "JOIN domain_history t_2 ON (tmp.id = t_2.historyid) "
+        << "JOIN domain_lifecycle_parameters dlp ON dlp.valid_from=(SELECT MAX(valid_from) FROM domain_lifecycle_parameters WHERE valid_from<=t_2.exdate) "
         << "JOIN object_history t_5 ON (t_2.historyid = t_5.historyid) "
         << "JOIN object_registry t_1 ON (t_5.id = t_1.id) "
         << "JOIN contact_history t_4 ON (t_2.registrant = t_4.id) "
@@ -982,37 +1006,32 @@ public:
       fillTempTable(true);
     // load domain data
     sql.str("");
-    sql << "SELECT "
-    // domain, zone, nsset
-        << "obr.id,obr.name,d.zone,d.nsset,'',"
-    // registrant
-        << "cor.id,cor.name,c.name,c.organization,"
-    // registrar
-        << "o.clid,"
-    // registration dates
-        << "obr.crdate,o.trdate,o.update,"
-    // creating and updating registrar
-        << "obr.crid,o.upid,"
-    // repository data
-        << "o.authinfopw,obr.roid,"
-    // expiration and validation dates (validation in seperate query)
-        << "d.exdate,NULL,"
-    // outzone data and cancel date from enum_parameters compute
-        << "(((d.exdate + (SELECT val || ' day' FROM enum_parameters WHERE id = 4)::interval)::timestamp + (SELECT val || ' hours' FROM enum_parameters WHERE name = 'regular_day_procedure_period')::interval) AT TIME ZONE (SELECT val FROM enum_parameters WHERE name = 'regular_day_procedure_zone'))::timestamp as outzonedate, "
-        << "(((d.exdate + (SELECT val || ' day' FROM enum_parameters WHERE id = 6)::interval)::timestamp + (SELECT val || ' hours' FROM enum_parameters WHERE name = 'regular_day_procedure_period')::interval) AT TIME ZONE (SELECT val FROM enum_parameters WHERE name = 'regular_day_procedure_zone'))::timestamp as canceldate, "
-    // keyset id and keyset handle
-        << "d.keyset, '' "
-        << "FROM "
-        << (useTempTable ? getTempTableName() : "object_registry ") << " tmp, "
-        << "contact c, object_registry cor, " << "object_registry obr, "
-        << "object o, " << "domain d "
-        << "WHERE tmp.id=d.id AND d.id=o.id AND d.registrant=c.id "
-        << "AND c.id=cor.id " << "AND obr.id=o.id ";
-    if (!useTempTable) {
-      sql << "AND tmp.name=LOWER('" << db->Escape2(fqdn) << "') "
-          << "AND tmp.erdate ISNULL AND tmp.type=3 ";
+    sql <<
+        "SELECT obr.id,obr.name,d.zone,d.nsset,'',"    // domain, zone, nsset
+               "cor.id,cor.name,c.name,c.organization,"// registrant
+               "o.clid,"                               // registrar
+               "obr.crdate,o.trdate,o.update,"         // registration dates
+               "obr.crid,o.upid,"                      // creating and updating registrar
+               "o.authinfopw,obr.roid,"                // repository data
+               "d.exdate,NULL,"                        // expiration and validation dates (validation in seperate query)
+               "(((d.exdate + dlp.expiration_dns_protection_period)::timestamp + (SELECT val || ' hours' FROM enum_parameters WHERE name = 'regular_day_procedure_period')::interval) AT TIME ZONE (SELECT val FROM enum_parameters WHERE name = 'regular_day_procedure_zone'))::timestamp as outzonedate,"
+               "(((d.exdate + dlp.expiration_registration_protection_period)::timestamp + (SELECT val || ' hours' FROM enum_parameters WHERE name = 'regular_day_procedure_period')::interval) AT TIME ZONE (SELECT val FROM enum_parameters WHERE name = 'regular_day_procedure_zone'))::timestamp as canceldate,"
+               "d.keyset,'' "                          // keyset id and keyset handle
+        "FROM " << (useTempTable ? getTempTableName() : "object_registry") << " tmp "
+        "JOIN domain d ON d.id=tmp.id "
+        "JOIN object o ON o.id=d.id "
+        "JOIN contact c ON c.id=d.registrant "
+        "JOIN object_registry cor ON cor.id=c.id "
+        "JOIN object_registry obr ON obr.id=o.id "
+        "JOIN domain_lifecycle_parameters dlp ON dlp.valid_from=(SELECT MAX(valid_from) FROM domain_lifecycle_parameters WHERE valid_from<=d.exdate) ";
+    if (!useTempTable)
+    {
+      sql << " "
+          "WHERE tmp.name=LOWER('" << db->Escape2(fqdn) << "') AND "
+                "tmp.erdate IS NULL AND "
+                "tmp.type=3";
     }
-    sql << "ORDER BY tmp.id ";
+    sql << " ORDER BY tmp.id";
     if (!db->ExecSelect(sql.str().c_str()))
       throw SQL_ERROR();
     for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
@@ -1477,7 +1496,5 @@ std::vector<unsigned long long> getExpiredDomainSummary(const std::string &regis
     return ret;
 }
 
-
-}
-}
-
+}//namespace LibFred::Domain
+}//namespace LibFred
