@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -75,21 +75,25 @@ void create_domain_bill_item(
     const Database::Result locked_registrar_credit_result
         = _ctx.get_conn().exec_params(
             // clang-format off
+            // get registrar's handle
             "SELECT r.handle, "
                  "(SELECT z.fqdn "
                     "FROM zone z "
                    "WHERE z.id = $2::bigint), "
+                // try to get registrar's credit
                  "(SELECT rc.credit "
                     "FROM registrar_credit rc "
                   "WHERE rc.registrar_id = $1::bigint "
                     "AND rc.zone_id = $2::bigint "
+                    // if credit record exists, lock it
                     "FOR UPDATE) "
               "FROM registrar r "
              "WHERE r.id = $1::bigint ",
             // clang-format on
             Database::query_param_list(_sponsoring_registrar_id)(zone_id));
 
-    if (locked_registrar_credit_result.size() != 1)
+    if (locked_registrar_credit_result.size() != 1 ||
+        locked_registrar_credit_result[0][1].isnull())
     {
         _ctx.get_log().error("unable to get registrar_credit");
         throw std::runtime_error("unable to get registrar_credit");
@@ -98,7 +102,7 @@ void create_domain_bill_item(
     const std::string registrar_handle = static_cast<std::string>(locked_registrar_credit_result[0][0]);
     const std::string zone_fqdn = static_cast<std::string>(locked_registrar_credit_result[0][1]);
     const Decimal registrar_credit_balance = (locked_registrar_credit_result[0][2].isnull()
-                                                    ? "0.00"
+                                                    ? "0.00" // missing record in registrar_credit table will be initialized later, count credit as 0 for now
                                                     : static_cast<std::string>(locked_registrar_credit_result[0][2]));
 
     if ((price != Decimal("0"))
@@ -210,25 +214,28 @@ void renew_domain_bill_item(
             boost::format("price_list_price: %1% price_list_quantity: %2% price: %3%")
             % price_list_price.get_string() % price_list_quantity.get_string() % price.get_string());
 
-    // get_registrar_credit - lock record in registrar_credit table for registrar and zone
     const Database::Result locked_registrar_credit_result =
             _ctx.get_conn().exec_params(
                     // clang-format off
+                    // get registrar's handle
                     "SELECT r.handle, "
                         "(SELECT z.fqdn "
                            "FROM zone z "
                           "WHERE z.id = $2::bigint), "
+                        // try to get registrar's credit
                         "(SELECT rc.credit "
                            "FROM registrar_credit rc "
                           "WHERE rc.registrar_id = $1::bigint "
                             "AND rc.zone_id = $2::bigint "
+                            // if credit record exists, lock it
                             "FOR UPDATE) "
                       "FROM registrar r "
                      "WHERE r.id = $1::bigint ",
                     // clang-format on
                     Database::query_param_list(_sponsoring_registrar_id)(zone_id));
 
-    if (locked_registrar_credit_result.size() != 1)
+    if (locked_registrar_credit_result.size() != 1 ||
+        locked_registrar_credit_result[0][1].isnull())
     {
         _ctx.get_log().error("unable to get registrar_credit");
         throw std::runtime_error("unable to get registrar_credit");
@@ -237,7 +244,7 @@ void renew_domain_bill_item(
     const std::string registrar_handle = static_cast<std::string>(locked_registrar_credit_result[0][0]);
     const std::string zone_fqdn = static_cast<std::string>(locked_registrar_credit_result[0][1]);
     const Decimal registrar_credit_balance = (locked_registrar_credit_result[0][2].isnull()
-                                                    ? "0.00"
+                                                    ? "0.00" // missing record in registrar_credit table will be initialized later, count credit as 0 for now
                                                     : static_cast<std::string>(locked_registrar_credit_result[0][2]));
 
     if ((price != Decimal("0"))

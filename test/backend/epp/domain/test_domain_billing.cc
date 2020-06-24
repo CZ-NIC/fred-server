@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -221,16 +221,48 @@ BOOST_FIXTURE_TEST_CASE(renew_domain_no_credit_record, supply_ctx<HasRegistrarWi
     const boost::gregorian::date current_local_date = current_local_time.date();
     const int length_of_domain_registration_in_months = 12;
 
+    ctx.get_conn().exec(
+        // clang-format off
+        "UPDATE price_list "
+           "SET enable_postpaid_operation = false "
+        "WHERE operation_id = "
+                "(SELECT id "
+                   "FROM enum_operation "
+                  "WHERE operation = 'RenewDomain')");
+        // clang-format on
+
     BOOST_CHECK_THROW(
-        ::Epp::Domain::renew_domain_bill_item(domain.data.fqdn,
-            domain.data.creation_time,
-            registrar.data.id,
-            domain.data.id,
-            length_of_domain_registration_in_months,
-            current_local_date,
-            domain.data.expiration_date,
-        ctx),
-        std::runtime_error);
+            ::Epp::Domain::renew_domain_bill_item(
+                    domain.data.fqdn,
+                    domain.data.creation_time,
+                    registrar.data.id,
+                    domain.data.id,
+                    length_of_domain_registration_in_months,
+                    current_local_date,
+                    domain.data.expiration_date,
+                    ctx),
+            ::Epp::BillingFailure);
+
+    ctx.get_conn().exec(
+        // clang-format off
+        "UPDATE price_list "
+           "SET enable_postpaid_operation = true "
+        "WHERE operation_id = "
+                "(SELECT id "
+                   "FROM enum_operation "
+                  "WHERE operation = 'RenewDomain')");
+        // clang-format on
+
+    BOOST_CHECK_NO_THROW(
+            ::Epp::Domain::renew_domain_bill_item(
+                    domain.data.fqdn,
+                    domain.data.creation_time,
+                    registrar.data.id,
+                    domain.data.id,
+                    length_of_domain_registration_in_months,
+                    current_local_date,
+                    domain.data.expiration_date,
+                    ctx));
 }
 
 BOOST_FIXTURE_TEST_CASE(renew_domain_no_money, supply_ctx<HasRegistrarWithSessionAndDomain>)
