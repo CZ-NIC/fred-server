@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2008-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -43,7 +43,6 @@
 
 #include <boost/test/unit_test.hpp>
 #include <boost/format.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time.hpp>
 #include <boost/assign/list_of.hpp>
@@ -386,12 +385,10 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
     for (std::size_t i = 0 ; i < registrar_credit_vect.size(); ++i)
     {
         dec_credit_query_params.push_back(registrar_credit_vect.at(i).price);
-        dec_credit_query_params.push_back(registrar_credit_vect.at(i).koef);
-        dec_credit_query += std::string(" + $")
-                + boost::lexical_cast<std::string>(dec_credit_query_params.size()-1)
-                +  "::numeric - ( $"+ boost::lexical_cast<std::string>(dec_credit_query_params.size())
-                +"::numeric * $"+ boost::lexical_cast<std::string>(dec_credit_query_params.size()-1)
-                +"::numeric )::numeric(10,2) ";//round vat to 2 places
+        const auto price_idx = std::to_string(dec_credit_query_params.size());
+        dec_credit_query_params.push_back(registrar_credit_vect.at(i).vat);
+        const auto vat_idx = std::to_string(dec_credit_query_params.size());
+        dec_credit_query += " + ($" + price_idx + "::numeric / (('100'::numeric + $" + vat_idx + "::numeric )/'100'::numeric))::numeric(10,2) "; // round to 2 places
 
         //std::string fred_credit_str ( str(boost::format("%1$.2f") % registrar_credit_vect.at(i).credit_from_query));
         std::string fred_credit_str (registrar_credit_vect.at(i).credit_from_query);
@@ -583,12 +580,10 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_credit_note )
     for (std::size_t i = 0 ; i < registrar_credit_vect.size(); ++i)
     {
         dec_credit_query_params.push_back(registrar_credit_vect.at(i).price);
-        dec_credit_query_params.push_back(registrar_credit_vect.at(i).koef);
-        dec_credit_query += std::string(" + $")
-                + boost::lexical_cast<std::string>(dec_credit_query_params.size()-1)
-                +  "::numeric - ( $"+ boost::lexical_cast<std::string>(dec_credit_query_params.size())
-                +"::numeric * $"+ boost::lexical_cast<std::string>(dec_credit_query_params.size()-1)
-                +"::numeric )::numeric(10,2) ";//round vat to 2 places
+        const auto price_idx = std::to_string(dec_credit_query_params.size());
+        dec_credit_query_params.push_back(registrar_credit_vect.at(i).vat);
+        const auto vat_idx = std::to_string(dec_credit_query_params.size());
+        dec_credit_query += " + ($" + price_idx + "::numeric / (('100'::numeric + $" + vat_idx + "::numeric )/'100'::numeric))::numeric(10,2) "; // round to 2 places
 
         //std::string fred_credit_str ( str(boost::format("%1$.2f") % registrar_credit_vect.at(i).credit_from_query));
         std::string fred_credit_str (registrar_credit_vect.at(i).credit_from_query);
@@ -738,12 +733,10 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
     for (std::size_t i = 0 ; i < registrar_novat_credit_vect.size(); ++i)
     {
         dec_credit_query_params.push_back(registrar_novat_credit_vect.at(i).price);
-        dec_credit_query_params.push_back(registrar_novat_credit_vect.at(i).koef);
-        dec_credit_query += std::string(" + $")
-                + boost::lexical_cast<std::string>(dec_credit_query_params.size()-1)
-                +  "::numeric - ( $"+ boost::lexical_cast<std::string>(dec_credit_query_params.size())
-                +"::numeric * $"+ boost::lexical_cast<std::string>(dec_credit_query_params.size()-1)
-                +"::numeric )::numeric(10,2) ";//round vat to 2 places
+        const auto price_idx = std::to_string(dec_credit_query_params.size());
+        dec_credit_query_params.push_back(registrar_novat_credit_vect.at(i).vat);
+        const auto vat_idx = std::to_string(dec_credit_query_params.size());
+        dec_credit_query += " + ($" + price_idx + "::numeric / (('100'::numeric + $" + vat_idx + "::numeric )/'100'::numeric))::numeric(10,2) "; // round to 2 places
 
         //std::string fred_credit_str ( str(boost::format("%1$.2f") % registrar_novat_credit_vect.at(i).credit_from_query));
         std::string fred_credit_str (registrar_novat_credit_vect.at(i).credit_from_query);
@@ -872,7 +865,7 @@ ResultTestCharge testCreateDomainDirectWorker(ccReg_EPP_i *epp_backend, Database
 
         if(r->code != 1000) {
             std::cerr << "ERROR: Return code: " << r->code << std::endl;
-            throw CreateDomainFailed(std::string("Error received. Code: ") + boost::lexical_cast<std::string>(r->code));
+            throw CreateDomainFailed(std::string("Error received. Code: ") + std::to_string(r->code));
         }
 
     } else if (operation == INVOICING_DomainRenew) {
@@ -1355,8 +1348,7 @@ BOOST_AUTO_TEST_CASE(createDomainDirectThreaded)
     params.epp_backend = epp.get();
     params.clientId = clientId;
 
-    Decimal thread_count = boost::lexical_cast<std::string>(
-            threadedTest< TestCreateDomainDirectThreadedWorker> (params, &testChargeEval));
+    Decimal thread_count = std::to_string(threadedTest< TestCreateDomainDirectThreadedWorker> (params, &testChargeEval));
 
     Database::Connection conn2 = Database::Manager::acquire();
 
@@ -1545,15 +1537,15 @@ BOOST_AUTO_TEST_CASE(lower_debt)
     int vat;
     std::string koef;
     get_vat(vat, koef);
-    Decimal vat_ratio = Decimal("1") - Decimal(koef);
+    Decimal vat_ratio = (Decimal("100") + Decimal(std::to_string(vat))) / Decimal("100");
 
     Decimal estimated_credit = Decimal(
-                       Decimal(vat_ratio * price).round_half_up(2)
-                     + Decimal(vat_ratio * recharge).round_half_up(2)
+                       Decimal(price / vat_ratio).round_half_up(2)
+                     + Decimal(recharge / vat_ratio).round_half_up(2)
                      - unit_price * postpaid_operation
         ).round_half_up(2);
 
-    vat_ratio * (price + recharge) - unit_price * postpaid_operation;
+    (price + recharge) / vat_ratio - unit_price * postpaid_operation;
     Decimal credit_after = get_credit(reg_id, zone_id);
 
     BOOST_CHECK(credit_after == estimated_credit);
