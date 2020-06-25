@@ -16,69 +16,36 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
-#include "test/backend/epp/poll/fixture.hh"
-#include "test/setup/fixtures_utils.hh"
-#include "test/backend/epp/util.hh"
-#include "libfred/poll/create_update_object_poll_message.hh"
 #include "libfred/poll/create_poll_message.hh"
+#include "libfred/poll/create_update_object_poll_message.hh"
 #include "libfred/registrable_object/contact/info_contact_data.hh"
-#include "src/backend/epp/poll/poll_request_get_update_contact_details.hh"
 #include "src/backend/epp/epp_response_failure.hh"
-#include "src/backend/epp/epp_result_failure.hh"
 #include "src/backend/epp/epp_result_code.hh"
-#include "src/util/tz/utc.hh"
+#include "src/backend/epp/epp_result_failure.hh"
+#include "src/backend/epp/poll/poll_request_get_update_contact_details.hh"
 #include "src/util/tz/get_psql_handle_of.hh"
+#include "src/util/tz/utc.hh"
+#include "test/backend/epp/contact/util.hh"
+#include "test/backend/epp/poll/fixture.hh"
+#include "test/backend/epp/util.hh"
+#include "test/setup/fixtures_utils.hh"
 
+#include <boost/optional.hpp>
+#include <boost/optional/optional_io.hpp>
 #include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_SUITE(Poll)
 BOOST_AUTO_TEST_SUITE(PollRequest)
 BOOST_AUTO_TEST_SUITE(PollRequestContactDetails)
 
-namespace {
-
-void check_equal(
-    const Epp::Contact::InfoContactOutputData& output_data,
-    const ::LibFred::InfoContactData& contact_data)
+struct HasContactUpdateBySponsoringRegistrar : virtual Test::Backend::Epp::autorollbacking_context
 {
-    BOOST_CHECK_EQUAL(output_data.roid, contact_data.roid);
-    BOOST_CHECK_EQUAL(output_data.handle, contact_data.handle);
-    BOOST_CHECK_EQUAL(output_data.sponsoring_registrar_handle, contact_data.sponsoring_registrar_handle);
-    BOOST_CHECK_EQUAL(output_data.creating_registrar_handle, contact_data.create_registrar_handle);
-    BOOST_CHECK_EQUAL(output_data.crdate, contact_data.creation_time);
-    BOOST_CHECK_EQUAL(output_data.last_transfer, contact_data.transfer_time);
-    BOOST_REQUIRE(output_data.authinfopw);
-    BOOST_CHECK_EQUAL(*output_data.authinfopw, contact_data.authinfopw);
-    BOOST_CHECK_EQUAL(output_data.telephone, contact_data.telephone);
-    BOOST_CHECK_EQUAL(output_data.fax, contact_data.fax);
-    BOOST_CHECK_EQUAL(output_data.email, contact_data.email);
-    BOOST_CHECK_EQUAL(output_data.notify_email, contact_data.notifyemail);
-    BOOST_CHECK_EQUAL(output_data.VAT, contact_data.vat);
-    BOOST_CHECK_EQUAL(output_data.personal_id, !contact_data.ssntype.isnull());
-    BOOST_CHECK_EQUAL(output_data.personal_id, !contact_data.ssn.isnull());
-    if (output_data.personal_id) {
-        BOOST_CHECK_EQUAL(*output_data.personal_id, ::LibFred::PersonalIdUnion::get_any_type(contact_data.ssntype.get_value(), contact_data.ssn.get_value()));
-    }
-    BOOST_CHECK_EQUAL(output_data.mailing_address, contact_data.addresses.find(::LibFred::ContactAddressType::MAILING) != contact_data.addresses.end());
-    if (output_data.mailing_address) {
-        BOOST_CHECK_EQUAL(*output_data.mailing_address, contact_data.addresses.at(::LibFred::ContactAddressType::MAILING));
-    }
-}
-
-struct HasContactUpdate : virtual Test::Backend::Epp::autorollbacking_context
-{
-    ::LibFred::InfoContactData old_contact_data;
-    ::LibFred::InfoContactData new_contact_data;
-
-    HasContactUpdate()
+    HasContactUpdateBySponsoringRegistrar()
     {
         Test::mark_all_messages_as_seen(ctx);
+
+        const Test::contact contact(ctx, Optional<std::string>{}, Optional<std::string>{}, Tz::get_psql_handle_of<Tz::UTC>());
         static const char new_passwd[] = "doesntmatter_38E166961BEE";
-
-        const Test::contact contact(ctx, Tz::get_psql_handle_of<Tz::UTC>());
-        old_contact_data = new_contact_data = contact.info_data;
-
-        new_contact_data.authinfopw = new_passwd;
 
         const unsigned long long new_history_id =
                 ::LibFred::UpdateContactByHandle(contact.info_data.handle,
@@ -90,7 +57,144 @@ struct HasContactUpdate : virtual Test::Backend::Epp::autorollbacking_context
     }
 };
 
-} // namespace {anonymous}
+// update done by contact's sponsoring registar, but contact owns domain registered by different registrar
+struct HasContactUpdateBySponsoringRegistrarButContactOwnsDomain : virtual Test::Backend::Epp::autorollbacking_context
+{
+    ::LibFred::InfoContactData old_contact_data;
+    ::LibFred::InfoContactData new_contact_data;
+
+    HasContactUpdateBySponsoringRegistrarButContactOwnsDomain()
+    {
+        Test::mark_all_messages_as_seen(ctx);
+
+        const Test::contact contact(ctx, Optional<std::string>{}, Optional<std::string>{}, Tz::get_psql_handle_of<Tz::UTC>());
+        const Test::contact different_contact(ctx, Optional<std::string>{}, Optional<std::string>{}, Tz::get_psql_handle_of<Tz::UTC>());
+        static const char new_passwd[] = "doesntmatter_38E166961BEE";
+        old_contact_data = new_contact_data = contact.info_data;
+        new_contact_data.authinfopw = new_passwd;
+        const Test::registrar different_registrar(ctx);
+        LibFred::InfoDomainData domain =
+                Test::exec(
+                        Test::CreateX_factory<LibFred::CreateDomain>()
+                                .make(different_registrar.info_data.handle, contact.info_data.handle),
+                        ctx);
+        const unsigned long long new_history_id =
+                ::LibFred::UpdateContactByHandle(contact.info_data.handle,
+                        contact.info_data.sponsoring_registrar_handle)
+                        .set_authinfo(new_passwd)
+                        .exec(ctx);
+
+        ::LibFred::Poll::CreateUpdateObjectPollMessage().exec(ctx, new_history_id);
+    }
+};
+
+// update done by contact's sponsoring registar, but contact administrates domain registered by different registrar
+struct HasContactUpdateBySponsoringRegistrarButContactAdministratesDomain : virtual Test::Backend::Epp::autorollbacking_context
+{
+    ::LibFred::InfoContactData old_contact_data;
+    ::LibFred::InfoContactData new_contact_data;
+
+    HasContactUpdateBySponsoringRegistrarButContactAdministratesDomain()
+    {
+        Test::mark_all_messages_as_seen(ctx);
+
+        const Test::contact contact(ctx, Optional<std::string>{}, Optional<std::string>{}, Tz::get_psql_handle_of<Tz::UTC>());
+        const Test::contact different_contact(ctx, Optional<std::string>{}, Optional<std::string>{}, Tz::get_psql_handle_of<Tz::UTC>());
+        static const char new_passwd[] = "doesntmatter_38E166961BEE";
+        old_contact_data = new_contact_data = contact.info_data;
+        new_contact_data.authinfopw = new_passwd;
+        const Test::registrar different_registrar(ctx);
+        LibFred::InfoDomainData domain =
+                ::LibFred::InfoDomainById(
+                        ::LibFred::CreateDomain("domain-with-admin-c.cz", different_registrar.info_data.handle, different_contact.info_data.handle)
+                                .set_admin_contacts(std::vector<std::string>{contact.info_data.handle})
+                                .exec(ctx, "UTC")
+                                .create_object_result.object_id)
+                        .exec(ctx, "UTC")
+                        .info_domain_data;
+
+        const unsigned long long new_history_id =
+                ::LibFred::UpdateContactByHandle(contact.info_data.handle,
+                        contact.info_data.sponsoring_registrar_handle)
+                        .set_authinfo(new_passwd)
+                        .exec(ctx);
+
+        ::LibFred::Poll::CreateUpdateObjectPollMessage().exec(ctx, new_history_id);
+    }
+};
+
+struct HasContactUpdate : virtual Test::Backend::Epp::autorollbacking_context
+{
+    ::LibFred::InfoContactData old_contact_data;
+    ::LibFred::InfoContactData new_contact_data;
+
+    HasContactUpdate()
+    {
+        Test::mark_all_messages_as_seen(ctx);
+
+        const Test::contact contact(ctx, Optional<std::string>{}, Optional<std::string>{}, Tz::get_psql_handle_of<Tz::UTC>());
+        static const char new_passwd[] = "doesntmatter_38E166961BEE";
+        old_contact_data = new_contact_data = contact.info_data;
+        new_contact_data.authinfopw = new_passwd;
+        const Test::registrar different_registrar(ctx);
+
+        const unsigned long long new_history_id =
+                ::LibFred::UpdateContactByHandle(contact.info_data.handle,
+                        different_registrar.info_data.handle)
+                        .set_authinfo(new_passwd)
+                        .exec(ctx);
+
+        ::LibFred::Poll::CreateUpdateObjectPollMessage().exec(ctx, new_history_id);
+    }
+};
+
+BOOST_FIXTURE_TEST_CASE(failed_request_contact_details2, HasContactUpdateBySponsoringRegistrar)
+{
+    const unsigned long long before_message_count = Test::get_number_of_unseen_poll_messages(ctx);
+    BOOST_REQUIRE_EQUAL(before_message_count, 0);
+}
+
+BOOST_FIXTURE_TEST_CASE(successful_request_contact_details2, HasContactUpdateBySponsoringRegistrarButContactOwnsDomain)
+{
+    const unsigned long long before_message_count = Test::get_number_of_unseen_poll_messages(ctx);
+    BOOST_REQUIRE_EQUAL(before_message_count, 1);
+
+    const Test::MessageDetail mesage_detail = Test::get_message_ids(ctx);
+
+    Epp::Poll::PollRequestUpdateContactOutputData output;
+    BOOST_CHECK_NO_THROW(output =
+        Epp::Poll::poll_request_get_update_contact_details(ctx, mesage_detail.message_id, mesage_detail.registrar_id));
+
+    Test::Backend::Epp::Contact::check_equal_but_no_authinfopw(output.old_data, old_contact_data);
+    Test::Backend::Epp::Contact::check_equal_but_no_authinfopw(output.new_data, new_contact_data);
+
+    BOOST_CHECK(output.old_data.last_update == boost::none);
+    BOOST_CHECK(output.new_data.last_update != boost::none);
+
+    const unsigned long long after_message_count = Test::get_number_of_unseen_poll_messages(ctx);
+    BOOST_CHECK_EQUAL(after_message_count, 1);
+}
+
+BOOST_FIXTURE_TEST_CASE(successful_request_contact_details3, HasContactUpdateBySponsoringRegistrarButContactAdministratesDomain)
+{
+    const unsigned long long before_message_count = Test::get_number_of_unseen_poll_messages(ctx);
+    BOOST_REQUIRE_EQUAL(before_message_count, 1);
+
+    const Test::MessageDetail mesage_detail = Test::get_message_ids(ctx);
+
+    Epp::Poll::PollRequestUpdateContactOutputData output;
+    BOOST_CHECK_NO_THROW(output =
+        Epp::Poll::poll_request_get_update_contact_details(ctx, mesage_detail.message_id, mesage_detail.registrar_id));
+
+    Test::Backend::Epp::Contact::check_equal_but_no_authinfopw(output.old_data, old_contact_data);
+    Test::Backend::Epp::Contact::check_equal_but_no_authinfopw(output.new_data, new_contact_data);
+
+    BOOST_CHECK(output.old_data.last_update == boost::none);
+    BOOST_CHECK(output.new_data.last_update != boost::none);
+
+    const unsigned long long after_message_count = Test::get_number_of_unseen_poll_messages(ctx);
+    BOOST_CHECK_EQUAL(after_message_count, 1);
+}
 
 BOOST_FIXTURE_TEST_CASE(successful_request_contact_details, HasContactUpdate)
 {
@@ -103,12 +207,12 @@ BOOST_FIXTURE_TEST_CASE(successful_request_contact_details, HasContactUpdate)
     BOOST_CHECK_NO_THROW(output =
         Epp::Poll::poll_request_get_update_contact_details(ctx, mesage_detail.message_id, mesage_detail.registrar_id));
 
-    check_equal(output.old_data, old_contact_data);
-    check_equal(output.new_data, new_contact_data);
+    Test::Backend::Epp::Contact::check_equal(output.old_data, old_contact_data);
+    Test::Backend::Epp::Contact::check_equal(output.new_data, new_contact_data);
 
     BOOST_CHECK(*output.old_data.authinfopw != *output.new_data.authinfopw);
-    BOOST_CHECK(output.old_data.last_update.isnull());
-    BOOST_CHECK(!output.new_data.last_update.isnull());
+    BOOST_CHECK(output.old_data.last_update == boost::none);
+    BOOST_CHECK(output.new_data.last_update != boost::none);
 
     const unsigned long long after_message_count = Test::get_number_of_unseen_poll_messages(ctx);
     BOOST_CHECK_EQUAL(after_message_count, 1);

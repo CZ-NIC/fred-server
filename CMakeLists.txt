@@ -2475,9 +2475,12 @@ prepare_executable(test-epp
     test/backend/epp/poll/fixture.cc
     test/backend/epp/poll/test_poll_request.cc
     test/backend/epp/poll/test_poll_acknowledgement.cc
-    test/backend/epp/poll/test_poll_request_nsset_details.cc
+    test/backend/epp/poll/test_poll_request_contact_details.cc
     test/backend/epp/poll/test_poll_request_domain_details.cc
     test/backend/epp/poll/test_poll_request_keyset_details.cc
+    test/backend/epp/poll/test_poll_request_nsset_details.cc
+    test/backend/epp/poll/util.cc
+    test/setup/fixtures_utils.cc
     test/setup/fixtures.cc)
 target_link_libraries(test-epp
     epp_impl

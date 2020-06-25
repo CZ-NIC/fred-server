@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -276,8 +276,10 @@ struct HasPollUpdateContactMessage : virtual Test::Backend::Epp::autorollbacking
     {
         Test::mark_all_messages_as_seen(ctx);
         const Test::contact contact(ctx);
+        const Test::registrar different_registrar(ctx);
+        // update done not by contact's sponsoring registar
         history_id = ::LibFred::UpdateContactByHandle(contact.info_data.handle,
-                                        contact.info_data.sponsoring_registrar_handle
+                                        different_registrar.info_data.handle
             ).set_authinfo("doesntmatter").exec(ctx);
         ::LibFred::Poll::CreateUpdateObjectPollMessage().exec(ctx, history_id);
     }
@@ -347,10 +349,10 @@ struct HasPollUpdate : T
         const unsigned long long before_message_count = Test::get_number_of_unseen_poll_messages(T::ctx);
         BOOST_REQUIRE_EQUAL(before_message_count, 1);
 
-        const Test::MessageDetail mesage_detail = Test::get_message_ids(T::ctx);
+        const Test::MessageDetail message_detail = Test::get_message_ids(T::ctx);
 
         ep::PollRequestOutputData output;
-        BOOST_CHECK_NO_THROW(output = ep::poll_request(T::ctx, mesage_detail.registrar_id));
+        BOOST_CHECK_NO_THROW(output = ep::poll_request(T::ctx, message_detail.registrar_id));
 
         ep::UpdateInfoEvent update_info_event;
         BOOST_CHECK_NO_THROW(update_info_event = boost::get<ep::UpdateInfoEvent>(output.message));
@@ -358,7 +360,7 @@ struct HasPollUpdate : T
         BOOST_CHECK_NO_THROW(update_info = boost::get<SubMessage>(update_info_event.message));
 
         BOOST_CHECK_EQUAL(update_info.transaction_id, get_request_id_by_history_id(T::ctx, T::history_id));
-        BOOST_CHECK_EQUAL(update_info.poll_id, mesage_detail.message_id);
+        BOOST_CHECK_EQUAL(update_info.poll_id, message_detail.message_id);
 
         const unsigned long long after_message_count = Test::get_number_of_unseen_poll_messages(T::ctx);
         BOOST_CHECK_EQUAL(after_message_count, 1);
