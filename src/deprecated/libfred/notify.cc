@@ -259,7 +259,7 @@ namespace Notify {
                    "JOIN registrar r ON r.id=doh.clid "
                    "JOIN domain_history dh ON dh.historyid=dobr.historyid "
                    "JOIN object_registry cobr ON cobr.id=dh.registrant "
-                   "JOIN domain_lifecycle_parameters dlp ON dlp.valid_from=(SELECT MAX(valid_from) FROM domain_lifecycle_parameters WHERE valid_from<=dh.exdate) "
+                   "JOIN domain_lifecycle_parameters dlp ON dlp.valid_for_exdate_after=(SELECT MAX(valid_for_exdate_after) FROM domain_lifecycle_parameters WHERE valid_for_exdate_after<=dh.exdate) "
                    "WHERE dobr.id=" << domain_id;
             if (!db->ExecSelect(sql.str().c_str()))
             {
@@ -671,7 +671,7 @@ public:
           "JOIN zone z ON z.id = d.zone "
           "JOIN object_registry cor ON cor.id=d.registrant "
           "JOIN contact_history c ON c.historyid=cor.historyid "
-          "JOIN domain_lifecycle_parameters dlp ON dlp.valid_from=(SELECT MAX(valid_from) FROM domain_lifecycle_parameters WHERE valid_from<=d.exdate) "
+          "JOIN domain_lifecycle_parameters dlp ON dlp.valid_for_exdate_after=(SELECT MAX(valid_for_exdate_after) FROM domain_lifecycle_parameters WHERE valid_for_exdate_after<=d.exdate) "
           "WHERE s.state_id = (SELECT id FROM enum_object_states WHERE name = 'deleteWarning') AND "
                 "s.valid_to IS NULL AND "
                 "nl.state_id IS NULL AND "
@@ -721,7 +721,7 @@ public:
     "JOIN contact_history c ON c.historyid=cor.historyid "
     "LEFT JOIN contact_address_history ca ON ca.historyid=cor.historyid AND ca.type='MAILING' "
     "JOIN registrar r ON r.id=doh.clid "
-    "JOIN domain_lifecycle_parameters dlp ON dlp.valid_from=(SELECT MAX(valid_from) FROM domain_lifecycle_parameters WHERE valid_from<=d.exdate) "
+    "JOIN domain_lifecycle_parameters dlp ON dlp.valid_for_exdate_after=(SELECT MAX(valid_for_exdate_after) FROM domain_lifecycle_parameters WHERE valid_for_exdate_after<=d.exdate) "
     "WHERE d.exdate::date='" << exDates[j] << "') "
 "SELECT ed.domain_name,ed.registrar_handle,CURRENT_DATE,ed.termination_date," // 0 1 2 3
        "ed.contact_name,ed.organization," // 4 5

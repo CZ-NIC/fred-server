@@ -739,7 +739,7 @@ public:
     object_info_query.from() << getTempTableName()
         << " tmp "
            "JOIN domain_history t_2 ON (tmp.id = t_2.historyid) "
-        << "JOIN domain_lifecycle_parameters dlp ON dlp.valid_from=(SELECT MAX(valid_from) FROM domain_lifecycle_parameters WHERE valid_from<=t_2.exdate) "
+        << "JOIN domain_lifecycle_parameters dlp ON dlp.valid_for_exdate_after=(SELECT MAX(valid_for_exdate_after) FROM domain_lifecycle_parameters WHERE valid_for_exdate_after<=t_2.exdate) "
         << "JOIN object_history t_5 ON (t_2.historyid = t_5.historyid) "
         << "JOIN object_registry t_1 ON (t_5.id = t_1.id) "
         << "JOIN contact_history t_4 ON (t_2.registrant = t_4.id) "
@@ -1023,7 +1023,7 @@ public:
         "JOIN contact c ON c.id=d.registrant "
         "JOIN object_registry cor ON cor.id=c.id "
         "JOIN object_registry obr ON obr.id=o.id "
-        "JOIN domain_lifecycle_parameters dlp ON dlp.valid_from=(SELECT MAX(valid_from) FROM domain_lifecycle_parameters WHERE valid_from<=d.exdate) ";
+        "JOIN domain_lifecycle_parameters dlp ON dlp.valid_for_exdate_after=(SELECT MAX(valid_for_exdate_after) FROM domain_lifecycle_parameters WHERE valid_for_exdate_after<=d.exdate) ";
     if (!useTempTable)
     {
       sql << " "

@@ -155,7 +155,9 @@ Interval<Database::DateInterval>& DomainImpl::addExpirationDate() {
 
 Interval<Database::DateInterval>& DomainImpl::addOutZoneDate() {
   Interval<Database::DateInterval> *tmp = new Interval<Database::DateInterval>(Column("exdate", joinDomainTable()));
-  tmp->addPostValueString("::date - (SELECT expiration_dns_protection_period FROM domain_lifecycle_parameters WHERE valid_from=(SELECT MAX(valid_from) FROM domain_lifecycle_parameters WHERE valid_from<=domain.exdate))");
+  tmp->addPostValueString("::date - (SELECT expiration_dns_protection_period "
+                                    "FROM domain_lifecycle_parameters "
+                                    "WHERE valid_for_exdate_after=(SELECT MAX(valid_for_exdate_after) FROM domain_lifecycle_parameters WHERE valid_for_exdate_after<=domain.exdate))");
   tmp->setName("OutZoneDate");
   add(tmp);
   return *tmp;
@@ -163,7 +165,9 @@ Interval<Database::DateInterval>& DomainImpl::addOutZoneDate() {
 
 Interval<Database::DateInterval>& DomainImpl::addCancelDate() {
   Interval<Database::DateInterval> *tmp = new Interval<Database::DateInterval>(Column("exdate", joinDomainTable()));
-  tmp->addPostValueString("::date - (SELECT expiration_registration_protection_period FROM domain_lifecycle_parameters WHERE valid_from=(SELECT MAX(valid_from) FROM domain_lifecycle_parameters WHERE valid_from<=domain.exdate))");
+  tmp->addPostValueString("::date - (SELECT expiration_registration_protection_period "
+                                    "FROM domain_lifecycle_parameters "
+                                    "WHERE valid_for_exdate_after=(SELECT MAX(valid_for_exdate_after) FROM domain_lifecycle_parameters WHERE valid_for_exdate_after<=domain.exdate))");
   tmp->setName("CancelDate");
   add(tmp);
   return *tmp;
@@ -315,7 +319,9 @@ Interval<Database::DateInterval>& DomainHistoryImpl::addExpirationDate() {
 
 Interval<Database::DateInterval>& DomainHistoryImpl::addOutZoneDate() {
   Interval<Database::DateInterval> *tmp = new Interval<Database::DateInterval>(Column("exdate", joinDomainTable()));
-  tmp->addPostValueString("::date - (SELECT expiration_dns_protection_period FROM domain_lifecycle_parameters WHERE valid_from=(SELECT MAX(valid_from) FROM domain_lifecycle_parameters WHERE valid_from<=domain_history.exdate))");
+  tmp->addPostValueString("::date - (SELECT expiration_dns_protection_period "
+                                    "FROM domain_lifecycle_parameters "
+                                    "WHERE valid_for_exdate_after=(SELECT MAX(valid_for_exdate_after) FROM domain_lifecycle_parameters WHERE valid_for_exdate_after<=domain_history.exdate))");
   tmp->setName("OutZoneDate");
   add(tmp);
   return *tmp;
@@ -323,7 +329,9 @@ Interval<Database::DateInterval>& DomainHistoryImpl::addOutZoneDate() {
 
 Interval<Database::DateInterval>& DomainHistoryImpl::addCancelDate() {
   Interval<Database::DateInterval> *tmp = new Interval<Database::DateInterval>(Column("exdate", joinDomainTable()));
-  tmp->addPostValueString("::date - (SELECT expiration_registration_protection_period FROM domain_lifecycle_parameters WHERE valid_from=(SELECT MAX(valid_from) FROM domain_lifecycle_parameters WHERE valid_from<=domain_history.exdate))");
+  tmp->addPostValueString("::date - (SELECT expiration_registration_protection_period "
+                                    "FROM domain_lifecycle_parameters "
+                                    "WHERE valid_for_exdate_after=(SELECT MAX(valid_for_exdate_after) FROM domain_lifecycle_parameters WHERE valid_for_exdate_after<=domain_history.exdate))");
   tmp->setName("CancelDate");
   add(tmp);
   return *tmp;

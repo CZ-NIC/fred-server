@@ -1454,7 +1454,7 @@ DomainList DomainBrowser::getDomainList(
                                                          "ELSE NULL END) "
                                  "ORDER BY eos.importance)::text[],',') AS state_code "
 "FROM domain_list dl "
-"JOIN domain_lifecycle_parameters dlp ON dlp.valid_from=(SELECT MAX(valid_from) FROM domain_lifecycle_parameters WHERE valid_from<=dl.expiration_date) "
+"JOIN domain_lifecycle_parameters dlp ON dlp.valid_for_exdate_after=(SELECT MAX(valid_for_exdate_after) FROM domain_lifecycle_parameters WHERE valid_for_exdate_after<=dl.expiration_date) "
 "LEFT JOIN object_state os ON os.object_id=dl.id AND "
                              "os.valid_from<=CURRENT_TIMESTAMP AND (CURRENT_TIMESTAMP<os.valid_to OR os.valid_to IS NULL) "
 "LEFT JOIN enum_object_states eos ON eos.id=os.state_id "
