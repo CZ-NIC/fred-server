@@ -2453,6 +2453,7 @@ prepare_executable(test-epp
     test/backend/epp/contact/test_check_contact.cc
     test/backend/epp/contact/test_transfer_contact.cc
     test/backend/epp/contact/test_contact_handle_state_to_check_result.cc
+    test/backend/epp/contact/util.cc
     test/backend/epp/credit/test_client_credit.cc
     test/backend/epp/domain/fixture.cc
     test/backend/epp/domain/test_check_domain.cc

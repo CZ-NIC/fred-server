@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,21 +16,31 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
-#include "test/backend/epp/poll/fixture.hh"
-#include "test/setup/fixtures_utils.hh"
+
+#include "test/backend/epp/poll/util.hh"
 #include "test/backend/epp/util.hh"
-#include "libfred/poll/create_update_object_poll_message.hh"
-#include "libfred/poll/create_poll_message.hh"
-#include "src/backend/epp/poll/poll_request_get_update_keyset_details.hh"
+#include "test/setup/fixtures_utils.hh"
+
 #include "src/backend/epp/epp_response_failure.hh"
-#include "src/backend/epp/epp_result_failure.hh"
 #include "src/backend/epp/epp_result_code.hh"
-#include "src/util/tz/utc.hh"
+#include "src/backend/epp/epp_result_failure.hh"
+#include "src/backend/epp/poll/poll_request_get_update_keyset_details.hh"
 #include "src/util/tz/get_psql_handle_of.hh"
+#include "src/util/tz/utc.hh"
+
+#include "libfred/poll/create_poll_message.hh"
+#include "libfred/poll/create_update_object_poll_message.hh"
+
 #include "util/optional_value.hh"
 
 #include <boost/test/unit_test.hpp>
 
+#include <set>
+
+namespace Test {
+
+BOOST_AUTO_TEST_SUITE(Backend)
+BOOST_AUTO_TEST_SUITE(Epp)
 BOOST_AUTO_TEST_SUITE(Poll)
 BOOST_AUTO_TEST_SUITE(PollRequest)
 BOOST_AUTO_TEST_SUITE(PollRequestKeysetDetails)
@@ -38,7 +48,7 @@ BOOST_AUTO_TEST_SUITE(PollRequestKeysetDetails)
 namespace {
 
 void check_equal(
-    const Epp::Keyset::InfoKeysetOutputData& output_data,
+    const ::Epp::Keyset::InfoKeysetOutputData& output_data,
     const ::LibFred::InfoKeysetData& keyset_data)
 {
     BOOST_CHECK_EQUAL(output_data.roid, keyset_data.roid);
@@ -51,13 +61,13 @@ void check_equal(
     BOOST_CHECK_EQUAL(output_data.crdate, keyset_data.creation_time);
     BOOST_CHECK_EQUAL(output_data.last_transfer, keyset_data.transfer_time);
 
-    std::set<Epp::Keyset::DnsKey> dns_keys = output_data.dns_keys;
+    std::set<::Epp::Keyset::DnsKey> dns_keys = output_data.dns_keys;
     BOOST_CHECK_EQUAL(dns_keys.size(), keyset_data.dns_keys.size());
     for (std::vector<::LibFred::DnsKey>::const_iterator dns_key_itr = keyset_data.dns_keys.begin();
          dns_key_itr != keyset_data.dns_keys.end();
          ++dns_key_itr)
     {
-        dns_keys.erase(Epp::Keyset::DnsKey(dns_key_itr->get_flags(),
+        dns_keys.erase(::Epp::Keyset::DnsKey(dns_key_itr->get_flags(),
                                            dns_key_itr->get_protocol(),
                                            dns_key_itr->get_alg(),
                                            dns_key_itr->get_key()));
@@ -81,7 +91,7 @@ struct HasKeysetUpdate : virtual Test::Backend::Epp::autorollbacking_context
 
     HasKeysetUpdate()
     {
-        Test::mark_all_messages_as_seen(ctx);
+        Util::mark_all_messages_as_seen(ctx);
         static const char new_passwd[] = "doesntmatter_38E166961BEE";
 
         const Test::keyset keyset(ctx, Optional<std::string>(), Optional<std::string>(), Tz::get_psql_handle_of<Tz::UTC>());
@@ -102,14 +112,14 @@ struct HasKeysetUpdate : virtual Test::Backend::Epp::autorollbacking_context
 
 BOOST_FIXTURE_TEST_CASE(successful_request_keyset_details, HasKeysetUpdate)
 {
-    const unsigned long long before_message_count = Test::get_number_of_unseen_poll_messages(ctx);
+    const unsigned long long before_message_count = Util::get_number_of_unseen_poll_messages(ctx);
     BOOST_REQUIRE_EQUAL(before_message_count, 1);
 
-    const Test::MessageDetail mesage_detail = Test::get_message_ids(ctx);
+    const Util::MessageDetail mesage_detail = Util::get_message_ids(ctx);
 
-    Epp::Poll::PollRequestUpdateKeysetOutputData output;
+    ::Epp::Poll::PollRequestUpdateKeysetOutputData output;
     BOOST_CHECK_NO_THROW(output =
-        Epp::Poll::poll_request_get_update_keyset_details(ctx, mesage_detail.message_id, mesage_detail.registrar_id));
+        ::Epp::Poll::poll_request_get_update_keyset_details(ctx, mesage_detail.message_id, mesage_detail.registrar_id));
 
     check_equal(output.old_data, old_keyset_data);
     check_equal(output.new_data, new_keyset_data);
@@ -118,34 +128,38 @@ BOOST_FIXTURE_TEST_CASE(successful_request_keyset_details, HasKeysetUpdate)
     BOOST_CHECK(output.old_data.last_update.isnull());
     BOOST_CHECK(!output.new_data.last_update.isnull());
 
-    const unsigned long long after_message_count = Test::get_number_of_unseen_poll_messages(ctx);
+    const unsigned long long after_message_count = Util::get_number_of_unseen_poll_messages(ctx);
     BOOST_CHECK_EQUAL(after_message_count, 1);
 }
 
 BOOST_FIXTURE_TEST_CASE(failed_request_keyset_details, HasKeysetUpdate)
 {
-    const unsigned long long before_message_count = Test::get_number_of_unseen_poll_messages(ctx);
+    const unsigned long long before_message_count = Util::get_number_of_unseen_poll_messages(ctx);
     BOOST_REQUIRE_EQUAL(before_message_count, 1);
 
-    const Test::MessageDetail mesage_detail = Test::get_message_ids(ctx);
+    const Util::MessageDetail mesage_detail = Util::get_message_ids(ctx);
 
     const unsigned long long bogus_message_id = Test::get_nonexistent_message_id(ctx);
     const unsigned long long bogus_registrar_id = Test::get_nonexistent_registrar_id(ctx);
 
     BOOST_CHECK_THROW(
-        Epp::Poll::poll_request_get_update_keyset_details(ctx, mesage_detail.message_id, bogus_registrar_id),
-        Epp::EppResponseFailure);
+        ::Epp::Poll::poll_request_get_update_keyset_details(ctx, mesage_detail.message_id, bogus_registrar_id),
+        ::Epp::EppResponseFailure);
     BOOST_CHECK_THROW(
-        Epp::Poll::poll_request_get_update_keyset_details(ctx, bogus_message_id, mesage_detail.registrar_id),
-        Epp::EppResponseFailure);
+        ::Epp::Poll::poll_request_get_update_keyset_details(ctx, bogus_message_id, mesage_detail.registrar_id),
+        ::Epp::EppResponseFailure);
     BOOST_CHECK_THROW(
-        Epp::Poll::poll_request_get_update_keyset_details(ctx, bogus_message_id, bogus_registrar_id),
-        Epp::EppResponseFailure);
+        ::Epp::Poll::poll_request_get_update_keyset_details(ctx, bogus_message_id, bogus_registrar_id),
+        ::Epp::EppResponseFailure);
 
-    const unsigned long long after_message_count = Test::get_number_of_unseen_poll_messages(ctx);
+    const unsigned long long after_message_count = Util::get_number_of_unseen_poll_messages(ctx);
     BOOST_CHECK_EQUAL(after_message_count, 1);
 }
 
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END(); // PollRequestKeysetDetails
+BOOST_AUTO_TEST_SUITE_END(); // PollRequest
+BOOST_AUTO_TEST_SUITE_END(); // Poll
+BOOST_AUTO_TEST_SUITE_END(); // Epp
+BOOST_AUTO_TEST_SUITE_END(); // Backend
+
+} // namespace Test
