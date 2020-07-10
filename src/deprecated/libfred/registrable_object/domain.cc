@@ -705,25 +705,10 @@ public:
         % getTempTableName() % tmp_table_query.str());
 
     Database::SelectQuery object_info_query;
-    object_info_query.select() <<
-            "t_1.id,"
-            "tmp.id,"
-            "t_1.name,"
-            "t_2.zone,"
-            "t_2.nsset,"
-            "t_2.keyset,"
-            "t_3.id,"
-            "t_3.name,t_4.name,"
-            "t_4.organization,t_4.telephone,t_5.clid,"
-            "t_1.crdate,"
-            "t_5.trdate,"
-            "t_5.update,"
-            "t_1.erdate,"
-            "t_1.crid,"
-            "t_5.upid,"
-            "t_5.authinfopw,"
-            "t_1.roid,"
-            "t_2.exdate,"
+    object_info_query.select() << "t_1.id, tmp.id, t_1.name, t_2.zone, t_2.nsset, t_2.keyset, "
+        << "t_3.id, t_3.name, t_4.name, t_4.organization, t_4.telephone, t_5.clid, "
+        << "t_1.crdate, t_5.trdate, t_5.update, t_1.erdate, t_1.crid, t_5.upid, "
+        << "t_5.authinfopw, t_1.roid, t_2.exdate, "
             "((SELECT t_2.exdate + dlp.expiration_dns_protection_period + (val||'HOURS')::INTERVAL FROM enum_parameters WHERE name = 'regular_day_procedure_period')::TIMESTAMP "
              "AT TIME ZONE (SELECT val FROM enum_parameters WHERE name = 'regular_day_procedure_zone')"
             ")::TIMESTAMP AS outzonedate,"
@@ -737,8 +722,7 @@ public:
     //        << "JOIN object_registry t_3 ON (t_4.id = t_3.id) "
     //        << "JOIN object_registry t_1 ON (t_5.id = t_1.id)";
     object_info_query.from() << getTempTableName()
-        << " tmp "
-           "JOIN domain_history t_2 ON (tmp.id = t_2.historyid) "
+        << " tmp JOIN domain_history t_2 ON (tmp.id = t_2.historyid) "
         << "JOIN domain_lifecycle_parameters dlp ON dlp.valid_for_exdate_after=(SELECT MAX(valid_for_exdate_after) FROM domain_lifecycle_parameters WHERE valid_for_exdate_after<=t_2.exdate) "
         << "JOIN object_history t_5 ON (t_2.historyid = t_5.historyid) "
         << "JOIN object_registry t_1 ON (t_5.id = t_1.id) "
@@ -1006,24 +990,32 @@ public:
       fillTempTable(true);
     // load domain data
     sql.str("");
-    sql <<
-        "SELECT obr.id,obr.name,d.zone,d.nsset,'',"    // domain, zone, nsset
-               "cor.id,cor.name,c.name,c.organization,"// registrant
-               "o.clid,"                               // registrar
-               "obr.crdate,o.trdate,o.update,"         // registration dates
-               "obr.crid,o.upid,"                      // creating and updating registrar
-               "o.authinfopw,obr.roid,"                // repository data
-               "d.exdate,NULL,"                        // expiration and validation dates (validation in seperate query)
-               "(((d.exdate + dlp.expiration_dns_protection_period)::timestamp + (SELECT val || ' hours' FROM enum_parameters WHERE name = 'regular_day_procedure_period')::interval) AT TIME ZONE (SELECT val FROM enum_parameters WHERE name = 'regular_day_procedure_zone'))::timestamp as outzonedate,"
-               "(((d.exdate + dlp.expiration_registration_protection_period)::timestamp + (SELECT val || ' hours' FROM enum_parameters WHERE name = 'regular_day_procedure_period')::interval) AT TIME ZONE (SELECT val FROM enum_parameters WHERE name = 'regular_day_procedure_zone'))::timestamp as canceldate,"
-               "d.keyset,'' "                          // keyset id and keyset handle
+    sql << "SELECT "
+    // domain, zone, nsset
+        << "obr.id,obr.name,d.zone,d.nsset,'',"
+    // registrant
+        << "cor.id,cor.name,c.name,c.organization,"
+    // registrar
+        << "o.clid,"
+    // registration dates
+        << "obr.crdate,o.trdate,o.update,"
+    // creating and updating registrar
+        << "obr.crid,o.upid,"
+    // repository data
+        << "o.authinfopw,obr.roid,"
+    // expiration and validation dates (validation in seperate query)
+        << "d.exdate,NULL,"
+           "(((d.exdate + dlp.expiration_dns_protection_period)::timestamp + (SELECT val || ' hours' FROM enum_parameters WHERE name = 'regular_day_procedure_period')::interval) AT TIME ZONE (SELECT val FROM enum_parameters WHERE name = 'regular_day_procedure_zone'))::timestamp as outzonedate,"
+           "(((d.exdate + dlp.expiration_registration_protection_period)::timestamp + (SELECT val || ' hours' FROM enum_parameters WHERE name = 'regular_day_procedure_period')::interval) AT TIME ZONE (SELECT val FROM enum_parameters WHERE name = 'regular_day_procedure_zone'))::timestamp as canceldate,"
+    // keyset id and keyset handle
+        << "d.keyset, '' "
         "FROM " << (useTempTable ? getTempTableName() : "object_registry") << " tmp "
         "JOIN domain d ON d.id=tmp.id "
         "JOIN object o ON o.id=d.id "
         "JOIN contact c ON c.id=d.registrant "
         "JOIN object_registry cor ON cor.id=c.id "
         "JOIN object_registry obr ON obr.id=o.id "
-        "JOIN domain_lifecycle_parameters dlp ON dlp.valid_for_exdate_after=(SELECT MAX(valid_for_exdate_after) FROM domain_lifecycle_parameters WHERE valid_for_exdate_after<=d.exdate) ";
+        "JOIN domain_lifecycle_parameters dlp ON dlp.valid_for_exdate_after=(SELECT MAX(valid_for_exdate_after) FROM domain_lifecycle_parameters WHERE valid_for_exdate_after<=d.exdate)";
     if (!useTempTable)
     {
       sql << " "

@@ -662,22 +662,20 @@ public:
          // - was not notified so far with the notification letter
          // - belongs to domains whose zone have set warning_letter flag to send
          // - belongs to domains whose owner have set warning_letter flag to send or unspecified
-        static const char* const fixateStates =
+        const char *fixateStates =
           "INSERT INTO tmp_notify_letters "
-          "SELECT s.id "
-          "FROM object_state s "
+          "SELECT s.id FROM object_state s "
           "LEFT JOIN notify_letters nl ON (s.id=nl.state_id) "
-          "JOIN domain_history d ON d.historyid = s.ohid_from "
-          "JOIN zone z ON z.id = d.zone "
-          "JOIN object_registry cor ON cor.id=d.registrant "
-          "JOIN contact_history c ON c.historyid=cor.historyid "
+          " JOIN domain_history d "   "ON d.historyid = s.ohid_from "
+          " JOIN zone z "             "ON z.id = d.zone "
+          " JOIN object_registry cor ON cor.id=d.registrant "
+          " JOIN contact_history c ON c.historyid=cor.historyid "
           "JOIN domain_lifecycle_parameters dlp ON dlp.valid_for_exdate_after=(SELECT MAX(valid_for_exdate_after) FROM domain_lifecycle_parameters WHERE valid_for_exdate_after<=d.exdate) "
-          "WHERE s.state_id = (SELECT id FROM enum_object_states WHERE name = 'deleteWarning') AND "
-                "s.valid_to IS NULL AND "
-                "nl.state_id IS NULL AND "
-                "(now() - (dlp.expiration_registration_protection_period - dlp.expiration_letter_warning_period)/2) < s.valid_from AND "
-                "z.warning_letter AND "
-                "(c.warning_letter IS NULL OR c.warning_letter)";
+          "WHERE s.state_id = (SELECT id FROM enum_object_states WHERE name = 'deleteWarning') "
+          " AND s.valid_to ISNULL AND nl.state_id ISNULL "
+          " AND (now() - (dlp.expiration_registration_protection_period - dlp.expiration_letter_warning_period)/2) < s.valid_from "
+          " AND z.warning_letter=true "
+          " AND (c.warning_letter IS NULL OR c.warning_letter=true)";
 
         conn.exec(fixateStates);
         // select all expiration dates of domain to notify
