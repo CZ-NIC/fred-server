@@ -1,3 +1,7 @@
+2020-07-13 (2.45.0)
+
+  * Use parameters from new table domain_lifecycle_parameters
+
 2020-02-20 (2.44.0)
 
   * MojeID
