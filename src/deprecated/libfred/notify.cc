@@ -33,8 +33,10 @@
 
 using namespace Database;
 
-namespace LibFred {
-namespace Notify {
+namespace LibFred
+{
+  namespace Notify
+  {
 
     class ManagerImpl : virtual public Manager
     {
@@ -834,6 +836,5 @@ public:
     {
       return new ManagerImpl(db,mm,cm,nm, km, dm,docm,rm, msgm);
     }
-
-}//namespace LibFred::Notify
-}//namespace LibFred
+  }
+}
