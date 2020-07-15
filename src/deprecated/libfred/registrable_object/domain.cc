@@ -16,6 +16,11 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+#include <sstream>
+#include <memory>
+#include <functional>
+#include <algorithm>
+#include <boost/date_time/posix_time/time_parsers.hpp>
 
 #include "src/deprecated/libfred/registrable_object/domain.hh"
 #include "src/deprecated/libfred/blacklist.hh"
@@ -25,13 +30,6 @@
 #include "src/deprecated/model/model_filters.hh"
 #include "util/log/logger.hh"
 #include "src/deprecated/libfred/registrar.hh"
-
-#include <boost/date_time/posix_time/time_parsers.hpp>
-
-#include <algorithm>
-#include <functional>
-#include <memory>
-#include <sstream>
 
 namespace LibFred {
 namespace Domain {
