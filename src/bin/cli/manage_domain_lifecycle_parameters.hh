@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2020  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -17,19 +17,9 @@
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef VALIDATE_ARGS_HH_BAA5803FB80F4518ABC0DC0372B55DCF
-#define VALIDATE_ARGS_HH_BAA5803FB80F4518ABC0DC0372B55DCF
+#ifndef MANAGE_DOMAIN_LIFECYCLE_PARAMETERS_HH_45CF064233D612F2C814225C858FFDE2//date "+%s.%N"|md5sum|tr "[a-f]" "[A-F]"
+#define MANAGE_DOMAIN_LIFECYCLE_PARAMETERS_HH_45CF064233D612F2C814225C858FFDE2
 
-#include "src/util/cfg/checked_types.hh"
+void manage_domain_lifecycle_parameters();
 
-#include <iostream>
-
-std::ostream& operator<<(std::ostream& o, const Checked::string_fpnumber& s);
-
-std::istream& operator>>(std::istream& i, Checked::string_fpnumber& s);
-
-std::ostream& operator<<(std::ostream&, const Checked::Date&);
-
-std::istream& operator>>(std::istream&, Checked::Date&);
-
-#endif
+#endif//MANAGE_DOMAIN_LIFECYCLE_PARAMETERS_HH_45CF064233D612F2C814225C858FFDE2

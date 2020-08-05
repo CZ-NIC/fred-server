@@ -34,6 +34,7 @@
 #include "src/bin/cli/domain_params.hh"
 #include "src/bin/cli/keyset_params.hh"
 #include "src/bin/cli/contact_params.hh"
+#include "src/bin/cli/domain_lifecycle_params.hh"
 #include "src/bin/cli/invoice_params.hh"
 #include "src/bin/cli/bank_params.hh"
 #include "src/bin/cli/poll_params.hh"
@@ -1944,6 +1945,16 @@ public:
     }//handle
 };//class HandleAdminClientEnumParameterChangeArgsGrp
 
+class HandleAdminClientDomainLifecycleParametersArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    const DomainLifecycleParams& get_params() const noexcept;
+    CommandDescription get_command_option() override;
+    std::shared_ptr<boost::program_options::options_description> get_options_description() override;
+    std::size_t handle(int argc, char* argv[], FakedArgs& fa, std::size_t option_group_index) override;
+private:
+    DomainLifecycleParams params_;
+};
 
 /**
  * \class HandleAdminClientObjectNewStateRequestNameArgsGrp
@@ -1969,10 +1980,10 @@ public:
                 ::value<Checked::string>()->notifier(save_arg<std::string>(params.object_name))
                  ,"object handle")
             ("object_type,o",boost::program_options
-                 ::value<Checked::ulong>()->notifier(save_arg<unsigned long>(params.object_type))
+                ::value<Checked::ulong>()->notifier(save_arg<unsigned long>(params.object_type))
                   ,"object type number: 1 - contact,  2 - nsset, 3 - domain, 4 - keyset")
-          ("object_state_name,s",boost::program_options
-                  ::value<std::vector<std::string> >()->notifier(insert_arg< std::vector<std::string> >(params.object_state_name))
+            ("object_state_name,s",boost::program_options
+                ::value<std::vector<std::string> >()->notifier(insert_arg< std::vector<std::string> >(params.object_state_name))
                    ,"object state name , may appear multiple times like \" -s serverBlocked -s serverOutzoneManual \" , from db table enum_object_states: "
                    "serverRenewProhibited "
                    "serverOutzoneManual "
