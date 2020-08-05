@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2010-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -49,7 +49,7 @@ class CfgArgs : boost::noncopyable
 {
     HandlerPtrVector hpv_; //defines processing order in handle() implementation
     HandlerPtrMap hpm_; //used for looking for handler by type
-    static std::unique_ptr<CfgArgs> instance_ptr;
+    static CfgArgs* instance_ptr;
 public:
     template <class T> HandleArgsPtr get_handler_by_type()
     {
@@ -126,8 +126,8 @@ template <class HELP> CfgArgs* CfgArgs::init(const HandlerPtrVector& hpv)
                 ; i != hpv.end(); ++i )
             hga->po_description.push_back((*i)->get_options_description());
     }
-    instance_ptr = std::move(tmp_instance);
-    return instance_ptr.get();
+    instance_ptr = tmp_instance.release();
+    return instance_ptr;
 }
 
 typedef std::map<std::string, HandleGrpArgsPtr > HandlerGrpPtrMap;
@@ -140,7 +140,7 @@ class CfgArgGroups : boost::noncopyable
 {
     HandlerPtrGrid hpg_;
     HandlerGrpPtrMap hpm_;
-    static std::unique_ptr<CfgArgGroups> instance_ptr;
+    static CfgArgGroups* instance_ptr;
 public:
     template <class T> HandleGrpArgsPtr get_handler_by_type()
     {
@@ -236,8 +236,8 @@ template <class HELP> CfgArgGroups* CfgArgGroups::init(const HandlerPtrGrid& hpg
                 {}//ignore when no options decription suplied
             }
     }
-    instance_ptr = std::move(tmp_instance);
-    return instance_ptr.get();
+    instance_ptr = tmp_instance.release();
+    return instance_ptr;
 }
 
 #endif

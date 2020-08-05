@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2020  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -17,19 +17,22 @@
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef VALIDATE_ARGS_HH_BAA5803FB80F4518ABC0DC0372B55DCF
-#define VALIDATE_ARGS_HH_BAA5803FB80F4518ABC0DC0372B55DCF
+#include "src/util/cfg/config_handler_decl.hh"
 
-#include "src/util/cfg/checked_types.hh"
+CfgArgs* CfgArgs::instance_ptr = nullptr;
 
-#include <iostream>
+CfgArgGroups* CfgArgGroups::instance_ptr = nullptr;
 
-std::ostream& operator<<(std::ostream& o, const Checked::string_fpnumber& s);
+CfgArgs* CfgArgs::instance()
+{
+    CfgArgs* ret = instance_ptr;
+    if (ret == 0) throw std::runtime_error("error: CfgArgs instance not set");
+    return ret;
+}
 
-std::istream& operator>>(std::istream& i, Checked::string_fpnumber& s);
-
-std::ostream& operator<<(std::ostream&, const Checked::Date&);
-
-std::istream& operator>>(std::istream&, Checked::Date&);
-
-#endif
+CfgArgGroups* CfgArgGroups::instance()
+{
+    CfgArgGroups* ret = instance_ptr;
+    if (ret == 0) throw std::runtime_error("error: CfgArgGroups instance not set");
+    return ret;
+}

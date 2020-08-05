@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2010-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,54 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
-/**
- *  @file config_handler.h
- *  common option handlers definition
- */
-
 
 #ifndef CONFIG_HANDLER_HH_AC3B377B6DEE43D1A349A0E02C5899A6
 #define CONFIG_HANDLER_HH_AC3B377B6DEE43D1A349A0E02C5899A6
 
 #include "src/util/cfg/config_handler_decl.hh"
 
-//compose args processing
-/* possible usage:
-HandlerPtrVector ghpv =
-boost::assign::list_of
-(HandleArgsPtr(new HandleGeneralArgs))
-(HandleArgsPtr(new HandleDatabaseArgs))
-(HandleArgsPtr(new HandleThreadGroupArgs))
-(HandleArgsPtr(new HandleCorbaNameServiceArgs));
-
-in UTF main
- fa = CfgArgs::instance<HandleGeneralArgs>(ghpv)->handle(argc, argv);
-*/
-
-
-//static instance init
-std::unique_ptr<CfgArgs> CfgArgs::instance_ptr;
-
-//static instance init
-std::unique_ptr<CfgArgGroups> CfgArgGroups::instance_ptr;
-
-//getter
-CfgArgs* CfgArgs::instance()
-{
-    CfgArgs* ret = instance_ptr.get();
-    if (ret == 0) throw std::runtime_error("error: CfgArgs instance not set");
-    return ret;
-}
-
-
-//getter
-CfgArgGroups* CfgArgGroups::instance()
-{
-    CfgArgGroups* ret = instance_ptr.get();
-    if (ret == 0) throw std::runtime_error("error: CfgArgGroups instance not set");
-    return ret;
-}
-
-
-
-#endif
+#endif//CONFIG_HANDLER_HH_AC3B377B6DEE43D1A349A0E02C5899A6
