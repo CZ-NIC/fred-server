@@ -110,7 +110,7 @@ void exec_list_all(const LibFred::OperationContext& ctx)
     }
 }
 
-void exec_append_top(const LibFred::OperationContext& ctx, const DomainLifecycleParams::AppendTop& options)
+void exec_append_top(const LibFred::OperationContext& ctx, const DomainLifecycleParams::Command::AppendTop& options)
 {
     options.check();
     const auto valid_for_exdate_after = to_psql_timestamp(options.valid_for_exdate_after());
@@ -195,15 +195,15 @@ void manage_domain_lifecycle_parameters()
             explicit Executor(const LibFred::OperationContext& ctx)
                 : ctx_{ctx}
             { }
-            void operator()(const DomainLifecycleParams::ListAll&) const
+            void operator()(const DomainLifecycleParams::Command::ListAll&) const
             {
                 exec_list_all(ctx_);
             }
-            void operator()(const DomainLifecycleParams::AppendTop& options) const
+            void operator()(const DomainLifecycleParams::Command::AppendTop& options) const
             {
                 exec_append_top(ctx_, options);
             }
-            void operator()(const DomainLifecycleParams::DeleteTop&) const
+            void operator()(const DomainLifecycleParams::Command::DeleteTop&) const
             {
                 exec_delete_top(ctx_);
             }

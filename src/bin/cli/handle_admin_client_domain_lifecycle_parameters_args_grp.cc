@@ -37,27 +37,27 @@ std::shared_ptr<boost::program_options::options_description> HandleAdminClientDo
     auto cfg_opts = std::make_shared<boost::program_options::options_description>("Commands for domain lifecycle parameters management", 120);
     cfg_opts->add_options()
             ("domain_lifecycle_parameters", "list, append, delete records in domain_lifecycle_parameters table")
-            ("list", boost::program_options::value<bool>()->zero_tokens()->notifier(DomainLifecycleParams::SetListAll{params_}),
+            ("list", boost::program_options::value<bool>()->zero_tokens()->notifier(DomainLifecycleParams::Setter::ListAll{params_}),
              "command: list all records from the domain_lifecycle_parameters table")
-            ("append", boost::program_options::value<bool>()->zero_tokens()->notifier(DomainLifecycleParams::SetAppendTop{params_}),
-             "command: append record to the domain_lifecycle_parameters table")
-            ("delete", boost::program_options::value<bool>()->zero_tokens()->notifier(DomainLifecycleParams::SetDeleteTop{params_}),
+            ("delete", boost::program_options::value<bool>()->zero_tokens()->notifier(DomainLifecycleParams::Setter::DeleteTop{params_}),
              "command: delete the latest future record from the domain_lifecycle_parameters table")
-            ("valid_for_exdate_after", boost::program_options::value<Checked::Date>()->notifier(DomainLifecycleParams::SetValidForExdateAfter{params_}),
-             "set valid_for_exdate_after parameter (date)")
-            ("expiration_notify_period", boost::program_options::value<int>()->notifier(DomainLifecycleParams::SetExpirationNotifyPeriod{params_}),
+            ("append", boost::program_options::value<bool>()->zero_tokens()->notifier(DomainLifecycleParams::Setter::AppendTop{params_}),
+             "command: append record to the domain_lifecycle_parameters table, requires all the subsequent parameters")
+            ("valid_for_exdate_after", boost::program_options::value<Checked::Date>()->notifier(DomainLifecycleParams::Setter::ValidForExdateAfter{params_}),
+             "set valid_for_exdate_after parameter (date [YYYY-MM-DD])")
+            ("expiration_notify_period", boost::program_options::value<int>()->notifier(DomainLifecycleParams::Setter::ExpirationNotifyPeriod{params_}),
              "set expiration_notify_period (days)")
-            ("outzone_unguarded_email_warning_period", boost::program_options::value<int>()->notifier(DomainLifecycleParams::SetOutzoneUnguardedEmailWarningPeriod{params_}),
+            ("outzone_unguarded_email_warning_period", boost::program_options::value<int>()->notifier(DomainLifecycleParams::Setter::OutzoneUnguardedEmailWarningPeriod{params_}),
              "set outzone_unguarded_email_warning_period (days)")
-            ("expiration_dns_protection_period", boost::program_options::value<int>()->notifier(DomainLifecycleParams::SetExpirationDnsProtectionPeriod{params_}),
+            ("expiration_dns_protection_period", boost::program_options::value<int>()->notifier(DomainLifecycleParams::Setter::ExpirationDnsProtectionPeriod{params_}),
              "set expiration_dns_protection_period (days)")
-            ("expiration_letter_warning_period", boost::program_options::value<int>()->notifier(DomainLifecycleParams::SetExpirationLetterWarningPeriod{params_}),
+            ("expiration_letter_warning_period", boost::program_options::value<int>()->notifier(DomainLifecycleParams::Setter::ExpirationLetterWarningPeriod{params_}),
              "set expiration_letter_warning_period (days)")
-            ("expiration_registration_protection_period", boost::program_options::value<int>()->notifier(DomainLifecycleParams::SetExpirationRegistrationProtectionPeriod{params_}),
+            ("expiration_registration_protection_period", boost::program_options::value<int>()->notifier(DomainLifecycleParams::Setter::ExpirationRegistrationProtectionPeriod{params_}),
              "set expiration_registration_protection_period (days)")
-            ("validation_notify1_period", boost::program_options::value<int>()->notifier(DomainLifecycleParams::SetValidationNotify1Period{params_}),
+            ("validation_notify1_period", boost::program_options::value<int>()->notifier(DomainLifecycleParams::Setter::ValidationNotify1Period{params_}),
              "set validation_notify1_period (days)")
-            ("validation_notify2_period", boost::program_options::value<int>()->notifier(DomainLifecycleParams::SetValidationNotify2Period{params_}),
+            ("validation_notify2_period", boost::program_options::value<int>()->notifier(DomainLifecycleParams::Setter::ValidationNotify2Period{params_}),
              "set validation_notify2_period (days)");
     return cfg_opts;
 }
