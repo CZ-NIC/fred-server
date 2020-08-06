@@ -70,47 +70,47 @@ bool DomainLifecycleParams::has_command() const
     return !boost::apply_visitor(IsBlank{}, command);
 }
 
-const DomainLifecycleParams::Time& DomainLifecycleParams::AppendTop::valid_for_exdate_after() const
+const DomainLifecycleParams::Time& DomainLifecycleParams::Command::AppendTop::valid_for_exdate_after() const
 {
     return *params_.valid_for_exdate_after;
 }
 
-const DomainLifecycleParams::Day& DomainLifecycleParams::AppendTop::expiration_notify_period() const
+const DomainLifecycleParams::Day& DomainLifecycleParams::Command::AppendTop::expiration_notify_period() const
 {
     return *params_.expiration_notify_period;
 }
 
-const DomainLifecycleParams::Day& DomainLifecycleParams::AppendTop::outzone_unguarded_email_warning_period() const
+const DomainLifecycleParams::Day& DomainLifecycleParams::Command::AppendTop::outzone_unguarded_email_warning_period() const
 {
     return *params_.outzone_unguarded_email_warning_period;
 }
 
-const DomainLifecycleParams::Day& DomainLifecycleParams::AppendTop::expiration_dns_protection_period() const
+const DomainLifecycleParams::Day& DomainLifecycleParams::Command::AppendTop::expiration_dns_protection_period() const
 {
     return *params_.expiration_dns_protection_period;
 }
 
-const DomainLifecycleParams::Day& DomainLifecycleParams::AppendTop::expiration_letter_warning_period() const
+const DomainLifecycleParams::Day& DomainLifecycleParams::Command::AppendTop::expiration_letter_warning_period() const
 {
     return *params_.expiration_letter_warning_period;
 }
 
-const DomainLifecycleParams::Day& DomainLifecycleParams::AppendTop::expiration_registration_protection_period() const
+const DomainLifecycleParams::Day& DomainLifecycleParams::Command::AppendTop::expiration_registration_protection_period() const
 {
     return *params_.expiration_registration_protection_period;
 }
 
-const DomainLifecycleParams::Day& DomainLifecycleParams::AppendTop::validation_notify1_period() const
+const DomainLifecycleParams::Day& DomainLifecycleParams::Command::AppendTop::validation_notify1_period() const
 {
     return *params_.validation_notify1_period;
 }
 
-const DomainLifecycleParams::Day& DomainLifecycleParams::AppendTop::validation_notify2_period() const
+const DomainLifecycleParams::Day& DomainLifecycleParams::Command::AppendTop::validation_notify2_period() const
 {
     return *params_.validation_notify2_period;
 }
 
-void DomainLifecycleParams::AppendTop::check() const
+void DomainLifecycleParams::Command::AppendTop::check() const
 {
     struct MissingOption : std::runtime_error
     {
@@ -179,96 +179,96 @@ void DomainLifecycleParams::AppendTop::check() const
     }
 }
 
-DomainLifecycleParams::AppendTop& DomainLifecycleParams::AppendTop::valid_for_exdate_after(Time value)
+DomainLifecycleParams::Command::AppendTop& DomainLifecycleParams::Command::AppendTop::valid_for_exdate_after(Time value)
 {
     params_.valid_for_exdate_after = std::move(value);
     return *this;
 }
 
-DomainLifecycleParams::AppendTop& DomainLifecycleParams::AppendTop::expiration_notify_period(Day value)
+DomainLifecycleParams::Command::AppendTop& DomainLifecycleParams::Command::AppendTop::expiration_notify_period(Day value)
 {
     params_.expiration_notify_period = std::move(value);
     return *this;
 }
 
-DomainLifecycleParams::AppendTop& DomainLifecycleParams::AppendTop::outzone_unguarded_email_warning_period(Day value)
+DomainLifecycleParams::Command::AppendTop& DomainLifecycleParams::Command::AppendTop::outzone_unguarded_email_warning_period(Day value)
 {
     params_.outzone_unguarded_email_warning_period = std::move(value);
     return *this;
 }
 
-DomainLifecycleParams::AppendTop& DomainLifecycleParams::AppendTop::expiration_dns_protection_period(Day value)
+DomainLifecycleParams::Command::AppendTop& DomainLifecycleParams::Command::AppendTop::expiration_dns_protection_period(Day value)
 {
     params_.expiration_dns_protection_period = std::move(value);
     return *this;
 }
 
-DomainLifecycleParams::AppendTop& DomainLifecycleParams::AppendTop::expiration_letter_warning_period(Day value)
+DomainLifecycleParams::Command::AppendTop& DomainLifecycleParams::Command::AppendTop::expiration_letter_warning_period(Day value)
 {
     params_.expiration_letter_warning_period = std::move(value);
     return *this;
 }
 
-DomainLifecycleParams::AppendTop& DomainLifecycleParams::AppendTop::expiration_registration_protection_period(Day value)
+DomainLifecycleParams::Command::AppendTop& DomainLifecycleParams::Command::AppendTop::expiration_registration_protection_period(Day value)
 {
     params_.expiration_registration_protection_period = std::move(value);
     return *this;
 }
 
-DomainLifecycleParams::AppendTop& DomainLifecycleParams::AppendTop::validation_notify1_period(Day value)
+DomainLifecycleParams::Command::AppendTop& DomainLifecycleParams::Command::AppendTop::validation_notify1_period(Day value)
 {
     params_.validation_notify1_period = std::move(value);
     return *this;
 }
 
-DomainLifecycleParams::AppendTop& DomainLifecycleParams::AppendTop::validation_notify2_period(Day value)
+DomainLifecycleParams::Command::AppendTop& DomainLifecycleParams::Command::AppendTop::validation_notify2_period(Day value)
 {
     params_.validation_notify2_period = std::move(value);
     return *this;
 }
 
-DomainLifecycleParams::SetListAll::SetListAll(DomainLifecycleParams& dst)
+DomainLifecycleParams::Setter::ListAll::ListAll(DomainLifecycleParams& dst)
     : command_{dst.command}
 { }
 
-void DomainLifecycleParams::SetListAll::operator()(bool value) const
+void DomainLifecycleParams::Setter::ListAll::operator()(bool value) const
 {
     Require::is_true(value);
     Require::is_blank(command_);
-    command_ = ListAll{};
+    command_ = Command::ListAll{};
 }
 
-DomainLifecycleParams::SetDeleteTop::SetDeleteTop(DomainLifecycleParams& dst)
+DomainLifecycleParams::Setter::DeleteTop::DeleteTop(DomainLifecycleParams& dst)
     : command_{dst.command}
 { }
 
-void DomainLifecycleParams::SetDeleteTop::operator()(bool value) const
+void DomainLifecycleParams::Setter::DeleteTop::operator()(bool value) const
 {
     Require::is_true(value);
     Require::is_blank(command_);
-    command_ = DeleteTop{};
+    command_ = Command::DeleteTop{};
 }
 
 namespace {
 
-struct GetAppendTop : boost::static_visitor<DomainLifecycleParams::AppendTop*>
+struct GetAppendTop : boost::static_visitor<DomainLifecycleParams::Command::AppendTop*>
 {
-    DomainLifecycleParams::AppendTop* operator()(DomainLifecycleParams::AppendTop& options) const
+    DomainLifecycleParams::Command::AppendTop* operator()(DomainLifecycleParams::Command::AppendTop& options) const
     {
         return &options;
     }
     template <typename T>
-    DomainLifecycleParams::AppendTop* operator()(T&) const
+    DomainLifecycleParams::Command::AppendTop* operator()(T&) const
     {
         struct NotAppendTopCommand : std::runtime_error
         {
-            NotAppendTopCommand() : std::runtime_error{"is not the \"append\" command"} { }
+            NotAppendTopCommand() : std::runtime_error{"can be used just for the \"append\" command"} { }
         };
         throw NotAppendTopCommand{};
     }
 };
 
-DomainLifecycleParams::AppendTop& get_append_top_command(DomainLifecycleParams::Action& command)
+DomainLifecycleParams::Command::AppendTop& get_append_top_command(DomainLifecycleParams::Action& command)
 {
     return *boost::apply_visitor(GetAppendTop{}, command);
 }
@@ -282,85 +282,85 @@ DomainLifecycleParams::Time into_chrono_time(const boost::gregorian::date& date)
 
 }//namespace {anonymous}
 
-DomainLifecycleParams::SetAppendTop::SetAppendTop(DomainLifecycleParams& dst)
+DomainLifecycleParams::Setter::AppendTop::AppendTop(DomainLifecycleParams& dst)
     : command_{dst.command}
 { }
 
-void DomainLifecycleParams::SetAppendTop::operator()(bool value) const
+void DomainLifecycleParams::Setter::AppendTop::operator()(bool value) const
 {
     Require::is_true(value);
     Require::is_blank(command_);
-    command_ = AppendTop{};
+    command_ = Command::AppendTop{};
 }
 
-DomainLifecycleParams::SetValidForExdateAfter::SetValidForExdateAfter(DomainLifecycleParams& dst)
+DomainLifecycleParams::Setter::ValidForExdateAfter::ValidForExdateAfter(DomainLifecycleParams& dst)
     : command_{dst.command}
 { }
 
-void DomainLifecycleParams::SetValidForExdateAfter::operator()(const Checked::Date& value) const
+void DomainLifecycleParams::Setter::ValidForExdateAfter::operator()(const Checked::Date& value) const
 {
     get_append_top_command(command_).valid_for_exdate_after(into_chrono_time(value.date));
 }
 
-DomainLifecycleParams::SetExpirationNotifyPeriod::SetExpirationNotifyPeriod(DomainLifecycleParams& dst)
+DomainLifecycleParams::Setter::ExpirationNotifyPeriod::ExpirationNotifyPeriod(DomainLifecycleParams& dst)
     : command_{dst.command}
 { }
 
-void DomainLifecycleParams::SetExpirationNotifyPeriod::operator()(int days) const
+void DomainLifecycleParams::Setter::ExpirationNotifyPeriod::operator()(int days) const
 {
     get_append_top_command(command_).expiration_notify_period(Day{days});
 }
 
-DomainLifecycleParams::SetOutzoneUnguardedEmailWarningPeriod::SetOutzoneUnguardedEmailWarningPeriod(DomainLifecycleParams& dst)
+DomainLifecycleParams::Setter::OutzoneUnguardedEmailWarningPeriod::OutzoneUnguardedEmailWarningPeriod(DomainLifecycleParams& dst)
     : command_{dst.command}
 { }
 
-void DomainLifecycleParams::SetOutzoneUnguardedEmailWarningPeriod::operator()(int days) const
+void DomainLifecycleParams::Setter::OutzoneUnguardedEmailWarningPeriod::operator()(int days) const
 {
     get_append_top_command(command_).outzone_unguarded_email_warning_period(Day{days});
 }
 
-DomainLifecycleParams::SetExpirationDnsProtectionPeriod::SetExpirationDnsProtectionPeriod(DomainLifecycleParams& dst)
+DomainLifecycleParams::Setter::ExpirationDnsProtectionPeriod::ExpirationDnsProtectionPeriod(DomainLifecycleParams& dst)
     : command_{dst.command}
 { }
 
-void DomainLifecycleParams::SetExpirationDnsProtectionPeriod::operator()(int days) const
+void DomainLifecycleParams::Setter::ExpirationDnsProtectionPeriod::operator()(int days) const
 {
     get_append_top_command(command_).expiration_dns_protection_period(Day{days});
 }
 
-DomainLifecycleParams::SetExpirationLetterWarningPeriod::SetExpirationLetterWarningPeriod(DomainLifecycleParams& dst)
+DomainLifecycleParams::Setter::ExpirationLetterWarningPeriod::ExpirationLetterWarningPeriod(DomainLifecycleParams& dst)
     : command_{dst.command}
 { }
 
-void DomainLifecycleParams::SetExpirationLetterWarningPeriod::operator()(int days) const
+void DomainLifecycleParams::Setter::ExpirationLetterWarningPeriod::operator()(int days) const
 {
     get_append_top_command(command_).expiration_letter_warning_period(Day{days});
 }
 
-DomainLifecycleParams::SetExpirationRegistrationProtectionPeriod::SetExpirationRegistrationProtectionPeriod(DomainLifecycleParams& dst)
+DomainLifecycleParams::Setter::ExpirationRegistrationProtectionPeriod::ExpirationRegistrationProtectionPeriod(DomainLifecycleParams& dst)
     : command_{dst.command}
 { }
 
-void DomainLifecycleParams::SetExpirationRegistrationProtectionPeriod::operator()(int days) const
+void DomainLifecycleParams::Setter::ExpirationRegistrationProtectionPeriod::operator()(int days) const
 {
     get_append_top_command(command_).expiration_registration_protection_period(Day{days});
 }
 
-DomainLifecycleParams::SetValidationNotify1Period::SetValidationNotify1Period(DomainLifecycleParams& dst)
+DomainLifecycleParams::Setter::ValidationNotify1Period::ValidationNotify1Period(DomainLifecycleParams& dst)
     : command_{dst.command}
 { }
 
-void DomainLifecycleParams::SetValidationNotify1Period::operator()(int days) const
+void DomainLifecycleParams::Setter::ValidationNotify1Period::operator()(int days) const
 {
     get_append_top_command(command_).validation_notify1_period(Day{days});
 }
 
-DomainLifecycleParams::SetValidationNotify2Period::SetValidationNotify2Period(DomainLifecycleParams& dst)
+DomainLifecycleParams::Setter::ValidationNotify2Period::ValidationNotify2Period(DomainLifecycleParams& dst)
     : command_{dst.command}
 { }
 
-void DomainLifecycleParams::SetValidationNotify2Period::operator()(int days) const
+void DomainLifecycleParams::Setter::ValidationNotify2Period::operator()(int days) const
 {
     get_append_top_command(command_).validation_notify2_period(Day{days});
 }
