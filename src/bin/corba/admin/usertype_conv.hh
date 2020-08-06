@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2009-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -20,7 +20,7 @@
 #define USERTYPE_CONV_HH_63906E0168FA496B959A95DF14200295
 
 #include <memory>
-#include "src/bin/corba/Admin.hh"
+#include "corba/Admin.hh"
 #include "src/deprecated/libfred/requests/request.hh"
 
 inline std::unique_ptr<LibFred::Logger::ObjectReferences> convert_obj_references(const ccReg::ObjectReferences &r)

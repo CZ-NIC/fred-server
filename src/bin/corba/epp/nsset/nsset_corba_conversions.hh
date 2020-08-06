@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -19,7 +19,7 @@
 #ifndef NSSET_CORBA_CONVERSIONS_HH_8BFAB0F8B96E4F5F930C946006979713
 #define NSSET_CORBA_CONVERSIONS_HH_8BFAB0F8B96E4F5F930C946006979713
 
-#include "src/bin/corba/EPP.hh"
+#include "corba/EPP.hh"
 
 #include "src/backend/epp/nsset/dns_host_input.hh"
 #include "src/backend/epp/nsset/info_nsset_localized_output_data.hh"

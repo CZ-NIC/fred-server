@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2010-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -22,7 +22,7 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 
-#include "src/bin/corba/FileManager.hh"
+#include "corba/FileManager.hh"
 #include "src/bin/corba/nameservice.hh"
 #include "src/deprecated/libfred/file_transferer.hh"
 

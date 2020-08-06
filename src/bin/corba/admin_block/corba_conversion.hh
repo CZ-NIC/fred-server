@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2013-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -20,7 +20,7 @@
 #define CORBA_CONVERSION_HH_4787F0F5B8964E3282F494229EA4B01B
 
 #include "src/backend/admin_block/administrativeblocking.hh"
-#include "src/bin/corba/AdministrativeBlocking.hh"
+#include "corba/AdministrativeBlocking.hh"
 #include "src/bin/corba/common_wrappers.hh"
 #include "libfred/object_state/get_blocking_status_desc_list.hh"
 #include "util/db/nullable.hh"

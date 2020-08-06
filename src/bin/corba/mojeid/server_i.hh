@@ -24,8 +24,8 @@
 #ifndef SERVER_I_HH_B20D42971A09437AAE3D4B735A7129B4
 #define SERVER_I_HH_B20D42971A09437AAE3D4B735A7129B4
 
-#include "src/bin/corba/Buffer.hh"
-#include "src/bin/corba/MojeID.hh"
+#include "corba/Buffer.hh"
+#include "corba/MojeID.hh"
 #include "src/bin/corba/mojeid/service_name.hh"
 
 #include <boost/utility.hpp>

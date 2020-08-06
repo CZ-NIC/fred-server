@@ -23,7 +23,7 @@
 
 #include "src/backend/mojeid/mojeid_impl_internal.hh"
 #include "src/backend/mojeid/mojeid_impl_data.hh"
-#include "src/bin/corba/MojeID.hh"
+#include "corba/MojeID.hh"
 
 namespace Fred {
 namespace Backend {

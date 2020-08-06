@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2009-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -32,7 +32,7 @@
 #include "src/deprecated/libfred/requests/request_manager.hh"
 
 #include "src/util/corba_wrapper_decl.hh"
-#include "src/bin/corba/Logger.hh"
+#include "corba/Logger.hh"
 
 #include "src/util/cfg/handle_general_args.hh"
 #include "src/util/cfg/handle_database_args.hh"

@@ -22,9 +22,9 @@
  */
 
 #include "src/backend/buffer.hh"
-#include "src/bin/corba/IsoDate.hh"
-#include "src/bin/corba/MojeID.hh"
-#include "src/bin/corba/NullableIsoDate.hh"
+#include "corba/IsoDate.hh"
+#include "corba/MojeID.hh"
+#include "corba/NullableIsoDate.hh"
 #include "src/bin/corba/mojeid/mojeid_corba_conversion.hh"
 #include "src/bin/corba/util/corba_conversions_isodate.hh"
 #include "src/bin/corba/util/corba_conversions_isodatetime.hh"

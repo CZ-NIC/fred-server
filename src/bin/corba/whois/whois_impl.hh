@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2011-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -19,7 +19,7 @@
 #ifndef WHOIS_IMPL_HH_83BEF5EF7B324EEDB301BC49529CD44A
 #define WHOIS_IMPL_HH_83BEF5EF7B324EEDB301BC49529CD44A
 
-#include "src/bin/corba/Whois.hh"
+#include "corba/Whois.hh"
 
 #include "src/deprecated/libfred/registry.hh"
 //#include "src/deprecated/util/dbsql.hh"

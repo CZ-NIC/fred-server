@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2009-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -19,7 +19,7 @@
 #ifndef BANKINGINVOICING_IMPL_HH_03F685E625E04510AC2B1C6B1B6B5E20
 #define BANKINGINVOICING_IMPL_HH_03F685E625E04510AC2B1C6B1B6B5E20
 
-#include "src/bin/corba/Admin.hh"
+#include "corba/Admin.hh"
 
 #include "src/bin/corba/nameservice.hh"
 #include "src/deprecated/libfred/invoicing/invoice.hh"
