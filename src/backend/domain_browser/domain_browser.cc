@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2014-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -15,10 +15,6 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
- */
-/**
- *  @file
- *  domain browser implementation
  */
 
 #include "src/backend/domain_browser/domain_browser.hh"
@@ -1398,17 +1394,8 @@ DomainList DomainBrowser::getDomainList(
         std::ostringstream sql;
         sql <<
 // clang-format off
-"WITH outzone_period AS ("
-    "SELECT (val||' day')::INTERVAL AS val FROM enum_parameters "
-    "WHERE name='expiration_dns_protection_period'),"
-
-     "delete_period AS ("
-    "SELECT (val||' day')::INTERVAL AS val FROM enum_parameters "
-    "WHERE name='expiration_registration_protection_period'),"
-
-     "domain_list AS ("
+"WITH domain_list AS ("
     "WITH domains AS (";
-
                 if(!list_domains_for_nsset_id.isset() && !list_domains_for_keyset_id.isset())
                 {   //select domains related to user_contact_id
                     sql <<
@@ -1429,7 +1416,6 @@ DomainList DomainBrowser::getDomainList(
                     {   //select domains with given nsset
                         sql << "nsset=$" << idx_of_nsset_id << "::BIGINT";
                     }
-
                     if(list_domains_for_keyset_id.isset())
                     {   //select domains with given keyset
                         if(list_domains_for_nsset_id.isset())
@@ -1464,20 +1450,21 @@ DomainList DomainBrowser::getDomainList(
             "ELSE '' "
             "END AS user_role,"
        "CURRENT_DATE AS today_date,"
-       "(SELECT (dl.expiration_date AT TIME ZONE 'utc' AT TIME ZONE $"<< idx_timezone << "::text + val)::DATE FROM outzone_period) AS outzone_date,"
-       "(SELECT (dl.expiration_date AT TIME ZONE 'utc' AT TIME ZONE $"<< idx_timezone << "::text + val)::DATE FROM delete_period) AS delete_date,"
+       "(dl.expiration_date AT TIME ZONE 'utc' AT TIME ZONE $"<< idx_timezone << "::text + dlp.expiration_dns_protection_period)::DATE AS outzone_date,"
+       "(dl.expiration_date AT TIME ZONE 'utc' AT TIME ZONE $"<< idx_timezone << "::text + dlp.expiration_registration_protection_period)::DATE AS delete_date,"
        "COALESCE(BIT_OR(eos.external::INTEGER*eos.importance),0) AS external_importance,"
        "COALESCE(BOOL_OR(eos.name='serverBlocked'),false) AS is_server_blocked,"
        "ARRAY_TO_STRING(ARRAY_AGG((CASE WHEN eos.external THEN eos.name "
                                                          "ELSE NULL END) "
                                  "ORDER BY eos.importance)::text[],',') AS state_code "
 "FROM domain_list dl "
+"JOIN domain_lifecycle_parameters dlp ON dlp.valid_for_exdate_after=(SELECT MAX(valid_for_exdate_after) FROM domain_lifecycle_parameters WHERE valid_for_exdate_after<=dl.expiration_date) "
 "LEFT JOIN object_state os ON os.object_id=dl.id AND "
                              "os.valid_from<=CURRENT_TIMESTAMP AND (CURRENT_TIMESTAMP<os.valid_to OR "
                                                                    "os.valid_to IS NULL) "
 "LEFT JOIN enum_object_states eos ON eos.id=os.state_id "
 "GROUP BY dl.expiration_date,dl.id,dl.fqdn,dl.registrar_handle,dl.registrar_name,"
-         "dl.registrant_id,dl.have_keyset,user_role "
+         "dl.registrant_id,dl.have_keyset,user_role,dlp.id "
 "ORDER BY dl.expiration_date,dl.id";
 // clang-format on
 

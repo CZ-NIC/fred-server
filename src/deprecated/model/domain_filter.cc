@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2008-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/deprecated/model/domain_filter.hh"
 
 namespace Database {
@@ -154,7 +155,7 @@ Interval<Database::DateInterval>& DomainImpl::addExpirationDate() {
 
 Interval<Database::DateInterval>& DomainImpl::addOutZoneDate() {
   Interval<Database::DateInterval> *tmp = new Interval<Database::DateInterval>(Column("exdate", joinDomainTable()));
-  tmp->addPostValueString("::date - (SELECT val || ' day' FROM enum_parameters WHERE id = 4)::interval");
+  tmp->addPostValueString("::date - " + this->joinDomainTable().getAlias() + ".expiration_dns_protection_period");
   tmp->setName("OutZoneDate");
   add(tmp);
   return *tmp;
@@ -162,7 +163,7 @@ Interval<Database::DateInterval>& DomainImpl::addOutZoneDate() {
 
 Interval<Database::DateInterval>& DomainImpl::addCancelDate() {
   Interval<Database::DateInterval> *tmp = new Interval<Database::DateInterval>(Column("exdate", joinDomainTable()));
-  tmp->addPostValueString("::date - (SELECT val || ' day' FROM enum_parameters WHERE id = 6)::interval");
+  tmp->addPostValueString("::date - " + this->joinDomainTable().getAlias() + ".expiration_registration_protection_period");
   tmp->setName("CancelDate");
   add(tmp);
   return *tmp;
@@ -217,13 +218,23 @@ Contact& DomainImpl::addTempContact() {
   return tmp;
 }
 
+namespace {
+
+constexpr auto domain_join_dlp = "(SELECT d.*,dlp.expiration_dns_protection_period,dlp.expiration_registration_protection_period "
+                                  "FROM domain d "
+                                  "JOIN domain_lifecycle_parameters dlp ON dlp.valid_for_exdate_after=(SELECT MAX(valid_for_exdate_after) "
+                                                                                                      "FROM domain_lifecycle_parameters "
+                                                                                                      "WHERE valid_for_exdate_after<=d.exdate))";
+
+}//namespace Database::Filters::{anonymous}
+
 Table& DomainImpl::joinDomainTable() {
-  return joinTable("domain");
+  return joinTable(domain_join_dlp);
 }
 
 void DomainImpl::_joinPolymorphicTables() {
   ObjectImpl::_joinPolymorphicTables();
-  Table *d = findTable("domain");
+  Table *d = findTable(domain_join_dlp);
   if (d) {
     joins.push_back(new Join(
         Column("id", joinTable("object_registry")),
@@ -314,7 +325,7 @@ Interval<Database::DateInterval>& DomainHistoryImpl::addExpirationDate() {
 
 Interval<Database::DateInterval>& DomainHistoryImpl::addOutZoneDate() {
   Interval<Database::DateInterval> *tmp = new Interval<Database::DateInterval>(Column("exdate", joinDomainTable()));
-  tmp->addPostValueString("::date - (SELECT val || ' day' FROM enum_parameters WHERE id = 4)::interval");
+  tmp->addPostValueString("::date - " + this->joinDomainTable().getAlias() + ".expiration_dns_protection_period");
   tmp->setName("OutZoneDate");
   add(tmp);
   return *tmp;
@@ -322,7 +333,7 @@ Interval<Database::DateInterval>& DomainHistoryImpl::addOutZoneDate() {
 
 Interval<Database::DateInterval>& DomainHistoryImpl::addCancelDate() {
   Interval<Database::DateInterval> *tmp = new Interval<Database::DateInterval>(Column("exdate", joinDomainTable()));
-  tmp->addPostValueString("::date - (SELECT val || ' day' FROM enum_parameters WHERE id = 6)::interval");
+  tmp->addPostValueString("::date - " + this->joinDomainTable().getAlias() + ".expiration_registration_protection_period");
   tmp->setName("CancelDate");
   add(tmp);
   return *tmp;
@@ -389,12 +400,23 @@ Contact& DomainHistoryImpl::addTempContact() {
   return tmp;
 }
 
+namespace {
+
+constexpr auto domain_history_join_dlp =
+        "(SELECT dh.*,dlp.expiration_dns_protection_period,dlp.expiration_registration_protection_period "
+         "FROM domain_history dh "
+         "JOIN domain_lifecycle_parameters dlp ON dlp.valid_for_exdate_after=(SELECT MAX(valid_for_exdate_after) "
+                                                                             "FROM domain_lifecycle_parameters "
+                                                                             "WHERE valid_for_exdate_after<=dh.exdate))";
+
+}//namespace Database::Filters::{anonymous}
+
 Table& DomainHistoryImpl::joinDomainTable() {
-  return joinTable("domain_history");
+  return joinTable(domain_history_join_dlp);
 }
 
 void DomainHistoryImpl::_joinPolymorphicTables() {
-  Table *d = findTable("domain_history");
+  Table *d = findTable(domain_history_join_dlp);
   if (d) {
     joins.push_back(new Join(
         Column("historyid", joinTable("object_history")),
@@ -405,5 +427,5 @@ void DomainHistoryImpl::_joinPolymorphicTables() {
   ObjectHistoryImpl::_joinPolymorphicTables();
 }
 
-}
-}
+}//namespace Database::Filters
+}//namespace Database
