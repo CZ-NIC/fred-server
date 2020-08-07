@@ -582,10 +582,13 @@ prepare_object_files(
     src/bin/cli/charge_registry_access_fee.cc
     src/bin/cli/commonclient.cc
     src/bin/cli/contactclient.cc
+    src/bin/cli/domain_lifecycle_params.cc
     src/bin/cli/domainclient.cc
     src/bin/cli/enumparamclient.cc
     src/bin/cli/fileclient.cc
     src/bin/cli/fred-admin.cc
+    src/bin/cli/handle_admin_client_domain_lifecycle_parameters_args_grp.cc
+    src/bin/cli/manage_domain_lifecycle_parameters.cc
     src/bin/cli/invoiceclient.cc
     src/bin/cli/keysetclient.cc
     src/bin/cli/notifyclient.cc
@@ -816,8 +819,10 @@ prepare_object_files(
     src/deprecated/libfred/requests/session_cache.cc
     src/deprecated/libfred/requests/session.cc
     src/deprecated/libfred/zone.cc
+    src/util/cfg/config_handler.cc
     src/util/cfg/handle_rifd_args.cc
     src/util/cfg/handle_database_args.cc
+    src/util/cfg/validate_args.cc
     src/util/corba_conversion.cc
     src/util/csv_parser.cc
     src/util/db/query/compound_filter.cc
@@ -1080,7 +1085,9 @@ prepare_static_library(fred-deprecated
     src/deprecated/libfred/poll/create_request_fee_info_messages.cc
     src/backend/admin/contact/verification/contact_states/delete_all.cc
     src/deprecated/libfred/registrar/registrar_impl.cc
-    src/util/cfg/handle_database_args.cc)
+    src/util/cfg/config_handler.cc
+    src/util/cfg/handle_database_args.cc
+    src/util/cfg/validate_args.cc)
 
 prepare_static_library(authentic_registrar
     src/backend/epp/impl/registraracl/authentic_registrar.cc)
@@ -1763,6 +1770,7 @@ target_link_libraries(fred-msgd
     oldutils
     util
     corbadatatypes
+    fred-deprecated
     fred-static::library)
 target_link_external_libraries(fred-msgd
     boost_thread
@@ -1830,6 +1838,7 @@ target_link_libraries(fred-mojeid-msggen
     corbabuffer
     corbanullableisodate
     corbaisodatetime
+    fred-deprecated
     fred-static::library)
 target_link_external_libraries(fred-mojeid-msggen
     boost_program_options
@@ -2000,10 +2009,13 @@ prepare_executable(fred-admin
     src/bin/cli/charge_registry_access_fee.cc
     src/bin/cli/commonclient.cc
     src/bin/cli/contactclient.cc
+    src/bin/cli/domain_lifecycle_params.cc
     src/bin/cli/domainclient.cc
     src/bin/cli/enumparamclient.cc
     src/bin/cli/fileclient.cc
     src/bin/cli/fred-admin.cc
+    src/bin/cli/handle_admin_client_domain_lifecycle_parameters_args_grp.cc
+    src/bin/cli/manage_domain_lifecycle_parameters.cc
     src/bin/cli/invoiceclient.cc
     src/bin/cli/keysetclient.cc
     src/bin/cli/notifyclient.cc
