@@ -1,3 +1,7 @@
+2020-08-11 (2.45.2)
+
+  * Fix domain filter performance issue
+
 2020-08-07 (2.45.1)
 
   * Fix domain filter for Daphne
