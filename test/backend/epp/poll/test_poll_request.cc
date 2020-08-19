@@ -1089,9 +1089,9 @@ BOOST_FIXTURE_TEST_CASE(request_tech_check_message, HasPollTechCheckMessage)
     test();
 }
 
-BOOST_AUTO_TEST_SUITE_END(); // PollRequest
-BOOST_AUTO_TEST_SUITE_END(); // Poll
-BOOST_AUTO_TEST_SUITE_END(); // Epp
+BOOST_AUTO_TEST_SUITE_END(); // Backend/Epp/Poll/PollRequest
+BOOST_AUTO_TEST_SUITE_END(); // Backend/Epp/Poll
+BOOST_AUTO_TEST_SUITE_END(); // Backend/Epp
 BOOST_AUTO_TEST_SUITE_END(); // Backend
 
 } // namespace Teest

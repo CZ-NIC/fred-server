@@ -132,9 +132,9 @@ BOOST_FIXTURE_TEST_CASE(failed_acknowledgement, HasPollInfoMessage)
     BOOST_CHECK_EQUAL(after_message_count, 1);
 }
 
-BOOST_AUTO_TEST_SUITE_END(); // PollAcknowledgement
-BOOST_AUTO_TEST_SUITE_END(); // Poll
-BOOST_AUTO_TEST_SUITE_END(); // Epp
+BOOST_AUTO_TEST_SUITE_END(); // Backend/Epp/Poll/PollAcknowledgement
+BOOST_AUTO_TEST_SUITE_END(); // Backend/Epp/Poll
+BOOST_AUTO_TEST_SUITE_END(); // Backend/Epp
 BOOST_AUTO_TEST_SUITE_END(); // Backend
 
 } // namespace Test

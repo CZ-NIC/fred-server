@@ -156,10 +156,10 @@ BOOST_FIXTURE_TEST_CASE(failed_request_keyset_details, HasKeysetUpdate)
     BOOST_CHECK_EQUAL(after_message_count, 1);
 }
 
-BOOST_AUTO_TEST_SUITE_END(); // PollRequestKeysetDetails
-BOOST_AUTO_TEST_SUITE_END(); // PollRequest
-BOOST_AUTO_TEST_SUITE_END(); // Poll
-BOOST_AUTO_TEST_SUITE_END(); // Epp
+BOOST_AUTO_TEST_SUITE_END(); // Backend/Epp/Poll/PollRequest/PollRequestKeysetDetails
+BOOST_AUTO_TEST_SUITE_END(); // Backend/Epp/Poll/PollRequest
+BOOST_AUTO_TEST_SUITE_END(); // Backend/Epp/Poll
+BOOST_AUTO_TEST_SUITE_END(); // Backend/Epp
 BOOST_AUTO_TEST_SUITE_END(); // Backend
 
 } // namespace Test
