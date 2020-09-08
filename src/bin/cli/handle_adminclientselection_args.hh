@@ -24,12 +24,12 @@
 #ifndef HANDLE_ADMINCLIENTSELECTION_ARGS_HH_809940176CCF407B8E20E1741F12646B
 #define HANDLE_ADMINCLIENTSELECTION_ARGS_HH_809940176CCF407B8E20E1741F12646B
 
+#include "src/util/cfg/validate_args.hh"//must be included earlier than the boost/program_options.hpp !!!
 #include "src/util/cfg/faked_args.hh"
 #include "src/util/cfg/handle_args.hh"
 #include "src/util/types/optional.hh"
 #include "src/util/types/optional_from_program_options.hh"
 #include "src/util/cfg/command_selection_args.hh"
-#include "src/util/cfg/validate_args.hh"
 
 #include "src/bin/cli/domain_params.hh"
 #include "src/bin/cli/keyset_params.hh"

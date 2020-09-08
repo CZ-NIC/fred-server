@@ -16,20 +16,85 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+/**
+ *  @validate_args.h
+ *  program options validate overloads for
+ *  option argument value custom validation
+ */
 
 #ifndef VALIDATE_ARGS_HH_BAA5803FB80F4518ABC0DC0372B55DCF
 #define VALIDATE_ARGS_HH_BAA5803FB80F4518ABC0DC0372B55DCF
 
 #include "src/util/cfg/checked_types.hh"
 
+#include <boost/any.hpp>
+
 #include <iostream>
+#include <string>
+#include <vector>
 
-std::ostream& operator<<(std::ostream& o, const Checked::string_fpnumber& s);
+#ifdef PROGRAM_OPTIONS_VP_2003_05_19
+#error "boost/program_options.hpp included"
+#endif
 
-std::istream& operator>>(std::istream& i, Checked::string_fpnumber& s);
+template<class Char, class Traits>
+std::basic_ostream<Char, Traits>&
+operator<<(std::basic_ostream<Char, Traits> &o, const Checked::string_fpnumber &s)
+{
+    return o << (s.to_string());
+}
+
+template<class Char, class Traits>
+std::basic_istream<Char, Traits>&
+operator>>(std::basic_istream<Char, Traits> &i, Checked::string_fpnumber &s)
+{
+    std::string tmp;
+    i >> tmp;
+    s = tmp;
+    return i;
+}
 
 std::ostream& operator<<(std::ostream&, const Checked::Date&);
-
 std::istream& operator>>(std::istream&, Checked::Date&);
+
+namespace boost {
+namespace program_options {
+
+//overrides the 'validate' function for the 'std::string' type
+void validate(boost::any& v,
+        const std::vector<std::string>& values,
+        Checked::string*, int);
+
+//overrides the 'validate' function for the 'unsigned long long' type
+void validate(boost::any& v,
+        const std::vector<std::string>& values,
+        Checked::ulonglong*, int);
+
+//overrides the 'validate' function for the 'unsigned long' type
+void validate(boost::any& v,
+        const std::vector<std::string>& values,
+        Checked::ulong*, int);
+
+//overrides the 'validate' function for the 'double' type
+void validate(boost::any& v,
+        const std::vector<std::string>& values,
+        Checked::fpnumber*, int);
+
+void validate(boost::any& v,
+        const std::vector<std::string>& values,
+        Checked::string_fpnumber*, int);
+
+//overrides the 'validate' function for the 'boost::gregorian::date' type
+void validate(boost::any& v,
+        const std::vector<std::string>& values,
+        Checked::date*, int);
+
+//overrides the 'validate' function for the 'boost::posix_time::ptime' type
+void validate(boost::any& v,
+        const std::vector<std::string>& values,
+        Checked::ptime*, int);
+
+}//namespace boost::program_options
+}//namespace boost::
 
 #endif

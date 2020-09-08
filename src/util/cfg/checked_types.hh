@@ -38,6 +38,7 @@ struct Checked
     typedef unsigned long ulong;
     typedef ulonglong id;
     typedef double fpnumber;
+    typedef boost::gregorian::date date;
     struct Date
     {
         boost::gregorian::date date;
