@@ -1,3 +1,7 @@
+2020-10-20 (2.45.5)
+
+  * Validators as inline functions
+
 2020-10-01 (2.45.4)
 
   * Fix missing parameter validators
