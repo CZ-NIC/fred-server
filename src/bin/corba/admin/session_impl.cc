@@ -17,6 +17,7 @@
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include "corba/Admin.hh"
+#include "corba/LoggerFilter.hh"
 
 #include "src/backend/admin/registrar/create_registrar.hh"
 #include "src/backend/admin/registrar/update_epp_auth.hh"
@@ -163,13 +164,13 @@ ccReg_Session_i::~ccReg_Session_i() {
   delete m_messages;
 
     try {
-        ccReg::Logger_ptr logger = ccReg::Logger::_narrow(m_ns->resolve("Logger"));
+        ccReg::LoggerFilter_ptr logger_filter = ccReg::LoggerFilter::_narrow(m_ns->resolve("LoggerFilter"));
 
-        if (CORBA::is_nil(logger)) {
+        if (CORBA::is_nil(logger_filter)) {
             LOGGER.debug(boost::format("ccReg_Session_i::~ccReg_Session_i: logd isn't running."));
         } else {
-            LOGGER.debug(boost::format("ccReg_Session_i::~ccReg_Session_i: deleting logger pagetable."));
-            logger->deletePageTable(session_id_.c_str());
+            LOGGER.debug(boost::format("ccReg_Session_i::~ccReg_Session_i: deleting logger_filter pagetable."));
+            logger_filter->deletePageTable(session_id_.c_str());
 
         }
     } catch (CORBA::COMM_FAILURE&) {
@@ -194,22 +195,22 @@ Registry::User_ptr ccReg_Session_i::getUser() {
 
 Registry::PageTable_ptr ccReg_Session_i::getLoggerPageTable()
 {
-    ccReg::Logger_ptr logger;
-    //TODO substitute "Logger"
+    ccReg::LoggerFilter_ptr logger_filter;
+    //TODO substitute "LoggerFilter"
     try {
-        logger = ccReg::Logger::_narrow(m_ns->resolve("Logger"));
+        logger_filter = ccReg::LoggerFilter::_narrow(m_ns->resolve("LoggerFilter"));
     } catch (...) {
         throw ccReg::Admin::ServiceUnavailable();
     }
 
-    if(CORBA::is_nil(logger)) {
+    if(CORBA::is_nil(logger_filter)) {
         throw ccReg::Admin::ServiceUnavailable();
     }
 
     Registry::PageTable_ptr pagetable;
 
     try {
-        pagetable = logger->createPageTable(session_id_.c_str());
+        pagetable = logger_filter->createPageTable(session_id_.c_str());
     } catch(...) {
         throw ccReg::Admin::ServiceUnavailable();
     }
@@ -348,11 +349,8 @@ CORBA::Any* ccReg_Session_i::getDetail(ccReg::FilterType _type, ccReg::TID _id) 
         LOGGER.warning("ccReg_Session_i::getDetail ex: ccReg::Admin::ObjectNotFound");
         throw;
     }
-    catch (const ccReg::Logger::OBJECT_NOT_FOUND&) {
+    catch (const ccReg::LoggerFilter::OBJECT_NOT_FOUND&) {
         throw ccReg::Admin::ObjectNotFound();
-    }
-    catch (const ccReg::Logger::INTERNAL_SERVER_ERROR&) {
-        throw ccReg::Admin::ServiceUnavailable();
     }
     catch(std::exception& ex)
     {
@@ -638,22 +636,21 @@ Registry::Mailing::Detail* ccReg_Session_i::getMailDetail(ccReg::TID _id) {
 }
 
 
-// ccReg::Logger::Detail*  ccReg_Session_i::getRequestDetail(ccReg::TID _id) {
-ccReg::Logger::Detail*  ccReg_Session_i::getLoggerDetail(ccReg::TID _id) {
+ccReg::LoggerFilter::Detail*  ccReg_Session_i::getLoggerDetail(ccReg::TID _id) {
 
-        ccReg::Logger_ptr logger;
+        ccReg::LoggerFilter_ptr logger_filter;
 
-	LOGGER.debug(boost::format("constructing request filter for object id=%1% detail") % _id);
+        LOGGER.debug(boost::format("constructing request filter for object id=%1% detail") % _id);
 
         try {
-            logger = ccReg::Logger::_narrow(m_ns->resolve("Logger"));
+            logger_filter = ccReg::LoggerFilter::_narrow(m_ns->resolve("LoggerFilter"));
         } catch (...) {
             throw ccReg::Admin::ServiceUnavailable();
         }
 
-        if (CORBA::is_nil(logger)) throw ccReg::Admin::ServiceUnavailable();
+        if (CORBA::is_nil(logger_filter)) throw ccReg::Admin::ServiceUnavailable();
 
-        return logger->getDetail(_id);
+        return logger_filter->getDetail(_id);
 
 }
 
