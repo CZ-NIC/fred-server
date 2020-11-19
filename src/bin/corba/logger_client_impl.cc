@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2011-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -58,6 +58,7 @@ LoggerCorbaClientImpl::LoggerCorbaClientImpl()
 {
     boost::mutex::scoped_lock lock (ref_mutex);
     logger_ref = ccReg::Logger::_narrow(CorbaContainer::get_instance()->nsresolve("Logger"));
+    logger_request_count_ref = ccReg::LoggerRequestCount::_narrow(CorbaContainer::get_instance()->nsresolve("LoggerRequestCount"));
 
     try {
         ccReg::RequestServiceList_var service_list = logger_ref->getServices();
@@ -94,7 +95,7 @@ unsigned long long LoggerCorbaClientImpl::getRequestCount(
     std::string c_from = boost::posix_time::to_iso_string(from);
     std::string c_to = boost::posix_time::to_iso_string(to);
 
-    return logger_ref->getRequestCount(c_from.c_str(), c_to.c_str(), service.c_str(), user.c_str());
+    return logger_request_count_ref->getRequestCount(c_from.c_str(), c_to.c_str(), service.c_str(), user.c_str());
 }
 
 
@@ -106,7 +107,7 @@ std::unique_ptr<RequestCountInfo> LoggerCorbaClientImpl::getRequestCountUsers(
     std::string c_from = boost::posix_time::to_iso_string(from);
     std::string c_to = boost::posix_time::to_iso_string(to);
 
-    ccReg::RequestCountInfo_var info = logger_ref->getRequestCountUsers(c_from.c_str(), c_to.c_str(), service.c_str());
+    ccReg::RequestCountInfo_var info = logger_request_count_ref->getRequestCountUsers(c_from.c_str(), c_to.c_str(), service.c_str());
 
     std::unique_ptr<RequestCountInfo> ret(new RequestCountInfo);
 
