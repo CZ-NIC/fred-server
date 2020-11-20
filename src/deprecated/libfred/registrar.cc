@@ -1667,11 +1667,16 @@ public:
         Database::Connection conn = Database::Manager::acquire();
 
         Database::Result blocked = conn.exec(
-            "SELECT rd.registrarid, r.handle, (rd.blocked_from AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Prague') as blocked_from, rfrp.request_price_limit, rfrp.email, rfrp.telephone "
+            "SELECT rd.registrarid, "
+                   "r.handle, "
+                   "(rd.blocked_from AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Prague') AS blocked_from, "
+                   "rfrp.request_price_limit, "
+                   "rfrp.email, "
+                   "rfrp.telephone "
             "FROM registrar_disconnect rd "
             "LEFT JOIN request_fee_registrar_parameter rfrp ON rfrp.registrar_id = rd.registrarid "
             "JOIN registrar r ON r.id = rd.registrarid "
-            "WHERE blocked_from >= date_trunc('day', now())"
+            "WHERE rd.blocked_from AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Prague' >= date_trunc('day', NOW() AT TIME ZONE 'Europe/Prague')"
         );
 
         BlockedRegistrars ret(new std::vector<BlockedReg>);
