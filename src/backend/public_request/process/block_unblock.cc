@@ -19,9 +19,13 @@
 #include "src/backend/public_request/process/block_unblock.hh"
 
 #include "src/backend/public_request/exceptions.hh"
+#include "src/backend/public_request/get_valid_registry_emails_of_registered_object.hh"
 #include "src/backend/public_request/lock_request_type.hh"
+#include "src/backend/public_request/object_type.hh"
+#include "src/backend/public_request/process/exceptions.hh"
 #include "src/backend/public_request/type/get_iface_of.hh"
 #include "src/backend/public_request/type/public_request_block_unblock.hh"
+#include "src/backend/public_request/util/send_joined_address_email.hh"
 #include "libfred/object/object_state.hh"
 #include "libfred/object/object_states_info.hh"
 #include "libfred/object_state/cancel_object_state_request_id.hh"
@@ -168,17 +172,99 @@ void process(const LibFred::LockedPublicRequestForUpdate& _locked_request)
     LibFred::PerformObjectStateRequest(object_id).exec(ctx);
 }
 
+ObjectType convert_libfred_object_type_to_public_request_objecttype(LibFred::Object_Type::Enum libfred_object_type)
+{
+        switch (libfred_object_type)
+        {
+            case LibFred::Object_Type::contact: return ObjectType::contact;
+            case LibFred::Object_Type::nsset: return ObjectType::nsset;
+            case LibFred::Object_Type::domain: return ObjectType::domain;
+            case LibFred::Object_Type::keyset: return ObjectType::keyset;
+        }
+        throw std::runtime_error("unexpected LibFred::Object_Type");
+}
+
+unsigned long long send_request_block_email(
+        const LibFred::LockedPublicRequestForUpdate& _locked_request,
+        std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager)
+{
+    auto& ctx = _locked_request.get_ctx();
+    const auto public_request_id = _locked_request.get_id();
+    const LibFred::PublicRequestInfo request_info = LibFred::InfoPublicRequest().exec(ctx, _locked_request);
+    const auto object_id = request_info.get_object_id().get_value(); // oops
+    const std::string sql_query =
+            "SELECT obr.name, "
+                   "eot.name "
+            "FROM object_registry obr "
+            "JOIN enum_object_type eot ON eot.id = obr.type "
+            "WHERE obr.id = $1::BIGINT AND "
+                  "obr.erdate IS NULL";
+    const Database::Result db_result = ctx.get_conn().exec_params(
+            sql_query,
+            Database::query_param_list(object_id));
+    if (db_result.size() < 1)
+    {
+        throw ObjectNotFound();
+    }
+    if (1 < db_result.size())
+    {
+        throw std::runtime_error("too many objects for given id");
+    }
+    const std::string handle = static_cast<std::string>(db_result[0][0]);
+    const LibFred::Object_Type::Enum object_type =
+            Conversion::Enums::from_db_handle<LibFred::Object_Type>(static_cast<std::string>(db_result[0][1]));
+
+    LibFred::Mailer::Parameters email_template_params;
+    {
+        const Database::Result dbres = ctx.get_conn().exec_params(
+                "SELECT (create_time AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Prague')::DATE "
+                "FROM public_request "
+                "WHERE id = $1::BIGINT",
+                Database::query_param_list(public_request_id));
+        if (dbres.size() < 1)
+        {
+            throw NoPublicRequest();
+        }
+        if (1 < dbres.size())
+        {
+            throw std::runtime_error{"too many public requests for given id"};
+        }
+        email_template_params.insert(LibFred::Mailer::Parameters::value_type("reqid", std::to_string(public_request_id)));
+        email_template_params.insert(LibFred::Mailer::Parameters::value_type("reqdate", static_cast<std::string>(dbres[0][0])));
+        email_template_params.insert(LibFred::Mailer::Parameters::value_type("handle", handle));
+    }
+
+    std::set<std::string> emails;
+    const auto email_to_answer = request_info.get_email_to_answer();
+    if (!email_to_answer.isnull())
+    {
+        emails.insert(email_to_answer.get_value()); // validity checked when public_request was created
+    }
+    else
+    {
+        emails = get_valid_registry_emails_of_registered_object(ctx, convert_libfred_object_type_to_public_request_objecttype(object_type), object_id);
+        if (emails.empty())
+        {
+            throw NoContactEmail();
+        }
+    }
+
+    const Util::EmailData data(emails, "request_block", email_template_params, std::vector<unsigned long long>());
+    return send_joined_addresses_email(_mailer_manager, data);
+}
+
 } // namespace Fred::Backend::PublicRequest::Process::{anonymous}
 
 void process_public_request_block_unblock_resolved(
         unsigned long long _public_request_id,
-        const LibFred::PublicRequestTypeIface& _public_request_type)
+        const LibFred::PublicRequestTypeIface& _public_request_type,
+        std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager)
 {
     try
     {
         LibFred::OperationContextCreator ctx;
         const LibFred::PublicRequestLockGuardById locked_request(ctx, _public_request_id);
-
+        const auto email_id = send_request_block_email(locked_request, _mailer_manager);
         try
         {
             const std::string public_request_type = _public_request_type.get_public_request_type();
@@ -226,6 +312,7 @@ void process_public_request_block_unblock_resolved(
         try
         {
             LibFred::UpdatePublicRequest()
+                .set_answer_email_id(email_id)
                 .set_on_status_action(LibFred::PublicRequest::OnStatusAction::processed)
                 .exec(locked_request, _public_request_type);
             ctx.commit_transaction();

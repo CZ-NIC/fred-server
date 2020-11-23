@@ -195,7 +195,8 @@ void PublicRequestProcedure::exec()
                 {
                     Fbpr::Process::process_public_request_block_unblock_resolved(
                             request_id,
-                            iface_block_unblock_itr->second());
+                            iface_block_unblock_itr->second(),
+                            mailer_manager_);
                     continue;
                 }
             }
