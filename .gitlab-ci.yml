@@ -49,6 +49,17 @@ docker:server:fedora30:
     - schedules
     - web
 
+docker:server:fedora33:
+  <<: *image
+  variables:
+    IMAGE_NAME: fedora:33
+    IMAGE_TAG: $CI_REGISTRY_IMAGE/$IMAGE_NAME
+  only:
+    - master
+    - triggers
+    - schedules
+    - web
+
 docker:server:centos:
   <<: *image
   variables:
@@ -76,6 +87,13 @@ docker:server:centos:
 
 .fedora_30: &fedora_30
   image: "$CI_REGISTRY/fred/server/fedora:30"
+  tags:
+    - amd64
+    - builder
+    - linux
+
+.fedora_33: &fedora_33
+  image: "$CI_REGISTRY/fred/server/fedora:33"
   tags:
     - amd64
     - builder
@@ -124,6 +142,19 @@ build:fedora29:amd64:
 
 build:fedora30:amd64:
   <<: *fedora_30
+  <<: *build_job
+  script:
+    - echo "\$PWD=$PWD"
+    - cmake .
+    - make -j $(($(grep -c processor /proc/cpuinfo) / 2 + 1)) distcheck
+  only:
+    - master
+    - triggers
+    - schedules
+    - web
+
+build:fedora33:amd64:
+  <<: *fedora_33
   <<: *build_job
   script:
     - echo "\$PWD=$PWD"
