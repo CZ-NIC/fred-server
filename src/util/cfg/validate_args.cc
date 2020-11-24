@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2020  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 #include "src/util/cfg/validate_args.hh"
 
 #include <boost/date_time/gregorian/gregorian.hpp>
