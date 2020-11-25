@@ -275,7 +275,7 @@ function(set_common_properties_on_targets)
             PUBLIC "-fdiagnostics-color=always")
         target_include_directories(${target_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
         target_include_directories(${target_name} PUBLIC ${CMAKE_BINARY_DIR})
-        target_include_directories(${target_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/external/lib/libfred/src)
+        target_include_directories(${target_name} PUBLIC ${LIBFRED_DIR}/src)
     endforeach()
 endfunction()
 
