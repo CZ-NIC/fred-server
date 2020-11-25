@@ -1783,10 +1783,17 @@ public:
             throw std::runtime_error("getRequestFeeDataMap: No registrars found");
         }
 
+        Result res_times = conn.exec_params( " SELECT "
+                "($1::timestamp AT TIME ZONE 'Europe/Prague') AT TIME ZONE 'UTC', "
+                "($2::timestamp AT TIME ZONE 'Europe/Prague') AT TIME ZONE 'UTC' " ,
+                Database::query_param_list(p_from)(p_to));
+        const ptime utc_from = res_times[0][0];
+        const ptime utc_to = res_times[0][1];
+
         // TODO why should we compute request count for all of them? But maybe it's not so much different
         // to think
         std::unique_ptr<LibFred::Logger::RequestCountInfo> request_counts =
-                logger_client->getRequestCountUsers(p_from, p_to, "EPP");
+                logger_client->getRequestCountUsers(utc_from, utc_to, "EPP");
 
         for (unsigned i = 0; i < res_registrars.size(); i++) {
             Database::ID reg_id = res_registrars[i][0];
