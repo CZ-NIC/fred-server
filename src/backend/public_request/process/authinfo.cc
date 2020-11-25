@@ -213,20 +213,10 @@ void process_public_request_authinfo_resolved(
     {
         LibFred::OperationContextCreator ctx;
         const LibFred::PublicRequestLockGuardById locked_request(ctx, _public_request_id);
-        const auto email_id = [&]() -> Nullable<unsigned long long>
-        {
-            try
-            {
-                return send_authinfo_email(
-                    locked_request,
-                    _mailer_manager,
-                    get_email_type(_public_request_type));
-            }
-            catch (...)
-            {
-                return Nullable<unsigned long long>{};
-            }
-        }();
+        const auto email_id = send_authinfo_email(
+                locked_request,
+                _mailer_manager,
+                get_email_type(_public_request_type));
         try
         {
             LibFred::UpdatePublicRequest()
