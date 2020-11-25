@@ -22,6 +22,8 @@
 #include "src/backend/public_request/exceptions.hh"
 #include "src/backend/public_request/object_type.hh"
 #include "src/backend/public_request/process/exceptions.hh"
+#include "src/backend/public_request/type/get_iface_of.hh"
+#include "src/backend/public_request/type/public_request_authinfo.hh"
 #include "src/backend/public_request/util/send_joined_address_email.hh"
 #include "src/bin/corba/mailer_manager.hh"
 #include "libfred/object/object_states_info.hh"
@@ -87,11 +89,11 @@ std::string to_string(EmailType email_type)
 EmailType get_email_type(const LibFred::PublicRequestTypeIface& public_request)
 {
     const auto public_request_type = public_request.get_public_request_type();
-    if (public_request_type == "authinfo_auto_rif")
+    if (public_request_type == Type::get_iface_of<Type::AuthinfoAutoRif>().get_public_request_type())
     {
         return EmailType::sendauthinfo_epp;
     }
-    if (public_request_type == "authinfo_auto_pif")
+    if (public_request_type == Type::get_iface_of<Type::AuthinfoAuto>().get_public_request_type())
     {
         return EmailType::sendauthinfo_pif;
     }
