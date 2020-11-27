@@ -58,12 +58,6 @@ public:
   ccReg::Logger::Detail* getDetail(ccReg::TID _id);
   ccReg::Logger::Detail* createRequestDetail(LibFred::Logger::Request *req);
 
-  CORBA::ULongLong getRequestCount(const char *datetime_from, const char *datetime_to,
-          const char *service, const char *user);
-  ccReg::RequestCountInfo* getRequestCountUsers(const char *datetime_from, const char *datetime_to,
-          const char *service);
-
-
 private:
   typedef std::map<std::string, ccReg_Logger_i*> pagetables_list;
 
