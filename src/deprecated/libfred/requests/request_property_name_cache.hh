@@ -62,26 +62,5 @@ inline void logger_error(boost::format &fmt)
 #endif
 }
 
-using namespace Database;
-
-class RequestPropertyNameCache {
-public:
-    RequestPropertyNameCache(Connection &conn);
-
-    ID find_property_name_id(const std::string &name, Connection &conn);
-
-    /** Limit the number of entries read from request_property_name table
-     * (which is supposed to contain limited number of distinct property names )
-     */
-
-    static const unsigned int PROP_NAMES_SIZE_LIMIT;
-    static const int MAX_NAME_LENGTH;
-
-private:
-    boost::mutex properties_mutex;
-    std::map<std::string, Database::ID> property_names;
-
-};
-
 }
 }

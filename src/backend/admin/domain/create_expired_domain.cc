@@ -26,6 +26,7 @@
 #include "libfred/registrar/info_registrar.hh"
 #include "libfred/zone/zone.hh"
 
+#include <boost/assign.hpp>
 #include <boost/optional.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 

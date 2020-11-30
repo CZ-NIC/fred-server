@@ -640,10 +640,7 @@ add_common_library_target(requests
     src/deprecated/libfred/requests/model_request_property_name.cc
     src/deprecated/libfred/requests/session.cc
     src/deprecated/libfred/requests/request_list.cc
-    src/deprecated/libfred/requests/request_manager.cc
-    src/deprecated/libfred/requests/request_cache.cc
-    src/deprecated/libfred/requests/request_property_name_cache.cc
-    src/deprecated/libfred/requests/session_cache.cc)
+    src/deprecated/libfred/requests/request_manager.cc)
 target_link_libraries(requests PRIVATE
     fred-deprecated
     Fred::library)
@@ -1414,27 +1411,6 @@ target_compile_options(fred-admin PRIVATE ${LIBCURL_CXXFLAGS})
 target_compile_options(fred-admin PRIVATE ${MINIZIP_CXXFLAGS})
 target_compile_options(fred-admin PRIVATE ${LIBSSH_CXXFLAGS})
 
-# migrate_log
-add_common_executable_target(migrate_log
-    tools/logd_migration/migrate.cc
-    tools/logd_migration/log_if.cc
-    tools/logd_migration/m_epp_parser.cc)
-target_link_libraries(migrate_log
-    requests
-    fred-deprecated
-    model
-    banking
-    log_impl
-    types
-    db
-    util
-    oldutils
-    Fred::library
-    Boost::system
-    Boost::regex
-    Boost::thread
-    Boost::date_time)
-
 # mojeid_contact_address_import
 add_common_executable_target(mojeid_contact_address_import
     tools/contact_migration/mojeid_contact_address_import.cc)
@@ -1929,12 +1905,10 @@ add_common_executable_target(test-server
     test/deprecated/test_db.cc
     test/deprecated/test_registrar_group.cc
     test/deprecated/test_registrar_blocking.cc
-    test/deprecated/test_logd.cc
     test/deprecated/test_msgd.cc
     test/deprecated/test_admin.cc
     test/deprecated/test_corbans.cc
     test/deprecated/test_whois.cc
-    test/deprecated/test_cache.cc
     test/deprecated/test_filters_date_time.cc
     test/deprecated/test_invoice_common.cc
     test/deprecated/test_invoice.cc
@@ -2101,7 +2075,6 @@ install(TARGETS fred-msgd DESTINATION ${SBINDIR})
 install(TARGETS fred-pifd DESTINATION ${SBINDIR})
 install(TARGETS fred-rifd DESTINATION ${SBINDIR})
 install(TARGETS fred-rsifd DESTINATION ${SBINDIR})
-install(TARGETS migrate_log DESTINATION ${SBINDIR})
 install(TARGETS mojeid_contact_address_import DESTINATION ${SBINDIR})
 install(TARGETS mojeid_contact_ssn_fix DESTINATION ${SBINDIR})
 install(TARGETS fred-disclose-flags-updater DESTINATION ${SBINDIR})

@@ -23,9 +23,9 @@
 #include <utility>
 
 
-ccReg_Log_i::ccReg_Log_i(const std::string database) : pagetables()
+ccReg_Log_i::ccReg_Log_i(const std::string) : pagetables()
 {
-	back.reset(LibFred::Logger::Manager::create(database));
+	back.reset(LibFred::Logger::Manager::create());
 }
 
   // ccReg_Log_i(const std::string database) throw (LibFred::Logger::Manager::DB_CONNECT_FAILED): LibFred::Logger::Manager(database) {};

@@ -40,6 +40,7 @@
 #include "util/util.hh"
 
 #include <boost/algorithm/string.hpp>
+#include <boost/assign.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/random/mersenne_twister.hpp>

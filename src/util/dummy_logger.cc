@@ -27,16 +27,6 @@ DummyLoggerImpl::DummyLoggerImpl()
 }
 
 
-unsigned long long DummyLoggerImpl::getRequestCount(
-    const boost::posix_time::ptime &,
-    const boost::posix_time::ptime &,
-    const std::string &,
-    const std::string &)
-{
-    return 0;
-}
-
-
 std::unique_ptr<RequestCountInfo> DummyLoggerImpl::getRequestCountUsers(
     const boost::posix_time::ptime &,
     const boost::posix_time::ptime &,

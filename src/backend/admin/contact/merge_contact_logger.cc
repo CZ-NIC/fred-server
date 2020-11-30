@@ -18,6 +18,7 @@
  */
 #include "src/backend/admin/contact/merge_contact_logger.hh"
 
+#include <boost/assign.hpp>
 
 void logger_merge_contact_transform_output_data(
         const LibFred::MergeContactOutput &_merge_data,
