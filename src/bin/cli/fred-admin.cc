@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2011-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "libfred/db_settings.hh"
 #include "src/util/corba_wrapper.hh"
 #include "util/log/add_log_device.hh"
@@ -33,6 +34,7 @@
 #include "src/bin/cli/registrar_client_impl.hh"
 #include "src/bin/cli/notify_client_impl.hh"
 #include "src/bin/cli/enumparam_client_impl.hh"
+#include "src/bin/cli/manage_domain_lifecycle_parameters.hh"
 #include "src/bin/cli/object_client_impl.hh"
 #include "src/bin/cli/file_client_impl.hh"
 #include "src/bin/cli/regblock_client.hh"
@@ -128,6 +130,7 @@ CommandHandlerPtrVector chpv = boost::assign::list_of
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientNotifyLettersOptysSendArgsGrp),notify_letters_optys_send_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientNotifyLettersOptysGetUndeliveredArgsGrp),notify_letters_optys_get_undelivered_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientEnumParameterChangeArgsGrp),enum_parameter_change_impl()))
+    (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientDomainLifecycleParametersArgsGrp), manage_domain_lifecycle_parameters))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientObjectNewStateRequestNameArgsGrp),object_new_state_request_name_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientObjectUpdateStatesArgsGrp),object_update_states_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientObjectRegularProcedureArgsGrp),object_regular_procedure_impl()))

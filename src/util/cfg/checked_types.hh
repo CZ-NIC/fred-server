@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -39,6 +39,10 @@ struct Checked
     typedef ulonglong id;
     typedef double fpnumber;
     typedef boost::gregorian::date date;
+    struct Date
+    {
+        boost::gregorian::date date;
+    };
     typedef boost::posix_time::ptime ptime;
     typedef std::vector<std::string> ip_addresses;
     typedef unsigned short ushort;

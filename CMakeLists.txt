@@ -871,7 +871,9 @@ add_common_library_target(admin_create_expired_domain
 target_link_libraries(admin_create_expired_domain PRIVATE fred-static::library)
 
 add_common_library_target(handle_database_args
-    src/util/cfg/handle_database_args.cc)
+    src/util/cfg/config_handler.cc
+    src/util/cfg/handle_database_args.cc
+    src/util/cfg/validate_args.cc)
 target_link_libraries(handle_database_args PRIVATE fred-static::library)
 
 add_common_library_target(handle_rifd_args
@@ -1212,6 +1214,7 @@ target_link_libraries(fred-mojeid-msggen
     corba_isodatetime
     corba_mojeid
     corba_mojeid_util
+    handle_database_args
     fred-static::library
     Boost::program_options
     Boost::date_time)
@@ -1334,10 +1337,13 @@ add_common_executable_target(fred-admin
     src/bin/cli/charge_registry_access_fee.cc
     src/bin/cli/commonclient.cc
     src/bin/cli/contactclient.cc
+    src/bin/cli/domain_lifecycle_params.cc
     src/bin/cli/domainclient.cc
     src/bin/cli/enumparamclient.cc
     src/bin/cli/fileclient.cc
     src/bin/cli/fred-admin.cc
+    src/bin/cli/handle_admin_client_domain_lifecycle_parameters_args_grp.cc
+    src/bin/cli/manage_domain_lifecycle_parameters.cc
     src/bin/cli/invoiceclient.cc
     src/bin/cli/keysetclient.cc
     src/bin/cli/notifyclient.cc

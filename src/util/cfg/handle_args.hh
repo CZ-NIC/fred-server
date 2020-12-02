@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2010-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -218,10 +218,10 @@ public:
                 {
                     value = boost::lexical_cast<std::string>(boost::any_cast<Checked::ushort>(it->second.value()));
                 }
-                else if (it->second.value().type() == typeid(Checked::date))
+                else if (it->second.value().type() == typeid(Checked::Date))
                 {
                     value = boost::gregorian::to_iso_extended_string(
-                            boost::any_cast<Checked::date>(it->second.value()));
+                            boost::any_cast<Checked::Date>(it->second.value()).date);
                 }
                 else if (it->second.value().type() == typeid(Checked::ptime))
                 {

@@ -24,16 +24,17 @@
 #ifndef HANDLE_ADMINCLIENTSELECTION_ARGS_HH_809940176CCF407B8E20E1741F12646B
 #define HANDLE_ADMINCLIENTSELECTION_ARGS_HH_809940176CCF407B8E20E1741F12646B
 
+#include "src/util/cfg/validate_args.hh"//must be included earlier than the boost/program_options.hpp !!!
 #include "src/util/cfg/faked_args.hh"
 #include "src/util/cfg/handle_args.hh"
 #include "src/util/types/optional.hh"
 #include "src/util/types/optional_from_program_options.hh"
 #include "src/util/cfg/command_selection_args.hh"
-#include "src/util/cfg/validate_args.hh"
 
 #include "src/bin/cli/domain_params.hh"
 #include "src/bin/cli/keyset_params.hh"
 #include "src/bin/cli/contact_params.hh"
+#include "src/bin/cli/domain_lifecycle_params.hh"
 #include "src/bin/cli/invoice_params.hh"
 #include "src/bin/cli/bank_params.hh"
 #include "src/bin/cli/poll_params.hh"
@@ -1944,6 +1945,16 @@ public:
     }//handle
 };//class HandleAdminClientEnumParameterChangeArgsGrp
 
+class HandleAdminClientDomainLifecycleParametersArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    const DomainLifecycleParams& get_params() const noexcept;
+    CommandDescription get_command_option() override;
+    std::shared_ptr<boost::program_options::options_description> get_options_description() override;
+    std::size_t handle(int argc, char* argv[], FakedArgs& fa, std::size_t option_group_index) override;
+private:
+    DomainLifecycleParams params_;
+};
 
 /**
  * \class HandleAdminClientObjectNewStateRequestNameArgsGrp
@@ -1969,10 +1980,10 @@ public:
                 ::value<Checked::string>()->notifier(save_arg<std::string>(params.object_name))
                  ,"object handle")
             ("object_type,o",boost::program_options
-                 ::value<Checked::ulong>()->notifier(save_arg<unsigned long>(params.object_type))
+                ::value<Checked::ulong>()->notifier(save_arg<unsigned long>(params.object_type))
                   ,"object type number: 1 - contact,  2 - nsset, 3 - domain, 4 - keyset")
-          ("object_state_name,s",boost::program_options
-                  ::value<std::vector<std::string> >()->notifier(insert_arg< std::vector<std::string> >(params.object_state_name))
+            ("object_state_name,s",boost::program_options
+                ::value<std::vector<std::string> >()->notifier(insert_arg< std::vector<std::string> >(params.object_state_name))
                    ,"object state name , may appear multiple times like \" -s serverBlocked -s serverOutzoneManual \" , from db table enum_object_states: "
                    "serverRenewProhibited "
                    "serverOutzoneManual "

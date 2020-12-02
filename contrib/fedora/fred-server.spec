@@ -46,14 +46,22 @@ clients.
 %else
 %cmake -DCMAKE_INSTALL_PREFIX=/ -DUSE_USR_PREFIX=1 -DDO_NOT_INSTALL_TESTS=1 -DVERSION=%{version} .
 %endif
+%if 0%{?el7}
 %make_build
+%else
+%cmake_build
+%endif
 %if 0%{?el7}
 %{?scl:EOF}
 %endif
 
 %install
 rm -rf ${RPM_BUILD_ROOT}
+%if 0%{?el7}
 %make_install
+%else
+%cmake_install
+%endif
 mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/fred/
 grep ExecStart contrib/fedora/*.service | grep -h -o 'fred-[^/]*\.conf' | while read FILE; do ln -s %{_sysconfdir}/fred/server.conf $RPM_BUILD_ROOT/%{_sysconfdir}/fred/$FILE; done
 mkdir -p $RPM_BUILD_ROOT/%{_unitdir}

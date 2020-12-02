@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2018-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -29,7 +29,8 @@ namespace Process {
 
 void process_public_request_block_unblock_resolved(
         unsigned long long _public_request_id,
-        const LibFred::PublicRequestTypeIface& _public_request_type);
+        const LibFred::PublicRequestTypeIface& _public_request_type,
+        std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager);
 
 } // namespace Fred::Backend::PublicRequest::Process
 } // namespace Fred::Backend::PublicRequest

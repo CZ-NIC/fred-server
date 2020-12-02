@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2020  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -17,9 +17,22 @@
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef CONFIG_HANDLER_HH_AC3B377B6DEE43D1A349A0E02C5899A6
-#define CONFIG_HANDLER_HH_AC3B377B6DEE43D1A349A0E02C5899A6
-
 #include "src/util/cfg/config_handler_decl.hh"
 
-#endif//CONFIG_HANDLER_HH_AC3B377B6DEE43D1A349A0E02C5899A6
+CfgArgs* CfgArgs::instance_ptr = nullptr;
+
+CfgArgGroups* CfgArgGroups::instance_ptr = nullptr;
+
+CfgArgs* CfgArgs::instance()
+{
+    CfgArgs* ret = instance_ptr;
+    if (ret == 0) throw std::runtime_error("error: CfgArgs instance not set");
+    return ret;
+}
+
+CfgArgGroups* CfgArgGroups::instance()
+{
+    CfgArgGroups* ret = instance_ptr;
+    if (ret == 0) throw std::runtime_error("error: CfgArgGroups instance not set");
+    return ret;
+}

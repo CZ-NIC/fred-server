@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2020  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -17,9 +17,9 @@
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef CONFIG_HANDLER_HH_AC3B377B6DEE43D1A349A0E02C5899A6
-#define CONFIG_HANDLER_HH_AC3B377B6DEE43D1A349A0E02C5899A6
+#ifndef MANAGE_DOMAIN_LIFECYCLE_PARAMETERS_HH_45CF064233D612F2C814225C858FFDE2//date "+%s.%N"|md5sum|tr "[a-f]" "[A-F]"
+#define MANAGE_DOMAIN_LIFECYCLE_PARAMETERS_HH_45CF064233D612F2C814225C858FFDE2
 
-#include "src/util/cfg/config_handler_decl.hh"
+void manage_domain_lifecycle_parameters();
 
-#endif//CONFIG_HANDLER_HH_AC3B377B6DEE43D1A349A0E02C5899A6
+#endif//MANAGE_DOMAIN_LIFECYCLE_PARAMETERS_HH_45CF064233D612F2C814225C858FFDE2

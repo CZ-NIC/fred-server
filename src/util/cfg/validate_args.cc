@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2020  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,10 +16,19 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+#include "src/util/cfg/validate_args.hh"
 
-#ifndef CONFIG_HANDLER_HH_AC3B377B6DEE43D1A349A0E02C5899A6
-#define CONFIG_HANDLER_HH_AC3B377B6DEE43D1A349A0E02C5899A6
+#include <boost/date_time/gregorian/gregorian.hpp>
 
-#include "src/util/cfg/config_handler_decl.hh"
+std::ostream& operator<<(std::ostream& o, const Checked::Date& s)
+{
+    return o << boost::gregorian::to_iso_extended_string(s.date);
+}
 
-#endif//CONFIG_HANDLER_HH_AC3B377B6DEE43D1A349A0E02C5899A6
+std::istream& operator>>(std::istream& i, Checked::Date& s)
+{
+    std::string date;
+    i >> date;
+    s.date = boost::gregorian::from_string(date);
+    return i;
+}

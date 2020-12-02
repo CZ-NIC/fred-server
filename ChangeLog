@@ -2,6 +2,22 @@ UNRELEASED
 
   * Remove duplicate `libfred` tests
 
+2020-11-02 (2.45.6)
+
+  * Fix retrieving registrars blocked "today"
+
+2020-10-20 (2.45.5)
+
+  * Validators as inline functions
+
+2020-10-01 (2.45.4)
+
+  * Fix missing parameter validators
+
+2020-08-13 (2.45.3)
+
+  * Add domain_lifecycle_parameters commands into fred-admin
+
 2020-08-11 (2.45.2)
 
   * Fix domain filter performance issue

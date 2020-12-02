@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2018-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -19,9 +19,13 @@
 #include "src/backend/public_request/process/block_unblock.hh"
 
 #include "src/backend/public_request/exceptions.hh"
+#include "src/backend/public_request/get_valid_registry_emails_of_registered_object.hh"
 #include "src/backend/public_request/lock_request_type.hh"
+#include "src/backend/public_request/object_type.hh"
+#include "src/backend/public_request/process/exceptions.hh"
 #include "src/backend/public_request/type/get_iface_of.hh"
 #include "src/backend/public_request/type/public_request_block_unblock.hh"
+#include "src/backend/public_request/util/send_joined_address_email.hh"
 #include "libfred/object/object_state.hh"
 #include "libfred/object/object_states_info.hh"
 #include "libfred/object_state/cancel_object_state_request_id.hh"
@@ -38,7 +42,8 @@
 #include "libfred/registrar/info_registrar.hh"
 #include "src/util/corba_wrapper_decl.hh"
 
-#include <exception>
+#include <functional>
+#include <stdexcept>
 
 namespace Fred {
 namespace Backend {
@@ -168,45 +173,194 @@ void process(const LibFred::LockedPublicRequestForUpdate& _locked_request)
     LibFred::PerformObjectStateRequest(object_id).exec(ctx);
 }
 
+ObjectType convert_libfred_object_type_to_public_request_objecttype(LibFred::Object_Type::Enum libfred_object_type)
+{
+        switch (libfred_object_type)
+        {
+            case LibFred::Object_Type::contact: return ObjectType::contact;
+            case LibFred::Object_Type::nsset: return ObjectType::nsset;
+            case LibFred::Object_Type::domain: return ObjectType::domain;
+            case LibFred::Object_Type::keyset: return ObjectType::keyset;
+        }
+        throw std::runtime_error("unexpected LibFred::Object_Type");
+}
+
+enum class Operation
+{
+    block,
+    unblock
+};
+
+std::string to_otype(Operation operation)
+{
+    switch (operation)
+    {
+        case Operation::block: return "1";
+        case Operation::unblock: return "2";
+    }
+    throw std::runtime_error{"unexpected operation"};
+}
+
+enum class Action
+{
+    change,
+    transfer
+};
+
+std::string to_rtype(Action action)
+{
+    switch (action)
+    {
+        case Action::change: return "1";
+        case Action::transfer: return "2";
+    }
+    throw std::runtime_error{"unexpected action"};
+}
+
+struct Request
+{
+    Operation operation;
+    Action action;
+};
+
+std::string to_type(ObjectType object_type)
+{
+    switch (object_type)
+    {
+        case ObjectType::contact: return "1";
+        case ObjectType::nsset: return "2";
+        case ObjectType::domain: return "3";
+        case ObjectType::keyset: return "4";
+    }
+    throw std::runtime_error{"unexpected object type"};
+}
+
+unsigned long long send_request_block_email(
+        const LibFred::LockedPublicRequestForUpdate& _locked_request,
+        std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager,
+        Request request)
+{
+    auto& ctx = _locked_request.get_ctx();
+    const auto public_request_id = _locked_request.get_id();
+    const LibFred::PublicRequestInfo request_info = LibFred::InfoPublicRequest().exec(ctx, _locked_request);
+    const auto object_id = request_info.get_object_id().get_value(); // oops
+    const std::string sql_query =
+            "SELECT obr.name, "
+                   "eot.name "
+            "FROM object_registry obr "
+            "JOIN enum_object_type eot ON eot.id = obr.type "
+            "WHERE obr.id = $1::BIGINT AND "
+                  "obr.erdate IS NULL";
+    const Database::Result db_result = ctx.get_conn().exec_params(
+            sql_query,
+            Database::query_param_list(object_id));
+    if (db_result.size() < 1)
+    {
+        throw ObjectNotFound();
+    }
+    if (1 < db_result.size())
+    {
+        throw std::runtime_error("too many objects for given id");
+    }
+    const std::string handle = static_cast<std::string>(db_result[0][0]);
+    const auto object_type = convert_libfred_object_type_to_public_request_objecttype(
+            Conversion::Enums::from_db_handle<LibFred::Object_Type>(static_cast<std::string>(db_result[0][1])));
+
+    LibFred::Mailer::Parameters email_template_params;
+    {
+        const Database::Result dbres = ctx.get_conn().exec_params(
+                "SELECT (create_time AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Prague')::DATE "
+                "FROM public_request "
+                "WHERE id = $1::BIGINT",
+                Database::query_param_list(public_request_id));
+        if (dbres.size() < 1)
+        {
+            throw NoPublicRequest();
+        }
+        if (1 < dbres.size())
+        {
+            throw std::runtime_error{"too many public requests for given id"};
+        }
+        email_template_params.emplace("reqid", std::to_string(public_request_id));
+        email_template_params.emplace("reqdate", static_cast<std::string>(dbres[0][0]));
+        email_template_params.emplace("handle", handle);
+        email_template_params.emplace("otype", to_otype(request.operation));
+        email_template_params.emplace("rtype", to_rtype(request.action));
+        email_template_params.emplace("type", to_type(object_type));
+    }
+
+    std::set<std::string> emails;
+    const auto email_to_answer = request_info.get_email_to_answer();
+    if (!email_to_answer.isnull())
+    {
+        emails.insert(email_to_answer.get_value()); // validity checked when public_request was created
+    }
+    else
+    {
+        emails = get_valid_registry_emails_of_registered_object(ctx, object_type, object_id);
+        if (emails.empty())
+        {
+            throw NoContactEmail();
+        }
+    }
+
+    const Util::EmailData data(emails, "request_block", email_template_params, std::vector<unsigned long long>());
+    return send_joined_addresses_email(_mailer_manager, data);
+}
+
+auto get_public_request_process_function(const LibFred::PublicRequestTypeIface& public_request)
+{
+    const auto public_request_type = public_request.get_public_request_type();
+    struct Result
+    {
+        std::function<void(const LibFred::PublicRequestLockGuardById&)> fnc;
+        Request request;
+        void operator()(const LibFred::PublicRequestLockGuardById& arg) const { fnc(arg); }
+    };
+
+    if (public_request_type == Type::get_iface_of<Type::BlockTransfer<ConfirmedBy::email>>().get_public_request_type() ||
+        public_request_type == Type::get_iface_of<Type::BlockTransfer<ConfirmedBy::letter>>().get_public_request_type() ||
+        public_request_type == Type::get_iface_of<Type::BlockTransfer<ConfirmedBy::government>>().get_public_request_type())
+    {
+        return Result{process<LockRequestType::block_transfer>, {Operation::block, Action::transfer}};
+    }
+    if (public_request_type == Type::get_iface_of<Type::BlockChanges<ConfirmedBy::email>>().get_public_request_type() ||
+        public_request_type == Type::get_iface_of<Type::BlockChanges<ConfirmedBy::letter>>().get_public_request_type() ||
+        public_request_type == Type::get_iface_of<Type::BlockChanges<ConfirmedBy::government>>().get_public_request_type())
+    {
+        return Result{process<LockRequestType::block_transfer_and_update>, {Operation::block, Action::change}};
+    }
+    if (public_request_type == Type::get_iface_of<Type::UnblockTransfer<ConfirmedBy::email>>().get_public_request_type() ||
+        public_request_type == Type::get_iface_of<Type::UnblockTransfer<ConfirmedBy::letter>>().get_public_request_type() ||
+        public_request_type == Type::get_iface_of<Type::UnblockTransfer<ConfirmedBy::government>>().get_public_request_type())
+    {
+        return Result{process<LockRequestType::unblock_transfer>, {Operation::unblock, Action::transfer}};
+    }
+    if (public_request_type == Type::get_iface_of<Type::UnblockChanges<ConfirmedBy::email>>().get_public_request_type() ||
+        public_request_type == Type::get_iface_of<Type::UnblockChanges<ConfirmedBy::letter>>().get_public_request_type() ||
+        public_request_type == Type::get_iface_of<Type::UnblockChanges<ConfirmedBy::government>>().get_public_request_type())
+    {
+        return Result{process<LockRequestType::unblock_transfer_and_update>, {Operation::unblock, Action::change}};
+    }
+    throw std::runtime_error{"unexpected public request"};
+}
+
 } // namespace Fred::Backend::PublicRequest::Process::{anonymous}
 
 void process_public_request_block_unblock_resolved(
         unsigned long long _public_request_id,
-        const LibFred::PublicRequestTypeIface& _public_request_type)
+        const LibFred::PublicRequestTypeIface& _public_request_type,
+        std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager)
 {
     try
     {
         LibFred::OperationContextCreator ctx;
         const LibFred::PublicRequestLockGuardById locked_request(ctx, _public_request_id);
-
+        const auto process_function = get_public_request_process_function(_public_request_type);
+        const auto email_id = send_request_block_email(locked_request, _mailer_manager, process_function.request);
         try
         {
-            const std::string public_request_type = _public_request_type.get_public_request_type();
-
-            if (public_request_type == Type::get_iface_of<Type::BlockTransfer<ConfirmedBy::email>>().get_public_request_type() ||
-                public_request_type == Type::get_iface_of<Type::BlockTransfer<ConfirmedBy::letter>>().get_public_request_type() ||
-                public_request_type == Type::get_iface_of<Type::BlockTransfer<ConfirmedBy::government>>().get_public_request_type())
-            {
-                process<LockRequestType::block_transfer>(locked_request);
-            }
-            else if (public_request_type == Type::get_iface_of<Type::BlockChanges<ConfirmedBy::email>>().get_public_request_type() ||
-                     public_request_type == Type::get_iface_of<Type::BlockChanges<ConfirmedBy::letter>>().get_public_request_type() ||
-                     public_request_type == Type::get_iface_of<Type::BlockChanges<ConfirmedBy::government>>().get_public_request_type())
-            {
-                process<LockRequestType::block_transfer_and_update>(locked_request);
-            }
-            else if (public_request_type == Type::get_iface_of<Type::UnblockTransfer<ConfirmedBy::email>>().get_public_request_type() ||
-                     public_request_type == Type::get_iface_of<Type::UnblockTransfer<ConfirmedBy::letter>>().get_public_request_type() ||
-                     public_request_type == Type::get_iface_of<Type::UnblockTransfer<ConfirmedBy::government>>().get_public_request_type())
-            {
-                process<LockRequestType::unblock_transfer>(locked_request);
-            }
-            else if (public_request_type == Type::get_iface_of<Type::UnblockChanges<ConfirmedBy::email>>().get_public_request_type() ||
-                     public_request_type == Type::get_iface_of<Type::UnblockChanges<ConfirmedBy::letter>>().get_public_request_type() ||
-                     public_request_type == Type::get_iface_of<Type::UnblockChanges<ConfirmedBy::government>>().get_public_request_type())
-            {
-                process<LockRequestType::unblock_transfer_and_update>(locked_request);
-            }
+            process_function(locked_request);
         }
         catch (const ObjectAlreadyBlocked& e)
         {
@@ -226,6 +380,7 @@ void process_public_request_block_unblock_resolved(
         try
         {
             LibFred::UpdatePublicRequest()
+                .set_answer_email_id(email_id)
                 .set_on_status_action(LibFred::PublicRequest::OnStatusAction::processed)
                 .exec(locked_request, _public_request_type);
             ctx.commit_transaction();

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2018-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -195,7 +195,8 @@ void PublicRequestProcedure::exec()
                 {
                     Fbpr::Process::process_public_request_block_unblock_resolved(
                             request_id,
-                            iface_block_unblock_itr->second());
+                            iface_block_unblock_itr->second(),
+                            mailer_manager_);
                     continue;
                 }
             }

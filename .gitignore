@@ -2,7 +2,7 @@ external/
 generated/
 .ninja_deps
 .ninja_log
-bin/
+/bin/
 build.ninja
 rules.ninja
 doxy.conf
