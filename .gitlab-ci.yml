@@ -27,7 +27,8 @@ stages:
     - ./scripts/dependencies.sh -r
   script:
     - cmake .
-    - make -j $(($(grep -c processor /proc/cpuinfo) / 2 + 1)) distcheck
+    - job_count=$(($(grep -c processor /proc/cpuinfo) / 2 + 1))
+    - grep "^distcheck:" Makefile && make -j "$job_count" distcheck || make -j "$job_count"
 
 
 
