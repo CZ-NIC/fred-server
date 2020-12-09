@@ -3,6 +3,7 @@ stages:
   - analysis
   - build
 
+
 .image: &image
   stage: image
   before_script:
@@ -10,164 +11,163 @@ stages:
   script:
     - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
     - docker pull "$IMAGE_TAG" || true
-    - docker build --cache-from "$IMAGE_TAG" -t "$IMAGE_TAG" "scripts/docker/$IMAGE_NAME" || docker build --no-cache -t "$IMAGE_TAG" "scripts/docker/$IMAGE_NAME"
+    - docker build --cache-from "$IMAGE_TAG" -t "$IMAGE_TAG" "$IMAGE_PATH" || docker build --no-cache -t "$IMAGE_TAG" "$IMAGE_PATH"
     - docker push "$IMAGE_TAG"
   tags:
     - dind
 
-docker:man:
-  <<: *image
-  variables:
-    IMAGE_NAME: man
-    IMAGE_TAG: $CI_REGISTRY_IMAGE/$IMAGE_NAME
-
-docker:server:ubuntu:
-  <<: *image
-  variables:
-    IMAGE_NAME: ubuntu:16.04
-    IMAGE_TAG: $CI_REGISTRY_IMAGE/$IMAGE_NAME
-
-docker:server:fedora32:
-  <<: *image
-  variables:
-    IMAGE_NAME: fedora:32
-    IMAGE_TAG: $CI_REGISTRY_IMAGE/$IMAGE_NAME
-  only:
-    - master
-    - triggers
-    - schedules
-    - web
-
-docker:server:fedora33:
-  <<: *image
-  variables:
-    IMAGE_NAME: fedora:33
-    IMAGE_TAG: $CI_REGISTRY_IMAGE/$IMAGE_NAME
-  only:
-    - master
-    - triggers
-    - schedules
-    - web
-
-docker:server:centos:
-  <<: *image
-  variables:
-    IMAGE_NAME: centos:7
-    IMAGE_TAG: $CI_REGISTRY_IMAGE/$IMAGE_NAME
-  only:
-    - master
-    - triggers
-    - schedules
-    - web
-
-.ubuntu_16_04: &ubuntu_16_04
-  image: "$CI_REGISTRY/fred/server/ubuntu:16.04"
-  tags:
-    - amd64
-    - builder
-    - linux
-
-.fedora_32: &fedora_32
-  image: "$CI_REGISTRY/fred/server/fedora:32"
-  tags:
-    - amd64
-    - builder
-    - linux
-
-.fedora_33: &fedora_33
-  image: "$CI_REGISTRY/fred/server/fedora:33"
-  tags:
-    - amd64
-    - builder
-    - linux
-
-.centos_7: &centos_7
-  image: "$CI_REGISTRY/fred/server/centos:7"
-  tags:
-    - amd64
-    - builder
-    - linux
 
 .build: &build_job
   variables:
     SRC_DIR: /usr/local/env
   stage: build
   before_script:
-    - echo "\$SRC_DIR=$SRC_DIR"
-    - echo "\$HOME=$HOME"
     - install -m 700 -d $HOME/.ssh
     - install -m 600 $SRC_DIR/{id_rsa,id_rsa.pub,known_hosts} $HOME/.ssh/
-    - GIT_UPSTREAM=$(git config remote.origin.url | cut -d/ -f-3 | sed 's$https://.*@$ssh://git@$')
-    - echo "\$GIT_UPSTREAM=$GIT_UPSTREAM"
-    - while read -r repo commit clone_path ; do [[ x"$repo" != x"#" ]] && { clone_branch=$(git ls-remote --tags "$GIT_UPSTREAM"/"$repo" | grep "$commit" | cut -d/ -f3 | tr '-' '~' | sort -V | tr '~' '-' | tail -1) || /bin/true ; clone_branch=${clone_branch:-$commit} ; git clone "$GIT_UPSTREAM"/"$repo" "$clone_path" --depth 1 --branch "$clone_branch" ; } ; done < dependencies.txt
-
-build:ubuntu:amd64:
-  <<: *ubuntu_16_04
-  <<: *build_job
+    - ./scripts/dependencies.sh -r
   script:
-    - echo "\$PWD=$PWD"
-    - DISTCHECK_CMAKE_FLAGS=-DPostgreSQL_ADDITIONAL_VERSIONS=9.6 cmake -DPostgreSQL_ADDITIONAL_VERSIONS=9.6 .
-    - make -j $(($(grep -c processor /proc/cpuinfo) / 2 + 1)) distcheck
-
-build:fedora32:amd64:
-  <<: *fedora_32
-  <<: *build_job
-  script:
-    - echo "\$PWD=$PWD"
     - cmake .
     - make -j $(($(grep -c processor /proc/cpuinfo) / 2 + 1)) distcheck
+
+
+
+docker:server:centos_7:
+  <<: *image
+  variables:
+    IMAGE_NAME: centos:7
+    IMAGE_TAG: $CI_REGISTRY_IMAGE/$IMAGE_NAME
+    IMAGE_PATH: scripts/docker/$IMAGE_NAME
   only:
     - master
+    - tags
     - triggers
     - schedules
     - web
 
-build:fedora33:amd64:
-  <<: *fedora_33
-  <<: *build_job
-  script:
-    - echo "\$PWD=$PWD"
-    - cmake .
-    - make -j $(($(grep -c processor /proc/cpuinfo) / 2 + 1)) distcheck
-  only:
-    - master
-    - triggers
-    - schedules
-    - web
+.centos_7: &centos_7
+  image: "$CI_REGISTRY_IMAGE/centos:7"
+  tags:
+    - amd64
+    - common
+    - linux
 
-build:centos:amd64:
+build:centos_7:amd64:
   <<: *centos_7
   <<: *build_job
-  script:
-    - echo "\$PWD=$PWD"
-    - cmake3 .
-    - make -j $(($(grep -c processor /proc/cpuinfo) / 2 + 1)) distcheck
   only:
     - master
+    - tags
     - triggers
     - schedules
     - web
 
 
+docker:server:fedora_32:
+  <<: *image
+  variables:
+    IMAGE_NAME: fedora:32
+    IMAGE_TAG: $CI_REGISTRY_IMAGE/$IMAGE_NAME
+    IMAGE_PATH: scripts/docker/$IMAGE_NAME
+  only:
+    - master
+    - tags
+    - triggers
+    - schedules
+    - web
+
+.fedora_32: &fedora_32
+  image: "$CI_REGISTRY_IMAGE/fedora:32"
+  tags:
+    - amd64
+    - common
+    - linux
+
+build:fedora_32:amd64:
+  <<: *fedora_32
+  <<: *build_job
+  only:
+    - master
+    - tags
+    - triggers
+    - schedules
+    - web
+
+
+docker:server:fedora_33:
+  <<: *image
+  variables:
+    IMAGE_NAME: fedora:33
+    IMAGE_TAG: $CI_REGISTRY_IMAGE/$IMAGE_NAME
+    IMAGE_PATH: scripts/docker/$IMAGE_NAME
+  only:
+    - master
+    - tags
+    - triggers
+    - schedules
+    - web
+
+.fedora_33: &fedora_33
+  image: "$CI_REGISTRY_IMAGE/fedora:33"
+  tags:
+    - amd64
+    - common
+    - linux
+
+build:fedora_33:amd64:
+  <<: *fedora_33
+  <<: *build_job
+  only:
+    - master
+    - tags
+    - triggers
+    - schedules
+    - web
+
+
+docker:server:ubuntu_16_04:
+  <<: *image
+  variables:
+    IMAGE_NAME: ubuntu:16.04
+    IMAGE_TAG: $CI_REGISTRY_IMAGE/$IMAGE_NAME
+    IMAGE_PATH: scripts/docker/$IMAGE_NAME
+
+.ubuntu_16_04: &ubuntu_16_04
+  image: "$CI_REGISTRY_IMAGE/ubuntu:16.04"
+  tags:
+    - amd64
+    - common
+    - linux
+
+build:ubuntu_16_04:amd64:
+  <<: *ubuntu_16_04
+  <<: *build_job
+
+
+
+docker:man:
+  <<: *image
+  variables:
+    IMAGE_NAME: man
+    IMAGE_TAG: $CI_REGISTRY_IMAGE/$IMAGE_NAME
+    IMAGE_PATH: scripts/docker/$IMAGE_NAME
+
 build:man:
-  image: "$CI_REGISTRY/fred/server/man"
+  image: "$CI_REGISTRY_IMAGE/man"
   stage: build
   script:
       - cd man/ && make man SPHINXOPTS=-W
   tags:
     - amd64
-    - builder
+    - common
     - linux
 
 
-licensing:
+license_check:
   <<: *ubuntu_16_04
   variables:
     SRC_DIR: /usr/local/env
   stage: analysis
   before_script:
-    - echo "\$SRC_DIR=$SRC_DIR"
-    - echo "\$HOME=$HOME"
     - install -m 700 -d $HOME/.ssh
     - install -m 600 $SRC_DIR/{id_rsa,id_rsa.pub,known_hosts} $HOME/.ssh/
     - git clone git@gitlab.office.nic.cz:internal-tools/license-check.git --single-branch --depth 1
