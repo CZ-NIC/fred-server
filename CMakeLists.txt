@@ -887,6 +887,7 @@ prepare_object_files(
     test/backend/epp/contact/test_info_contact.cc
     test/backend/epp/contact/test_transfer_contact.cc
     test/backend/epp/contact/test_update_contact.cc
+    test/backend/epp/contact/util.cc
     test/backend/epp/credit/test_client_credit.cc
     test/backend/epp/domain/fixture.cc
     test/backend/epp/domain/test_check_domain.cc
@@ -906,12 +907,13 @@ prepare_object_files(
     test/backend/epp/nsset/test_info_nsset.cc
     test/backend/epp/nsset/test_transfer_nsset.cc
     test/backend/epp/nsset/test_update_nsset.cc
-    test/backend/epp/poll/fixture.cc
     test/backend/epp/poll/test_poll_acknowledgement.cc
     test/backend/epp/poll/test_poll_request.cc
+    test/backend/epp/poll/test_poll_request_contact_details.cc
     test/backend/epp/poll/test_poll_request_domain_details.cc
     test/backend/epp/poll/test_poll_request_keyset_details.cc
     test/backend/epp/poll/test_poll_request_nsset_details.cc
+    test/backend/epp/poll/util.cc
     test/backend/epp/test_conditionally_enqueue_notification.cc
     test/backend/public_request/fixture_common.cc
     test/backend/public_request/main.cc
@@ -2473,7 +2475,6 @@ prepare_executable(test-epp
     test/backend/epp/nsset/test_update_nsset.cc
     test/backend/epp/nsset/test_transfer_nsset.cc
     test/setup/fixtures_utils.cc
-    test/backend/epp/poll/fixture.cc
     test/backend/epp/poll/test_poll_request.cc
     test/backend/epp/poll/test_poll_acknowledgement.cc
     test/backend/epp/poll/test_poll_request_contact_details.cc
