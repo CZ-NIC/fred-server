@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -22,6 +22,10 @@
 #include "libfred/opcontext.hh"
 
 namespace Test {
+namespace Backend {
+namespace Epp {
+namespace Poll {
+namespace Util {
 
 void mark_all_messages_as_seen(::LibFred::OperationContext& _ctx);
 
@@ -35,6 +39,10 @@ struct MessageDetail
 
 MessageDetail get_message_ids(::LibFred::OperationContext& _ctx);
 
+} // namespace Test::Backend::Epp::Poll::Util
+} // namespace Test::Backend::Epp::Poll
+} // namespace Test::Backend::Epp
+} // namespace Test::Backend
 } // namespace Test
 
 #endif

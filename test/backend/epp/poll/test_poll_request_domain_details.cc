@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,20 +16,27 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
-#include "test/backend/epp/poll/fixture.hh"
-#include "test/setup/fixtures_utils.hh"
+
+#include "test/backend/epp/poll/util.hh"
 #include "test/backend/epp/util.hh"
-#include "libfred/poll/create_update_object_poll_message.hh"
-#include "libfred/poll/create_poll_message.hh"
-#include "src/backend/epp/poll/poll_request_get_update_domain_details.hh"
+#include "test/setup/fixtures_utils.hh"
+
 #include "src/backend/epp/epp_response_failure.hh"
-#include "src/backend/epp/epp_result_failure.hh"
 #include "src/backend/epp/epp_result_code.hh"
-#include "src/util/tz/utc.hh"
+#include "src/backend/epp/epp_result_failure.hh"
+#include "src/backend/epp/poll/poll_request_get_update_domain_details.hh"
 #include "src/util/tz/get_psql_handle_of.hh"
+#include "src/util/tz/utc.hh"
+
+#include "libfred/poll/create_poll_message.hh"
+#include "libfred/poll/create_update_object_poll_message.hh"
 
 #include <boost/test/unit_test.hpp>
 
+namespace Test {
+
+BOOST_AUTO_TEST_SUITE(Backend)
+BOOST_AUTO_TEST_SUITE(Epp)
 BOOST_AUTO_TEST_SUITE(Poll)
 BOOST_AUTO_TEST_SUITE(PollRequest)
 BOOST_AUTO_TEST_SUITE(PollRequestDomainDetails)
@@ -37,7 +44,7 @@ BOOST_AUTO_TEST_SUITE(PollRequestDomainDetails)
 namespace {
 
 void check_equal(
-    const Epp::Domain::InfoDomainOutputData& output_data,
+    const ::Epp::Domain::InfoDomainOutputData& output_data,
     const ::LibFred::InfoDomainData& domain_data)
 {
     BOOST_CHECK_EQUAL(output_data.roid, domain_data.roid);
@@ -66,7 +73,7 @@ void check_equal(
         info_domain_data_admin_contacts.end());
 
     BOOST_CHECK_EQUAL(
-       output_data.ext_enum_domain_validation.get_value_or(Epp::Domain::EnumValidationExtension()).get_valexdate(),
+       output_data.ext_enum_domain_validation.get_value_or(::Epp::Domain::EnumValidationExtension()).get_valexdate(),
        domain_data.enum_domain_validation.get_value_or_default().validation_expiration);
 
     BOOST_CHECK_EQUAL(
@@ -83,7 +90,7 @@ struct HasDomainUpdate : virtual Test::Backend::Epp::autorollbacking_context
 
     HasDomainUpdate()
     {
-        Test::mark_all_messages_as_seen(ctx);
+        Util::mark_all_messages_as_seen(ctx);
         static const char new_passwd[] = "doesntmatter_38E166961BEE";
 
         const Test::domain domain(ctx, Tz::get_psql_handle_of<Tz::UTC>());
@@ -104,14 +111,14 @@ struct HasDomainUpdate : virtual Test::Backend::Epp::autorollbacking_context
 
 BOOST_FIXTURE_TEST_CASE(successful_request_domain_details, HasDomainUpdate)
 {
-    const unsigned long long before_message_count = Test::get_number_of_unseen_poll_messages(ctx);
+    const unsigned long long before_message_count = Util::get_number_of_unseen_poll_messages(ctx);
     BOOST_REQUIRE_EQUAL(before_message_count, 1);
 
-    const Test::MessageDetail mesage_detail = Test::get_message_ids(ctx);
+    const Util::MessageDetail mesage_detail = Util::get_message_ids(ctx);
 
-    Epp::Poll::PollRequestUpdateDomainOutputData output;
+    ::Epp::Poll::PollRequestUpdateDomainOutputData output;
     BOOST_CHECK_NO_THROW(output =
-        Epp::Poll::poll_request_get_update_domain_details(ctx, mesage_detail.message_id, mesage_detail.registrar_id));
+        ::Epp::Poll::poll_request_get_update_domain_details(ctx, mesage_detail.message_id, mesage_detail.registrar_id));
 
     check_equal(output.old_data, old_domain_data);
     check_equal(output.new_data, new_domain_data);
@@ -120,34 +127,38 @@ BOOST_FIXTURE_TEST_CASE(successful_request_domain_details, HasDomainUpdate)
     BOOST_CHECK(output.old_data.last_update.isnull());
     BOOST_CHECK(!output.new_data.last_update.isnull());
 
-    const unsigned long long after_message_count = Test::get_number_of_unseen_poll_messages(ctx);
+    const unsigned long long after_message_count = Util::get_number_of_unseen_poll_messages(ctx);
     BOOST_CHECK_EQUAL(after_message_count, 1);
 }
 
 BOOST_FIXTURE_TEST_CASE(failed_request_domain_details, HasDomainUpdate)
 {
-    const unsigned long long before_message_count = Test::get_number_of_unseen_poll_messages(ctx);
+    const unsigned long long before_message_count = Util::get_number_of_unseen_poll_messages(ctx);
     BOOST_REQUIRE_EQUAL(before_message_count, 1);
 
-    const Test::MessageDetail mesage_detail = Test::get_message_ids(ctx);
+    const Util::MessageDetail mesage_detail = Util::get_message_ids(ctx);
 
     const unsigned long long bogus_message_id = Test::get_nonexistent_message_id(ctx);
     const unsigned long long bogus_registrar_id = Test::get_nonexistent_registrar_id(ctx);
 
     BOOST_CHECK_THROW(
-        Epp::Poll::poll_request_get_update_domain_details(ctx, mesage_detail.message_id, bogus_registrar_id),
-        Epp::EppResponseFailure);
+        ::Epp::Poll::poll_request_get_update_domain_details(ctx, mesage_detail.message_id, bogus_registrar_id),
+        ::Epp::EppResponseFailure);
     BOOST_CHECK_THROW(
-        Epp::Poll::poll_request_get_update_domain_details(ctx, bogus_message_id, mesage_detail.registrar_id),
-        Epp::EppResponseFailure);
+        ::Epp::Poll::poll_request_get_update_domain_details(ctx, bogus_message_id, mesage_detail.registrar_id),
+        ::Epp::EppResponseFailure);
     BOOST_CHECK_THROW(
-        Epp::Poll::poll_request_get_update_domain_details(ctx, bogus_message_id, bogus_registrar_id),
-        Epp::EppResponseFailure);
+        ::Epp::Poll::poll_request_get_update_domain_details(ctx, bogus_message_id, bogus_registrar_id),
+        ::Epp::EppResponseFailure);
 
-    const unsigned long long after_message_count = Test::get_number_of_unseen_poll_messages(ctx);
+    const unsigned long long after_message_count = Util::get_number_of_unseen_poll_messages(ctx);
     BOOST_CHECK_EQUAL(after_message_count, 1);
 }
 
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END(); // Backend/Epp/Poll/PollRequest/PollRequestDomainDetails
+BOOST_AUTO_TEST_SUITE_END(); // Backend/Epp/Poll/PollRequest
+BOOST_AUTO_TEST_SUITE_END(); // Backend/Epp/Poll
+BOOST_AUTO_TEST_SUITE_END(); // Backend/Epp
+BOOST_AUTO_TEST_SUITE_END(); // Backend
+
+} // namespace Test
