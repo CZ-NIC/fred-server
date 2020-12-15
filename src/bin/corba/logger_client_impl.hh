@@ -37,12 +37,6 @@ class LoggerCorbaClientImpl : public LoggerClient
 public:
     LoggerCorbaClientImpl();
 
-    unsigned long long getRequestCount(
-            const boost::posix_time::ptime &from,
-            const boost::posix_time::ptime &to,
-            const std::string &service,
-            const std::string &user);
-
     std::unique_ptr<RequestCountInfo> getRequestCountUsers(
                const boost::posix_time::ptime &from,
                const boost::posix_time::ptime &to,
