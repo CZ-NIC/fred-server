@@ -1,6 +1,7 @@
 UNRELEASED
 
   * Remove duplicate `libfred` tests
+  * Remove obsolete `getRequestCount*` (moved to LoggerCorba)
 
 2020-11-02 (2.45.6)
 

@@ -1,4 +1,4 @@
 # <repository> <commitish> <clone-path>
 fred/libfred master external/lib/libfred
-fred/idl 29269-old-get-request-count external/idl
+fred/idl master external/idl
 fred/db 2.38.0 external/db
