@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2018-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,11 +16,14 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/public_request/process/authinfo.hh"
 
 #include "src/backend/public_request/exceptions.hh"
 #include "src/backend/public_request/object_type.hh"
 #include "src/backend/public_request/process/exceptions.hh"
+#include "src/backend/public_request/type/get_iface_of.hh"
+#include "src/backend/public_request/type/public_request_authinfo.hh"
 #include "src/backend/public_request/util/send_joined_address_email.hh"
 #include "src/bin/corba/mailer_manager.hh"
 #include "libfred/object/object_states_info.hh"
@@ -65,10 +68,42 @@ ObjectType convert_libfred_object_type_to_public_request_objecttype(
         throw std::runtime_error("unexpected LibFred::Object_Type");
 }
 
+enum class EmailType
+{
+    sendauthinfo_pif,
+    sendauthinfo_epp
+};
 
-unsigned long long send_authinfo(
+std::string to_string(EmailType email_type)
+{
+    switch (email_type)
+    {
+        case EmailType::sendauthinfo_pif:
+            return "sendauthinfo_pif";
+        case EmailType::sendauthinfo_epp:
+            return "sendauthinfo_epp";
+    }
+    throw std::runtime_error{"unexpected email type"};
+}
+
+EmailType get_email_type(const LibFred::PublicRequestTypeIface& public_request)
+{
+    const auto public_request_type = public_request.get_public_request_type();
+    if (public_request_type == Type::get_iface_of<Type::AuthinfoAutoRif>().get_public_request_type())
+    {
+        return EmailType::sendauthinfo_epp;
+    }
+    if (public_request_type == Type::get_iface_of<Type::AuthinfoAuto>().get_public_request_type())
+    {
+        return EmailType::sendauthinfo_pif;
+    }
+    throw std::runtime_error{"unexpected public request type"};
+}
+
+unsigned long long send_authinfo_email(
         const LibFred::LockedPublicRequestForUpdate& _locked_request,
-        std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager)
+        std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager,
+        EmailType _email_type)
 {
     auto& ctx = _locked_request.get_ctx();
     const auto public_request_id = _locked_request.get_id();
@@ -95,10 +130,11 @@ unsigned long long send_authinfo(
         throw std::runtime_error("too many objects for given id");
     }
     const std::string handle = static_cast<std::string>(db_result[0]["handle"]);
+    LibFred::Mailer::Parameters email_template_params;
+    email_template_params.insert(LibFred::Mailer::Parameters::value_type("handle", handle));
     const LibFred::Object_Type::Enum object_type =
             Conversion::Enums::from_db_handle<LibFred::Object_Type>(static_cast<std::string>(db_result[0]["object_type"]));
-
-    LibFred::Mailer::Parameters email_template_params;
+    if (_email_type == EmailType::sendauthinfo_pif)
     {
         const Database::Result dbres = ctx.get_conn().exec_params(
                 "SELECT (create_time AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Prague')::DATE FROM public_request "
@@ -114,9 +150,15 @@ unsigned long long send_authinfo(
         }
         email_template_params.insert(LibFred::Mailer::Parameters::value_type("reqid", boost::lexical_cast<std::string>(public_request_id)));
         email_template_params.insert(LibFred::Mailer::Parameters::value_type("reqdate", static_cast<std::string>(dbres[0][0])));
-        email_template_params.insert(LibFred::Mailer::Parameters::value_type("handle", handle));
     }
-
+    else if (_email_type == EmailType::sendauthinfo_epp)
+    {
+        if (!request_info.get_registrar_id().isnull())
+        {
+            const auto registrar_info = LibFred::InfoRegistrarById{request_info.get_registrar_id().get_value()}.exec(ctx).info_registrar_data;
+            email_template_params.insert(LibFred::Mailer::Parameters::value_type("registrar", registrar_info.name.get_value_or(registrar_info.handle)));
+        }
+    }
     std::set<std::string> emails;
     const auto email_to_answer = request_info.get_email_to_answer();
     if (!email_to_answer.isnull())
@@ -156,7 +198,7 @@ unsigned long long send_authinfo(
     email_template_params.insert(LibFred::Mailer::Parameters::value_type("type", type));
     email_template_params.insert(LibFred::Mailer::Parameters::value_type("authinfo", authinfo));
 
-    const Util::EmailData data(emails, "sendauthinfo_pif", email_template_params, std::vector<unsigned long long>());
+    const auto data = Util::EmailData{emails, to_string(_email_type), email_template_params, std::vector<unsigned long long>()};
     return send_joined_addresses_email(_mailer_manager, data);
 }
 
@@ -171,7 +213,10 @@ void process_public_request_authinfo_resolved(
     {
         LibFred::OperationContextCreator ctx;
         const LibFred::PublicRequestLockGuardById locked_request(ctx, _public_request_id);
-        const unsigned long long email_id = send_authinfo(locked_request, _mailer_manager);
+        const auto email_id = send_authinfo_email(
+                locked_request,
+                _mailer_manager,
+                get_email_type(_public_request_type));
         try
         {
             LibFred::UpdatePublicRequest()
