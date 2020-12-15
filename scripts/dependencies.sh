@@ -103,7 +103,7 @@ git_clone() {
         fi
     fi
     git -c advice.detachedHead=false clone "$url" "$clone_path" --depth 1 --recurse-submodules --branch "$clone_branch" || exit 1
-    git -c advice.detachedHead=false -C "$clone_path" status
+    git -c advice.detachedHead=false --git-dir="$clone_path/.git" --work-tree="$clone_path" status
 }
 
 clone_dependencies() {
