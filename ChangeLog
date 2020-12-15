@@ -1,3 +1,13 @@
+2020-12-15 (2.45.7)
+
+  * Fix poll message unittests
+
+  * Fix ``add_credit_to_invoice`` function (when used without outer transaction)
+
+  * Fix authinfo e-mail type when requested through epp
+
+  * Fix CI
+
 2020-11-02 (2.45.6)
 
   * Fix retrieving registrars blocked "today"
