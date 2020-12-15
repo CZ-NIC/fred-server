@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -153,6 +153,23 @@ bool is_poll_request_fee_present(
     throw UnexpectedNumberOfRows();
 }
 
+void convert_timestamps_to_utc(
+        LibFred::OperationContext& ctx,
+        boost::posix_time::ptime &utc_from,
+        boost::posix_time::ptime &utc_to,
+        const boost::posix_time::ptime &local_from,
+        const boost::posix_time::ptime &local_to,
+        const std::string& time_zone)
+{
+    Database::ParamQuery sql_query;
+    sql_query("SELECT "
+        "(").param_timestamp(local_from)(" AT TIME ZONE ").param_text(time_zone)(") AT TIME ZONE 'UTC'"
+        "(").param_timestamp(local_to)(" AT TIME ZONE ").param_text(time_zone)(") AT TIME ZONE 'UTC'");
+    const Database::Result db_result = ctx.get_conn().exec_params(sql_query);
+    utc_from = db_result[0][0];
+    utc_to = db_result[0][1];
+}
+
 } // namespace LibFred::Poll::{anonymous}
 
 void create_request_fee_info_messages(
@@ -204,8 +221,11 @@ void create_request_fee_info_messages(
     const boost::posix_time::ptime ts_period_to(local_period_to);
     const boost::posix_time::ptime ts_period_from(local_period_from);
 
+    boost::posix_time::ptime utc_ts_period_from;
+    boost::posix_time::ptime utc_ts_period_to;
+    convert_timestamps_to_utc(ctx, utc_ts_period_from, utc_ts_period_to, ts_period_from, ts_period_to, time_zone);
     const std::unique_ptr<LibFred::Logger::RequestCountInfo> request_counts =
-        logger_client.getRequestCountUsers(ts_period_from, ts_period_to, "EPP");
+        logger_client.getRequestCountUsers(utc_ts_period_to, utc_ts_period_from, "EPP");
 
     for (std::size_t i = 0; i < sql_query_result.size(); ++i)
     {

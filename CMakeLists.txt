@@ -185,6 +185,7 @@ OMNIORB4_IDL_TO_CPP(${IDL_SOURCE_DIR} ${IDL_DESTINATION_DIR} IDL_CC_FILES IDL_HH
     IsoDate.idl
     IsoDateTime.idl
     Logger.idl
+    LoggerRequestCount.idl
     Mailer.idl
     Messages.idl
     MojeID.idl
@@ -364,7 +365,9 @@ target_link_libraries(corba_whois2 PRIVATE
 
 add_corba_library_target(corba_logger
     ${IDL_DESTINATION_DIR}/LoggerSK.cc
-    ${IDL_DESTINATION_DIR}/LoggerDynSK.cc)
+    ${IDL_DESTINATION_DIR}/LoggerDynSK.cc
+    ${IDL_DESTINATION_DIR}/LoggerRequestCountSK.cc
+    ${IDL_DESTINATION_DIR}/LoggerRequestCountDynSK.cc)
 target_link_libraries(corba_logger PRIVATE corba_admin)
 
 add_corba_library_target(corba_techcheck

@@ -50,9 +50,6 @@ void Logger_common_exception_handler(const std::string &method_name)
 {
     try {
         throw;
-    } catch (WrongUsageError &ex) {
-        logger_error(boost::format("Incorrect usage error in %1%: %2%") % method_name % ex.what());
-        throw ccReg::Logger::INCORRECT_USAGE();
     } catch (InternalServerError &ex) {
         logger_error(boost::format("Internal server error in %1%: %2%") % method_name % ex.what());
         throw ccReg::Logger::INTERNAL_SERVER_ERROR();
@@ -382,55 +379,4 @@ ccReg::Logger::Detail *ccReg_Log_i::createRequestDetail(LibFred::Logger::Request
         detail->refs            = convert_obj_references_d2c(req->getReferences());
 
 	return detail;
-}
-
-CORBA::ULongLong ccReg_Log_i::getRequestCount(const char *datetime_from, const char *datetime_to,
-        const char *service, const char *user)
-{
-    ConnectionReleaser releaser;
-
-    try {
-
-        ptime from (from_iso_string(datetime_from));
-        ptime to   (from_iso_string(datetime_to));
-
-        return back->i_getRequestCount(from, to, service, user);
-    }
-    catch (...) {
-        Logger_common_exception_handler("getRequestCount");
-        throw ccReg::Logger::INTERNAL_SERVER_ERROR();
-    }
-
-}
-
-ccReg::RequestCountInfo* ccReg_Log_i::getRequestCountUsers(const char *datetime_from, const char *datetime_to,
-        const char *service)
-{
-    ConnectionReleaser releaser;
-
-    try {
-
-        ptime from (from_iso_string(datetime_from));
-        ptime to   (from_iso_string(datetime_to));
-        std::unique_ptr<RequestCountInfo> info = back->i_getRequestCountUsers(from, to, service);
-
-        size_t size = info->size();
-
-        ccReg::RequestCountInfo_var ret = new ccReg::RequestCountInfo();
-        ret->length( size );
-
-        unsigned i=0;
-        for(RequestCountInfo::iterator it = info->begin();
-                it != info->end();
-                ++it, ++i) {
-            ret[i].user_handle = CORBA::string_dup((*it).first.c_str());
-            ret[i].count       = (*it).second;
-        }
-
-        return ret._retn();
-    } catch (...) {
-        Logger_common_exception_handler("getRequestCountUsers");
-        throw ccReg::Logger::INTERNAL_SERVER_ERROR();
-    }
-
 }

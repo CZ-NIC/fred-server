@@ -20,6 +20,7 @@
 #define LOGGER_CLIENT_IMPL_HH_08E0527D90D74431B6E79639226FDB14
 
 #include "corba/Logger.hh"
+#include "corba/LoggerRequestCount.hh"
 #include "src/util/corba_wrapper_decl.hh"
 #include "src/deprecated/libfred/logger_client.hh"
 
@@ -66,6 +67,7 @@ public:
             const unsigned long long _session_id); 
 private:
     ccReg::Logger_var logger_ref;
+    ccReg::LoggerRequestCount_var logger_request_count_ref;
     boost::mutex ref_mutex;
 
     /* { service name => service id } */
@@ -78,10 +80,5 @@ private:
 
 }
 }
-
-/*
-ccReg::Logger_var logger_ref;
-       logger_ref = ccReg::Logger::_narrow(CorbaContainer::get_instance()->nsresolve("Logger"));
-*/
 
 #endif
