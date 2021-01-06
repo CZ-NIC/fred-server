@@ -57,7 +57,9 @@ if(NOT VERSION)
 endif()
 set(TARBALL_FILE_NAME "${project_name}-${VERSION}")
 
-if(NOT TARGET fred-static::library)
+set(LIBFRED_PREFIX ${TARBALL_FILE_NAME}/external/lib/libfred)
+
+if(NOT TARGET Fred::library)
     set_default(LIBFRED_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/lib/libfred)
     if(NOT IS_ABSOLUTE ${LIBFRED_DIR})
         set(LIBFRED_DIR ${CMAKE_CURRENT_BINARY_DIR}/${LIBFRED_DIR})
@@ -450,7 +452,7 @@ target_link_libraries(corba PRIVATE
     corba_filemanager
     corba_logger
     corba_epp
-    fred-static::library)
+    Fred::library)
 
 add_common_library_target(corba_mojeid_util
     src/bin/corba/mojeid/mojeid_corba_conversion.cc
@@ -459,14 +461,14 @@ target_link_libraries(corba_mojeid_util PRIVATE
     corba_isodate
     corba_nullableisodate
     corba_mojeid
-    fred-static::library)
+    Fred::library)
 
 add_common_library_target(util
     src/util/output_indenter.cc
     src/util/csv_parser.cc
     src/util/xmlgen.cc
     src/util/subprocess.cc)
-target_link_libraries(util PRIVATE fred-static::library)
+target_link_libraries(util PRIVATE Fred::library)
 
 add_common_library_target(types
     src/util/types/birthdate.cc)
@@ -478,7 +480,7 @@ add_common_library_target(db
     src/util/db/query/simple_filter.cc)
 target_link_libraries(db PRIVATE
     ${PostgreSQL_LIBRARIES}
-    fred-static::library)
+    Fred::library)
 
 add_common_library_target(timezones
     src/util/tz/local_timestamp.cc
@@ -504,7 +506,7 @@ target_link_libraries(corbautil PRIVATE
     corba_nullabletypes
     corba_nullableisodate
     corba_nullableisodatetime
-    fred-static::library)
+    Fred::library)
 
 add_common_library_target(oldutils
     src/deprecated/util/dbsql.cc
@@ -514,7 +516,7 @@ add_common_library_target(oldutils
     src/deprecated/util/util.cc)
 target_link_libraries(oldutils PRIVATE
     ${PostgreSQL_LIBRARIES}
-    fred-static::library)
+    Fred::library)
 
 add_common_library_target(model
     src/deprecated/model/object_registry_filter.cc
@@ -538,7 +540,7 @@ add_common_library_target(model
     src/deprecated/model/zone_soa_filter.cc
     src/deprecated/model/message_filter.cc)
 target_link_libraries(model PRIVATE
-    fred-static::library)
+    Fred::library)
 
 add_common_library_target(fred-deprecated
     src/deprecated/libfred/registry.cc
@@ -574,11 +576,11 @@ target_link_libraries(fred-deprecated PRIVATE
     oldutils
     model
     Boost::serialization
-    fred-static::library)
+    Fred::library)
 
 add_common_library_target(authentic_registrar
     src/backend/epp/impl/registraracl/authentic_registrar.cc)
-target_link_libraries(authentic_registrar PRIVATE fred-static::library)
+target_link_libraries(authentic_registrar PRIVATE Fred::library)
 
 add_common_library_target(buffer
     src/backend/buffer.cc)
@@ -610,7 +612,7 @@ add_common_library_target(public_request
 target_link_libraries(public_request PRIVATE
     buffer
     corba_mailer
-    fred-static::library)
+    Fred::library)
 
 add_common_library_target(banking
     src/deprecated/libfred/banking/bank_common.cc
@@ -618,13 +620,13 @@ add_common_library_target(banking
     src/deprecated/libfred/banking/exceptions.cc
     src/deprecated/libfred/banking/get_bank_accounts.cc)
 target_link_libraries(banking PRIVATE
-    fred-static::library
+    Fred::library
     ${XML2_LIBRARIES})
 target_include_directories(banking PUBLIC ${XML2_INCLUDE_DIRS})
 
 add_common_library_target(messages
     src/deprecated/libfred/messages/messages_impl.cc)
-target_link_libraries(messages PRIVATE fred-static::library)
+target_link_libraries(messages PRIVATE Fred::library)
 
 add_common_library_target(requests
     src/deprecated/libfred/requests/model_request.cc
@@ -638,7 +640,7 @@ add_common_library_target(requests
     src/deprecated/libfred/requests/session_cache.cc)
 target_link_libraries(requests PRIVATE
     fred-deprecated
-    fred-static::library)
+    Fred::library)
 
 add_common_library_target(contact_verification
     src/backend/contact_verification/contact_verification_impl.cc
@@ -650,7 +652,7 @@ add_common_library_target(contact_verification
     src/deprecated/libfred/contact_verification/contact_verification_state.cc
     src/deprecated/libfred/contact_verification/contact_verification_validators.cc
     src/deprecated/libfred/contact_verification/contact_verification_password.cc)
-target_link_libraries(contact_verification PRIVATE fred-static::library)
+target_link_libraries(contact_verification PRIVATE Fred::library)
 
 add_common_library_target(admin_contact_verification
     src/backend/admin/contact/verification/create_test_impl_prototypes.cc
@@ -673,7 +675,7 @@ add_common_library_target(admin_contact_verification
     src/backend/admin/contact/verification/test_impl/test_send_letter.cc
     src/backend/admin/contact/verification/test_impl/test_email_exists_for_managed_zones.cc)
 target_link_libraries(admin_contact_verification PRIVATE
-    fred-static::library
+    Fred::library
     ${XML2_LIBRARIES}
     resolv)
 target_include_directories(admin_contact_verification PUBLIC ${XML2_INCLUDE_DIRS})
@@ -681,7 +683,7 @@ target_include_directories(admin_contact_verification PUBLIC ${XML2_INCLUDE_DIRS
 add_common_library_target(admin_notification
     src/backend/admin/notification/notification.cc)
 target_link_libraries(admin_notification PRIVATE
-    fred-static::library
+    Fred::library
     corba_notification)
 
 add_common_library_target(admin_impl
@@ -708,14 +710,14 @@ add_common_library_target(admin_impl
     src/bin/corba/admin/bankinginvoicing_impl.cc)
 target_link_libraries(admin_impl PRIVATE
     corba_admin
-    fred-static::library)
+    Fred::library)
 
 add_common_library_target(whois_impl
     src/bin/corba/whois/whois_impl.cc)
 target_link_libraries(whois_impl PRIVATE
     admin_impl
     corba_whois
-    fred-static::library)
+    Fred::library)
 
 add_common_library_target(whois2_impl
     src/bin/corba/whois/whois2_impl.cc
@@ -728,11 +730,11 @@ add_common_library_target(whois2_impl
     src/backend/whois/whois.cc)
 target_link_libraries(whois2_impl PRIVATE
     corba_whois2
-    fred-static::library)
+    Fred::library)
 
 add_common_library_target(epp_keyset_dns_key
     src/backend/epp/keyset/dns_key.cc)
-target_link_libraries(epp_keyset_dns_key PRIVATE fred-static::library)
+target_link_libraries(epp_keyset_dns_key PRIVATE Fred::library)
 
 add_common_library_target(epp_impl
     src/bin/corba/epp/epp_session.cc
@@ -857,24 +859,24 @@ target_link_libraries(epp_impl PRIVATE
     contact_verification
     epp_keyset_dns_key
     buffer
-    fred-static::library)
+    Fred::library)
 
 add_common_library_target(log_impl
     src/bin/corba/log/log_impl_wrap.cc)
 target_link_libraries(log_impl PRIVATE
     admin_impl
     corba_logger
-    fred-static::library)
+    Fred::library)
 
 add_common_library_target(admin_create_expired_domain
     src/backend/admin/domain/create_expired_domain.cc)
-target_link_libraries(admin_create_expired_domain PRIVATE fred-static::library)
+target_link_libraries(admin_create_expired_domain PRIVATE Fred::library)
 
 add_common_library_target(handle_database_args
     src/util/cfg/config_handler.cc
     src/util/cfg/handle_database_args.cc
     src/util/cfg/validate_args.cc)
-target_link_libraries(handle_database_args PRIVATE fred-static::library)
+target_link_libraries(handle_database_args PRIVATE Fred::library)
 
 add_common_library_target(handle_rifd_args
     src/util/cfg/handle_rifd_args.cc
@@ -883,7 +885,7 @@ add_common_library_target(handle_rifd_args
     src/backend/epp/contact/impl/set_unused/config.cc)
 target_link_libraries(handle_rifd_args PRIVATE
     handle_database_args
-    fred-static::library)
+    Fred::library)
 
 add_common_library_target(util_corba_conversion
     src/util/corba_conversion.cc)
@@ -894,21 +896,21 @@ add_common_library_target(optys_util
     src/bin/cli/optys_get_undelivered.cc)
 target_link_libraries(optys_util PRIVATE
     util
-    fred-static::library)
+    Fred::library)
 
 add_common_library_target(admin_registrar
     src/backend/admin/registrar/create_registrar.cc
     src/backend/admin/registrar/update_epp_auth.cc
     src/backend/admin/registrar/update_registrar.cc
     src/backend/admin/registrar/update_zone_access.cc)
-target_link_libraries(admin_registrar PRIVATE fred-static::library)
+target_link_libraries(admin_registrar PRIVATE Fred::library)
 
 add_common_library_target(admin_contact_merge
     src/backend/admin/contact/merge_contact.cc
     src/backend/admin/contact/merge_contact_auto_procedure.cc
     src/backend/admin/contact/merge_contact_logger.cc
     src/backend/admin/contact/merge_contact_reporting.cc)
-target_link_libraries(admin_contact_merge PRIVATE fred-static::library)
+target_link_libraries(admin_contact_merge PRIVATE Fred::library)
 
 add_common_library_target(record_statement_impl
     src/backend/record_statement/record_statement.cc
@@ -920,11 +922,11 @@ add_common_library_target(record_statement_impl
     src/backend/record_statement/impl/util.cc)
 target_link_libraries(record_statement_impl PRIVATE
     buffer
-    fred-static::library)
+    Fred::library)
 
 add_common_library_target(domain_browser_impl
     src/backend/domain_browser/domain_browser.cc)
-target_link_libraries(domain_browser_impl PRIVATE fred-static::library)
+target_link_libraries(domain_browser_impl PRIVATE Fred::library)
 
 add_common_library_target(accounting_impl
     src/backend/accounting/accounting.cc
@@ -932,7 +934,7 @@ add_common_library_target(accounting_impl
     src/backend/accounting/impl/accounting.cc
     src/backend/accounting/impl/exceptions.cc
     src/backend/credit.cc)
-target_link_libraries(accounting_impl PRIVATE fred-static::library)
+target_link_libraries(accounting_impl PRIVATE Fred::library)
 
 add_common_library_target(akm_impl
     src/backend/automatic_keyset_management/automatic_keyset_management.cc
@@ -942,22 +944,22 @@ add_common_library_target(akm_impl
     src/backend/automatic_keyset_management/impl/logger_request_property.cc
     src/backend/automatic_keyset_management/impl/logger_request_type.cc
     src/backend/automatic_keyset_management/impl/util.cc)
-target_link_libraries(akm_impl PRIVATE fred-static::library)
+target_link_libraries(akm_impl PRIVATE Fred::library)
 
 add_common_library_target(admin_zone_impl
     src/backend/admin/zone/zone.cc)
-target_link_libraries(admin_zone_impl PRIVATE fred-static::library)
+target_link_libraries(admin_zone_impl PRIVATE Fred::library)
 
 add_common_library_target(administrativeblocking_impl
     src/backend/admin_block/administrativeblocking.cc)
-target_link_libraries(administrativeblocking_impl PRIVATE fred-static::library)
+target_link_libraries(administrativeblocking_impl PRIVATE Fred::library)
 
 add_common_library_target(test-setup-fixtures
     test/setup/fixtures.cc
     test/setup/fixtures_utils.cc
     test/setup/tests_common.cc)
 target_link_libraries(test-setup-fixtures PUBLIC
-    fred-static::library
+    Fred::library
     Boost::program_options
     Boost::unit_test_framework)
 
@@ -965,7 +967,7 @@ add_common_library_target(mojeid-checkers
     src/backend/mojeid/checkers.cc)
 target_link_libraries(mojeid-checkers PUBLIC
     types
-    fred-static::library)
+    Fred::library)
 
 # fred-rifd
 add_common_executable_target(fred-rifd
@@ -988,7 +990,7 @@ target_link_libraries(fred-rifd
     handle_rifd_args
     oldutils
     util
-    fred-static::library
+    Fred::library
     Threads::Threads
     Boost::thread
     Boost::random
@@ -1051,7 +1053,7 @@ target_link_libraries(fred-adifd
     util_corba_conversion
     whois2_impl
     whois_impl
-    fred-static::library
+    Fred::library
     Threads::Threads
     Boost::random
     Boost::system
@@ -1105,7 +1107,7 @@ target_link_libraries(fred-pifd
     oldutils
     util
     util_corba_conversion
-    fred-static::library
+    Fred::library
     Threads::Threads
     Boost::random
     Boost::thread
@@ -1133,7 +1135,7 @@ target_link_libraries(fred-logd
     types
     util
     oldutils
-    fred-static::library
+    Fred::library
     Boost::system
     Boost::regex
     Boost::date_time
@@ -1158,7 +1160,7 @@ target_link_libraries(fred-msgd
     corba_datatypes
     corba_messages
     corba_filemanager
-    fred-static::library
+    Fred::library
     Boost::thread
     Boost::system
     Boost::regex
@@ -1215,7 +1217,7 @@ target_link_libraries(fred-mojeid-msggen
     corba_mojeid
     corba_mojeid_util
     handle_database_args
-    fred-static::library
+    Fred::library
     Boost::program_options
     Boost::date_time)
 
@@ -1233,7 +1235,7 @@ target_link_libraries(fred-dbifd
     timezones
     util
     db
-    fred-static::library
+    Fred::library
     Threads::Threads
     Boost::system
     Boost::random
@@ -1264,7 +1266,7 @@ target_link_libraries(fred-akmd
     corba_filters
     util
     db
-    fred-static::library
+    Fred::library
     Boost::system
     Boost::random
     Boost::thread
@@ -1293,7 +1295,7 @@ target_link_libraries(fred-rsifd
     corba_isodate
     corba_isodatetime
     corba_nullableisodate
-    fred-static::library
+    Fred::library
     Threads::Threads
     Boost::date_time
     Boost::program_options
@@ -1321,7 +1323,7 @@ target_link_libraries(fred-accifd
     oldutils
     types
     util
-    fred-static::library
+    Fred::library
     Threads::Threads
     Boost::random
     Boost::system
@@ -1385,7 +1387,7 @@ target_link_libraries(fred-admin
     hp
     public_request
     optys_util
-    fred-static::library
+    Fred::library
     Threads::Threads
     ${LIBCURL_LIBRARIES}
     ${MINIZIP_LIBRARIES}
@@ -1421,7 +1423,7 @@ target_link_libraries(migrate_log
     db
     util
     oldutils
-    fred-static::library
+    Fred::library
     Boost::system
     Boost::regex
     Boost::thread
@@ -1434,7 +1436,7 @@ target_link_libraries(mojeid_contact_address_import
     fred-deprecated
     db
     util
-    fred-static::library
+    Fred::library
     Threads::Threads
     Boost::system
     Boost::regex
@@ -1453,7 +1455,7 @@ target_link_libraries(mojeid_contact_ssn_fix
     corba_isodatetime
     corba_nullableisodate
     util
-    fred-static::library
+    Fred::library
     Threads::Threads
     Boost::system
     Boost::thread
@@ -1473,7 +1475,7 @@ target_link_libraries(fred-disclose-flags-updater
     fred-deprecated
     db
     util
-    fred-static::library
+    Fred::library
     Threads::Threads
     Boost::regex
     Boost::date_time
@@ -1491,7 +1493,7 @@ add_common_executable_target(test-mockdb
     src/util/db/test-mockdb.cc)
 target_link_libraries(test-mockdb
     types
-    fred-static::library
+    Fred::library
     Boost::thread
     Boost::regex
     Boost::date_time
@@ -1505,7 +1507,7 @@ target_link_libraries(test-model
     banking
     types
     db
-    fred-static::library
+    Fred::library
     Boost::system
     Boost::regex
     Boost::thread
@@ -1517,7 +1519,7 @@ add_common_executable_target(test-db
 target_link_libraries(test-db
     types
     db
-    fred-static::library
+    Fred::library
     Boost::thread
     Boost::system
     Boost::regex
@@ -1715,7 +1717,7 @@ target_link_libraries(test-epp
 add_common_executable_target(test-exception
     test/util/test_exception.cc)
 target_link_libraries(test-exception
-    fred-static::library
+    Fred::library
     Boost::system)
 
 # test-admin-domain
@@ -2053,7 +2055,7 @@ target_link_libraries(test-delete-objects-marked-as-delete-candidate
     db
     oldutils
     util
-    fred-static::library
+    Fred::library
     Threads::Threads
     Boost::program_options
     Boost::date_time
@@ -2138,18 +2140,19 @@ endif()
 
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/.git AND GIT_PROGRAM)
     if(NOT TARGET dist)
-        add_custom_target(dist_libfred
-            COMMAND ${GIT_PROGRAM} archive --format=tar --prefix=${TARBALL_FILE_NAME}/external/lib/libfred/ HEAD > ${CMAKE_CURRENT_SOURCE_DIR}/.libfred.tar
-            WORKING_DIRECTORY ${LIBFRED_DIR})
+        if (NOT TARGET dist_libfred)
+            add_custom_target(dist_libfred
+                COMMAND ${GIT_PROGRAM} archive --format=tar --prefix=${TARBALL_FILE_NAME}/external/lib/libfred/ HEAD > ${CMAKE_BINARY_DIR}/.libfred.tar
+                WORKING_DIRECTORY ${LIBFRED_DIR})
+        endif()
         add_custom_target(dist_idl
-            COMMAND ${GIT_PROGRAM} archive --format=tar --prefix=${TARBALL_FILE_NAME}/external/idl/ HEAD > ${CMAKE_CURRENT_SOURCE_DIR}/.idl.tar
+            COMMAND ${GIT_PROGRAM} archive --format=tar --prefix=${TARBALL_FILE_NAME}/external/idl/ HEAD > ${CMAKE_BINARY_DIR}/.idl.tar
             WORKING_DIRECTORY ${IDL_PROJECT_DIR})
         add_custom_target(dist
-            COMMAND ${GIT_PROGRAM} archive --format=tar --prefix=${TARBALL_FILE_NAME}/ HEAD > .${TARBALL_FILE_NAME}.tar
-            COMMAND tar --concatenate --file=.${TARBALL_FILE_NAME}.tar .libfred.tar
-            COMMAND tar --concatenate --file=.${TARBALL_FILE_NAME}.tar .idl.tar
-            COMMAND cat .${TARBALL_FILE_NAME}.tar | gzip > ${CMAKE_CURRENT_BINARY_DIR}/${TARBALL_FILE_NAME}.tar.gz
-            COMMAND rm .${TARBALL_FILE_NAME}.tar .libfred.tar .idl.tar
+            COMMAND ${GIT_PROGRAM} archive --format=tar --prefix=${TARBALL_FILE_NAME}/ HEAD > ${CMAKE_BINARY_DIR}/.${TARBALL_FILE_NAME}.tar
+            COMMAND tar --concatenate --file=${CMAKE_BINARY_DIR}/.${TARBALL_FILE_NAME}.tar ${CMAKE_BINARY_DIR}/.libfred.tar && rm ${CMAKE_BINARY_DIR}/.libfred.tar
+            COMMAND tar --concatenate --file=${CMAKE_BINARY_DIR}/.${TARBALL_FILE_NAME}.tar ${CMAKE_BINARY_DIR}/.idl.tar && rm ${CMAKE_BINARY_DIR}/.idl.tar
+            COMMAND cat ${CMAKE_BINARY_DIR}/.${TARBALL_FILE_NAME}.tar | gzip > ${CMAKE_BINARY_DIR}/${TARBALL_FILE_NAME}.tar.gz && rm ${CMAKE_BINARY_DIR}/.${TARBALL_FILE_NAME}.tar
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
         add_dependencies(dist dist_libfred dist_idl)
     endif()
