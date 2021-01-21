@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007-2020  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2007-2021  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -2802,7 +2802,7 @@ public:
                                << "LEFT JOIN files t_6 ON (t_1.file = t_6.id) "
                                << "LEFT JOIN files t_7 ON (t_1.filexml = t_7.id)";
 
-      object_info_query.order_by() << "tmp.id";
+      object_info_query.order_by() << "tmp.id DESC";
 
       try {
         Database::Connection conn = Database::Manager::acquire();
