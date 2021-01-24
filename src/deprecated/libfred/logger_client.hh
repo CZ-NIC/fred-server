@@ -19,7 +19,10 @@
 #ifndef LOGGER_CLIENT_HH_6295BB642CBC4154A1BA7AEC088EF657
 #define LOGGER_CLIENT_HH_6295BB642CBC4154A1BA7AEC088EF657
 
+#include "src/deprecated/libfred/requests/request.hh"
 #include "src/deprecated/libfred/requests/request_manager.hh"
+
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace LibFred {
 namespace Logger {
@@ -55,7 +58,7 @@ public:
 
 };
 
-}
-}
+} // namespace LibFred::Logger
+} // namespace LibFred
 
 #endif

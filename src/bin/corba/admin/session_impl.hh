@@ -49,13 +49,12 @@
 #include "src/bin/corba/mailer_manager.hh"
 #include "src/bin/corba/file_manager_client.hh"
 #include "src/deprecated/libfred/registry.hh"
-#include "src/deprecated/libfred/requests/request_manager.hh"
 #include "src/deprecated/util/dbsql.hh"
 #include "src/deprecated/model/model_filters.hh"
 
 #include "src/util/settings.hh"
 
-#include "corba/Logger.hh"
+#include "corba/LoggerFilter.hh"
 
 
 using namespace boost::posix_time;
@@ -99,7 +98,6 @@ private:
   std::unique_ptr<LibFred::Invoicing::Manager> m_invoicing_manager;
   std::unique_ptr<LibFred::Mail::Manager> mail_manager_;
   std::unique_ptr<LibFred::File::Manager> file_manager_;
-  std::unique_ptr<LibFred::Logger::Manager> m_logger_manager;
   std::unique_ptr<LibFred::Session::Manager> m_logsession_manager;
   std::unique_ptr<LibFred::Banking::Manager> m_banking_manager;
   MailerManager m_mailer_manager;
@@ -128,7 +126,7 @@ private:
   Registry::PublicRequest::Detail* getPublicRequestDetail(ccReg::TID _id);
   Registry::Mailing::Detail* getMailDetail(ccReg::TID _id);
   Registry::Invoicing::Detail* getInvoiceDetail(ccReg::TID _id);
-  ccReg::Logger::Detail*  getLoggerDetail(ccReg::TID _id);
+  ccReg::LoggerFilter::Detail*  getLoggerDetail(ccReg::TID _id);
   Registry::Zone::Detail* getZoneDetail(ccReg::TID _id);
   Registry::Banking::BankItem::Detail * getPaymentDetail(ccReg::TID _id);
   Registry::Message::Detail* getMessageDetail(ccReg::TID _id);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -18,6 +18,7 @@
  */
 #include "src/backend/admin/contact/merge_contact_logger.hh"
 
+#include <boost/assign.hpp>
 
 void logger_merge_contact_transform_output_data(
         const LibFred::MergeContactOutput &_merge_data,

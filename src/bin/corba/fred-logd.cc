@@ -52,7 +52,6 @@
 #include "src/util/cfg/handle_logging_args.hh"
 #include "src/util/cfg/handle_database_args.hh"
 #include "src/util/cfg/handle_corbanameservice_args.hh"
-#include "src/util/cfg/handle_logd_args.hh"
 
 using namespace std;
 
@@ -67,7 +66,6 @@ boost::assign::list_of
     (HandleArgsPtr(new HandleLoggingArgs))
     (HandleArgsPtr(new HandleDatabaseArgs))
     (HandleArgsPtr(new HandleCorbaNameServiceArgs))
-    (HandleArgsPtr(new HandleLogdArgs))
     ;
 
 int main(int argc, char *argv[])
@@ -100,12 +98,9 @@ int main(int argc, char *argv[])
         //conf pointers
         HandleDatabaseArgs* db_args_ptr = CfgArgs::instance()
             ->get_handler_ptr_by_type<HandleDatabaseArgs>();
-        HandleLogdArgs* logd_args_ptr = CfgArgs::instance()
-            ->get_handler_ptr_by_type<HandleLogdArgs>();
 
         std::unique_ptr<ccReg_Log_i> myccReg_Log_i (
-            new ccReg_Log_i(db_args_ptr->get_conn_info()
-                            , logd_args_ptr->logd_monitoring_hosts_file));
+            new ccReg_Log_i(db_args_ptr->get_conn_info()));
 
         //create server object with poa and nameservice registration
         CorbaContainer::get_instance()

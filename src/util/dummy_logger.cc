@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -24,16 +24,6 @@ namespace Logger {
 
 DummyLoggerImpl::DummyLoggerImpl()
 {
-}
-
-
-unsigned long long DummyLoggerImpl::getRequestCount(
-    const boost::posix_time::ptime &,
-    const boost::posix_time::ptime &,
-    const std::string &,
-    const std::string &)
-{
-    return 0;
 }
 
 

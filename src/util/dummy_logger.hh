@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -29,12 +29,6 @@ class DummyLoggerImpl : public LoggerClient
 {
 public:
     DummyLoggerImpl();
-
-    unsigned long long getRequestCount(
-            const boost::posix_time::ptime &from,
-            const boost::posix_time::ptime &to,
-            const std::string &service,
-            const std::string &user);
 
     std::unique_ptr<RequestCountInfo> getRequestCountUsers(
                const boost::posix_time::ptime &from,
