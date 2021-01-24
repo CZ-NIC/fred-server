@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2021  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -1156,7 +1156,7 @@ private:
         return Factory::Product(
                 new ImplementationWithin<REGISTRY_TIMEZONE>(_doc_manager, _mailer_manager));
     }
-
+public:
     struct RegistryProducer
     {
         RegistryProducer()
@@ -1164,6 +1164,11 @@ private:
             Factory::register_producer(Tz::get_psql_handle_of<REGISTRY_TIMEZONE>(), producer);
         }
     };
+    static const RegistryProducer& get() noexcept
+    {
+        return auto_registry_producer;
+    }
+private:
     static const RegistryProducer auto_registry_producer;
 };
 
