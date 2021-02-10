@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2020  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2010-2021  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -1326,18 +1326,22 @@ void MojeIdImpl::update_contact_prepare(
                 }
             }
             const HandleMojeIdArgs* const server_conf_ptr = CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIdArgs>();
-            check_sent_letters_limit(ctx,
-                    new_data.id,
-                    server_conf_ptr->letter_limit_count,
-                    server_conf_ptr->letter_limit_interval);
-            LibFred::CreatePublicRequestAuth create_public_request_op;
-            create_public_request_op.set_reason("data changed");
-            create_public_request_op.set_registrar_id(mojeid_registrar_.id());
-            create_public_request_op.exec(
-                    locked_contact,
-                    reidentification_needed ? Fred::Backend::MojeId::PublicRequest::ContactReidentification().iface()
-                                            : Fred::Backend::MojeId::PublicRequest::ContactIdentification().iface(),
-                    get_optional_log_request_id(_log_request_id));
+            if (server_conf_ptr->auto_pin3_sending == AutoPin3Sending::always)
+            {
+                check_sent_letters_limit(
+                        ctx,
+                        new_data.id,
+                        server_conf_ptr->letter_limit_count,
+                        server_conf_ptr->letter_limit_interval);
+                LibFred::CreatePublicRequestAuth create_public_request_op;
+                create_public_request_op.set_reason("data changed");
+                create_public_request_op.set_registrar_id(mojeid_registrar_.id());
+                create_public_request_op.exec(
+                        locked_contact,
+                        reidentification_needed ? Fred::Backend::MojeId::PublicRequest::ContactReidentification().iface()
+                                                : Fred::Backend::MojeId::PublicRequest::ContactIdentification().iface(),
+                        get_optional_log_request_id(_log_request_id));
+            }
         }
         {
             const MojeIdImplInternal::CheckUpdateContactPrepare check_contact_data(new_data);
@@ -2087,16 +2091,19 @@ MojeIdImpl::ContactId MojeIdImpl::process_registration_request(
                     "successfully processed",
                     _log_request_id);
 
-            if (LibFred::ObjectStatesInfo(LibFred::GetObjectStates(contact_id).exec(ctx))
-                            .absents(LibFred::Object_State::identified_contact))
+            const HandleMojeIdArgs* const server_conf_ptr = CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIdArgs>();
+            if (server_conf_ptr->auto_pin3_sending == AutoPin3Sending::always)
             {
-                LibFred::CreatePublicRequestAuth op_create_pub_req;
-                op_create_pub_req.set_registrar_id(mojeid_registrar_.id());
-                LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_contact(ctx, contact_id);
-                const LibFred::CreatePublicRequestAuth::Result result = op_create_pub_req.exec(
-                        locked_contact, Fred::Backend::MojeId::PublicRequest::ContactIdentification().iface(), get_optional_log_request_id(_log_request_id));
+                if (LibFred::ObjectStatesInfo(LibFred::GetObjectStates(contact_id).exec(ctx))
+                                .absents(LibFred::Object_State::identified_contact))
+                {
+                    LibFred::CreatePublicRequestAuth op_create_pub_req;
+                    op_create_pub_req.set_registrar_id(mojeid_registrar_.id());
+                    LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_contact(ctx, contact_id);
+                    const LibFred::CreatePublicRequestAuth::Result result = op_create_pub_req.exec(
+                            locked_contact, Fred::Backend::MojeId::PublicRequest::ContactIdentification().iface(), get_optional_log_request_id(_log_request_id));
+                }
             }
-
             ctx.commit_transaction();
 
             return contact_id;
