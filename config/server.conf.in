@@ -224,6 +224,10 @@ demo_mode = false
 # If false, it is generated later by another process (asynchronously)
 auto_email_generation = true
 auto_sms_generation = true
+# Controls automatic sending of letter with PIN3
+#     possible values: always/never
+#     default value: always
+auto_pin3_sending = always
 
 # Maximum number of letters sent to one contact in the specified interval
 #letter_limit_count = 6
