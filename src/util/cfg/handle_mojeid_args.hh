@@ -37,18 +37,6 @@
 
 namespace po = boost::program_options;
 
-enum class AutoPin3Sending
-{
-    always,
-    never
-};
-
-template <typename CharT, typename Traits>
-std::basic_istream<CharT, Traits>& operator>>(std::basic_istream<CharT, Traits>&, AutoPin3Sending&);
-
-template <typename CharT, typename Traits>
-std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>&, AutoPin3Sending);
-
 /**
  * \class HandleMojeIdArgs
  * \brief mojeid backend config
@@ -64,7 +52,7 @@ public:
     unsigned letter_limit_interval;
     bool auto_sms_generation;
     bool auto_email_generation;
-    AutoPin3Sending auto_pin3_sending;
+    bool auto_pin3_sending;
 
     std::shared_ptr<boost::program_options::options_description>
     get_options_description()
@@ -99,7 +87,7 @@ public:
                  po::value< bool >()->default_value(true),
                  "turn on/off email generation after two phase commit")
                 ("mojeid.auto_pin3_sending",
-                 po::value<AutoPin3Sending>()->default_value(AutoPin3Sending::always),
+                 po::value<bool>()->default_value(true),
                  "control automatic PIN3 sending");
 
         return cfg_opts;
@@ -118,62 +106,8 @@ public:
         letter_limit_interval = vm["mojeid.letter_limit_interval"].as<unsigned>();
         auto_sms_generation   = vm["mojeid.auto_sms_generation"].as< bool >();
         auto_email_generation = vm["mojeid.auto_email_generation"].as< bool >();
-        auto_pin3_sending = vm["mojeid.auto_pin3_sending"].as<AutoPin3Sending>();
+        auto_pin3_sending = vm["mojeid.auto_pin3_sending"].as<bool>();
     }//handle
 };
-
-template <typename CharT, typename Traits>
-std::basic_istream<CharT, Traits>& operator>>(std::basic_istream<CharT, Traits>& in, AutoPin3Sending& value)
-{
-    if (in.good())
-    {
-        std::basic_string<CharT> str;
-        in >> str;
-        if (str == "always")
-        {
-            value = AutoPin3Sending::always;
-        }
-        else if (str == "never")
-        {
-            value = AutoPin3Sending::never;
-        }
-        else
-        {
-            struct InvalidValue : std::exception
-            {
-                const char* what() const noexcept override
-                {
-                    return "unable to convert to AutoPin3Sending value";
-                }
-            };
-            throw InvalidValue{};
-        }
-    }
-    return in;
-}
-
-template <typename CharT, typename Traits>
-std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>& out, AutoPin3Sending value)
-{
-    if (out.good())
-    {
-        switch (value)
-        {
-            case AutoPin3Sending::always:
-                return out << "always";
-            case AutoPin3Sending::never:
-                return out << "never";
-        }
-        struct InvalidValue : std::exception
-        {
-            const char* what() const noexcept override
-            {
-                return "unexpected AutoPin3Sending value";
-            }
-        };
-        throw InvalidValue{};
-    }
-    return out;
-}
 
 #endif
