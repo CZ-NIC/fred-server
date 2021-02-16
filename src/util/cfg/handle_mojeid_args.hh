@@ -118,6 +118,7 @@ public:
         letter_limit_interval = vm["mojeid.letter_limit_interval"].as<unsigned>();
         auto_sms_generation   = vm["mojeid.auto_sms_generation"].as< bool >();
         auto_email_generation = vm["mojeid.auto_email_generation"].as< bool >();
+        auto_pin3_sending = vm["mojeid.auto_pin3_sending"].as<AutoPin3Sending>();
     }//handle
 };
 
