@@ -1326,7 +1326,7 @@ void MojeIdImpl::update_contact_prepare(
                 }
             }
             const HandleMojeIdArgs* const server_conf_ptr = CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIdArgs>();
-            if (server_conf_ptr->auto_pin3_sending == AutoPin3Sending::always)
+            if (server_conf_ptr->auto_pin3_sending)
             {
                 check_sent_letters_limit(
                         ctx,
@@ -2092,7 +2092,7 @@ MojeIdImpl::ContactId MojeIdImpl::process_registration_request(
                     _log_request_id);
 
             const HandleMojeIdArgs* const server_conf_ptr = CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIdArgs>();
-            if (server_conf_ptr->auto_pin3_sending == AutoPin3Sending::always)
+            if (server_conf_ptr->auto_pin3_sending)
             {
                 if (LibFred::ObjectStatesInfo(LibFred::GetObjectStates(contact_id).exec(ctx))
                                 .absents(LibFred::Object_State::identified_contact))
