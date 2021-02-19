@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006-2020  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2006-2021  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/epp/contact/config_data_filter.hh"
 #include "src/backend/epp/contact/create_contact_data_filter.hh"
 #include "src/backend/epp/contact/update_contact_data_filter.hh"
@@ -315,6 +316,7 @@ public:
 
     ccReg::Response* ContactInfo(
             const char* _handle,
+            const char* _authinfopw,
             const ccReg::ControlledPrivacyDataMask& _unused_disclose_flags,
             ccReg::Contact_out _contact_info,
             const ccReg::EppParams& _epp_params);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006-2020  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2006-2021  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "corba/EPP.hh"
 #include "src/bin/corba/epp/epp_impl.hh"
 
@@ -1831,6 +1832,7 @@ ccReg::Response* ccReg_EPP_i::KeySetCheck(
 
 ccReg::Response* ccReg_EPP_i::ContactInfo(
         const char* const _contact_handle,
+        const char* const _authinfopw,
         const ccReg::ControlledPrivacyDataMask& _available_disclose_flags [[gnu::unused]],
         ccReg::Contact_out _contact_info,
         const ccReg::EppParams& _epp_params)
