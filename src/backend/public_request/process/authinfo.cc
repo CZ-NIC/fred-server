@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2020  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2018-2021  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -93,11 +93,14 @@ EmailType get_email_type(const LibFred::PublicRequestTypeIface& public_request)
     {
         return EmailType::sendauthinfo_epp;
     }
-    if (public_request_type == Type::get_iface_of<Type::AuthinfoAuto>().get_public_request_type())
+    if ((public_request_type == Type::get_iface_of<Type::AuthinfoAuto>().get_public_request_type()) ||
+        (public_request_type == Type::get_iface_of<Type::AuthinfoEmail>().get_public_request_type()) ||
+        (public_request_type == Type::get_iface_of<Type::AuthinfoGovernment>().get_public_request_type()) ||
+        (public_request_type == Type::get_iface_of<Type::AuthinfoPost>().get_public_request_type()))
     {
         return EmailType::sendauthinfo_pif;
     }
-    throw std::runtime_error{"unexpected public request type"};
+    throw std::runtime_error{"unexpected public request type: " + public_request_type};
 }
 
 unsigned long long send_authinfo_email(
