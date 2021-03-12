@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2021  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/epp/contact/info_contact.hh"
 
 #include "src/backend/admin/contact/verification/contact_states/enum.hh"
@@ -42,7 +43,7 @@ namespace Contact {
 InfoContactOutputData info_contact(
         LibFred::OperationContext& _ctx,
         const std::string& _contact_handle,
-        const InfoContactConfigData&,
+        const InfoContactConfigData& _info_contact_config_data,
         const SessionData& _session_data)
 {
     if (!is_session_registrar_valid(_session_data))
@@ -53,25 +54,21 @@ InfoContactOutputData info_contact(
 
     try
     {
-        const LibFred::InfoContactData info_contact_data =
-                LibFred::InfoContactByHandle(_contact_handle)
-                        .exec(_ctx, "UTC")
-                        .info_contact_data;
-
-        const std::string session_registrar_handle =
-                LibFred::InfoRegistrarById(_session_data.registrar_id).exec(_ctx).info_registrar_data.handle;
-
-        const bool include_authinfo =
-                info_contact_data.sponsoring_registrar_handle == session_registrar_handle;
+        const LibFred::InfoContactData info_contact_data = LibFred::InfoContactByHandle(_contact_handle)
+                .exec(_ctx, "UTC")
+                .info_contact_data;
 
         const std::vector<LibFred::ObjectStateData> contact_states_data =
                 LibFred::GetObjectStates(info_contact_data.id).exec(_ctx);
 
         const InfoContactOutputData info_contact_output_data =
                 get_info_contact_output(
+                        _ctx,
                         info_contact_data,
-                        contact_states_data,
-                        include_authinfo);
+                        _info_contact_config_data.authinfopw,
+                        *_info_contact_config_data.info_contact_data_filter,
+                        _session_data,
+                        contact_states_data);
 
         return info_contact_output_data;
     }

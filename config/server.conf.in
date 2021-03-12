@@ -141,7 +141,7 @@ epp_update_domain_keyset_clear = true
 epp_operations_charging = @EPP_OPERATIONS_CHARGING@
 # Turn on/off contact check (semi-automatic) after data change
 epp_update_contact_enqueue_check = false
-#possible values: <empty>, cznic_specific
+#possible values: <empty>, cznic_specific, set_unused_discloseflags
 #default value: <empty>
 contact_data_filter = set_unused_discloseflags
 
@@ -178,6 +178,31 @@ default_discloseorganization = show
 # default_disclosevat =
 # default_discloseident =
 # default_disclosenotifyemail =
+
+#How to share contact data between registrars.
+#You can specify a policy or the relationship
+#between contact and registrar which can see
+#data without restrictions otherwise can see
+#just a data marked as "disclose". Default is
+#"show all" policy.
+# data_share_policy
+#     possible values: cznic_specific, show_all
+# show_private_data_to
+#     multiple option
+#     possible values: admin_contact,        // sponsoring registrar of domain where contact
+#                                            // is in "admin contact" role
+#                      authorized_registrar, // registrar which knows authinfo password
+#                      domain_holder,        // sponsoring registrar of domain where contact
+#                                            // is in "holder" role
+#                      other,                // all other relationships
+#                      sponsoring_registrar  // sponsoring registrar of contact
+[rifd::info_contact]
+data_share_policy = cznic_specific
+# show_private_data_to = admin_contact
+# show_private_data_to = authorized_registrar
+# show_private_data_to = domain_holder
+# show_private_data_to = other
+# show_private_data_to = sponsoring_registrar
 
 ###
 ### ADIFD specific settings

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2018-2021  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -25,8 +25,10 @@
 
 #include <boost/program_options.hpp>
 
+#include <functional>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 namespace Epp {
 namespace Contact {
@@ -44,10 +46,12 @@ public:
     template <typename>
     const std::string& get_value()const;
     template <typename>
+    void iterate_multiple_value(std::function<void(const std::string&)> on_value) const;
+    template <typename>
     ConfigDataFilter& set_all_values(const boost::program_options::variables_map&);
     template <typename>
     static ConfigDataFilter get_default();
-    using KeyValue = std::unordered_map<std::string, std::string>;
+    using KeyValue = std::unordered_multimap<std::string, std::string>;
 private:
     std::string name_;
     KeyValue options_;

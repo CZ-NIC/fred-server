@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2018-2021  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,17 +16,27 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #ifndef CONTACT_OUTPUT_HH_423C3E44464D4CB2AF91BA42D101450F
 #define CONTACT_OUTPUT_HH_423C3E44464D4CB2AF91BA42D101450F
 
 #include "libfred/registrable_object/contact/info_contact_data.hh"
 #include "src/backend/epp/contact/info_contact.hh"
+#include "src/backend/epp/contact/info_contact_data_filter.hh"
 #include "libfred/object_state/get_object_states.hh"
 
 #include <vector>
 
 namespace Epp {
 namespace Contact {
+
+InfoContactOutputData get_info_contact_output(
+        LibFred::OperationContext& _ctx,
+        LibFred::InfoContactData _data,
+        const char* _authinfopw,
+        const InfoContactDataFilter& _info_contact_data_filter,
+        const SessionData& _session_data,
+        const std::vector<LibFred::ObjectStateData>& _object_state_data);
 
 InfoContactOutputData get_info_contact_output(
         const LibFred::InfoContactData& _data,

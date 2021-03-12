@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2021  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,24 +16,31 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #ifndef INFO_CONTACT_CONFIG_DATA_HH_F7DDDCCA0C744EEB846B216F7AF03958
 #define INFO_CONTACT_CONFIG_DATA_HH_F7DDDCCA0C744EEB846B216F7AF03958
+
+#include "src/backend/epp/contact/info_contact_data_filter.hh"
+
+#include <memory>
+#include <utility>
 
 namespace Epp {
 namespace Contact {
 
 struct InfoContactConfigData
 {
-    const bool rifd_epp_operations_charging;
-
-
     InfoContactConfigData(
-            const bool _rifd_epp_operations_charging)
-        : rifd_epp_operations_charging(_rifd_epp_operations_charging)
-    {
-    }
-
-
+            bool rifd_epp_operations_charging,
+            const char* authinfopw,
+            std::shared_ptr<InfoContactDataFilter> info_contact_data_filter)
+        : rifd_epp_operations_charging{rifd_epp_operations_charging},
+          authinfopw{authinfopw},
+          info_contact_data_filter{std::move(info_contact_data_filter)}
+    { }
+    const bool rifd_epp_operations_charging;
+    const char* const authinfopw;
+    const std::shared_ptr<InfoContactDataFilter> info_contact_data_filter;
 };
 
 } // namespace Epp::Contact
