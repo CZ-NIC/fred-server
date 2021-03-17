@@ -134,7 +134,8 @@ bool contact_is_registrars_domain_admin_contact(
             "JOIN domain d ON d.id = d_o.id AND "
                              "d_o.clid = $1::BIGINT "
             "JOIN domain_contact_map dcm ON dcm.domainid = d.id AND "
-                                           "dcm.contactid = $2::BIGINT "
+                                           "dcm.contactid = $2::BIGINT AND "
+                                           "dcm.role = 1 " // 1 means "admin contact", there are currently no other roles.
             "LIMIT 1",
             Database::query_param_list(registrar_id)(contact_id)).size();
 }

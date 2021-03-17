@@ -141,68 +141,73 @@ epp_update_domain_keyset_clear = true
 epp_operations_charging = @EPP_OPERATIONS_CHARGING@
 # Turn on/off contact check (semi-automatic) after data change
 epp_update_contact_enqueue_check = false
-#possible values: <empty>, cznic_specific, set_unused_discloseflags
-#default value: <empty>
+# possible values: <empty>, cznic_specific, set_unused_discloseflags
+# default value: <empty>
 contact_data_filter = set_unused_discloseflags
 
-#default values of discloseflags not shown in epp xml schemas
-#possible values: <empty> - discloseflag must present, no substitution available
-#                 show    - missing discloseflag means "to show"
-#                 hide    - missing discloseflag means "to hide"
-#default value: <empty>
-#for a create_contact operation
+# default values of discloseflags not shown in epp xml schemas
+#     possible values: <empty> - discloseflag must present, no substitution available
+#                      show    - missing discloseflag means "to show"
+#                      hide    - missing discloseflag means "to hide"
+#     default value: <empty>
+# for a create_contact operation
 [rifd::set_unused_discloseflags::create_contact]
 default_disclosename = show
 default_discloseorganization = show
 default_discloseaddress = show
-# default_disclosetelephone =
-# default_disclosefax =
-# default_discloseemail =
-# default_disclosevat =
-# default_discloseident =
-# default_disclosenotifyemail =
+#default_disclosetelephone =
+#default_disclosefax =
+#default_discloseemail =
+#default_disclosevat =
+#default_discloseident =
+#default_disclosenotifyemail =
 
-#default values of discloseflags not shown in epp xml schemas
-#possible values: <empty> - missing discloseflag means "do not change"
-#                 show    - missing discloseflag means "set to show"
-#                 hide    - missing discloseflag means "set to hide"
-#default value: <empty>
-#for an update_contact operation
+# default values of discloseflags not shown in epp xml schemas
+#     possible values: <empty> - missing discloseflag means "do not change"
+#                      show    - missing discloseflag means "set to show"
+#                      hide    - missing discloseflag means "set to hide"
+#     default value: <empty>
+# for an update_contact operation
 [rifd::set_unused_discloseflags::update_contact]
 default_disclosename = show
 default_discloseorganization = show
-# default_discloseaddress =
-# default_disclosetelephone =
-# default_disclosefax =
-# default_discloseemail =
-# default_disclosevat =
-# default_discloseident =
-# default_disclosenotifyemail =
+#default_discloseaddress =
+#default_disclosetelephone =
+#default_disclosefax =
+#default_discloseemail =
+#default_disclosevat =
+#default_discloseident =
+#default_disclosenotifyemail =
 
-#How to share contact data between registrars.
-#You can specify a policy or the relationship
-#between contact and registrar which can see
-#data without restrictions otherwise can see
-#just a data marked as "disclose". Default is
-#"show all" policy.
-# data_share_policy
-#     possible values: cznic_specific, show_all
-# show_private_data_to
-#     multiple option
-#     possible values: admin_contact,        // sponsoring registrar of domain where contact
-#                                            // is in "admin contact" role
-#                      authorized_registrar, // registrar which knows authinfo password
-#                      domain_holder,        // sponsoring registrar of domain where contact
-#                                            // is in "holder" role
-#                      other,                // all other relationships
-#                      sponsoring_registrar  // sponsoring registrar of contact
+# How to share contact data between registrars. You can specify a policy
+# or the relationship between contact and registrar which can see data
+# without restrictions otherwise can see just a data marked as "disclose".
+# Default is "show all" policy.
+#
+# The first variant is policy specification:
+# * data_share_policy
+#       possible values: cznic_specific, show_all
+#
+# The second variant is multiple relationships specification:
+# * show_private_data_to
+#       multiple option
+#       possible values: admin_contact,        // sponsoring registrar of domain where contact
+#                                              // is in "administrative contact of a domain" role
+#                        authorized_registrar, // registrar which knows authinfo password
+#                        domain_holder,        // sponsoring registrar of domain where contact
+#                                              // is in "holder" role
+#                        other,                // all other relationships
+#                        sponsoring_registrar  // sponsoring registrar of contact
+#
+# Both variants (policy and relationships) are mutually exclusive,
+# do not use both at the same time!
 [rifd::info_contact]
-data_share_policy = cznic_specific
-# show_private_data_to = admin_contact
-# show_private_data_to = authorized_registrar
-# show_private_data_to = domain_holder
-# show_private_data_to = other
-# show_private_data_to = sponsoring_registrar
+data_share_policy = show_all
+#show_private_data_to = admin_contact
+#show_private_data_to = authorized_registrar
+#show_private_data_to = domain_holder
+#show_private_data_to = other
+#show_private_data_to = sponsoring_registrar
 
 ###
 ### ADIFD specific settings
