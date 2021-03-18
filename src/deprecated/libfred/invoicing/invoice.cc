@@ -3362,7 +3362,20 @@ public:
   {
         return size();
   }
-    
+
+  virtual CommonObject* findIDSequence(TID _id)
+  {
+      const auto it = std::find_if(data_.cbegin(), data_.cend(), [&_id](const auto& val) {
+                                                              return val->getId() == _id;
+                                                         });
+      if (it == data_.end())
+      {
+          LOGGER.debug(boost::format("find id sequence: not found in result set. (id=%1%)") % _id);
+          return nullptr;
+      }
+      return *it;
+  }
+
   }; // ListImpl 
   
   
