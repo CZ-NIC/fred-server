@@ -1,3 +1,7 @@
+2021-03-18 (2.45.9)
+
+  * Fix invoice list - loading of related objects
+
 2021-02-23 (2.45.8)
 
   * Fix authinfo sending when not confirmed automatically
