@@ -871,7 +871,9 @@ add_common_library_target(admin_create_expired_domain
 target_link_libraries(admin_create_expired_domain PRIVATE fred-static::library)
 
 add_common_library_target(handle_database_args
-    src/util/cfg/handle_database_args.cc)
+    src/util/cfg/config_handler.cc
+    src/util/cfg/handle_database_args.cc
+    src/util/cfg/validate_args.cc)
 target_link_libraries(handle_database_args PRIVATE fred-static::library)
 
 add_common_library_target(handle_rifd_args
@@ -1212,6 +1214,7 @@ target_link_libraries(fred-mojeid-msggen
     corba_isodatetime
     corba_mojeid
     corba_mojeid_util
+    handle_database_args
     fred-static::library
     Boost::program_options
     Boost::date_time)
@@ -1683,12 +1686,13 @@ add_common_executable_target(test-epp
     test/backend/epp/nsset/test_create_nsset.cc
     test/backend/epp/nsset/test_update_nsset.cc
     test/backend/epp/nsset/test_transfer_nsset.cc
-    test/backend/epp/poll/fixture.cc
+#    test/backend/epp/poll/fixture.cc
     test/backend/epp/poll/test_poll_request.cc
     test/backend/epp/poll/test_poll_acknowledgement.cc
     test/backend/epp/poll/test_poll_request_contact_details.cc
     test/backend/epp/poll/test_poll_request_domain_details.cc
-    test/backend/epp/poll/test_poll_request_keyset_details.cc)
+    test/backend/epp/poll/test_poll_request_keyset_details.cc
+    test/backend/epp/poll/util.cc)
 target_link_libraries(test-epp
     epp_impl
     fred-deprecated
