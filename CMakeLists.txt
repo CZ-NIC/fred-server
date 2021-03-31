@@ -1651,6 +1651,7 @@ add_common_executable_target(test-epp
     test/backend/epp/contact/test_check_contact.cc
     test/backend/epp/contact/test_transfer_contact.cc
     test/backend/epp/contact/test_contact_handle_state_to_check_result.cc
+    test/backend/epp/contact/util.cc
     test/backend/epp/credit/test_client_credit.cc
     test/backend/epp/domain/fixture.cc
     test/backend/epp/domain/test_check_domain.cc
@@ -1669,10 +1670,10 @@ add_common_executable_target(test-epp
     test/backend/epp/nsset/test_create_nsset.cc
     test/backend/epp/nsset/test_update_nsset.cc
     test/backend/epp/nsset/test_transfer_nsset.cc
-    test/backend/epp/poll/fixture.cc
+    test/backend/epp/poll/util.cc
     test/backend/epp/poll/test_poll_request.cc
     test/backend/epp/poll/test_poll_acknowledgement.cc
-    test/backend/epp/poll/test_poll_request_nsset_details.cc
+    test/backend/epp/poll/test_poll_request_contact_details.cc
     test/backend/epp/poll/test_poll_request_domain_details.cc
     test/backend/epp/poll/test_poll_request_keyset_details.cc)
 target_link_libraries(test-epp

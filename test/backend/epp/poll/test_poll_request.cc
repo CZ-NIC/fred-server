@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,34 +16,41 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
-#include "test/backend/epp/poll/fixture.hh"
-#include "test/setup/fixtures_utils.hh"
+
+#include "test/backend/epp/poll/util.hh"
 #include "test/backend/epp/util.hh"
-#include "libfred/poll/create_update_object_poll_message.hh"
-#include "libfred/registrable_object/contact/update_contact.hh"
-#include "libfred/registrable_object/domain/update_domain.hh"
-#include "libfred/registrable_object/nsset/update_nsset.hh"
-#include "libfred/registrable_object/keyset/update_keyset.hh"
-#include "libfred/registrable_object/domain/transfer_domain.hh"
-#include "libfred/registrable_object/contact/transfer_contact.hh"
-#include "libfred/registrable_object/nsset/transfer_nsset.hh"
-#include "libfred/registrable_object/keyset/transfer_keyset.hh"
-#include "libfred/registrable_object/contact/delete_contact.hh"
-#include "libfred/registrable_object/domain/delete_domain.hh"
+#include "test/setup/fixtures_utils.hh"
+
+#include "src/backend/epp/epp_response_failure.hh"
+#include "src/backend/epp/epp_result_code.hh"
+#include "src/backend/epp/epp_result_failure.hh"
+#include "src/backend/epp/poll/message_type.hh"
+#include "src/backend/epp/poll/poll_request.hh"
+
 #include "libfred/object/object_type.hh"
 #include "libfred/poll/create_poll_message.hh"
 #include "libfred/poll/create_request_fee_info_message.hh"
-#include "src/backend/epp/poll/poll_request.hh"
-#include "src/backend/epp/poll/message_type.hh"
-#include "src/backend/epp/epp_response_failure.hh"
-#include "src/backend/epp/epp_result_failure.hh"
-#include "src/backend/epp/epp_result_code.hh"
+#include "libfred/poll/create_update_object_poll_message.hh"
+#include "libfred/registrable_object/contact/delete_contact.hh"
+#include "libfred/registrable_object/contact/transfer_contact.hh"
+#include "libfred/registrable_object/contact/update_contact.hh"
+#include "libfred/registrable_object/domain/delete_domain.hh"
+#include "libfred/registrable_object/domain/transfer_domain.hh"
+#include "libfred/registrable_object/domain/update_domain.hh"
+#include "libfred/registrable_object/keyset/transfer_keyset.hh"
+#include "libfred/registrable_object/keyset/update_keyset.hh"
+#include "libfred/registrable_object/nsset/transfer_nsset.hh"
+#include "libfred/registrable_object/nsset/update_nsset.hh"
 
+#include <boost/date_time/local_time_adjustor.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/test/unit_test.hpp>
 #include <boost/variant.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/date_time/local_time_adjustor.hpp>
 
+namespace Test {
+
+BOOST_AUTO_TEST_SUITE(Backend)
+BOOST_AUTO_TEST_SUITE(Epp)
 BOOST_AUTO_TEST_SUITE(Poll)
 BOOST_AUTO_TEST_SUITE(PollRequest)
 
@@ -96,7 +103,7 @@ boost::gregorian::date get_transfer_date_by_message_id(::LibFred::OperationConte
 unsigned long long create_message_and_get_message_id(
     ::LibFred::OperationContext& _ctx,
     unsigned long long _registrar_id,
-    Epp::Poll::MessageType::Enum _type)
+    ::Epp::Poll::MessageType::Enum _type)
 {
     Database::ParamQuery sql_query;
     sql_query("INSERT INTO message (id, clid, crdate, exdate, msgtype) "
@@ -226,11 +233,11 @@ unsigned long long create_check_nsset_record(
     return static_cast<unsigned long long>(sql_query_result[0][0]);
 }
 
-std::vector<Epp::Poll::Test> create_check_result_record(
+std::vector<::Epp::Poll::Test> create_check_result_record(
     ::LibFred::OperationContext& _ctx,
     unsigned long long _check_nsset_id)
 {
-    std::vector<Epp::Poll::Test> ret;
+    std::vector<::Epp::Poll::Test> ret;
 
     const Database::Result sql_query_result = _ctx.get_conn().exec_params(
         "INSERT INTO check_result (checkid, testid, status) "
@@ -246,7 +253,7 @@ std::vector<Epp::Poll::Test> create_check_result_record(
         const std::string testname = static_cast<std::string>(sql_query_result[idx][0]);
         const int status = 0;
         const std::string note;
-        ret.push_back(Epp::Poll::Test(testname, note, status));
+        ret.push_back(::Epp::Poll::Test(testname, note, status));
     }
 
     return ret;
@@ -274,15 +281,17 @@ struct HasPollUpdateContactMessage : virtual Test::Backend::Epp::autorollbacking
 
     HasPollUpdateContactMessage()
     {
-        Test::mark_all_messages_as_seen(ctx);
+        Util::mark_all_messages_as_seen(ctx);
         const Test::contact contact(ctx);
+        const Test::registrar different_registrar(ctx);
+        // update done not by contact's sponsoring registar
         history_id = ::LibFred::UpdateContactByHandle(contact.info_data.handle,
-                                        contact.info_data.sponsoring_registrar_handle
+                                        different_registrar.info_data.handle
             ).set_authinfo("doesntmatter").exec(ctx);
         ::LibFred::Poll::CreateUpdateObjectPollMessage().exec(ctx, history_id);
     }
 
-    typedef Epp::Poll::UpdateInfoEvent::Data<Epp::Poll::UpdateInfoEvent::UpdateContact> SubMessage;
+    typedef ::Epp::Poll::UpdateInfoEvent::Data<::Epp::Poll::UpdateInfoEvent::UpdateContact> SubMessage;
 };
 
 struct HasPollUpdateDomainMessage : virtual Test::Backend::Epp::autorollbacking_context
@@ -291,7 +300,7 @@ struct HasPollUpdateDomainMessage : virtual Test::Backend::Epp::autorollbacking_
 
     HasPollUpdateDomainMessage()
     {
-        Test::mark_all_messages_as_seen(ctx);
+        Util::mark_all_messages_as_seen(ctx);
         const Test::domain domain(ctx);
         history_id = ::LibFred::UpdateDomain(domain.info_data.fqdn,
                                         domain.info_data.sponsoring_registrar_handle
@@ -299,7 +308,7 @@ struct HasPollUpdateDomainMessage : virtual Test::Backend::Epp::autorollbacking_
         ::LibFred::Poll::CreateUpdateObjectPollMessage().exec(ctx, history_id);
     }
 
-    typedef Epp::Poll::UpdateInfoEvent::Data<Epp::Poll::UpdateInfoEvent::UpdateDomain> SubMessage;
+    typedef ::Epp::Poll::UpdateInfoEvent::Data<::Epp::Poll::UpdateInfoEvent::UpdateDomain> SubMessage;
 };
 
 struct HasPollUpdateNssetMessage : virtual Test::Backend::Epp::autorollbacking_context
@@ -308,7 +317,7 @@ struct HasPollUpdateNssetMessage : virtual Test::Backend::Epp::autorollbacking_c
 
     HasPollUpdateNssetMessage()
     {
-        Test::mark_all_messages_as_seen(ctx);
+        Util::mark_all_messages_as_seen(ctx);
         const Test::nsset nsset(ctx);
         history_id = ::LibFred::UpdateNsset(nsset.info_data.handle,
                                        nsset.info_data.sponsoring_registrar_handle
@@ -316,7 +325,7 @@ struct HasPollUpdateNssetMessage : virtual Test::Backend::Epp::autorollbacking_c
         ::LibFred::Poll::CreateUpdateObjectPollMessage().exec(ctx, history_id);
     }
 
-    typedef Epp::Poll::UpdateInfoEvent::Data<Epp::Poll::UpdateInfoEvent::UpdateNsset> SubMessage;
+    typedef ::Epp::Poll::UpdateInfoEvent::Data<::Epp::Poll::UpdateInfoEvent::UpdateNsset> SubMessage;
 };
 
 struct HasPollUpdateKeysetMessage : virtual Test::Backend::Epp::autorollbacking_context
@@ -325,7 +334,7 @@ struct HasPollUpdateKeysetMessage : virtual Test::Backend::Epp::autorollbacking_
 
     HasPollUpdateKeysetMessage()
     {
-        Test::mark_all_messages_as_seen(ctx);
+        Util::mark_all_messages_as_seen(ctx);
         const Test::keyset keyset(ctx);
         history_id = ::LibFred::UpdateKeyset(keyset.info_data.handle,
                                         keyset.info_data.sponsoring_registrar_handle
@@ -333,7 +342,7 @@ struct HasPollUpdateKeysetMessage : virtual Test::Backend::Epp::autorollbacking_
         ::LibFred::Poll::CreateUpdateObjectPollMessage().exec(ctx, history_id);
     }
 
-    typedef Epp::Poll::UpdateInfoEvent::Data<Epp::Poll::UpdateInfoEvent::UpdateKeyset> SubMessage;
+    typedef ::Epp::Poll::UpdateInfoEvent::Data<::Epp::Poll::UpdateInfoEvent::UpdateKeyset> SubMessage;
 };
 
 template<typename T>
@@ -341,16 +350,16 @@ struct HasPollUpdate : T
 {
     void test()
     {
-        namespace ep = Epp::Poll;
+        namespace ep = ::Epp::Poll;
         typedef typename T::SubMessage SubMessage;
 
-        const unsigned long long before_message_count = Test::get_number_of_unseen_poll_messages(T::ctx);
+        const unsigned long long before_message_count = Util::get_number_of_unseen_poll_messages(T::ctx);
         BOOST_REQUIRE_EQUAL(before_message_count, 1);
 
-        const Test::MessageDetail mesage_detail = Test::get_message_ids(T::ctx);
+        const Util::MessageDetail message_detail = Util::get_message_ids(T::ctx);
 
         ep::PollRequestOutputData output;
-        BOOST_CHECK_NO_THROW(output = ep::poll_request(T::ctx, mesage_detail.registrar_id));
+        BOOST_CHECK_NO_THROW(output = ep::poll_request(T::ctx, message_detail.registrar_id));
 
         ep::UpdateInfoEvent update_info_event;
         BOOST_CHECK_NO_THROW(update_info_event = boost::get<ep::UpdateInfoEvent>(output.message));
@@ -358,9 +367,9 @@ struct HasPollUpdate : T
         BOOST_CHECK_NO_THROW(update_info = boost::get<SubMessage>(update_info_event.message));
 
         BOOST_CHECK_EQUAL(update_info.transaction_id, get_request_id_by_history_id(T::ctx, T::history_id));
-        BOOST_CHECK_EQUAL(update_info.poll_id, mesage_detail.message_id);
+        BOOST_CHECK_EQUAL(update_info.poll_id, message_detail.message_id);
 
-        const unsigned long long after_message_count = Test::get_number_of_unseen_poll_messages(T::ctx);
+        const unsigned long long after_message_count = Util::get_number_of_unseen_poll_messages(T::ctx);
         BOOST_CHECK_EQUAL(after_message_count, 1);
     }
 };
@@ -372,7 +381,7 @@ struct HasPollTransferDomainMessage : virtual Test::Backend::Epp::autorollbackin
 
     HasPollTransferDomainMessage()
     {
-        Test::mark_all_messages_as_seen(ctx);
+        Util::mark_all_messages_as_seen(ctx);
         const Test::domain domain(ctx);
         const Test::registrar registrar(ctx);
 
@@ -387,7 +396,7 @@ struct HasPollTransferDomainMessage : virtual Test::Backend::Epp::autorollbackin
         ::LibFred::Poll::CreatePollMessage<::LibFred::Poll::MessageType::transfer_domain>().exec(ctx, history_id);
     }
 
-    typedef Epp::Poll::TransferEvent::Data<Epp::Poll::TransferEvent::TransferDomain> SubMessage;
+    typedef ::Epp::Poll::TransferEvent::Data<::Epp::Poll::TransferEvent::TransferDomain> SubMessage;
 };
 
 struct HasPollTransferContactMessage : virtual Test::Backend::Epp::autorollbacking_context
@@ -397,7 +406,7 @@ struct HasPollTransferContactMessage : virtual Test::Backend::Epp::autorollbacki
 
     HasPollTransferContactMessage()
     {
-        Test::mark_all_messages_as_seen(ctx);
+        Util::mark_all_messages_as_seen(ctx);
         const Test::contact contact(ctx);
         const Test::registrar registrar(ctx);
 
@@ -412,7 +421,7 @@ struct HasPollTransferContactMessage : virtual Test::Backend::Epp::autorollbacki
         ::LibFred::Poll::CreatePollMessage<::LibFred::Poll::MessageType::transfer_contact>().exec(ctx, history_id);
     }
 
-    typedef Epp::Poll::TransferEvent::Data<Epp::Poll::TransferEvent::TransferContact> SubMessage;
+    typedef ::Epp::Poll::TransferEvent::Data<::Epp::Poll::TransferEvent::TransferContact> SubMessage;
 };
 
 struct HasPollTransferNssetMessage : virtual Test::Backend::Epp::autorollbacking_context
@@ -422,7 +431,7 @@ struct HasPollTransferNssetMessage : virtual Test::Backend::Epp::autorollbacking
 
     HasPollTransferNssetMessage()
     {
-        Test::mark_all_messages_as_seen(ctx);
+        Util::mark_all_messages_as_seen(ctx);
         const Test::nsset nsset(ctx);
         const Test::registrar registrar(ctx);
 
@@ -437,7 +446,7 @@ struct HasPollTransferNssetMessage : virtual Test::Backend::Epp::autorollbacking
         ::LibFred::Poll::CreatePollMessage<::LibFred::Poll::MessageType::transfer_nsset>().exec(ctx, history_id);
     }
 
-    typedef Epp::Poll::TransferEvent::Data<Epp::Poll::TransferEvent::TransferNsset> SubMessage;
+    typedef ::Epp::Poll::TransferEvent::Data<::Epp::Poll::TransferEvent::TransferNsset> SubMessage;
 };
 
 struct HasPollTransferKeysetMessage : virtual Test::Backend::Epp::autorollbacking_context
@@ -447,7 +456,7 @@ struct HasPollTransferKeysetMessage : virtual Test::Backend::Epp::autorollbackin
 
     HasPollTransferKeysetMessage()
     {
-        Test::mark_all_messages_as_seen(ctx);
+        Util::mark_all_messages_as_seen(ctx);
         const Test::keyset keyset(ctx);
         const Test::registrar registrar(ctx);
 
@@ -462,7 +471,7 @@ struct HasPollTransferKeysetMessage : virtual Test::Backend::Epp::autorollbackin
         ::LibFred::Poll::CreatePollMessage<::LibFred::Poll::MessageType::transfer_keyset>().exec(ctx, history_id);
     }
 
-    typedef Epp::Poll::TransferEvent::Data<Epp::Poll::TransferEvent::TransferKeyset> SubMessage;
+    typedef ::Epp::Poll::TransferEvent::Data<::Epp::Poll::TransferEvent::TransferKeyset> SubMessage;
 };
 
 template<typename T>
@@ -470,13 +479,13 @@ struct HasPollTransfer : T
 {
     void test()
     {
-        namespace ep = Epp::Poll;
+        namespace ep = ::Epp::Poll;
         typedef typename T::SubMessage SubMessage;
 
-        const unsigned long long before_message_count = Test::get_number_of_unseen_poll_messages(T::ctx);
+        const unsigned long long before_message_count = Util::get_number_of_unseen_poll_messages(T::ctx);
         BOOST_REQUIRE_EQUAL(before_message_count, 1);
 
-        const Test::MessageDetail message_detail = Test::get_message_ids(T::ctx);
+        const Util::MessageDetail message_detail = Util::get_message_ids(T::ctx);
 
         ep::PollRequestOutputData output;
         BOOST_CHECK_NO_THROW(output = ep::poll_request(T::ctx, message_detail.registrar_id));
@@ -492,7 +501,7 @@ struct HasPollTransfer : T
         BOOST_CHECK_EQUAL(transfer_info.object_handle, T::object_handle);
         BOOST_CHECK_EQUAL(transfer_info.dst_registrar_handle, T::dst_registrar_handle);
 
-        const unsigned long long after_message_count = Test::get_number_of_unseen_poll_messages(T::ctx);
+        const unsigned long long after_message_count = Util::get_number_of_unseen_poll_messages(T::ctx);
         BOOST_CHECK_EQUAL(after_message_count, 1);
     }
 };
@@ -501,11 +510,11 @@ struct HasPollRequestFeeInfoMessage : virtual Test::Backend::Epp::autorollbackin
 {
     unsigned long long message_id;
     unsigned long long registrar_id;
-    Epp::Poll::RequestFeeInfoEvent golden_request_fee_info_event;
+    ::Epp::Poll::RequestFeeInfoEvent golden_request_fee_info_event;
 
     HasPollRequestFeeInfoMessage()
     {
-        Test::mark_all_messages_as_seen(ctx);
+        Util::mark_all_messages_as_seen(ctx);
         const Test::registrar registrar(ctx);
         registrar_id = registrar.info_data.id;
         golden_request_fee_info_event.from = boost::posix_time::time_from_string("2017-03-30 14:16:02.713506");
@@ -530,9 +539,9 @@ struct HasPollRequestFeeInfoMessage : virtual Test::Backend::Epp::autorollbackin
 
     void test()
     {
-        namespace ep = Epp::Poll;
+        namespace ep = ::Epp::Poll;
 
-        const unsigned long long before_message_count = Test::get_number_of_unseen_poll_messages(ctx);
+        const unsigned long long before_message_count = Util::get_number_of_unseen_poll_messages(ctx);
         BOOST_REQUIRE_EQUAL(before_message_count, 1);
 
         ep::PollRequestOutputData output;
@@ -547,7 +556,7 @@ struct HasPollRequestFeeInfoMessage : virtual Test::Backend::Epp::autorollbackin
         BOOST_CHECK_EQUAL(golden_request_fee_info_event.used_count, request_fee_info_event.used_count);
         BOOST_CHECK_EQUAL(golden_request_fee_info_event.price, request_fee_info_event.price);
 
-        const unsigned long long after_message_count = Test::get_number_of_unseen_poll_messages(ctx);
+        const unsigned long long after_message_count = Util::get_number_of_unseen_poll_messages(ctx);
         BOOST_CHECK_EQUAL(after_message_count, 1);
     }
 };
@@ -556,11 +565,11 @@ struct HasPollRequestLowCreditMessage : virtual Test::Backend::Epp::autorollback
 {
     unsigned long long message_id;
     unsigned long long registrar_id;
-    Epp::Poll::LowCreditEvent golden_low_credit_event;
+    ::Epp::Poll::LowCreditEvent golden_low_credit_event;
 
     HasPollRequestLowCreditMessage()
     {
-        Test::mark_all_messages_as_seen(ctx);
+        Util::mark_all_messages_as_seen(ctx);
         const Test::registrar registrar(ctx);
         registrar_id = registrar.info_data.id;
         golden_low_credit_event.zone = "cz";
@@ -576,9 +585,9 @@ struct HasPollRequestLowCreditMessage : virtual Test::Backend::Epp::autorollback
 
     void test()
     {
-        namespace ep = Epp::Poll;
+        namespace ep = ::Epp::Poll;
 
-        const unsigned long long before_message_count = Test::get_number_of_unseen_poll_messages(ctx);
+        const unsigned long long before_message_count = Util::get_number_of_unseen_poll_messages(ctx);
         BOOST_REQUIRE_EQUAL(before_message_count, 1);
 
         ep::PollRequestOutputData output;
@@ -591,7 +600,7 @@ struct HasPollRequestLowCreditMessage : virtual Test::Backend::Epp::autorollback
         BOOST_CHECK_EQUAL(golden_low_credit_event.credit, low_credit_event.credit);
         BOOST_CHECK_EQUAL(golden_low_credit_event.limit, low_credit_event.limit);
 
-        const unsigned long long after_message_count = Test::get_number_of_unseen_poll_messages(ctx);
+        const unsigned long long after_message_count = Util::get_number_of_unseen_poll_messages(ctx);
         BOOST_CHECK_EQUAL(after_message_count, 1);
     }
 };
@@ -603,7 +612,7 @@ struct HasPollDeleteDomainMessage : virtual Test::Backend::Epp::autorollbacking_
 
     HasPollDeleteDomainMessage()
     {
-        Test::mark_all_messages_as_seen(ctx);
+        Util::mark_all_messages_as_seen(ctx);
         const Test::domain domain(ctx);
         handle = domain.info_data.fqdn;
         unsigned long long history_id =
@@ -615,7 +624,7 @@ struct HasPollDeleteDomainMessage : virtual Test::Backend::Epp::autorollbacking_
         ::LibFred::Poll::CreatePollMessage<::LibFred::Poll::MessageType::delete_domain>().exec(ctx, history_id);
     }
 
-    typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::DeleteDomain> SubMessage;
+    typedef ::Epp::Poll::MessageEvent::Data<::Epp::Poll::MessageEvent::DeleteDomain> SubMessage;
 };
 
 struct HasPollDeleteContactMessage : virtual Test::Backend::Epp::autorollbacking_context
@@ -625,7 +634,7 @@ struct HasPollDeleteContactMessage : virtual Test::Backend::Epp::autorollbacking
 
     HasPollDeleteContactMessage()
     {
-        Test::mark_all_messages_as_seen(ctx);
+        Util::mark_all_messages_as_seen(ctx);
         const Test::contact contact(ctx);
         handle = contact.info_data.handle;
         unsigned long long history_id =
@@ -637,7 +646,7 @@ struct HasPollDeleteContactMessage : virtual Test::Backend::Epp::autorollbacking
         ::LibFred::Poll::CreatePollMessage<::LibFred::Poll::MessageType::delete_contact>().exec(ctx, history_id);
     }
 
-    typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::DeleteContact> SubMessage;
+    typedef ::Epp::Poll::MessageEvent::Data<::Epp::Poll::MessageEvent::DeleteContact> SubMessage;
 };
 
 struct HasPollValidationMessage : virtual Test::Backend::Epp::autorollbacking_context
@@ -649,7 +658,7 @@ struct HasPollValidationMessage : virtual Test::Backend::Epp::autorollbacking_co
         handle("1.2.3.4.5.6.7.8.9.0.2.4.e164.arpa"),
         date(boost::posix_time::second_clock::local_time().date())
     {
-        Test::mark_all_messages_as_seen(ctx);
+        Util::mark_all_messages_as_seen(ctx);
         const Test::registrar registrar(ctx);
         const Test::contact contact(ctx);
         const ::LibFred::CreateDomain::Result result =
@@ -662,7 +671,7 @@ struct HasPollValidationMessage : virtual Test::Backend::Epp::autorollbacking_co
         create_poll_statechange_record(ctx, poll_msg_id, state_change_id);
     }
 
-    typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::Validation> SubMessage;
+    typedef ::Epp::Poll::MessageEvent::Data<::Epp::Poll::MessageEvent::Validation> SubMessage;
 };
 
 struct HasPollImpValidationMessage : virtual Test::Backend::Epp::autorollbacking_context
@@ -674,20 +683,20 @@ struct HasPollImpValidationMessage : virtual Test::Backend::Epp::autorollbacking
         handle("1.2.3.4.5.6.7.8.9.0.2.4.e164.arpa"),
         date(boost::posix_time::second_clock::local_time().date() + boost::gregorian::days(7))
     {
-        Test::mark_all_messages_as_seen(ctx);
+        Util::mark_all_messages_as_seen(ctx);
         const Test::registrar registrar(ctx);
         const Test::contact contact(ctx);
         const ::LibFred::CreateDomain::Result result =
             ::LibFred::CreateDomain(handle, registrar.info_data.handle, contact.info_data.handle)
             .set_enum_validation_expiration(date).exec(ctx, "Europe/Prague");
         const unsigned long long poll_msg_id =
-            create_message_and_get_message_id(ctx, registrar.info_data.id, Epp::Poll::MessageType::imp_validation);
+            create_message_and_get_message_id(ctx, registrar.info_data.id, ::Epp::Poll::MessageType::imp_validation);
         const unsigned long long state_change_id =
             create_poll_object_state_record_validation(ctx, "validationWarning1", result.create_object_result.object_id);
         create_poll_statechange_record(ctx, poll_msg_id, state_change_id);
     }
 
-    typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::ImpValidation> SubMessage;
+    typedef ::Epp::Poll::MessageEvent::Data<::Epp::Poll::MessageEvent::ImpValidation> SubMessage;
 };
 
 struct HasPollExpirationMessage : virtual Test::Backend::Epp::autorollbacking_context
@@ -699,20 +708,20 @@ struct HasPollExpirationMessage : virtual Test::Backend::Epp::autorollbacking_co
         handle("expirationxxxxxxaxxdxefxfxxxxeca.cz"),
         date(boost::posix_time::second_clock::local_time().date())
     {
-        Test::mark_all_messages_as_seen(ctx);
+        Util::mark_all_messages_as_seen(ctx);
         const Test::registrar registrar(ctx);
         const Test::contact contact(ctx);
         const ::LibFred::CreateDomain::Result result =
             ::LibFred::CreateDomain(handle, registrar.info_data.handle, contact.info_data.handle)
             .set_expiration_date(date).exec(ctx, "Europe/Prague");
         const unsigned long long poll_msg_id =
-            create_message_and_get_message_id(ctx, registrar.info_data.id, Epp::Poll::MessageType::expiration);
+            create_message_and_get_message_id(ctx, registrar.info_data.id, ::Epp::Poll::MessageType::expiration);
         const StateRecordData state_record_data =
             create_poll_object_state_record_rest(ctx, "expired", result.create_object_result.object_id);
         create_poll_statechange_record(ctx, poll_msg_id, state_record_data.id);
     }
 
-    typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::Expiration> SubMessage;
+    typedef ::Epp::Poll::MessageEvent::Data<::Epp::Poll::MessageEvent::Expiration> SubMessage;
 };
 
 struct HasPollImpExpirationMessage : virtual Test::Backend::Epp::autorollbacking_context
@@ -724,20 +733,20 @@ struct HasPollImpExpirationMessage : virtual Test::Backend::Epp::autorollbacking
         handle("impendingexpirationdxefxfxxxxecb.cz"),
         date(boost::posix_time::second_clock::local_time().date() + boost::gregorian::days(7))
     {
-        Test::mark_all_messages_as_seen(ctx);
+        Util::mark_all_messages_as_seen(ctx);
         const Test::registrar registrar(ctx);
         const Test::contact contact(ctx);
         const ::LibFred::CreateDomain::Result result =
             ::LibFred::CreateDomain(handle, registrar.info_data.handle, contact.info_data.handle)
             .set_expiration_date(date).exec(ctx, "Europe/Prague");
         const unsigned long long poll_msg_id =
-            create_message_and_get_message_id(ctx, registrar.info_data.id, Epp::Poll::MessageType::imp_expiration);
+            create_message_and_get_message_id(ctx, registrar.info_data.id, ::Epp::Poll::MessageType::imp_expiration);
         const StateRecordData state_record_data =
             create_poll_object_state_record_rest(ctx, "expirationWarning", result.create_object_result.object_id);
         create_poll_statechange_record(ctx, poll_msg_id, state_record_data.id);
     }
 
-    typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::ImpExpiration> SubMessage;
+    typedef ::Epp::Poll::MessageEvent::Data<::Epp::Poll::MessageEvent::ImpExpiration> SubMessage;
 };
 
 struct HasPollIdleDeleteDomainMessage : virtual Test::Backend::Epp::autorollbacking_context
@@ -749,20 +758,20 @@ struct HasPollIdleDeleteDomainMessage : virtual Test::Backend::Epp::autorollback
         handle("idledeletexxxxxxaxxdxefxfxxxxecc.cz"),
         date(boost::posix_time::second_clock::local_time().date() - boost::gregorian::days(25))
     {
-        Test::mark_all_messages_as_seen(ctx);
+        Util::mark_all_messages_as_seen(ctx);
         const Test::registrar registrar(ctx);
         const Test::contact contact(ctx);
         const ::LibFred::CreateDomain::Result result =
             ::LibFred::CreateDomain(handle, registrar.info_data.handle, contact.info_data.handle)
             .set_expiration_date(date).exec(ctx, "Europe/Prague");
         const unsigned long long poll_msg_id =
-            create_message_and_get_message_id(ctx, registrar.info_data.id, Epp::Poll::MessageType::idle_delete_domain);
+            create_message_and_get_message_id(ctx, registrar.info_data.id, ::Epp::Poll::MessageType::idle_delete_domain);
         const StateRecordData state_record_data =
             create_poll_object_state_record_rest(ctx, "deleteCandidate", result.create_object_result.object_id);
         create_poll_statechange_record(ctx, poll_msg_id, state_record_data.id);
     }
 
-    typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::IdleDeleteDomain> SubMessage;
+    typedef ::Epp::Poll::MessageEvent::Data<::Epp::Poll::MessageEvent::IdleDeleteDomain> SubMessage;
 };
 
 struct HasPollIdleDeleteContactMessage : virtual Test::Backend::Epp::autorollbacking_context
@@ -773,19 +782,19 @@ struct HasPollIdleDeleteContactMessage : virtual Test::Backend::Epp::autorollbac
     HasPollIdleDeleteContactMessage() :
         handle("IDLEDELETECONTACTCONTACTPGKGCNEBOCO")
     {
-        Test::mark_all_messages_as_seen(ctx);
+        Util::mark_all_messages_as_seen(ctx);
         const Test::contact contact(ctx, handle);
         const unsigned long long registrar_id =
             ::LibFred::InfoRegistrarByHandle(contact.info_data.sponsoring_registrar_handle).exec(ctx).info_registrar_data.id;
         const unsigned long long poll_msg_id =
-            create_message_and_get_message_id(ctx, registrar_id, Epp::Poll::MessageType::idle_delete_contact);
+            create_message_and_get_message_id(ctx, registrar_id, ::Epp::Poll::MessageType::idle_delete_contact);
         const StateRecordData state_record_data =
             create_poll_object_state_record_rest(ctx, "deleteCandidate", contact.info_data.id);
         date = state_record_data.date;
         create_poll_statechange_record(ctx, poll_msg_id, state_record_data.id);
     }
 
-    typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::IdleDeleteContact> SubMessage;
+    typedef ::Epp::Poll::MessageEvent::Data<::Epp::Poll::MessageEvent::IdleDeleteContact> SubMessage;
 };
 
 struct HasPollIdleDeleteNssetMessage : virtual Test::Backend::Epp::autorollbacking_context
@@ -796,19 +805,19 @@ struct HasPollIdleDeleteNssetMessage : virtual Test::Backend::Epp::autorollbacki
     HasPollIdleDeleteNssetMessage() :
         handle("IDLEDELETENSSETNSSETPGKGCNEBOCO")
     {
-        Test::mark_all_messages_as_seen(ctx);
+        Util::mark_all_messages_as_seen(ctx);
         const Test::nsset nsset(ctx, handle);
         const unsigned long long registrar_id =
             ::LibFred::InfoRegistrarByHandle(nsset.info_data.sponsoring_registrar_handle).exec(ctx).info_registrar_data.id;
         const unsigned long long poll_msg_id =
-            create_message_and_get_message_id(ctx, registrar_id, Epp::Poll::MessageType::idle_delete_nsset);
+            create_message_and_get_message_id(ctx, registrar_id, ::Epp::Poll::MessageType::idle_delete_nsset);
         const StateRecordData state_record_data =
             create_poll_object_state_record_rest(ctx, "deleteCandidate", nsset.info_data.id);
         date = state_record_data.date;
         create_poll_statechange_record(ctx, poll_msg_id, state_record_data.id);
     }
 
-    typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::IdleDeleteNsset> SubMessage;
+    typedef ::Epp::Poll::MessageEvent::Data<::Epp::Poll::MessageEvent::IdleDeleteNsset> SubMessage;
 };
 
 struct HasPollIdleDeleteKeysetMessage : virtual Test::Backend::Epp::autorollbacking_context
@@ -819,19 +828,19 @@ struct HasPollIdleDeleteKeysetMessage : virtual Test::Backend::Epp::autorollback
     HasPollIdleDeleteKeysetMessage() :
         handle("IDLEDELETEKEYSETKEYSETPGKGCNEBOCO")
     {
-        Test::mark_all_messages_as_seen(ctx);
+        Util::mark_all_messages_as_seen(ctx);
         const Test::keyset keyset(ctx, handle);
         const unsigned long long registrar_id =
             ::LibFred::InfoRegistrarByHandle(keyset.info_data.sponsoring_registrar_handle).exec(ctx).info_registrar_data.id;
         const unsigned long long poll_msg_id =
-            create_message_and_get_message_id(ctx, registrar_id, Epp::Poll::MessageType::idle_delete_keyset);
+            create_message_and_get_message_id(ctx, registrar_id, ::Epp::Poll::MessageType::idle_delete_keyset);
         const StateRecordData state_record_data =
             create_poll_object_state_record_rest(ctx, "deleteCandidate", keyset.info_data.id);
         date = state_record_data.date;
         create_poll_statechange_record(ctx, poll_msg_id, state_record_data.id);
     }
 
-    typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::IdleDeleteKeyset> SubMessage;
+    typedef ::Epp::Poll::MessageEvent::Data<::Epp::Poll::MessageEvent::IdleDeleteKeyset> SubMessage;
 };
 
 struct HasPollOutzoneUnguardedMessage : virtual Test::Backend::Epp::autorollbacking_context
@@ -843,20 +852,20 @@ struct HasPollOutzoneUnguardedMessage : virtual Test::Backend::Epp::autorollback
         handle("outzoneoutguardedxxdxefxfxxxxecc.cz"),
         date(boost::posix_time::second_clock::local_time().date() - boost::gregorian::days(90))
     {
-        Test::mark_all_messages_as_seen(ctx);
+        Util::mark_all_messages_as_seen(ctx);
         const Test::registrar registrar(ctx);
         const Test::contact contact(ctx);
         const ::LibFred::CreateDomain::Result result =
             ::LibFred::CreateDomain(handle, registrar.info_data.handle, contact.info_data.handle)
             .set_expiration_date(date).exec(ctx, "Europe/Prague");
         const unsigned long long poll_msg_id =
-            create_message_and_get_message_id(ctx, registrar.info_data.id, Epp::Poll::MessageType::outzone);
+            create_message_and_get_message_id(ctx, registrar.info_data.id, ::Epp::Poll::MessageType::outzone);
         const StateRecordData state_record_data =
             create_poll_object_state_record_rest(ctx, "outzoneUnguarded", result.create_object_result.object_id);
         create_poll_statechange_record(ctx, poll_msg_id, state_record_data.id);
     }
 
-    typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::Outzone> SubMessage;
+    typedef ::Epp::Poll::MessageEvent::Data<::Epp::Poll::MessageEvent::Outzone> SubMessage;
 };
 
 template<typename T>
@@ -864,13 +873,13 @@ struct HasPollMessage : T
 {
     void test()
     {
-        namespace ep = Epp::Poll;
+        namespace ep = ::Epp::Poll;
         typedef typename T::SubMessage SubMessage;
 
-        const unsigned long long before_message_count = Test::get_number_of_unseen_poll_messages(T::ctx);
+        const unsigned long long before_message_count = Util::get_number_of_unseen_poll_messages(T::ctx);
         BOOST_REQUIRE_EQUAL(before_message_count, 1);
 
-        const Test::MessageDetail message_detail = Test::get_message_ids(T::ctx);
+        const Util::MessageDetail message_detail = Util::get_message_ids(T::ctx);
 
         ep::PollRequestOutputData output;
         BOOST_CHECK_NO_THROW(output = ep::poll_request(T::ctx, message_detail.registrar_id));
@@ -883,19 +892,19 @@ struct HasPollMessage : T
         BOOST_CHECK_EQUAL(message_info.date, T::date);
         BOOST_CHECK_EQUAL(message_info.handle, T::handle);
 
-        const unsigned long long after_message_count = Test::get_number_of_unseen_poll_messages(T::ctx);
+        const unsigned long long after_message_count = Util::get_number_of_unseen_poll_messages(T::ctx);
         BOOST_CHECK_EQUAL(after_message_count, 1);
     }
 };
 
 struct HasPollTechCheckMessage : virtual Test::Backend::Epp::autorollbacking_context
 {
-    Epp::Poll::TechCheckEvent golden;
+    ::Epp::Poll::TechCheckEvent golden;
     const std::string name;
 
     HasPollTechCheckMessage() : name("MYOWNNSSETILSHIBAMF")
     {
-        Test::mark_all_messages_as_seen(ctx);
+        Util::mark_all_messages_as_seen(ctx);
         const Test::registrar registrar(ctx);
         const ::LibFred::CreateNsset::Result result =
             ::LibFred::CreateNsset(name, registrar.info_data.handle)
@@ -913,12 +922,12 @@ struct HasPollTechCheckMessage : virtual Test::Backend::Epp::autorollbacking_con
 
     void test()
     {
-        namespace ep = Epp::Poll;
+        namespace ep = ::Epp::Poll;
 
-        const unsigned long long before_message_count = Test::get_number_of_unseen_poll_messages(ctx);
+        const unsigned long long before_message_count = Util::get_number_of_unseen_poll_messages(ctx);
         BOOST_REQUIRE_EQUAL(before_message_count, 1);
 
-        const Test::MessageDetail message_detail = Test::get_message_ids(ctx);
+        const Util::MessageDetail message_detail = Util::get_message_ids(ctx);
 
         ep::PollRequestOutputData output;
         BOOST_CHECK_NO_THROW(output = ep::poll_request(ctx, message_detail.registrar_id));
@@ -930,7 +939,7 @@ struct HasPollTechCheckMessage : virtual Test::Backend::Epp::autorollbacking_con
 
         struct TestComparator
         {
-            static bool less(const Epp::Poll::Test& _a, const Epp::Poll::Test& _b)
+            static bool less(const ::Epp::Poll::Test& _a, const ::Epp::Poll::Test& _b)
             {
                 return _a.testname < _b.testname;
             }
@@ -939,7 +948,7 @@ struct HasPollTechCheckMessage : virtual Test::Backend::Epp::autorollbacking_con
         BOOST_CHECK_EQUAL(tech_check_event.tests.size(), golden.tests.size());
         std::sort(tech_check_event.tests.begin(), tech_check_event.tests.end(), &TestComparator::less);
         std::sort(golden.tests.begin(), golden.tests.end(), &TestComparator::less);
-        for (std::vector<Epp::Poll::Test>::const_iterator
+        for (std::vector<::Epp::Poll::Test>::const_iterator
                  test_itr = tech_check_event.tests.begin(),
                  golden_itr = golden.tests.begin();
              test_itr != tech_check_event.tests.end() && golden_itr != golden.tests.end();
@@ -963,7 +972,7 @@ struct HasPollTechCheckMessage : virtual Test::Backend::Epp::autorollbacking_con
         }
 
 
-        const unsigned long long after_message_count = Test::get_number_of_unseen_poll_messages(ctx);
+        const unsigned long long after_message_count = Util::get_number_of_unseen_poll_messages(ctx);
         BOOST_CHECK_EQUAL(after_message_count, 1);
     }
 };
@@ -1080,5 +1089,9 @@ BOOST_FIXTURE_TEST_CASE(request_tech_check_message, HasPollTechCheckMessage)
     test();
 }
 
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END(); // Backend/Epp/Poll/PollRequest
+BOOST_AUTO_TEST_SUITE_END(); // Backend/Epp/Poll
+BOOST_AUTO_TEST_SUITE_END(); // Backend/Epp
+BOOST_AUTO_TEST_SUITE_END(); // Backend
+
+} // namespace Teest

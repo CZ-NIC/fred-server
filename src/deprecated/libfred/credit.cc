@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2011-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -38,6 +38,7 @@ namespace LibFred
              Logging::Context ctx("add_credit");
 
              Database::Connection conn = Database::Manager::acquire();
+             Database::Transaction tx{conn};
 
              Database::Result registrar_credit_id_result
                  = conn.exec_params(
@@ -98,7 +99,7 @@ namespace LibFred
                 , Database::query_param_list
                      (invoice_id)
                      (registrar_credit_transaction_id));
-
+             tx.commit();
              return registrar_credit_transaction_id;
          }
 
