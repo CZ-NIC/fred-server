@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2020-2021  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 #ifndef UTIL_HH_7D6C14B0C75543FCB3B5AB6CA91D2971
 #define UTIL_HH_7D6C14B0C75543FCB3B5AB6CA91D2971
 
@@ -35,9 +34,11 @@ std::string get_ident_type(const ::Epp::Contact::HideableOptional<::Epp::Contact
 
 std::string get_ident_value(const ::Epp::Contact::HideableOptional<::Epp::Contact::ContactIdent>& ident);
 
-void check_equal(::Epp::Contact::InfoContactOutputData epp_data, const ::LibFred::InfoContactData& fred_data);
+void check_equal(const ::Epp::Contact::InfoContactOutputData& epp_data, const ::LibFred::InfoContactData& fred_data);
 
-void check_equal_but_no_authinfopw(::Epp::Contact::InfoContactOutputData epp_data, const ::LibFred::InfoContactData& fred_data);
+void check_equal_but_no_authinfopw(const ::Epp::Contact::InfoContactOutputData& epp_data, const ::LibFred::InfoContactData& fred_data);
+
+void check_equal_except_authinfo_respect_discloseflags(const ::Epp::Contact::InfoContactOutputData& epp_data, const ::LibFred::InfoContactData& fred_data);
 
 } // namespace Test::Backend::Epp::Contact
 } // namespace Test::Backend::Epp
