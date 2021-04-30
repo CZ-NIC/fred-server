@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2011-2021  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -50,6 +50,7 @@ public:
     bool epp_update_contact_enqueue_check;
 
     Epp::Contact::ConfigDataFilter rifd_contact_data_filter;
+    Epp::Contact::ConfigDataFilter rifd_info_contact_data_filter;
 };
 
 #endif

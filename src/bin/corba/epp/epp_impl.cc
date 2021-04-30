@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006-2020  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2006-2021  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "corba/EPP.hh"
 #include "src/bin/corba/epp/epp_impl.hh"
 
@@ -73,6 +74,7 @@
 #include "src/backend/epp/contact/transfer_contact_localized.hh"
 #include "src/backend/epp/contact/update_contact_localized.hh"
 #include "src/backend/epp/contact/impl/get_create_contact_data_filter.hh"
+#include "src/backend/epp/contact/impl/get_info_contact_data_filter.hh"
 #include "src/backend/epp/contact/impl/get_update_contact_data_filter.hh"
 
 #include "src/bin/corba/epp/credit/credit_corba_conversions.hh"
@@ -465,7 +467,8 @@ ccReg_EPP_i::ccReg_EPP_i(
     bool rifd_epp_update_domain_keyset_clear,
     bool rifd_epp_operations_charging,
     bool epp_update_contact_enqueue_check,
-    const Epp::Contact::ConfigDataFilter& rifd_contact_data_filter)
+    const Epp::Contact::ConfigDataFilter& rifd_contact_data_filter,
+    const Epp::Contact::ConfigDataFilter& rifd_info_contact_data_filter)
 
     : database(_db),
       mm(_mm),
@@ -489,6 +492,7 @@ ccReg_EPP_i::ccReg_EPP_i(
       rifd_epp_operations_charging_(rifd_epp_operations_charging),
       epp_update_contact_enqueue_check_(epp_update_contact_enqueue_check),
       rifd_epp_create_contact_data_filter_(Epp::Contact::Impl::get_create_contact_data_filter(rifd_contact_data_filter)),
+      rifd_epp_info_contact_data_filter_(Epp::Contact::Impl::get_info_contact_data_filter(rifd_info_contact_data_filter)),
       rifd_epp_update_contact_data_filter_(Epp::Contact::Impl::get_update_contact_data_filter(rifd_contact_data_filter)),
       db_disconnect_guard_(),
       regMan(),
@@ -1831,6 +1835,7 @@ ccReg::Response* ccReg_EPP_i::KeySetCheck(
 
 ccReg::Response* ccReg_EPP_i::ContactInfo(
         const char* const _contact_handle,
+        const char* const _authinfopw,
         const ccReg::ControlledPrivacyDataMask& _available_disclose_flags [[gnu::unused]],
         ccReg::Contact_out _contact_info,
         const ccReg::EppParams& _epp_params)
@@ -1840,8 +1845,10 @@ ccReg::Response* ccReg_EPP_i::ContactInfo(
 
     try
     {
-        const Epp::Contact::InfoContactConfigData info_contact_config_data(
-                rifd_epp_operations_charging_);
+        const Epp::Contact::InfoContactConfigData info_contact_config_data{
+                rifd_epp_operations_charging_,
+                _authinfopw,
+                rifd_epp_info_contact_data_filter_};
 
         const Epp::RegistrarSessionData registrar_session_data =
                 Epp::get_registrar_session_data(

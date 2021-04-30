@@ -736,6 +736,22 @@ add_common_library_target(epp_keyset_dns_key
     src/backend/epp/keyset/dns_key.cc)
 target_link_libraries(epp_keyset_dns_key PRIVATE Fred::library)
 
+add_common_library_target(handle_database_args
+    src/util/cfg/config_handler.cc
+    src/util/cfg/handle_database_args.cc
+    src/util/cfg/validate_args.cc)
+target_link_libraries(handle_database_args PRIVATE Fred::library)
+
+add_common_library_target(handle_rifd_args
+    src/util/cfg/handle_rifd_args.cc
+    src/backend/epp/contact/config_data_filter.cc
+    src/backend/epp/contact/impl/info_contact.cc
+    src/backend/epp/contact/impl/cznic/specific.cc
+    src/backend/epp/contact/impl/set_unused/config.cc)
+target_link_libraries(handle_rifd_args PRIVATE
+    handle_database_args
+    Fred::library)
+
 add_common_library_target(epp_impl
     src/bin/corba/epp/epp_session.cc
     src/bin/corba/epp/epp_impl.cc
@@ -767,11 +783,13 @@ add_common_library_target(epp_impl
     src/backend/epp/contact/contact_data.cc
     src/backend/epp/contact/impl/contact_output.cc
     src/backend/epp/contact/impl/get_personal_id_union.cc
+    src/backend/epp/contact/impl/info_contact_data_filter.cc
     src/backend/epp/contact/impl/cznic/create_contact_data_filter.cc
     src/backend/epp/contact/impl/cznic/update_contact_data_filter.cc
     src/backend/epp/contact/impl/set_unused/create_contact_data_filter.cc
     src/backend/epp/contact/impl/set_unused/update_contact_data_filter.cc
     src/backend/epp/contact/impl/get_create_contact_data_filter.cc
+    src/backend/epp/contact/impl/get_info_contact_data_filter.cc
     src/backend/epp/contact/impl/get_update_contact_data_filter.cc
     src/backend/epp/contact/update_contact_localized.cc
     src/backend/epp/contact/update_contact.cc
@@ -858,6 +876,7 @@ target_link_libraries(epp_impl PRIVATE
     corbautil
     contact_verification
     epp_keyset_dns_key
+    handle_rifd_args
     buffer
     Fred::library)
 
@@ -871,21 +890,6 @@ target_link_libraries(log_impl PRIVATE
 add_common_library_target(admin_create_expired_domain
     src/backend/admin/domain/create_expired_domain.cc)
 target_link_libraries(admin_create_expired_domain PRIVATE Fred::library)
-
-add_common_library_target(handle_database_args
-    src/util/cfg/config_handler.cc
-    src/util/cfg/handle_database_args.cc
-    src/util/cfg/validate_args.cc)
-target_link_libraries(handle_database_args PRIVATE Fred::library)
-
-add_common_library_target(handle_rifd_args
-    src/util/cfg/handle_rifd_args.cc
-    src/backend/epp/contact/config_data_filter.cc
-    src/backend/epp/contact/impl/cznic/specific.cc
-    src/backend/epp/contact/impl/set_unused/config.cc)
-target_link_libraries(handle_rifd_args PRIVATE
-    handle_database_args
-    Fred::library)
 
 add_common_library_target(util_corba_conversion
     src/util/corba_conversion.cc)
