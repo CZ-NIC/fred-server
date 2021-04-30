@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2008-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -19,7 +19,7 @@
 #include <math.h>
 #include <memory>
 #include <iomanip>
-#include "src/bin/corba/Filters.hh"
+#include "corba/Filters.hh"
 #include <algorithm>
 #include <boost/utility.hpp>
 

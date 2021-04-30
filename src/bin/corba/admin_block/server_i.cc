@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2013-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -23,7 +23,7 @@
  */
 
 
-#include "src/bin/corba/NullableIsoDate.hh"
+#include "corba/NullableIsoDate.hh"
 
 #include "src/backend/admin_block/administrativeblocking.hh"
 #include "src/bin/corba/admin_block/corba_conversion.hh"

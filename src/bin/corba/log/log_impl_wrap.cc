@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2009-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -18,7 +18,7 @@
  */
 #include "src/bin/corba/log/log_impl_wrap.hh"
 
-#include "src/bin/corba/Logger.hh"
+#include "corba/Logger.hh"
 #include <boost/thread.hpp>
 #include <utility>
 

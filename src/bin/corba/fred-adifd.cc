@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2011-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -23,10 +23,10 @@
 
 #include "config.h"
 
-#include "src/bin/corba/Admin.hh"
+#include "corba/Admin.hh"
 #include "src/bin/corba/admin/admin_impl.hh"
 #include "src/bin/corba/admin_block/server_i.hh"
-#include "src/bin/corba/Notification.hh"
+#include "corba/Notification.hh"
 #include "src/bin/corba/notification/server_i.hh"
 #include "src/bin/corba/admin_contact_verification/server_i.hh"
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -26,7 +26,7 @@
 #ifndef SERVER_I_HH_CDE0FA6A11B2420DA0BEF6806B47CDB7
 #define SERVER_I_HH_CDE0FA6A11B2420DA0BEF6806B47CDB7
 
-#include "src/bin/corba/AutomaticKeysetManagement.hh"
+#include "corba/AutomaticKeysetManagement.hh"
 #include "src/deprecated/libfred/logger_client.hh"
 
 #include <string>

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2018-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -19,7 +19,7 @@
 #ifndef CORBA_CONVERSIONS_NULLABLEISODATE_HH_B0312DBA49604F05BFC8F4879459192E
 #define CORBA_CONVERSIONS_NULLABLEISODATE_HH_B0312DBA49604F05BFC8F4879459192E
 
-#include "src/bin/corba/NullableIsoDate.hh"
+#include "corba/NullableIsoDate.hh"
 #include "util/db/nullable.hh"
 
 #include <boost/date_time/gregorian/gregorian_types.hpp>

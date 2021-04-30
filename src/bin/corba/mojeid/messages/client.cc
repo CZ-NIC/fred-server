@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
-#include "src/bin/corba/MojeID.hh"
+#include "corba/MojeID.hh"
 #include "src/bin/corba/mojeid/service_name.hh"
 #include "config.h"
 #include "src/util/cfg/config_handler.hh"

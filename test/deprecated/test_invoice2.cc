@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2011-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -38,8 +38,8 @@
 #include "src/deprecated/libfred/credit.hh"
 #include "src/bin/corba/file_manager_client.hh"
 #include "src/deprecated/libfred/banking/bank_common.hh"
-#include "src/bin/corba/Admin.hh"
-#include "src/bin/corba/EPP.hh"
+#include "corba/Admin.hh"
+#include "corba/EPP.hh"
 #include "src/bin/corba/epp/epp_impl.hh"
 #include "src/util/types/money.hh"
 

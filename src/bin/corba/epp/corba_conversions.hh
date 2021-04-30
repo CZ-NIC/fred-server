@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -19,7 +19,7 @@
 #ifndef CORBA_CONVERSIONS_HH_C3BA4DD497834F29B428E0CB16C3146B
 #define CORBA_CONVERSIONS_HH_C3BA4DD497834F29B428E0CB16C3146B
 
-#include "src/bin/corba/EPP.hh"
+#include "corba/EPP.hh"
 #include "src/bin/corba/util/corba_conversions_string.hh"
 #include "src/backend/epp/contact/check_contact_localized.hh"
 #include "src/backend/epp/contact/contact_change.hh"

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2012-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -25,7 +25,7 @@
 #ifndef CONTACT_VERIFICATION_I_HH_634B136D452B45E7B6E9AFD756BB28BD
 #define CONTACT_VERIFICATION_I_HH_634B136D452B45E7B6E9AFD756BB28BD
 
-#include "src/bin/corba/ContactVerification.hh"
+#include "corba/ContactVerification.hh"
 #include <memory>
 #include <string>
 

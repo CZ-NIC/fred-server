@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2013-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -25,8 +25,8 @@
 #define SERVER_I_HH_55983EE8D4A7410995392A0C7C0AC73E
 
 #include "src/backend/admin_block/administrativeblocking.hh"
-#include "src/bin/corba/AdministrativeBlocking.hh"
-#include "src/bin/corba/NullableIsoDate.hh"
+#include "corba/AdministrativeBlocking.hh"
+#include "corba/NullableIsoDate.hh"
 #include <memory>
 #include <string>
 

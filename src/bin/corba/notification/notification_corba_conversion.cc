@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -25,7 +25,7 @@
 #include "src/bin/corba/util/corba_conversions_string.hh"
 #include "src/bin/corba/util/corba_conversions_nullable_types.hh"
 
-#include "src/bin/corba/Notification.hh"
+#include "corba/Notification.hh"
 
 #include "src/bin/corba/notification/notification_corba_conversion.hh"
 

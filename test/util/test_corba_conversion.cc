@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2015-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -29,14 +29,14 @@
 
 #include "src/util/corba_conversion.hh"
 
-#include "src/bin/corba/corba_conversion_test.hh"
 #include "src/bin/corba/util/corba_conversions_isodate.hh"
 #include "src/bin/corba/util/corba_conversions_isodatetime.hh"
 #include "src/bin/corba/util/corba_conversions_nullableisodate.hh"
 #include "src/bin/corba/mojeid/mojeid_corba_conversion.hh"
 #include "src/bin/corba/util/corba_conversions_buffer.hh"
 
-#include "src/bin/corba/Buffer.hh"
+#include "corba/Buffer.hh"
+#include "corba/corba_conversion_test.hh"
 #include "src/backend/buffer.hh"
 
 //not using UTF defined main

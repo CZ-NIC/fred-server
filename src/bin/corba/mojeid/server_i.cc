@@ -24,7 +24,7 @@
 
 #include "src/bin/corba/mojeid/server_i.hh"
 #include "src/backend/mojeid/mojeid.hh"
-#include "src/bin/corba/Buffer.hh"
+#include "corba/Buffer.hh"
 #include "src/bin/corba/mojeid/mojeid_corba_conversion.hh"
 #include "src/bin/corba/util/corba_conversions_buffer.hh"
 

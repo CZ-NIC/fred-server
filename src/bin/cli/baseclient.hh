@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2009-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -24,7 +24,7 @@
 #ifndef BASECLIENT_HH_F8472B4549B7445EB34B657F5E42E010
 #define BASECLIENT_HH_F8472B4549B7445EB34B657F5E42E010
 
-#include "src/bin/corba/EPP.hh"
+#include "corba/EPP.hh"
 #include <map>
 #include <string>
 

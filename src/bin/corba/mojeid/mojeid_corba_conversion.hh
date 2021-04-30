@@ -27,9 +27,9 @@
 
 #include "src/backend/buffer.hh"
 #include "src/backend/mojeid/mojeid_impl_data.hh"
-#include "src/bin/corba/IsoDate.hh"
-#include "src/bin/corba/MojeID.hh"
-#include "src/bin/corba/NullableIsoDate.hh"
+#include "corba/IsoDate.hh"
+#include "corba/MojeID.hh"
+#include "corba/NullableIsoDate.hh"
 #include "src/util/corba_conversion.hh"
 #include "util/db/nullable.hh"
 

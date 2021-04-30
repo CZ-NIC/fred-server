@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2013-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -19,7 +19,7 @@
 #ifndef CORBA_CONVERSIONS_NULLABLE_TYPES_HH_B09E37E52D7B440DA9714F6AE9769442
 #define CORBA_CONVERSIONS_NULLABLE_TYPES_HH_B09E37E52D7B440DA9714F6AE9769442
 
-#include "src/bin/corba/NullableTypes.hh"
+#include "corba/NullableTypes.hh"
 #include "util/db/nullable.hh"
 #include "util/optional_value.hh"
 
