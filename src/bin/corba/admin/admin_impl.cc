@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2006-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -27,7 +27,7 @@
 #include <math.h>
 #include <memory>
 #include <iomanip>
-#include "src/bin/corba/Admin.hh"
+#include "corba/Admin.hh"
 
 #include "src/bin/corba/admin/common.hh"
 #include "src/bin/corba/admin/admin_impl.hh"
@@ -249,7 +249,7 @@ void ccReg_Admin_i::garbageSession() {
 }
 
 void ccReg_Admin_i::authenticateUser(const char* _username,
-                                     const char* _password)
+                                     const char* _password [[gnu::unused]])
 {
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
@@ -407,7 +407,7 @@ ccReg::RegistrarList* ccReg_Admin_i::getRegistrars()
     fillRegistrar((*reglist)[i],rl->get(i));
     return reglist;
   }
-  catch (LibFred::SQL_ERROR) {
+  catch (const LibFred::SQL_ERROR&) {
     throw ccReg::Admin::SQL_ERROR();
   }
 }
@@ -445,7 +445,7 @@ ccReg::AdminRegistrar* ccReg_Admin_i::getRegistrarById(ccReg::TID id)
     fillRegistrar(*creg,rl->get(0));
     return creg;
   }
-  catch (LibFred::SQL_ERROR) {
+  catch (const LibFred::SQL_ERROR&) {
     throw ccReg::Admin::SQL_ERROR();
   }
 }
@@ -763,10 +763,10 @@ ccReg::TID ccReg_Admin_i::createPublicRequest(Registry::PublicRequest::Type _typ
     new_request->save();
     return new_request->getId();
   }
-  catch (ccReg::Admin::REQUEST_BLOCKED) {
+  catch (const ccReg::Admin::REQUEST_BLOCKED&) {
     throw;
   }
-  catch (ccReg::Admin::OBJECT_NOT_FOUND) {
+  catch (const ccReg::Admin::OBJECT_NOT_FOUND&) {
     throw;
   }
   catch (...) {
@@ -818,16 +818,16 @@ void ccReg_Admin_i::processPublicRequest(ccReg::TID id, CORBA::Boolean invalid)
   try {
     request_manager->processRequest(id,invalid,true);
   }
-  catch (LibFred::SQL_ERROR) {
+  catch (const LibFred::SQL_ERROR&) {
     throw ccReg::Admin::SQL_ERROR();
   }
-  catch (LibFred::NOT_FOUND) {
+  catch (const LibFred::NOT_FOUND&) {
     throw ccReg::Admin::OBJECT_NOT_FOUND();
   }
-  catch (LibFred::Mailer::NOT_SEND) {
+  catch (const LibFred::Mailer::NOT_SEND&) {
     throw ccReg::Admin::MAILER_ERROR();
   }
-  catch (LibFred::PublicRequest::REQUEST_BLOCKED) {
+  catch (const LibFred::PublicRequest::REQUEST_BLOCKED&) {
     throw ccReg::Admin::REQUEST_BLOCKED();
   }
   catch (...) {
@@ -894,10 +894,10 @@ ccReg::Admin::Buffer* ccReg_Admin_i::getPublicRequestPDF(ccReg::TID id,
                          id % lang);
     return output;
   }
-  catch (LibFred::SQL_ERROR) {
+  catch (const LibFred::SQL_ERROR&) {
     throw ccReg::Admin::SQL_ERROR();
   }
-  catch (LibFred::NOT_FOUND) {
+  catch (const LibFred::NOT_FOUND&) {
     throw ccReg::Admin::OBJECT_NOT_FOUND();
   }
 }
@@ -1222,7 +1222,7 @@ ccReg::EnumDictList* ccReg_Admin_i::getEnumDomainsByRegistrant(const char* name,
         ::CORBA::Boolean by_person, ::CORBA::Boolean by_org,
         ::CORBA::Long offset, ::CORBA::Long limit)
 {
-  Logging::Context(server_name_);
+  Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
   try {
@@ -1839,7 +1839,7 @@ ccReg::RegistrarRequestCountInfo* ccReg_Admin_i::getRegistrarRequestCount(const 
 bool ccReg_Admin_i::isRegistrarBlocked(ccReg::TID reg_id)
 {
     try {
-        Logging::Context(server_name_);
+        Logging::Context ctx(server_name_);
         ConnectionReleaser release;
         TRACE(boost::format("[CALL] ccReg_Admin_i::isRegistrarBlocked(%1%)") % reg_id);
 
@@ -1864,7 +1864,7 @@ bool ccReg_Admin_i::isRegistrarBlocked(ccReg::TID reg_id)
 bool ccReg_Admin_i::blockRegistrar(ccReg::TID reg_id)
 {
     try {
-        Logging::Context(server_name_);
+        Logging::Context ctx(server_name_);
         ConnectionReleaser release;
         TRACE(boost::format("[CALL] ccReg_Admin_i::blockRegistrar(%1%)") % reg_id);
 
@@ -1891,7 +1891,7 @@ bool ccReg_Admin_i::blockRegistrar(ccReg::TID reg_id)
 void ccReg_Admin_i::unblockRegistrar(ccReg::TID reg_id, ccReg::TID request_id)
 {
     try {
-        Logging::Context(server_name_);
+        Logging::Context ctx(server_name_);
         ConnectionReleaser release;
         TRACE(boost::format("[CALL] ccReg_Admin_i::unblockRegistrar(%1%, %2%)") % reg_id % request_id);
 
@@ -1917,7 +1917,7 @@ void ccReg_Admin_i::unblockRegistrar(ccReg::TID reg_id, ccReg::TID request_id)
 ccReg::ULLSeq* ccReg_Admin_i::getSummaryOfExpiredDomains(const char *registrar_handle, const ccReg::DatePeriodList &date_intervals)
 {
     try {
-        Logging::Context(server_name_);
+        Logging::Context ctx(server_name_);
         ConnectionReleaser release;
         TRACE(boost::format("[CALL] ccReg_Admin_i::getSummaryOfExpiredDomains(%1%, date_intervals") % registrar_handle );
 

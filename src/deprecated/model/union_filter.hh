@@ -103,7 +103,7 @@ public:
 
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
-      const unsigned int _version) {
+      const unsigned int) {
     /*
      * Need registering all classes which can be hold in 'filter_list'
      * by Filter* pointer

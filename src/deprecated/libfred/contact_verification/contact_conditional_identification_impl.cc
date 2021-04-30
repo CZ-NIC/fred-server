@@ -71,7 +71,7 @@ void ConditionalContactIdentificationImpl::pre_save_check()
     }
 }
 
-void ConditionalContactIdentificationImpl::pre_process_check(bool _check)
+void ConditionalContactIdentificationImpl::pre_process_check(bool _check [[gnu::unused]])
 {
     /* object should not change */
     if (LibFred::PublicRequest::object_was_changed_since_request_create(
@@ -90,7 +90,7 @@ void ConditionalContactIdentificationImpl::pre_process_check(bool _check)
     }
 }
 
-void ConditionalContactIdentificationImpl::process_action(bool _check)
+void ConditionalContactIdentificationImpl::process_action(bool _check [[gnu::unused]])
 {
     LibFred::PublicRequest::insertNewStateRequest(
             pra_impl_ptr_->getId(),

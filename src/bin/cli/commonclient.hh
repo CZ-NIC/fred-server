@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2008-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -32,7 +32,7 @@
 #include "util/types/date_interval.hh"
 #include "src/deprecated/util/dbsql.hh"
 
-#include "src/bin/corba/EPP.hh"
+#include "corba/EPP.hh"
 
 extern const char *corbaOpts[][2];
 extern const char g_prog_name[];

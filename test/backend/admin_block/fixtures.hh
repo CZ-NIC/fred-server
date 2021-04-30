@@ -103,7 +103,7 @@ struct StatusList
 {
     ::LibFred::StatusList status_list;
 
-    StatusList(LibFred::OperationContext& _ctx, bool _all_administrative_states = false)
+    StatusList(LibFred::OperationContext&, bool _all_administrative_states = false)
     {
         status_list.insert(Conversion::Enums::to_db_handle(LibFred::Object_State::server_delete_prohibited));
         if (_all_administrative_states)
@@ -132,7 +132,7 @@ struct HasNoDomainForBlock
     std::string reason;
     unsigned long long log_req_id;
 
-    HasNoDomainForBlock(LibFred::OperationContext& _ctx)
+    HasNoDomainForBlock(LibFred::OperationContext&)
             : blocking_impl("test_server"),
               domain_list(),
               status_list(),

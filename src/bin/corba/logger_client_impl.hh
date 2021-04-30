@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2011-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -19,16 +19,17 @@
 #ifndef LOGGER_CLIENT_IMPL_HH_08E0527D90D74431B6E79639226FDB14
 #define LOGGER_CLIENT_IMPL_HH_08E0527D90D74431B6E79639226FDB14
 
-#include <memory>
-#include <boost/thread/thread.hpp>
-#include <boost/date_time/posix_time/ptime.hpp>
-#include <src/bin/corba/Logger.hh>
+#include "corba/Logger.hh"
 #include "src/util/corba_wrapper_decl.hh"
 #include "src/deprecated/libfred/logger_client.hh"
 
+#include <boost/thread/thread.hpp>
+#include <boost/date_time/posix_time/ptime.hpp>
+
+#include <memory>
+
 namespace LibFred {
 namespace Logger {
-
 
 class LoggerCorbaClientImpl : public LoggerClient
 {
@@ -63,8 +64,6 @@ public:
             const ObjectReferences &_references,
             const std::string &_result,
             const unsigned long long _session_id); 
-
-
 private:
     ccReg::Logger_var logger_ref;
     boost::mutex ref_mutex;

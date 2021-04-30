@@ -148,7 +148,7 @@ static const std::string owner_copy_zero_idx = "00000";
 
 std::string get_copy_owner_handle(
         const std::string& _owner_handle,
-        unsigned long long _log_req_id,
+        unsigned long long _log_req_id [[gnu::unused]],
         LibFred::OperationContext& _ctx)
 {
     std::string new_owner_handle = _owner_handle + owner_copy_suffix;
@@ -1053,7 +1053,7 @@ void BlockingImpl::blacklistAndDeleteDomainsId(
         const IdlDomainIdList& _domain_list,
         const Nullable<boost::gregorian::date>& _blacklist_to_date,
         const std::string& _reason,
-        unsigned long long _log_req_id)
+        unsigned long long _log_req_id [[gnu::unused]])
 {
     Logging::Context ctx_server(create_ctx_name(this->get_server_name()));
     Logging::Context ctx_method("blacklist-and-delete-domains-id");
@@ -1134,8 +1134,8 @@ void BlockingImpl::blacklistAndDeleteDomainsId(
 void BlockingImpl::blacklistDomainsId(
         const IdlDomainIdList& _domain_list,
         const Nullable<boost::gregorian::date>& _blacklist_to_date,
-        bool _with_delete,
-        unsigned long long _log_req_id)
+        bool, 
+        unsigned long long) 
 {
     Logging::Context ctx_server(create_ctx_name(this->get_server_name()));
     Logging::Context ctx_method("blacklist-domains-id");

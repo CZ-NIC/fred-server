@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2010-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -40,7 +40,7 @@
 #include <boost/assign/list_of.hpp>
 
 #include "libfred/db_settings.hh"
-#include "src/bin/corba/Admin.hh"
+#include "corba/Admin.hh"
 #include "src/deprecated/util/dbsql.hh"
 #include "src/deprecated/libfred/registrar.hh"
 #include "src/util/corba_wrapper_decl.hh"

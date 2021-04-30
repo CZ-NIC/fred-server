@@ -90,7 +90,7 @@ LibFred::Logger::RequestProperties *epp_property_push(LibFred::Logger::RequestPr
 
 LibFred::Logger::RequestProperties *epp_property_push_qhead(LibFred::Logger::RequestProperties *c_props, qhead *list, const char *list_name, bool child)
 {
-	LibFred::Logger::RequestProperties *ret;
+	LibFred::Logger::RequestProperties *ret = NULL;
 
 	if (list->count == 0) {
 		return c_props;
@@ -408,7 +408,7 @@ LibFred::Logger::RequestProperties *epp_property_push_dnskey(LibFred::Logger::Re
  *
  * @return  status
  */
-unique_ptr<LibFred::Logger::RequestProperties> log_epp_command(epp_command_data *cdata, epp_red_command_type cmdtype, int sessionid, epp_action_type *request_type_id)
+unique_ptr<LibFred::Logger::RequestProperties> log_epp_command(epp_command_data *cdata, epp_red_command_type cmdtype, int /*sessionid*/, epp_action_type *request_type_id)
 {
 #define PUSH_PROPERTY(seq, name, value)								\
 	seq = epp_property_push(seq, name, value, false);	\

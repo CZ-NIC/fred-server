@@ -42,7 +42,7 @@ namespace Contact {
 InfoContactOutputData info_contact(
         LibFred::OperationContext& _ctx,
         const std::string& _contact_handle,
-        const InfoContactConfigData& _info_contact_config_data,
+        const InfoContactConfigData&,
         const SessionData& _session_data)
 {
     if (!is_session_registrar_valid(_session_data))

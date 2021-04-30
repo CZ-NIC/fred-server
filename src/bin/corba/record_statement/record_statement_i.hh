@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -26,9 +26,9 @@
 #ifndef RECORD_STATEMENT_I_HH_993EA437283F486CB9C5943AE62F0770
 #define RECORD_STATEMENT_I_HH_993EA437283F486CB9C5943AE62F0770
 
-#include "src/bin/corba/Buffer.hh"
-#include "src/bin/corba/IsoDateTime.hh"
-#include "src/bin/corba/RecordStatement.hh"
+#include "corba/Buffer.hh"
+#include "corba/IsoDateTime.hh"
+#include "corba/RecordStatement.hh"
 
 #include "src/deprecated/libfred/documents.hh"
 #include "libfred/mailer.hh"

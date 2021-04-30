@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2006-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
-#include "src/bin/corba/EPP.hh"
+#include "corba/EPP.hh"
 #include "src/bin/corba/epp/epp_impl.hh"
 
 #include "src/bin/corba/connection_releaser.hh"
@@ -1831,7 +1831,7 @@ ccReg::Response* ccReg_EPP_i::KeySetCheck(
 
 ccReg::Response* ccReg_EPP_i::ContactInfo(
         const char* const _contact_handle,
-        const ccReg::ControlledPrivacyDataMask& _available_disclose_flags,
+        const ccReg::ControlledPrivacyDataMask& _available_disclose_flags [[gnu::unused]],
         ccReg::Contact_out _contact_info,
         const ccReg::EppParams& _epp_params)
 {
@@ -3102,7 +3102,7 @@ ccReg::Response* ccReg_EPP_i::KeySetUpdate(
 
 // primitive list of objects
 ccReg::Response *
-ccReg_EPP_i::FullList(short act, const char *table, const char *fname,
+ccReg_EPP_i::FullList(short act, const char *table, const char *fname [[gnu::unused]],
         ccReg::Lists_out list, const ccReg::EppParams &params)
 {
     int rows =0, i;
@@ -3248,15 +3248,15 @@ ccReg::Response* ccReg_EPP_i::nssetTest(
           try {
             tc.checkFromRegistrar(regHandle,handle,level,ifqdns,params.clTRID);
           }
-          catch (TechCheckManager::INTERNAL_ERROR) {
+          catch (const TechCheckManager::INTERNAL_ERROR&) {
             LOG<Logging::Log::Severity::err>("Tech check internal error nsset [%s] clientID -> %llu clTRID [%s] " , handle , params.loginID , static_cast<const char*>(params.clTRID) );
             internalError = true;
           }
-          catch (TechCheckManager::REGISTRAR_NOT_FOUND) {
+          catch (const TechCheckManager::REGISTRAR_NOT_FOUND&) {
             LOG<Logging::Log::Severity::err>("Tech check reg not found nsset [%s] clientID -> %llu clTRID [%s] " , handle , params.loginID , static_cast<const char*>(params.clTRID) );
             internalError = true;
           }
-          catch (TechCheckManager::NSSET_NOT_FOUND) {
+          catch (const TechCheckManager::NSSET_NOT_FOUND&) {
             LOG<Logging::Log::Severity::err>("Tech check nsset not found nset [%s] clientID -> %llu clTRID [%s] " , handle , params.loginID , static_cast<const char*>(params.clTRID) );
             internalError = true;
           }

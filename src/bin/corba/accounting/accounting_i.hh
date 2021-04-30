@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2018-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -19,9 +19,9 @@
 #ifndef ACCOUNTING_I_HH_F0DCD580DEA74C35B7172B9034F8FB79
 #define ACCOUNTING_I_HH_F0DCD580DEA74C35B7172B9034F8FB79
 
-#include "src/bin/corba/Accounting.hh"
-#include "src/bin/corba/NullableIsoDate.hh"
-#include "src/bin/corba/Registry.hh"
+#include "corba/Accounting.hh"
+#include "corba/NullableIsoDate.hh"
+#include "corba/Registry.hh"
 #include "src/deprecated/libfred/banking/bank_manager.hh"
 #include "src/deprecated/libfred/documents.hh"
 

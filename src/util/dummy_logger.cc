@@ -28,45 +28,45 @@ DummyLoggerImpl::DummyLoggerImpl()
 
 
 unsigned long long DummyLoggerImpl::getRequestCount(
-    const boost::posix_time::ptime &from,
-    const boost::posix_time::ptime &to,
-    const std::string &service,
-    const std::string &user)
+    const boost::posix_time::ptime &,
+    const boost::posix_time::ptime &,
+    const std::string &,
+    const std::string &)
 {
     return 0;
 }
 
 
 std::unique_ptr<RequestCountInfo> DummyLoggerImpl::getRequestCountUsers(
-    const boost::posix_time::ptime &from,
-    const boost::posix_time::ptime &to,
-    const std::string &service)
+    const boost::posix_time::ptime &,
+    const boost::posix_time::ptime &,
+    const std::string &)
 {
     return std::unique_ptr<RequestCountInfo>();
 }
 
 
 unsigned long long DummyLoggerImpl::createRequest(
-    const std::string &_src_ip,
-    const std::string &_service,
-    const std::string &_content,
-    const RequestProperties &_properties,
-    const ObjectReferences &_references,
-    const std::string &_type,
-    const unsigned long long _session_id)
+    const std::string &,
+    const std::string &,
+    const std::string &,
+    const RequestProperties &,
+    const ObjectReferences &,
+    const std::string &,
+    const unsigned long long )
 {
     return 0;
 }
 
 
 void DummyLoggerImpl::closeRequest(
-    const unsigned long long _request_id,
-    const std::string &_service,
-    const std::string &_content,
-    const RequestProperties &_properties,
-    const ObjectReferences &_references,
-    const std::string &_result,
-    const unsigned long long _session_id)
+    const unsigned long long ,
+    const std::string &,
+    const std::string &,
+    const RequestProperties &,
+    const ObjectReferences &,
+    const std::string &,
+    const unsigned long long )
 {
 }
 

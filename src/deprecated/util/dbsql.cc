@@ -93,7 +93,7 @@ DB::~DB()
 
 // action
 bool DB::BeginAction(
-  unsigned long long clientID, int action, const char *clTRID, const char *xml,
+  unsigned long long clientID, int action, const char*, const char*,
   unsigned long long requestID
 )
 {
@@ -115,8 +115,7 @@ bool DB::BeginAction(
 }
 
 // end of EPP operation
-const char * DB::EndAction(
-  int response)
+const char * DB::EndAction(int)
 {
     LOG<Logging::Log::Severity::debug>( "EndAction svrTRID: %s" , svrTRID );
     return svrTRID;
@@ -205,7 +204,7 @@ DB::GetDSRecordId(
         int keysetId,
         int keyTag,
         int alg,
-        int digestType,
+        int,
         const char *digest,
         int maxSigLife)
 {
@@ -236,7 +235,7 @@ int
 DB::GetDSRecordId(
         int keyTag,
         int alg,
-        int digestType,
+        int,
         const char *digest,
         int maxSigLife)
 {
@@ -507,7 +506,7 @@ DB::TestKeySetHandleHistory(const char *handle, int days)
 
 // test protected period
 bool DB::TestObjectHistory(
-  const char * name, int days)
+  const char *, int)
 {
   /* TODO rework
    char sqlString[512];
@@ -774,7 +773,7 @@ bool DB::RenewExDate(
 }
 
 int DB::GetDomainID(
-  const char *fqdn, bool enum_zone)
+  const char *fqdn, bool)
 {
   return GetObjectID( 3, fqdn);
 }
@@ -1793,7 +1792,7 @@ bool DB::SELECTONE(
 
 // special select to the object
 bool DB::SELECTOBJECTID(
-  const char *table, const char *fname, int id)
+  const char *table, const char *, int id)
 {
   char numStr[16];
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2012-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -24,7 +24,7 @@
 
 #include "src/bin/corba/contact_verification/contact_verification_i.hh"
 #include "src/backend/contact_verification/contact_verification_impl.hh"
-#include "src/bin/corba/ContactVerification.hh"
+#include "corba/ContactVerification.hh"
 #include "src/bin/corba/contact_verification/corba_conversion.hh"
 #include "src/bin/corba/mailer_manager.hh"
 #include "src/util/corba_wrapper_decl.hh"

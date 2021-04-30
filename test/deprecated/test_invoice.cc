@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2008-2021  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -19,7 +19,7 @@
 #include "test/deprecated/test_common_registry.hh"
 
 #include "src/bin/corba/file_manager_client.hh"
-#include "src/bin/corba/Admin.hh"
+#include "corba/Admin.hh"
 
 #include "src/util/setup_server_decl.hh"
 #include "src/util/cfg/handle_general_args.hh"
@@ -669,7 +669,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
     std::vector<registrar_credit_item> registrar_novat_credit_vect;
 
     {//get registrar novat credit
-        registrar_credit_item ci={1400,"0.00",0,"0.00", "0.00", Database::Date(1400,1,1)};
+        registrar_credit_item ci={1400,"0.00",0,"0.00", "0.00", Database::Date()};
 
         Database::Result credit_res = conn.exec_params(zone_registrar_credit_query
                 , Database::query_param_list(zone_cz_id)(registrar_novat_inv_id));
@@ -700,7 +700,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
             ::LibFred::Credit::add_credit_to_invoice( registrar_novat_inv_id,  zone_cz_id, out_credit, invoiceid);
 
             //get registrar credit
-            registrar_credit_item ci={year,"0.00",0,"0.00", "200.00", Database::Date(1400,1,1)};
+            registrar_credit_item ci={year,"0.00",0,"0.00", "200.00", Database::Date()};
 
             Database::Result credit_res = conn.exec_params(zone_registrar_credit_query
                     , Database::query_param_list(zone_cz_id)(registrar_novat_inv_id));
@@ -722,7 +722,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
             ::LibFred::Credit::add_credit_to_invoice( registrar_novat_inv_id,  zone_cz_id, out_credit, invoiceid);
 
             //get registrar credit
-            registrar_credit_item ci={year,"0.00",0,"0.00", "200.00", Database::Date(1400,1,1)};
+            registrar_credit_item ci={year,"0.00",0,"0.00", "200.00", Database::Date()};
 
             Database::Result credit_res = conn.exec_params(zone_registrar_credit_query
                     , Database::query_param_list(zone_cz_id)(registrar_novat_inv_id));
@@ -1127,8 +1127,9 @@ BOOST_AUTO_TEST_CASE( chargeDomain )
 
 }
 
-void testCharge2InvoicesWorker(Database::ID zone_id, unsigned op, unsigned period,
+void testCharge2InvoicesWorker(Database::ID zone_id, unsigned /*op*/, unsigned period,
         Database::Date taxdate, Database::Date exdate, Money amount, bool should_succ)
+   
 {
     // registrar
     ::LibFred::Registrar::Registrar::AutoPtr reg = createTestRegistrarClass();

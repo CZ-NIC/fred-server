@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2018-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -19,7 +19,7 @@
 #ifndef CORBA_CONVERSIONS_ISODATE_HH_2BF5BCD875144165A64AD4C1BBC18508
 #define CORBA_CONVERSIONS_ISODATE_HH_2BF5BCD875144165A64AD4C1BBC18508
 
-#include "src/bin/corba/IsoDate.hh"
+#include "corba/IsoDate.hh"
 
 #include <boost/date_time/gregorian/gregorian_types.hpp>
 

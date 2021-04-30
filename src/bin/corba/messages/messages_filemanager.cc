@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2010-2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -27,7 +27,7 @@
 #include "src/bin/corba/messages/messages_filemanager.hh"
 #include "src/util/corba_wrapper_decl.hh"
 
-#include "src/bin/corba/FileManager.hh"
+#include "corba/FileManager.hh"
 #include "src/bin/corba/file_manager_client.hh"
 
 unsigned long long save_file(std::vector<char>& file_buffer
