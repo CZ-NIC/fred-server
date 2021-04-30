@@ -50,7 +50,7 @@ void verify_items_sequence(SessionCache &sc, unsigned count)
     for (unsigned i=1; i<= count; i++) {
         try {
             std::shared_ptr<ModelSession> s = sc.get(i);
-        } catch(CACHE_MISS) {
+        } catch(CACHE_MISS&) {
             THREAD_BOOST_ERROR("Cache miss occured when not allowed");
         }
     }
@@ -60,7 +60,7 @@ bool verify_item(SessionCache &sc, Database::ID id)
 {
     try {
         std::shared_ptr<ModelSession> s = sc.get(id);
-    } catch(CACHE_MISS) {
+    } catch(CACHE_MISS&) {
         return false;
     }
     return true;
@@ -72,7 +72,7 @@ void verify_items_miss_sequence(SessionCache &sc, unsigned count)
         bool exception = false;
         try {
             std::shared_ptr<ModelSession> s = sc.get(i);
-        } catch(CACHE_MISS) {
+        } catch(CACHE_MISS&) {
             exception = true;
         }
 

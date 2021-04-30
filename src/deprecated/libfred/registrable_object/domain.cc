@@ -294,10 +294,10 @@ public:
             throw;
         }//catch(...)
   }//getAdminPhoneByIdx
-  virtual void removeAdminId(TID id) {
+  virtual void removeAdminId(TID id [[gnu::unused]]) {
     // find id in list and delete
   }
-  virtual void insertAdminId(TID id) {
+  virtual void insertAdminId(TID id [[gnu::unused]]) {
     // check existance of id
   }
   /// id lookup function
@@ -1263,7 +1263,7 @@ public:
       bool allowIDN) const {
     Zone::DomainName domain; // parsed domain name
     try { zm->parseDomainName(fqdn,domain,allowIDN); }
-    catch (Zone::INVALID_DOMAIN_NAME) {return CA_INVALID_HANDLE;}
+    catch (const Zone::INVALID_DOMAIN_NAME&) {return CA_INVALID_HANDLE;}
     const Zone::Zone *z = zm->findApplicableZone(fqdn);
     // TLD domain allowed only if zone.fqdn='' is in zone list
     if (!z && domain.size() == 1)

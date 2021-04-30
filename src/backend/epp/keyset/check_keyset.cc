@@ -69,7 +69,7 @@ Nullable<Keyset::KeysetHandleRegistrationObstruction::Enum> keyset_handle_state_
 std::map<std::string, Nullable<Keyset::KeysetHandleRegistrationObstruction::Enum> > check_keyset(
         LibFred::OperationContext& _ctx,
         const std::set<std::string>& _keyset_handles,
-        const CheckKeysetConfigData& _check_keyset_config_data,
+        const CheckKeysetConfigData&,
         const SessionData& _session_data)
 {
 

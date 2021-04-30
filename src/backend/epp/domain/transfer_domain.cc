@@ -52,7 +52,7 @@ unsigned long long transfer_domain(
         LibFred::OperationContext& _ctx,
         const std::string& _fqdn,
         const std::string& _authinfopw,
-        const TransferDomainConfigData& _transfer_domain_config_data,
+        const TransferDomainConfigData&,
         const SessionData& _session_data)
 {
 

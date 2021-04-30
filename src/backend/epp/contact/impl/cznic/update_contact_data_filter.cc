@@ -342,7 +342,7 @@ LibFred::UpdateContactByHandle& UpdateContactDataFilter::operator()(
         LibFred::OperationContext& ctx,
         const LibFred::InfoContactData& old_data,
         const ContactChange& change,
-        const SessionData& session_data,
+        const SessionData&,
         LibFred::UpdateContactByHandle& update_op)const
 {
     if (change.disclose == UpdateOperation::Action::set_value)

@@ -32,7 +32,7 @@ namespace Nsset {
 std::map<std::string, Nullable<NssetHandleRegistrationObstruction::Enum> > check_nsset(
         LibFred::OperationContext& _ctx,
         const std::set<std::string>& _nsset_handles,
-        const CheckNssetConfigData& _check_nsset_config_data,
+        const CheckNssetConfigData&,
         const SessionData& _session_data)
 {
 

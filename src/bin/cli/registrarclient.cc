@@ -321,7 +321,7 @@ RegistrarClient::registrar_create_certification()
             registrar_create_certification_params_.certification_evaluation_mime_type;//REGISTRAR_CERTIFICATION_EVALUATION_MIME_TYPE_NAME
 
     const unsigned short score = registrar_create_certification_params_.certification_score;//REGISTRAR_CERTIFICATION_SCORE_NAME
-    if((score < 0) || (score > 5))
+    if (score > 5)
         throw std::runtime_error("Invalid value of score");
 
     const std::string registrar_handle = registrar_create_certification_params_.handle;//REGISTRAR_ADD_HANDLE_NAME

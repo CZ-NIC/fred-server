@@ -134,7 +134,7 @@ class TestImplLog {
 
 
 public:
-    TestImplLog (const std::string connection_string) :
+    TestImplLog (const std::string /*connection_string*/) :
         logd(new ::LibFred::Logger::ManagerImpl())
     {
         Connection conn = Database::Manager::acquire();
@@ -142,7 +142,7 @@ public:
 
     };
 
-	TestImplLog (const std::string connection_string, const std::string monitoring_file) :
+	TestImplLog (const std::string /*connection_string*/, const std::string monitoring_file) :
 	    logd(new ::LibFred::Logger::ManagerImpl(monitoring_file))
     // , pcache(new ::LibFred::Logger::RequestPropertyNameCache(Database::Manager::acquire()))
     {};
@@ -553,7 +553,7 @@ bool TestImplLog::property_match(const Row r, const ::LibFred::Logger::RequestPr
 	return true;
 }
 
-void TestImplLog::check_db_properties_subset(ID rec_id, const ::LibFred::Logger::RequestProperties &props, bool output)
+void TestImplLog::check_db_properties_subset(ID rec_id, const ::LibFred::Logger::RequestProperties &props, bool)
 {
 	if (props.size() == 0) return;
 
@@ -608,8 +608,8 @@ void TestImplLog::check_db_properties(ID rec_id, const ::LibFred::Logger::Reques
 }
 
 
-void TestImplLog::check_obj_references_subset(ID rec_id, const ::LibFred::Logger::ObjectReferences &refs) {}
-void TestImplLog::check_obj_references(ID rec_id, const ::LibFred::Logger::ObjectReferences &refs)
+void TestImplLog::check_obj_references_subset(ID, const ::LibFred::Logger::ObjectReferences &) {}
+void TestImplLog::check_obj_references(ID, const ::LibFred::Logger::ObjectReferences &)
 {
     // TODO check object_references
     /*
@@ -659,7 +659,7 @@ private:
 	std::ofstream conffile;
 
 public:
-	ConfigFile(const std::string &filename, const std::string &content) {
+	ConfigFile(const std::string &filename [[gnu::unused]], const std::string &content) {
 
 		conffile.open("test_log_monitoring.conf");
 		conffile << content;

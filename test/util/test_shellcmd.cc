@@ -294,7 +294,7 @@ struct ResultTest : TestParams
     { }
 };
 
-static ResultTest testWorker(unsigned long long worker_param)
+static ResultTest testWorker(unsigned long long /*worker_param*/)
 {
     ResultTest ret;
 

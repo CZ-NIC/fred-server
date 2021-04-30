@@ -168,7 +168,7 @@ public:
 	}
   }
 
-  virtual void sort(MemberType _member, bool _asc) {
+  virtual void sort(MemberType _member [[gnu::unused]], bool _asc [[gnu::unused]]) {
 	// TODO
   }
 

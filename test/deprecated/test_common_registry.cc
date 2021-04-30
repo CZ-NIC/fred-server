@@ -164,7 +164,7 @@ bool check_std_exception_billing_fail(std::exception const & ex)
     return (ex_msg.find(std::string("Billing failure")) != std::string::npos);
 }
 
-bool check_dummy(std::exception const & ex)
+bool check_dummy(std::exception const &)
 {
     return true;
 }

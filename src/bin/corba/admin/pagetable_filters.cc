@@ -100,7 +100,7 @@ ccReg_Filters_i::getRowId(CORBA::UShort row)
 }
 
 void 
-ccReg_Filters_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
+ccReg_Filters_i::sortByColumn(CORBA::Short column [[gnu::unused]], CORBA::Boolean dir [[gnu::unused]]) {
   Logging::Context ctx(base_context_);
 
 }
@@ -141,13 +141,13 @@ ccReg_Filters_i::clear() {
 }
 
 void
-ccReg_Filters_i::loadFilter(ccReg::TID _id) {
+ccReg_Filters_i::loadFilter(ccReg::TID _id [[gnu::unused]]) {
   Logging::Context ctx(base_context_);
 
 }
 
 void
-ccReg_Filters_i::saveFilter(const char* _name) {
+ccReg_Filters_i::saveFilter(const char* _name [[gnu::unused]]) {
   Logging::Context ctx(base_context_);
 
 }

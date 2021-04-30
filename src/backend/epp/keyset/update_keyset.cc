@@ -650,7 +650,7 @@ std::vector<LibFred::DnsKey> to_fred(const std::vector<Keyset::DnsKey>& _dns_key
 UpdateKeysetResult update_keyset(
         LibFred::OperationContext& _ctx,
         const UpdateKeysetInputData& _update_keyset_data,
-        const UpdateKeysetConfigData& _update_keyset_config_data,
+        const UpdateKeysetConfigData&,
         const SessionData& _session_data)
 {
     if (!is_session_registrar_valid(_session_data))

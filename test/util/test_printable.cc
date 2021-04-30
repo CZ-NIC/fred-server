@@ -556,7 +556,7 @@ struct HavingToStringDev3{
 };
 
 struct HavingStreamOp{
-    friend std::ostream& operator<<(std::ostream& os, const HavingStreamOp& i)
+    friend std::ostream& operator<<(std::ostream& os, const HavingStreamOp&)
     {return os << "test";}
 };
 struct HavingConversionToString{

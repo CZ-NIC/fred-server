@@ -44,7 +44,7 @@ namespace Domain {
 unsigned long long delete_domain(
         LibFred::OperationContext& _ctx,
         const std::string& _domain_fqdn,
-        const DeleteDomainConfigData& _delete_domain_config_data,
+        const DeleteDomainConfigData&,
         const SessionData& _session_data)
 {
 

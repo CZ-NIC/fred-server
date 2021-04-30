@@ -450,7 +450,7 @@ ccReg_Messages_i::findId(ccReg::TID id)
         LibFred::Messages::MessagePtr msg
             = ml->findId(id);
         return msg.get();
-    } catch (LibFred::NOT_FOUND) {
+    } catch (const LibFred::NOT_FOUND&) {
         return 0;
     }
 	catch(std::exception& ex)

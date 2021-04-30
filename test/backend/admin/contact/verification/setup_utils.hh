@@ -86,7 +86,7 @@ class DummyTestReturning: public Fred::Backend::Admin::Contact::Verification::Te
                 break;
             }
         }
-        TestRunResult run(unsigned long long _history_id) const {
+        TestRunResult run(unsigned long long) const {
             return TestRunResult(return_status, return_status);
         }
         static std::string registration_name() { return "DummyTestReturning"; }
@@ -129,7 +129,7 @@ class DummyThrowingTest: public Fred::Backend::Admin::Contact::Verification::Tes
             id_ = static_cast<long>(res[0]["id_"]);
         }
 
-        TestRunResult run(unsigned long long _history_id) const {
+        TestRunResult run(unsigned long long) const {
             throw std::runtime_error("not exactly a feature");
         }
         static std::string registration_name() { return "DummyThrowingTest"; }

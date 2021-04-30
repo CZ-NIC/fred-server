@@ -461,10 +461,9 @@ struct FullDomain
 
     FullDomain(
             ::LibFred::OperationContext& _ctx,
-            const std::string& _registrar_handle,
-            const std::string& _fqdn = "freddy.cz",
-            const std::string& _registrant_handle = "REGISTRANT")
-        : registrant(_ctx, _registrar_handle, _registrant_handle)
+            const std::string& _registrar_handle
+            )
+        : registrant(_ctx, _registrar_handle, "REGISTRANT")
     {
         ::LibFred::CreateContact("CONTACT1", _registrar_handle).exec(_ctx);
 
@@ -472,7 +471,7 @@ struct FullDomain
 
         ::LibFred::CreateKeyset("KEYSET1", _registrar_handle).exec(_ctx);
 
-        ::LibFred::CreateDomain("fulldomain.cz", _registrar_handle, _registrant_handle)
+        ::LibFred::CreateDomain("fulldomain.cz", _registrar_handle, "REGISTRANT")
                 .set_admin_contacts(Util::vector_of<std::string>("CONTACT1"))
                 .set_nsset(std::string("NSSET1"))
                 .set_keyset(std::string("KEYSET1"))

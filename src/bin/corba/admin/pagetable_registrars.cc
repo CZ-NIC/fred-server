@@ -303,7 +303,7 @@ LibFred::Registrar::Registrar* ccReg_Registrars_i::findId(ccReg::TID _id) {
   try {
     return dynamic_cast<LibFred::Registrar::Registrar* >(rl->findId(_id));
     }
-  catch (LibFred::NOT_FOUND) {
+  catch (const LibFred::NOT_FOUND&) {
     return 0;
   }
 }

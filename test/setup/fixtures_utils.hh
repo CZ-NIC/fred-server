@@ -441,7 +441,7 @@ unsigned long long  get_nonexistent_registrar_id(::LibFred::OperationContext& ct
 unsigned long long  get_nonexistent_zone_id(::LibFred::OperationContext& ctx);
 
 template<typename T> T get_nonexistent_value(
-    ::LibFred::OperationContext& ctx,
+    ::LibFred::OperationContext&,
     const std::string& table,
     const std::string& column,
     const std::string& postgres_type,

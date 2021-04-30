@@ -47,7 +47,7 @@ public:
 
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
-      const unsigned int _version) {
+      const unsigned int) {
     _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Compound);
   }
 
@@ -72,7 +72,7 @@ public:
 
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
-      const unsigned int _version) {
+      const unsigned int) {
     _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Message);
   }
 
