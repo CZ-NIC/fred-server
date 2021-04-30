@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2020  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -27,7 +27,6 @@
 #include <boost/test/unit_test.hpp>
 #include <string>
 
-const std::string server_name = "test-contact-checkers";
 
 struct test_contact_checkers_fixture : public Test::instantiate_db_template
 {
@@ -132,7 +131,7 @@ struct test_contact_checkers_fixture : public Test::instantiate_db_template
 };
 
 
-BOOST_FIXTURE_TEST_SUITE(TestContactCheckers, test_contact_checkers_fixture)
+BOOST_FIXTURE_TEST_SUITE(TestMojeIdContactCheckers, test_contact_checkers_fixture)
 
 /**
  * testFred::Backend::SSNType conversion functions
@@ -1133,4 +1132,4 @@ BOOST_AUTO_TEST_CASE(check_contact_birthday)
     }
 }
 
-BOOST_AUTO_TEST_SUITE_END();//TestContactCheckers
+BOOST_AUTO_TEST_SUITE_END();//TestMojeIdContactCheckers
