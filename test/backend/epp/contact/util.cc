@@ -342,7 +342,7 @@ void check_equal_except_authinfo_respect_discloseflags(const ::Epp::Contact::Inf
     }
     else
     {
-        BOOST_CHECK(*epp_data.personal_id == boost::none);
+        BOOST_CHECK(!(*epp_data.personal_id));
     }
     BOOST_CHECK_EQUAL(is_public(epp_data.name), fred_data.disclosename);
     BOOST_CHECK_EQUAL(is_public(epp_data.organization), fred_data.discloseorganization);
