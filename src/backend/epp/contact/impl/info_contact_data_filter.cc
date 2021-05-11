@@ -87,11 +87,11 @@ bool is_authorized_registrar(
     {
         if (contact_data.authinfopw != *contact_authinfopw)
         {
-            struct UnauthorizedAccess : InfoContactDataFilter::AuthenticationFailure, std::exception
+            struct AuthinfoDoesNotMatch : InfoContactDataFilter::InvalidAuthorizationInformation, std::exception
             {
-                const char* what() const noexcept override { return "unauthorized contact data access"; }
+                const char* what() const noexcept override { return "authinfo does not match"; }
             };
-            throw UnauthorizedAccess{};
+            throw AuthinfoDoesNotMatch{};
         }
         return true;
     }
