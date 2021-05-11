@@ -72,6 +72,10 @@ InfoContactOutputData info_contact(
 
         return info_contact_output_data;
     }
+    catch (const InfoContactDataFilter::InvalidAuthorizationInformation&)
+    {
+        throw EppResponseFailure(EppResultFailure(EppResultCode::invalid_authorization_information));
+    }
     catch (const LibFred::InfoContactByHandle::Exception& e)
     {
         if (e.is_set_unknown_contact_handle())

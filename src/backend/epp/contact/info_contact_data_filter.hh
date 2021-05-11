@@ -35,7 +35,7 @@ namespace Contact {
 class InfoContactDataFilter
 {
 public:
-    struct AuthenticationFailure { };
+    struct InvalidAuthorizationInformation { };
     virtual ~InfoContactDataFilter() { }
     virtual LibFred::InfoContactData& operator()(
             LibFred::OperationContext& ctx,
