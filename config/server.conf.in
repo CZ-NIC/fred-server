@@ -197,7 +197,8 @@ default_discloseorganization = show
 #                        domain_holder,        // sponsoring registrar of domain where contact
 #                                              // is in "holder" role
 #                        other,                // all other relationships
-#                        sponsoring_registrar  // sponsoring registrar of contact
+#                        sponsoring_registrar, // sponsoring registrar of contact
+#                        system_registrar      // registrar is marked as "system registrar"
 #
 # Both variants (policy and relationships) are mutually exclusive,
 # do not use both at the same time!
@@ -208,6 +209,7 @@ data_share_policy = show_all
 #show_private_data_to = domain_holder
 #show_private_data_to = other
 #show_private_data_to = sponsoring_registrar
+#show_private_data_to = system_registrar
 
 ###
 ### ADIFD specific settings

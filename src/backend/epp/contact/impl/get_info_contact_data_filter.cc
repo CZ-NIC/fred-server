@@ -73,6 +73,8 @@ std::shared_ptr<Epp::Contact::InfoContactDataFilter> get_info_contact_data_filte
                 show_private_data_to<ContactRegistrarRelationship::OtherRelationship>(
                         relationship_name, enabled_registrars) ||
                 show_private_data_to<ContactRegistrarRelationship::SponsoringRegistrar>(
+                        relationship_name, enabled_registrars) ||
+                show_private_data_to<ContactRegistrarRelationship::SystemRegistrar>(
                         relationship_name, enabled_registrars))
             {
                 return;

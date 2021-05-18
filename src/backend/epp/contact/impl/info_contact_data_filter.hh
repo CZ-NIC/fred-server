@@ -38,6 +38,7 @@ struct ContactRegistrarRelationship
         struct AdminContact;
     };
     struct AuthorizedRegistrar;
+    struct SystemRegistrar;
     struct OtherRelationship;
 };
 
@@ -59,6 +60,7 @@ public:
             Bool<ContactRegistrarRelationship::AuthorizedRegistrar>,
             Bool<ContactRegistrarRelationship::SponsoringRegistrarOfDomainWhereContactIs::DomainHolder>,
             Bool<ContactRegistrarRelationship::SponsoringRegistrarOfDomainWhereContactIs::AdminContact>,
+            Bool<ContactRegistrarRelationship::SystemRegistrar>,
             Bool<ContactRegistrarRelationship::OtherRelationship>>;
     explicit InfoContactDataFilter(const Relationships& show_private_data_to);
     explicit InfoContactDataFilter(InfoContact::DataSharePolicy data_share_policy);

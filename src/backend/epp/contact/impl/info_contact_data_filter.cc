@@ -53,6 +53,7 @@ InfoContactDataFilter::Relationships enabled_relationships(InfoContact::DataShar
                     enable<ContactRegistrarRelationship::AuthorizedRegistrar>(),
                     enable<ContactRegistrarRelationship::SponsoringRegistrarOfDomainWhereContactIs::DomainHolder>(),
                     enable<ContactRegistrarRelationship::SponsoringRegistrarOfDomainWhereContactIs::AdminContact>(),
+                    enable<ContactRegistrarRelationship::SystemRegistrar>(),
                     disable<ContactRegistrarRelationship::OtherRelationship>()};
         case InfoContact::DataSharePolicy::show_all:
             return InfoContactDataFilter::Relationships{
@@ -60,6 +61,7 @@ InfoContactDataFilter::Relationships enabled_relationships(InfoContact::DataShar
                     enable<ContactRegistrarRelationship::AuthorizedRegistrar>(),
                     enable<ContactRegistrarRelationship::SponsoringRegistrarOfDomainWhereContactIs::DomainHolder>(),
                     enable<ContactRegistrarRelationship::SponsoringRegistrarOfDomainWhereContactIs::AdminContact>(),
+                    enable<ContactRegistrarRelationship::SystemRegistrar>(),
                     enable<ContactRegistrarRelationship::OtherRelationship>()};
     }
     throw std::runtime_error{"unexpected DataSharePolicy value"};
@@ -76,7 +78,8 @@ bool is_visibility_restricted(const InfoContactDataFilter::Relationships& show_p
     return !does_present<ContactRegistrarRelationship::SponsoringRegistrarOfDomainWhereContactIs::AdminContact>(show_private_data_to) ||
            !does_present<ContactRegistrarRelationship::SponsoringRegistrarOfDomainWhereContactIs::DomainHolder>(show_private_data_to) ||
            !does_present<ContactRegistrarRelationship::OtherRelationship>(show_private_data_to) ||
-           !does_present<ContactRegistrarRelationship::SponsoringRegistrar>(show_private_data_to);
+           !does_present<ContactRegistrarRelationship::SponsoringRegistrar>(show_private_data_to) ||
+           !does_present<ContactRegistrarRelationship::SystemRegistrar>(show_private_data_to);
 }
 
 bool is_authorized_registrar(
@@ -106,6 +109,13 @@ bool registrar_is_contacts_sponsoring_registrar(
     const auto contact_sponsoring_registrar_id = LibFred::InfoRegistrarByHandle{contact_sponsoring_registrar_handle}
             .exec(ctx).info_registrar_data.id;
     return registrar_id  == contact_sponsoring_registrar_id;
+}
+
+bool registrar_is_system_registrar(
+        LibFred::OperationContext& ctx,
+        unsigned long long registrar_id)
+{
+    return LibFred::InfoRegistrarById{registrar_id}.exec(ctx).info_registrar_data.system.get_value_or(false);
 }
 
 bool contact_is_registrars_domain_holder(
@@ -215,6 +225,12 @@ std::string relationship_name<ContactRegistrarRelationship::SponsoringRegistrarO
 }
 
 template <>
+std::string relationship_name<ContactRegistrarRelationship::SystemRegistrar>()
+{
+    return "SystemRegistrar";
+}
+
+template <>
 std::string relationship_name<ContactRegistrarRelationship::OtherRelationship>()
 {
     return "OtherRelationship";
@@ -307,13 +323,19 @@ LibFred::InfoContactData& InfoContactDataFilter::operator()(
                 {
                     return contact_is_registrars_domain_admin_contact(ctx, session_data.registrar_id, contact_data.id);
                 };
+            const auto is_system_registrar = [&]()
+                {
+                    return registrar_is_system_registrar(ctx, session_data.registrar_id);
+                };
             show_private_data =
                     (this->show_private_data_to<ContactRegistrarRelationship::SponsoringRegistrar>() &&
                      is_sponsoring_registrar) ||
                     (this->show_private_data_to<ContactRegistrarRelationship::SponsoringRegistrarOfDomainWhereContactIs::DomainHolder>() &&
                      is_domain_holder()) ||
                     (this->show_private_data_to<ContactRegistrarRelationship::SponsoringRegistrarOfDomainWhereContactIs::AdminContact>() &&
-                     is_admin_contact());
+                     is_admin_contact()) ||
+                    (this->show_private_data_to<ContactRegistrarRelationship::SystemRegistrar>() &&
+                     is_system_registrar());
             if (!show_private_data && this->show_private_data_to<ContactRegistrarRelationship::OtherRelationship>())
             {
                 show_private_data =
@@ -322,7 +344,9 @@ LibFred::InfoContactData& InfoContactDataFilter::operator()(
                         (this->show_private_data_to<ContactRegistrarRelationship::SponsoringRegistrarOfDomainWhereContactIs::DomainHolder>() ||
                          !is_domain_holder()) &&
                         (this->show_private_data_to<ContactRegistrarRelationship::SponsoringRegistrarOfDomainWhereContactIs::AdminContact>() ||
-                         !is_admin_contact());
+                         !is_admin_contact()) &&
+                        (this->show_private_data_to<ContactRegistrarRelationship::SystemRegistrar>() ||
+                         !is_system_registrar());
             }
             if (!show_private_data)
             {
@@ -344,6 +368,7 @@ template bool InfoContactDataFilter::show_private_data_to<ContactRegistrarRelati
 template bool InfoContactDataFilter::show_private_data_to<ContactRegistrarRelationship::SponsoringRegistrar>() const noexcept;
 template bool InfoContactDataFilter::show_private_data_to<ContactRegistrarRelationship::SponsoringRegistrarOfDomainWhereContactIs::AdminContact>() const noexcept;
 template bool InfoContactDataFilter::show_private_data_to<ContactRegistrarRelationship::SponsoringRegistrarOfDomainWhereContactIs::DomainHolder>() const noexcept;
+template bool InfoContactDataFilter::show_private_data_to<ContactRegistrarRelationship::SystemRegistrar>() const noexcept;
 
 }//namespace Epp::Contact::Impl
 }//namespace Epp::Contact
