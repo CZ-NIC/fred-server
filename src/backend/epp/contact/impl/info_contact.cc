@@ -171,6 +171,12 @@ bool has_value<ContactRegistrarRelationship::OtherRelationship>(const std::strin
     return value == "other";
 }
 
+template <>
+bool has_value<ContactRegistrarRelationship::SystemRegistrar>(const std::string& value)
+{
+    return value == "system_registrar";
+}
+
 }//namespace Epp::Contact::Impl
 
 template <>

@@ -163,6 +163,12 @@ std::string relationship_name<ContactRegistrarRelationship::OtherRelationship>()
     return "other";
 }
 
+template <>
+std::string relationship_name<ContactRegistrarRelationship::SystemRegistrar>()
+{
+    return "system_registrar";
+}
+
 template <typename ...> struct AddRelationships;
 
 template <typename First, typename ...Tail>
@@ -206,14 +212,14 @@ struct InfoContactConfigData : ::Epp::Contact::InfoContactConfigData
 struct Contact
 {
     Contact(::LibFred::OperationContext& ctx,
-            const Registrar& registrar,
+            const LibFred::InfoRegistrarData& registrar_data,
             const std::string& contact_handle)
         : data{
             [&]()
             {
                 ::LibFred::CreateContact{
                         contact_handle,
-                        registrar.data.handle,
+                        registrar_data.handle,
                         "authInfo123",
                         "Jan Novák Jr.",
                         Optional<std::string>{},
@@ -258,6 +264,16 @@ struct Contact
                 }.exec(ctx);
                 return ::LibFred::InfoContactByHandle(contact_handle).exec(ctx).info_contact_data;
             }()}
+    { }
+    Contact(::LibFred::OperationContext& ctx,
+            const Registrar& registrar,
+            const std::string& contact_handle)
+        : Contact{ctx, registrar.data, contact_handle}
+    { }
+    Contact(::LibFred::OperationContext& ctx,
+            const SystemRegistrar& registrar,
+            const std::string& contact_handle)
+        : Contact{ctx, registrar.data, contact_handle}
     { }
     ::LibFred::InfoContactData data;
 };
@@ -380,11 +396,14 @@ BOOST_FIXTURE_TEST_CASE(info_contact_data_filter_test, autorollbacking_context)
 {
     const Registrar registrar_a{ctx, "REG-TEST-A"};
     const Registrar registrar_b{ctx, "REG-TEST-B"};
+    const SystemRegistrar sys_registrar{ctx};
     const SessionData session_a{registrar_a.data.id};
     const SessionData session_b{registrar_b.data.id};
+    const SessionData sysreg_session{sys_registrar.data.id};
     const Contact contact_a{ctx, registrar_a, "CONTACT-TEST-A"};
     const Contact contact_b{ctx, registrar_b, "CONTACT-TEST-B"};
     const Contact contact_b0{ctx, registrar_b, "CONTACT-TEST-B-0"};
+    const Contact contact_sys{ctx, sys_registrar, "CONTACT-TEST-SYS"};
     const Domain domain_a_owner_a{ctx, registrar_a, "domain-a-owner-a.cz", contact_a};
     const Domain domain_b_owner_a{ctx, registrar_b, "domain-b-owner-a.cz", contact_a};
     const Domain domain_b_owner_b{ctx, registrar_b, "domain-b-owner-b.cz", contact_b};
@@ -433,6 +452,32 @@ BOOST_FIXTURE_TEST_CASE(info_contact_data_filter_test, autorollbacking_context)
                 contact_b0.data.authinfopw.c_str(),
                 contact_b0,
                 Share::all_except_authinfo);
+    check<ContactRegistrarRelationship::SystemRegistrar>(
+                ctx,
+                sysreg_session,
+                contact_a,
+                Share::all_except_authinfo);
+    check<ContactRegistrarRelationship::SystemRegistrar>(
+                ctx,
+                sysreg_session,
+                contact_b,
+                Share::all_except_authinfo);
+    check<ContactRegistrarRelationship::SystemRegistrar>(
+                ctx,
+                sysreg_session,
+                contact_b0,
+                Share::all_except_authinfo);
+    check<ContactRegistrarRelationship::SystemRegistrar>(
+                ctx,
+                sysreg_session,
+                contact_sys,
+                Share::all_except_authinfo);
+    check<ContactRegistrarRelationship::SponsoringRegistrar,
+          ContactRegistrarRelationship::SystemRegistrar>(
+                ctx,
+                sysreg_session,
+                contact_sys,
+                Share::all);
 }
 
 BOOST_AUTO_TEST_SUITE_END()//Backend/Epp/Contact/InfoContact
