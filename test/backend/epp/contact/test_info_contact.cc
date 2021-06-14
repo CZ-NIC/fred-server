@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2020  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2021  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -27,6 +27,12 @@
 #include "src/backend/epp/epp_response_failure.hh"
 #include "src/backend/epp/epp_result_code.hh"
 #include "src/backend/epp/session_data.hh"
+#include "src/backend/epp/contact/info_contact_config_data.hh"
+#include "src/backend/epp/contact/impl/info_contact_data_filter.hh"
+
+#include "libfred/registrable_object/domain/create_domain.hh"
+#include "libfred/registrable_object/domain/info_domain.hh"
+#include "libfred/registrable_object/domain/update_domain.hh"
 
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/algorithm/string/join.hpp>
@@ -35,7 +41,15 @@
 #include <boost/optional/optional_io.hpp>
 #include <boost/test/unit_test.hpp>
 
+#include <algorithm>
+
 namespace Test {
+
+namespace {
+
+
+
+}//namespace Test::{anonymous}
 
 BOOST_AUTO_TEST_SUITE(Backend)
 BOOST_AUTO_TEST_SUITE(Epp)
@@ -110,6 +124,360 @@ BOOST_FIXTURE_TEST_CASE(info_ok_full_data_for_different_registrar, supply_ctx<Ha
                     DefaultInfoContactConfigData(),
                     session.data),
             contact_of_different_registrar.data);
+}
+
+namespace {
+
+template <typename>
+std::string relationship_name();
+
+using ContactRegistrarRelationship = ::Epp::Contact::Impl::ContactRegistrarRelationship;
+
+template <>
+std::string relationship_name<ContactRegistrarRelationship::AuthorizedRegistrar>()
+{
+    return "authorized_registrar";
+}
+
+template <>
+std::string relationship_name<ContactRegistrarRelationship::SponsoringRegistrar>()
+{
+    return "sponsoring_registrar";
+}
+
+template <>
+std::string relationship_name<ContactRegistrarRelationship::SponsoringRegistrarOfDomainWhereContactIs::AdminContact>()
+{
+    return "admin_contact";
+}
+
+template <>
+std::string relationship_name<ContactRegistrarRelationship::SponsoringRegistrarOfDomainWhereContactIs::DomainHolder>()
+{
+    return "domain_holder";
+}
+
+template <>
+std::string relationship_name<ContactRegistrarRelationship::OtherRelationship>()
+{
+    return "other";
+}
+
+template <>
+std::string relationship_name<ContactRegistrarRelationship::SystemRegistrar>()
+{
+    return "system_registrar";
+}
+
+template <typename ...> struct AddRelationships;
+
+template <typename First, typename ...Tail>
+struct AddRelationships<First, Tail...>
+{
+    static void into(std::vector<std::string>& relationships)
+    {
+        relationships.push_back(relationship_name<First>());
+        AddRelationships<Tail...>::into(relationships);
+    }
+};
+
+template <>
+struct AddRelationships<>
+{
+    static void into(const std::vector<std::string>&) { }
+};
+
+template <typename ...Relationships>
+auto make_info_contact_data_filter()
+{
+    std::vector<std::string> relationships;
+    AddRelationships<Relationships...>::into(relationships);
+    boost::program_options::variables_map vm;
+    vm.insert(std::make_pair("rifd::info_contact.show_private_data_to", boost::program_options::variable_value{relationships, false}));
+    return ::Epp::Contact::Impl::get_info_contact_data_filter(
+                ::Epp::Contact::ConfigDataFilter{}.template set_all_values<::Epp::Contact::Impl::InfoContact>(vm));
+}
+
+template <typename ...Relationships>
+struct InfoContactConfigData : ::Epp::Contact::InfoContactConfigData
+{
+    explicit InfoContactConfigData(const char* authinfopw = "")
+        : ::Epp::Contact::InfoContactConfigData{
+              false,
+              authinfopw,
+              make_info_contact_data_filter<Relationships...>()}
+    { }
+};
+
+struct Contact
+{
+    Contact(::LibFred::OperationContext& ctx,
+            const LibFred::InfoRegistrarData& registrar_data,
+            const std::string& contact_handle)
+        : data{
+            [&]()
+            {
+                ::LibFred::CreateContact{
+                        contact_handle,
+                        registrar_data.handle,
+                        "authInfo123",
+                        "Jan Novák Jr.",
+                        Optional<std::string>{},
+                        LibFred::Contact::PlaceAddress{
+                            "ulice 1",
+                            "ulice 2",
+                            "ulice 3",
+                            "město",
+                            "hejtmanství",
+                            "12345",
+                            "CZ"},
+                        "+420 123 456 789",
+                        "+420 987 654 321",
+                        "jan@novak.novak",
+                        "jan.notify@novak.novak",
+                        "MyVATstring",
+                        "PASS",
+                        "7001010005",
+                        LibFred::ContactAddressList{
+                            {LibFred::ContactAddressType::MAILING,
+                             LibFred::ContactAddress{
+                                 Optional<std::string>{},
+                                 "Korešpondenčná",
+                                 "ulica",
+                                 "1",
+                                 "Korešpondenčné Mesto",
+                                 "Korešpondenčné hajtmanstvo",
+                                 "54321",
+                                 "SK"}}
+                        },
+                        true,
+                        true,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        Optional<Nullable<bool>>{},
+                        Optional<unsigned long long>{}
+                }.exec(ctx);
+                return ::LibFred::InfoContactByHandle(contact_handle).exec(ctx).info_contact_data;
+            }()}
+    { }
+    Contact(::LibFred::OperationContext& ctx,
+            const Registrar& registrar,
+            const std::string& contact_handle)
+        : Contact{ctx, registrar.data, contact_handle}
+    { }
+    Contact(::LibFred::OperationContext& ctx,
+            const SystemRegistrar& registrar,
+            const std::string& contact_handle)
+        : Contact{ctx, registrar.data, contact_handle}
+    { }
+    ::LibFred::InfoContactData data;
+};
+
+template <typename ...> struct CollectHandles;
+
+template <typename ...Ts>
+struct CollectHandles<Contact, Ts...>
+{
+    static void into(std::vector<std::string>& handles, const Contact& contact, const Ts& ...tail)
+    {
+        handles.push_back(contact.data.handle);
+        CollectHandles<Ts...>::into(handles, tail...);
+    }
+};
+
+template <>
+struct CollectHandles<>
+{
+    static void into(const std::vector<std::string>&) { }
+};
+
+template <typename ...Ts>
+std::vector<std::string> collect_handles(const Ts& ...contacts)
+{
+    std::vector<std::string> handles;
+    CollectHandles<Ts...>::into(handles, contacts...);
+    return handles;
+}
+
+struct Domain
+{
+    template <typename ...Ts>
+    Domain(::LibFred::OperationContext& ctx,
+           const Registrar& registrar,
+           const std::string& fqdn,
+           const Contact& registrant,
+           const Ts& ...admin_contacts)
+        : data{
+            [&]()
+            {
+                ::LibFred::CreateDomain update_op{fqdn, registrar.data.handle, registrant.data.handle};
+                const auto handles = collect_handles(admin_contacts...);
+                if (!handles.empty())
+                {
+                    update_op.set_admin_contacts(handles);
+                }
+                update_op.exec(ctx);
+                return ::LibFred::InfoDomainByFqdn(fqdn).exec(ctx, "UTC").info_domain_data;
+            }()}
+    { }
+    ::LibFred::InfoDomainData data;
+};
+
+enum class Share
+{
+    all,
+    all_except_authinfo,
+    by_discloseflags
+};
+
+template <typename ...Relationships>
+void check(LibFred::OperationContext& ctx,
+           const SessionData& session,
+           const Contact& contact,
+           Share expected_share_level)
+{
+    const auto cmp = [&]()
+    {
+        switch (expected_share_level)
+        {
+            case Share::all:
+                return check_equal;
+            case Share::all_except_authinfo:
+                return check_equal_but_no_authinfopw;
+            case Share::by_discloseflags:
+                return check_equal_except_authinfo_respect_discloseflags;
+        }
+        throw std::logic_error{"unexpected Share value"};
+    }();
+    cmp(::Epp::Contact::info_contact(
+            ctx,
+            contact.data.handle,
+            InfoContactConfigData<Relationships...>{},
+            session),
+        contact.data);
+}
+
+template <typename ...Relationships>
+void check(LibFred::OperationContext& ctx,
+           const SessionData& session,
+           const char* authinfopw,
+           const Contact& contact,
+           Share expected_share_level)
+{
+    const auto cmp = [&]()
+    {
+        switch (expected_share_level)
+        {
+            case Share::all:
+                return check_equal;
+            case Share::all_except_authinfo:
+                return check_equal_but_no_authinfopw;
+            case Share::by_discloseflags:
+                return check_equal_except_authinfo_respect_discloseflags;
+        }
+        throw std::logic_error{"unexpected Share value"};
+    }();
+    cmp(::Epp::Contact::info_contact(
+            ctx,
+            contact.data.handle,
+            InfoContactConfigData<Relationships...>{authinfopw},
+            session),
+        contact.data);
+}
+
+}//namespace Test::{anonymous}
+
+BOOST_FIXTURE_TEST_CASE(info_contact_data_filter_test, autorollbacking_context)
+{
+    const Registrar registrar_a{ctx, "REG-TEST-A"};
+    const Registrar registrar_b{ctx, "REG-TEST-B"};
+    const SystemRegistrar sys_registrar{ctx};
+    const SessionData session_a{registrar_a.data.id};
+    const SessionData session_b{registrar_b.data.id};
+    const SessionData sysreg_session{sys_registrar.data.id};
+    const Contact contact_a{ctx, registrar_a, "CONTACT-TEST-A"};
+    const Contact contact_b{ctx, registrar_b, "CONTACT-TEST-B"};
+    const Contact contact_b0{ctx, registrar_b, "CONTACT-TEST-B-0"};
+    const Contact contact_sys{ctx, sys_registrar, "CONTACT-TEST-SYS"};
+    const Domain domain_a_owner_a{ctx, registrar_a, "domain-a-owner-a.cz", contact_a};
+    const Domain domain_b_owner_a{ctx, registrar_b, "domain-b-owner-a.cz", contact_a};
+    const Domain domain_b_owner_b{ctx, registrar_b, "domain-b-owner-b.cz", contact_b};
+    const Domain domain_b_owner_b_admin_a{ctx, registrar_b, "domain-b-owner-b-admin-a.cz", contact_b, contact_a};
+    check<ContactRegistrarRelationship::SponsoringRegistrar>(
+                ctx,
+                session_a,
+                contact_a,
+                Share::all);
+    check<ContactRegistrarRelationship::SponsoringRegistrar>(
+                ctx,
+                session_b,
+                contact_a,
+                Share::by_discloseflags);
+    check<ContactRegistrarRelationship::SponsoringRegistrarOfDomainWhereContactIs::DomainHolder>(
+                ctx,
+                session_a,
+                contact_a,
+                Share::all);
+    check<ContactRegistrarRelationship::SponsoringRegistrarOfDomainWhereContactIs::AdminContact>(
+                ctx,
+                session_b,
+                contact_a,
+                Share::all_except_authinfo);
+    check<ContactRegistrarRelationship::OtherRelationship>(
+                ctx,
+                session_b,
+                contact_a,
+                Share::by_discloseflags);
+    check<ContactRegistrarRelationship::AuthorizedRegistrar,
+          ContactRegistrarRelationship::SponsoringRegistrar,
+          ContactRegistrarRelationship::SponsoringRegistrarOfDomainWhereContactIs::AdminContact,
+          ContactRegistrarRelationship::SponsoringRegistrarOfDomainWhereContactIs::DomainHolder>(
+                ctx,
+                session_a,
+                contact_b0,
+                Share::by_discloseflags);
+    check<ContactRegistrarRelationship::OtherRelationship>(
+                ctx,
+                session_a,
+                contact_b0,
+                Share::all_except_authinfo);
+    check<ContactRegistrarRelationship::AuthorizedRegistrar>(
+                ctx,
+                session_a,
+                contact_b0.data.authinfopw.c_str(),
+                contact_b0,
+                Share::all_except_authinfo);
+    check<ContactRegistrarRelationship::SystemRegistrar>(
+                ctx,
+                sysreg_session,
+                contact_a,
+                Share::all_except_authinfo);
+    check<ContactRegistrarRelationship::SystemRegistrar>(
+                ctx,
+                sysreg_session,
+                contact_b,
+                Share::all_except_authinfo);
+    check<ContactRegistrarRelationship::SystemRegistrar>(
+                ctx,
+                sysreg_session,
+                contact_b0,
+                Share::all_except_authinfo);
+    check<ContactRegistrarRelationship::SystemRegistrar>(
+                ctx,
+                sysreg_session,
+                contact_sys,
+                Share::all_except_authinfo);
+    check<ContactRegistrarRelationship::SponsoringRegistrar,
+          ContactRegistrarRelationship::SystemRegistrar>(
+                ctx,
+                sysreg_session,
+                contact_sys,
+                Share::all);
 }
 
 BOOST_AUTO_TEST_SUITE_END()//Backend/Epp/Contact/InfoContact

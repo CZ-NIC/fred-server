@@ -770,11 +770,13 @@ add_common_library_target(epp_impl
     src/backend/epp/contact/contact_data.cc
     src/backend/epp/contact/impl/contact_output.cc
     src/backend/epp/contact/impl/get_personal_id_union.cc
+    src/backend/epp/contact/impl/info_contact_data_filter.cc
     src/backend/epp/contact/impl/cznic/create_contact_data_filter.cc
     src/backend/epp/contact/impl/cznic/update_contact_data_filter.cc
     src/backend/epp/contact/impl/set_unused/create_contact_data_filter.cc
     src/backend/epp/contact/impl/set_unused/update_contact_data_filter.cc
     src/backend/epp/contact/impl/get_create_contact_data_filter.cc
+    src/backend/epp/contact/impl/get_info_contact_data_filter.cc
     src/backend/epp/contact/impl/get_update_contact_data_filter.cc
     src/backend/epp/contact/update_contact_localized.cc
     src/backend/epp/contact/update_contact.cc
@@ -884,6 +886,7 @@ target_link_libraries(handle_database_args PRIVATE Fred::library)
 add_common_library_target(handle_rifd_args
     src/util/cfg/handle_rifd_args.cc
     src/backend/epp/contact/config_data_filter.cc
+    src/backend/epp/contact/impl/info_contact.cc
     src/backend/epp/contact/impl/cznic/specific.cc
     src/backend/epp/contact/impl/set_unused/config.cc)
 target_link_libraries(handle_rifd_args PRIVATE
@@ -1675,7 +1678,8 @@ add_common_executable_target(test-epp
     test/backend/epp/poll/test_poll_acknowledgement.cc
     test/backend/epp/poll/test_poll_request_contact_details.cc
     test/backend/epp/poll/test_poll_request_domain_details.cc
-    test/backend/epp/poll/test_poll_request_keyset_details.cc)
+    test/backend/epp/poll/test_poll_request_keyset_details.cc
+    test/backend/epp/poll/util.cc)
 target_link_libraries(test-epp
     epp_impl
     fred-deprecated

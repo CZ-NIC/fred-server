@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2014-2021  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/whois/is_domain_delete_pending.hh"
 
 namespace Fred {
@@ -24,85 +25,62 @@ namespace Whois {
 
 bool is_domain_delete_pending(const std::string& _fqdn, LibFred::OperationContext& _ctx, const std::string& _timezone)
 {
-
-    Database::Result result = _ctx.get_conn().exec_params(
+    const Database::Result result = _ctx.get_conn().exec_params(
             // clang-format off
-            "WITH "
-            "domain_object_type AS ( "
-                "SELECT id FROM enum_object_type WHERE name = 'domain' "
-            "), "
-            "delete_candidate_state AS ( "
-                "SELECT id FROM enum_object_states WHERE name = 'deleteCandidate' "
-            "), "
-            "erdate_interval AS ( "
-                "SELECT "
-                    // conversions are necessary because we are interested in start/end of day in local time zone
-                    "date_trunc('day', NOW() AT TIME ZONE 'UTC' AT TIME ZONE $2::text) AS from_, "
-                    "date_trunc('day', NOW() AT TIME ZONE 'UTC' AT TIME ZONE $2::text +  interval '1 day') AS to_ "
-            ")"
-            "SELECT "
-                "oreg.name, "
-                "oreg.id, "
-                "oreg.crdate "
+            "WITH erdate_interval AS ("
+                // conversions are necessary because we are interested in start/end of day in local time zone
+                "SELECT date_trunc('day', NOW() AT TIME ZONE 'UTC' AT TIME ZONE $2::text) AS from_, "
+                       "date_trunc('day', NOW() AT TIME ZONE 'UTC' AT TIME ZONE $2::text + '1DAY'::INTERVAL) AS to_) "
+            "SELECT oreg.id "
             "FROM object_registry AS oreg "
-                "JOIN object_state AS os        ON oreg.id = os.object_id  "
-                "JOIN delete_candidate_state    ON os.state_id = delete_candidate_state.id "
-                "JOIN domain_object_type        ON oreg.type = domain_object_type.id, "
-                "erdate_interval "
-            "WHERE "
-                "os.valid_from < NOW() "
-                "AND (os.valid_to > NOW() OR os.valid_to IS NULL) "
-                "AND ("
-                    "oreg.erdate IS NULL "
-                    "OR ( "
-                        "oreg.erdate::timestamp AT TIME ZONE 'UTC' AT TIME ZONE $2::text >= erdate_interval.from_ "
-                        "AND "
-                        "oreg.erdate::timestamp AT TIME ZONE 'UTC' AT TIME ZONE $2::text < erdate_interval.to_"
-                    ") "
-                ") "
-                "AND oreg.name = $1::text ",
+            "JOIN object_state AS os ON os.object_id = oreg.id "
+            "JOIN enum_object_states eos ON eos.name = 'deleteCandidate' AND "
+                                           "eos.id = os.state_id, "
+                 "erdate_interval "
+            "WHERE oreg.name = LOWER($1::text) AND "
+                  "oreg.type = get_object_type_id('domain') AND "
+                  "(oreg.erdate IS NULL OR "
+                   "(erdate_interval.from_ <= oreg.erdate::timestamp AT TIME ZONE 'UTC' AT TIME ZONE $2::text AND "
+                                             "oreg.erdate::timestamp AT TIME ZONE 'UTC' AT TIME ZONE $2::text < erdate_interval.to_)) AND "
+                  "os.valid_from <= NOW() AND "
+                                  "(NOW() < os.valid_to OR os.valid_to IS NULL)",
+            // clang-format on
             Database::query_param_list
                 (_fqdn)
-                (_timezone)
-            // clang-format on
-            );
+                (_timezone));
 
-    if (result.size() > 0)
-    {
-        LOGGER.debug(
-                boost::format("delete pending check for fqdn %1% selected id=%2%") % static_cast<std::string>(result[0][0]) % static_cast<std::string>(result[0][1]));
-
-        Database::Result check = _ctx.get_conn().exec_params(
-                // clang-format off
-                "SELECT oreg.name, oreg.id FROM object_registry oreg"
-                " WHERE oreg.type = 3"
-                " AND oreg.name = $1::text"
-                " AND oreg.id != $2::bigint"
-                " AND oreg.crdate > $3::timestamp",
-                Database::query_param_list
-                    (_fqdn)
-                    (static_cast<unsigned long long>(result[0][1]))
-                    (static_cast<std::string>(result[0][2]))
-                // clang-format on
-                );
-
-        if (check.size() > 0)
-        {
-            LOGGER.debug(
-                    boost::format("delete pending check found newer domain %1% with id=%2%") % static_cast<std::string>(check[0][0]) % static_cast<std::string>(check[0][1]));
-
-            return false;
-        }
-        else
-        {
-            return true;
-        }
-    }
-    else
+    if (result.size() == 0)
     {
         return false;
     }
+
+    const auto pending_domain_id = static_cast<unsigned long long>(result[0][0]);
+    LOGGER.debug(boost::format("delete pending check for fqdn %1% selected id=%2%") % _fqdn
+                                                                                    % pending_domain_id);
+    const Database::Result check = _ctx.get_conn().exec_params(
+            // clang-format off
+            "SELECT id "
+            "FROM object_registry "
+            "WHERE type = get_object_type_id('domain') AND "
+                  "name = LOWER($1::text) AND "
+                  "id != $2::bigint AND "
+                  "(SELECT crdate FROM object_registry WHERE id = $2::bigint) < crdate "
+            "ORDER BY crdate DESC "
+            "LIMIT 1",
+            // clang-format on
+            Database::query_param_list
+                (_fqdn)
+                (pending_domain_id));
+
+    if (check.size() == 0)
+    {
+        return true;
+    }
+    LOGGER.debug(boost::format("delete pending check found newer domain %1% with id=%2%") % _fqdn
+                                                                                          % static_cast<unsigned long long>(check[0][0]));
+    return false;
 }
+
 } // namespace Fred::Backend::Whois
 } // namespace Fred::Backend
 } // namespace Fred

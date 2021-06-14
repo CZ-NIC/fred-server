@@ -8,6 +8,46 @@ UNRELEASED
 
 * Remove obsolete ``getRequestCount*`` (moved to LoggerCorba)
 
+2021-05-18 (2.47.0)
+-------------------
+
+* Add configuration for epp backend to specify privacy policy for contact data between registrars
+
+* Add optional authinfo parameter to info contact method
+
+2021-06-14 (2.46.1)
+-------------------
+
+* Public request processing - add ``registrar_url`` parameter to epp sendauthinfo e-mail template context
+
+2021-04-21 (2.46.0)
+-------------------
+
+* Whois backend - Optimize info domain method (bump libfred)
+
+* MojeID - Add ``auto_pin3_sending`` configuration option
+
+2021-03-18 (2.45.9)
+-------------------
+
+* Fix invoice list - loading of related objects
+
+2021-02-23 (2.45.8)
+-------------------
+
+* Fix authinfo sending when not confirmed automatically
+
+2020-12-15 (2.45.7)
+-------------------
+
+* Fix poll message unittests
+
+* Fix ``add_credit_to_invoice`` function (when used without outer transaction)
+
+* Fix authinfo e-mail type when requested through epp
+
+* Fix CI
+
 2020-11-02 (2.45.6)
 -------------------
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2018-2021  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/epp/contact/impl/contact_output.hh"
 
 #include "src/backend/epp/contact/status_value.hh"
@@ -70,6 +71,16 @@ boost::optional<std::string> string_to_optional(const std::string& value)
         return boost::none;
     }
     return value;
+}
+
+boost::optional<std::string> string_to_optional(const char* value)
+{
+    if ((value == nullptr) ||
+        (*value == '\0'))
+    {
+        return boost::none;
+    }
+    return std::string{value};
 }
 
 boost::optional<ContactData::Address> nullable_to_optional(const Nullable<LibFred::Contact::PlaceAddress>& nullable)
@@ -133,12 +144,9 @@ boost::optional<ContactIdent> get_contact_ident(
     throw std::runtime_error("Invalid ident type.");
 }
 
-}//namespace Epp::Contact::{anonymous}
-
 InfoContactOutputData get_info_contact_output(
-    const LibFred::InfoContactData& _data,
-    const std::vector<LibFred::ObjectStateData>& _object_state_data,
-    bool _include_authinfo)
+        const LibFred::InfoContactData& _data,
+        const std::vector<LibFred::ObjectStateData>& _object_state_data)
 {
     InfoContactOutputData retval;
 
@@ -199,6 +207,38 @@ InfoContactOutputData get_info_contact_output(
     retval.notify_email = nullable_to_hideable_optional(_data.notifyemail, _data.disclosenotifyemail);
     retval.VAT = nullable_to_hideable_optional(_data.vat, _data.disclosevat);
     retval.personal_id = to_hideable(get_contact_ident(_data.ssn, _data.ssntype), _data.discloseident);
+
+    return retval;
+}
+
+}//namespace Epp::Contact::{anonymous}
+
+InfoContactOutputData get_info_contact_output(
+        LibFred::OperationContext& _ctx,
+        LibFred::InfoContactData _data,
+        const char* _authinfopw,
+        const InfoContactDataFilter& _info_contact_data_filter,
+        const SessionData& _session_data,
+        const std::vector<LibFred::ObjectStateData>& _object_state_data)
+{
+    _info_contact_data_filter(
+                _ctx,
+                string_to_optional(_authinfopw),
+                _session_data,
+                _data);
+    InfoContactOutputData retval = get_info_contact_output(_data, _object_state_data);
+
+    retval.authinfopw = string_to_optional(_data.authinfopw);
+
+    return retval;
+}
+
+InfoContactOutputData get_info_contact_output(
+        const LibFred::InfoContactData& _data,
+        const std::vector<LibFred::ObjectStateData>& _object_state_data,
+        bool _include_authinfo)
+{
+    InfoContactOutputData retval = get_info_contact_output(_data, _object_state_data);
 
     if (_include_authinfo)
     {

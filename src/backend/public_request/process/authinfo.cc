@@ -160,6 +160,7 @@ unsigned long long send_authinfo_email(
         {
             const auto registrar_info = LibFred::InfoRegistrarById{request_info.get_registrar_id().get_value()}.exec(ctx).info_registrar_data;
             email_template_params.insert(LibFred::Mailer::Parameters::value_type("registrar", registrar_info.name.get_value_or(registrar_info.handle)));
+            email_template_params.insert(LibFred::Mailer::Parameters::value_type("registrar_url", registrar_info.url.get_value_or("")));
         }
     }
     std::set<std::string> emails;

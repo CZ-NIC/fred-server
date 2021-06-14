@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2018-2021  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,7 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/util/cfg/handle_rifd_args.hh"
+
+#include "src/backend/epp/contact/impl/info_contact.hh"
 #include "src/backend/epp/contact/impl/cznic/specific.hh"
 #include "src/backend/epp/contact/impl/set_unused/config.hh"
 
@@ -59,6 +62,7 @@ std::shared_ptr<boost::program_options::options_description> HandleRifdArgs::get
 
     Epp::Contact::ConfigDataFilter::add_options_description<CzNicSpecific>(*opts_descs);
     Epp::Contact::ConfigDataFilter::add_options_description<SetUnusedConfig>(*opts_descs);
+    Epp::Contact::Impl::add_info_contact_options_description(*opts_descs);
     return opts_descs;
 }
 
@@ -76,4 +80,5 @@ void HandleRifdArgs::handle(int argc, char* argv[], FakedArgs &fa)
     rifd_contact_data_filter.set_name(vm["rifd.contact_data_filter"].as<std::string>());
     rifd_contact_data_filter.set_all_values<CzNicSpecific>(vm);
     rifd_contact_data_filter.set_all_values<SetUnusedConfig>(vm);
+    rifd_info_contact_data_filter.set_all_values<Epp::Contact::Impl::InfoContact>(vm);
 }
