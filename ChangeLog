@@ -2,6 +2,16 @@ UNRELEASED
 
   * Remove duplicate `libfred` tests
 
+2021-06-14 (2.46.1)
+
+  * Public request processing - add ``registrar_url`` parameter to epp sendauthinfo e-mail template context
+
+2021-04-21 (2.46.0)
+
+  * Whois backend - Optimize info domain method (bump libfred)
+
+  * MojeID - Add ``auto_pin3_sending`` configuration option
+
 2021-03-18 (2.45.9)
 
   * Fix invoice list - loading of related objects
