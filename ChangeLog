@@ -2,6 +2,12 @@ UNRELEASED
 
   * Remove duplicate `libfred` tests
 
+2021-05-18 (2.47.0)
+
+  * Add configuration for epp backend to specify privacy policy for contact data between registrars
+
+  * Add optional authinfo parameter to info contact method
+
 2021-06-14 (2.46.1)
 
   * Public request processing - add ``registrar_url`` parameter to epp sendauthinfo e-mail template context
