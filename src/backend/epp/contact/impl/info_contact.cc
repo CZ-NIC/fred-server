@@ -97,23 +97,6 @@ void set_value<Impl::InfoContact::ShowPrivateDataTo>(const po_variables_map& vm,
     }
 }
 
-void check_mutually_exclusive_options(const po_variables_map& vm)
-{
-    const bool has_data_share_policy = 0 < vm.count(get_key<Impl::InfoContact::DataSharePolicy>());
-    if (has_data_share_policy)
-    {
-        const bool has_show_private_data_to = 0 < vm.count(get_key<Impl::InfoContact::ShowPrivateDataTo>());
-        if (has_show_private_data_to)
-        {
-            struct MutuallyExclusiveOptions : std::runtime_error
-            {
-                MutuallyExclusiveOptions() : std::runtime_error{"Mutually exclusive options"} { }
-            };
-            throw MutuallyExclusiveOptions{};
-        }
-    }
-}
-
 }//namespace {anonymous}
 
 namespace Impl {
@@ -208,9 +191,27 @@ void ConfigDataFilter::iterate_multiple_value<Impl::InfoContact::ShowPrivateData
 template <>
 ConfigDataFilter& ConfigDataFilter::set_all_values<Impl::InfoContact>(const po_variables_map& vm)
 {
-    check_mutually_exclusive_options(vm);
-    set_value<Impl::InfoContact::DataSharePolicy>(vm, options_);
-    set_value<Impl::InfoContact::ShowPrivateDataTo>(vm, options_);
+    const bool has_not_defaulted_data_share_policy = 0 < vm.count(get_key<Impl::InfoContact::DataSharePolicy>())
+                                                        && !vm[get_key<Impl::InfoContact::DataSharePolicy>()].defaulted();
+    const bool has_show_private_data_to = 0 < vm.count(get_key<Impl::InfoContact::ShowPrivateDataTo>());
+
+    if (has_not_defaulted_data_share_policy && has_show_private_data_to)
+    {
+        struct MutuallyExclusiveOptions : std::runtime_error
+        {
+            MutuallyExclusiveOptions() : std::runtime_error{"Mutually exclusive options"} { }
+        };
+        throw MutuallyExclusiveOptions{};
+    }
+    else if (has_show_private_data_to)
+    {
+        set_value<Impl::InfoContact::ShowPrivateDataTo>(vm, options_);
+    }
+    else
+    {
+        set_value<Impl::InfoContact::DataSharePolicy>(vm, options_);
+    }
+
     return *this;
 }
 
