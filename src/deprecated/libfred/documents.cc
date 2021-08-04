@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2007-2021  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -161,7 +161,7 @@ namespace LibFred
         // in case of generation into corba filesystem send result to
         // corba filesystem client
         if (!filename.empty()) {
-          cmd << "| python " << pathFM 
+          cmd << "| " << pathFM 
               << " -m " << genProc.mime 
               << " -s "
               << " -l " << filename
