@@ -144,6 +144,37 @@ build:ubuntu_16_04:amd64:
   <<: *build_job
 
 
+docker:server:ubuntu_20_04:
+  <<: *image
+  variables:
+    IMAGE_NAME: ubuntu:20.04
+    IMAGE_TAG: $CI_REGISTRY_IMAGE/$IMAGE_NAME
+    IMAGE_PATH: scripts/docker/$IMAGE_NAME
+  only:
+    - master
+    - tags
+    - triggers
+    - schedules
+    - web
+
+.ubuntu_20_04: &ubuntu_20_04
+  image: "$CI_REGISTRY_IMAGE/ubuntu:20.04"
+  tags:
+    - amd64
+    - common
+    - linux
+
+build:ubuntu_20_04:amd64:
+  <<: *ubuntu_20_04
+  <<: *build_job
+  only:
+    - master
+    - tags
+    - triggers
+    - schedules
+    - web
+
+
 
 docker:man:
   <<: *image
