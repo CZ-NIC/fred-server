@@ -193,6 +193,7 @@ LibFred::InfoContactOutput check_contact_id(
         info = info_contact_by_id.exec(
                 ctx,
                 output_timezone);
+        LibFred::PerformObjectStateRequest(user_contact_id).exec(ctx);
     }
     catch (const LibFred::InfoContactById::Exception& ex)
     {
