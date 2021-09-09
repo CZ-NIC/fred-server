@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2020  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2014-2021  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -20,6 +20,7 @@
 #include "src/backend/domain_browser/domain_browser.hh"
 
 #include "libfred/object/object_impl.hh"
+#include "libfred/object/object_states_info.hh"
 #include "libfred/object_state/cancel_object_state_request_id.hh"
 #include "libfred/object_state/create_object_state_request_id.hh"
 #include "libfred/object_state/get_object_state_descriptions.hh"
@@ -116,6 +117,55 @@ static void log_and_rethrow_exception_handler(LibFred::OperationContext& ctx)
     }
 }
 
+namespace {
+
+bool is_attached_to_identity(
+        const LibFred::OperationContext& ctx,
+        unsigned long long contact_id)
+{
+    return 0 < ctx.get_conn().exec_params(
+            "SELECT 0 "
+            "FROM contact_identity "
+            "WHERE contact_id = $1::BIGINT AND "
+                  "valid_to IS NULL "
+            "LIMIT 1", Database::query_param_list{contact_id}).size();
+}
+
+bool is_at_least_identified(
+        LibFred::OperationContext& ctx,
+        unsigned long long contact_id)
+{
+    const auto state_flags = LibFred::ObjectStatesInfo{LibFred::GetObjectStates{contact_id}.exec(ctx)};
+    if (state_flags.presents(LibFred::Object_State::mojeid_contact))
+    {
+        return state_flags.presents(LibFred::Object_State::identified_contact) ||
+               state_flags.presents(LibFred::Object_State::validated_contact);
+    }
+    return is_attached_to_identity(ctx, contact_id);
+}
+
+bool is_at_least_validated(
+        LibFred::OperationContext& ctx,
+        unsigned long long contact_id)
+{
+    const auto state_flags = LibFred::ObjectStatesInfo{LibFred::GetObjectStates{contact_id}.exec(ctx)};
+    if (state_flags.presents(LibFred::Object_State::mojeid_contact))
+    {
+        return state_flags.presents(LibFred::Object_State::validated_contact);
+    }
+    return is_attached_to_identity(ctx, contact_id);
+}
+
+bool has_domainbrowser_allowed(
+        LibFred::OperationContext& ctx,
+        unsigned long long contact_id)
+{
+    const auto state_flags = LibFred::ObjectStatesInfo{LibFred::GetObjectStates{contact_id}.exec(ctx)};
+    return state_flags.presents(LibFred::Object_State::mojeid_contact) ||
+           is_attached_to_identity(ctx, contact_id);
+}
+
+}//namespace Fred::Backend::DomainBrowser::{anonymous}
 
 /**
  * Check contact.
@@ -181,9 +231,7 @@ LibFred::InfoContactOutput check_user_contact_id(
             output_timezone,
             lock_contact_for_update);
 
-    if (!LibFred::ObjectHasState(
-                user_contact_id,
-                LibFred::Object_State::mojeid_contact).exec(ctx))
+    if (!has_domainbrowser_allowed(ctx, user_contact_id))
     {
         throw EXCEPTION();
     }
@@ -946,13 +994,7 @@ bool DomainBrowser::setContactDiscloseFlags(
                 output_timezone,
                 true);
 
-        if (!(LibFred::ObjectHasState(
-                      user_contact_id,
-                      ::LibFred::Object_State::identified_contact).exec(ctx)
-              ||
-              LibFred::ObjectHasState(
-                      user_contact_id,
-                      ::LibFred::Object_State::validated_contact).exec(ctx)))
+        if (!is_at_least_identified(ctx, user_contact_id))
         {
             throw AccessDenied();
         }
@@ -1057,13 +1099,7 @@ bool DomainBrowser::setContactAuthInfo(
             throw IncorrectUsage();
         }
 
-        if (!(LibFred::ObjectHasState(
-                      contact_id,
-                      ::LibFred::Object_State::identified_contact).exec(ctx)
-              ||
-              LibFred::ObjectHasState(
-                      contact_id,
-                      ::LibFred::Object_State::validated_contact).exec(ctx)))
+        if (!is_at_least_identified(ctx, contact_id))
         {
             throw AccessDenied();
         }
@@ -1110,9 +1146,7 @@ bool DomainBrowser::setObjectBlockStatus(
                 user_contact_id,
                 output_timezone);
 
-        if (!LibFred::ObjectHasState(
-                    user_contact_id,
-                    ::LibFred::Object_State::validated_contact).exec(ctx))
+        if (!is_at_least_validated(ctx, user_contact_id))
         {
             throw AccessDenied();
         }
@@ -1832,17 +1866,13 @@ struct MergeContactDiffContacts
                     LibFred::MergeContact::Exception().set_dst_contact_invalid(src_contact_handle));
         }
 
-        unsigned long long src_contact_id = static_cast<unsigned long long>(diff_result[0]["src_contact_id"]);
+        const auto src_contact_id = static_cast<unsigned long long>(diff_result[0]["src_contact_id"]);
+        const auto state_flags = LibFred::ObjectStatesInfo{LibFred::GetObjectStates{src_contact_id}.exec(ctx)};
 
-        if (LibFred::ObjectHasState(
-                    src_contact_id,
-                    LibFred::Object_State::mojeid_contact).exec(ctx)
-            || LibFred::ObjectHasState(
-                    src_contact_id,
-                    LibFred::Object_State::server_blocked).exec(ctx)
-            || LibFred::ObjectHasState(
-                    src_contact_id,
-                    LibFred::Object_State::server_delete_prohibited).exec(ctx))
+        if (state_flags.presents(LibFred::Object_State::mojeid_contact) ||
+            state_flags.presents(LibFred::Object_State::server_blocked) ||
+            state_flags.presents(LibFred::Object_State::server_delete_prohibited) ||
+            is_attached_to_identity(ctx, src_contact_id))
         {
             BOOST_THROW_EXCEPTION(
                     LibFred::MergeContact::Exception().set_src_contact_invalid(src_contact_handle));
@@ -2048,9 +2078,7 @@ void DomainBrowser::setContactPreferenceForDomainExpirationLetters(
 
         unsigned long long contact_id = contact_info.info_contact_data.id;
 
-        if (!send_expiration_letters && !LibFred::ObjectHasState(
-                    contact_id,
-                    ::LibFred::Object_State::validated_contact).exec(ctx))
+        if (!send_expiration_letters && !is_at_least_validated(ctx, contact_id))
         {
             throw AccessDenied();
         }
