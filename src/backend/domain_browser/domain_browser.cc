@@ -29,6 +29,7 @@
 #include "src/deprecated/libfred/object_state/object_state_name.hh"
 #include "libfred/object_state/perform_object_state_request.hh"
 #include "libfred/opcontext.hh"
+#include "libfred/poll/create_poll_message.hh"
 #include "libfred/registrable_object/contact/info_contact.hh"
 #include "libfred/registrable_object/contact/merge_contact.hh"
 #include "libfred/registrable_object/contact/update_contact.hh"
@@ -163,6 +164,13 @@ bool has_domainbrowser_allowed(
     const auto state_flags = LibFred::ObjectStatesInfo{LibFred::GetObjectStates{contact_id}.exec(ctx)};
     return state_flags.presents(LibFred::Object_State::mojeid_contact) ||
            is_attached_to_identity(ctx, contact_id);
+}
+
+void exec_update_contact(LibFred::OperationContext& ctx, LibFred::UpdateContactById& updater)
+{
+    const auto contact_history_id = updater.exec(ctx);
+    using PollMessageGenerator = LibFred::Poll::CreateUpdateOperationPollMessage<LibFred::Object_Type::contact>;
+    PollMessageGenerator{}.exec(ctx, contact_history_id);
 }
 
 }//namespace Fred::Backend::DomainBrowser::{anonymous}
@@ -978,7 +986,6 @@ KeysetDetail DomainBrowser::getKeysetDetail(
     return KeysetDetail();
 }
 
-
 bool DomainBrowser::setContactDiscloseFlags(
         unsigned long long user_contact_id,
         const ContactDiscloseFlagsToSet& flags,
@@ -1060,7 +1067,7 @@ bool DomainBrowser::setContactDiscloseFlags(
 
         if (exec_update)
         {
-            update_contact.set_logd_request_id(request_id).exec(ctx);
+            exec_update_contact(ctx, update_contact.set_logd_request_id(request_id));
             ctx.commit_transaction();
         }
         else
@@ -1117,9 +1124,9 @@ bool DomainBrowser::setContactAuthInfo(
             return false;
         }
 
-        LibFred::UpdateContactById(
-                contact_id,
-                update_registrar_).set_authinfo(authinfo).set_logd_request_id(request_id).exec(ctx);
+        exec_update_contact(ctx, LibFred::UpdateContactById{contact_id, update_registrar_}
+                .set_authinfo(authinfo)
+                .set_logd_request_id(request_id));
         ctx.commit_transaction();
     }
     catch (...)
