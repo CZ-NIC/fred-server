@@ -15,6 +15,13 @@ UNRELEASED
 
 * Add optional authinfo parameter to info contact method
 
+2021-08-09 (2.46.2)
+-------------------
+
+* Remove explicit python call in external command running ``filemanager_client``
+
+* Fix update contact poll message additional recipients (bump ``libfred``)
+
 2021-06-14 (2.46.1)
 -------------------
 
