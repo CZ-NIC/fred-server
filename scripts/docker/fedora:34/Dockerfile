@@ -1,4 +1,4 @@
-FROM fedora:32
+FROM fedora:34
 
 RUN dnf -y install              \
         cmake                   \
@@ -18,6 +18,6 @@ RUN dnf -y install              \
     && dnf clean all            \
     && rm -rf /var/cache/yum
 
-RUN rpm -Uvh https://download.postgresql.org/pub/repos/yum/reporpms/F-32-x86_64/pgdg-fedora-repo-latest.noarch.rpm \
+RUN rpm -Uvh https://download.postgresql.org/pub/repos/yum/reporpms/F-34-x86_64/pgdg-fedora-repo-latest.noarch.rpm \
         && dnf -y update \
         && dnf -y install postgresql96-devel
