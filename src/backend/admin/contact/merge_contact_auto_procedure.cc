@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2013-2021  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -209,6 +209,7 @@ std::vector<LibFred::ContactSelectionFilterType> MergeContactAutoProcedure::get_
 {
     std::vector<LibFred::ContactSelectionFilterType> tmp = boost::assign::list_of
         (LibFred::MCS_FILTER_IDENTIFIED_CONTACT)
+        (LibFred::MCS_FILTER_IDENTITY_ATTACHED)
         (LibFred::MCS_FILTER_CONDITIONALLY_IDENTIFIED_CONTACT)
         (LibFred::MCS_FILTER_HANDLE_MOJEID_SYNTAX)
         (LibFred::MCS_FILTER_MAX_DOMAINS_BOUND)
