@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2021  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -40,6 +40,7 @@
 #include "src/util/setup_server.hh"
 
 #include <boost/assign/list_of.hpp>
+#include <boost/scoped_ptr.hpp>
 
 #include <cstdlib>
 #include <iostream>
