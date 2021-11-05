@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2021  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,10 +16,12 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "test/backend/epp/fixture.hh"
 #include "test/backend/epp/contact/fixture.hh"
 #include "test/backend/epp/util.hh"
 
+#include "src/backend/epp/contact/status_value.hh"
 #include "src/backend/epp/contact/update_contact.hh"
 #include "src/backend/epp/epp_response_failure.hh"
 #include "src/backend/epp/epp_result_code.hh"
@@ -764,6 +766,24 @@ void check_equal(
 static const ::Epp::Updateable<::Epp::Contact::PrivacyPolicy> leave_privacy_unchanged =
         ::Epp::UpdateOperation::no_operation();
 
+void make_object_state_request(
+        const ::LibFred::OperationContext& ctx,
+        unsigned long long object_id,
+        ::Epp::Contact::StatusValue::Enum flag)
+{
+    auto arguments = Database::query_param_list{object_id}(::Conversion::Enums::to_status_value_name(flag));
+    ctx.get_conn().exec_params(
+            "WITH os AS "
+                "(SELECT o.id AS object_id, eos.id AS state_id, lock_object_state_request_lock(o.id) "
+                 "FROM object o, "
+                      "enum_object_states eos "
+                 "WHERE o.id = $1::BIGINT AND "
+                       "eos.name = $2::TEXT) "
+            "INSERT INTO object_state_request (object_id, state_id) "
+            "SELECT object_id, state_id "
+            "FROM os", arguments);
+}
+
 }//namespace Test::{anonymous}
 
 BOOST_FIXTURE_TEST_CASE(update_ok_full_data, supply_ctx<HasRegistrarWithSessionAndContact>)
@@ -777,6 +797,180 @@ BOOST_FIXTURE_TEST_CASE(update_ok_full_data, supply_ctx<HasRegistrarWithSessionA
             update_contact_input_data,
             DefaultUpdateContactConfigData(),
             session.data);
+
+    check_equal(contact.data, update_contact_input_data, ::LibFred::InfoContactByHandle(contact.data.handle).exec(ctx).info_contact_data);
+}
+
+BOOST_FIXTURE_TEST_CASE(update_ok_name_change_prohibited, supply_ctx<HasRegistrarWithSessionAndContact>)
+{
+    make_object_state_request(ctx, contact.data.id, ::Epp::Contact::StatusValue::server_contact_name_change_prohibited);
+    DefaultUpdateContactInputData update_contact_input_data;
+    update_contact_input_data.add_additional_data();
+
+    BOOST_CHECK_EXCEPTION(
+            ::Epp::Contact::update_contact(
+                    ctx,
+                    contact.data.handle,
+                    update_contact_input_data,
+                    DefaultUpdateContactConfigData(),
+                    session.data),
+            ::Epp::EppResponseFailure,
+            update_fail_prohibiting_status_request_exception);
+
+    update_contact_input_data.name = make_deletable_unchanged();
+    ::Epp::Contact::update_contact(
+            ctx,
+            contact.data.handle,
+            update_contact_input_data,
+            DefaultUpdateContactConfigData(),
+            session.data);
+
+    check_equal(contact.data, update_contact_input_data, ::LibFred::InfoContactByHandle(contact.data.handle).exec(ctx).info_contact_data);
+}
+
+BOOST_FIXTURE_TEST_CASE(update_ok_organization_change_prohibited, supply_ctx<HasRegistrarWithSessionAndContact>)
+{
+    make_object_state_request(ctx, contact.data.id, ::Epp::Contact::StatusValue::server_contact_organization_change_prohibited);
+    DefaultUpdateContactInputData update_contact_input_data;
+    update_contact_input_data.add_additional_data();
+
+    BOOST_CHECK_EXCEPTION(
+            ::Epp::Contact::update_contact(
+                    ctx,
+                    contact.data.handle,
+                    update_contact_input_data,
+                    DefaultUpdateContactConfigData(),
+                    session.data),
+            ::Epp::EppResponseFailure,
+            update_fail_prohibiting_status_request_exception);
+
+    update_contact_input_data.organization = make_deletable_unchanged();
+    ::Epp::Contact::update_contact(
+            ctx,
+            contact.data.handle,
+            update_contact_input_data,
+            DefaultUpdateContactConfigData(),
+            session.data);
+
+    check_equal(contact.data, update_contact_input_data, ::LibFred::InfoContactByHandle(contact.data.handle).exec(ctx).info_contact_data);
+}
+
+BOOST_FIXTURE_TEST_CASE(update_ok_ident_change_prohibited, supply_ctx<HasRegistrarWithSessionAndContact>)
+{
+    make_object_state_request(ctx, contact.data.id, ::Epp::Contact::StatusValue::server_contact_ident_change_prohibited);
+    DefaultUpdateContactInputData update_contact_input_data;
+    update_contact_input_data.add_additional_data();
+
+    BOOST_CHECK_EXCEPTION(
+            ::Epp::Contact::update_contact(
+                    ctx,
+                    contact.data.handle,
+                    update_contact_input_data,
+                    DefaultUpdateContactConfigData(),
+                    session.data),
+            ::Epp::EppResponseFailure,
+            update_fail_prohibiting_status_request_exception);
+
+    update_contact_input_data.ident = make_deletable_unchanged();
+    ::Epp::Contact::update_contact(
+            ctx,
+            contact.data.handle,
+            update_contact_input_data,
+            DefaultUpdateContactConfigData(),
+            session.data);
+
+    check_equal(contact.data, update_contact_input_data, ::LibFred::InfoContactByHandle(contact.data.handle).exec(ctx).info_contact_data);
+}
+
+BOOST_FIXTURE_TEST_CASE(update_ok_permanent_address_change_prohibited, supply_ctx<HasRegistrarWithSessionAndContact>)
+{
+    make_object_state_request(ctx, contact.data.id, ::Epp::Contact::StatusValue::server_contact_permanent_address_change_prohibited);
+    DefaultUpdateContactInputData update_contact_input_data;
+    update_contact_input_data.add_additional_data();
+
+    const auto perform_update = [&]()
+            {
+                ::Epp::Contact::update_contact(
+                        ctx,
+                        contact.data.handle,
+                        update_contact_input_data,
+                        DefaultUpdateContactConfigData(),
+                        session.data);
+            };
+    BOOST_CHECK_EXCEPTION(perform_update(), ::Epp::EppResponseFailure, update_fail_prohibiting_status_request_exception);
+
+    update_contact_input_data.change_address();
+    update_contact_input_data.address.street[1] = make_deletable_unchanged();
+    update_contact_input_data.address.street[2] = make_deletable_unchanged();
+    update_contact_input_data.address.city = make_deletable_unchanged();
+    update_contact_input_data.address.state_or_province = make_deletable_unchanged();
+    update_contact_input_data.address.postal_code = make_deletable_unchanged();
+    update_contact_input_data.address.country_code = make_updateable_unchanged();
+    BOOST_CHECK_EXCEPTION(perform_update(), ::Epp::EppResponseFailure, update_fail_prohibiting_status_request_exception);
+
+    update_contact_input_data.change_address();
+    update_contact_input_data.address.street[0] = make_deletable_unchanged();
+    update_contact_input_data.address.street[2] = make_deletable_unchanged();
+    update_contact_input_data.address.city = make_deletable_unchanged();
+    update_contact_input_data.address.state_or_province = make_deletable_unchanged();
+    update_contact_input_data.address.postal_code = make_deletable_unchanged();
+    update_contact_input_data.address.country_code = make_updateable_unchanged();
+    BOOST_CHECK_EXCEPTION(perform_update(), ::Epp::EppResponseFailure, update_fail_prohibiting_status_request_exception);
+
+    update_contact_input_data.change_address();
+    update_contact_input_data.address.street[0] = make_deletable_unchanged();
+    update_contact_input_data.address.street[1] = make_deletable_unchanged();
+    update_contact_input_data.address.city = make_deletable_unchanged();
+    update_contact_input_data.address.state_or_province = make_deletable_unchanged();
+    update_contact_input_data.address.postal_code = make_deletable_unchanged();
+    update_contact_input_data.address.country_code = make_updateable_unchanged();
+    BOOST_CHECK_EXCEPTION(perform_update(), ::Epp::EppResponseFailure, update_fail_prohibiting_status_request_exception);
+
+    update_contact_input_data.change_address();
+    update_contact_input_data.address.street[0] = make_deletable_unchanged();
+    update_contact_input_data.address.street[1] = make_deletable_unchanged();
+    update_contact_input_data.address.street[2] = make_deletable_unchanged();
+    update_contact_input_data.address.state_or_province = make_deletable_unchanged();
+    update_contact_input_data.address.postal_code = make_deletable_unchanged();
+    update_contact_input_data.address.country_code = make_updateable_unchanged();
+    BOOST_CHECK_EXCEPTION(perform_update(), ::Epp::EppResponseFailure, update_fail_prohibiting_status_request_exception);
+
+    update_contact_input_data.change_address();
+    update_contact_input_data.address.street[0] = make_deletable_unchanged();
+    update_contact_input_data.address.street[1] = make_deletable_unchanged();
+    update_contact_input_data.address.street[2] = make_deletable_unchanged();
+    update_contact_input_data.address.city = make_deletable_unchanged();
+    update_contact_input_data.address.postal_code = make_deletable_unchanged();
+    update_contact_input_data.address.country_code = make_updateable_unchanged();
+    BOOST_CHECK_EXCEPTION(perform_update(), ::Epp::EppResponseFailure, update_fail_prohibiting_status_request_exception);
+
+    update_contact_input_data.change_address();
+    update_contact_input_data.address.street[0] = make_deletable_unchanged();
+    update_contact_input_data.address.street[1] = make_deletable_unchanged();
+    update_contact_input_data.address.street[2] = make_deletable_unchanged();
+    update_contact_input_data.address.city = make_deletable_unchanged();
+    update_contact_input_data.address.state_or_province = make_deletable_unchanged();
+    update_contact_input_data.address.country_code = make_updateable_unchanged();
+    BOOST_CHECK_EXCEPTION(perform_update(), ::Epp::EppResponseFailure, update_fail_prohibiting_status_request_exception);
+
+    update_contact_input_data.change_address();
+    update_contact_input_data.address.street[0] = make_deletable_unchanged();
+    update_contact_input_data.address.street[1] = make_deletable_unchanged();
+    update_contact_input_data.address.street[2] = make_deletable_unchanged();
+    update_contact_input_data.address.city = make_deletable_unchanged();
+    update_contact_input_data.address.state_or_province = make_deletable_unchanged();
+    update_contact_input_data.address.postal_code = make_deletable_unchanged();
+    BOOST_CHECK_EXCEPTION(perform_update(), ::Epp::EppResponseFailure, update_fail_prohibiting_status_request_exception);
+
+    update_contact_input_data.add_additional_data();
+    update_contact_input_data.address.street[0] = make_deletable_unchanged();
+    update_contact_input_data.address.street[1] = make_deletable_unchanged();
+    update_contact_input_data.address.street[2] = make_deletable_unchanged();
+    update_contact_input_data.address.city = make_deletable_unchanged();
+    update_contact_input_data.address.state_or_province = make_deletable_unchanged();
+    update_contact_input_data.address.postal_code = make_deletable_unchanged();
+    update_contact_input_data.address.country_code = make_updateable_unchanged();
+    perform_update();
 
     check_equal(contact.data, update_contact_input_data, ::LibFred::InfoContactByHandle(contact.data.handle).exec(ctx).info_contact_data);
 }

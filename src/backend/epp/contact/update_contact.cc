@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2021  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/epp/contact/update_contact.hh"
 
 #include "src/backend/epp/contact/contact_change.hh"
@@ -239,10 +240,10 @@ unsigned long long update_contact(
     LibFred::LockObjectStateRequestLock(contact_data_before_update.id).exec(ctx);
     LibFred::PerformObjectStateRequest(contact_data_before_update.id).exec(ctx);
 
+    const auto contact_states_before_update = LibFred::ObjectStatesInfo{
+            LibFred::GetObjectStates{contact_data_before_update.id}.exec(ctx)};
     if (!is_system_registrar)
     {
-        const LibFred::ObjectStatesInfo contact_states_before_update(LibFred::GetObjectStates(
-                        contact_data_before_update.id).exec(ctx));
         if (contact_states_before_update.presents(LibFred::Object_State::server_update_prohibited) ||
             contact_states_before_update.presents(LibFred::Object_State::delete_candidate))
         {
@@ -252,6 +253,32 @@ unsigned long long update_contact(
 
     const auto trimmed_change = change.get_trimmed_copy();
 
+    if (contact_states_before_update.presents(LibFred::Object_State::server_contact_name_change_prohibited) &&
+        trimmed_change.name != UpdateOperation::Action::no_operation)
+    {
+        throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
+    }
+    if (contact_states_before_update.presents(LibFred::Object_State::server_contact_organization_change_prohibited) &&
+        trimmed_change.organization != UpdateOperation::Action::no_operation)
+    {
+        throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
+    }
+    if (contact_states_before_update.presents(LibFred::Object_State::server_contact_ident_change_prohibited) &&
+        trimmed_change.ident != UpdateOperation::Action::no_operation)
+    {
+        throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
+    }
+    if (contact_states_before_update.presents(LibFred::Object_State::server_contact_permanent_address_change_prohibited) &&
+        (trimmed_change.address.street[0] != UpdateOperation::Action::no_operation ||
+         trimmed_change.address.street[1] != UpdateOperation::Action::no_operation ||
+         trimmed_change.address.street[2] != UpdateOperation::Action::no_operation ||
+         trimmed_change.address.city != UpdateOperation::Action::no_operation ||
+         trimmed_change.address.state_or_province != UpdateOperation::Action::no_operation ||
+         trimmed_change.address.postal_code != UpdateOperation::Action::no_operation ||
+         trimmed_change.address.country_code != UpdateOperation::Action::no_operation))
+    {
+        throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
+    }
     EppResultFailure parameter_value_policy_errors(EppResultCode::parameter_value_policy_error);
 
     // when deleting or not-changing, no check of data is needed
