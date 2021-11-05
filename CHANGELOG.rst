@@ -8,6 +8,11 @@ UNRELEASED
 
 * Remove obsolete ``getRequestCount*`` (moved to LoggerCorba)
 
+2021-11-05 (2.47.1)
+-------------------
+
+* Fix rpm build (fedora 35) and remove support for CentOS7
+
 2021-05-18 (2.47.0)
 -------------------
 
