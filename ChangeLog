@@ -2,6 +2,10 @@ UNRELEASED
 
   * Remove duplicate `libfred` tests
 
+2021-11-05 (2.47.1)
+
+  * Fix rpm build (fedora 35) and remove support for CentOS7
+
 2021-05-18 (2.47.0)
 
   * Add configuration for epp backend to specify privacy policy for contact data between registrars
