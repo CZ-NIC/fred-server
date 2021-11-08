@@ -220,6 +220,17 @@ struct DefaultUpdateContactInputData : ::Epp::Contact::ContactChange
         this->disclose = make_updateable<::Epp::Contact::ContactChange::Publishability>(make_all_public());
         return *this;
     }
+    DefaultUpdateContactInputData& change_address()
+    {
+        this->address.street[0] = make_deletable<std::string>("Václavské náměstí 1");
+        this->address.street[1] = make_deletable<std::string>("53. patro");
+        this->address.street[2] = make_deletable<std::string>("vpravo");
+        this->address.city = make_deletable<std::string>("Brno");
+        this->address.state_or_province = make_deletable<std::string>("Morava");
+        this->address.postal_code = make_deletable<std::string>("20000");
+        this->address.country_code = make_updateable<std::string>("CZ");
+        return *this;
+    }
     DefaultUpdateContactInputData& drop_mailing_address()
     {
         this->mailing_address = ::Epp::UpdateOperation::delete_value();

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2020  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2008-2021  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -381,6 +381,7 @@ public:
                     ->notifier(save_arg<std::vector<std::string> >(params.selection_filter_order)),
                 "specify custom order of filters for best contact selection; available values are:\n"
                 "\tmcs_filter_identified_contact\n"
+                "\tmcs_filter_identity_attached\n"
                 "\tmcs_filter_conditionally_identified_contact\n"
                 "\tmcs_filter_handle_mojeid_syntax\n"
                 "\tmcs_filter_max_domains_bound\n"

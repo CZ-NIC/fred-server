@@ -8,6 +8,17 @@ UNRELEASED
 
 * Remove obsolete ``getRequestCount*`` (moved to LoggerCorba)
 
+2021-11-08 (2.48.0)
+-------------------
+
+* Add concept of external identity (service) that can be linked to registry contact
+
+* Modify domain browser backend to be usable with both mojeid contacts and contacts linked to external identity service
+
+* Add new contact states to inform that some of the contact attributes are locked and cannot be changed
+
+  - appropriate changes in epp contact update / contact auto merge procedure
+
 2021-11-05 (2.47.1)
 -------------------
 
