@@ -52,6 +52,7 @@
 
 #include <algorithm>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace Fred {
@@ -132,39 +133,51 @@ bool is_attached_to_identity(
             "LIMIT 1", Database::query_param_list{contact_id}).size();
 }
 
-bool is_at_least_identified(
-        LibFred::OperationContext& ctx,
-        unsigned long long contact_id)
+class UserState
 {
-    const auto state_flags = LibFred::ObjectStatesInfo{LibFred::GetObjectStates{contact_id}.exec(ctx)};
-    if (state_flags.presents(LibFred::Object_State::mojeid_contact))
+public:
+    explicit UserState(
+            LibFred::OperationContext& ctx,
+            unsigned long long contact_id)
+        : state_flags_{LibFred::GetObjectStates{contact_id}.exec(ctx)},
+          is_attached_to_identity_{Fred::Backend::DomainBrowser::is_attached_to_identity(ctx, contact_id)}
+    { }
+    bool has_domainbrowser_allowed() const noexcept
     {
-        return state_flags.presents(LibFred::Object_State::identified_contact) ||
-               state_flags.presents(LibFred::Object_State::validated_contact);
+        return this->is_mojeid_contact() || this->is_attached_to_identity();
     }
-    return is_attached_to_identity(ctx, contact_id);
-}
-
-bool is_at_least_validated(
-        LibFred::OperationContext& ctx,
-        unsigned long long contact_id)
-{
-    const auto state_flags = LibFred::ObjectStatesInfo{LibFred::GetObjectStates{contact_id}.exec(ctx)};
-    if (state_flags.presents(LibFred::Object_State::mojeid_contact))
+    bool is_at_least_identified_mojeid_contact() const noexcept
     {
-        return state_flags.presents(LibFred::Object_State::validated_contact);
+        return this->is_mojeid_contact() && (this->is_identified_contact() || this->is_validated_contact());
     }
-    return is_attached_to_identity(ctx, contact_id);
-}
-
-bool has_domainbrowser_allowed(
-        LibFred::OperationContext& ctx,
-        unsigned long long contact_id)
-{
-    const auto state_flags = LibFred::ObjectStatesInfo{LibFred::GetObjectStates{contact_id}.exec(ctx)};
-    return state_flags.presents(LibFred::Object_State::mojeid_contact) ||
-           is_attached_to_identity(ctx, contact_id);
-}
+    bool is_at_least_validated_mojeid_contact() const noexcept
+    {
+        return this->is_mojeid_contact() && this->is_validated_contact();
+    }
+    bool is_server_blocked() const noexcept
+    {
+        return state_flags_.presents(LibFred::Object_State::server_blocked);
+    }
+    bool is_attached_to_identity() const noexcept
+    {
+        return is_attached_to_identity_;
+    }
+private:
+    bool is_mojeid_contact() const noexcept
+    {
+        return state_flags_.presents(LibFred::Object_State::mojeid_contact);
+    }
+    bool is_identified_contact() const noexcept
+    {
+        return state_flags_.presents(LibFred::Object_State::identified_contact);
+    }
+    bool is_validated_contact() const noexcept
+    {
+        return state_flags_.presents(LibFred::Object_State::validated_contact);
+    }
+    LibFred::ObjectStatesInfo state_flags_;
+    bool is_attached_to_identity_;
+};
 
 void exec_update_contact(LibFred::OperationContext& ctx, LibFred::UpdateContactById& updater)
 {
@@ -176,21 +189,21 @@ void exec_update_contact(LibFred::OperationContext& ctx, LibFred::UpdateContactB
 }//namespace Fred::Backend::DomainBrowser::{anonymous}
 
 /**
- * Check contact.
- * @param EXCEPTION is type of exception used for reporting when contact is not found
+ * Get contact's info and perform contact's object state requests.
+ * @tparam EXCEPTION is type of exception used for reporting when contact is not found
  * @param ctx contains reference to database and logging interface
  * @param contact_id is database id of contact
  * @param lock_contact_for_update indicates whether to lock contact for update (true) or for share (false)
- * @return contact info or if contact is deleted throw @ref EXCEPTION.
+ * @return contact's info
+ * @throw EXCEPTION if contact is deleted
  */
 template <class EXCEPTION>
-LibFred::InfoContactOutput check_contact_id(
+LibFred::InfoContactOutput get_contact_info(
         LibFred::OperationContext& ctx,
         unsigned long long user_contact_id,
         const std::string& output_timezone,
         bool lock_contact_for_update = false)
 {
-    LibFred::InfoContactOutput info;
     try
     {
         LibFred::InfoContactById info_contact_by_id(user_contact_id);
@@ -198,10 +211,11 @@ LibFred::InfoContactOutput check_contact_id(
         {
             info_contact_by_id.set_lock();
         }
-        info = info_contact_by_id.exec(
+        auto info = info_contact_by_id.exec(
                 ctx,
                 output_timezone);
         LibFred::PerformObjectStateRequest(user_contact_id).exec(ctx);
+        return info;
     }
     catch (const LibFred::InfoContactById::Exception& ex)
     {
@@ -209,43 +223,41 @@ LibFred::InfoContactOutput check_contact_id(
         {
             throw EXCEPTION();
         }
-        else
-        {
-            throw;
-        }
+        throw;
     }
-
-    return info;
 }
 
 
 /**
- * Check user contact.
- * @param EXCEPTION is type of exception used for reporting when contact is not found or not in required state
+ * Get user's info and check user's permission to use domainbrowser.
+ * @tparam EXCEPTION exception used for reporting when contact is not found or not able to use domainbrowser
  * @param ctx contains reference to database and logging interface
  * @param user_contact_id is database id of user contact
  * @param lock_contact_for_update indicates whether to lock contact for update (true) or for share (false)
- * @return contact info or if user contact is deleted or don't have mojeidContact state throw @ref EXCEPTION.
+ * @return contact's info and user's status
+ * @throw EXCEPTION if user contact is deleted or don't have permission to use domainbrowser
  */
 template <class EXCEPTION>
-LibFred::InfoContactOutput check_user_contact_id(
+auto get_checked_user_info(
         LibFred::OperationContext& ctx,
         unsigned long long user_contact_id,
         const std::string& output_timezone,
         bool lock_contact_for_update = false)
 {
-    LibFred::InfoContactOutput info = check_contact_id<EXCEPTION>(
-            ctx,
-            user_contact_id,
-            output_timezone,
-            lock_contact_for_update);
+    auto result = std::make_tuple(
+            get_contact_info<EXCEPTION>(
+                    ctx,
+                    user_contact_id,
+                    output_timezone,
+                    lock_contact_for_update),
+            UserState{ctx, user_contact_id});
 
-    if (!has_domainbrowser_allowed(ctx, user_contact_id))
+    if (!std::get<UserState>(result).has_domainbrowser_allowed())
     {
         throw EXCEPTION();
     }
 
-    return info;
+    return result;
 }
 
 
@@ -432,7 +444,7 @@ RegistrarDetail DomainBrowser::getRegistrarDetail(
     LibFred::OperationContextCreator ctx;
     try
     {
-        check_user_contact_id<UserNotExists>(
+        get_checked_user_info<UserNotExists>(
                 ctx,
                 user_contact_id,
                 output_timezone);
@@ -525,7 +537,7 @@ ContactDetail DomainBrowser::getContactDetail(
     LibFred::OperationContextCreator ctx;
     try
     {
-        check_user_contact_id<UserNotExists>(
+        get_checked_user_info<UserNotExists>(
                 ctx,
                 user_contact_id,
                 output_timezone);
@@ -626,7 +638,7 @@ DomainDetail DomainBrowser::getDomainDetail(
     LibFred::OperationContextCreator ctx;
     try
     {
-        check_user_contact_id<UserNotExists>(
+        get_checked_user_info<UserNotExists>(
                 ctx,
                 user_contact_id,
                 output_timezone);
@@ -748,7 +760,7 @@ NssetDetail DomainBrowser::getNssetDetail(
     LibFred::OperationContextCreator ctx;
     try
     {
-        check_user_contact_id<UserNotExists>(
+        get_checked_user_info<UserNotExists>(
                 ctx,
                 user_contact_id,
                 output_timezone);
@@ -867,7 +879,7 @@ KeysetDetail DomainBrowser::getKeysetDetail(
 
     try
     {
-        check_user_contact_id<UserNotExists>(
+        get_checked_user_info<UserNotExists>(
                 ctx,
                 user_contact_id,
                 output_timezone);
@@ -996,26 +1008,25 @@ bool DomainBrowser::setContactDiscloseFlags(
     LibFred::OperationContextCreator ctx;
     try
     {
-        LibFred::InfoContactOutput contact_info = check_user_contact_id<UserNotExists>(
+        const auto user_info = get_checked_user_info<UserNotExists>(
                 ctx,
                 user_contact_id,
                 output_timezone,
                 true);
 
-        if (!is_at_least_identified(ctx, user_contact_id))
+        if (!std::get<UserState>(user_info).is_at_least_identified_mojeid_contact())
         {
             throw AccessDenied();
         }
 
-        if (LibFred::ObjectHasState(
-                    user_contact_id,
-                    LibFred::Object_State::server_blocked).exec(ctx))
+        if (std::get<UserState>(user_info).is_server_blocked())
         {
             throw ObjectBlocked();
         }
 
+        const auto& info_contact_data = std::get<LibFred::InfoContactOutput>(user_info).info_contact_data;
         // when organization is set it's not allowed to hide address
-        if ((!contact_info.info_contact_data.organization.get_value_or_default().empty()) &&
+        if ((!info_contact_data.organization.get_value_or_default().empty()) &&
             (flags.address == false))
         {
             throw IncorrectUsage();
@@ -1023,43 +1034,43 @@ bool DomainBrowser::setContactDiscloseFlags(
 
         LibFred::UpdateContactById update_contact(user_contact_id, update_registrar_);
         bool exec_update = false;
-        if (flags.email != contact_info.info_contact_data.discloseemail)
+        if (flags.email != info_contact_data.discloseemail)
         {
             update_contact.set_discloseemail(flags.email);
             exec_update = true;
         }
 
-        if (flags.address != contact_info.info_contact_data.discloseaddress)
+        if (flags.address != info_contact_data.discloseaddress)
         {
             update_contact.set_discloseaddress(flags.address);
             exec_update = true;
         }
 
-        if (flags.telephone != contact_info.info_contact_data.disclosetelephone)
+        if (flags.telephone != info_contact_data.disclosetelephone)
         {
             update_contact.set_disclosetelephone(flags.telephone);
             exec_update = true;
         }
 
-        if (flags.fax != contact_info.info_contact_data.disclosefax)
+        if (flags.fax != info_contact_data.disclosefax)
         {
             update_contact.set_disclosefax(flags.fax);
             exec_update = true;
         }
 
-        if (flags.ident != contact_info.info_contact_data.discloseident)
+        if (flags.ident != info_contact_data.discloseident)
         {
             update_contact.set_discloseident(flags.ident);
             exec_update = true;
         }
 
-        if (flags.vat != contact_info.info_contact_data.disclosevat)
+        if (flags.vat != info_contact_data.disclosevat)
         {
             update_contact.set_disclosevat(flags.vat);
             exec_update = true;
         }
 
-        if (flags.notify_email != contact_info.info_contact_data.disclosenotifyemail)
+        if (flags.notify_email != info_contact_data.disclosenotifyemail)
         {
             update_contact.set_disclosenotifyemail(flags.notify_email);
             exec_update = true;
@@ -1093,38 +1104,35 @@ bool DomainBrowser::setContactAuthInfo(
     LibFred::OperationContextCreator ctx;
     try
     {
-        LibFred::InfoContactOutput contact_info = check_user_contact_id<UserNotExists>(
+        const auto user_info = get_checked_user_info<UserNotExists>(
                 ctx,
                 user_contact_id,
                 output_timezone,
                 true);
 
-        unsigned long long contact_id = contact_info.info_contact_data.id;
-
-        const unsigned MAX_AUTH_INFO_LENGTH = 300u;
+        static constexpr unsigned MAX_AUTH_INFO_LENGTH = 300u;
         if (authinfo.length() > MAX_AUTH_INFO_LENGTH)
         {
             throw IncorrectUsage();
         }
 
-        if (!is_at_least_identified(ctx, contact_id))
+        if (!std::get<UserState>(user_info).is_at_least_identified_mojeid_contact())
         {
             throw AccessDenied();
         }
 
-        if (LibFred::ObjectHasState(
-                    contact_id,
-                    LibFred::Object_State::server_blocked).exec(ctx))
+        if (std::get<UserState>(user_info).is_server_blocked())
         {
             throw ObjectBlocked();
         }
 
-        if (contact_info.info_contact_data.authinfopw == authinfo)
+        const auto& info_contact_data = std::get<LibFred::InfoContactOutput>(user_info).info_contact_data;
+        if (info_contact_data.authinfopw == authinfo)
         {
             return false;
         }
 
-        exec_update_contact(ctx, LibFred::UpdateContactById{contact_id, update_registrar_}
+        exec_update_contact(ctx, LibFred::UpdateContactById{user_contact_id, update_registrar_}
                 .set_authinfo(authinfo)
                 .set_logd_request_id(request_id));
         ctx.commit_transaction();
@@ -1149,12 +1157,13 @@ bool DomainBrowser::setObjectBlockStatus(
     LibFred::OperationContextCreator ctx;
     try
     {
-        LibFred::InfoContactOutput contact_info = check_user_contact_id<UserNotExists>(
+        const auto user_info = get_checked_user_info<UserNotExists>(
                 ctx,
                 user_contact_id,
                 output_timezone);
 
-        if (!is_at_least_validated(ctx, user_contact_id))
+        if (!(std::get<UserState>(user_info).is_at_least_validated_mojeid_contact() ||
+              std::get<UserState>(user_info).is_attached_to_identity()))
         {
             throw AccessDenied();
         }
@@ -1366,14 +1375,14 @@ DomainList DomainBrowser::getDomainList(
     LibFred::OperationContextCreator ctx;
     try
     {
-        check_user_contact_id<UserNotExists>(
+        get_checked_user_info<UserNotExists>(
                 ctx,
                 user_contact_id,
                 output_timezone);
 
         if (list_domains_for_contact_id.isset())
         {
-            check_contact_id<ObjectNotExists>(
+            get_contact_info<ObjectNotExists>(
                     ctx,
                     list_domains_for_contact_id.get_value(),
                     output_timezone);
@@ -1589,14 +1598,14 @@ NssetList DomainBrowser::getNssetList(
     LibFred::OperationContextCreator ctx;
     try
     {
-        check_user_contact_id<UserNotExists>(
+        get_checked_user_info<UserNotExists>(
                 ctx,
                 user_contact_id,
                 output_timezone);
 
         if (list_nssets_for_contact_id.isset())
         {
-            check_contact_id<ObjectNotExists>(
+            get_contact_info<ObjectNotExists>(
                     ctx,
                     list_nssets_for_contact_id.get_value(),
                     output_timezone);
@@ -1687,14 +1696,14 @@ KeysetList DomainBrowser::getKeysetList(
     LibFred::OperationContextCreator ctx;
     try
     {
-        check_user_contact_id<UserNotExists>(
+        get_checked_user_info<UserNotExists>(
                 ctx,
                 user_contact_id,
                 output_timezone);
 
         if (list_keysets_for_contact_id.isset())
         {
-            check_contact_id<ObjectNotExists>(
+            get_contact_info<ObjectNotExists>(
                     ctx,
                     list_keysets_for_contact_id.get_value(),
                     output_timezone);
@@ -1901,7 +1910,7 @@ MergeContactCandidateList DomainBrowser::getMergeContactCandidateList(
     LibFred::OperationContextCreator ctx;
     try
     {
-        check_user_contact_id<UserNotExists>(
+        get_checked_user_info<UserNotExists>(
                 ctx,
                 user_contact_id,
                 output_timezone);
@@ -1985,10 +1994,15 @@ void DomainBrowser::mergeContacts(
     LibFred::OperationContextCreator ctx;
     try
     {
-        LibFred::InfoContactOutput dst = check_user_contact_id<UserNotExists>(
+        const auto user_info = get_checked_user_info<UserNotExists>(
                 ctx,
                 dst_contact_id,
                 output_timezone);
+        if (!(std::get<UserState>(user_info).is_at_least_validated_mojeid_contact() ||
+              std::get<UserState>(user_info).is_attached_to_identity()))
+        {
+            throw AccessDenied();
+        }
         if (contact_list.empty())
         {
             throw Fred::Backend::DomainBrowser::InvalidContacts();
@@ -2010,9 +2024,8 @@ void DomainBrowser::mergeContacts(
 
         sql += ")";
 
-        Database::Result src_handle_result = ctx.get_conn().exec_params(
-                sql,
-                params);
+        const auto src_handle_result = ctx.get_conn().exec_params(sql, params);
+        const auto& dst = std::get<LibFred::InfoContactOutput>(user_info).info_contact_data;
 
         for (Database::Result::size_type i = 0; i < src_handle_result.size(); ++i)
         {
@@ -2021,7 +2034,7 @@ void DomainBrowser::mergeContacts(
             {
                 merge_data = LibFred::MergeContact(
                         src_handle_result[i]["name"],
-                        dst.info_contact_data.handle,
+                        dst.handle,
                         update_registrar_,
                         MergeContactDiffContacts()).set_logd_request_id(request_id).exec(ctx);
             }
@@ -2078,28 +2091,26 @@ void DomainBrowser::setContactPreferenceForDomainExpirationLetters(
     LibFred::OperationContextCreator ctx;
     try
     {
-        LibFred::InfoContactOutput contact_info = check_user_contact_id<UserNotExists>(
+        const auto user_info = get_checked_user_info<UserNotExists>(
                 ctx,
                 user_contact_id,
                 output_timezone,
                 true);
-
-        unsigned long long contact_id = contact_info.info_contact_data.id;
-
-        if (!send_expiration_letters && !is_at_least_validated(ctx, contact_id))
+        //Who wants to save our money must be validated. That doesn't make sense!
+        if (!send_expiration_letters &&
+            !(std::get<UserState>(user_info).is_at_least_validated_mojeid_contact() ||
+              std::get<UserState>(user_info).is_attached_to_identity()))
         {
             throw AccessDenied();
         }
 
-        if (LibFred::ObjectHasState(
-                    contact_id,
-                    LibFred::Object_State::server_blocked).exec(ctx))
+        if (std::get<UserState>(user_info).is_server_blocked())
         {
             throw ObjectBlocked();
         }
 
         LibFred::UpdateContactById(
-                contact_id,
+                user_contact_id,
                 update_registrar_)
         .set_domain_expiration_warning_letter_enabled(send_expiration_letters)
         .set_logd_request_id(request_id).exec(ctx);
