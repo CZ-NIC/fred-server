@@ -408,31 +408,37 @@ BOOST_FIXTURE_TEST_CASE(info_contact_data_filter_test, autorollbacking_context)
     const Domain domain_b_owner_a{ctx, registrar_b, "domain-b-owner-a.cz", contact_a};
     const Domain domain_b_owner_b{ctx, registrar_b, "domain-b-owner-b.cz", contact_b};
     const Domain domain_b_owner_b_admin_a{ctx, registrar_b, "domain-b-owner-b-admin-a.cz", contact_b, contact_a};
+    BOOST_TEST_MESSAGE("SponsoringRegistrar a-a");
     check<ContactRegistrarRelationship::SponsoringRegistrar>(
                 ctx,
                 session_a,
                 contact_a,
                 Share::all);
+    BOOST_TEST_MESSAGE("SponsoringRegistrar b-a");
     check<ContactRegistrarRelationship::SponsoringRegistrar>(
                 ctx,
                 session_b,
                 contact_a,
                 Share::by_discloseflags);
+    BOOST_TEST_MESSAGE("DomainHolder a-a");
     check<ContactRegistrarRelationship::SponsoringRegistrarOfDomainWhereContactIs::DomainHolder>(
                 ctx,
                 session_a,
                 contact_a,
                 Share::all);
+    BOOST_TEST_MESSAGE("AdminContact b-a");
     check<ContactRegistrarRelationship::SponsoringRegistrarOfDomainWhereContactIs::AdminContact>(
                 ctx,
                 session_b,
                 contact_a,
                 Share::all_except_authinfo);
+    BOOST_TEST_MESSAGE("OtherRelationship b-a");
     check<ContactRegistrarRelationship::OtherRelationship>(
                 ctx,
                 session_b,
                 contact_a,
                 Share::by_discloseflags);
+    BOOST_TEST_MESSAGE("AuthorizedRegistrar + SponsoringRegistrar + AdminContact + DomainHolder a-b0");
     check<ContactRegistrarRelationship::AuthorizedRegistrar,
           ContactRegistrarRelationship::SponsoringRegistrar,
           ContactRegistrarRelationship::SponsoringRegistrarOfDomainWhereContactIs::AdminContact,
@@ -441,37 +447,44 @@ BOOST_FIXTURE_TEST_CASE(info_contact_data_filter_test, autorollbacking_context)
                 session_a,
                 contact_b0,
                 Share::by_discloseflags);
+    BOOST_TEST_MESSAGE("OtherRelationship a-b0");
     check<ContactRegistrarRelationship::OtherRelationship>(
                 ctx,
                 session_a,
                 contact_b0,
                 Share::all_except_authinfo);
+    BOOST_TEST_MESSAGE("AuthorizedRegistrar a-b0");
     check<ContactRegistrarRelationship::AuthorizedRegistrar>(
                 ctx,
                 session_a,
                 contact_b0.data.authinfopw.c_str(),
                 contact_b0,
                 Share::all_except_authinfo);
+    BOOST_TEST_MESSAGE("SystemRegistrar sys-a");
     check<ContactRegistrarRelationship::SystemRegistrar>(
                 ctx,
                 sysreg_session,
                 contact_a,
                 Share::all_except_authinfo);
+    BOOST_TEST_MESSAGE("SystemRegistrar sys-b");
     check<ContactRegistrarRelationship::SystemRegistrar>(
                 ctx,
                 sysreg_session,
                 contact_b,
                 Share::all_except_authinfo);
+    BOOST_TEST_MESSAGE("SystemRegistrar sys-b0");
     check<ContactRegistrarRelationship::SystemRegistrar>(
                 ctx,
                 sysreg_session,
                 contact_b0,
                 Share::all_except_authinfo);
+    BOOST_TEST_MESSAGE("SystemRegistrar sys-sys");
     check<ContactRegistrarRelationship::SystemRegistrar>(
                 ctx,
                 sysreg_session,
                 contact_sys,
-                Share::all_except_authinfo);
+                Share::all);
+    BOOST_TEST_MESSAGE("SponsoringRegistrar + SystemRegistrar sys-sys");
     check<ContactRegistrarRelationship::SponsoringRegistrar,
           ContactRegistrarRelationship::SystemRegistrar>(
                 ctx,

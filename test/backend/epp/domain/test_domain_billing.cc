@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2021  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -214,23 +214,24 @@ BOOST_FIXTURE_TEST_CASE(renew_domain_no_credit_record, supply_ctx<HasRegistrarWi
 {
     BOOST_TEST_MESSAGE(domain.data.to_string());
 
-    const boost::posix_time::ptime current_utc_time = boost::posix_time::time_from_string(
-    static_cast<std::string>(ctx.get_conn().exec("SELECT CURRENT_TIMESTAMP AT TIME ZONE 'UTC'")[0][0]));
+    const auto current_utc_time = boost::posix_time::time_from_string(
+            static_cast<std::string>(ctx.get_conn().exec("SELECT CURRENT_TIMESTAMP AT TIME ZONE 'UTC'")[0][0]));
     //warning: timestamp conversion using local system timezone
     const boost::posix_time::ptime current_local_time = boost::date_time::c_local_adjustor<ptime>::utc_to_local(current_utc_time);
     const boost::gregorian::date current_local_date = current_local_time.date();
-    const int length_of_domain_registration_in_months = 12;
+    static constexpr auto length_of_domain_registration_in_months = 12;
 
     BOOST_CHECK_THROW(
-        ::Epp::Domain::renew_domain_bill_item(domain.data.fqdn,
-            domain.data.creation_time,
-            registrar.data.id,
-            domain.data.id,
-            length_of_domain_registration_in_months,
-            current_local_date,
-            domain.data.expiration_date,
-        ctx),
-        std::runtime_error);
+        ::Epp::Domain::renew_domain_bill_item(
+                domain.data.fqdn,
+                domain.data.creation_time,
+                registrar.data.id,
+                domain.data.id,
+                length_of_domain_registration_in_months,
+                current_local_date,
+                domain.data.expiration_date,
+                ctx),
+        ::Epp::BillingFailure);
 }
 
 BOOST_FIXTURE_TEST_CASE(renew_domain_no_money, supply_ctx<HasRegistrarWithSessionAndDomain>)
