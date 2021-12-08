@@ -1074,6 +1074,10 @@ void MojeIdImpl::transfer_contact_prepare(
     {
         LibFred::OperationContextTwoPhaseCommitCreator ctx(_trans_id);
         const LibFred::InfoContactData contact = LibFred::InfoContactByHandle(_handle).exec(ctx).info_contact_data;
+        if (is_identity_attached(ctx, contact.id))
+        {
+            throw MojeIdImplData::IdentityAttached{};
+        }
         const LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_contact(ctx, contact.id);
         const LibFred::ObjectStatesInfo states(LibFred::GetObjectStates(contact.id).exec(ctx));
         {
@@ -1082,10 +1086,6 @@ void MojeIdImpl::transfer_contact_prepare(
             {
                 MojeIdImplInternal::raise(check_result);
             }
-        }
-        if (is_identity_attached(ctx, contact.id))
-        {
-            throw MojeIdImplData::IdentityAttached{};
         }
         {
             const MojeIdImplInternal::CheckMojeIdRegistration check_result(
@@ -1594,6 +1594,10 @@ MojeIdImplData::InfoContact MojeIdImpl::update_transfer_contact_prepare(
         LibFred::OperationContextTwoPhaseCommitCreator ctx(_trans_id);
         //check contact is registered
         const LibFred::InfoContactData current_data = LibFred::InfoContactByHandle(_username).exec(ctx).info_contact_data;
+        if (is_identity_attached(ctx, current_data.id))
+        {
+            throw MojeIdImplData::IdentityAttached{};
+        }
         new_data.id = current_data.id;
         new_data.handle = current_data.handle;
         const LibFred::ObjectStatesInfo states(LibFred::GetObjectStates(new_data.id).exec(ctx));
@@ -1603,10 +1607,6 @@ MojeIdImplData::InfoContact MojeIdImpl::update_transfer_contact_prepare(
             {
                 MojeIdImplInternal::raise(check_result);
             }
-        }
-        if (is_identity_attached(ctx, current_data.id))
-        {
-            throw MojeIdImplData::IdentityAttached{};
         }
         check_limits::sent_letters()(ctx, current_data.id);
         const LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_contact(ctx, new_data.id);
@@ -2009,6 +2009,14 @@ MojeIdImpl::ContactId MojeIdImpl::process_registration_request(
             throw MojeIdImplData::IdentificationRequestDoesntExist();
         }
         const LibFred::ObjectId contact_id = pub_req_info.get_object_id().get_value();
+        if (is_identity_attached(ctx, contact_id))
+        {
+            invalidate(locked_request,
+                    LibFred::FakePublicRequestForInvalidating(pub_req_info.get_type()).iface(),
+                    "contact is attached to another identity",
+                    _log_request_id);
+            throw MojeIdImplData::IdentityAttached{};
+        }
         const LibFred::ObjectStatesInfo states(LibFred::GetObjectStates(contact_id).exec(ctx));
         const PubReqType::Enum pub_req_type(Conversion::Enums::from_db_handle<PubReqType>(pub_req_info.get_type()));
         try
@@ -2080,15 +2088,6 @@ MojeIdImpl::ContactId MojeIdImpl::process_registration_request(
             if (!pub_req_info.check_password(_password))
             {
                 throw MojeIdImplData::IdentificationFailed();
-            }
-
-            if (is_identity_attached(ctx, contact_id))
-            {
-                invalidate(locked_request,
-                        LibFred::FakePublicRequestForInvalidating(pub_req_info.get_type()).iface(),
-                        "contact is attached to another identity",
-                        _log_request_id);
-                throw MojeIdImplData::IdentityAttached{};
             }
 
             to_set.insert(Conversion::Enums::to_db_handle(LibFred::Object_State::server_delete_prohibited));
