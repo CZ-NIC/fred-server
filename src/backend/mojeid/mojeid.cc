@@ -1035,6 +1035,30 @@ LibFred::CreatePublicRequestAuth::Result action_transfer_contact_prepare(
     return result;
 }
 
+bool is_identity_attached(const LibFred::OperationContext& ctx, unsigned long long contact_id)
+{
+    const auto db_res = ctx.get_conn().exec_params(
+            "SELECT EXISTS(SELECT 0 "
+                          "FROM contact_identity ci "
+                          "WHERE ci.contact_id = obr.id AND "
+                                "ci.valid_to IS NULL) "
+            "FROM object_registry obr "
+            "WHERE obr.id = $1::BIGINT AND "
+                  "obr.erdate IS NULL AND "
+                  "obr.type = get_object_type_id('contact') "
+            "FOR UPDATE OF obr",
+            Database::query_param_list{contact_id});
+    if (db_res.size() == 0)
+    {
+        throw MojeIdImplData::ObjectDoesntExist{};
+    }
+    if (1 < db_res.size())
+    {
+        throw std::runtime_error{"too many contacts with a given id"};
+    }
+    return static_cast<bool>(db_res[0][0]);
+}
+
 } // namespace Fred::Backend::MojeId::{anonymous}
 
 void MojeIdImpl::transfer_contact_prepare(
@@ -1050,6 +1074,10 @@ void MojeIdImpl::transfer_contact_prepare(
     {
         LibFred::OperationContextTwoPhaseCommitCreator ctx(_trans_id);
         const LibFred::InfoContactData contact = LibFred::InfoContactByHandle(_handle).exec(ctx).info_contact_data;
+        if (is_identity_attached(ctx, contact.id))
+        {
+            throw MojeIdImplData::IdentityAttached{};
+        }
         const LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_contact(ctx, contact.id);
         const LibFred::ObjectStatesInfo states(LibFred::GetObjectStates(contact.id).exec(ctx));
         {
@@ -1114,6 +1142,11 @@ void MojeIdImpl::transfer_contact_prepare(
     catch (const MojeIdImplData::AlreadyMojeidContact&)
     {
         LOGGER.info("request failed (incorrect input data - AlreadyMojeidContact)");
+        throw;
+    }
+    catch (const MojeIdImplData::IdentityAttached&)
+    {
+        LOGGER.info("request failed (incorrect input data - IdentityAttached)");
         throw;
     }
     catch (const MojeIdImplData::ObjectAdminBlocked&)
@@ -1561,6 +1594,10 @@ MojeIdImplData::InfoContact MojeIdImpl::update_transfer_contact_prepare(
         LibFred::OperationContextTwoPhaseCommitCreator ctx(_trans_id);
         //check contact is registered
         const LibFred::InfoContactData current_data = LibFred::InfoContactByHandle(_username).exec(ctx).info_contact_data;
+        if (is_identity_attached(ctx, current_data.id))
+        {
+            throw MojeIdImplData::IdentityAttached{};
+        }
         new_data.id = current_data.id;
         new_data.handle = current_data.handle;
         const LibFred::ObjectStatesInfo states(LibFred::GetObjectStates(new_data.id).exec(ctx));
@@ -1745,6 +1782,11 @@ MojeIdImplData::InfoContact MojeIdImpl::update_transfer_contact_prepare(
     catch (const MojeIdImplData::AlreadyMojeidContact&)
     {
         LOGGER.info("request failed (AlreadyMojeidContact)");
+        throw;
+    }
+    catch (const MojeIdImplData::IdentityAttached&)
+    {
+        LOGGER.info("request failed (IdentityAttached)");
         throw;
     }
     catch (const MojeIdImplData::ObjectAdminBlocked&)
@@ -1967,6 +2009,14 @@ MojeIdImpl::ContactId MojeIdImpl::process_registration_request(
             throw MojeIdImplData::IdentificationRequestDoesntExist();
         }
         const LibFred::ObjectId contact_id = pub_req_info.get_object_id().get_value();
+        if (is_identity_attached(ctx, contact_id))
+        {
+            invalidate(locked_request,
+                    LibFred::FakePublicRequestForInvalidating(pub_req_info.get_type()).iface(),
+                    "contact is attached to another identity",
+                    _log_request_id);
+            throw MojeIdImplData::IdentityAttached{};
+        }
         const LibFred::ObjectStatesInfo states(LibFred::GetObjectStates(contact_id).exec(ctx));
         const PubReqType::Enum pub_req_type(Conversion::Enums::from_db_handle<PubReqType>(pub_req_info.get_type()));
         try
@@ -2118,6 +2168,11 @@ MojeIdImpl::ContactId MojeIdImpl::process_registration_request(
             ctx.commit_transaction();
             throw;
         }
+        catch (const MojeIdImplData::IdentityAttached&)
+        {
+            ctx.commit_transaction();
+            throw;
+        }
     }
     catch (const MojeIdImplData::IdentificationRequestDoesntExist&)
     {
@@ -2133,6 +2188,16 @@ MojeIdImpl::ContactId MojeIdImpl::process_registration_request(
     {
         LOGGER.info("request failed (contact changed)");
         throw;
+    }
+    catch (const MojeIdImplData::IdentityAttached&)
+    {
+        LOGGER.info("request failed (contact attached to another identity)");
+        throw;
+    }
+    catch (const MojeIdImplData::ObjectDoesntExist& e)
+    {
+        LOGGER.info(boost::format("request failed (%1%)") % e.what());
+        throw MojeIdImplData::IdentificationFailed{};
     }
     catch (const MojeIdImplData::ProcessRegistrationValidationResult&)
     {
