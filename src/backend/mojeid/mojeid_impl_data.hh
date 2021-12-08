@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2020  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2021  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -416,6 +416,14 @@ struct AlreadyMojeidContact : Exception
     const char* what() const noexcept
     {
         return "AlreadyMojeidContact";
+    }
+};
+
+struct IdentityAttached : Exception
+{
+    const char* what() const noexcept override
+    {
+        return "IdentityAttached";
     }
 };
 
