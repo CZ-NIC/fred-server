@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2021  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -35,6 +35,10 @@
 #include "src/util/cfg/handle_logging_args.hh"
 #include "src/util/cfg/handle_registry_args.hh"
 #include "src/util/cfg/handle_server_args.hh"
+
+#include "src/backend/record_statement/impl/templates_impl.hh"
+#include "src/util/tz/europe/prague.hh"
+#include "src/util/tz/utc.hh"
 
 #include "src/util/corba_wrapper.hh"
 #include "util/log/context.hh"
@@ -90,6 +94,9 @@ int main(int argc, char* argv[])
                         CfgArgs::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgs>()->get_nameservice_host_port())
                         .release());
 
+        // hotfix!!!
+        Fred::Backend::RecordStatement::Impl::InstanceOfNecessaryImpl<Tz::Europe::Prague>::get();
+        Fred::Backend::RecordStatement::Impl::InstanceOfNecessaryImpl<Tz::UTC>::get();
 
         //create server object with poa and nameservice registration
         CorbaContainer::get_instance()
