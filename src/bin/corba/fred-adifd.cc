@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2020  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2011-2021  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -46,6 +46,15 @@
 #include "src/util/cfg/handle_corbanameservice_args.hh"
 #include "src/util/cfg/handle_adifd_args.hh"
 
+#include "src/backend/admin/contact/verification/test_impl/test_contactability.hh"
+#include "src/backend/admin/contact/verification/test_impl/test_cz_address_exists.hh"
+#include "src/backend/admin/contact/verification/test_impl/test_email_exists.hh"
+#include "src/backend/admin/contact/verification/test_impl/test_email_exists_for_managed_zones.hh"
+#include "src/backend/admin/contact/verification/test_impl/test_email_syntax.hh"
+#include "src/backend/admin/contact/verification/test_impl/test_name_syntax.hh"
+#include "src/backend/admin/contact/verification/test_impl/test_phone_syntax.hh"
+#include "src/backend/admin/contact/verification/test_impl/test_send_letter.hh"
+
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/thread.hpp>
@@ -75,6 +84,18 @@ const HandlerPtrVector global_hpv =
 
 int main(int argc, char *argv[])
 {
+    {
+        // to not skip auto registration
+        using namespace Fred::Backend::Admin::Contact::Verification;
+        test_auto_registration<TestContactability>::is_registered();
+        test_auto_registration<TestCzAddress>::is_registered();
+        test_auto_registration<TestEmailExists>::is_registered();
+        test_auto_registration<TestEmailExistsForManagedZones>::is_registered();
+        test_auto_registration<TestEmailSyntax>::is_registered();
+        test_auto_registration<TestNameSyntax>::is_registered();
+        test_auto_registration<TestPhoneSyntax>::is_registered();
+        test_auto_registration<TestSendLetter>::is_registered();
+    }
     FakedArgs fa; //producing faked args with unrecognized ones
     try
     {   //config
