@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2013-2021  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -303,16 +303,24 @@ Registry::AdminContactVerification::ContactCheckDetail* Server_i::getContactChec
 
         return result._retn();
     }
-    catch (const uuid::ExceptionInvalidUuid&)
+    catch (const uuid::ExceptionInvalidUuid& e)
     {
+        LOGGER.info("exception caught: " + std::string{e.what()});
         throw Registry::AdminContactVerification::INVALID_CHECK_HANDLE();
     }
-    catch (const Fred::Backend::Admin::Contact::Verification::ExceptionUnknownCheckHandle&)
+    catch (const Fred::Backend::Admin::Contact::Verification::ExceptionUnknownCheckHandle& e)
     {
+        LOGGER.info("exception caught: " + std::string{e.what()});
         throw Registry::AdminContactVerification::UNKNOWN_CHECK_HANDLE();
+    }
+    catch (const std::exception& e)
+    {
+        LOGGER.error("getContactCheckDetail failed: " + std::string{e.what()});
+        throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
     }
     catch (...)
     {
+        LOGGER.error("getContactCheckDetail threw an unknown exception");
         throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
     }
 }
@@ -344,8 +352,14 @@ Registry::AdminContactVerification::ContactCheckList* Server_i::getChecksOfConta
 
         return result._retn();
     }
+    catch (const std::exception& e)
+    {
+        LOGGER.error("getChecksOfContact failed: " + std::string{e.what()});
+        throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
+    }
     catch (...)
     {
+        LOGGER.error("getChecksOfContact threw an unknown exception");
         throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
     }
 }
@@ -365,8 +379,14 @@ Registry::AdminContactVerification::ContactCheckList* Server_i::getActiveChecks(
 
         return result._retn();
     }
+    catch (const std::exception& e)
+    {
+        LOGGER.error("getActiveChecks failed: " + std::string{e.what()});
+        throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
+    }
     catch (...)
     {
+        LOGGER.error("getActiveChecks threw an unknown exception");
         throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
     }
 }
@@ -388,32 +408,44 @@ void Server_i::updateContactCheckTests(const char* check_handle, const Registry:
 
         ctx.commit_transaction();
     }
-    catch (const uuid::ExceptionInvalidUuid&)
+    catch (const uuid::ExceptionInvalidUuid& e)
     {
+        LOGGER.info("exception caught: " + std::string{e.what()});
         throw Registry::AdminContactVerification::INVALID_CHECK_HANDLE();
     }
-    catch (const Fred::Backend::Admin::Contact::Verification::ExceptionUnknownCheckHandle&)
+    catch (const Fred::Backend::Admin::Contact::Verification::ExceptionUnknownCheckHandle& e)
     {
+        LOGGER.info("exception caught: " + std::string{e.what()});
         throw Registry::AdminContactVerification::UNKNOWN_CHECK_HANDLE();
     }
-    catch (const Fred::Backend::Admin::Contact::Verification::ExceptionUnknownTestHandle&)
+    catch (const Fred::Backend::Admin::Contact::Verification::ExceptionUnknownTestHandle& e)
     {
+        LOGGER.info("exception caught: " + std::string{e.what()});
         throw Registry::AdminContactVerification::UNKNOWN_TEST_HANDLE();
     }
-    catch (const Fred::Backend::Admin::Contact::Verification::ExceptionUnknownCheckTestPair&)
+    catch (const Fred::Backend::Admin::Contact::Verification::ExceptionUnknownCheckTestPair& e)
     {
+        LOGGER.info("exception caught: " + std::string{e.what()});
         throw Registry::AdminContactVerification::UNKNOWN_CHECK_TEST_PAIR();
     }
-    catch (const Fred::Backend::Admin::Contact::Verification::ExceptionUnknownTestStatusHandle&)
+    catch (const Fred::Backend::Admin::Contact::Verification::ExceptionUnknownTestStatusHandle& e)
     {
+        LOGGER.info("exception caught: " + std::string{e.what()});
         throw Registry::AdminContactVerification::UNKNOWN_TEST_STATUS_HANDLE();
     }
-    catch (const Fred::Backend::Admin::Contact::Verification::ExceptionCheckNotUpdateable&)
+    catch (const Fred::Backend::Admin::Contact::Verification::ExceptionCheckNotUpdateable& e)
     {
+        LOGGER.info("exception caught: " + std::string{e.what()});
         throw Registry::AdminContactVerification::CHECK_NOT_UPDATEABLE();
+    }
+    catch (const std::exception& e)
+    {
+        LOGGER.error("updateContactCheckTests failed: " + std::string{e.what()});
+        throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
     }
     catch (...)
     {
+        LOGGER.error("updateContactCheckTests threw an unknown exception");
         throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
     }
 }
@@ -435,24 +467,34 @@ void Server_i::resolveContactCheckStatus(const char* check_handle, const char* s
 
         ctx.commit_transaction();
     }
-    catch (const uuid::ExceptionInvalidUuid&)
+    catch (const uuid::ExceptionInvalidUuid& e)
     {
+        LOGGER.info("exception caught: " + std::string{e.what()});
         throw Registry::AdminContactVerification::INVALID_CHECK_HANDLE();
     }
-    catch (const Fred::Backend::Admin::Contact::Verification::ExceptionUnknownCheckHandle&)
+    catch (const Fred::Backend::Admin::Contact::Verification::ExceptionUnknownCheckHandle& e)
     {
+        LOGGER.info("exception caught: " + std::string{e.what()});
         throw Registry::AdminContactVerification::UNKNOWN_CHECK_HANDLE();
     }
-    catch (const Fred::Backend::Admin::Contact::Verification::ExceptionUnknownCheckStatusHandle&)
+    catch (const Fred::Backend::Admin::Contact::Verification::ExceptionUnknownCheckStatusHandle& e)
     {
+        LOGGER.info("exception caught: " + std::string{e.what()});
         throw Registry::AdminContactVerification::UNKNOWN_CHECK_STATUS_HANDLE();
     }
-    catch (const Fred::Backend::Admin::Contact::Verification::ExceptionCheckNotUpdateable&)
+    catch (const Fred::Backend::Admin::Contact::Verification::ExceptionCheckNotUpdateable& e)
     {
+        LOGGER.info("exception caught: " + std::string{e.what()});
         throw Registry::AdminContactVerification::CHECK_NOT_UPDATEABLE();
+    }
+    catch (const std::exception& e)
+    {
+        LOGGER.error("resolveContactCheckStatus failed: " + std::string{e.what()});
+        throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
     }
     catch (...)
     {
+        LOGGER.error("resolveContactCheckStatus threw an unknown exception");
         throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
     }
 }
@@ -472,32 +514,44 @@ void Server_i::deleteDomainsAfterFailedManualCheck(const char* check_handle)
 
         ctx.commit_transaction();
     }
-    catch (const uuid::ExceptionInvalidUuid&)
+    catch (const uuid::ExceptionInvalidUuid& e)
     {
+        LOGGER.info("exception caught: " + std::string{e.what()});
         throw Registry::AdminContactVerification::INVALID_CHECK_HANDLE();
     }
-    catch (const Fred::Backend::Admin::Contact::Verification::ExceptionUnknownCheckHandle&)
+    catch (const Fred::Backend::Admin::Contact::Verification::ExceptionUnknownCheckHandle& e)
     {
+        LOGGER.info("exception caught: " + std::string{e.what()});
         throw Registry::AdminContactVerification::UNKNOWN_CHECK_HANDLE();
     }
-    catch (const Fred::Backend::Admin::Contact::Verification::ExceptionIncorrectTestsuite&)
+    catch (const Fred::Backend::Admin::Contact::Verification::ExceptionIncorrectTestsuite& e)
     {
+        LOGGER.info("exception caught: " + std::string{e.what()});
         throw Registry::AdminContactVerification::INCORRECT_TESTSUITE();
     }
-    catch (const Fred::Backend::Admin::Contact::Verification::ExceptionIncorrectCheckStatus&)
+    catch (const Fred::Backend::Admin::Contact::Verification::ExceptionIncorrectCheckStatus& e)
     {
+        LOGGER.info("exception caught: " + std::string{e.what()});
         throw Registry::AdminContactVerification::INCORRECT_CHECK_STATUS();
     }
-    catch (const Fred::Backend::Admin::Contact::Verification::ExceptionIncorrectContactStatus&)
+    catch (const Fred::Backend::Admin::Contact::Verification::ExceptionIncorrectContactStatus& e)
     {
+        LOGGER.info("exception caught: " + std::string{e.what()});
         throw Registry::AdminContactVerification::INCORRECT_CONTACT_STATUS();
     }
-    catch (const Fred::Backend::Admin::Contact::Verification::ExceptionDomainsAlreadyDeleted&)
+    catch (const Fred::Backend::Admin::Contact::Verification::ExceptionDomainsAlreadyDeleted& e)
     {
+        LOGGER.info("exception caught: " + std::string{e.what()});
         throw Registry::AdminContactVerification::DOMAINS_ALREADY_DELETED();
+    }
+    catch (const std::exception& e)
+    {
+        LOGGER.error("deleteDomainsAfterFailedManualCheck failed: " + std::string{e.what()});
+        throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
     }
     catch (...)
     {
+        LOGGER.error("deleteDomainsAfterFailedManualCheck threw an unknown exception");
         throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
     }
 }
@@ -523,16 +577,24 @@ char* Server_i::requestEnqueueingContactCheck(CORBA::ULongLong contact_id, const
 
         return CORBA::string_dup(created_handle.c_str());
     }
-    catch (const LibFred::ExceptionUnknownContactId&)
+    catch (const LibFred::ExceptionUnknownContactId& e)
     {
+        LOGGER.info("exception caught: " + std::string{e.what()});
         throw Registry::AdminContactVerification::UNKNOWN_CONTACT_ID();
     }
-    catch (const LibFred::ExceptionUnknownTestsuiteHandle&)
+    catch (const LibFred::ExceptionUnknownTestsuiteHandle& e)
     {
+        LOGGER.info("exception caught: " + std::string{e.what()});
         throw Registry::AdminContactVerification::UNKNOWN_TESTSUITE_HANDLE();
+    }
+    catch (const std::exception& e)
+    {
+        LOGGER.error("requestEnqueueingContactCheck failed: " + std::string{e.what()});
+        throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
     }
     catch (...)
     {
+        LOGGER.error("requestEnqueueingContactCheck threw an unknown exception");
         throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
     }
 }
@@ -553,20 +615,29 @@ void Server_i::confirmEnqueueingContactCheck(const char* check_handle, CORBA::UL
 
         ctx.commit_transaction();
     }
-    catch (const uuid::ExceptionInvalidUuid&)
+    catch (const uuid::ExceptionInvalidUuid& e)
     {
+        LOGGER.info("exception caught: " + std::string{e.what()});
         throw Registry::AdminContactVerification::INVALID_CHECK_HANDLE();
     }
-    catch (const LibFred::ExceptionUnknownCheckHandle&)
+    catch (const LibFred::ExceptionUnknownCheckHandle& e)
     {
+        LOGGER.info("exception caught: " + std::string{e.what()});
         throw Registry::AdminContactVerification::UNKNOWN_CHECK_HANDLE();
     }
-    catch (const Fred::Backend::Admin::Contact::Verification::ExceptionCheckNotUpdateable&)
+    catch (const Fred::Backend::Admin::Contact::Verification::ExceptionCheckNotUpdateable& e)
     {
+        LOGGER.info("exception caught: " + std::string{e.what()});
         throw Registry::AdminContactVerification::CHECK_NOT_UPDATEABLE();
+    }
+    catch (const std::exception& e)
+    {
+        LOGGER.error("confirmEnqueueingContactCheck failed: " + std::string{e.what()});
+        throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
     }
     catch (...)
     {
+        LOGGER.error("confirmEnqueueingContactCheck threw an unknown exception");
         throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
     }
 }
@@ -592,16 +663,24 @@ char* Server_i::enqueueContactCheck(CORBA::ULongLong contact_id, const char* tes
 
         return CORBA::string_dup(created_handle.c_str());
     }
-    catch (const Fred::Backend::Admin::Contact::Verification::ExceptionUnknownContactId&)
+    catch (const Fred::Backend::Admin::Contact::Verification::ExceptionUnknownContactId& e)
     {
+        LOGGER.info("exception caught: " + std::string{e.what()});
         throw Registry::AdminContactVerification::UNKNOWN_CONTACT_ID();
     }
-    catch (const Fred::Backend::Admin::Contact::Verification::ExceptionUnknownTestsuiteHandle&)
+    catch (const Fred::Backend::Admin::Contact::Verification::ExceptionUnknownTestsuiteHandle& e)
     {
+        LOGGER.info("exception caught: " + std::string{e.what()});
         throw Registry::AdminContactVerification::UNKNOWN_TESTSUITE_HANDLE();
+    }
+    catch (const std::exception& e)
+    {
+        LOGGER.error("enqueueContactCheck failed: " + std::string{e.what()});
+        throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
     }
     catch (...)
     {
+        LOGGER.error("enqueueContactCheck threw an unknown exception");
         throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
     }
 }
@@ -630,8 +709,14 @@ Registry::AdminContactVerification::MessageSeq* Server_i::getContactCheckMessage
     {
         throw Registry::AdminContactVerification::INVALID_CHECK_HANDLE();
     }
+    catch (const std::exception& e)
+    {
+        LOGGER.error("getContactCheckMessages failed: " + std::string{e.what()});
+        throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
+    }
     catch (...)
     {
+        LOGGER.error("getContactCheckMessages threw an unknown exception");
         throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
     }
 }
@@ -652,8 +737,14 @@ Registry::AdminContactVerification::ContactTestStatusDefSeq* Server_i::listTestS
 
         return result._retn();
     }
+    catch (const std::exception& e)
+    {
+        LOGGER.error("listTestStatusDefs failed: " + std::string{e.what()});
+        throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
+    }
     catch (...)
     {
+        LOGGER.error("listTestStatusDefs threw an unknown exception");
         throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
     }
 }
@@ -674,8 +765,14 @@ Registry::AdminContactVerification::ContactCheckStatusDefSeq* Server_i::listChec
 
         return result._retn();
     }
+    catch (const std::exception& e)
+    {
+        LOGGER.error("listCheckStatusDefs failed: " + std::string{e.what()});
+        throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
+    }
     catch (...)
     {
+        LOGGER.error("listCheckStatusDefs threw an unknown exception");
         throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
     }
 }
@@ -699,8 +796,14 @@ Registry::AdminContactVerification::ContactTestDefSeq* Server_i::listTestDefs(
 
         return result._retn();
     }
+    catch (const std::exception& e)
+    {
+        LOGGER.error("listTestDefs failed: " + std::string{e.what()});
+        throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
+    }
     catch (...)
     {
+        LOGGER.error("listTestDefs threw an unknown exception");
         throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
     }
 }
@@ -721,8 +824,14 @@ Registry::AdminContactVerification::ContactTestSuiteDefSeq* Server_i::listTestSu
 
         return result._retn();
     }
+    catch (const std::exception& e)
+    {
+        LOGGER.error("listTestSuiteDefs failed: " + std::string{e.what()});
+        throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
+    }
     catch (...)
     {
+        LOGGER.error("listTestSuiteDefs threw an unknown exception");
         throw Registry::AdminContactVerification::INTERNAL_SERVER_ERROR();
     }
 }
