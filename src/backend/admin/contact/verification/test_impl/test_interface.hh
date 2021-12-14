@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2013-2021  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -126,11 +126,36 @@ typedef Util::Factory<Test, Util::ClassCreator<Test>> test_factory;
 typedef Util::Factory<TestDataProvider_intf, Util::ClassCreator<TestDataProvider_intf>>
         test_data_provider_factory;
 
+template <typename Base, typename Derived, typename Key = std::string>
+class RegisteredInFactory
+{
+protected:
+    static bool is_registered() noexcept { return is_registered_; }
+private:
+    static bool exec()
+    {
+        ::Util::Factory<Base, ::Util::ClassCreator<Base>, Key>::instance_ref().register_class(
+                Derived::registration_name(),
+                new ::Util::DerivedClassCreator<Base, Derived>());
+        return true;
+    }
+    static bool is_registered_;
+};
+
+template <typename Base, typename Derived, typename Key>
+bool RegisteredInFactory<Base, Derived, Key>::is_registered_ = RegisteredInFactory<Base, Derived, Key>::exec();
+
 template <typename Test_impl>
 class test_auto_registration
-        : Util::FactoryAutoRegister<Test, Test_impl>,
-          Util::FactoryAutoRegister<TestDataProvider_intf, TestDataProvider<Test_impl>>
+        : RegisteredInFactory<Test, Test_impl>,
+          RegisteredInFactory<TestDataProvider_intf, TestDataProvider<Test_impl>>
 {
+public:
+    static bool is_registered() noexcept
+    {
+        return RegisteredInFactory<Test, Test_impl>::is_registered() &&
+               RegisteredInFactory<TestDataProvider_intf, TestDataProvider<Test_impl>>::is_registered();
+    }
 };
 
 } // namespace Fred::Backend::Admin::Contact::Verification
