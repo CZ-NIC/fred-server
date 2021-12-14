@@ -2,6 +2,10 @@ UNRELEASED
 
   * Remove duplicate `libfred` tests
 
+2021-12-14 (2.48.1)
+
+  * Quick fix - auto registration tests in admin. contact verification
+
 2021-11-08 (2.48.0)
 
   * Add concept of external identity (service) that can be linked to registry contact
