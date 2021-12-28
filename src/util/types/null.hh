@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2008-2021  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -47,6 +47,7 @@ public:
   }
   virtual ~Null() {
   }
+  Null& operator=(const Null&) = default;
   friend std::ostream& operator<<(std::ostream& _os, const Null<Tp>& _v) {
     if (_v.is_null) {
       return Rep::toStr(_os);

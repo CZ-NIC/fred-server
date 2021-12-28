@@ -12,6 +12,11 @@ endmacro()
 #Use in config.h
 set_default(PACKAGE ${project_name})
 
+# Set CMake policies to support later version behaviour
+set(CMAKE_POLICY_DEFAULT_CMP0077 NEW) # option() honors variables already set
+
+set(LIBFRED_BUILD_TESTS TRUE)
+
 #Make sure that custom modules like FindOMNIORB are found
 set_default(IDL_PROJECT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/idl)
 set(IDL_SOURCE_DIR ${IDL_PROJECT_DIR}/idl)
