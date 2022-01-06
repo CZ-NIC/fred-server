@@ -4,6 +4,10 @@ UNRELEASED
 
 2021-12-22 (2.48.2)
 
+  * Fix mojeid - add specific exception (instead of internal server error) when transferring contact attached to external identity
+
+  * Fix domain browser contact merge candidate list - exclude contacts attached to external identity
+
   * Fix rpm build (fedora 35) and remove support for CentOS7
 
 2021-12-14 (2.48.1)
