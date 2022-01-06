@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2021  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2014-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -1949,7 +1949,8 @@ MergeContactCandidateList DomainBrowser::getMergeContactCandidateList(
                     " (trim(BOTH ' ' FROM COALESCE(c_src.vat,'')) != trim(BOTH ' ' FROM COALESCE(c_dst.vat,'')) AND trim(BOTH ' ' FROM COALESCE(c_src.vat,'')) != ''::text) OR "
                     " (trim(BOTH ' ' FROM COALESCE(c_src.ssn,'')) != trim(BOTH ' ' FROM COALESCE(c_dst.ssn,'')) AND trim(BOTH ' ' FROM COALESCE(c_src.ssn,'')) != ''::text) OR "
                     " (COALESCE(c_src.ssntype,0) != COALESCE(c_dst.ssntype,0) AND COALESCE(c_src.ssntype,0) != 0)) = false "
-                    " AND oreg_src.name != oreg_dst.name AND os_src.id IS NULL "
+                    " AND oreg_src.name != oreg_dst.name AND os_src.id IS NULL AND"
+                    " NOT EXISTS(SELECT 0 FROM contact_identity ci WHERE ci.contact_id = oreg_src.id AND ci.valid_to IS NULL)"
                     " ORDER BY oreg_src.id "
                     " LIMIT $2::bigint OFFSET $3::bigint ",
                 // clang-format on
