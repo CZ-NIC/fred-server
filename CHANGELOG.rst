@@ -8,6 +8,20 @@ UNRELEASED
 
 * Remove obsolete ``getRequestCount*`` (moved to LoggerCorba)
 
+2021-12-22 (2.48.2)
+-------------------
+
+* Fix mojeid - add specific exception (instead of internal server error) when transferring contact attached to external identity
+
+* Fix domain browser contact merge candidate list - exclude contacts attached to external identity
+
+* Fix rpm build (fedora 35) and remove support for CentOS7
+
+2021-12-14 (2.48.1)
+-------------------
+
+* Quick fix - auto registration tests in admin. contact verification
+
 2021-11-08 (2.48.0)
 -------------------
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2021  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2012-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -98,7 +98,7 @@ MojeID::InfoContact* Server_i::transfer_contact_prepare(
     }
     catch (const Fred::Backend::MojeIdImplData::IdentityAttached&)
     {
-        throw IDL::INTERNAL_SERVER_ERROR{};
+        throw IDL::IDENTITY_ATTACHED{};
     }
     catch (const Fred::Backend::MojeIdImplData::ObjectAdminBlocked&)
     {
@@ -221,7 +221,7 @@ MojeID::InfoContact* Server_i::update_transfer_contact_prepare(
     }
     catch (const Fred::Backend::MojeIdImplData::IdentityAttached&)
     {
-        throw IDL::INTERNAL_SERVER_ERROR{};
+        throw IDL::IDENTITY_ATTACHED{};
     }
     catch (const Fred::Backend::MojeIdImplData::MessageLimitExceeded&)
     {
@@ -308,7 +308,7 @@ MojeID::ContactId Server_i::process_registration_request(
     }
     catch (const Fred::Backend::MojeIdImplData::IdentityAttached&)
     {
-        throw IDL::INTERNAL_SERVER_ERROR{};
+        throw IDL::IDENTITY_ATTACHED{};
     }
     catch (const Fred::Backend::MojeIdImplData::ObjectAdminBlocked&)
     {
