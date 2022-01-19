@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2021  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -40,6 +40,15 @@
 namespace Epp {
 namespace Contact {
 
+namespace {
+
+bool has_authinfopw(const InfoContactConfigData& data)
+{
+    return (data.authinfopw != nullptr) && (data.authinfopw[0] != '\0');
+}
+
+} // namespace Epp::Contact::{anonymous}
+
 InfoContactOutputData info_contact(
         LibFred::OperationContext& _ctx,
         const std::string& _contact_handle,
@@ -54,23 +63,23 @@ InfoContactOutputData info_contact(
 
     try
     {
-        const LibFred::InfoContactData info_contact_data = LibFred::InfoContactByHandle(_contact_handle)
-                .exec(_ctx, "UTC")
-                .info_contact_data;
+        auto info_contact_operation = LibFred::InfoContactByHandle{_contact_handle};
+        if (has_authinfopw(_info_contact_config_data))
+        {
+            info_contact_operation.set_lock();//authinfopw can be regenerated
+        }
+        const auto info_contact_data = info_contact_operation.exec(_ctx, "UTC").info_contact_data;
 
         const std::vector<LibFred::ObjectStateData> contact_states_data =
                 LibFred::GetObjectStates(info_contact_data.id).exec(_ctx);
 
-        const InfoContactOutputData info_contact_output_data =
-                get_info_contact_output(
+        return get_info_contact_output(
                         _ctx,
                         info_contact_data,
                         _info_contact_config_data.authinfopw,
                         *_info_contact_config_data.info_contact_data_filter,
                         _session_data,
                         contact_states_data);
-
-        return info_contact_output_data;
     }
     catch (const InfoContactDataFilter::InvalidAuthorizationInformation&)
     {

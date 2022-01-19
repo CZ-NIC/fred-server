@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2021-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -19,6 +19,8 @@
 
 #include "src/backend/epp/contact/impl/info_contact_data_filter.hh"
 
+#include "libfred/object/generate_authinfo_password.hh"
+#include "libfred/registrable_object/contact/update_contact.hh"
 #include "libfred/registrar/info_registrar.hh"
 
 #include "util/log/logger.hh"
@@ -82,42 +84,6 @@ bool is_visibility_restricted(const InfoContactDataFilter::Relationships& show_p
            !does_present<ContactRegistrarRelationship::SystemRegistrar>(show_private_data_to);
 }
 
-bool is_authorized_registrar(
-        const boost::optional<std::string>& contact_authinfopw,
-        const LibFred::InfoContactData& contact_data)
-{
-    if (contact_authinfopw != boost::none)
-    {
-        if (contact_data.authinfopw != *contact_authinfopw)
-        {
-            struct AuthinfoDoesNotMatch : InfoContactDataFilter::InvalidAuthorizationInformation, std::exception
-            {
-                const char* what() const noexcept override { return "authinfo does not match"; }
-            };
-            throw AuthinfoDoesNotMatch{};
-        }
-        return true;
-    }
-    return false;
-}
-
-bool registrar_is_contacts_sponsoring_registrar(
-        LibFred::OperationContext& ctx,
-        unsigned long long registrar_id,
-        const std::string& contact_sponsoring_registrar_handle)
-{
-    const auto contact_sponsoring_registrar_id = LibFred::InfoRegistrarByHandle{contact_sponsoring_registrar_handle}
-            .exec(ctx).info_registrar_data.id;
-    return registrar_id  == contact_sponsoring_registrar_id;
-}
-
-bool registrar_is_system_registrar(
-        LibFred::OperationContext& ctx,
-        unsigned long long registrar_id)
-{
-    return LibFred::InfoRegistrarById{registrar_id}.exec(ctx).info_registrar_data.system.get_value_or(false);
-}
-
 bool contact_is_registrars_domain_holder(
         LibFred::OperationContext& ctx,
         unsigned long long registrar_id,
@@ -148,6 +114,18 @@ bool contact_is_registrars_domain_admin_contact(
                                            "dcm.role = 1 " // 1 means "admin contact", there are currently no other roles.
             "LIMIT 1",
             Database::query_param_list(registrar_id)(contact_id)).size();
+}
+
+void check_authinfopw(const LibFred::InfoContactData& contact_data, const std::string& authinfopw)
+{
+    if (contact_data.authinfopw != authinfopw)
+    {
+        struct AuthinfoDoesNotMatch : InfoContactDataFilter::InvalidAuthorizationInformation, std::exception
+        {
+            const char* what() const noexcept override { return "authinfo does not match"; }
+        };
+        throw AuthinfoDoesNotMatch{};
+    }
 }
 
 template <typename T>
@@ -301,14 +279,19 @@ LibFred::InfoContactData& InfoContactDataFilter::operator()(
     try
     {
         bool show_private_data = false;
-        if (this->show_private_data_to<ContactRegistrarRelationship::AuthorizedRegistrar>() && is_authorized_registrar(contact_authinfopw, contact_data))
+        const auto session_registrar =
+                LibFred::InfoRegistrarById{session_data.registrar_id}.exec(ctx).info_registrar_data;
+        if (this->show_private_data_to<ContactRegistrarRelationship::AuthorizedRegistrar>() &&
+            (contact_authinfopw != boost::none))
         {
+            check_authinfopw(contact_data, *contact_authinfopw);
+            LibFred::UpdateContactById{contact_data.id, session_registrar.handle}
+                    .set_authinfo(LibFred::generate_authinfo_pw().password_)
+                    .exec(ctx);
+            contact_data = std::move(LibFred::InfoContactById{contact_data.id}.exec(ctx).info_contact_data);
             show_private_data = true;
         }
-        const bool is_sponsoring_registrar = registrar_is_contacts_sponsoring_registrar(
-                    ctx,
-                    session_data.registrar_id,
-                    contact_data.sponsoring_registrar_handle);
+        const bool is_sponsoring_registrar = session_registrar.handle == contact_data.sponsoring_registrar_handle;
         if (!is_sponsoring_registrar)
         {
             contact_data.authinfopw.clear();
@@ -325,7 +308,7 @@ LibFred::InfoContactData& InfoContactDataFilter::operator()(
                 };
             const auto is_system_registrar = [&]()
                 {
-                    return registrar_is_system_registrar(ctx, session_data.registrar_id);
+                    return session_registrar.system.get_value_or(false);
                 };
             show_private_data =
                     (this->show_private_data_to<ContactRegistrarRelationship::SponsoringRegistrar>() &&
