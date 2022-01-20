@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2018-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -24,12 +24,15 @@
 #include "src/backend/public_request/get_valid_registry_emails_of_registered_object.hh"
 #include "src/backend/public_request/type/get_iface_of.hh"
 #include "src/backend/public_request/type/public_request_authinfo.hh"
+
 #include "libfred/object/get_id_of_registered.hh"
 #include "libfred/object/object_states_info.hh"
 #include "libfred/public_request/create_public_request.hh"
 #include "libfred/public_request/public_request_lock_guard.hh"
 #include "libfred/public_request/update_public_request.hh"
+
 #include "util/log/context.hh"
+#include "util/log/logger.hh"
 #include "util/optional_value.hh"
 
 namespace Epp {
@@ -73,7 +76,11 @@ unsigned long long create_authinfo_request_registry_email(
         LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_object(_ctx, object_id);
         if (states.presents(LibFred::Object_State::server_transfer_prohibited))
         {
-            throw Fred::Backend::PublicRequest::ObjectTransferProhibited();
+            if (_object_type != Fred::Backend::PublicRequest::ObjectType::contact)
+            {
+                throw Fred::Backend::PublicRequest::ObjectTransferProhibited{};
+            }
+            LOGGER.info("authinfo requested for contact blocked against transfer");
         }
         const auto emails = get_valid_registry_emails_of_registered_object(_ctx, _object_type, object_id);
         if (emails.empty())
