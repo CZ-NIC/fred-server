@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2008-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -30,7 +30,6 @@
 #include "util/optional_value.hh"
 
 #include <boost/mpl/assert.hpp>
-#include <boost/test/auto_unit_test.hpp>
 #include <boost/test/unit_test.hpp>
 #include <boost/test/unit_test_suite.hpp>
 
@@ -46,7 +45,6 @@ BOOST_AUTO_TEST_SUITE(Backend)
 BOOST_AUTO_TEST_SUITE(Epp)
 BOOST_AUTO_TEST_SUITE(Domain)
 BOOST_AUTO_TEST_SUITE(UpdateDomain)
-
 
 bool fail_invalid_registrar_id_exception(const ::Epp::EppResponseFailure& e) {
     BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::authentication_error_server_closing_connection);
@@ -432,9 +430,9 @@ BOOST_FIXTURE_TEST_CASE(ok, supply_ctx<HasDataForUpdateDomain>)
    );
 }
 
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END()//Backend/Epp/Domain/UpdateDomain
+BOOST_AUTO_TEST_SUITE_END()//Backend/Epp/Domain
+BOOST_AUTO_TEST_SUITE_END()//Backend/Epp
+BOOST_AUTO_TEST_SUITE_END()//Backend
 
 } // namespace Test

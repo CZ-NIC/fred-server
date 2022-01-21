@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2021-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -18,7 +18,7 @@
  */
 
 #include "src/backend/epp/contact/impl/info_contact.hh"
-#include "src/backend/epp/contact/impl/info_contact_data_filter.hh"
+#include "src/backend/epp/contact/impl/contact_data_share_policy_rules.hh"
 
 #include "src/backend/epp/contact/config_data_filter.hh"
 

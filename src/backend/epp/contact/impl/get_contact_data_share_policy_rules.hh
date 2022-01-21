@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2021  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,30 +16,22 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
-#ifndef INFO_CONTACT_CONFIG_DATA_HH_F7DDDCCA0C744EEB846B216F7AF03958
-#define INFO_CONTACT_CONFIG_DATA_HH_F7DDDCCA0C744EEB846B216F7AF03958
+#ifndef GET_CONTACT_DATA_SHARE_POLICY_RULES_HH_8DFB0156981D0A832B7D4CA0020FA0CB//date "+%s.%N"|md5sum|tr "[a-f]" "[A-F]"
+#define GET_CONTACT_DATA_SHARE_POLICY_RULES_HH_8DFB0156981D0A832B7D4CA0020FA0CB
 
 #include "src/backend/epp/contact/contact_data_share_policy_rules.hh"
+#include "src/backend/epp/contact/config_data_filter.hh"
 
 #include <memory>
-#include <utility>
 
 namespace Epp {
 namespace Contact {
+namespace Impl {
 
-struct InfoContactConfigData
-{
-    InfoContactConfigData(
-            bool rifd_epp_operations_charging,
-            std::shared_ptr<ContactDataSharePolicyRules> contact_data_share_policy_rules)
-        : rifd_epp_operations_charging{rifd_epp_operations_charging},
-          contact_data_share_policy_rules{std::move(contact_data_share_policy_rules)}
-    { }
-    bool rifd_epp_operations_charging;
-    std::shared_ptr<ContactDataSharePolicyRules> contact_data_share_policy_rules;
-};
+std::shared_ptr<Epp::Contact::ContactDataSharePolicyRules> get_contact_data_share_policy_rules(const ConfigDataFilter& filter);
 
-} // namespace Epp::Contact
-} // namespace Epp
+}//namespace Epp::Contact::Impl
+}//namespace Epp::Contact
+}//namespace Epp
 
-#endif
+#endif//GET_CONTACT_DATA_SHARE_POLICY_RULES_HH_8DFB0156981D0A832B7D4CA0020FA0CB

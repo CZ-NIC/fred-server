@@ -777,6 +777,7 @@ add_common_library_target(epp_impl
     src/backend/epp/epp_result_success_localized.cc
     src/backend/epp/epp_extended_error.cc
     src/backend/epp/epp_extended_error_localized.cc
+    src/backend/epp/password.cc
     src/backend/epp/session_data.cc
     src/backend/epp/impl/conditionally_enqueue_notification.cc
     src/backend/epp/contact/authinfo_contact.cc
@@ -786,15 +787,15 @@ add_common_library_target(epp_impl
     src/backend/epp/contact/util.cc
     src/backend/epp/contact/contact_change.cc
     src/backend/epp/contact/contact_data.cc
+    src/backend/epp/contact/impl/contact_data_share_policy_rules.cc
     src/backend/epp/contact/impl/contact_output.cc
     src/backend/epp/contact/impl/get_personal_id_union.cc
-    src/backend/epp/contact/impl/info_contact_data_filter.cc
     src/backend/epp/contact/impl/cznic/create_contact_data_filter.cc
     src/backend/epp/contact/impl/cznic/update_contact_data_filter.cc
     src/backend/epp/contact/impl/set_unused/create_contact_data_filter.cc
     src/backend/epp/contact/impl/set_unused/update_contact_data_filter.cc
     src/backend/epp/contact/impl/get_create_contact_data_filter.cc
-    src/backend/epp/contact/impl/get_info_contact_data_filter.cc
+    src/backend/epp/contact/impl/get_contact_data_share_policy_rules.cc
     src/backend/epp/contact/impl/get_update_contact_data_filter.cc
     src/backend/epp/contact/update_contact_localized.cc
     src/backend/epp/contact/update_contact.cc

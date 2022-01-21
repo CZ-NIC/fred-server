@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2021  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 #include "test/backend/epp/contact/fixture.hh"
 #include "test/backend/epp/contact/util.hh"
 #include "test/backend/epp/util.hh"
@@ -28,7 +27,7 @@
 #include "src/backend/epp/epp_result_code.hh"
 #include "src/backend/epp/session_data.hh"
 #include "src/backend/epp/contact/info_contact_config_data.hh"
-#include "src/backend/epp/contact/impl/info_contact_data_filter.hh"
+#include "src/backend/epp/contact/impl/contact_data_share_policy_rules.hh"
 
 #include "libfred/registrable_object/domain/create_domain.hh"
 #include "libfred/registrable_object/domain/info_domain.hh"
@@ -74,6 +73,7 @@ BOOST_FIXTURE_TEST_CASE(info_invalid_registrar_id, supply_ctx<HasSessionWithUnau
             ctx,
             ValidHandle().handle,
             DefaultInfoContactConfigData(),
+            ::Epp::Password{},
             session_with_unauthenticated_registrar.data
         ),
         ::Epp::EppResponseFailure,
@@ -98,6 +98,7 @@ BOOST_FIXTURE_TEST_CASE(info_fail_nonexistent_handle, supply_ctx<HasRegistrarWit
             ctx,
             NonexistentHandle().handle,
             DefaultInfoContactConfigData(),
+            ::Epp::Password{},
             session.data
         ),
         ::Epp::EppResponseFailure,
@@ -111,6 +112,7 @@ BOOST_FIXTURE_TEST_CASE(info_ok_full_data_for_sponsoring_registrar, supply_ctx<H
                     ctx,
                     contact.data.handle,
                     DefaultInfoContactConfigData(),
+                    ::Epp::Password{},
                     session.data),
             contact.data);
 }
@@ -122,6 +124,7 @@ BOOST_FIXTURE_TEST_CASE(info_ok_full_data_for_different_registrar, supply_ctx<Ha
                     ctx,
                     contact_of_different_registrar.data.handle,
                     DefaultInfoContactConfigData(),
+                    ::Epp::Password{},
                     session.data),
             contact_of_different_registrar.data);
 }
@@ -188,24 +191,23 @@ struct AddRelationships<>
 };
 
 template <typename ...Relationships>
-auto make_info_contact_data_filter()
+auto make_contact_data_share_policy_rules()
 {
     std::vector<std::string> relationships;
     AddRelationships<Relationships...>::into(relationships);
     boost::program_options::variables_map vm;
     vm.insert(std::make_pair("rifd::info_contact.show_private_data_to", boost::program_options::variable_value{relationships, false}));
-    return ::Epp::Contact::Impl::get_info_contact_data_filter(
+    return ::Epp::Contact::Impl::get_contact_data_share_policy_rules(
                 ::Epp::Contact::ConfigDataFilter{}.template set_all_values<::Epp::Contact::Impl::InfoContact>(vm));
 }
 
 template <typename ...Relationships>
 struct InfoContactConfigData : ::Epp::Contact::InfoContactConfigData
 {
-    explicit InfoContactConfigData(const char* authinfopw = "")
+    InfoContactConfigData()
         : ::Epp::Contact::InfoContactConfigData{
               false,
-              authinfopw,
-              make_info_contact_data_filter<Relationships...>()}
+              make_contact_data_share_policy_rules<Relationships...>()}
     { }
 };
 
@@ -358,6 +360,7 @@ void check(LibFred::OperationContext& ctx,
             ctx,
             contact.data.handle,
             InfoContactConfigData<Relationships...>{},
+            ::Epp::Password{},
             session),
         contact.data);
 }
@@ -365,7 +368,7 @@ void check(LibFred::OperationContext& ctx,
 template <typename ...Relationships>
 void check(LibFred::OperationContext& ctx,
            const SessionData& session,
-           const char* authinfopw,
+           const ::Epp::Password& authinfopw,
            const Contact& contact,
            Share expected_share_level)
 {
@@ -385,14 +388,15 @@ void check(LibFred::OperationContext& ctx,
     cmp(::Epp::Contact::info_contact(
             ctx,
             contact.data.handle,
-            InfoContactConfigData<Relationships...>{authinfopw},
+            InfoContactConfigData<Relationships...>{},
+            authinfopw,
             session),
         contact.data);
 }
 
 }//namespace Test::{anonymous}
 
-BOOST_FIXTURE_TEST_CASE(info_contact_data_filter_test, autorollbacking_context)
+BOOST_FIXTURE_TEST_CASE(contact_data_share_policy_rules_test, autorollbacking_context)
 {
     const Registrar registrar_a{ctx, "REG-TEST-A"};
     const Registrar registrar_b{ctx, "REG-TEST-B"};
@@ -457,7 +461,7 @@ BOOST_FIXTURE_TEST_CASE(info_contact_data_filter_test, autorollbacking_context)
     check<ContactRegistrarRelationship::AuthorizedRegistrar>(
                 ctx,
                 session_a,
-                contact_b0.data.authinfopw.c_str(),
+                ::Epp::Password{contact_b0.data.authinfopw},
                 contact_b0,
                 Share::all_except_authinfo);
     BOOST_TEST_MESSAGE("SystemRegistrar sys-a");

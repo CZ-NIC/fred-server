@@ -16,10 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
-
-#include "src/backend/epp/contact/impl/get_info_contact_data_filter.hh"
+#include "src/backend/epp/contact/impl/get_contact_data_share_policy_rules.hh"
 #include "src/backend/epp/contact/impl/info_contact.hh"
-#include "src/backend/epp/contact/impl/info_contact_data_filter.hh"
+#include "src/backend/epp/contact/impl/contact_data_share_policy_rules.hh"
 
 #include <stdexcept>
 
@@ -44,11 +43,11 @@ InfoContact::DataSharePolicy to_data_share_policy(const std::string& value)
 }
 
 template <typename T>
-bool show_private_data_to(const std::string& relationship_name, InfoContactDataFilter::Relationships& enabled_registrars) noexcept
+bool show_private_data_to(const std::string& relationship_name, ContactDataSharePolicyRules::Relationships& enabled_registrars) noexcept
 {
     if (has_value<T>(relationship_name))
     {
-        std::get<InfoContactDataFilter::Bool<T>>(enabled_registrars) = true;
+        std::get<ContactDataSharePolicyRules::Bool<T>>(enabled_registrars) = true;
         return true;
     }
     return false;
@@ -56,12 +55,12 @@ bool show_private_data_to(const std::string& relationship_name, InfoContactDataF
 
 }//namespace Epp::Contact::Impl::{anonymous}
 
-std::shared_ptr<Epp::Contact::InfoContactDataFilter> get_info_contact_data_filter(const ConfigDataFilter& filter)
+std::shared_ptr<Epp::Contact::ContactDataSharePolicyRules> get_contact_data_share_policy_rules(const ConfigDataFilter& filter)
 {
     const auto data_share_policy_str = filter.get_value<Impl::InfoContact::DataSharePolicy>();
     if (data_share_policy_str.empty())
     {
-        Impl::InfoContactDataFilter::Relationships enabled_registrars{};
+        Impl::ContactDataSharePolicyRules::Relationships enabled_registrars{};
         const auto on_registrars_role = [&](const std::string& relationship_name)
         {
             if (show_private_data_to<ContactRegistrarRelationship::SponsoringRegistrarOfDomainWhereContactIs::AdminContact>(
@@ -86,9 +85,9 @@ std::shared_ptr<Epp::Contact::InfoContactDataFilter> get_info_contact_data_filte
             throw InvalidRelationshipName{};
         };
         filter.iterate_multiple_value<Impl::InfoContact::ShowPrivateDataTo>(on_registrars_role);
-        return std::make_shared<Impl::InfoContactDataFilter>(enabled_registrars);
+        return std::make_shared<Impl::ContactDataSharePolicyRules>(enabled_registrars);
     }
-    return std::make_shared<Impl::InfoContactDataFilter>(to_data_share_policy(data_share_policy_str));
+    return std::make_shared<Impl::ContactDataSharePolicyRules>(to_data_share_policy(data_share_policy_str));
 }
 
 }//namespace Epp::Contact::Impl
