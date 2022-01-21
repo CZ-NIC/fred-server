@@ -115,7 +115,7 @@ bool contact_is_registrars_domain_admin_contact(
             Database::query_param_list(registrar_id)(contact_id)).size();
 }
 
-void check_authinfopw(const LibFred::InfoContactData& contact_data, const Password& password)
+void authorize_registrar_request(const LibFred::InfoContactData& contact_data, const Password& password)
 {
     const auto authinfo = Password{contact_data.authinfopw};
     if (authinfo.is_empty())
@@ -292,7 +292,7 @@ LibFred::InfoContactData& ContactDataSharePolicyRules::apply(
         if (this->show_private_data_to<ContactRegistrarRelationship::AuthorizedRegistrar>() &&
             !contact_authinfopw.is_empty())
         {
-            check_authinfopw(contact_data, contact_authinfopw);
+            authorize_registrar_request(contact_data, contact_authinfopw);
             LibFred::UpdateContactById{contact_data.id, session_registrar.handle}
                     .set_authinfo(LibFred::generate_authinfo_pw().password_)
                     .exec(ctx);
