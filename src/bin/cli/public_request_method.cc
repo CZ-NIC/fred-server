@@ -177,7 +177,7 @@ void PublicRequestProcedure::exec()
                     Fbpr::Process::process_public_request_personal_info_resolved(
                             request_id,
                             iface_personal_info_itr->second(),
-                            messenger_endpoint_,
+                            messenger_args_.endpoint,
                             mailer_manager_,
                             file_manager_client_);
                     continue;
@@ -188,7 +188,7 @@ void PublicRequestProcedure::exec()
                     Fbpr::Process::process_public_request_authinfo_resolved(
                             request_id,
                             iface_authinfo_itr->second(),
-                            messenger_endpoint_,
+                            messenger_args_.endpoint,
                             mailer_manager_);
                     continue;
                 }
@@ -198,7 +198,7 @@ void PublicRequestProcedure::exec()
                     Fbpr::Process::process_public_request_block_unblock_resolved(
                             request_id,
                             iface_block_unblock_itr->second(),
-                            messenger_endpoint_,
+                            messenger_args_.endpoint,
                             mailer_manager_);
                     continue;
                 }

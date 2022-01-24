@@ -48,6 +48,7 @@
 #include "src/bin/cli/public_request_params.hh"
 #include "src/bin/cli/domain_name_validation_params.hh"
 #include "src/bin/cli/charge_registry_access_fee_params.hh"
+#include "src/bin/cli/messenger.hh"
 
 #include <iostream>
 #include <exception>
@@ -2638,7 +2639,10 @@ struct HandleAdminClientProcessPublicRequestsArgsGrp : HandleCommandGrpArgs
              ("process_public_requests", "process_public_requests options")
              ("types", boost::program_options::value<std::vector<std::string> >()->multitoken()
                  ->notifier(save_arg<std::vector<std::string> >(process_public_requests_params.types)),
-                 "list of types of public requests to be processed");
+                 "list of types of public requests to be processed")
+             ("messenger_endpoint", boost::program_options::value<std::string>()->required()
+                 ->notifier(save_arg<std::string>(process_public_requests_params.messenger_endpoint)),
+                 "URI of Fred.Api.Messenger.Email service to connect to");
         return cfg_opts;
     }
 
@@ -2755,6 +2759,40 @@ struct HandleChargeRegistryAccessFeeMonthlyArgsGrp : HandleCommandGrpArgs
         handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }
+};
+
+struct HandleAdminClientMessengerArgsGrp : HandleCommandGrpArgs
+{
+    CommandDescription get_command_option() override
+    {
+        return CommandDescription("messenger");
+    }
+
+    std::shared_ptr<boost::program_options::options_description>
+    get_options_description() override
+    {
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("messenger options")));
+        cfg_opts->add_options()
+             ("messenger", "messenger options")
+             ("endpoint", boost::program_options::value<std::string>()->required()
+                 ->notifier(save_arg<std::string>(messenger_params.endpoint)),
+                 "URI of Fred.Api.Messenger.Email service to connect to");
+        return cfg_opts;
+    }
+
+    std::size_t handle(
+            int argc,
+            char* argv[],
+            FakedArgs& fa,
+            std::size_t option_group_index) override
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }
+    MessengerArgs messenger_params;
 };
 
 #endif

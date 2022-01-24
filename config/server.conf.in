@@ -308,3 +308,10 @@ enable_request_logger = true
 ###
 [messenger]
 endpoint = localhost:50051
+
+###
+### Fileman settings
+### * endpoint - URI of Fred.Fileman.Api.File gRPC service
+###
+[fileman]
+endpoint = localhost:50051

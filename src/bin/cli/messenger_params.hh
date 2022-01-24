@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,22 +16,22 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
-#ifndef PUBLIC_REQUEST_PARAMS_HH_D11401DE20AD4684A355DD9612889EBA
-#define PUBLIC_REQUEST_PARAMS_HH_D11401DE20AD4684A355DD9612889EBA
+#ifndef MESSENGER_PARAMS_HH_779C1D436F8041EB986E1D778638557B
+#define MESSENGER_PARAMS_HH_779C1D436F8041EB986E1D778638557B
 
-#include <vector>
 #include <string>
 
-struct ProcessPublicRequestsArgs
+struct MessengerArgs
 {
-    std::vector<std::string> types;
+    std::string endpoint;
 
-    ProcessPublicRequestsArgs() = default;
+    MessengerArgs() = default;
 
-    explicit ProcessPublicRequestsArgs(const std::vector<std::string>&  _public_requests_types)
-        : types(_public_requests_types)
+    explicit MessengerArgs(const std::string&  _endpoint)
+        : endpoint(_endpoint)
     {
     }
 };
 
 #endif
+

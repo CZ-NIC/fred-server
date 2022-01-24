@@ -18,6 +18,8 @@
  */
 #include "src/backend/public_request/util/send_joined_address_email.hh"
 
+#include "libhermes/libhermes.hh"
+
 #include <boost/algorithm/string/trim.hpp>
 
 #include <sstream>
@@ -28,29 +30,48 @@ namespace PublicRequest {
 namespace Util {
 
 unsigned long long send_joined_addresses_email(
-        std::shared_ptr<LibFred::Mailer::Manager> mailer,
+        const std::string& _messenger_endpoint,
         const EmailData& data)
 {
-    std::ostringstream recipients;
-    for (const auto& email: data.recipient_email_addresses)
+    for (const auto& recipient_email_address : data.recipient_email_addresses)
     {
-        recipients << boost::trim_copy(email) << ' ';
-    }
+        auto email =
+                LibHermes::Email::make_minimal_email(
+                        LibHermes::Email::Email::Recipient{boost::algorithm::trim_copy(recipient_email_address)},
+                        LibHermes::Email::Email::SubjectTemplate{data.template_name_subject},
+                        LibHermes::Email::Email::BodyTemplate{data.tamplate_name_body});
 
-    try
-    {
-        return mailer->sendEmail(
-                "",
-                recipients.str(),
-                "",
-                data.template_name,
-                data.template_parameters,
-                LibFred::Mailer::Handles(),
-                data.attachments);
-    }
-    catch (const LibFred::Mailer::NOT_SEND&)
-    {
-        throw FailedToSendMailToRecipient();
+        std::transform(
+                data.template_parameters.begin(),
+                data.template_parameters.end(),
+                std::inserter(email.context, email.context.end()),
+                [](const auto& item) -> auto
+                {
+                    return std::make_pair(LibHermes::StructKey{item.first}, LibHermes::StructValue{item.second});
+                });
+
+        LibHermes::Email::EmailUid email_uid;
+        try
+        {
+            email_uid =
+                    LibHermes::Email::send(
+                            connection,
+                            email,
+                            LibHermes::Email::Archive{false},
+                            {});
+        }
+        catch (const std::exception& e)
+        {
+            LIBLOG_WARNING("std::exception caught while sending email: {}", e.what());
+            continue;
+        }
+        catch (...)
+        {
+            LIBLOG_WARNING("exception caught while sending email");
+            continue;
+        }
+        // throw FailedToSendMailToRecipient();
+        // return email_uids
     }
 }
 

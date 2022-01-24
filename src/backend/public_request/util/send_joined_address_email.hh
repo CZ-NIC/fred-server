@@ -43,23 +43,26 @@ struct EmailData
 {
     EmailData(
             const std::set<std::string>& _recipient_email_addresses,
-            const std::string& _template_name,
+            const std::string& _template_name_subject,
+            const std::string& _template_name_body,
             const std::map<std::string, std::string>& _template_parameters,
             const std::vector<unsigned long long>& _attachments)
         : recipient_email_addresses(_recipient_email_addresses),
-          template_name(_template_name),
+          template_name_subject(_template_name_subject),
+          template_name_body(_template_name_body),
           template_parameters(_template_parameters),
           attachments(_attachments)
     {
     }
     const std::set<std::string> recipient_email_addresses;
-    const std::string template_name;
+    const std::string template_name_subject;
+    const std::string template_name_body;
     const std::map<std::string, std::string> template_parameters;
     const std::vector<unsigned long long> attachments;
 };
 
 unsigned long long send_joined_addresses_email(
-        std::shared_ptr<LibFred::Mailer::Manager> mailer,
+        const std::string& _messenger_endpoint,
         const EmailData& data);
 
 } // namespace Fred::Backend::PublicRequest::Util

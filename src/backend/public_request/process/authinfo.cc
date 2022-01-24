@@ -25,7 +25,6 @@
 #include "src/backend/public_request/type/get_iface_of.hh"
 #include "src/backend/public_request/type/public_request_authinfo.hh"
 #include "src/backend/public_request/util/send_joined_address_email.hh"
-#include "src/bin/corba/mailer_manager.hh"
 #include "libfred/object/object_states_info.hh"
 #include "libfred/object/object_type.hh"
 #include "src/backend/public_request/get_valid_registry_emails_of_registered_object.hh"
@@ -103,10 +102,25 @@ EmailType get_email_type(const LibFred::PublicRequestTypeIface& public_request)
     throw std::runtime_error{"unexpected public request type: " + public_request_type};
 }
 
+std::string get_template_name_subject(const EmailType& _email_type)
+{
+    switch (_email_type) {
+        case EmailType::sendauthinfo_pif: return "send-authinfo-subject.txt";
+        case EmailType::sendauthinfo_epp: return "send_authinfo-subject.txt";
+    }
+}
+
+std::string get_template_name_body(const EmailType& _email_type)
+{
+    switch (_email_type) {
+        case EmailType::sendauthinfo_pif: return "send-authinfo-pif-body.txt";
+        case EmailType::sendauthinfo_epp: return "send_authinfo-epp-body.txt";
+    }
+}
+
 unsigned long long send_authinfo_email(
         const LibFred::LockedPublicRequestForUpdate& _locked_request,
         const std::string& _messenger_endpoint,
-        std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager,
         EmailType _email_type)
 {
     auto& ctx = _locked_request.get_ctx();
@@ -203,8 +217,8 @@ unsigned long long send_authinfo_email(
     email_template_params.insert(LibFred::Mailer::Parameters::value_type("type", type));
     email_template_params.insert(LibFred::Mailer::Parameters::value_type("authinfo", authinfo));
 
-    const auto data = Util::EmailData{emails, to_string(_email_type), email_template_params, std::vector<unsigned long long>()};
-    return send_joined_addresses_email(_messenger_endpoint, _mailer_manager, data);
+    const auto data = Util::EmailData{emails, get_template_name_subject(_email_type), template_name_body(_email_type), email_template_params, std::vector<unsigned long long>()};
+    return send_joined_addresses_email(_messenger_endpoint, data);
 }
 
 } // namespace Fred::Backend::PublicRequest::Process::{anonymous}
@@ -212,8 +226,7 @@ unsigned long long send_authinfo_email(
 void process_public_request_authinfo_resolved(
         unsigned long long _public_request_id,
         const LibFred::PublicRequestTypeIface& _public_request_type,
-        const std::string& _messenger_endpoint,
-        std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager)
+        const std::string& _messenger_endpoint)
 {
     try
     {
@@ -222,7 +235,6 @@ void process_public_request_authinfo_resolved(
         const auto email_id = send_authinfo_email(
                 locked_request,
                 _messenger_endpoint,
-                _mailer_manager,
                 get_email_type(_public_request_type));
         try
         {

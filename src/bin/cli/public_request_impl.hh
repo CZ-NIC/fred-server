@@ -55,6 +55,7 @@ struct process_public_requests_impl
 
         Admin::PublicRequestProcedure public_request(
                 CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientProcessPublicRequestsArgsGrp>()->process_public_requests_params,
+                CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientMessengerArgsGrp>()->messenger_params,
                 static_cast<std::shared_ptr<LibFred::Mailer::Manager>>(
                         std::make_shared<MailerManager>(CorbaContainer::get_instance()->getNS())),
                 static_cast<std::shared_ptr<LibFred::File::Transferer>>(

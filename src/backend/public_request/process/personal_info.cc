@@ -20,7 +20,6 @@
 
 #include "src/backend/public_request/exceptions.hh"
 #include "src/backend/public_request/util/send_joined_address_email.hh"
-#include "src/bin/corba/mailer_manager.hh"
 #include "libfred/opcontext.hh"
 #include "libfred/public_request/info_public_request.hh"
 #include "libfred/public_request/public_request_lock_guard.hh"
@@ -66,7 +65,6 @@ std::string pretty_print_address(const T& _address)
 unsigned long long send_personal_info(
         const LibFred::LockedPublicRequestForUpdate& _locked_request,
         const std::string& _messenger_endpoint,
-        std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager,
         std::shared_ptr<LibFred::File::Transferer> _file_manager_client)
 {
     auto& ctx = _locked_request.get_ctx();
@@ -297,8 +295,8 @@ unsigned long long send_personal_info(
     }
 
     const std::set<std::string> recipients = { email_to_answer.empty() ? info_contact_data.email.get_value() : email_to_answer };
-    const Util::EmailData data(recipients, "sendpersonalinfo_pif", email_template_params, attachments);
-    return send_joined_addresses_email(_messenger_endpoint, _mailer_manager, data);
+    const Util::EmailData data(recipients, "send-personalinfo-pif-subject.txt", "send-personalinfo-pif-body.txt", email_template_params, attachments);
+    return send_joined_addresses_email(_messenger_endpoint, data);
 }
 
 } // namespace Fred::Backend::PublicRequest::Process::{anonymous}
@@ -307,14 +305,13 @@ void process_public_request_personal_info_resolved(
         unsigned long long _public_request_id,
         const LibFred::PublicRequestTypeIface& _public_request_type,
         const std::string& _messenger_endpoint,
-        std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager,
         std::shared_ptr<LibFred::File::Transferer> _file_manager_client)
 {
     try
     {
         LibFred::OperationContextCreator ctx;
         const LibFred::PublicRequestLockGuardById locked_request(ctx, _public_request_id);
-        const unsigned long long email_id = send_personal_info(locked_request, _messenger_endpoint, _mailer_manager, _file_manager_client);
+        const unsigned long long email_id = send_personal_info(locked_request, _messenger_endpoint, _file_manager_client);
         try
         {
             LibFred::UpdatePublicRequest()

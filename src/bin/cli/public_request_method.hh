@@ -38,11 +38,11 @@ class PublicRequestProcedure
 public:
     PublicRequestProcedure(
             const ProcessPublicRequestsArgs& _args,
-            const std::string& _messenger_endpoint,
+            const MessengerArgs& _messenger_args,
             std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager,
             std::shared_ptr<LibFred::File::Transferer> _file_manager_client)
         : args_(_args),
-          messenger_endpoint_(_messenger_endpoint),
+          messenger_args_(_messenger_args),
           mailer_manager_(std::move(_mailer_manager)),
           file_manager_client_(std::move(_file_manager_client))
         {
@@ -51,7 +51,7 @@ public:
     void exec();
 private:
     ProcessPublicRequestsArgs args_;
-    std::string messenger_endpoint_;
+    MessengerArgs messenger_args_;
     std::shared_ptr<LibFred::Mailer::Manager> mailer_manager_;
     std::shared_ptr<LibFred::File::Transferer> file_manager_client_;
 };
