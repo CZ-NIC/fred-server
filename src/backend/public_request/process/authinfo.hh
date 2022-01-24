@@ -33,6 +33,7 @@ namespace Process {
 void process_public_request_authinfo_resolved(
         unsigned long long _public_request_id,
         const LibFred::PublicRequestTypeIface& _public_request_type,
+        const std::string& _messenger_endpoint,
         std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager);
 
 } // namespace Fred::Backend::PublicRequest::Process
