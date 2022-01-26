@@ -356,6 +356,7 @@ void check(LibFred::OperationContext& ctx,
         }
         throw std::logic_error{"unexpected Share value"};
     }();
+    const auto authinfo_before = ::Epp::Password{LibFred::InfoContactById{contact.data.id}.exec(ctx).info_contact_data.authinfopw};
     cmp(::Epp::Contact::info_contact(
             ctx,
             contact.data.handle,
@@ -363,6 +364,11 @@ void check(LibFred::OperationContext& ctx,
             ::Epp::Password{},
             session),
         contact.data);
+    const auto authinfo_after = ::Epp::Password{LibFred::InfoContactById{contact.data.id}.exec(ctx).info_contact_data.authinfopw};
+    BOOST_REQUIRE((authinfo_before.is_empty() && authinfo_after.is_empty()) ||
+                  (!authinfo_before.is_empty() && !authinfo_after.is_empty()));
+    BOOST_CHECK((authinfo_before.is_empty() && authinfo_after.is_empty()) ||
+                (authinfo_before == authinfo_after));
 }
 
 template <typename ...Relationships>
@@ -385,6 +391,9 @@ void check(LibFred::OperationContext& ctx,
         }
         throw std::logic_error{"unexpected Share value"};
     }();
+    const auto authinfo_before = ::Epp::Password{LibFred::InfoContactById{contact.data.id}.exec(ctx).info_contact_data.authinfopw};
+    BOOST_REQUIRE(!authinfo_before.is_empty());
+    const auto authorized = authinfo_before == authinfopw;
     cmp(::Epp::Contact::info_contact(
             ctx,
             contact.data.handle,
@@ -392,6 +401,15 @@ void check(LibFred::OperationContext& ctx,
             authinfopw,
             session),
         contact.data);
+    const auto authinfo_after = ::Epp::Password{LibFred::InfoContactById{contact.data.id}.exec(ctx).info_contact_data.authinfopw};
+    if (authorized)
+    {
+        BOOST_CHECK(authinfopw != authinfo_after);
+    }
+    else
+    {
+        BOOST_CHECK(authinfo_before == authinfo_after);
+    }
 }
 
 }//namespace Test::{anonymous}

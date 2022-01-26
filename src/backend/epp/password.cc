@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/epp/password.hh"
 
 #include <stdexcept>
@@ -29,7 +30,7 @@ Password::Password(std::string value)
 
 bool Password::is_empty() const noexcept
 {
-    return *this == Password{};
+    return value_.empty();
 }
 
 } // namespace Epp
