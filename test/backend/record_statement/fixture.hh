@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -15,9 +15,6 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
- */
-/**
- *  @file
  */
 
 #ifndef FIXTURE_HH_5946B0B6ADA84B5E81A41847FEE8074D
@@ -76,10 +73,9 @@ struct domain_fixture : virtual public Test::instantiate_db_template
       test_nsset_handle("TEST-NSSET-HANDLE"),
       test_keyset_handle("TEST-KEYSET-HANDLE"),
       test_fqdn("fredinfo.cz"),
-      rs_impl(Fred::Backend::RecordStatement::Impl::Factory::produce(
-              CfgArgs::instance()->get_handler_ptr_by_type<HandleRegistryArgs>()->registry_timezone,
-              make_doc_manager(),
-              make_mailer_manager()))
+      rs_impl(Fred::Backend::RecordStatement::Impl::get_default_factory()
+              [CfgArgs::instance()->get_handler_ptr_by_type<HandleRegistryArgs>()->registry_timezone]
+              (make_doc_manager(), make_mailer_manager()))
     {
         namespace ip = boost::asio::ip;
 
@@ -211,10 +207,9 @@ struct domain_by_name_and_time_fixture : virtual public Test::instantiate_db_tem
           test_keyset_handle("TEST-KEYSET-HANDLE"),
           test_fqdn("fredinfo.cz"),
           timestamp(Tz::LocalTimestamp::from_rfc3339_formated_string("1970-01-01T00:00:00Z")),
-          rs_impl(Fred::Backend::RecordStatement::Impl::Factory::produce(
-                  CfgArgs::instance()->get_handler_ptr_by_type<HandleRegistryArgs>()->registry_timezone,
-                  make_doc_manager(),
-                  make_mailer_manager()))
+          rs_impl(Fred::Backend::RecordStatement::Impl::get_default_factory()
+                  [CfgArgs::instance()->get_handler_ptr_by_type<HandleRegistryArgs>()->registry_timezone]
+                  (make_doc_manager(), make_mailer_manager()))
     {
         namespace ip = boost::asio::ip;
 

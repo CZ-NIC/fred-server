@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2021  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2013-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,12 +16,16 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/admin/contact/merge_contact_auto_procedure.hh"
 #include "src/backend/admin/contact/merge_contact.hh"
 #include "src/backend/admin/contact/merge_contact_reporting.hh"
+
 #include "libfred/registrable_object/contact/find_contact_duplicates.hh"
-#include "libfred/registrable_object/contact/merge_contact_email_notification_data.hh"
 #include "libfred/registrable_object/contact/merge_contact.hh"
+#include "libfred/registrable_object/contact/merge_contact_email_notification_data.hh"
+#include "libfred/registrable_object/contact/merge_contact_selection.hh"
+
 #include "util/util.hh"
 
 #include <boost/algorithm/string/join.hpp>
@@ -182,10 +186,12 @@ MergeContactAutoProcedure& MergeContactAutoProcedure::set_dry_run(
 }
 
 MergeContactAutoProcedure& MergeContactAutoProcedure::set_selection_filter_order(
-    const std::vector<LibFred::ContactSelectionFilterType>& _selection_filter_order)
+    const std::vector<std::string>& _selection_filter_order)
 {
     /* XXX: this throws - should do better error reporting */
-    FactoryHaveSupersetOfKeysChecker<LibFred::ContactSelectionFilterFactory>(_selection_filter_order).check();
+    Util::FactoryHaveSupersetOfKeys::require(
+            LibFred::get_default_contact_selection_filter_factory(),
+            _selection_filter_order);
     selection_filter_order_ = _selection_filter_order;
     return *this;
 }
@@ -205,9 +211,9 @@ bool MergeContactAutoProcedure::is_set_dry_run() const
 }
 
 
-std::vector<LibFred::ContactSelectionFilterType> MergeContactAutoProcedure::get_default_selection_filter_order() const
+std::vector<std::string> MergeContactAutoProcedure::get_default_selection_filter_order() const
 {
-    std::vector<LibFred::ContactSelectionFilterType> tmp = boost::assign::list_of
+    std::vector<std::string> tmp = boost::assign::list_of
         (LibFred::MCS_FILTER_IDENTIFIED_CONTACT)
         (LibFred::MCS_FILTER_IDENTITY_ATTACHED)
         (LibFred::MCS_FILTER_CONDITIONALLY_IDENTIFIED_CONTACT)
@@ -264,7 +270,7 @@ std::vector<LibFred::MergeContactNotificationEmailWithAddr> MergeContactAutoProc
         throw std::runtime_error(std::string("registrar: '") + registrar_ + "' not found");
     }
 
-    const std::vector<LibFred::ContactSelectionFilterType> selection_filter =
+    const std::vector<std::string> selection_filter =
         !selection_filter_order_.empty()
         ? selection_filter_order_
         : get_default_selection_filter_order();

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -21,7 +21,6 @@
 
 #include "src/backend/admin/contact/verification/contact_states/delete_all.hh"
 #include "src/backend/admin/contact/verification/contact_states/enum.hh"
-#include "src/backend/admin/contact/verification/create_test_impl_prototypes.hh"
 #include "src/backend/admin/contact/verification/delete_domains_of_invalid_contact.hh"
 #include "src/backend/admin/contact/verification/enqueue_check.hh"
 #include "src/backend/admin/contact/verification/exceptions.hh"

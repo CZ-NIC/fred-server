@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2020  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2014-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,21 +16,19 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/admin/contact/verification/test_impl/test_email_exists_for_managed_zones.hh"
 #include "libfred/opcontext.hh"
 #include "libfred/registrable_object/contact/info_contact.hh"
 #include "libfred/registrable_object/contact/verification/enum_test_status.hh"
 
 #include <boost/algorithm/string.hpp>
-#include <boost/foreach.hpp>
 
 namespace Fred {
 namespace Backend {
 namespace Admin {
 namespace Contact {
 namespace Verification {
-
-FACTORY_MODULE_INIT_DEFI(TestEmailExistsForManagedZones_init)
 
 /**
  * @returns test result for this email only - either OK, FAIL or SKIPPED
@@ -74,10 +72,7 @@ static std::string check_email(
     // guarantees that label_separator_positions.size() > 0 which is handy in iterator init in for(;;) below
     label_separator_positions.push_back(at_domain.begin());
 
-    for (std::string::iterator it = at_domain.begin();
-         it != at_domain.end();
-         ++it
-         )
+    for (std::string::iterator it = at_domain.begin(); it != at_domain.end(); ++it)
     {
         if (*it == '.')
         {
@@ -91,7 +86,8 @@ static std::string check_email(
      * alice@subdomain.zone
      * even if we would be managing myzone we can't (directly) say if
      * e-mail bob@myzone exists, we can only say so about foo@mydomain.myzone
-     */for (std::vector<std::string::iterator>::const_iterator it = label_separator_positions.begin() + 1;
+     */
+    for (std::vector<std::string::iterator>::const_iterator it = label_separator_positions.begin() + 1;
          it != label_separator_positions.end();
          ++it)
     {
@@ -100,16 +96,14 @@ static std::string check_email(
                     std::string(
                             (*it) + 1,
                             at_domain.end())                  // emulation of "hostname.substr(it)"
-                    ) == managed_zones.end()
-            )
+                    ) == managed_zones.end())
         {
             continue;
         }
 
         // ok, we are managing the zone, lets ...
         // ... try to find first level sub-domain in this zone
-        if (
-            ctx.get_conn().exec_params(
+        if (ctx.get_conn().exec_params(
                     // clang-format off
                     "WITH normalized AS ( "
                         "SELECT "
@@ -135,18 +129,16 @@ static std::string check_email(
         {
             return LibFred::ContactTestStatus::FAIL;
         }
-        else
-        {
-            return LibFred::ContactTestStatus::OK;
-        }
+        return LibFred::ContactTestStatus::OK;
     }
 
     // ok no subdomain of hostname is a managed zones
     return LibFred::ContactTestStatus::SKIPPED;
 }
 
+namespace {
 
-static std::set<std::string> get_managed_zones(LibFred::OperationContext& ctx)
+std::set<std::string> get_managed_zones(LibFred::OperationContext& ctx)
 {
     Database::Result res_zones = ctx.get_conn().exec("SELECT fqdn FROM zone ");
     std::set<std::string> result;
@@ -160,6 +152,7 @@ static std::set<std::string> get_managed_zones(LibFred::OperationContext& ctx)
     return result;
 }
 
+} // namespace Fred::Backend::Admin::Contact::Verification::{anonymous}
 
 Test::TestRunResult TestEmailExistsForManagedZones::run(unsigned long long _history_id) const
 {
@@ -178,7 +171,7 @@ Test::TestRunResult TestEmailExistsForManagedZones::run(unsigned long long _hist
     // empty email is ok
     if (emails.size() == 0)
     {
-        return TestRunResult(LibFred::ContactTestStatus::OK);
+        return TestRunResult{LibFred::ContactTestStatus::OK};
     }
 
     LibFred::OperationContextCreator ctx;
@@ -188,10 +181,7 @@ Test::TestRunResult TestEmailExistsForManagedZones::run(unsigned long long _hist
     std::vector<std::string> invalid_emails;
     unsigned int skipped_email_count = 0;
 
-    for (std::vector<std::string>::const_iterator it = emails.begin();
-         it != emails.end();
-         ++it
-         )
+    for (std::vector<std::string>::const_iterator it = emails.begin(); it != emails.end(); ++it)
     {
         std::string result = check_email(
                 ctx,
@@ -210,20 +200,39 @@ Test::TestRunResult TestEmailExistsForManagedZones::run(unsigned long long _hist
 
     if (skipped_email_count == emails.size() && emails.size() > 0)
     {
-        return TestRunResult(
+        return TestRunResult{
                 LibFred::ContactTestStatus::SKIPPED,
-                std::string("this test is intended for e-mails from managed zones only"));
+                "this test is intended for e-mails from managed zones only"};
     }
-    else if (!invalid_emails.empty())
+    if (!invalid_emails.empty())
     {
-        return TestRunResult(
+        return TestRunResult{
                 LibFred::ContactTestStatus::FAIL,
                 "emails: " + boost::join(
                         invalid_emails,
-                        ",") + " are invalid");
+                        ",") + " are invalid"};
     }
 
-    return TestRunResult(LibFred::ContactTestStatus::OK);
+    return TestRunResult{LibFred::ContactTestStatus::OK};
+}
+
+ void TestDataProvider<TestEmailExistsForManagedZones>::store_data(const LibFred::InfoContactOutput& _data)
+{
+    if (!_data.info_contact_data.email.isnull())
+    {
+        email_ = _data.info_contact_data.email.get_value_or_default();
+    }
+}
+
+std::vector<std::string> TestDataProvider<TestEmailExistsForManagedZones>::get_string_data() const
+{
+    return {email_};
+}
+
+template <>
+std::string test_name<TestEmailExistsForManagedZones>()
+{
+    return "email_existence_in_managed_zones";
 }
 
 } // namespace Fred::Backend::Admin::Contact::Verification

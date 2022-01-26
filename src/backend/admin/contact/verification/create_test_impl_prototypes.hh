@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2013-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,20 +16,16 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
-/**
- *  @file
- *  push back contact verification checks to queue up to it's at maximal length
- */
 
 #ifndef CREATE_TEST_IMPL_PROTOTYPES_HH_9627A790EC304B26805677091D2BE100
 #define CREATE_TEST_IMPL_PROTOTYPES_HH_9627A790EC304B26805677091D2BE100
 
 #include "src/backend/admin/contact/verification/test_impl/test_interface.hh"
 #include "src/deprecated/libfred/documents.hh"
-#include "libfred/mailer.hh"
 #include "src/deprecated/libfred/messages/messages_impl.hh"
 
-#include <map>
+#include "libfred/mailer.hh"
+
 #include <memory>
 #include <string>
 
@@ -42,12 +38,11 @@ namespace Verification {
 /**
  * @return mapping of testnames to configured test implementation instances
  */
-std::map<std::string, std::shared_ptr<Test>> create_test_impl_prototypes(
+Util::Factory<Test> create_test_impl_prototypes(
         std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager,
         std::shared_ptr<LibFred::Document::Manager> _document_manager,
         std::shared_ptr<LibFred::Messages::Manager> _message_manager,
         const std::string& _cz_address_dataset_path);
-
 
 } // namespace Fred::Backend::Admin::Contact::Verification
 } // namespace Fred::Backend::Admin::Contact
@@ -55,4 +50,4 @@ std::map<std::string, std::shared_ptr<Test>> create_test_impl_prototypes(
 } // namespace Fred::Backend
 } // namespace Fred
 
-#endif
+#endif//CREATE_TEST_IMPL_PROTOTYPES_HH_9627A790EC304B26805677091D2BE100

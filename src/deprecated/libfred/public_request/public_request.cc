@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2011-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,15 +16,26 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/deprecated/libfred/public_request/public_request.hh"
 #include "src/deprecated/libfred/public_request/public_request_impl.hh"
+#include "src/deprecated/libfred/public_request/public_request_authinfo_impl.hh"
+#include "src/deprecated/libfred/public_request/public_request_block_impl.hh"
+#include "src/deprecated/libfred/public_request/public_request_personal_info_impl.hh"
+
+#include "src/backend/contact_verification/public_request_contact_verification_impl.hh"
+
+#include "src/bin/corba/admin/public_request_mojeid.hh"
+
+#include "src/util/types/stringify.hh"
 
 #include "util/util.hh"
-#include "src/util/types/stringify.hh"
 
 
 namespace LibFred {
 namespace PublicRequest {
+
+namespace {
 
 class ListImpl : public LibFred::CommonListImpl,
                  virtual public List {
@@ -32,17 +43,17 @@ private:
   Manager *manager_;
 
 public:
-  ListImpl(Manager *_manager) : CommonListImpl(), manager_(_manager) {
-  }
+  ListImpl(Manager *_manager) : CommonListImpl(), manager_(_manager) { }
 
-  virtual ~ListImpl() {
-  }
+  ~ListImpl() override { }
 
-  virtual const char* getTempTableName() const {
+  const char* getTempTableName() const override
+  {
     return "tmp_public_request_filter_result";
   }
 
-  virtual PublicRequest* get(unsigned _idx) const {
+  PublicRequest* get(unsigned _idx) const override
+  {
     try {
       PublicRequest *request = dynamic_cast<PublicRequest* >(data_.at(_idx));
       if (request)
@@ -56,7 +67,8 @@ public:
     }
   }
 
-  virtual void reload(Database::Filters::Union& _filter) {
+  void reload(Database::Filters::Union& _filter) override
+  {
     TRACE("[CALL] LibFred::Request::ListImpl::reload()");
     clear();
     _filter.clearQueries();
@@ -162,11 +174,10 @@ public:
       LOGGER.error(boost::format("%1%") % ex.what());
       clear();
     }
-
-
   }
 
-  virtual void sort(MemberType _member, bool _asc) {
+  void sort(MemberType _member, bool _asc) override
+  {
     switch(_member) {
       case MT_CRDATE:
         stable_sort(data_.begin(), data_.end(), CompareCreateTime(_asc));
@@ -183,11 +194,9 @@ public:
     }
   }
 
-  virtual void reload() {
-  }
+  void reload() override { }
 
-  virtual void makeQuery(bool, bool, std::stringstream&) const {
-  }
+  void makeQuery(bool, bool, std::stringstream&) const override { }
 };
 
 
@@ -224,23 +233,25 @@ public:
   {
   }
 
-  virtual ~ManagerImpl() {
-  }
+  ~ManagerImpl() override { }
 
-  virtual Mailer::Manager* getMailerManager() const {
+  Mailer::Manager* getMailerManager() const override
+  {
     return mailer_manager_;
   }
 
-  virtual Document::Manager* getDocumentManager() const {
+  Document::Manager* getDocumentManager() const override
+  {
     return doc_manager_;
   }
 
-  Messages::ManagerPtr getMessagesManager() const
+  Messages::ManagerPtr getMessagesManager() const override
   {
       return messages_manager;
   }
 
-  virtual List* createList() const {
+  List* createList() const override
+  {
     TRACE("[CALL] LibFred::Request::Manager::createList()");
     /*
      * can't use this way; connection will not be properly closed when
@@ -252,10 +263,10 @@ public:
     return new ListImpl((Manager *)this);
   }
 
-  virtual void getPdf(Database::ID _id,
-                      const std::string& _lang,
-                      std::ostream& _output) const
-                                                    {
+  void getPdf(Database::ID _id,
+              const std::string& _lang,
+              std::ostream& _output) const override
+  {
     TRACE(boost::format("[CALL] LibFred::Request::Manager::getPdf(%1%, '%2%')") %
           _id % _lang);
     std::unique_ptr<List> l(loadRequest(_id));
@@ -291,21 +302,21 @@ public:
     g->closeInput();
   }
 
-  virtual PublicRequest* createRequest(Type _type) const
+  PublicRequest* createRequest(Type _type) const override
   {
-    LOGGER.debug(boost::format("create public request: %1%  (factory keys: %2%)")
-            % _type % Util::container2comma_list(Factory::instance_ref().get_keys()));
+    LOGGER.debug(boost::format("create public request: %1%") % _type);
 
-    PublicRequestImpl *request = dynamic_cast<PublicRequestImpl*>(Factory::instance_ref().create(_type));
-    if (!request) {
-        throw std::runtime_error("cannot create request");
+    PublicRequestImpl* const request = dynamic_cast<PublicRequestImpl*>(&(get_default_factory()[_type]));
+    if (!request)
+    {
+        throw std::runtime_error{"cannot create request"};
     }
     request->setType(_type);
     request->setManager((Manager *)this);
     return request;
   }
 
-  List *loadRequest(Database::ID id) const {
+  List *loadRequest(Database::ID id) const override {
     lock_public_request_id(id);
     Database::Filters::PublicRequest *prf = new Database::Filters::PublicRequestImpl();
     prf->addId().setValue(id);
@@ -317,9 +328,9 @@ public:
     return l;
   }
 
-  virtual void processRequest(Database::ID _id, bool _invalidate,
-                              bool check,
-                              const unsigned long long &_request_id) const
+  void processRequest(Database::ID _id, bool _invalidate,
+                      bool check,
+                      unsigned long long _request_id) const override
   {
     TRACE(boost::format("[CALL] LibFred::Request::Manager::processRequest(%1%, %2%)") %
           _id % _invalidate);
@@ -335,10 +346,10 @@ public:
     catch (const Database::Exception&) { throw SQL_ERROR(); }
   }
 
-  virtual unsigned long long processAuthRequest(
+  unsigned long long processAuthRequest(
           const std::string &_identification,
           const std::string &_password,
-          const unsigned long long &_request_id)
+          unsigned long long _request_id) override
   {
       Database::Connection conn = Database::Manager::acquire();
       Database::Transaction tx(conn);
@@ -364,9 +375,9 @@ public:
       return request->getObject(0).id;
   }
 
-  virtual bool checkAlreadyProcessedPublicRequest(
-          unsigned long long &_contact_id,
-          const std::vector<Type> &_request_type_list)
+  bool checkAlreadyProcessedPublicRequest(
+          unsigned long long _contact_id,
+          const std::vector<Type> &_request_type_list) override
   {
       Database::Connection conn = Database::Manager::acquire();
       std::ostringstream sql;
@@ -395,9 +406,9 @@ public:
           && (conn.exec_params(sql.str(), Util::vector_of<QueryParam>(_contact_id)(0)(params)).size() == 0); //and no new request
   }
 
-  virtual std::string getPublicRequestAuthIdentification(
-          unsigned long long &_contact_id,
-          const std::vector<Type> &_request_type_list)
+  std::string getPublicRequestAuthIdentification(
+          unsigned long long _contact_id,
+          const std::vector<Type> &_request_type_list) override
   {
       Database::Connection conn = Database::Manager::acquire();
 
@@ -444,9 +455,9 @@ public:
   {
       demo_mode_ = _demo_mode;
   }
-
-
 };
+
+} // namespace LibFred::PublicRequest::{anonymous}
 
 Manager* Manager::create(Domain::Manager    *_domain_manager,
                          Contact::Manager   *_contact_manager,
@@ -456,7 +467,6 @@ Manager* Manager::create(Domain::Manager    *_domain_manager,
                          Document::Manager  *_doc_manager,
                          Messages::ManagerPtr _messages_manager)
 {
-
     TRACE("[CALL] LibFred::Request::Manager::create()");
     return new ManagerImpl(
       _domain_manager,
@@ -469,7 +479,27 @@ Manager* Manager::create(Domain::Manager    *_domain_manager,
     );
 }
 
-std::vector<std::string> get_enum_public_request_type()
+} // namespace LibFred::PublicRequest
+} // namespace LibFred
+
+using namespace LibFred::PublicRequest;
+
+const LibFred::PublicRequest::Factory& LibFred::PublicRequest::get_default_factory()
+{
+    static const auto factory = []()
+    {
+        Factory factory{};
+        Fred::Backend::ContactVerification::PublicRequest::add_producers(factory);
+        CorbaConversion::Admin::add_producers(factory);
+        LibFred::PublicRequest::add_authinfo_producers(factory);
+        LibFred::PublicRequest::add_block_producers(factory);
+        LibFred::PublicRequest::add_personal_info_producers(factory);
+        return factory;
+    }();
+    return factory;
+}
+
+std::vector<std::string> LibFred::PublicRequest::get_enum_public_request_type()
 {
     Database::Connection conn = Database::Manager::acquire();
     Database::Result res = conn.exec("select name from enum_public_request_type");
@@ -483,7 +513,7 @@ std::vector<std::string> get_enum_public_request_type()
 }//enum_public_request_type
 
 //lock public_request for object_id from object_registry.id
-void lock_public_request_by_object(unsigned long long object_id)
+void LibFred::PublicRequest::lock_public_request_by_object(unsigned long long object_id)
 {
     Database::Connection conn = Database::Manager::acquire();
     //get lock to the end of transaction for given object
@@ -492,7 +522,7 @@ void lock_public_request_by_object(unsigned long long object_id)
 }
 
 //lock public_request by public_request_auth.identification
-void lock_public_request_lock(const std::string& identification)
+void LibFred::PublicRequest::lock_public_request_lock(const std::string& identification)
 {
     Database::Connection conn = Database::Manager::acquire();
     Database::Result res_req = conn.exec_params(
@@ -508,7 +538,7 @@ void lock_public_request_lock(const std::string& identification)
 }
 
 //lock public_request object by public_request.id
-void lock_public_request_id(unsigned long long public_request_id)
+void LibFred::PublicRequest::lock_public_request_id(unsigned long long public_request_id)
 {
     Database::Connection conn = Database::Manager::acquire();
     Database::Result res_req = conn.exec_params(
@@ -521,7 +551,3 @@ void lock_public_request_id(unsigned long long public_request_id)
         lock_public_request_by_object(static_cast<unsigned long long>(res_req[0][0]));
     }
 }
-
-
-} // namespace PublicRequest
-} // namespace LibFred

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2012-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -30,76 +30,34 @@ namespace Fred {
 namespace Backend {
 namespace ContactVerification {
 
-struct IDENTIFICATION_FAILED
-    : public std::runtime_error
+struct IDENTIFICATION_FAILED : std::runtime_error
 {
-
-
-    IDENTIFICATION_FAILED()
-        : std::runtime_error("identification failed")
-    {
-    }
-
+    IDENTIFICATION_FAILED() : std::runtime_error("identification failed") { }
 };
 
-struct IDENTIFICATION_PROCESSED
-    : public std::runtime_error
+struct IDENTIFICATION_PROCESSED : std::runtime_error
 {
-
-
-    IDENTIFICATION_PROCESSED()
-        : std::runtime_error("identification procesed")
-    {
-    }
-
+    IDENTIFICATION_PROCESSED() : std::runtime_error("identification procesed") { }
 };
 
-struct IDENTIFICATION_INVALIDATED
-    : public std::runtime_error
+struct IDENTIFICATION_INVALIDATED : public std::runtime_error
 {
-
-
-    IDENTIFICATION_INVALIDATED()
-        : std::runtime_error("identification invalidated")
-    {
-    }
-
+    IDENTIFICATION_INVALIDATED() : std::runtime_error("identification invalidated") { }
 };
 
-struct OBJECT_CHANGED
-    : public std::runtime_error
+struct OBJECT_CHANGED : std::runtime_error
 {
-
-
-    OBJECT_CHANGED()
-        : std::runtime_error("object changed")
-    {
-    }
-
+    OBJECT_CHANGED() : std::runtime_error("object changed") { }
 };
 
-struct OBJECT_NOT_EXISTS
-    : public std::runtime_error
+struct OBJECT_NOT_EXISTS : public std::runtime_error
 {
-
-
-    OBJECT_NOT_EXISTS()
-        : std::runtime_error("object does not exist")
-    {
-    }
-
+    OBJECT_NOT_EXISTS() : std::runtime_error("object does not exist") { }
 };
 
-struct REGISTRAR_NOT_EXISTS
-    : public std::runtime_error
+struct REGISTRAR_NOT_EXISTS : std::runtime_error
 {
-
-
-    REGISTRAR_NOT_EXISTS()
-        : std::runtime_error("registrar does not exist")
-    {
-    }
-
+    REGISTRAR_NOT_EXISTS() : std::runtime_error("registrar does not exist") { }
 };
 
 struct VALIDATION_ERROR
@@ -109,51 +67,31 @@ struct VALIDATION_ERROR
         NOT_AVAILABLE,
         INVALID,
         REQUIRED
-
     };
-
 };
 
 typedef std::map<std::string, VALIDATION_ERROR::Type> FIELD_ERROR_MAP;
 
-struct DATA_VALIDATION_ERROR
-    : public std::runtime_error
+struct DATA_VALIDATION_ERROR : std::runtime_error
 {
-
-
-    DATA_VALIDATION_ERROR(const FIELD_ERROR_MAP& _e)
+    DATA_VALIDATION_ERROR(FIELD_ERROR_MAP _e)
         : std::runtime_error("data validation error"),
-          errors(_e)
-    {
-    }
-
-    ~DATA_VALIDATION_ERROR()
-    {
-    }
+          errors{std::move(_e)}
+    { }
 
     FIELD_ERROR_MAP errors;
-
 };
-
 
 class ContactVerificationImpl
 {
-    const HandleRegistryArgs* registry_conf_;
-    const std::string server_name_;
-
-    std::shared_ptr<LibFred::Mailer::Manager> mailer_;
-
 public:
-    ContactVerificationImpl(
+    explicit ContactVerificationImpl(
             const std::string& _server_name,
             std::shared_ptr<LibFred::Mailer::Manager> _mailer);
 
-
     virtual ~ContactVerificationImpl();
 
-
     const std::string& get_server_name();
-
 
     unsigned long long createConditionalIdentification(
             const std::string& contact_handle,
@@ -161,23 +99,23 @@ public:
             const unsigned long long log_id,
             std::string& request_id);
 
-
     unsigned long long processConditionalIdentification(
             const std::string& request_id,
             const std::string& password,
             const unsigned long long log_id);
-
 
     unsigned long long processIdentification(
             const std::string& contact_handle,
             const std::string& password,
             const unsigned long long log_id);
 
-
     std::string getRegistrarName(const std::string& registrar_handle);
+private:
+    const HandleRegistryArgs* registry_conf_;
+    const std::string server_name_;
 
-
-};            // class ContactVerificationImpl
+    std::shared_ptr<LibFred::Mailer::Manager> mailer_;
+};
 
 } // namespace Fred::Backend::ContactVerification
 } // namespace Fred::Backend

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2021  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2013-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,14 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
-/**
- *  @file
- *  implementation of admin contact verification wrapper over corba
- */
 
 #include "src/bin/corba/admin_contact_verification/server_i.hh"
 
-#include "src/backend/admin/contact/verification/create_test_impl_prototypes.hh"
 #include "src/backend/admin/contact/verification/delete_domains_of_invalid_contact.hh"
 #include "src/backend/admin/contact/verification/enqueue_check.hh"
 #include "src/backend/admin/contact/verification/exceptions.hh"
@@ -37,6 +32,10 @@
 #include "src/bin/corba/util/corba_conversions_nullableisodatetime.hh"
 #include "src/bin/corba/util/corba_conversions_nullable_types.hh"
 #include "src/bin/corba/util/corba_conversions_string.hh"
+#include "src/deprecated/libfred/registrable_object/contact/verification/enum_testsuite_handle.hh"
+#include "src/util/tz/utc.hh"
+#include "src/util/tz/get_psql_handle_of.hh"
+
 #include "libfred/registrable_object/contact/check_contact.hh"
 #include "libfred/registrable_object/contact/copy_contact.hh"
 #include "libfred/registrable_object/contact/create_contact.hh"
@@ -49,18 +48,16 @@
 #include "libfred/registrable_object/contact/verification/create_test.hh"
 #include "libfred/registrable_object/contact/verification/enum_check_status.hh"
 #include "libfred/registrable_object/contact/verification/enum_test_status.hh"
-#include "src/deprecated/libfred/registrable_object/contact/verification/enum_testsuite_handle.hh"
 #include "libfred/registrable_object/contact/verification/exceptions.hh"
 #include "libfred/registrable_object/contact/verification/info_check.hh"
 #include "libfred/registrable_object/contact/verification/list_checks.hh"
 #include "libfred/registrable_object/contact/verification/list_enum_objects.hh"
 #include "libfred/registrable_object/contact/verification/update_check.hh"
 #include "libfred/registrable_object/contact/verification/update_test.hh"
+
 #include "util/log/context.hh"
 #include "util/random/char_set/char_set.hh"
 #include "util/random/random.hh"
-#include "src/util/tz/utc.hh"
-#include "src/util/tz/get_psql_handle_of.hh"
 #include "util/uuid.hh"
 
 #include <string>
@@ -121,17 +118,14 @@ static void wrap_check_detail(const LibFred::InfoContactCheckOutput& in, Registr
             test_it != in.tests.end();
             ++test_it, ++test_seq_i)
     {
-        std::vector<std::string> tested_values =
-                Fred::Backend::Admin::Contact::Verification::test_data_provider_factory::instance_ref()
-                        .create_sh_ptr(test_it->test_handle)
-                        ->init_data(in.contact_history_id)
-                        .get_string_data();
-
-        std::vector<std::string> current_values =
-                Fred::Backend::Admin::Contact::Verification::test_data_provider_factory::instance_ref()
-                        .create_sh_ptr(test_it->test_handle)
-                        ->init_data(contact_info_current.info_contact_data.historyid)
-                        .get_string_data();
+        const auto& test_data_provider_factory =
+                Fred::Backend::Admin::Contact::Verification::get_default_test_data_provider_factory();
+        const auto tested_values = test_data_provider_factory[test_it->test_handle]
+                .init_data(in.contact_history_id)
+                .get_string_data();
+        const auto current_values = test_data_provider_factory[test_it->test_handle]
+                .init_data(contact_info_current.info_contact_data.historyid)
+                .get_string_data();
 
         unsigned out_tested_index = 0;
         out->test_list[test_seq_i].tested_contact_data.length(tested_values.size());

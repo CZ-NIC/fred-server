@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2013-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,17 +16,11 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
-/**
- *  @file
- *  contact verification test for name (syntax only)
- */
 
 #ifndef TEST_NAME_SYNTAX_HH_D585913B490D498FBDB3F06070B637B7
 #define TEST_NAME_SYNTAX_HH_D585913B490D498FBDB3F06070B637B7
 
 #include "src/backend/admin/contact/verification/test_impl/test_interface.hh"
-
-#include <boost/assign/list_of.hpp>
 
 namespace Fred {
 namespace Backend {
@@ -34,45 +28,22 @@ namespace Admin {
 namespace Contact {
 namespace Verification {
 
-FACTORY_MODULE_INIT_DECL(TestNameSyntax_init)
-
-class TestNameSyntax
-    : public
-      Test,
-          test_auto_registration<TestNameSyntax>
+class TestNameSyntax : public Test
 {
-
 public:
-    virtual TestRunResult run(unsigned long long _history_id) const;
-
-
-    static std::string registration_name()
-    {
-        return "name_syntax";
-    }
-
+    TestRunResult run(unsigned long long _history_id) const override;
 };
 
 template <>
-struct TestDataProvider<TestNameSyntax>
-    : TestDataProvider_common,
-      _inheritTestRegName<TestNameSyntax>
+std::string test_name<TestNameSyntax>();
+
+template <>
+struct TestDataProvider<TestNameSyntax> : TestDataProvider_common
 {
+    void store_data(const LibFred::InfoContactOutput& _data) override;
+    std::vector<std::string> get_string_data() const override;
+
     std::string name_;
-
-    virtual void store_data(const LibFred::InfoContactOutput& _data)
-    {
-        if (!_data.info_contact_data.name.isnull())
-        {
-            name_ = _data.info_contact_data.name.get_value_or_default();
-        }
-    }
-
-    virtual std::vector<std::string> get_string_data() const
-    {
-        return boost::assign::list_of(name_);
-    }
-
 };
 
 } // namespace Fred::Backend::Admin::Contact::Verification
@@ -81,4 +52,4 @@ struct TestDataProvider<TestNameSyntax>
 } // namespace Fred::Backend
 } // namespace Fred
 
-#endif
+#endif//TEST_NAME_SYNTAX_HH_D585913B490D498FBDB3F06070B637B7

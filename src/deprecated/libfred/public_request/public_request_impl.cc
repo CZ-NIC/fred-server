@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2011-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,29 +16,30 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/deprecated/libfred/public_request/public_request_impl.hh"
+#include "src/deprecated/libfred/object_states.hh"
+#include "src/deprecated/libfred/messages/messages_impl.hh"
+
+#include "libfred/db_settings.hh"
+
 #include "util/log/logger.hh"
 #include "util/util.hh"
-#include "libfred/db_settings.hh"
 #include "util/types/convert_sql_db_types.hh"
 #include "util/types/sqlize.hh"
 #include "util/random/char_set/char_set.hh"
 #include "util/random/random.hh"
-#include "src/deprecated/libfred/object_states.hh"
-#include "src/deprecated/libfred/messages/messages_impl.hh"
+
+#include <boost/utility.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <string>
 #include <vector>
 #include <algorithm>
 
-#include <boost/utility.hpp>
-#include <boost/lexical_cast.hpp>
-
 
 namespace LibFred {
 namespace PublicRequest {
-
-
 
 std::string Status2Str(Status_PR _status)
 {
@@ -54,7 +55,6 @@ std::string Status2Str(Status_PR _status)
             return "STATUS UNKNOWN";
     }
 }
-
 
 std::string ObjectType2Str(ObjectType type)
 {
@@ -74,7 +74,6 @@ std::string ObjectType2Str(ObjectType type)
     }
 }
 
-
 void insertNewStateRequest(
         Database::ID blockRequestID [[gnu::unused]],
         Database::ID objectId,
@@ -82,7 +81,6 @@ void insertNewStateRequest(
 {
     insert_object_state(objectId, state_name);
 }
-
 
 /*
  * check if object states interfere with requested states
@@ -132,11 +130,10 @@ bool queryBlockRequest(
   return true;
 }
 
-
 /* check if object has given request type already opened */
 unsigned long long check_public_request(
-        const unsigned long long &_object_id,
-        const Type &_type)
+        unsigned long long _object_id,
+        const Type& _type)
 {
     Database::Connection conn = Database::Manager::acquire();
 
@@ -162,11 +159,10 @@ unsigned long long check_public_request(
     }
 }
 
-
 void cancel_public_request(
-        const unsigned long long &_object_id,
-        const Type &_type,
-        const unsigned long long &_request_id)
+        unsigned long long _object_id,
+        const Type& _type,
+        unsigned long long _request_id)
 {
     Database::Connection conn = Database::Manager::acquire();
 
@@ -205,7 +201,6 @@ void cancel_public_request(
     }
 }
 
-
 bool object_was_changed_since_request_create(const unsigned long long _request_id)
 {
     Database::Connection conn = Database::Manager::acquire();
@@ -225,15 +220,12 @@ bool object_was_changed_since_request_create(const unsigned long long _request_i
     return false;
 }
 
-
-
 PublicRequestImpl::PublicRequestImpl()
     : CommonObjectImpl(0), type_(), create_request_id_(0),
       resolve_request_id_(0), status_(PRS_OPENED), answer_email_id_(0),
       registrar_id_(0), man_()
 {
 }
-
 
 PublicRequestImpl::PublicRequestImpl(
         Database::ID _id,
@@ -249,24 +241,27 @@ PublicRequestImpl::PublicRequestImpl(
         std::string _registrar_handle,
         std::string _registrar_name,
         std::string _registrar_url)
-    : CommonObjectImpl(_id), type_(_type),
-      create_request_id_(_create_request_id), resolve_request_id_(0),
-      create_time_(_create_time), status_(_status),
-      resolve_time_(_resolve_time), reason_(_reason),
-      email_to_answer_(_email_to_answer), answer_email_id_(_answer_email_id),
+    : CommonObjectImpl{_id},
+      type_{_type},
+      create_request_id_{_create_request_id},
+      resolve_request_id_{0},
+      create_time_{_create_time},
+      status_{_status},
+      resolve_time_{_resolve_time},
+      reason_{std::move(_reason)},
+      email_to_answer_{std::move(_email_to_answer)},
+      answer_email_id_{_answer_email_id},
       registrar_id_(_registrar_id),
-      registrar_handle_(_registrar_handle),
-      registrar_name_(_registrar_name), registrar_url_(_registrar_url),
-      man_()
-{
-}
-
+      registrar_handle_{std::move(_registrar_handle)},
+      registrar_name_{std::move(_registrar_name)},
+      registrar_url_{std::move(_registrar_url)},
+      man_{}
+{ }
 
 void PublicRequestImpl::setManager(Manager* _man)
 {
     man_ = _man;
 }
-
 
 void PublicRequestImpl::init(Database::Row::Iterator& _it)
 {
@@ -284,7 +279,6 @@ void PublicRequestImpl::init(Database::Row::Iterator& _it)
     registrar_name_   = (std::string)*(++_it);
     registrar_url_    = (std::string)*(++_it);
 }
-
 
 void PublicRequestImpl::save()
 {
@@ -386,13 +380,10 @@ void PublicRequestImpl::save()
     }
 }
 
-
 LibFred::PublicRequest::Type PublicRequestImpl::getType() const
 {
     return type_;
 }
-
-
 
 void PublicRequestImpl::setType(LibFred::PublicRequest::Type _type)
 {
@@ -400,12 +391,10 @@ void PublicRequestImpl::setType(LibFred::PublicRequest::Type _type)
     modified_ = true;
 }
 
-
 LibFred::PublicRequest::Status_PR PublicRequestImpl::getStatus() const
 {
     return status_;
 }
-
 
 void PublicRequestImpl::setStatus(LibFred::PublicRequest::Status_PR _status)
 {
@@ -413,24 +402,20 @@ void PublicRequestImpl::setStatus(LibFred::PublicRequest::Status_PR _status)
    modified_ = true;
 }
 
-
 ptime PublicRequestImpl::getCreateTime() const
 {
     return create_time_;
 }
-
 
 ptime PublicRequestImpl::getResolveTime() const
 {
     return resolve_time_;
 }
 
-
 const std::string& PublicRequestImpl::getReason() const
 {
     return reason_;
 }
-
 
 void PublicRequestImpl::setReason(const std::string& _reason)
 {
@@ -438,19 +423,16 @@ void PublicRequestImpl::setReason(const std::string& _reason)
     modified_ = true;
 }
 
-
 const std::string& PublicRequestImpl::getEmailToAnswer() const
 {
     return email_to_answer_;
 }
-
 
 void PublicRequestImpl::setEmailToAnswer(const std::string& _email)
 {
     email_to_answer_ = _email;
     modified_ = true;
 }
-
 
 const Database::ID PublicRequestImpl::getAnswerEmailId() const
 {
@@ -462,12 +444,10 @@ const Database::ID PublicRequestImpl::getRequestId() const
     return create_request_id_;
 }
 
-
 const Database::ID PublicRequestImpl::getResolveRequestId() const
 {
     return resolve_request_id_;
 }
-
 
 void PublicRequestImpl::setRequestId(const Database::ID& _create_request_id)
 {
@@ -475,25 +455,21 @@ void PublicRequestImpl::setRequestId(const Database::ID& _create_request_id)
     modified_ = true;
 }
 
-
 void PublicRequestImpl::setRegistrarId(const Database::ID& _registrar_id)
 {
     registrar_id_ = _registrar_id;
     modified_ = true;
 }
 
-
 void PublicRequestImpl::addObject(const OID& _oid)
 {
     objects_.push_back(_oid);
 }
 
-
 const OID& PublicRequestImpl::getObject(unsigned _idx) const
 {
     return objects_.at(_idx);
 }
-
 
 unsigned PublicRequestImpl::getObjectSize() const
 {
@@ -505,24 +481,20 @@ const Database::ID PublicRequestImpl::getRegistrarId() const
     return registrar_id_;
 }
 
-
 const std::string PublicRequestImpl::getRegistrarHandle() const
 {
     return registrar_handle_;
 }
-
 
 const std::string PublicRequestImpl::getRegistrarName() const
 {
     return registrar_name_;
 }
 
-
 const std::string PublicRequestImpl::getRegistrarUrl() const
 {
     return registrar_url_;
 }
-
 
 /// default destination emails for answer are from objects
 std::string PublicRequestImpl::getEmails() const
@@ -576,7 +548,6 @@ std::string PublicRequestImpl::getEmails() const
     return emails;
   }
 
-
 /// send email with answer and return its id
 TID PublicRequestImpl::sendEmail() const
 {
@@ -595,8 +566,7 @@ TID PublicRequestImpl::sendEmail() const
       "", // default subject is taken from template
       getTemplateName(),params,handles,attach
     ); // can throw Mailer::NOT_SEND exception
-  }
-
+}
 
 /// concrete resolution action
 void PublicRequestImpl::processAction(bool check [[gnu::unused]])
@@ -604,18 +574,16 @@ void PublicRequestImpl::processAction(bool check [[gnu::unused]])
     // default is to do nothing special
 }
 
-
 /// what to do if request is invalidated
 void PublicRequestImpl::invalidateAction()
 {
 }
 
-
 /// process request (or just close in case of invalidated flag)
 void PublicRequestImpl::process(
         bool invalidated,
         bool check,
-        const unsigned long long &_request_id)
+        unsigned long long _request_id)
 {
       Database::Connection conn = Database::Manager::acquire();
       Database::Transaction tx(conn);
@@ -638,13 +606,11 @@ void PublicRequestImpl::process(
       tx.commit();
 }
 
-
 /// type for PDF letter template in case there is no template
 unsigned PublicRequestImpl::getPDFType() const
 {
     return 0;
 }
-
 
 /// function called inside save() to handle special behavior after create
 void PublicRequestImpl::postCreate()
@@ -652,19 +618,16 @@ void PublicRequestImpl::postCreate()
     // normally do nothing
 }
 
-
 Manager* PublicRequestImpl::getPublicRequestManager() const
 {
     return man_;
 }
-
 
 PublicRequestAuthImpl::PublicRequestAuthImpl()
     : PublicRequestImpl(), authenticated_(false)
 {
     identification_ = Random::Generator().get_seq(Random::CharSet::letters(), 32);
 }
-
 
 void PublicRequestAuthImpl::init(Database::Row::Iterator& _it)
 {
@@ -673,18 +636,15 @@ void PublicRequestAuthImpl::init(Database::Row::Iterator& _it)
     password_ = static_cast<std::string>(*(++_it));
 }
 
-
 std::string PublicRequestAuthImpl::getIdentification() const
 {
     return identification_;
 }
 
-
 std::string PublicRequestAuthImpl::getPassword() const
 {
     return password_;
 }
-
 
 bool PublicRequestAuthImpl::authenticate(const std::string &_password)
 {
@@ -699,7 +659,6 @@ bool PublicRequestAuthImpl::authenticate(const std::string &_password)
     }
     return false;
 }
-
 
 void PublicRequestAuthImpl::save()
 {
@@ -739,11 +698,10 @@ void PublicRequestAuthImpl::save()
     }
 }
 
-
 void PublicRequestAuthImpl::process(
         bool _invalidated,
         bool _check,
-        const unsigned long long &_request_id)
+        unsigned long long _request_id)
 {
     Database::Connection conn = Database::Manager::acquire();
     Database::Transaction tx(conn);
@@ -776,12 +734,8 @@ void PublicRequestAuthImpl::process(
     tx.commit();
 }
 
-
 /* just to be sure of empty impl (if someone would change base impl) */
-void PublicRequestAuthImpl::postCreate()
-{
-}
-
+void PublicRequestAuthImpl::postCreate() { }
 
 /* don't use this methods for constucting email so far */
 std::string PublicRequestAuthImpl::getTemplateName() const
@@ -789,18 +743,12 @@ std::string PublicRequestAuthImpl::getTemplateName() const
     return std::string();
 }
 
-
-void PublicRequestAuthImpl::fillTemplateParams(Mailer::Parameters& params [[gnu::unused]]) const
-{
-}
-
-
+void PublicRequestAuthImpl::fillTemplateParams(Mailer::Parameters& params [[gnu::unused]]) const { }
 
 bool PublicRequestAuthImpl::check() const
 {
     return true;
 }
 
-}
-}
-
+}//namespace LibFred::PublicRequest
+}//namespace LibFred

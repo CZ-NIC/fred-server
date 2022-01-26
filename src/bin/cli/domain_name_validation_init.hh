@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2013-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,19 +16,16 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
-/**
- *  @domain_name_validation_init.h
- *  initialization of domain name validation
- */
 
 #ifndef DOMAIN_NAME_VALIDATION_INIT_HH_4E51E41BE2744BCD8C3A3E8EBEACBF58
 #define DOMAIN_NAME_VALIDATION_INIT_HH_4E51E41BE2744BCD8C3A3E8EBEACBF58
+
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/handle_database_args.hh"
 #include "src/util/cfg/handle_corbanameservice_args.hh"
 #include "src/bin/cli/handle_adminclientselection_args.hh"
-
 #include "src/bin/cli/domain_name_validation_params.hh"
+
 #include "util/log/context.hh"
 #include "util/factory.hh"
 #include "util/factory_check.hh"
@@ -53,9 +50,10 @@ struct init_domain_name_validation_impl
 
         if(cfg_params.serch_checkers_by_prefix)
         {
-            std::vector<std::string> checkers_with_prefix
-                = get_names_begining_with_prefix_from_factory<LibFred::Domain::DomainNameCheckerFactory>(
-                    cfg_params.checker_name_prefix.get_value());
+            std::vector<std::string> checkers_with_prefix =
+                Util::get_names_begining_with_prefix(
+                    cfg_params.checker_name_prefix.get_value(),
+                    LibFred::Domain::get_default_domain_name_checker_factory());
 
             for(std::vector<std::string>::const_iterator i = checkers_with_prefix.begin()
                     ; i != checkers_with_prefix.end() ; ++i)
