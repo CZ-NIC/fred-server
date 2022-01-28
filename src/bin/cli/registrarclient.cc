@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2008-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -277,7 +277,8 @@ RegistrarClient::registrar_add()
             dic,
             variable_symbol,
             payment_memo_regex,
-            vat_payer);
+            vat_payer,
+            registrar_add_params_.internal);
 }
 
 void

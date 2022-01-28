@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2018-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -288,12 +288,14 @@ struct HasSystemRegistrar : NonexistentRegistrar
 {
     FullContactAddress address;
     EmptyContactData contact;
-    boost::optional<bool> system;
+    bool system;
+    bool internal;
     EmptyMerchantInformation merchant;
 
     HasSystemRegistrar(::LibFred::OperationContext& _ctx)
-            : NonexistentRegistrar(_ctx),
-              system(true)
+        : NonexistentRegistrar{_ctx},
+          system{true},
+          internal{false}
     {
         registrar.street1 = address.street1.get();
         registrar.street2 = address.street2.get();
@@ -303,7 +305,20 @@ struct HasSystemRegistrar : NonexistentRegistrar
         registrar.postalcode = address.postal_code.get();
         registrar.country = address.country.get();
 
-        registrar.system = system.get();
+        registrar.system = system;
+        registrar.is_internal = internal;
+    }
+};
+
+struct HasInternalRegistrar : HasSystemRegistrar
+{
+    HasInternalRegistrar(::LibFred::OperationContext& _ctx)
+        : HasSystemRegistrar{_ctx}
+    {
+        system = false;
+        internal = true;
+        registrar.system = system;
+        registrar.is_internal = internal;
     }
 };
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2018-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -60,7 +60,8 @@ unsigned long long create_registrar(const std::string& _handle,
                 const boost::optional<std::string>& _dic,
                 const boost::optional<std::string>& _variable_symbol,
                 const boost::optional<std::string>& _payment_memo_regex,
-                boost::optional<bool> _vat_payer);
+                boost::optional<bool> _vat_payer,
+                bool internal);
 
 } // namespace Admin::Registrar
 } // namespace Admin
