@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+#ifndef CONTACT_DATA_SHARE_POLICY_RULES_HH_F1F64D7A27BD9690B617A87D5303B03A//date "+%s.%N"|md5sum|tr "[a-f]" "[A-F]"
+#define CONTACT_DATA_SHARE_POLICY_RULES_HH_F1F64D7A27BD9690B617A87D5303B03A
 
-#ifndef INFO_CONTACT_DATA_FILTER_HH_F1F64D7A27BD9690B617A87D5303B03A//date "+%s.%N"|md5sum|tr "[a-f]" "[A-F]"
-#define INFO_CONTACT_DATA_FILTER_HH_F1F64D7A27BD9690B617A87D5303B03A
-
-#include "src/backend/epp/contact/info_contact_data_filter.hh"
+#include "src/backend/epp/contact/contact_data_share_policy_rules.hh"
 #include "src/backend/epp/contact/impl/info_contact.hh"
 
 #include <tuple>
@@ -42,7 +41,7 @@ struct ContactRegistrarRelationship
     struct OtherRelationship;
 };
 
-class InfoContactDataFilter final : public Epp::Contact::InfoContactDataFilter
+class ContactDataSharePolicyRules final : public Epp::Contact::ContactDataSharePolicyRules
 {
 public:
     template <typename T>
@@ -62,14 +61,14 @@ public:
             Bool<ContactRegistrarRelationship::SponsoringRegistrarOfDomainWhereContactIs::AdminContact>,
             Bool<ContactRegistrarRelationship::SystemRegistrar>,
             Bool<ContactRegistrarRelationship::OtherRelationship>>;
-    explicit InfoContactDataFilter(const Relationships& show_private_data_to);
-    explicit InfoContactDataFilter(InfoContact::DataSharePolicy data_share_policy);
+    explicit ContactDataSharePolicyRules(const Relationships& show_private_data_to);
+    explicit ContactDataSharePolicyRules(InfoContact::DataSharePolicy data_share_policy);
     template <typename>
     bool show_private_data_to() const noexcept;
 private:
-    LibFred::InfoContactData& operator()(
+    LibFred::InfoContactData& apply(
             LibFred::OperationContext& ctx,
-            const boost::optional<std::string>& contact_authinfopw,
+            const Password& contact_authinfopw,
             const SessionData& session_data,
             LibFred::InfoContactData& contact_data) const override;
     Relationships show_private_data_to_;
@@ -79,4 +78,4 @@ private:
 }//namespace Epp::Contact
 }//namespace Epp
 
-#endif//INFO_CONTACT_DATA_FILTER_HH_F1F64D7A27BD9690B617A87D5303B03A
+#endif//CONTACT_DATA_SHARE_POLICY_RULES_HH_F1F64D7A27BD9690B617A87D5303B03A

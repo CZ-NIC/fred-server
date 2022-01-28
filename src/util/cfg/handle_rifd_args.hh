@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2021  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2011-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -40,7 +40,7 @@ class HandleRifdArgs : public HandleArgs
 public:
     ~HandleRifdArgs();
     std::shared_ptr<boost::program_options::options_description> get_options_description()override;
-    void handle(int argc, char* argv[], FakedArgs &fa)override;
+    void handle(int argc, char* argv[], FakedArgs& fa) override;
 
     unsigned rifd_session_max;
     unsigned rifd_session_timeout;
@@ -50,7 +50,7 @@ public:
     bool epp_update_contact_enqueue_check;
 
     Epp::Contact::ConfigDataFilter rifd_contact_data_filter;
-    Epp::Contact::ConfigDataFilter rifd_info_contact_data_filter;
+    Epp::Contact::ConfigDataFilter rifd_contact_data_share_policy_rules;
 };
 
 #endif

@@ -16,23 +16,28 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+#ifndef PASSWORD_HH_82E5F2E4C257E300E9986A34FBCDCD8B//date "+%s.%N"|md5sum|tr "[a-f]" "[A-F]"
+#define PASSWORD_HH_82E5F2E4C257E300E9986A34FBCDCD8B
 
-#ifndef GET_INFO_CONTACT_DATA_FILTER_HH_8DFB0156981D0A832B7D4CA0020FA0CB//date "+%s.%N"|md5sum|tr "[a-f]" "[A-F]"
-#define GET_INFO_CONTACT_DATA_FILTER_HH_8DFB0156981D0A832B7D4CA0020FA0CB
-
-#include "src/backend/epp/contact/info_contact_data_filter.hh"
-#include "src/backend/epp/contact/config_data_filter.hh"
-
-#include <memory>
+#include <string>
 
 namespace Epp {
-namespace Contact {
-namespace Impl {
 
-std::shared_ptr<Epp::Contact::InfoContactDataFilter> get_info_contact_data_filter(const ConfigDataFilter& filter);
+class Password;
+bool operator==(const Password& lhs, const Password& rhs);
+bool operator!=(const Password& lhs, const Password& rhs);
 
-}//namespace Epp::Contact::Impl
-}//namespace Epp::Contact
-}//namespace Epp
+class Password
+{
+public:
+    explicit Password(std::string value = "");
+    bool is_empty() const noexcept;
+private:
+    friend bool operator==(const Password& lhs, const Password& rhs);
+    friend bool operator!=(const Password& lhs, const Password& rhs);
+    std::string value_;
+};
 
-#endif//GET_INFO_CONTACT_DATA_FILTER_HH_8DFB0156981D0A832B7D4CA0020FA0CB
+} // namespace Epp
+
+#endif//PASSWORD_HH_82E5F2E4C257E300E9986A34FBCDCD8B

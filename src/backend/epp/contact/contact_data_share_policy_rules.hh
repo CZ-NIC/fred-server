@@ -16,30 +16,28 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
-
-#ifndef INFO_CONTACT_DATA_FILTER_HH_53E0BB635FD48C9637BBC7A03CD00CDD//date "+%s.%N"|md5sum|tr "[a-f]" "[A-F]"
-#define INFO_CONTACT_DATA_FILTER_HH_53E0BB635FD48C9637BBC7A03CD00CDD
+#ifndef CONTACT_DATA_SHARE_POLICY_RULES_HH_53E0BB635FD48C9637BBC7A03CD00CDD//date "+%s.%N"|md5sum|tr "[a-f]" "[A-F]"
+#define CONTACT_DATA_SHARE_POLICY_RULES_HH_53E0BB635FD48C9637BBC7A03CD00CDD
 
 #include "libfred/opcontext.hh"
 #include "libfred/registrable_object/contact/info_contact_data.hh"
 
+#include "src/backend/epp/password.hh"
 #include "src/backend/epp/session_data.hh"
-
-#include <boost/optional.hpp>
 
 #include <string>
 
 namespace Epp {
 namespace Contact {
 
-class InfoContactDataFilter
+class ContactDataSharePolicyRules
 {
 public:
     struct InvalidAuthorizationInformation { };
-    virtual ~InfoContactDataFilter() { }
-    virtual LibFred::InfoContactData& operator()(
+    virtual ~ContactDataSharePolicyRules() { }
+    virtual LibFred::InfoContactData& apply(
             LibFred::OperationContext& ctx,
-            const boost::optional<std::string>& contact_authinfopw,
+            const Password& contact_authinfopw,
             const SessionData& session_data,
             LibFred::InfoContactData& contact_data) const = 0;
 };
@@ -47,4 +45,4 @@ public:
 }//namespace Epp::Contact
 }//namespace Epp
 
-#endif//INFO_CONTACT_DATA_FILTER_HH_53E0BB635FD48C9637BBC7A03CD00CDD
+#endif//CONTACT_DATA_SHARE_POLICY_RULES_HH_53E0BB635FD48C9637BBC7A03CD00CDD

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -24,8 +24,10 @@
 #include "src/backend/epp/contact/hideable.hh"
 #include "src/backend/epp/contact/info_contact_config_data.hh"
 #include "src/backend/epp/contact/status_value.hh"
+#include "src/backend/epp/password.hh"
 #include "src/backend/epp/session_data.hh"
 #include "src/backend/epp/session_lang.hh"
+
 #include "libfred/registrable_object/contact/info_contact_data.hh"
 #include "libfred/opcontext.hh"
 
@@ -64,14 +66,11 @@ struct InfoContactOutputData
     boost::optional<std::string> authinfopw;
 };
 
-/**
- * @throws ExceptionAuthErrorServerClosingConnection
- * @throws ExceptionNonexistentHandle
- */
 InfoContactOutputData info_contact(
         LibFred::OperationContext& _ctx,
         const std::string& _contact_handle,
         const InfoContactConfigData& _info_contact_config_data,
+        const Password& _authinfopw,
         const SessionData& _session_data);
 
 }//namespace Epp::Contact

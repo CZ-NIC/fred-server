@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2021  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2018-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 #include "src/backend/epp/contact/impl/contact_output.hh"
 
 #include "src/backend/epp/contact/status_value.hh"
@@ -71,16 +70,6 @@ boost::optional<std::string> string_to_optional(const std::string& value)
         return boost::none;
     }
     return value;
-}
-
-boost::optional<std::string> string_to_optional(const char* value)
-{
-    if ((value == nullptr) ||
-        (*value == '\0'))
-    {
-        return boost::none;
-    }
-    return std::string{value};
 }
 
 boost::optional<ContactData::Address> nullable_to_optional(const Nullable<LibFred::Contact::PlaceAddress>& nullable)
@@ -216,14 +205,14 @@ InfoContactOutputData get_info_contact_output(
 InfoContactOutputData get_info_contact_output(
         LibFred::OperationContext& _ctx,
         LibFred::InfoContactData _data,
-        const char* _authinfopw,
-        const InfoContactDataFilter& _info_contact_data_filter,
+        const Password& _authinfopw,
+        const ContactDataSharePolicyRules& _contact_data_share_policy_rules,
         const SessionData& _session_data,
         const std::vector<LibFred::ObjectStateData>& _object_state_data)
 {
-    _info_contact_data_filter(
+    _contact_data_share_policy_rules.apply(
                 _ctx,
-                string_to_optional(_authinfopw),
+                _authinfopw,
                 _session_data,
                 _data);
     InfoContactOutputData retval = get_info_contact_output(_data, _object_state_data);

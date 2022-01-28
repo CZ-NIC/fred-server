@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2021  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2011-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -147,7 +147,7 @@ int main(int argc, char *argv[])
                 rifd_args_ptr->rifd_epp_operations_charging,
                 rifd_args_ptr->epp_update_contact_enqueue_check,
                 rifd_args_ptr->rifd_contact_data_filter,
-                rifd_args_ptr->rifd_info_contact_data_filter);
+                rifd_args_ptr->rifd_contact_data_share_policy_rules);
 
         // create session use values from config
         LOGGER.info(boost::format(

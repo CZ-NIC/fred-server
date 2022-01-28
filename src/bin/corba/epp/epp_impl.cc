@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006-2021  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2006-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -74,7 +74,7 @@
 #include "src/backend/epp/contact/transfer_contact_localized.hh"
 #include "src/backend/epp/contact/update_contact_localized.hh"
 #include "src/backend/epp/contact/impl/get_create_contact_data_filter.hh"
-#include "src/backend/epp/contact/impl/get_info_contact_data_filter.hh"
+#include "src/backend/epp/contact/impl/get_contact_data_share_policy_rules.hh"
 #include "src/backend/epp/contact/impl/get_update_contact_data_filter.hh"
 
 #include "src/bin/corba/epp/credit/credit_corba_conversions.hh"
@@ -468,7 +468,7 @@ ccReg_EPP_i::ccReg_EPP_i(
     bool rifd_epp_operations_charging,
     bool epp_update_contact_enqueue_check,
     const Epp::Contact::ConfigDataFilter& rifd_contact_data_filter,
-    const Epp::Contact::ConfigDataFilter& rifd_info_contact_data_filter)
+    const Epp::Contact::ConfigDataFilter& rifd_contact_data_share_policy_rules)
 
     : database(_db),
       mm(_mm),
@@ -492,7 +492,7 @@ ccReg_EPP_i::ccReg_EPP_i(
       rifd_epp_operations_charging_(rifd_epp_operations_charging),
       epp_update_contact_enqueue_check_(epp_update_contact_enqueue_check),
       rifd_epp_create_contact_data_filter_(Epp::Contact::Impl::get_create_contact_data_filter(rifd_contact_data_filter)),
-      rifd_epp_info_contact_data_filter_(Epp::Contact::Impl::get_info_contact_data_filter(rifd_info_contact_data_filter)),
+      rifd_epp_contact_data_share_policy_rules_(Epp::Contact::Impl::get_contact_data_share_policy_rules(rifd_contact_data_share_policy_rules)),
       rifd_epp_update_contact_data_filter_(Epp::Contact::Impl::get_update_contact_data_filter(rifd_contact_data_filter)),
       db_disconnect_guard_(),
       regMan(),
@@ -1847,8 +1847,7 @@ ccReg::Response* ccReg_EPP_i::ContactInfo(
     {
         const Epp::Contact::InfoContactConfigData info_contact_config_data{
                 rifd_epp_operations_charging_,
-                _authinfopw,
-                rifd_epp_info_contact_data_filter_};
+                rifd_epp_contact_data_share_policy_rules_};
 
         const Epp::RegistrarSessionData registrar_session_data =
                 Epp::get_registrar_session_data(
@@ -1865,6 +1864,7 @@ ccReg::Response* ccReg_EPP_i::ContactInfo(
                 Epp::Contact::info_contact_localized(
                         LibFred::Corba::unwrap_string(_contact_handle),
                         info_contact_config_data,
+                        Epp::Password{LibFred::Corba::unwrap_string(_authinfopw)},
                         session_data);
 
         ccReg::Contact_var contact_info = new ccReg::Contact;

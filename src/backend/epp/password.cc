@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2021  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,27 +16,37 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
-#ifndef INFO_CONTACT_LOCALIZED_HH_EF41DA3A6AD7403CBBD9DB1371A55FC0
-#define INFO_CONTACT_LOCALIZED_HH_EF41DA3A6AD7403CBBD9DB1371A55FC0
 
-#include "src/backend/epp/contact/info_contact_config_data.hh"
-#include "src/backend/epp/contact/info_contact_localized_response.hh"
-#include "src/backend/epp/notification_data.hh"
 #include "src/backend/epp/password.hh"
-#include "src/backend/epp/session_data.hh"
 
-#include <string>
+#include <stdexcept>
+#include <utility>
 
 namespace Epp {
-namespace Contact {
 
-InfoContactLocalizedResponse info_contact_localized(
-        const std::string& _contact_handle,
-        const InfoContactConfigData& _info_contact_config_data,
-        const Password& _authinfopw,
-        const SessionData& _session_data);
+Password::Password(std::string value)
+    : value_{std::move(value)}
+{ }
 
-} // namespace Epp::Contact
+bool Password::is_empty() const noexcept
+{
+    return value_.empty();
+}
+
 } // namespace Epp
 
-#endif
+using namespace Epp;
+
+bool Epp::operator==(const Password& lhs, const Password& rhs)
+{
+    if (lhs.is_empty() || rhs.is_empty())
+    {
+        throw std::invalid_argument{"both passwords must be set"};
+    }
+    return lhs.value_ == rhs.value_;
+}
+
+bool Epp::operator!=(const Password& lhs, const Password& rhs)
+{
+    return !(lhs == rhs);
+}

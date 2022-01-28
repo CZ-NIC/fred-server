@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2021  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2018-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 #include "src/util/cfg/handle_rifd_args.hh"
 
 #include "src/backend/epp/contact/impl/info_contact.hh"
@@ -80,5 +79,5 @@ void HandleRifdArgs::handle(int argc, char* argv[], FakedArgs &fa)
     rifd_contact_data_filter.set_name(vm["rifd.contact_data_filter"].as<std::string>());
     rifd_contact_data_filter.set_all_values<CzNicSpecific>(vm);
     rifd_contact_data_filter.set_all_values<SetUnusedConfig>(vm);
-    rifd_info_contact_data_filter.set_all_values<Epp::Contact::Impl::InfoContact>(vm);
+    rifd_contact_data_share_policy_rules.set_all_values<Epp::Contact::Impl::InfoContact>(vm);
 }

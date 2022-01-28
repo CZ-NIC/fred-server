@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2021  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2011-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 #include <utility>
 
 #include "test/deprecated/test_invoice_common.hh"
@@ -97,7 +96,7 @@ std::unique_ptr<ccReg_EPP_i> create_epp_backend_object()
             rifd_args_ptr->rifd_epp_operations_charging,
             rifd_args_ptr->epp_update_contact_enqueue_check,
             rifd_args_ptr->rifd_contact_data_filter,
-            rifd_args_ptr->rifd_info_contact_data_filter);
+            rifd_args_ptr->rifd_contact_data_share_policy_rules);
 
     EPP_backend_init(ret_epp.get(), rifd_args_ptr);
 
