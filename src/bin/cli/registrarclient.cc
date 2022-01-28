@@ -125,6 +125,7 @@ RegistrarClient::list()
             << "\t\t<fax>" << reg_list->get(i)->getFax() << "</fax>\n"
             << "\t\t<email>" << reg_list->get(i)->getEmail() << "</email>\n"
             << "\t\t<system>" << reg_list->get(i)->getSystem() << "</system>\n"
+            << "\t\t<internal>" << reg_list->get(i)->getInternal() << "</internal>\n"
             << "\t\t<credit>" << reg_list->get(i)->getCredit() << "</credit>\n";
         for (unsigned int j = 0; j < reg_list->get(i)->getACLSize(); j++) {
             std::cout
