@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2019-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -21,6 +21,7 @@
 
 #include "src/deprecated/libfred/db_settings.hh"
 #include "src/deprecated/libfred/invoicing/invoice.hh"
+
 #include "util/db/result.hh"
 #include "util/util.hh"
 
@@ -139,7 +140,7 @@ void chargeRegistryAccessFee(
                         "($1::date <= ri.fromdate AND $2::date > ri.fromdate) "
                         "OR ($1::date >= ri.fromdate AND  ((ri.todate IS NULL) OR (ri.todate >= $1::date))) "
                     ") "
-             "WHERE r.system  = false "
+             "WHERE NOT COALESCE(r.system, False) AND NOT r.is_internal "
                "AND ri.zone=$3::integer " +
                 condition +
              "ORDER BY r.id",

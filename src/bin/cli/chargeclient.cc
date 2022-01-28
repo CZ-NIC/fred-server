@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2011-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,10 +16,13 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/bin/cli/chargeclient.hh"
 #include "src/deprecated/libfred/invoicing/invoice.hh"
 #include "src/deprecated/libfred/db_settings.hh"
+
 #include "util/util.hh"
+
 
 namespace Admin {
 
@@ -110,7 +113,7 @@ void ChargeClient::chargeRequestFeeAllRegs(const std::string &except_handles, co
                         "($1::date <= ri.fromdate AND $2::date > ri.fromdate) "
                         "OR ($1::date >= ri.fromdate AND  ((ri.todate IS NULL) OR (ri.todate >= $1::date))) "
                     ") "
-                "WHERE r.system  = false "
+                "WHERE NOT COALESCE(r.system, False) AND NOT r.is_internal "
                     "AND ri.zone=$3::integer "
                 "ORDER BY r.id",
                 Database::query_param_list(poll_msg_period_from)
@@ -140,7 +143,7 @@ void ChargeClient::chargeRequestFeeAllRegs(const std::string &except_handles, co
                         "($1::date <= ri.fromdate AND $2::date > ri.fromdate) "
                         "OR ($1::date >= ri.fromdate AND  ((ri.todate IS NULL) OR (ri.todate > $1::date))) "
                     ") "
-                "WHERE r.system  = false "
+                "WHERE NOT COALESCE(r.system, False) AND NOT r.is_internal "
                     "AND ri.zone = $3::integer "
                     "AND r.id != ALL ($4::bigint[]) "
                 "ORDER BY r.id",
