@@ -1088,7 +1088,7 @@ void createAccountInvoices(
            " AND registrar_id =r.id "
            " ORDER BY id DESC LIMIT 1 ) as fromdate_ig "
            " FROM registrar r, registrarinvoice i, zone z "
-           " WHERE r.id=i.registrarid AND NOT COALESCE(r.system, False) AND NOT r.is_internal "
+           " WHERE r.id=i.registrarid AND r.system IS NOT NULL AND NOT r.system AND NOT r.is_internal "
            " AND i.zone=z.id AND z.fqdn=$1::text) as oq "
            " WHERE (oq.i_fromdate <= coalesce(oq.p_fromdate,oq.fromdate_ig, oq.i_fromdate ) "
            "   AND (oq.i_todate >= coalesce(oq.p_fromdate,oq.fromdate_ig, i_fromdate) "

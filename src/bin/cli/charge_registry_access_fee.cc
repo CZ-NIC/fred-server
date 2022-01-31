@@ -140,7 +140,7 @@ void chargeRegistryAccessFee(
                         "($1::date <= ri.fromdate AND $2::date > ri.fromdate) "
                         "OR ($1::date >= ri.fromdate AND  ((ri.todate IS NULL) OR (ri.todate >= $1::date))) "
                     ") "
-             "WHERE NOT COALESCE(r.system, False) AND NOT r.is_internal "
+             "WHERE r.system IS NOT NULL AND NOT r.system AND NOT r.is_internal "
                "AND ri.zone=$3::integer " +
                 condition +
              "ORDER BY r.id",
