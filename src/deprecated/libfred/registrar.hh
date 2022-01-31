@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2019-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -217,6 +217,10 @@ public:
     virtual bool getSystem() const = 0;
     /// Set hidden flag for system registrar
     virtual void setSystem(bool _system) = 0;
+    /// Get registrar flag internal
+    virtual bool getInternal() const = 0;
+    /// Set registrar flag internal
+    virtual void setInternal(bool value) = 0;
     /// Get total credit
     virtual Money getCredit() const = 0;
     /// Get credit for specific zone, id = 0 is unspecified zone (converted from null in database table invoice)

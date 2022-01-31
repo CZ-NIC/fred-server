@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007-2021  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2007-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/deprecated/libfred/invoicing/invoice.hh"
 #include "libfred/poll/get_request_fee_message.hh"
 #include "src/deprecated/libfred/common_impl.hh"
@@ -276,27 +277,28 @@ public:
       , boost::posix_time::ptime price_timestamp //utc timestamp to lookup relevant price in price_list
       , Decimal quantity)
   {
-      //if (registrar is "system registrar") return ok //no charging
+      //if (registrar is "system or internal registrar") return ok //no charging
 
       // TODO we rely that connection is saved in thread specific data
       Database::Connection conn = Database::Manager::acquire();
 
-      // find out whether the registrar in question is system registrar
-      bool system = false;
-      Database::Result rsys =
-        conn.exec_params("SELECT system FROM registrar WHERE id=$1::integer",
-            Database::query_param_list(registrar_id));
-      if(rsys.size() != 1 || rsys[0][0].isnull()) {
-          throw std::runtime_error((boost::format("Registrar ID %1% not found ") % registrar_id).str());
-      } else {
-          system = rsys[0][0];
-          if(system) {
-              LOGGER.info ( (boost::format("Registrar ID %1% has system flag set, not billing") % registrar_id).str());
-              // no billing for system registrar
-              return true;
+      // find out whether the registrar in question is system or internal registrar
+      {
+          const Database::Result dbres = conn.exec_params(
+                "SELECT system OR is_internal FROM registrar WHERE id=$1::integer",
+                Database::query_param_list(registrar_id));
+          if ((dbres.size() != 1) || dbres[0][0].isnull())
+          {
+            throw std::runtime_error((boost::format("Registrar ID %1% not found ") % registrar_id).str());
+          }
+          const bool charging_is_disabled = static_cast<bool>(dbres[0][0]);
+          if (charging_is_disabled)
+          {
+            LOGGER.info((boost::format("Registrar ID %1% has system or is_internal flag set, not billing") % registrar_id).str());
+            // no billing for system or internal registrar
+            return true;
           }
       }
-
       //get_operation_payment_settings
       Database::Result operation_price_list_result
           = conn.exec_params(
@@ -1086,7 +1088,7 @@ void createAccountInvoices(
            " AND registrar_id =r.id "
            " ORDER BY id DESC LIMIT 1 ) as fromdate_ig "
            " FROM registrar r, registrarinvoice i, zone z "
-           " WHERE r.id=i.registrarid AND r.system=false "
+           " WHERE r.id=i.registrarid AND r.system IS NOT NULL AND NOT r.system AND NOT r.is_internal "
            " AND i.zone=z.id AND z.fqdn=$1::text) as oq "
            " WHERE (oq.i_fromdate <= coalesce(oq.p_fromdate,oq.fromdate_ig, oq.i_fromdate ) "
            "   AND (oq.i_todate >= coalesce(oq.p_fromdate,oq.fromdate_ig, i_fromdate) "

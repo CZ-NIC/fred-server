@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2020  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2008-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -152,13 +152,15 @@ private:
   std::string fax_;
   std::string email_;
   bool system_;
+  bool internal_;
 public:
   RegistrarImpl()
       : CommonObjectImplNew(),
         credit("0"),
         id_(0),
         vat_(true),
-        system_(false)
+        system_(false),
+        internal_{false}
   {}
   RegistrarImpl(TID _id,
                 const std::string& _ico,
@@ -180,6 +182,7 @@ public:
                 const std::string& _fax,
                 const std::string& _email,
                 bool _system,
+                bool _internal,
                 Money _credit)
       : CommonObjectImplNew(),
         credit(_credit),
@@ -202,7 +205,8 @@ public:
         telephone_(_telephone),
         fax_(_fax),
         email_(_email),
-        system_(_system)
+        system_(_system),
+        internal_{_internal}
   {
   }
   void clear() {
@@ -370,6 +374,14 @@ public:
   void setSystem(bool _system) override
   {
 	system_ = _system;
+  }
+  bool getInternal() const override
+  {
+    return internal_;
+  }
+  void setInternal(bool value) override
+  {
+	internal_ = value;
   }
 
   Money getCredit() const override
@@ -712,7 +724,7 @@ public:
 
       Database::SelectQuery *tmp = new Database::SelectQuery();
       tmp->addSelect("id ico dic varsymb vat handle name url organization street1 street2 street3 "
-                       "city stateorprovince postalcode country telephone fax email system",
+                     "city stateorprovince postalcode country telephone fax email system is_internal",
                      rf->joinRegistrarTable());
       uf.addQuery(tmp);
       at_least_one = true;
@@ -752,6 +764,7 @@ public:
         std::string   fax          = *(++col);
         std::string   email        = *(++col);
         bool          system       = *(++col);
+        bool          internal     = *(++col);
         Money credit ("0");
 
         m_data.push_back(new RegistrarImpl(
@@ -775,6 +788,7 @@ public:
                 fax,
                 email,
                 system,
+                internal,
                 credit));
       }
 

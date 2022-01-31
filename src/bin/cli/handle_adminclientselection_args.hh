@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2021  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2008-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -1297,6 +1297,9 @@ public:
             ("no_vat", boost::program_options
                 ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.no_vat)),
                 "no vat")
+            ("internal", boost::program_options
+                ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.internal)),
+                "if registrar is internal")
             ;
         return cfg_opts;
     }//get_options_description

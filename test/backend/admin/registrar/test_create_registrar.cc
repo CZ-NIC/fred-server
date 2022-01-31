@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2018-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,8 +16,11 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/admin/registrar/create_registrar.hh"
+
 #include "libfred/opcontext.hh"
+
 #include "test/backend/admin/registrar/fixtures.hh"
 #include "test/setup/fixtures.hh"
 
@@ -59,7 +62,8 @@ BOOST_FIXTURE_TEST_CASE(set_already_existing_registrar, SupplyFixtureCtx<HasExis
                               merchant.dic,
                               merchant.variable_symbol,
                               merchant.payment_memo_regex,
-                              merchant.vat_payer),
+                              merchant.vat_payer,
+                              false),
             ::Admin::Registrar::RegistrarAlreadyExists);
 }
 
@@ -84,7 +88,8 @@ BOOST_FIXTURE_TEST_CASE(set_create_registrar_min, SupplyFixtureCtx<HasNonexisten
             merchant.dic,
             merchant.variable_symbol,
             merchant.payment_memo_regex,
-            merchant.vat_payer);
+            merchant.vat_payer,
+            false);
 
     BOOST_CHECK(registrar == getInfoRegistrar(registrar.handle));
 }
@@ -110,7 +115,8 @@ BOOST_FIXTURE_TEST_CASE(set_create_registrar_max, SupplyFixtureCtx<HasNonexisten
             merchant.dic,
             merchant.variable_symbol,
             merchant.payment_memo_regex,
-            merchant.vat_payer);
+            merchant.vat_payer,
+            false);
 
     BOOST_CHECK(registrar == getInfoRegistrar(registrar.handle));
 }
@@ -136,14 +142,44 @@ BOOST_FIXTURE_TEST_CASE(set_create_system_registrar, SupplyFixtureCtx<HasSystemR
             merchant.dic,
             merchant.variable_symbol,
             merchant.payment_memo_regex,
-            merchant.vat_payer);
+            merchant.vat_payer,
+            internal);
 
     BOOST_CHECK(registrar == getInfoRegistrar(registrar.handle));
 }
 
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
+BOOST_FIXTURE_TEST_CASE(set_create_internal_registrar, SupplyFixtureCtx<HasInternalRegistrar>)
+{
+    BOOST_REQUIRE(!system);
+    BOOST_REQUIRE(internal);
+    registrar.id = ::Admin::Registrar::create_registrar(registrar.handle,
+            contact.name,
+            merchant.organization,
+            address.street1,
+            address.street2,
+            address.street3,
+            address.city,
+            address.state_or_province,
+            address.postal_code,
+            address.country,
+            contact.telephone,
+            contact.fax,
+            contact.email,
+            contact.url,
+            system,
+            merchant.ico,
+            merchant.dic,
+            merchant.variable_symbol,
+            merchant.payment_memo_regex,
+            merchant.vat_payer,
+            internal);
+
+    BOOST_CHECK(registrar == getInfoRegistrar(registrar.handle));
+}
+
+BOOST_AUTO_TEST_SUITE_END()//Backend/Admin/Registrar/TestAdminCreateRegistrar
+BOOST_AUTO_TEST_SUITE_END()//Backend/Admin/Registrar
+BOOST_AUTO_TEST_SUITE_END()//Backend/Admin
+BOOST_AUTO_TEST_SUITE_END()//Backend
 
 } // namespace Test

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2008-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -125,6 +125,7 @@ RegistrarClient::list()
             << "\t\t<fax>" << reg_list->get(i)->getFax() << "</fax>\n"
             << "\t\t<email>" << reg_list->get(i)->getEmail() << "</email>\n"
             << "\t\t<system>" << reg_list->get(i)->getSystem() << "</system>\n"
+            << "\t\t<internal>" << reg_list->get(i)->getInternal() << "</internal>\n"
             << "\t\t<credit>" << reg_list->get(i)->getCredit() << "</credit>\n";
         for (unsigned int j = 0; j < reg_list->get(i)->getACLSize(); j++) {
             std::cout
@@ -277,7 +278,8 @@ RegistrarClient::registrar_add()
             dic,
             variable_symbol,
             payment_memo_regex,
-            vat_payer);
+            vat_payer,
+            registrar_add_params_.internal);
 }
 
 void

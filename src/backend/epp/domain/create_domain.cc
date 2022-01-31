@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/epp/domain/create_domain.hh"
 
 #include "src/backend/epp/domain/impl/domain_billing.hh"
@@ -25,6 +26,7 @@
 #include "src/backend/epp/exception.hh"
 #include "src/backend/epp/reason.hh"
 #include "src/backend/epp/impl/util.hh"
+
 #include "libfred/registrable_object/contact/check_contact.hh"
 #include "libfred/registrable_object/domain/check_domain.hh"
 #include "libfred/registrable_object/domain/create_domain.hh"
@@ -36,19 +38,19 @@
 #include "libfred/registrar/info_registrar.hh"
 #include "libfred/registrar/registrar_zone_access.hh"
 #include "libfred/zone/zone.hh"
+
 #include "util/db/param_query_composition.hh"
 #include "util/optional_value.hh"
 #include "util/util.hh"
 
 #include <boost/algorithm/string.hpp>
-#include <boost/asio/ip/address.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
-#include <boost/foreach.hpp>
-#include <boost/format.hpp>
+#include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 
 #include <set>
 #include <string>
+
 
 namespace Epp {
 namespace Domain {
@@ -331,24 +333,28 @@ CreateDomainResult create_domain(
             throw std::runtime_error("domain create failed");
         }
 
-        if (_create_domain_config_data.rifd_epp_operations_charging && !is_system_registrar)
+        if (_create_domain_config_data.rifd_epp_operations_charging)
         {
-            create_domain_bill_item(
-                    _data.fqdn,
-                    result.creation_time,
-                    _session_data.registrar_id,
-                    result.create_object_result.object_id,
-                    _ctx);
+            const bool charging_is_disabled = is_system_registrar || session_registrar.is_internal;
+            if (!charging_is_disabled)
+            {
+                create_domain_bill_item(
+                        _data.fqdn,
+                        result.creation_time,
+                        _session_data.registrar_id,
+                        result.create_object_result.object_id,
+                        _ctx);
 
-            renew_domain_bill_item(
-                    _data.fqdn,
-                    result.creation_time,
-                    _session_data.registrar_id,
-                    result.create_object_result.object_id,
-                    domain_registration_in_months,
-                    current_local_date,
-                    domain_expiration_date,
-                    _ctx);
+                renew_domain_bill_item(
+                        _data.fqdn,
+                        result.creation_time,
+                        _session_data.registrar_id,
+                        result.create_object_result.object_id,
+                        domain_registration_in_months,
+                        current_local_date,
+                        domain_expiration_date,
+                        _ctx);
+            }
         }
 
         return CreateDomainResult(

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2011-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -98,10 +98,12 @@ struct RegistrarAddArgs
     optional_string url;
     bool system;
     bool no_vat;
+    bool internal;
 
     RegistrarAddArgs()
     :system(false)
     , no_vat(false)
+    , internal{false}
     {}//ctor
 
     RegistrarAddArgs(
@@ -124,6 +126,7 @@ struct RegistrarAddArgs
     , const optional_string& _url
     , bool _system
     , bool _no_vat
+    , bool _internal
             )
     : handle(_handle)
     , country(_country)
@@ -144,6 +147,7 @@ struct RegistrarAddArgs
     , url(_url)
     , system(_system)
     , no_vat(_no_vat)
+    , internal{_internal}
     {}//init ctor
 };//struct RegistrarAddArgs
 
