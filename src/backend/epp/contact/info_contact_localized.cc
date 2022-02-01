@@ -109,16 +109,16 @@ InfoContactLocalizedResponse info_contact_localized(
         dst_data.email = src_data.email;
         dst_data.notify_email = src_data.notify_email;
         dst_data.VAT = src_data.VAT;
-        dst_data.VAT = src_data.VAT;
         dst_data.ident = src_data.personal_id;
         dst_data.authinfopw = src_data.authinfopw;
 
-        const InfoContactLocalizedResponse response(
+        InfoContactLocalizedResponse response(
                 EppResponseSuccessLocalized(
                         ctx,
                         EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
                         _session_data.lang),
                 dst_data);
+        ctx.commit_transaction();
         return response;
     }
     catch (const EppResponseFailure& e)
