@@ -32,10 +32,10 @@ stages:
 
 
 
-docker:server:centos_7:
+docker:server:fedora_35:
   <<: *image
   variables:
-    IMAGE_NAME: centos:7
+    IMAGE_NAME: fedora:35
     IMAGE_TAG: $CI_REGISTRY_IMAGE/$IMAGE_NAME
     IMAGE_PATH: scripts/docker/$IMAGE_NAME
   only:
@@ -45,15 +45,15 @@ docker:server:centos_7:
     - schedules
     - web
 
-.centos_7: &centos_7
-  image: "$CI_REGISTRY_IMAGE/centos:7"
+.fedora_35: &fedora_35
+  image: "$CI_REGISTRY_IMAGE/fedora:35"
   tags:
     - amd64
     - common
     - linux
 
-build:centos_7:amd64:
-  <<: *centos_7
+build:fedora_35:amd64:
+  <<: *fedora_35
   <<: *build_job
   only:
     - master
@@ -63,10 +63,10 @@ build:centos_7:amd64:
     - web
 
 
-docker:server:fedora_33:
+docker:server:fedora_rawhide:
   <<: *image
   variables:
-    IMAGE_NAME: fedora:33
+    IMAGE_NAME: fedora:rawhide
     IMAGE_TAG: $CI_REGISTRY_IMAGE/$IMAGE_NAME
     IMAGE_PATH: scripts/docker/$IMAGE_NAME
   only:
@@ -76,77 +76,15 @@ docker:server:fedora_33:
     - schedules
     - web
 
-.fedora_33: &fedora_33
-  image: "$CI_REGISTRY_IMAGE/fedora:33"
+.fedora_rawhide: &fedora_rawhide
+  image: "$CI_REGISTRY_IMAGE/fedora:rawhide"
   tags:
     - amd64
     - common
     - linux
 
-build:fedora_33:amd64:
-  <<: *fedora_33
-  <<: *build_job
-  only:
-    - master
-    - tags
-    - triggers
-    - schedules
-    - web
-
-
-docker:server:fedora_34:
-  <<: *image
-  variables:
-    IMAGE_NAME: fedora:34
-    IMAGE_TAG: $CI_REGISTRY_IMAGE/$IMAGE_NAME
-    IMAGE_PATH: scripts/docker/$IMAGE_NAME
-  only:
-    - master
-    - tags
-    - triggers
-    - schedules
-    - web
-
-.fedora_34: &fedora_34
-  image: "$CI_REGISTRY_IMAGE/fedora:34"
-  tags:
-    - amd64
-    - common
-    - linux
-
-build:fedora_34:amd64:
-  <<: *fedora_34
-  <<: *build_job
-  only:
-    - master
-    - tags
-    - triggers
-    - schedules
-    - web
-
-
-docker:server:ubuntu_16_04:
-  <<: *image
-  variables:
-    IMAGE_NAME: ubuntu:16.04
-    IMAGE_TAG: $CI_REGISTRY_IMAGE/$IMAGE_NAME
-    IMAGE_PATH: scripts/docker/$IMAGE_NAME
-  only:
-    - master
-    - tags
-    - triggers
-    - schedules
-    - web
-
-.ubuntu_16_04: &ubuntu_16_04
-  image: "$CI_REGISTRY_IMAGE/ubuntu:16.04"
-  tags:
-    - amd64
-    - common
-    - linux
-
-build:ubuntu_16_04:amd64:
-  <<: *ubuntu_16_04
+build:fedora_rawhide:amd64:
+  <<: *fedora_rawhide
   <<: *build_job
   only:
     - master
