@@ -36,8 +36,8 @@ set(DB_BUILD FALSE)
 set(IDL_BUILD FALSE)
 set(LIBFRED_BUILD_TESTS TRUE)
 add_package_dependencies(FROM_FILE "dependencies.txt")
-provide_package_dependency_dist(db SRC_DIR "${DB_DIR}" DST_RELATIVE_DIR "external/db")
-provide_package_dependency_dist(idl SRC_DIR "${IDL_DIR}" DST_RELATIVE_DIR "external/idl")
+provide_package_dependency_dist(db)
+provide_package_dependency_dist(idl)
 
 # build
 
