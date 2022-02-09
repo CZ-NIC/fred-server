@@ -8,6 +8,21 @@ UNRELEASED
 
 * Remove obsolete ``getRequestCount*`` (moved to LoggerCorba)
 
+2022-02-01 (2.49.0)
+-------------------
+
+* Add possibility to mark registrar as internal
+
+  - not in registrar list in public interfaces but still traceable when linked to another object
+  - not charged
+
+* Epp - on succesfull ``info_contact`` command used with authinfo parameter (to get all contact private data)
+        generate new authinfo password (same behaviour as ``transfer_*`` commands)
+
+* Epp / Public request - allow to send contact authinfo on registry e-mail even when contact has ``serverTransferProhibited`` status
+
+* Update CMake build
+
 2021-12-22 (2.48.2)
 -------------------
 

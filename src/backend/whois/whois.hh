@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -638,7 +638,7 @@ public:
     Registrar get_registrar_by_handle(const std::string& handle);
 
     /**
-     * Returns the vector of non-system registrars.
+     * Returns the vector of non-system non-internal registrars.
      * @return registrar vector.
      */
     std::vector<Registrar> get_registrars();

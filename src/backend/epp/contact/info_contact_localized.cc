@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -66,6 +66,7 @@ InfoContactLocalizedOutputData::Address to_localized_address(
 InfoContactLocalizedResponse info_contact_localized(
         const std::string& _contact_handle,
         const InfoContactConfigData& _info_contact_config_data,
+        const Password& _authinfopw,
         const SessionData& _session_data)
 {
     Logging::Context logging_ctx1("rifd");
@@ -81,6 +82,7 @@ InfoContactLocalizedResponse info_contact_localized(
                         ctx,
                         _contact_handle,
                         _info_contact_config_data,
+                        _authinfopw,
                         _session_data);
 
         InfoContactLocalizedOutputData dst_data;
@@ -107,16 +109,16 @@ InfoContactLocalizedResponse info_contact_localized(
         dst_data.email = src_data.email;
         dst_data.notify_email = src_data.notify_email;
         dst_data.VAT = src_data.VAT;
-        dst_data.VAT = src_data.VAT;
         dst_data.ident = src_data.personal_id;
         dst_data.authinfopw = src_data.authinfopw;
 
-        const InfoContactLocalizedResponse response(
+        InfoContactLocalizedResponse response(
                 EppResponseSuccessLocalized(
                         ctx,
                         EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
                         _session_data.lang),
                 dst_data);
+        ctx.commit_transaction();
         return response;
     }
     catch (const EppResponseFailure& e)

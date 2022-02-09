@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -22,6 +22,7 @@
 #include "src/backend/epp/contact/info_contact_config_data.hh"
 #include "src/backend/epp/contact/info_contact_localized_response.hh"
 #include "src/backend/epp/notification_data.hh"
+#include "src/backend/epp/password.hh"
 #include "src/backend/epp/session_data.hh"
 
 #include <string>
@@ -32,8 +33,8 @@ namespace Contact {
 InfoContactLocalizedResponse info_contact_localized(
         const std::string& _contact_handle,
         const InfoContactConfigData& _info_contact_config_data,
+        const Password& _authinfopw,
         const SessionData& _session_data);
-
 
 } // namespace Epp::Contact
 } // namespace Epp

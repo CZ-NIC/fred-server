@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2021-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,9 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+#include "src/backend/epp/contact/impl/contact_data_share_policy_rules.hh"
 
-#include "src/backend/epp/contact/impl/info_contact_data_filter.hh"
-
+#include "libfred/object/generate_authinfo_password.hh"
+#include "libfred/registrable_object/contact/update_contact.hh"
 #include "libfred/registrar/info_registrar.hh"
 
 #include "util/log/logger.hh"
@@ -34,21 +35,21 @@ namespace {
 template <typename T>
 constexpr auto enable() noexcept
 {
-    return InfoContactDataFilter::Bool<T>{true};
+    return ContactDataSharePolicyRules::Bool<T>{true};
 }
 
 template <typename T>
 constexpr auto disable() noexcept
 {
-    return InfoContactDataFilter::Bool<T>{false};
+    return ContactDataSharePolicyRules::Bool<T>{false};
 }
 
-InfoContactDataFilter::Relationships enabled_relationships(InfoContact::DataSharePolicy data_share_policy)
+ContactDataSharePolicyRules::Relationships enabled_relationships(InfoContact::DataSharePolicy data_share_policy)
 {
     switch (data_share_policy)
     {
         case InfoContact::DataSharePolicy::cznic_specific:
-            return InfoContactDataFilter::Relationships{
+            return ContactDataSharePolicyRules::Relationships{
                     enable<ContactRegistrarRelationship::SponsoringRegistrar>(),
                     enable<ContactRegistrarRelationship::AuthorizedRegistrar>(),
                     enable<ContactRegistrarRelationship::SponsoringRegistrarOfDomainWhereContactIs::DomainHolder>(),
@@ -56,7 +57,7 @@ InfoContactDataFilter::Relationships enabled_relationships(InfoContact::DataShar
                     enable<ContactRegistrarRelationship::SystemRegistrar>(),
                     disable<ContactRegistrarRelationship::OtherRelationship>()};
         case InfoContact::DataSharePolicy::show_all:
-            return InfoContactDataFilter::Relationships{
+            return ContactDataSharePolicyRules::Relationships{
                     enable<ContactRegistrarRelationship::SponsoringRegistrar>(),
                     enable<ContactRegistrarRelationship::AuthorizedRegistrar>(),
                     enable<ContactRegistrarRelationship::SponsoringRegistrarOfDomainWhereContactIs::DomainHolder>(),
@@ -68,54 +69,18 @@ InfoContactDataFilter::Relationships enabled_relationships(InfoContact::DataShar
 }
 
 template <typename T>
-constexpr bool does_present(const InfoContactDataFilter::Relationships& relationships) noexcept
+constexpr bool does_present(const ContactDataSharePolicyRules::Relationships& relationships) noexcept
 {
-    return std::get<InfoContactDataFilter::Bool<T>>(relationships);
+    return std::get<ContactDataSharePolicyRules::Bool<T>>(relationships);
 }
 
-bool is_visibility_restricted(const InfoContactDataFilter::Relationships& show_private_data_to)
+bool is_visibility_restricted(const ContactDataSharePolicyRules::Relationships& show_private_data_to)
 {
     return !does_present<ContactRegistrarRelationship::SponsoringRegistrarOfDomainWhereContactIs::AdminContact>(show_private_data_to) ||
            !does_present<ContactRegistrarRelationship::SponsoringRegistrarOfDomainWhereContactIs::DomainHolder>(show_private_data_to) ||
            !does_present<ContactRegistrarRelationship::OtherRelationship>(show_private_data_to) ||
            !does_present<ContactRegistrarRelationship::SponsoringRegistrar>(show_private_data_to) ||
            !does_present<ContactRegistrarRelationship::SystemRegistrar>(show_private_data_to);
-}
-
-bool is_authorized_registrar(
-        const boost::optional<std::string>& contact_authinfopw,
-        const LibFred::InfoContactData& contact_data)
-{
-    if (contact_authinfopw != boost::none)
-    {
-        if (contact_data.authinfopw != *contact_authinfopw)
-        {
-            struct AuthinfoDoesNotMatch : InfoContactDataFilter::InvalidAuthorizationInformation, std::exception
-            {
-                const char* what() const noexcept override { return "authinfo does not match"; }
-            };
-            throw AuthinfoDoesNotMatch{};
-        }
-        return true;
-    }
-    return false;
-}
-
-bool registrar_is_contacts_sponsoring_registrar(
-        LibFred::OperationContext& ctx,
-        unsigned long long registrar_id,
-        const std::string& contact_sponsoring_registrar_handle)
-{
-    const auto contact_sponsoring_registrar_id = LibFred::InfoRegistrarByHandle{contact_sponsoring_registrar_handle}
-            .exec(ctx).info_registrar_data.id;
-    return registrar_id  == contact_sponsoring_registrar_id;
-}
-
-bool registrar_is_system_registrar(
-        LibFred::OperationContext& ctx,
-        unsigned long long registrar_id)
-{
-    return LibFred::InfoRegistrarById{registrar_id}.exec(ctx).info_registrar_data.system.get_value_or(false);
 }
 
 bool contact_is_registrars_domain_holder(
@@ -148,6 +113,27 @@ bool contact_is_registrars_domain_admin_contact(
                                            "dcm.role = 1 " // 1 means "admin contact", there are currently no other roles.
             "LIMIT 1",
             Database::query_param_list(registrar_id)(contact_id)).size();
+}
+
+void authorize_registrar_request(const LibFred::InfoContactData& contact_data, const Password& password)
+{
+    const auto authinfo = Password{contact_data.authinfopw};
+    if (authinfo.is_empty())
+    {
+        struct AuthinfoIsDisabled : ContactDataSharePolicyRules::InvalidAuthorizationInformation, std::exception
+        {
+            const char* what() const noexcept override { return "authinfo is disabled"; }
+        };
+        throw AuthinfoIsDisabled{};
+    }
+    if (authinfo != password)
+    {
+        struct AuthinfoDoesNotMatch : ContactDataSharePolicyRules::InvalidAuthorizationInformation, std::exception
+        {
+            const char* what() const noexcept override { return "authinfo does not match"; }
+        };
+        throw AuthinfoDoesNotMatch{};
+    }
 }
 
 template <typename T>
@@ -242,9 +228,9 @@ template <typename First, typename ...Tail>
 struct Append<First, Tail...>
 {
     template <typename ...Ts>
-    static std::string& to_string(const std::tuple<InfoContactDataFilter::Bool<Ts>...>& relationships, std::string& str)
+    static std::string& to_string(const std::tuple<ContactDataSharePolicyRules::Bool<Ts>...>& relationships, std::string& str)
     {
-        if (std::get<InfoContactDataFilter::Bool<First>>(relationships))
+        if (std::get<ContactDataSharePolicyRules::Bool<First>>(relationships))
         {
             if (!str.empty())
             {
@@ -260,14 +246,14 @@ template <>
 struct Append<>
 {
     template <typename ...Ts>
-    static std::string& to_string(const std::tuple<InfoContactDataFilter::Bool<Ts>...>&, std::string& str)
+    static std::string& to_string(const std::tuple<ContactDataSharePolicyRules::Bool<Ts>...>&, std::string& str)
     {
         return str;
     }
 };
 
 template <typename ...Relationships>
-std::string to_string(const std::tuple<InfoContactDataFilter::Bool<Relationships>...>& relationships)
+std::string to_string(const std::tuple<ContactDataSharePolicyRules::Bool<Relationships>...>& relationships)
 {
     std::string result;
     Append<Relationships...>::to_string(relationships, result);
@@ -276,39 +262,44 @@ std::string to_string(const std::tuple<InfoContactDataFilter::Bool<Relationships
 
 }//namespace Epp::Contact::Impl::CzNic::{anonymous}
 
-InfoContactDataFilter::InfoContactDataFilter(const Relationships& show_private_data_to)
+ContactDataSharePolicyRules::ContactDataSharePolicyRules(const Relationships& show_private_data_to)
     : show_private_data_to_{show_private_data_to}
 {
-    LOGGER.info("InfoContactDataFilter(" + to_string(show_private_data_to_) + ")");
+    LOGGER.info("ContactDataSharePolicyRules(" + to_string(show_private_data_to_) + ")");
 }
 
-InfoContactDataFilter::InfoContactDataFilter(InfoContact::DataSharePolicy data_share_policy)
-    : InfoContactDataFilter{enabled_relationships(data_share_policy)}
+ContactDataSharePolicyRules::ContactDataSharePolicyRules(InfoContact::DataSharePolicy data_share_policy)
+    : ContactDataSharePolicyRules{enabled_relationships(data_share_policy)}
 { }
 
 template <typename T>
-bool InfoContactDataFilter::show_private_data_to() const noexcept
+bool ContactDataSharePolicyRules::show_private_data_to() const noexcept
 {
     return does_present<T>(show_private_data_to_);
 }
 
-LibFred::InfoContactData& InfoContactDataFilter::operator()(
+LibFred::InfoContactData& ContactDataSharePolicyRules::apply(
         LibFred::OperationContext& ctx,
-        const boost::optional<std::string>& contact_authinfopw,
+        const Password& contact_authinfopw,
         const SessionData& session_data,
         LibFred::InfoContactData& contact_data) const
 {
     try
     {
         bool show_private_data = false;
-        if (this->show_private_data_to<ContactRegistrarRelationship::AuthorizedRegistrar>() && is_authorized_registrar(contact_authinfopw, contact_data))
+        const auto session_registrar =
+                LibFred::InfoRegistrarById{session_data.registrar_id}.exec(ctx).info_registrar_data;
+        if (this->show_private_data_to<ContactRegistrarRelationship::AuthorizedRegistrar>() &&
+            !contact_authinfopw.is_empty())
         {
+            authorize_registrar_request(contact_data, contact_authinfopw);
+            LibFred::UpdateContactById{contact_data.id, session_registrar.handle}
+                    .set_authinfo(LibFred::generate_authinfo_pw().password_)
+                    .exec(ctx);
+            contact_data = std::move(LibFred::InfoContactById{contact_data.id}.exec(ctx).info_contact_data);
             show_private_data = true;
         }
-        const bool is_sponsoring_registrar = registrar_is_contacts_sponsoring_registrar(
-                    ctx,
-                    session_data.registrar_id,
-                    contact_data.sponsoring_registrar_handle);
+        const bool is_sponsoring_registrar = session_registrar.handle == contact_data.sponsoring_registrar_handle;
         if (!is_sponsoring_registrar)
         {
             contact_data.authinfopw.clear();
@@ -325,7 +316,7 @@ LibFred::InfoContactData& InfoContactDataFilter::operator()(
                 };
             const auto is_system_registrar = [&]()
                 {
-                    return registrar_is_system_registrar(ctx, session_data.registrar_id);
+                    return session_registrar.system.get_value_or(false);
                 };
             show_private_data =
                     (this->show_private_data_to<ContactRegistrarRelationship::SponsoringRegistrar>() &&
@@ -363,12 +354,12 @@ LibFred::InfoContactData& InfoContactDataFilter::operator()(
     return contact_data;
 }
 
-template bool InfoContactDataFilter::show_private_data_to<ContactRegistrarRelationship::AuthorizedRegistrar>() const noexcept;
-template bool InfoContactDataFilter::show_private_data_to<ContactRegistrarRelationship::OtherRelationship>() const noexcept;
-template bool InfoContactDataFilter::show_private_data_to<ContactRegistrarRelationship::SponsoringRegistrar>() const noexcept;
-template bool InfoContactDataFilter::show_private_data_to<ContactRegistrarRelationship::SponsoringRegistrarOfDomainWhereContactIs::AdminContact>() const noexcept;
-template bool InfoContactDataFilter::show_private_data_to<ContactRegistrarRelationship::SponsoringRegistrarOfDomainWhereContactIs::DomainHolder>() const noexcept;
-template bool InfoContactDataFilter::show_private_data_to<ContactRegistrarRelationship::SystemRegistrar>() const noexcept;
+template bool ContactDataSharePolicyRules::show_private_data_to<ContactRegistrarRelationship::AuthorizedRegistrar>() const noexcept;
+template bool ContactDataSharePolicyRules::show_private_data_to<ContactRegistrarRelationship::OtherRelationship>() const noexcept;
+template bool ContactDataSharePolicyRules::show_private_data_to<ContactRegistrarRelationship::SponsoringRegistrar>() const noexcept;
+template bool ContactDataSharePolicyRules::show_private_data_to<ContactRegistrarRelationship::SponsoringRegistrarOfDomainWhereContactIs::AdminContact>() const noexcept;
+template bool ContactDataSharePolicyRules::show_private_data_to<ContactRegistrarRelationship::SponsoringRegistrarOfDomainWhereContactIs::DomainHolder>() const noexcept;
+template bool ContactDataSharePolicyRules::show_private_data_to<ContactRegistrarRelationship::SystemRegistrar>() const noexcept;
 
 }//namespace Epp::Contact::Impl
 }//namespace Epp::Contact

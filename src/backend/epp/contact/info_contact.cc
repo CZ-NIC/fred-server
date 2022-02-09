@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2021  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -27,10 +27,11 @@
 #include "src/backend/epp/epp_result_failure.hh"
 #include "src/backend/epp/exception.hh"
 #include "src/backend/epp/impl/util.hh"
+
 #include "src/deprecated/libfred/registrable_object/contact.hh"
+
 #include "libfred/registrable_object/contact/info_contact.hh"
 #include "libfred/object_state/get_object_states.hh"
-#include "src/deprecated/libfred/registrar.hh"
 #include "libfred/registrar/info_registrar.hh"
 
 #include <boost/foreach.hpp>
@@ -44,6 +45,7 @@ InfoContactOutputData info_contact(
         LibFred::OperationContext& _ctx,
         const std::string& _contact_handle,
         const InfoContactConfigData& _info_contact_config_data,
+        const Password& _authinfopw,
         const SessionData& _session_data)
 {
     if (!is_session_registrar_valid(_session_data))
@@ -54,25 +56,25 @@ InfoContactOutputData info_contact(
 
     try
     {
-        const LibFred::InfoContactData info_contact_data = LibFred::InfoContactByHandle(_contact_handle)
-                .exec(_ctx, "UTC")
-                .info_contact_data;
+        auto info_contact_operation = LibFred::InfoContactByHandle{_contact_handle};
+        if (!_authinfopw.is_empty())
+        {
+            info_contact_operation.set_lock();  // authinfopw can be regenerated
+        }
+        const auto info_contact_data = info_contact_operation.exec(_ctx, "UTC").info_contact_data;
 
         const std::vector<LibFred::ObjectStateData> contact_states_data =
                 LibFred::GetObjectStates(info_contact_data.id).exec(_ctx);
 
-        const InfoContactOutputData info_contact_output_data =
-                get_info_contact_output(
+        return get_info_contact_output(
                         _ctx,
                         info_contact_data,
-                        _info_contact_config_data.authinfopw,
-                        *_info_contact_config_data.info_contact_data_filter,
+                        _authinfopw,
+                        *_info_contact_config_data.contact_data_share_policy_rules,
                         _session_data,
                         contact_states_data);
-
-        return info_contact_output_data;
     }
-    catch (const InfoContactDataFilter::InvalidAuthorizationInformation&)
+    catch (const ContactDataSharePolicyRules::InvalidAuthorizationInformation&)
     {
         throw EppResponseFailure(EppResultFailure(EppResultCode::invalid_authorization_information));
     }

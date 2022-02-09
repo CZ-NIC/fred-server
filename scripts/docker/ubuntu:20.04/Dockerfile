@@ -12,7 +12,7 @@ RUN printf 'deb http://archive.nic.cz/ubuntu focal main\n' > /etc/apt/sources.li
     && apt-get -y update                 \
     && apt-get -y install                \
             cmake                        \
-            postgresql-server-dev-9.6    \
+            postgresql-server-dev-13     \
             pkg-config                   \
             build-essential              \
             ninja-build                  \

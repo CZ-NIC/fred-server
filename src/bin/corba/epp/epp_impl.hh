@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006-2021  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2006-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -18,7 +18,7 @@
  */
 #include "src/backend/epp/contact/config_data_filter.hh"
 #include "src/backend/epp/contact/create_contact_data_filter.hh"
-#include "src/backend/epp/contact/info_contact_data_filter.hh"
+#include "src/backend/epp/contact/contact_data_share_policy_rules.hh"
 #include "src/backend/epp/contact/update_contact_data_filter.hh"
 
 #include "src/bin/corba/epp/messages.hh"
@@ -86,7 +86,7 @@ private:
   bool rifd_epp_operations_charging_;
   const bool epp_update_contact_enqueue_check_;
   std::shared_ptr<Epp::Contact::CreateContactDataFilter> rifd_epp_create_contact_data_filter_;
-  std::shared_ptr<Epp::Contact::InfoContactDataFilter> rifd_epp_info_contact_data_filter_;
+  std::shared_ptr<Epp::Contact::ContactDataSharePolicyRules> rifd_epp_contact_data_share_policy_rules_;
   std::shared_ptr<Epp::Contact::UpdateContactDataFilter> rifd_epp_update_contact_data_filter_;
 
   DBSharedPtr  db_disconnect_guard_;
@@ -125,7 +125,7 @@ public:
               bool rifd_epp_operations_charging,
               bool epp_update_contact_enqueue_check,
               const Epp::Contact::ConfigDataFilter& rifd_contact_data_filter,
-              const Epp::Contact::ConfigDataFilter& rifd_info_contact_data_filter);
+              const Epp::Contact::ConfigDataFilter& rifd_contact_data_share_policy_rules);
   virtual ~ccReg_EPP_i();
 
   const std::string& get_disable_epp_notifier_cltrid_prefix() const

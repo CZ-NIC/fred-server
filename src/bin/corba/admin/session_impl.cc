@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2020  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2008-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -1305,7 +1305,8 @@ try
                 LibFred::Corba::unwrap_string(_registrar.dic),
                 LibFred::Corba::unwrap_string(_registrar.varSymb),
                 boost::none,
-                static_cast<bool>(_registrar.vat));
+                static_cast<bool>(_registrar.vat),
+                false);
     }
     else
     {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2021  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 #ifndef FIXTURE_HH_D413188368CF45BEA79CE297BB880BDD
 #define FIXTURE_HH_D413188368CF45BEA79CE297BB880BDD
 
@@ -34,7 +33,7 @@
 #include "src/backend/epp/contact/transfer_contact_config_data.hh"
 #include "src/backend/epp/contact/update_contact_config_data.hh"
 #include "src/backend/epp/contact/impl/get_create_contact_data_filter.hh"
-#include "src/backend/epp/contact/impl/get_info_contact_data_filter.hh"
+#include "src/backend/epp/contact/impl/get_contact_data_share_policy_rules.hh"
 #include "src/backend/epp/contact/impl/get_update_contact_data_filter.hh"
 #include "src/backend/epp/contact/impl/info_contact.hh"
 #include "src/backend/epp/contact/impl/cznic/specific.hh"
@@ -63,8 +62,7 @@ struct DefaultInfoContactConfigData : ::Epp::Contact::InfoContactConfigData
     DefaultInfoContactConfigData()
         : InfoContactConfigData{
               false,
-              "",
-              ::Epp::Contact::Impl::get_info_contact_data_filter(
+              ::Epp::Contact::Impl::get_contact_data_share_policy_rules(
                       ::Epp::Contact::ConfigDataFilter::get_default<::Epp::Contact::Impl::InfoContact>())}
     { }
 };
