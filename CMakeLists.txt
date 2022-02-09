@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-set(project_name fred-server)
-project(${project_name} CXX)
+# macros
 
 macro(set_default variable_name variable_value)
     if(NOT ${variable_name})
@@ -9,13 +8,41 @@ macro(set_default variable_name variable_value)
     endif()
 endmacro()
 
-#Use in config.h
-set_default(PACKAGE ${project_name})
+# project details
+
+include("cmake/package.cmake")
+
+package(fred-server
+    FULL_VERSION "2.49.0-rc3")
+
+project(FredServer
+    VERSION ${PACKAGE_VERSION}
+    LANGUAGES CXX)
+
+# build options
+
+option(CMAKE_EXPORT_COMPILE_COMMANDS "If enabled, generates a compile_commands.json file containing the exact compiler calls." ON)
+
+# compile options
+
+set_default(CMAKE_BUILD_TYPE "Release")
+set(CMAKE_CXX_FLAGS_RELEASE "-O2")
+
+# dependencies
+
+include("cmake/package_dependencies.cmake")
+
+set(DB_BUILD FALSE)
+set(IDL_BUILD FALSE)
+set(LIBFRED_BUILD_TESTS TRUE)
+add_package_dependencies(FROM_FILE "dependencies.txt")
+provide_package_dependency_dist(db)
+provide_package_dependency_dist(idl)
+
+# build
 
 # Set CMake policies to support later version behaviour
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW) # option() honors variables already set
-
-set(LIBFRED_BUILD_TESTS TRUE)
 
 #Make sure that custom modules like FindOMNIORB are found
 set_default(IDL_PROJECT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/idl)
@@ -27,11 +54,6 @@ list(INSERT CMAKE_MODULE_PATH 0 ${IDL_PROJECT_DIR}/cmake)
 # Declare dependencies
 find_package(OMNIORB4 REQUIRED)
 find_program(GIT_PROGRAM git)
-find_program(CCACHE_PROGRAM ccache)
-
-if(CCACHE_PROGRAM)
-    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCACHE_PROGRAM}")
-endif()
 
 macro(normalize_path variable_name path)
     string(REGEX REPLACE "//+" "/" ${variable_name} "${path}")
@@ -45,35 +67,6 @@ macro(set_default_path variable_name path)
         normalize_path(${variable_name} "${path}")
     endif()
 endmacro()
-
-set_default(CMAKE_BUILD_TYPE "Release")
-set(CMAKE_CXX_FLAGS_RELEASE "-O2")
-
-set_default(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-if(NOT VERSION)
-    if(NOT GIT_PROGRAM)
-        message(FATAL_ERROR "git not found; you need to pass -DVERSION=")
-    endif()
-    execute_process(COMMAND ${GIT_PROGRAM} "describe" "--tags"
-                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-                    OUTPUT_VARIABLE RAWVERSION)
-    string(REGEX REPLACE "(-.*)?\n" "" VERSION "${RAWVERSION}")
-endif()
-set(TARBALL_FILE_NAME "${project_name}-${VERSION}")
-
-set(LIBFRED_PREFIX ${TARBALL_FILE_NAME}/external/lib/libfred)
-
-if(NOT TARGET Fred::library)
-    set_default(LIBFRED_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/lib/libfred)
-    if(NOT IS_ABSOLUTE ${LIBFRED_DIR})
-        set(LIBFRED_DIR ${CMAKE_CURRENT_BINARY_DIR}/${LIBFRED_DIR})
-    endif()
-    if(NOT EXISTS ${LIBFRED_DIR}/CMakeLists.txt)
-        message(FATAL_ERROR "${LIBFRED_DIR}/CMakeLists.txt does not exist; you need to pass -DLIBFRED_DIR")
-    endif()
-    add_subdirectory(${LIBFRED_DIR} ${CMAKE_CURRENT_BINARY_DIR}/external/lib/libfred EXCLUDE_FROM_ALL)
-endif()
 
 set(USR_PREFIX "${CMAKE_INSTALL_PREFIX}")
 normalize_path(NORMALIZED_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
@@ -2148,66 +2141,10 @@ if(NOT TARGET uninstall)
         COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
 endif()
 
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/.git AND GIT_PROGRAM)
-    if(NOT TARGET dist)
-        if (NOT TARGET dist_libfred)
-            add_custom_target(dist_libfred
-                COMMAND ${GIT_PROGRAM} archive --format=tar --prefix=${TARBALL_FILE_NAME}/external/lib/libfred/ HEAD > ${CMAKE_BINARY_DIR}/.libfred.tar
-                WORKING_DIRECTORY ${LIBFRED_DIR})
-        endif()
-        add_custom_target(dist_idl
-            COMMAND ${GIT_PROGRAM} archive --format=tar --prefix=${TARBALL_FILE_NAME}/external/idl/ HEAD > ${CMAKE_BINARY_DIR}/.idl.tar
-            WORKING_DIRECTORY ${IDL_PROJECT_DIR})
-        add_custom_target(dist
-            COMMAND ${GIT_PROGRAM} archive --format=tar --prefix=${TARBALL_FILE_NAME}/ HEAD > ${CMAKE_BINARY_DIR}/.${TARBALL_FILE_NAME}.tar
-            COMMAND tar --concatenate --file=${CMAKE_BINARY_DIR}/.${TARBALL_FILE_NAME}.tar ${CMAKE_BINARY_DIR}/.libfred.tar && rm ${CMAKE_BINARY_DIR}/.libfred.tar
-            COMMAND tar --concatenate --file=${CMAKE_BINARY_DIR}/.${TARBALL_FILE_NAME}.tar ${CMAKE_BINARY_DIR}/.idl.tar && rm ${CMAKE_BINARY_DIR}/.idl.tar
-            COMMAND cat ${CMAKE_BINARY_DIR}/.${TARBALL_FILE_NAME}.tar | gzip > ${CMAKE_BINARY_DIR}/${TARBALL_FILE_NAME}.tar.gz && rm ${CMAKE_BINARY_DIR}/.${TARBALL_FILE_NAME}.tar
-            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-        add_dependencies(dist dist_libfred dist_idl)
-    endif()
+# dist
 
-    if(DEFINED ENV{DISTCHECK_CMAKE_FLAGS})
-        set(distcheck_flags $ENV{DISTCHECK_CMAKE_FLAGS})
-    endif()
+include("cmake/package_dist.cmake")
+package_dist(PACKAGE_NAME "${PACKAGE_NAME}"
+             PACKAGE_TARNAME "${PACKAGE_TARNAME}")
 
-    if(NOT TARGET distcheck)
-        set(DISTCHECK_BUILD_DIR "_build")
-        set(DISTCHECK_INSTALL_DIR "_inst")
-        if(${CMAKE_GENERATOR} STREQUAL "Ninja")
-            set(DISTCHECK_BUILD_CMD "ninja")
-            set(DISTCHECK_MAKEFLAGS "")
-        else()
-            set(DISTCHECK_BUILD_CMD "make")
-            execute_process(COMMAND "grep" "-c" "model name" "/proc/cpuinfo"
-                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-                OUTPUT_VARIABLE NOCPUS)
-            string(REGEX REPLACE "\n" "" NOCPUS ${NOCPUS})
-            set(DISTCHECK_MAKEFLAGS "MAKEFLAGS=-j${NOCPUS}")
-        endif()
-        add_custom_target(distcheck
-            COMMAND
-            rm -rf ${DISTCHECK_BUILD_DIR} ${DISTCHECK_INSTALL_DIR} ${TARBALL_FILE_NAME}
-            && mkdir ${DISTCHECK_BUILD_DIR} ${DISTCHECK_INSTALL_DIR}
-            && (tar xzf ${TARBALL_FILE_NAME}.tar.gz
-                || (echo 'Error: failed to unpack the archive' 2>&1\; false))
-            && (cd ${DISTCHECK_BUILD_DIR}
-                && (${CMAKE_COMMAND} -G${CMAKE_GENERATOR} ${distcheck_flags} -DCMAKE_INSTALL_PREFIX=../${DISTCHECK_INSTALL_DIR} ../${TARBALL_FILE_NAME}
-                    || (echo 'Error: failed to configure the archive' 2>&1\; false))
-                && (${DISTCHECK_MAKEFLAGS} ${DISTCHECK_BUILD_CMD}
-                    || (echo 'Error: the build target failed ' 2>&1\; false))
-                && (${DISTCHECK_BUILD_CMD} install
-                    || (echo 'Error: the install target failed' 2>&1\; false))
-                && (${DISTCHECK_BUILD_CMD} uninstall
-                    || (echo 'Error: the uninstall target failed' 2>&1\; false))
-                && (${DISTCHECK_BUILD_CMD} clean
-                    || (echo 'Error: the clean target failed' 2>&1\; false)))
-            && rm -rf ${DISTCHECK_BUILD_DIR} ${DISTCHECK_INSTALL_DIR} ${TARBALL_FILE_NAME}
-            && echo 'PASS: ' ${TARBALL_FILE_NAME}.tar.gz 'is ready for distribution.'
-            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-            COMMENT "Checking the distribution archive...")
-        add_dependencies(distcheck dist)
-    endif()
-else()
-    message(STATUS "no git -- not including dist and distcheck targets")
-endif()
+list_package_dependencies_recursive("${PACKAGE_NAME}")
