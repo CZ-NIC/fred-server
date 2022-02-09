@@ -13,6 +13,8 @@ UNRELEASED
 
   * Epp / Public request - allow to send contact authinfo on registry e-mail even when contact has serverTransferProhibited status
 
+  * Update CMake build
+
 2021-12-22 (2.48.2)
 
   * Fix mojeid - add specific exception (instead of internal server error) when transferring contact attached to external identity
