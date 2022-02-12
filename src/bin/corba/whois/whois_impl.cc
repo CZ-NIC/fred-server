@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2011-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,9 +16,11 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/bin/corba/whois/whois_impl.hh"
 
 #include "src/bin/corba/admin/common.hh"
+#include "src/bin/corba/connection_releaser.hh"
 #include "src/deprecated/util/dbsql.hh"
 #include "src/deprecated/libfred/registry.hh"
 
@@ -26,11 +28,11 @@
 #include "util/log/context.hh"
 #include "util/random/random.hh"
 
-#include "src/bin/corba/connection_releaser.hh"
-
-#include <memory>
+#include <algorithm>
 #include <iomanip>
+#include <memory>
 #include <stdexcept>
+
 
 static const std::string create_ctx_name(const std::string &_name)
 {
@@ -62,7 +64,6 @@ ccReg_Whois_i::~ccReg_Whois_i()
 {
   TRACE("[CALL] ccReg_Whois_i::~ccReg_Whois_i()");
 }
-
 
 const std::string& ccReg_Whois_i::get_server_name() const
 {
@@ -278,6 +279,22 @@ void ccReg_Whois_i::fillDomain(ccReg::DomainDetail* cd,
   }
 }//ccReg_Whois_i::fillDomain
 
+namespace {
+
+std::string to_upper(std::string str)
+{
+    std::for_each(begin(str), end(str), [](char& c)
+    {
+        const bool is_lower_case = ('a' <= c) && (c <= 'z');
+        if (is_lower_case)
+        {
+            c += 'A' - 'a';
+        }
+    });
+    return str;
+}
+
+}//namespace {anonymous}
 
 ccReg::WhoisRegistrar* ccReg_Whois_i::getRegistrarByHandle(const char* handle)
 {
@@ -305,7 +322,7 @@ ccReg::WhoisRegistrar* ccReg_Whois_i::getRegistrarByHandle(const char* handle)
             = Database::Filters::CreateClearedUnionPtr();
         std::unique_ptr<Database::Filters::Registrar>
             r ( new Database::Filters::RegistrarImpl(true));
-        r->addHandle().setValue(handle);
+        r->addHandle().setValue(to_upper(handle));
         unionFilter->addFilter( r.release() );
         rl->reload(*unionFilter.get());
 
