@@ -29,6 +29,7 @@
 #include "util/random/random.hh"
 
 #include <algorithm>
+#include <cctype>
 #include <iomanip>
 #include <memory>
 #include <stdexcept>
@@ -283,14 +284,7 @@ namespace {
 
 std::string to_upper(std::string str)
 {
-    std::for_each(begin(str), end(str), [](char& c)
-    {
-        const bool is_lower_case = ('a' <= c) && (c <= 'z');
-        if (is_lower_case)
-        {
-            c += 'A' - 'a';
-        }
-    });
+    std::transform(begin(str), end(str), begin(str), [](unsigned char c) -> char { return std::toupper(c); });
     return str;
 }
 
