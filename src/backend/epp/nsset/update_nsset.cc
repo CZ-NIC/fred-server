@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/epp/nsset/update_nsset.hh"
 
 #include "src/backend/epp/epp_response_failure.hh"
@@ -26,6 +27,7 @@
 #include "src/backend/epp/nsset/dns_host_input.hh"
 #include "src/backend/epp/nsset/impl/nsset.hh"
 #include "src/backend/epp/nsset/impl/limits.hh"
+
 #include "libfred/registrable_object/contact/check_contact.hh"
 #include "libfred/registrable_object/domain/domain_name.hh"
 #include "libfred/registrable_object/nsset/check_nsset.hh"
@@ -35,8 +37,10 @@
 #include "libfred/object_state/lock_object_state_request_lock.hh"
 #include "libfred/object_state/object_has_state.hh"
 #include "libfred/object_state/perform_object_state_request.hh"
+#include "libfred/poll/create_poll_message.hh"
 #include "libfred/registrar/info_registrar.hh"
 #include "libfred/zone/zone.hh"
+
 #include "util/map_at.hh"
 #include "util/optional_value.hh"
 #include "util/util.hh"
@@ -49,7 +53,6 @@
 #include <string>
 #include <vector>
 
-using namespace std;
 
 namespace Epp {
 namespace Nsset {
@@ -381,6 +384,10 @@ unsigned long long update_nsset(
                 throw EppResponseFailure(EppResultFailure(EppResultCode::parameter_value_policy_error));
             }
 
+            if (!is_sponsoring_registrar)
+            {
+                LibFred::Poll::CreatePollMessage<LibFred::Poll::MessageType::update_nsset>().exec(_ctx, new_history_id);
+            }
             return new_history_id;
         }
         catch (const LibFred::UpdateNsset::Exception& e)
