@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2008-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,13 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
+#include "src/backend/domain_browser/domain_browser.hh"
+
+#include "src/deprecated/libfred/object_state/object_state_name.hh"
+#include "src/util/cfg/handle_mojeid_args.hh"
+#include "src/util/cfg/handle_domainbrowser_args.hh"
+
 #include "libfred/registrable_object/domain/info_domain.hh"
 #include "libfred/registrable_object/domain/create_domain.hh"
 #include "libfred/registrable_object/domain/update_domain.hh"
@@ -28,29 +35,22 @@
 #include "libfred/registrable_object/contact/create_contact.hh"
 #include "libfred/registrable_object/contact/info_contact.hh"
 #include "libfred/registrable_object/contact/update_contact.hh"
-#include "src/deprecated/libfred/object_state/object_state_name.hh"
 #include "libfred/object_state/object_has_state.hh"
 #include "libfred/object_state/create_object_state_request_id.hh"
 #include "libfred/object_state/cancel_object_state_request_id.hh"
 #include "libfred/object_state/perform_object_state_request.hh"
 #include "libfred/object_state/lock_object_state_request_lock.hh"
-
 #include "libfred/registrar/create_registrar.hh"
 #include "libfred/registrar/info_registrar.hh"
 #include "libfred/registrar/info_registrar_diff.hh"
 #include "libfred/registrar/info_registrar_impl.hh"
 #include "libfred/opexception.hh"
 #include "libfred/opcontext.hh"
-#include "util/util.hh"
-#include "util/map_at.hh"
 
+#include "util/map_at.hh"
 #include "util/random/char_set/char_set.hh"
 #include "util/random/random.hh"
-
-#include "src/util/cfg/handle_mojeid_args.hh"
-#include "src/util/cfg/handle_domainbrowser_args.hh"
-
-#include "src/backend/domain_browser/domain_browser.hh"
+#include "util/util.hh"
 
 #include <boost/lexical_cast.hpp>
 
@@ -58,11 +58,6 @@
 #include <utility>
 #include <vector>
 #include <map>
-
-/**
- *  @file
- *  test domain browser
- */
 
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN
@@ -2748,7 +2743,12 @@ struct merge_contacts_fixture
                 .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                 .exec(ctx);
             user_contact_info = ::LibFred::InfoContactByHandle(user_contact_handle).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
-            ::LibFred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id, Util::set_of<std::string>(::LibFred::ObjectState::MOJEID_CONTACT)).exec(ctx);
+            ::LibFred::CreateObjectStateRequestId(
+                    user_contact_info.info_contact_data.id,
+                    {
+                        ::LibFred::ObjectState::MOJEID_CONTACT,
+                        ::LibFred::ObjectState::VALIDATED_CONTACT
+                    }).exec(ctx);
             ::LibFred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
             ctx.commit_transaction();//commit fixture
         }
@@ -3200,7 +3200,7 @@ BOOST_AUTO_TEST_SUITE(mergeContacts)
 /**
  * mergeContacts
 */
-BOOST_FIXTURE_TEST_CASE(merge_contacts, merge_contacts_fixture )
+BOOST_FIXTURE_TEST_CASE(merge_contacts, merge_contacts_fixture)
 {
     ::LibFred::OperationContextCreator ctx;
 
@@ -3264,7 +3264,12 @@ struct merge_contacts_no_src_contacts_fixture
             .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
             .exec(ctx);
         user_contact_info = ::LibFred::InfoContactByHandle(user_contact_handle).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
-        ::LibFred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id, Util::set_of<std::string>(::LibFred::ObjectState::MOJEID_CONTACT)).exec(ctx);
+        ::LibFred::CreateObjectStateRequestId(
+                user_contact_info.info_contact_data.id,
+                {
+                    ::LibFred::ObjectState::MOJEID_CONTACT,
+                    ::LibFred::ObjectState::VALIDATED_CONTACT
+                }).exec(ctx);
         ::LibFred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
         ctx.commit_transaction();//commit fixture
     }
