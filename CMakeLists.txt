@@ -28,6 +28,8 @@ option(CMAKE_EXPORT_COMPILE_COMMANDS "If enabled, generates a compile_commands.j
 set_default(CMAKE_BUILD_TYPE "Release")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2")
 
+option(LIBFRED_BUILD_TESTS "Build libfred tests" YES)
+
 # dependencies
 
 include("cmake/package_dependencies.cmake")
