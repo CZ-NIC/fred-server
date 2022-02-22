@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/epp/keyset/update_keyset.hh"
 
 #include "src/backend/epp/epp_extended_error.hh"
@@ -25,6 +26,7 @@
 #include "src/backend/epp/exception.hh"
 #include "src/backend/epp/reason.hh"
 #include "src/backend/epp/keyset/impl/limits.hh"
+
 #include "libfred/registrable_object/contact/check_contact.hh"
 #include "libfred/registrable_object/keyset/info_keyset.hh"
 #include "libfred/registrable_object/keyset/update_keyset.hh"
@@ -32,6 +34,7 @@
 #include "libfred/object_state/get_object_states.hh"
 #include "libfred/object_state/lock_object_state_request_lock.hh"
 #include "libfred/object_state/perform_object_state_request.hh"
+#include "libfred/poll/create_poll_message.hh"
 #include "libfred/registrar/info_registrar.hh"
 
 #include <strings.h>
@@ -661,6 +664,7 @@ UpdateKeysetResult update_keyset(
 
     UpdateKeysetResult result;
     std::string session_registrar_handle;
+    bool is_sponsoring_registrar = false;
     {
         const LibFred::InfoKeysetData keyset_data = check_keyset_handle(
                 _update_keyset_data.keyset_handle,
@@ -668,6 +672,7 @@ UpdateKeysetResult update_keyset(
                 _ctx,
                 session_registrar_handle);
 
+        is_sponsoring_registrar = keyset_data.sponsoring_registrar_handle == session_registrar_handle;
         EppResultFailure existing_objects = EppResultFailure(EppResultCode::object_exists);
         EppResultFailure missing_parameters = EppResultFailure(EppResultCode::required_parameter_missing);
         EppResultFailure policy_errors = EppResultFailure(EppResultCode::parameter_value_policy_error);
@@ -893,6 +898,10 @@ UpdateKeysetResult update_keyset(
                                         Param::keyset_tech_rem,
                                         Reason::can_not_remove_tech)));
             }
+        }
+        if (!is_sponsoring_registrar)
+        {
+            LibFred::Poll::CreatePollMessage<LibFred::Poll::MessageType::update_keyset>().exec(_ctx, result.update_history_id);
         }
         return result;
     }
