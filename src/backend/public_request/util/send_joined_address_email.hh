@@ -26,6 +26,8 @@
 #include <set>
 #include <map>
 
+#include <boost/uuid/uuid.hpp>
+
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
@@ -46,7 +48,7 @@ struct EmailData
             const std::string& _template_name_subject,
             const std::string& _template_name_body,
             const std::map<std::string, std::string>& _template_parameters,
-            const std::vector<unsigned long long>& _attachments)
+            const std::vector<boost::uuids::uuid>& _attachments)
         : recipient_email_addresses(_recipient_email_addresses),
           template_name_subject(_template_name_subject),
           template_name_body(_template_name_body),
@@ -58,7 +60,7 @@ struct EmailData
     const std::string template_name_subject;
     const std::string template_name_body;
     const std::map<std::string, std::string> template_parameters;
-    const std::vector<unsigned long long> attachments;
+    const std::vector<boost::uuids::uuid> attachments;
 };
 
 unsigned long long send_joined_addresses_email(

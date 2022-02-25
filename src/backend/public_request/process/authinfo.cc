@@ -217,8 +217,14 @@ unsigned long long send_authinfo_email(
     email_template_params.insert(LibFred::Mailer::Parameters::value_type("type", type));
     email_template_params.insert(LibFred::Mailer::Parameters::value_type("authinfo", authinfo));
 
-    const auto data = Util::EmailData{emails, get_template_name_subject(_email_type), template_name_body(_email_type), email_template_params, std::vector<unsigned long long>()};
-    return send_joined_addresses_email(_messenger_endpoint, data);
+    const Util::EmailData email_data{
+            emails,
+            get_template_name_subject(_email_type),
+            get_template_name_body(_email_type),
+            email_template_params,
+            {}};
+
+    return send_joined_addresses_email(_messenger_endpoint, email_data);
 }
 
 } // namespace Fred::Backend::PublicRequest::Process::{anonymous}

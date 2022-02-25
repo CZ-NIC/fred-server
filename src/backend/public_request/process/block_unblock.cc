@@ -304,8 +304,14 @@ unsigned long long send_request_block_email(
         }
     }
 
-    const Util::EmailData data(emails, "request-block-subject.txt", "request-block-body.txt", email_template_params, std::vector<unsigned long long>());
-    return send_joined_addresses_email(_messenger_endpoint, data);
+    const Util::EmailData email_data(
+            emails,
+            "request-block-subject.txt",
+            "request-block-body.txt",
+            email_template_params,
+            {});
+
+    return send_joined_addresses_email(_messenger_endpoint, email_data);
 }
 
 auto get_public_request_process_function(const LibFred::PublicRequestTypeIface& public_request)

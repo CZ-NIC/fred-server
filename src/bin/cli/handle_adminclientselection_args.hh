@@ -48,7 +48,8 @@
 #include "src/bin/cli/public_request_params.hh"
 #include "src/bin/cli/domain_name_validation_params.hh"
 #include "src/bin/cli/charge_registry_access_fee_params.hh"
-#include "src/bin/cli/messenger.hh"
+#include "src/bin/cli/messenger_params.hh"
+#include "src/bin/cli/fileman_params.hh"
 
 #include <iostream>
 #include <exception>
@@ -1712,7 +1713,8 @@ public:
  * \class HandleAdminClientChargeRequestFeeArgsGrp
  * \brief charge request fee to a registrar(s)
  */
-class HandleAdminClientChargeRequestFeeArgsGrp : public HandleCommandGrpArgs {
+class HandleAdminClientChargeRequestFeeArgsGrp : public HandleCommandGrpArgs
+{
 public:
     ChargeRequestFeeArgs params;
     CommandDescription get_command_option()
@@ -2335,7 +2337,8 @@ public:
 /**
  * admin client contact_verification_fill_queue_automatic_testsuite options handler
  */
-class HandleContactVerificationFillQueueArgsGrp : public HandleCommandGrpArgs {
+class HandleContactVerificationFillQueueArgsGrp : public HandleCommandGrpArgs
+{
     private:
         const char* name() const { return "contact_verification_fill_queue"; }
         typedef boost::program_options::options_description options_description;
@@ -2390,7 +2393,8 @@ class HandleContactVerificationFillQueueArgsGrp : public HandleCommandGrpArgs {
 /**
  * admin client contact_verification_enqueue_check  options handler
  */
-class HandleContactVerificationEnqueueCheckArgsGrp : public HandleCommandGrpArgs {
+class HandleContactVerificationEnqueueCheckArgsGrp : public HandleCommandGrpArgs
+{
     private:
         const char* name() const { return "contact_verification_enqueue_check";}
         typedef boost::program_options::options_description options_description;
@@ -2427,7 +2431,8 @@ class HandleContactVerificationEnqueueCheckArgsGrp : public HandleCommandGrpArgs
 /**
  * admin client contact_verification_start_enqueued_checks  options handler
  */
-class HandleContactVerificationStartEnqueuedChecksArgsGrp : public HandleCommandGrpArgs {
+class HandleContactVerificationStartEnqueuedChecksArgsGrp : public HandleCommandGrpArgs
+{
     private:
         const char* name() const { return "contact_verification_start_enqueued_checks";}
         typedef boost::program_options::options_description options_description;
@@ -2591,7 +2596,8 @@ class HandleAdminClientCreateExpiredDomainArgsGrp : public HandleCommandGrpArgs
         }//handle
 };//class HandleAdminClientCreateExpiredDomainArgsGrp
 
-class HandleSendObjectEventNotificationEmailsArgsGrp : public HandleCommandGrpArgs {
+class HandleSendObjectEventNotificationEmailsArgsGrp : public HandleCommandGrpArgs
+{
     private:
         static const char* get_command_name() { return "notify_email_objects_events"; }
     public:
@@ -2639,10 +2645,7 @@ struct HandleAdminClientProcessPublicRequestsArgsGrp : HandleCommandGrpArgs
              ("process_public_requests", "process_public_requests options")
              ("types", boost::program_options::value<std::vector<std::string> >()->multitoken()
                  ->notifier(save_arg<std::vector<std::string> >(process_public_requests_params.types)),
-                 "list of types of public requests to be processed")
-             ("messenger_endpoint", boost::program_options::value<std::string>()->required()
-                 ->notifier(save_arg<std::string>(process_public_requests_params.messenger_endpoint)),
-                 "URI of Fred.Api.Messenger.Email service to connect to");
+                 "list of types of public requests to be processed");
         return cfg_opts;
     }
 
@@ -2793,6 +2796,40 @@ struct HandleAdminClientMessengerArgsGrp : HandleCommandGrpArgs
         return option_group_index;
     }
     MessengerArgs messenger_params;
+};
+
+struct HandleAdminClientFilemanArgsGrp : HandleCommandGrpArgs
+{
+    CommandDescription get_command_option() override
+    {
+        return CommandDescription("fileman");
+    }
+
+    std::shared_ptr<boost::program_options::options_description>
+    get_options_description() override
+    {
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("fileman options")));
+        cfg_opts->add_options()
+             ("fileman", "fileman options")
+             ("endpoint", boost::program_options::value<std::string>()->required()
+                 ->notifier(save_arg<std::string>(fileman_params.endpoint)),
+                 "URI of Fred.Api.Fileman.File service to connect to");
+        return cfg_opts;
+    }
+
+    std::size_t handle(
+            int argc,
+            char* argv[],
+            FakedArgs& fa,
+            std::size_t option_group_index) override
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }
+    FilemanArgs fileman_params;
 };
 
 #endif

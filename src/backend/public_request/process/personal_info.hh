@@ -34,8 +34,7 @@ void process_public_request_personal_info_resolved(
         unsigned long long _public_request_id,
         const LibFred::PublicRequestTypeIface& _public_request_type,
         const std::string& _messenger_endpoint,
-        std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager,
-        std::shared_ptr<LibFred::File::Transferer> _file_manager_client);
+        const std::string& _fileman_endpoint);
 
 } // namespace Fred::Backend::PublicRequest::Process
 } // namespace Fred::Backend::PublicRequest

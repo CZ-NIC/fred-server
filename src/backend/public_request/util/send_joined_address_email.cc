@@ -33,13 +33,17 @@ unsigned long long send_joined_addresses_email(
         const std::string& _messenger_endpoint,
         const EmailData& data)
 {
+    LibHermes::Connection<LibHermes::Service::EmailMessenger> connection{
+        LibHermes::Connection<LibHermes::Service::EmailMessenger>::ConnectionString{
+            _messenger_endpoint}};
+
     for (const auto& recipient_email_address : data.recipient_email_addresses)
     {
         auto email =
                 LibHermes::Email::make_minimal_email(
                         LibHermes::Email::Email::Recipient{boost::algorithm::trim_copy(recipient_email_address)},
                         LibHermes::Email::Email::SubjectTemplate{data.template_name_subject},
-                        LibHermes::Email::Email::BodyTemplate{data.tamplate_name_body});
+                        LibHermes::Email::Email::BodyTemplate{data.template_name_body});
 
         std::transform(
                 data.template_parameters.begin(),
@@ -48,6 +52,15 @@ unsigned long long send_joined_addresses_email(
                 [](const auto& item) -> auto
                 {
                     return std::make_pair(LibHermes::StructKey{item.first}, LibHermes::StructValue{item.second});
+                });
+
+        std::transform(
+                data.attachments.begin(),
+                data.attachments.end(),
+                std::back_inserter(email.attachments),
+                [](const auto& item) -> auto
+                {
+                        return LibHermes::Email::Email::AttachmentUuid{item};
                 });
 
         LibHermes::Email::EmailUid email_uid;
@@ -62,12 +75,12 @@ unsigned long long send_joined_addresses_email(
         }
         catch (const std::exception& e)
         {
-            LIBLOG_WARNING("std::exception caught while sending email: {}", e.what());
+            //LIBLOG_WARNING("std::exception caught while sending email: {}", e.what());
             continue;
         }
         catch (...)
         {
-            LIBLOG_WARNING("exception caught while sending email");
+            //LIBLOG_WARNING("exception caught while sending email");
             continue;
         }
         // throw FailedToSendMailToRecipient();

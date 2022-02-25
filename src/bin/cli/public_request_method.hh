@@ -26,6 +26,8 @@
 #include "libfred/mailer.hh"
 #include "src/deprecated/libfred/file_transferer.hh"
 #include "src/bin/cli/public_request_params.hh"
+#include "src/bin/cli/messenger_params.hh"
+#include "src/bin/cli/fileman_params.hh"
 
 #include <boost/program_options.hpp>
 #include <iostream>
@@ -39,12 +41,10 @@ public:
     PublicRequestProcedure(
             const ProcessPublicRequestsArgs& _args,
             const MessengerArgs& _messenger_args,
-            std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager,
-            std::shared_ptr<LibFred::File::Transferer> _file_manager_client)
+            const FilemanArgs& _fileman_args)
         : args_(_args),
           messenger_args_(_messenger_args),
-          mailer_manager_(std::move(_mailer_manager)),
-          file_manager_client_(std::move(_file_manager_client))
+          fileman_args_(_fileman_args)
         {
         }
 
@@ -52,8 +52,7 @@ public:
 private:
     ProcessPublicRequestsArgs args_;
     MessengerArgs messenger_args_;
-    std::shared_ptr<LibFred::Mailer::Manager> mailer_manager_;
-    std::shared_ptr<LibFred::File::Transferer> file_manager_client_;
+    FilemanArgs fileman_args_;
 };
 
 } // namespace Admin;

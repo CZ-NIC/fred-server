@@ -144,8 +144,7 @@ CommandHandlerPtrVector chpv = boost::assign::list_of
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientCreateExpiredDomainArgsGrp), create_expired_domain_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientProcessPublicRequestsArgsGrp), process_public_requests_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleChargeRegistryAccessFeeAnnualArgsGrp), charge_registry_access_fee_annual_impl))
-    (CommandHandlerParam(HandleCommandArgsPtr(new HandleChargeRegistryAccessFeeMonthlyArgsGrp), charge_registry_access_fee_monthly_impl))
-    (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientMessengerArgsGrp), messenger_impl()));
+    (CommandHandlerParam(HandleCommandArgsPtr(new HandleChargeRegistryAccessFeeMonthlyArgsGrp), charge_registry_access_fee_monthly_impl));
 
 CommandOptionGroups cog(chpv);
 
