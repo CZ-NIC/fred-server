@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,128 +16,46 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/bin/corba/admin/public_request_mojeid.hh"
 
 #include "src/deprecated/libfred/contact_verification/contact_verification_state.hh"
-#include "libfred/mailer.hh"
 #include "src/deprecated/libfred/object_states.hh"
 #include "src/deprecated/libfred/object_states.hh"
 #include "src/deprecated/libfred/public_request/public_request_impl.hh"
 #include "src/util/types/birthdate.hh"
 
+#include "libfred/mailer.hh"
+
+
 namespace CorbaConversion {
 namespace Admin {
 
-FACTORY_MODULE_INIT_DEFI(mojeid)
+namespace {
 
-class MojeIdPublicRequestBase
-        : public LibFred::PublicRequest::PublicRequestAuthImpl
+class MojeIdPublicRequestBase : public LibFred::PublicRequest::PublicRequestAuthImpl
 {
 public:
-    void sendPasswords()
+    void sendPasswords() override
     {
         throw std::runtime_error(std::string("method ") + __PRETTY_FUNCTION__ + " should never be called");
     }
 
-    std::string generatePasswords()
+    std::string generatePasswords() override
     {
         throw std::runtime_error(std::string("method ") + __PRETTY_FUNCTION__ + " should never be called");
     }
 };
 
-class MojeIdCCI
-        : public MojeIdPublicRequestBase,
-          public Util::FactoryAutoRegister<LibFred::PublicRequest::PublicRequest, MojeIdCCI>
+class MojeIdContactValidation : public LibFred::PublicRequest::PublicRequestImpl
 {
 public:
-    static std::string registration_name()
-    {
-        return CorbaConversion::Admin::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION;
-    }
-};
-
-class MojeIdCI
-        : public MojeIdPublicRequestBase,
-          public Util::FactoryAutoRegister<LibFred::PublicRequest::PublicRequest, MojeIdCI>
-{
-public:
-    static std::string registration_name()
-    {
-        return CorbaConversion::Admin::PRT_MOJEID_CONTACT_IDENTIFICATION;
-    }
-};
-
-class MojeIdCICT
-        : public MojeIdPublicRequestBase,
-          public Util::FactoryAutoRegister<LibFred::PublicRequest::PublicRequest, MojeIdCICT>
-{
-public:
-    static std::string registration_name()
-    {
-        return CorbaConversion::Admin::PRT_MOJEID_CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER;
-    }
-};
-
-class MojeIdICT
-        : public MojeIdPublicRequestBase,
-          public Util::FactoryAutoRegister<LibFred::PublicRequest::PublicRequest, MojeIdICT>
-{
-public:
-    static std::string registration_name()
-    {
-        return CorbaConversion::Admin::PRT_MOJEID_IDENTIFIED_CONTACT_TRANSFER;
-    }
-};
-
-class MojeIdCRI
-        : public MojeIdPublicRequestBase,
-          public Util::FactoryAutoRegister<LibFred::PublicRequest::PublicRequest, MojeIdCRI>
-{
-public:
-    static std::string registration_name()
-    {
-        return CorbaConversion::Admin::PRT_MOJEID_CONTACT_REIDENTIFICATION;
-    }
-};
-
-class MojeIdCPUT
-        : public MojeIdPublicRequestBase,
-          public Util::FactoryAutoRegister<LibFred::PublicRequest::PublicRequest, MojeIdCPUT>
-{
-public:
-    static std::string registration_name()
-    {
-        return CorbaConversion::Admin::PRT_MOJEID_CONTACT_PREVALIDATED_UNIDENTIFIED_TRANSFER;
-    }
-};
-
-class MojeIdCPT
-        : public MojeIdPublicRequestBase,
-          public Util::FactoryAutoRegister<LibFred::PublicRequest::PublicRequest, MojeIdCPT>
-{
-public:
-    static std::string registration_name()
-    {
-        return CorbaConversion::Admin::PRT_MOJEID_CONTACT_PREVALIDATED_TRANSFER;
-    }
-};
-
-class MojeIdCV
-        : public LibFred::PublicRequest::PublicRequestImpl,
-          public Util::FactoryAutoRegister<LibFred::PublicRequest::PublicRequest, MojeIdCV>
-{
-public:
-    static std::string registration_name()
-    {
-        return CorbaConversion::Admin::PRT_MOJEID_CONTACT_VALIDATION;
-    }
-
-    bool check() const
+    bool check() const override
     {
         return true;
     }
 
-    void invalidateAction()
+    void invalidateAction() override
     {
         LOGGER.debug(boost::format("invalidation request id=%1%") % this->getId());
         /* just send email - note that difference between succesfully
@@ -149,7 +67,7 @@ public:
         this->get_answer_email_id() = this->sendEmail();
     }
 
-    void processAction(bool _check [[gnu::unused]])
+    void processAction(bool _check [[gnu::unused]]) override
     {
         LOGGER.debug(boost::format("processing validation request id=%1%") % this->getId());
 
@@ -173,7 +91,7 @@ public:
         tx.commit();
     }
 
-    void fillTemplateParams(::LibFred::Mailer::Parameters& params) const
+    void fillTemplateParams(::LibFred::Mailer::Parameters& params) const override
     {
         params["reqdate"] = stringify(this->getCreateTime().date());
         params["reqid"] = stringify(this->getId());
@@ -214,12 +132,12 @@ public:
         }
     }
 
-    std::string getTemplateName() const
+    std::string getTemplateName() const override
     {
         return "mojeid_validation";
     }
 
-    void save()
+    void save() override
     {
         if (this->getId() == 0)
         {
@@ -229,5 +147,23 @@ public:
     }
 };
 
+} // namespace CorbaConversion::Admin::{anonymous}
+
 } // namespace CorbaConversion::Admin
 } // namespace CorbaConversion
+
+using namespace CorbaConversion::Admin;
+
+LibFred::PublicRequest::Factory&
+CorbaConversion::Admin::add_producers(LibFred::PublicRequest::Factory& factory)
+{
+    return factory
+            .add_producer({PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION, std::make_unique<MojeIdPublicRequestBase>()})
+            .add_producer({PRT_MOJEID_CONTACT_IDENTIFICATION, std::make_unique<MojeIdPublicRequestBase>()})
+            .add_producer({PRT_MOJEID_CONTACT_VALIDATION, std::make_unique<MojeIdContactValidation>()})
+            .add_producer({PRT_MOJEID_CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER, std::make_unique<MojeIdPublicRequestBase>()})
+            .add_producer({PRT_MOJEID_IDENTIFIED_CONTACT_TRANSFER, std::make_unique<MojeIdPublicRequestBase>()})
+            .add_producer({PRT_MOJEID_CONTACT_REIDENTIFICATION, std::make_unique<MojeIdPublicRequestBase>()})
+            .add_producer({PRT_MOJEID_CONTACT_PREVALIDATED_UNIDENTIFIED_TRANSFER, std::make_unique<MojeIdPublicRequestBase>()})
+            .add_producer({PRT_MOJEID_CONTACT_PREVALIDATED_TRANSFER, std::make_unique<MojeIdPublicRequestBase>()});
+}

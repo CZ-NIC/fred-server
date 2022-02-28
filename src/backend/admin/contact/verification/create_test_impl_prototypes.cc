@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2013-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/admin/contact/verification/create_test_impl_prototypes.hh"
 
 #include "src/backend/admin/contact/verification/exceptions.hh"
@@ -37,96 +38,66 @@ namespace Admin {
 namespace Contact {
 namespace Verification {
 
-std::map<std::string, std::shared_ptr<Test>> create_test_impl_prototypes(
+namespace {
+
+template <typename T, typename ...Args>
+std::pair<std::string, std::unique_ptr<Test>> make_test_producer(Args&& ...args)
+{
+    return {test_name<T>(), std::make_unique<T>(std::forward<Args>(args)...)};
+}
+
+template <typename T, typename ...Args>
+std::pair<std::string, std::unique_ptr<TestDataProvider_intf>> make_test_data_provider_producer(Args&& ...args)
+{
+    return {test_name<T>(), std::make_unique<TestDataProvider<T>>(std::forward<Args>(args)...)};
+}
+
+template <typename Producer>
+Producer& get_specific_producer(const Util::Factory<Test>& factory)
+{
+    Producer* producer = dynamic_cast<Producer*>(&(factory[test_name<Producer>()]));
+    if (producer == nullptr)
+    {
+        throw ExceptionTestImplementationError{};
+    }
+    return *producer;
+}
+
+} // namespace Fred::Backend::Admin::Contact::Verification::{anonymous}
+
+Util::Factory<Test> create_test_impl_prototypes(
         std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager,
         std::shared_ptr<LibFred::Document::Manager> _document_manager,
         std::shared_ptr<LibFred::Messages::Manager> _message_manager,
         const std::string& _cz_address_dataset_path)
 {
     Logging::Context log("create_test_impl_prototypes");
-
-    std::map<std::string, std::shared_ptr<Test> > result;
-
     try
     {
-        result[TestNameSyntax::registration_name()] =
-            test_factory::instance_ref()
-            .create_sh_ptr(TestNameSyntax::registration_name());
-
-        result[TestEmailSyntax::registration_name()] =
-            test_factory::instance_ref()
-            .create_sh_ptr(TestEmailSyntax::registration_name());
-
-        result[TestPhoneSyntax::registration_name()] =
-            test_factory::instance_ref()
-            .create_sh_ptr(TestPhoneSyntax::registration_name());
-
-        result[TestEmailExistsForManagedZones::registration_name()] =
-            test_factory::instance_ref()
-            .create_sh_ptr(TestEmailExistsForManagedZones::registration_name());
-
-        {
-            result[TestCzAddress::registration_name()] =
-                test_factory::instance_ref()
-                .create_sh_ptr(TestCzAddress::registration_name());
-
-            TestCzAddress* instance =
-                dynamic_cast<TestCzAddress*>(
-                    result[TestCzAddress::registration_name()].get());
-
-            if (instance == NULL)
-            {
-                throw ExceptionTestImplementationError();
-            }
-
-            instance->set_mvcr_address_xml_filename(_cz_address_dataset_path);
-        }
-
-        {
-            result[TestContactability::registration_name()] =
-                test_factory::instance_ref()
-                .create_sh_ptr(TestContactability::registration_name());
-
-            TestContactability* instance =
-                dynamic_cast<TestContactability*>(
-                    result[TestContactability::registration_name()].get());
-
-            if (instance == NULL)
-            {
-                throw ExceptionTestImplementationError();
-            }
-            instance->set_document_file_manager(_document_manager)
-            .set_email_manager(_mailer_manager)
-            .set_letter_manager(_message_manager);
-        }
-
-        result[TestEmailExists::registration_name()] =
-            test_factory::instance_ref()
-            .create_sh_ptr(TestEmailExists::registration_name());
-
-        {
-            result[TestSendLetter::registration_name()] =
-                test_factory::instance_ref()
-                .create_sh_ptr(TestSendLetter::registration_name());
-
-            TestSendLetter* instance =
-                dynamic_cast<TestSendLetter*>(
-                    result[TestSendLetter::registration_name()].get());
-
-            if (instance == NULL)
-            {
-                throw ExceptionTestImplementationError();
-            }
-            instance->set_document_file_manager(_document_manager)
-            .set_letter_manager(_message_manager);
-        }
+        Util::Factory<Test> factory{};
+        factory.add_producer(make_test_producer<TestContactability>())
+               .add_producer(make_test_producer<TestCzAddress>())
+               .add_producer(make_test_producer<TestEmailExistsForManagedZones>())
+               .add_producer(make_test_producer<TestEmailExists>())
+               .add_producer(make_test_producer<TestEmailSyntax>())
+               .add_producer(make_test_producer<TestNameSyntax>())
+               .add_producer(make_test_producer<TestPhoneSyntax>())
+               .add_producer(make_test_producer<TestSendLetter>());
+        get_specific_producer<TestCzAddress>(factory)
+                .set_mvcr_address_xml_filename(_cz_address_dataset_path);
+        get_specific_producer<TestContactability>(factory)
+                .set_document_file_manager(_document_manager)
+                .set_email_manager(_mailer_manager)
+                .set_letter_manager(_message_manager);
+        get_specific_producer<TestSendLetter>(factory)
+                .set_document_file_manager(_document_manager)
+                .set_letter_manager(_message_manager);
+        return factory;
     }
     catch (const std::bad_cast&)
     {
-        throw ExceptionTestImplementationError();
+        throw ExceptionTestImplementationError{};
     }
-
-    return result;
 }
 
 } // namespace Fred::Backend::Admin::Contact::Verification

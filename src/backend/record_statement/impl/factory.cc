@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -18,47 +18,27 @@
  */
 #include "src/backend/record_statement/impl/factory.hh"
 
+#include "src/util/tz/europe/prague.hh"
+#include "src/util/tz/utc.hh"
+
 #include <stdexcept>
+
 
 namespace Fred {
 namespace Backend {
 namespace RecordStatement {
 namespace Impl {
 
-Factory::Factory()
+const Factory& get_default_factory()
 {
-}
-
-Factory::~Factory()
-{
-}
-
-Factory::RegisteredProducers& Factory::get_registered_producers()
-{
-    static RegisteredProducers static_instance;
-    return static_instance;
-}
-
-void Factory::register_producer(const std::string& _key, Producer _producer)
-{
-    if (get_registered_producers().find(_key) != get_registered_producers().end())
+    static const auto factory = []()
     {
-        throw std::runtime_error("Producer registered already.");
-    }
-    get_registered_producers().insert(std::make_pair(_key, _producer));
-}
-
-Factory::Product Factory::produce(
-        const std::string& _handle_of_timezone,
-        const std::shared_ptr<LibFred::Document::Manager>& _doc_manager,
-        const std::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager)
-{
-    const RegisteredProducers::const_iterator producers_itr = get_registered_producers().find(_handle_of_timezone);
-    if (producers_itr == get_registered_producers().end())
-    {
-        throw std::runtime_error("Unknown producer.");
-    }
-    return producers_itr->second(_doc_manager, _mailer_manager);
+        Factory factory{};
+        register_producer<Tz::Europe::Prague>(factory);
+        register_producer<Tz::UTC>(factory);
+        return factory;
+    }();
+    return factory;
 }
 
 } // namespace Fred::Backend::RecordStatement::Impl

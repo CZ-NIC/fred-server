@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -21,36 +21,31 @@
 
 #include "src/backend/record_statement/record_statement.hh"
 
-#include <map>
+#include "util/factory.hh"
+
 
 namespace Fred {
 namespace Backend {
 namespace RecordStatement {
 namespace Impl {
 
-class Factory
+using Product = std::shared_ptr<RecordStatementImpl::WithExternalContext>;
+
+struct Producer
 {
-public:
-    typedef std::shared_ptr<Fred::Backend::RecordStatement::RecordStatementImpl::WithExternalContext> Product;
-    typedef Product (*Producer)(const std::shared_ptr<LibFred::Document::Manager>&,
-                                const std::shared_ptr<LibFred::Mailer::Manager>&);
-    static void register_producer(const std::string& _key, Producer _producer);
-    static Product produce(
-            const std::string& _handle_of_timezone,
-            const std::shared_ptr<LibFred::Document::Manager>& _doc_manager,
-            const std::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager);
-private:
-    Factory();
-    Factory(const Factory&);
-    ~Factory();
-    Factory& operator=(const Factory&);
-    typedef std::map<std::string, Producer> RegisteredProducers;
-    static RegisteredProducers& get_registered_producers();
+    virtual Product operator()(const std::shared_ptr<LibFred::Document::Manager>&,
+                               const std::shared_ptr<LibFred::Mailer::Manager>&) = 0;
 };
+
+using Factory = Util::Factory<Producer>;
+
+template <typename> void register_producer(Factory&);
+
+const Factory& get_default_factory();
 
 } // namespace Fred::Backend::RecordStatement::Impl
 } // namespace Fred::Backend::RecordStatement
 } // namespace Fred::Backend
 } // namespace Fred
 
-#endif
+#endif//FACTORY_HH_11FF9EFF1490482CBE6092537EE29473

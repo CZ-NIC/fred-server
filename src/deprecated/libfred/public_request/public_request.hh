@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2008-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,17 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #ifndef PUBLIC_REQUEST_HH_2EEC5CA83E364803BF617BF5F3166AEC
 #define PUBLIC_REQUEST_HH_2EEC5CA83E364803BF617BF5F3166AEC
-
-#include <exception>
-#include <string>
-#include <vector>
-#include <boost/date_time/posix_time/ptime.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/date_time/gregorian/gregorian.hpp>
-#include <boost/format.hpp>
-#include <boost/utility.hpp>
 
 #include "src/deprecated/libfred/common_object.hh"
 #include "src/deprecated/libfred/registrar.hh"
@@ -35,50 +27,48 @@
 #include "src/deprecated/libfred/registrable_object/contact.hh"
 #include "src/deprecated/libfred/registrable_object/nsset.hh"
 #include "src/deprecated/libfred/registrable_object/keyset.hh"
-#include "libfred/mailer.hh"
 #include "src/deprecated/libfred/documents.hh"
 #include "src/deprecated/libfred/messages/messages_impl.hh"
+#include "src/deprecated/model/model_filters.hh"
 
 #include "libfred/db_settings.hh"
-#include "src/deprecated/model/model_filters.hh"
+#include "libfred/mailer.hh"
+
 #include "util/factory.hh"
 
-using namespace boost::posix_time;
-using namespace boost::gregorian;
+#include <boost/date_time/posix_time/ptime.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/format.hpp>
+#include <boost/utility.hpp>
+
+#include <exception>
+#include <string>
+#include <vector>
+
 
 namespace LibFred {
 namespace PublicRequest {
 
-struct NotApplicable : public std::runtime_error
+struct NotApplicable : std::runtime_error
 {
-    NotApplicable(const std::string &_str)
-        : std::runtime_error("not_applicable: " + _str)
-    {
-    }
+    explicit NotApplicable(const std::string &_str) : std::runtime_error{"not_applicable: " + _str} { }
 };
 
-
-struct AlreadyProcessed : public std::runtime_error
+struct AlreadyProcessed : std::runtime_error
 {
+    explicit AlreadyProcessed(unsigned long long _rid, bool _success)
+        : std::runtime_error{
+                str(boost::format("public_request [id=%1%]: already_processed") % _rid)},
+          success{_success}
+    { }
     bool success;
-
-    AlreadyProcessed(const unsigned long long &_rid, bool _success)
-        : std::runtime_error(str(boost::format(
-                        "public_request [id=%1%]: already_processed") % _rid)),
-          success(_success)
-    {
-    }
 };
 
-
-struct ObjectChanged : public std::runtime_error
+struct ObjectChanged : std::runtime_error
 {
-    ObjectChanged()
-        : std::runtime_error("object_changed (since request create)")
-    {
-    }
+    ObjectChanged() : std::runtime_error{"object_changed (since request create)"} { }
 };
-
 
 /// Member identification (i.e. for sorting)
 enum MemberType {
@@ -88,9 +78,7 @@ enum MemberType {
   MT_STATUS  ///< request status
 };
 
-
-typedef std::string Type;
-
+using Type = std::string;
 
 /// Request status
 enum Status_PR {  // suffix to fix name clash with public_request_status.h status struct
@@ -98,8 +86,8 @@ enum Status_PR {  // suffix to fix name clash with public_request_status.h statu
   PRS_RESOLVED,   ///< Email with answer was sent
   PRS_INVALIDATED ///< Time passed without authorization
 };
-
 std::string Status2Str(Status_PR _status); 
+
 /// Object types
 enum ObjectType {
   OT_UNKNOWN = 0,
@@ -110,33 +98,32 @@ enum ObjectType {
 };
 std::string ObjectType2Str(ObjectType type);
 
-
 /*
  * Object info
  */
-struct OID {
-  OID(Database::ID _id) : id(_id), handle(), type() { }
-  OID(Database::ID _id, std::string _handle, ObjectType _type) : id(_id),
-                                                              handle(_handle),
-                                                              type(_type) { }
-  Database::ID   id;
-  std::string handle;
-  ObjectType  type;
+struct OID
+{
+    explicit OID(Database::ID _id) : id(_id), handle(), type() { }
+    explicit OID(Database::ID _id, std::string _handle, ObjectType _type)
+        : id(_id),
+          handle(_handle),
+          type(_type)
+    { }
+    Database::ID id;
+    std::string handle;
+    ObjectType type;
 };
 
 struct REQUEST_BLOCKED : std::exception {};
 
-
-struct RequestExists : public std::runtime_error
+struct RequestExists : std::runtime_error
 {
-    RequestExists(const Type &_type, const unsigned long long &_object_id)
-        : std::runtime_error(str(boost::format(
-                        "public_request [type=%1% object_id=%2%]: already exists")
-                    % _type % _object_id))
-    {
-    }
+    explicit RequestExists(const Type &_type, unsigned long long _object_id)
+        : std::runtime_error{str(boost::format(
+                "public_request [type=%1% object_id=%2%]: already exists")
+                % _type % _object_id)}
+    { }
 };
-
 
 /*
  * Request interface
@@ -146,8 +133,7 @@ class PublicRequest
       private boost::noncopyable
 {
 public:
-  virtual ~PublicRequest() {
-  }
+  virtual ~PublicRequest() { }
 
   virtual void init(Database::Row::Iterator& _it) = 0;
   virtual void save() = 0;
@@ -186,104 +172,101 @@ public:
   virtual TID sendEmail() const = 0;
   /// process request (or just close in case of invalid flag)
   virtual void process(bool invalid, bool check,
-                       const unsigned long long &_request_id = 0) = 0;
+                       unsigned long long _request_id = 0) = 0;
   /// concrete action taken during request processing
   virtual void processAction(bool check) = 0;
   /// return proper type for PDF template generation
   virtual unsigned getPDFType() const = 0;
 };
 
-typedef std::shared_ptr<PublicRequest> PublicRequestPtr;
-
+using PublicRequestPtr = std::shared_ptr<PublicRequest>;
 
 class PublicRequestAuth : virtual public PublicRequest
 {
 public:
-    struct NotAuthenticated : public std::runtime_error
+    struct NotAuthenticated : std::runtime_error
     {
-        NotAuthenticated() : std::runtime_error("not authenticated"){}
+        NotAuthenticated() : std::runtime_error{"not authenticated"} { }
     };
 
     virtual ~PublicRequestAuth() { }
 
     /* try to authenticate public request by comparing _password with the one
      * stored in database. it should save it to internal state and processAction(...) */
-    virtual bool authenticate(const std::string &_password) = 0;
-
+    virtual bool authenticate(const std::string& _password) = 0;
     virtual void sendPasswords() = 0;
 };
 
-typedef std::shared_ptr<PublicRequestAuth> PublicRequestAuthPtr;
+using PublicRequestAuthPtr = std::shared_ptr<PublicRequestAuth>;
 
-
-class List : virtual public LibFred::CommonList {
+class List : virtual public LibFred::CommonList
+{
 public:
-  virtual ~List() {
-  }
+    virtual ~List() { }
+    virtual const char* getTempTableName() const = 0;
+    virtual PublicRequest* get(unsigned _idx) const = 0;
+    virtual void reload(Database::Filters::Union& _filter) = 0;
 
-  virtual const char* getTempTableName() const = 0;
-  virtual PublicRequest* get(unsigned _idx) const = 0;
-  virtual void reload(Database::Filters::Union& _filter) = 0;
-
-  /// from CommonList; propably will be removed in future
-  virtual void makeQuery(bool, bool, std::stringstream&) const = 0;
-  virtual void reload() = 0;
-  virtual void sort(MemberType _member, bool _asc) = 0;
+    /// from CommonList; propably will be removed in future
+    virtual void makeQuery(bool, bool, std::stringstream&) const = 0;
+    virtual void reload() = 0;
+    virtual void sort(MemberType _member, bool _asc) = 0;
 };
 
-
-class Manager {
+class Manager
+{
 public:
-  virtual ~Manager() {
-  }
+    virtual ~Manager() { }
 
-  static Manager* create(Domain::Manager    *_domain_manager,
-                         Contact::Manager   *_contact_manager,
-                         Nsset::Manager     *_nsset_manager,
-                         Keyset::Manager    *_keyset_manager,
-                         Mailer::Manager    *_mailer_manager,
-                         Document::Manager  *_doc_manager,
-                         Messages::ManagerPtr _messages_manager);
+    static Manager* create(
+            Domain::Manager* _domain_manager,
+            Contact::Manager* _contact_manager,
+            Nsset::Manager* _nsset_manager,
+            Keyset::Manager* _keyset_manager,
+            Mailer::Manager* _mailer_manager,
+            Document::Manager* _doc_manager,
+            Messages::ManagerPtr _messages_manager);
 
-  virtual Mailer::Manager* getMailerManager() const = 0;
-  virtual Document::Manager* getDocumentManager() const = 0;
-  virtual Messages::ManagerPtr getMessagesManager() const = 0;
+    virtual Mailer::Manager* getMailerManager() const = 0;
+    virtual Document::Manager* getDocumentManager() const = 0;
+    virtual Messages::ManagerPtr getMessagesManager() const = 0;
 
-  virtual List* createList() const = 0;
-  virtual List* loadRequest(Database::ID id) const = 0;
-  virtual void getPdf(Database::ID _id,
-                      const std::string& _lang,
-                      std::ostream& _output) const = 0;
+    virtual List* createList() const = 0;
+    virtual List* loadRequest(Database::ID id) const = 0;
+    virtual void getPdf(Database::ID _id,
+                        const std::string& _lang,
+                        std::ostream& _output) const = 0;
 
-  virtual PublicRequest* createRequest(Type _type) const = 0;
+    virtual PublicRequest* createRequest(Type _type) const = 0;
 
-  virtual void processRequest(Database::ID _id,
-                              bool _invalidate,
-                              bool _check,
-                              const unsigned long long &_request_id = 0) const = 0;
+    virtual void processRequest(Database::ID _id,
+                                bool _invalidate,
+                                bool _check,
+                                unsigned long long _request_id = 0) const = 0;
 
-  virtual unsigned long long processAuthRequest(
-          const std::string &_identification,
-          const std::string &_password,
-          const unsigned long long &_request_id) = 0;
+    virtual unsigned long long processAuthRequest(
+            const std::string &_identification,
+            const std::string &_password,
+            unsigned long long _request_id) = 0;
 
-  virtual bool checkAlreadyProcessedPublicRequest(
-          unsigned long long &_contact_id,
-          const std::vector<Type> &_request_type_list) = 0;
+    virtual bool checkAlreadyProcessedPublicRequest(
+            unsigned long long _contact_id,
+            const std::vector<Type>& _request_type_list) = 0;
 
-  virtual std::string getPublicRequestAuthIdentification(
-          unsigned long long &_contact_id,
-          const std::vector<Type> &_request_type_list) = 0;
+    virtual std::string getPublicRequestAuthIdentification(
+            unsigned long long _contact_id,
+            const std::vector<Type> &_request_type_list) = 0;
 
-  /* config - this should be in contructor */
-  virtual const std::string& getIdentificationMailAuthHostname() const = 0;
-  virtual bool getDemoMode() const = 0;
-  virtual void setIdentificationMailAuthHostname(const std::string &_hostname) = 0;
-  virtual void setDemoMode(bool _demo_mode) = 0;
+    /* config - this should be in contructor */
+    virtual const std::string& getIdentificationMailAuthHostname() const = 0;
+    virtual bool getDemoMode() const = 0;
+    virtual void setIdentificationMailAuthHostname(const std::string &_hostname) = 0;
+    virtual void setDemoMode(bool _demo_mode) = 0;
 };
 
+using Factory = Util::Factory<PublicRequest>;
 
-typedef Util::Factory<PublicRequest, Util::ClassCreator<PublicRequest> > Factory;
+const Factory& get_default_factory();
 
 std::vector<std::string> get_enum_public_request_type();
 
@@ -291,8 +274,7 @@ void lock_public_request_by_object(unsigned long long object_id);
 void lock_public_request_lock(const std::string& identification);
 void lock_public_request_id(unsigned long long public_request_id);
 
+}//namespace LibFred::PublicRequest
+}//namespace LibFred
 
-}
-}
-
-#endif /*PUBLIC_REQUEST_H_*/
+#endif//PUBLIC_REQUEST_HH_2EEC5CA83E364803BF617BF5F3166AEC

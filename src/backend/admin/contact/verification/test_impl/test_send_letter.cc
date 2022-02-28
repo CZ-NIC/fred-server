@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2014-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,19 +16,13 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
-#include "src/backend/admin/contact/verification/test_impl/test_send_letter.hh"
 
+#include "src/backend/admin/contact/verification/test_impl/test_send_letter.hh"
 #include "src/backend/admin/contact/verification/test_impl/util.hh"
-#include "libfred/registrable_object/contact/check_contact.hh"
-#include "libfred/registrable_object/contact/copy_contact.hh"
-#include "libfred/registrable_object/contact/create_contact.hh"
-#include "libfred/registrable_object/contact/delete_contact.hh"
+
+#include "libfred/opcontext.hh"
 #include "libfred/registrable_object/contact/info_contact.hh"
-#include "libfred/registrable_object/contact/info_contact_diff.hh"
-#include "libfred/registrable_object/contact/merge_contact.hh"
-#include "libfred/registrable_object/contact/update_contact.hh"
 #include "libfred/registrable_object/contact/verification/enum_test_status.hh"
-#include "util/util.hh"
 
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -41,8 +35,6 @@ namespace Admin {
 namespace Contact {
 namespace Verification {
 
-FACTORY_MODULE_INIT_DEFI(TestSendLetter_init)
-
 const std::string TestSendLetter::letter_message_type_("contact_check_thank_you");
 const unsigned TestSendLetter::letter_file_type_(9); // contact_check_thank_you
 const std::string TestSendLetter::letter_comm_type_("registered_letter"); // to enable manual "approval/rejection"
@@ -50,17 +42,33 @@ const LibFred::Document::GenerationType TestSendLetter::letter_doc_type_(
         LibFred::Document::GT_ADMIN_CONTACT_VERIFICATION_CONTACT_CHECK_THANK_YOU);
 const std::string TestSendLetter::genereted_file_name(TestSendLetter::letter_message_type_);
 
-static inline std::string xml_cdata(const std::string& _input)
+namespace {
+
+std::string xml_cdata(const std::string& _input)
 {
     return "<![CDATA[" + _input + "]]>";
 }
 
+}//namespace Fred::Backend::Admin::Contact::Verification::{anonymous}
+
+TestSendLetter& TestSendLetter::set_document_file_manager(
+        std::shared_ptr<LibFred::Document::Manager> _document_file_manager)
+{
+    document_file_manager_ = _document_file_manager;
+    return *this;
+}
+
+TestSendLetter& TestSendLetter::set_letter_manager(std::shared_ptr<LibFred::Messages::Manager> _letter_manager)
+{
+    letter_manager_ = _letter_manager;
+    return *this;
+}
 
 unsigned long long TestSendLetter::generate_pdf(
-        const std::string&                      _contact_handle,
+        const std::string& _contact_handle,
         unsigned long long _contact_history_id,
-        const std::string&                      _contact_email,
-        const LibFred::Messages::PostalAddress&    _contact_address) const
+        const std::string& _contact_email,
+        const LibFred::Messages::PostalAddress& _contact_address) const
 {
     std::string xmldata;
     boost::posix_time::ptime now(second_clock::local_time());
@@ -110,7 +118,6 @@ unsigned long long TestSendLetter::generate_pdf(
             "");
 }
 
-
 Test::TestRunResult TestSendLetter::run(unsigned long long _history_id) const
 {
     TestDataProvider<TestSendLetter> data;
@@ -130,15 +137,13 @@ Test::TestRunResult TestSendLetter::run(unsigned long long _history_id) const
 
     try
     {
-        address.country = Util::get_country_name(
-                ctx,
-                data.country_);
+        address.country = Util::get_country_name(ctx, data.country_);
     }
     catch (...)
     {
-        return TestRunResult(
+        return TestRunResult{
                 LibFred::ContactTestStatus::ERROR,
-                std::string("failed to get country name"));
+                "failed to get country name"};
     }
 
     unsigned long long generated_pdf_id;
@@ -157,9 +162,9 @@ Test::TestRunResult TestSendLetter::run(unsigned long long _history_id) const
     }
     catch (...)
     {
-        return TestRunResult(
+        return TestRunResult{
                 LibFred::ContactTestStatus::ERROR,
-                std::string("failed to generate pdf file"));
+                "failed to generate pdf file"};
     }
 
     bool error = false;
@@ -185,31 +190,26 @@ Test::TestRunResult TestSendLetter::run(unsigned long long _history_id) const
 
     if (error)
     {
-        return TestRunResult(
+        return TestRunResult{
                 LibFred::ContactTestStatus::ERROR,
                 error_msg,
                 std::set<unsigned long long>(),
-                message_ids);
+                message_ids};
     }
-    else
-    {
-        return TestRunResult(
-                LibFred::ContactTestStatus::MANUAL,
-                std::string(),
-                std::set<unsigned long long>(),
-                message_ids);
-    }
+    return TestRunResult{
+            LibFred::ContactTestStatus::MANUAL,
+            std::string(),
+            std::set<unsigned long long>(),
+            message_ids};
 }
-
 
 unsigned long long TestSendLetter::send_letter(
         unsigned long long _contact_id,
-        const std::string&                      _contact_handle,
+        const std::string& _contact_handle,
         unsigned long long _contact_history_id,
-        const LibFred::Messages::PostalAddress&    _contact_address,
+        const LibFred::Messages::PostalAddress& _contact_address,
         unsigned long long _pdf_file_id) const
 {
-
     return letter_manager_->save_letter_to_send(
             _contact_handle.c_str(),
             _contact_address,
@@ -217,8 +217,52 @@ unsigned long long TestSendLetter::send_letter(
             letter_message_type_.c_str(),
             _contact_id,
             _contact_history_id,
-            letter_comm_type_.c_str(),
+            letter_comm_type_,
             false);
+}
+
+void TestDataProvider<TestSendLetter>::store_data(const LibFred::InfoContactOutput& _data)
+{
+    name_ = boost::algorithm::trim_copy(_data.info_contact_data.name.get_value_or_default());
+    email_ = boost::algorithm::trim_copy(_data.info_contact_data.email.get_value_or_default());
+    organization_ =
+            boost::algorithm::trim_copy(
+                    _data.info_contact_data.organization.get_value_or_default());
+    street1_ = boost::algorithm::trim_copy(_data.info_contact_data.place.get_value_or_default().street1);
+    street2_ =
+            boost::algorithm::trim_copy(
+                    _data.info_contact_data.place.get_value_or_default().street2.get_value_or_default());
+    street3_ =
+            boost::algorithm::trim_copy(
+                    _data.info_contact_data.place.get_value_or_default().street3.get_value_or_default());
+    city_ = boost::algorithm::trim_copy(_data.info_contact_data.place.get_value_or_default().city);
+    stateorprovince_ =
+            boost::algorithm::trim_copy(
+                    _data.info_contact_data.place.get_value_or_default().stateorprovince.get_value_or_default());
+    postalcode_ =
+            boost::algorithm::trim_copy(
+                    _data.info_contact_data.place.get_value_or_default().postalcode);
+    country_ = boost::algorithm::trim_copy(_data.info_contact_data.place.get_value_or_default().country);
+}
+
+std::vector<std::string> TestDataProvider<TestSendLetter>::get_string_data() const
+{
+    return { name_,
+             email_,
+             organization_,
+             street1_,
+             street2_,
+             street3_,
+             city_,
+            stateorprovince_,
+            postalcode_,
+            country_ };
+}
+
+template <>
+std::string test_name<TestSendLetter>()
+{
+    return "send_letter";
 }
 
 } // namespace Fred::Backend::Admin::Contact::Verification

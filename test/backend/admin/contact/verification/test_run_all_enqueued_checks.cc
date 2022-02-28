@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2013-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -15,10 +15,6 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
- */
-/**
- *  @file
- *  integration tests for admin/contact/verification/run_all_enqueued_checks.cc
  */
 
 #include "src/backend/admin/contact/verification/fill_check_queue.hh"
@@ -48,16 +44,17 @@
 
 struct dummy_testsuite : public setup_empty_testsuite {
 
-    std::map< std::string, std::shared_ptr<Fred::Backend::Admin::Contact::Verification::Test> > test_impls_;
+    Util::Factory<Fred::Backend::Admin::Contact::Verification::Test> test_impls_;
 
-    dummy_testsuite (const std::vector<std::string>& _test_return_statuses) {
+    dummy_testsuite (const std::vector<std::string>& _test_return_statuses)
+    {
         std::string handle;
+        for (const std::string& status : _test_return_statuses)
+        {
+            auto temp_ptr = std::make_unique<DummyTestReturning>(status);
+            handle = temp_ptr->get_handle();
 
-        BOOST_FOREACH(const std::string& status, _test_return_statuses) {
-            std::shared_ptr<Fred::Backend::Admin::Contact::Verification::Test> temp_ptr(new DummyTestReturning(status));
-            handle = dynamic_cast<DummyTestReturning*>(temp_ptr.get())->get_handle();
-
-            test_impls_[handle] = temp_ptr;
+            test_impls_.add_producer({handle, std::move(temp_ptr)});
             setup_testdef_in_testsuite(handle, testsuite_handle);
         }
     }
@@ -74,8 +71,9 @@ void test_Resulting_check_status_impl(std::vector<std::string> _test_statuses, c
     ).exec(ctx1);
     ctx1.commit_transaction();
 
-    try {
-        run_all_enqueued_checks( const_cast<const std::map< std::string, std::shared_ptr<Fred::Backend::Admin::Contact::Verification::Test> >& > (suite.test_impls_) );
+    try
+    {
+        run_all_enqueued_checks(suite.test_impls_);
     } catch (...) {
         BOOST_FAIL("exception during Admin::run_all_enqueued_checks");
     }
@@ -252,13 +250,12 @@ BOOST_AUTO_TEST_CASE(test_Incorrect_test_return_handling)
     {
         ::LibFred::OperationContextCreator ctx;
 
-        std::shared_ptr<Fred::Backend::Admin::Contact::Verification::Test> temp_ptr(
-            new DummyTestReturning(TestStatus::ENQUEUED));
+        auto temp_ptr = std::make_unique<DummyTestReturning>(TestStatus::ENQUEUED);
 
-        std::string handle = dynamic_cast<DummyTestReturning*>(temp_ptr.get())->get_handle();
+        std::string handle = temp_ptr->get_handle();
 
-        std::map< std::string, std::shared_ptr<Fred::Backend::Admin::Contact::Verification::Test> > test_impls_;
-        test_impls_[handle] = temp_ptr;
+        Util::Factory<Fred::Backend::Admin::Contact::Verification::Test> test_impls_;
+        test_impls_.add_producer({handle, std::move(temp_ptr)});
 
         setup_empty_testsuite testsuite;
         setup_testdef_in_testsuite(handle, testsuite.testsuite_handle);
@@ -268,7 +265,7 @@ BOOST_AUTO_TEST_CASE(test_Incorrect_test_return_handling)
         ctx.commit_transaction();
 
         try {
-           run_all_enqueued_checks( test_impls_ );
+           run_all_enqueued_checks(test_impls_);
         } catch(...) {
             BOOST_FAIL("should have been swallowed");
         }
@@ -278,13 +275,12 @@ BOOST_AUTO_TEST_CASE(test_Incorrect_test_return_handling)
     {
         ::LibFred::OperationContextCreator ctx;
 
-        std::shared_ptr<Fred::Backend::Admin::Contact::Verification::Test> temp_ptr(
-            new DummyTestReturning(TestStatus::RUNNING));
+        auto temp_ptr = std::make_unique<DummyTestReturning>(TestStatus::RUNNING);
 
-        std::string handle = dynamic_cast<DummyTestReturning*>(temp_ptr.get())->get_handle();
+        std::string handle = temp_ptr->get_handle();
 
-        std::map< std::string, std::shared_ptr<Fred::Backend::Admin::Contact::Verification::Test> > test_impls_;
-        test_impls_[handle] = temp_ptr;
+        Util::Factory<Fred::Backend::Admin::Contact::Verification::Test> test_impls_;
+        test_impls_.add_producer({handle, std::move(temp_ptr)});
 
         setup_empty_testsuite testsuite;
         setup_testdef_in_testsuite(handle, testsuite.testsuite_handle);
@@ -307,11 +303,11 @@ BOOST_AUTO_TEST_CASE(test_Incorrect_test_return_handling)
  */
 BOOST_AUTO_TEST_CASE(test_Throwing_test_handling)
 {
-    std::shared_ptr<Fred::Backend::Admin::Contact::Verification::Test> temp_ptr(new DummyThrowingTest);
-    std::string handle = dynamic_cast<DummyThrowingTest*>(temp_ptr.get())->get_handle();
+    auto temp_ptr = std::make_unique<DummyThrowingTest>();
+    std::string handle = temp_ptr->get_handle();
 
-    std::map< std::string, std::shared_ptr<Fred::Backend::Admin::Contact::Verification::Test> > test_impls_;
-    test_impls_[handle] = temp_ptr;
+    Util::Factory<Fred::Backend::Admin::Contact::Verification::Test> test_impls_;
+    test_impls_.add_producer({handle, std::move(temp_ptr)});
 
     setup_empty_testsuite testsuite;
     setup_testdef_in_testsuite(handle, testsuite.testsuite_handle);
@@ -358,22 +354,19 @@ BOOST_AUTO_TEST_CASE(test_Logd_request_id_of_related_changes)
     // creating checkdef
     ::LibFred::OperationContextCreator ctx1;
 
-    std::shared_ptr<Fred::Backend::Admin::Contact::Verification::Test> temp_ptr1(
-        new DummyTestReturning(TestStatus::OK));
-    std::string handle1 = dynamic_cast<DummyTestReturning*>(temp_ptr1.get())->get_handle();
+    auto temp_ptr1 = std::make_unique<DummyTestReturning>(TestStatus::OK);
+    std::string handle1 = temp_ptr1->get_handle();
 
-    std::shared_ptr<Fred::Backend::Admin::Contact::Verification::Test> temp_ptr2(
-        new DummyTestReturning(TestStatus::FAIL));
-    std::string handle2 = dynamic_cast<DummyTestReturning*>(temp_ptr2.get())->get_handle();
+    auto temp_ptr2 = std::make_unique<DummyTestReturning>(TestStatus::FAIL);
+    std::string handle2 = temp_ptr2->get_handle();
 
-    std::shared_ptr<Fred::Backend::Admin::Contact::Verification::Test> temp_ptr3(
-        new DummyTestReturning(TestStatus::MANUAL));
-    std::string handle3 = dynamic_cast<DummyTestReturning*>(temp_ptr3.get())->get_handle();
+    auto temp_ptr3 = std::make_unique<DummyTestReturning>(TestStatus::MANUAL);
+    std::string handle3 = temp_ptr3->get_handle();
 
-    std::map< std::string, std::shared_ptr<Fred::Backend::Admin::Contact::Verification::Test> > test_impls_;
-    test_impls_[handle1] = temp_ptr1;
-    test_impls_[handle2] = temp_ptr2;
-    test_impls_[handle3] = temp_ptr3;
+    Util::Factory<Fred::Backend::Admin::Contact::Verification::Test> test_impls_;
+    test_impls_.add_producer({handle1, std::move(temp_ptr1)})
+               .add_producer({handle2, std::move(temp_ptr2)})
+               .add_producer({handle3, std::move(temp_ptr3)});
 
     setup_empty_testsuite testsuite;
     setup_testdef_in_testsuite(handle1, testsuite.testsuite_handle);
@@ -432,5 +425,5 @@ BOOST_AUTO_TEST_CASE(test_Logd_request_id_of_related_changes)
     }
 }
 
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END()//TestContactVerification/TestRunEnqueuedChecks
+BOOST_AUTO_TEST_SUITE_END()//TestContactVerification

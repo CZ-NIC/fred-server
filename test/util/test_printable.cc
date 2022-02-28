@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2008-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,35 +16,20 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
-#include <memory>
-#include <iostream>
-#include <string>
-#include <algorithm>
-#include <functional>
-#include <numeric>
-#include <map>
-#include <exception>
-#include <queue>
-#include <sys/time.h>
-#include <time.h>
-#include <string.h>
-
-#include <boost/algorithm/string.hpp>
-#include <boost/function.hpp>
-#include <boost/format.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/thread.hpp>
-#include <boost/thread/barrier.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/date_time.hpp>
-#include <boost/assign/list_of.hpp>
-
 
 //#include <omniORB4/fixed.h>
 
+#include "src/deprecated/libfred/registrar.hh"
 #include "src/util/setup_server_decl.hh"
 #include "src/util/time_clock.hh"
-#include "src/deprecated/libfred/registrar.hh"
+#include "src/util/concurrent_queue.hh"
+#include "src/util/cfg/handle_general_args.hh"
+#include "src/util/cfg/handle_server_args.hh"
+#include "src/util/cfg/handle_logging_args.hh"
+#include "src/util/cfg/handle_database_args.hh"
+#include "src/util/cfg/handle_threadgroup_args.hh"
+#include "src/util/cfg/handle_corbanameservice_args.hh"
+
 #include "libfred/registrable_object/contact/create_contact.hh"
 #include "libfred/registrable_object/contact/update_contact.hh"
 #include "libfred/registrable_object/contact/delete_contact.hh"
@@ -78,26 +63,40 @@
 #include "libfred/object/object_id_handle_pair.hh"
 #include "libfred/registrable_object/contact/contact_reference.hh"
 #include "libfred/registrable_object/keyset/keyset_reference.hh"
+#include "libfred/db_settings.hh"
 
 #include "util/util.hh"
 #include "util/printable.hh"
-
-#include "src/util/concurrent_queue.hh"
-
-#include "libfred/db_settings.hh"
-
-#include "src/util/cfg/handle_general_args.hh"
-#include "src/util/cfg/handle_server_args.hh"
-#include "src/util/cfg/handle_logging_args.hh"
-#include "src/util/cfg/handle_database_args.hh"
-#include "src/util/cfg/handle_threadgroup_args.hh"
-#include "src/util/cfg/handle_corbanameservice_args.hh"
 
 //not using UTF defined main
 #define BOOST_TEST_NO_MAIN
 
 #include "src/util/cfg/config_handler_decl.hh"
+
 #include <boost/test/unit_test.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/function.hpp>
+#include <boost/format.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/thread.hpp>
+#include <boost/thread/barrier.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time.hpp>
+#include <boost/assign/list_of.hpp>
+
+#include <ctime>
+#include <cstring>
+#include <sys/time.h>
+
+#include <algorithm>
+#include <exception>
+#include <functional>
+#include <iostream>
+#include <numeric>
+#include <map>
+#include <memory>
+#include <queue>
+#include <string>
 #include <utility>
 
 BOOST_AUTO_TEST_SUITE(TestPrintable)
@@ -838,15 +837,11 @@ BOOST_AUTO_TEST_CASE(merge_contact_email_notification_email_addr)
 /**
  * test MergeContactSelectionprint to string
  */
-
 BOOST_AUTO_TEST_CASE(merge_contact_selection)
 {
-    printable_test(
-    ::LibFred::MergeContactSelection(
-        Util::vector_of<std::string>("CONTACT1")("CONTACT2")
-        , Util::vector_of<::LibFred::ContactSelectionFilterType>
-        ("mcs_filter_identified_contact")("mcs_filter_not_regcznic"))
-    );
+    printable_test(::LibFred::MergeContactSelection{
+            { "CONTACT1", "CONTACT2"},
+            {"mcs_filter_identified_contact", "mcs_filter_not_regcznic"}});
 }
 
 /**
@@ -862,7 +857,6 @@ BOOST_AUTO_TEST_CASE(merge_contact_selection_output)
 /**
  * test UpdateContactById print to string
  */
-
 BOOST_AUTO_TEST_CASE(update_contact_by_id)
 {
     ::LibFred::Contact::PlaceAddress place;
@@ -873,7 +867,6 @@ BOOST_AUTO_TEST_CASE(update_contact_by_id)
 /**
  * test InfoContactDiff print to string
  */
-
 BOOST_AUTO_TEST_CASE(info_contact_diff)
 {
     ::LibFred::InfoContactData d;
@@ -885,7 +878,6 @@ BOOST_AUTO_TEST_CASE(info_contact_diff)
 /**
  * test InfoDOmainDiff print to string
  */
-
 BOOST_AUTO_TEST_CASE(info_domain_diff)
 {
     ::LibFred::InfoDomainData d;
@@ -897,7 +889,6 @@ BOOST_AUTO_TEST_CASE(info_domain_diff)
 /**
  * test InfoNssetDiff print to string
  */
-
 BOOST_AUTO_TEST_CASE(info_nsset_diff)
 {
     ::LibFred::InfoNssetData d;
@@ -909,7 +900,6 @@ BOOST_AUTO_TEST_CASE(info_nsset_diff)
 /**
  * test InfoKeysetDiff print to string
  */
-
 BOOST_AUTO_TEST_CASE(info_keyset_diff)
 {
     ::LibFred::InfoKeysetData d;
@@ -921,7 +911,6 @@ BOOST_AUTO_TEST_CASE(info_keyset_diff)
 /**
  * test ObjectIdHandlePair print to string
  */
-
 BOOST_AUTO_TEST_CASE(object_id_handle_pair)
 {
     ::LibFred::ObjectIdHandlePair i(1, "test");
@@ -930,4 +919,4 @@ BOOST_AUTO_TEST_CASE(object_id_handle_pair)
     BOOST_CHECK(i.handle == "test");
 }
 
-BOOST_AUTO_TEST_SUITE_END();//TestPrintable
+BOOST_AUTO_TEST_SUITE_END()//TestPrintable

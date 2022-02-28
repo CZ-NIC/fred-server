@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2013-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,20 +16,16 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
-/**
- *  @file
- *  run all contact verification checks in queue
- */
 
 #ifndef RUN_ALL_ENQUEUED_CHECKS_HH_98FF71CFFEEF434FAD74FEBACFD1DAE5
 #define RUN_ALL_ENQUEUED_CHECKS_HH_98FF71CFFEEF434FAD74FEBACFD1DAE5
+
+#include "src/backend/admin/contact/verification/test_impl/test_interface.hh"
 
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
-
-#include "src/backend/admin/contact/verification/test_impl/test_interface.hh"
 
 namespace Fred {
 namespace Backend {
@@ -44,7 +40,7 @@ namespace Verification {
  * @return handles of executed (finalized) check ordered by execution (first in vector - first executed)
  */
 std::vector<std::string> run_all_enqueued_checks(
-        const std::map<std::string, std::shared_ptr<Test>>& _tests,
+        const Util::Factory<Test>& _tests,
         Optional<unsigned long long> _logd_request_id = Optional<unsigned long long>());
 
 
@@ -54,4 +50,4 @@ std::vector<std::string> run_all_enqueued_checks(
 } // namespace Fred::Backend
 } // namespace Fred
 
-#endif
+#endif//RUN_ALL_ENQUEUED_CHECKS_HH_98FF71CFFEEF434FAD74FEBACFD1DAE5

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2014-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,9 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/admin/contact/verification/test_impl/test_email_exists.hh"
-#include "libfred/opcontext.hh"
-#include "libfred/registrable_object/contact/info_contact.hh"
+
 #include "libfred/registrable_object/contact/verification/enum_test_status.hh"
 
 #include <boost/algorithm/string.hpp>
@@ -35,12 +35,8 @@ namespace Admin {
 namespace Contact {
 namespace Verification {
 
-FACTORY_MODULE_INIT_DEFI(TestEmailExists_init)
-
 Test::TestRunResult TestEmailExists::run(unsigned long long _history_id) const
 {
-    using std::string;
-
     TestDataProvider<TestEmailExists> data;
     data.init_data(_history_id);
 
@@ -54,12 +50,9 @@ Test::TestRunResult TestEmailExists::run(unsigned long long _history_id) const
 
     std::vector<std::string> invalid_emails;
 
-    for (std::vector<std::string>::const_iterator it = emails.begin();
-         it != emails.end();
-         ++it
-         )
+    for (std::vector<std::string>::const_iterator it = emails.begin(); it != emails.end(); ++it)
     {
-        string email = boost::trim_copy(*it);
+        std::string email = boost::trim_copy(*it);
 
         if (email.empty())
         {
@@ -67,7 +60,7 @@ Test::TestRunResult TestEmailExists::run(unsigned long long _history_id) const
             continue;
         }
 
-        string host;
+        std::string host;
         try
         {
             host = email.substr(email.find('@') + 1); // +1 <=> cut the '@' as well
@@ -87,12 +80,12 @@ Test::TestRunResult TestEmailExists::run(unsigned long long _history_id) const
         }
         catch (const std::exception&)
         {
-            return TestRunResult(
+            return TestRunResult{
                     LibFred::ContactTestStatus::ERROR,
-                    string("runtime error"));
+                    "runtime error"};
         }
         boost::scoped_array<unsigned char> buffer_scoped(buffer_ptr);
-        buffer_ptr = NULL;
+        buffer_ptr = nullptr;
 
         // MX test
         if (res_query(
@@ -123,14 +116,33 @@ Test::TestRunResult TestEmailExists::run(unsigned long long _history_id) const
 
     if (!invalid_emails.empty())
     {
-        return TestRunResult(
+        return TestRunResult{
                 LibFred::ContactTestStatus::FAIL,
                 "hostname in emails: " +
                         boost::join(invalid_emails, ",") +
-                        " couldn't be resolved");
+                        " couldn't be resolved"};
     }
 
-    return TestRunResult(LibFred::ContactTestStatus::OK);
+    return TestRunResult{LibFred::ContactTestStatus::OK};
+}
+
+void TestDataProvider<TestEmailExists>::store_data(const LibFred::InfoContactOutput& _data)
+{
+    if (!_data.info_contact_data.email.isnull())
+    {
+        email_ = _data.info_contact_data.email.get_value_or_default();
+    }
+}
+
+std::vector<std::string> TestDataProvider<TestEmailExists>::get_string_data() const
+{
+    return {email_};
+}
+
+template <>
+std::string test_name<TestEmailExists>()
+{
+    return "email_host_existence";
 }
 
 } // namespace Fred::Backend::Admin::Contact::Verification

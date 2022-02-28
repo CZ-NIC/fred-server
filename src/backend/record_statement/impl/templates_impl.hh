@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2021  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -24,12 +24,14 @@
 #include "src/backend/record_statement/impl/factory.hh"
 #include "src/backend/record_statement/impl/record_statement_xml.hh"
 #include "src/backend/record_statement/impl/util.hh"
+#include "src/util/tz/utc.hh"
+
 #include "libfred/object/get_id_of_registered.hh"
 #include "libfred/opcontext.hh"
 #include "libfred/zone/zone.hh"
-#include "src/util/tz/utc.hh"
 
 #include <boost/algorithm/string/join.hpp>
+
 
 namespace Fred {
 namespace Backend {
@@ -1068,116 +1070,28 @@ void ImplementationWithin<T>::send_contact_printout(
     }
 }
 
-template <typename REGISTRY_TIMEZONE>
-class InstanceOfNecessaryImpl
+template <typename RegistryTimeZone>
+struct ProducerImpl : Producer
 {
-private:
-    static std::string fake_domain_printout_xml(
-            LibFred::OperationContext& ctx,
-            const LibFred::InfoDomainOutput& info,
-            const Tz::LocalTimestamp& valid_at,
-            const Purpose::Enum purpose,
-            const LibFred::InfoContactOutput& registrant_info,
-            const std::vector<LibFred::InfoContactOutput>& admin_contact_info,
-            const LibFred::InfoRegistrarOutput& sponsoring_registrar_info,
-            const boost::optional<NssetPrintoutInputData>& nsset_data,
-            const boost::optional<KeysetPrintoutInputData>& keyset_data,
-            const std::set<std::string>& external_states)
-    {
-        return domain_printout_xml<REGISTRY_TIMEZONE>(
-                ctx,
-                info,
-                valid_at,
-                purpose,
-                registrant_info,
-                admin_contact_info,
-                sponsoring_registrar_info,
-                nsset_data,
-                keyset_data,
-                external_states);
-    }
-    static std::string fake_contact_printout_xml(
-            LibFred::OperationContext& ctx,
-            const LibFred::InfoContactOutput& info,
-            const Tz::LocalTimestamp& valid_at,
-            Purpose::Enum purpose,
-            const LibFred::InfoRegistrarOutput& sponsoring_registrar_info,
-            const std::set<std::string>& external_states)
-    {
-        return contact_printout_xml<REGISTRY_TIMEZONE>(
-                ctx,
-                info,
-                valid_at,
-                purpose,
-                sponsoring_registrar_info,
-                external_states);
-    }
-    static XmlWithData fake_domain_printout_xml_with_data(
-            LibFred::OperationContext& ctx,
-            const std::string& fqdn,
-            Purpose::Enum purpose)
-    {
-        return domain_printout_xml_with_data<REGISTRY_TIMEZONE>(
-                ctx,
-                fqdn,
-                purpose);
-    }
-    static XmlWithData fake_nsset_printout_xml_with_data(
-            LibFred::OperationContext& ctx,
-            const std::string& handle)
-    {
-        return nsset_printout_xml_with_data<REGISTRY_TIMEZONE>(
-                ctx,
-                handle);
-    }
-    static XmlWithData fake_keyset_printout_xml_with_data(
-            LibFred::OperationContext& ctx,
-            const std::string& handle)
-    {
-        return keyset_printout_xml_with_data<REGISTRY_TIMEZONE>(
-                ctx,
-                handle);
-    }
-    static XmlWithData fake_contact_printout_xml_with_data(
-            LibFred::OperationContext& ctx,
-            const std::string& handle,
-            Purpose::Enum purpose)
-    {
-        return contact_printout_xml_with_data<REGISTRY_TIMEZONE>(
-                ctx,
-                handle,
-                purpose);
-    }
-
-    static Factory::Product producer(
+    Product operator()(
             const std::shared_ptr<LibFred::Document::Manager>& _doc_manager,
-            const std::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager)
+            const std::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager) override
     {
-        return Factory::Product(
-                new ImplementationWithin<REGISTRY_TIMEZONE>(_doc_manager, _mailer_manager));
+        using ParticularProduct = ImplementationWithin<RegistryTimeZone>;
+        return static_cast<Product>(std::make_shared<ParticularProduct>(_doc_manager, _mailer_manager));
     }
-public:
-    struct RegistryProducer
-    {
-        RegistryProducer()
-        {
-            Factory::register_producer(Tz::get_psql_handle_of<REGISTRY_TIMEZONE>(), producer);
-        }
-    };
-    static const RegistryProducer& get() noexcept
-    {
-        return auto_registry_producer;
-    }
-private:
-    static const RegistryProducer auto_registry_producer;
 };
 
-template <typename T>
-const typename InstanceOfNecessaryImpl<T>::RegistryProducer InstanceOfNecessaryImpl<T>::auto_registry_producer;
+template <typename RegistryTimeZone>
+void register_producer(Factory& factory)
+{
+    factory.add_producer({Tz::get_psql_handle_of<RegistryTimeZone>(),
+                          std::make_unique<ProducerImpl<RegistryTimeZone>>()});
+}
 
 } // namespace Fred::Backend::RecordStatement::Impl
 } // namespace Fred::Backend::RecordStatement
 } // namespace Fred::Backend
 } // namespace Fred
 
-#endif
+#endif//TEMPLATES_IMPL_HH_06DE732BD7B24E81A9587A9C789F0E54

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2014-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/admin/contact/verification/test_impl/test_contactability.hh"
 
 #include "src/backend/admin/contact/verification/test_impl/util.hh"
@@ -41,8 +42,6 @@ namespace Admin {
 namespace Contact {
 namespace Verification {
 
-FACTORY_MODULE_INIT_DEFI(TestContactability_init)
-
 const std::string TestContactability::letter_message_type_("contact_check_notice");
 const unsigned TestContactability::letter_file_type_(8); // contact_check_notice
 const std::string TestContactability::letter_comm_type_("registered_letter");
@@ -56,7 +55,6 @@ static inline std::string xml_cdata(const std::string& _input)
 {
     return "<![CDATA[" + _input + "]]>";
 }
-
 
 unsigned long long TestContactability::generate_pdf(
         const std::string&                      _contact_handle,
@@ -113,7 +111,6 @@ unsigned long long TestContactability::generate_pdf(
             "");
 }
 
-
 Test::TestRunResult TestContactability::run(unsigned long long _history_id) const
 {
     TestDataProvider<TestContactability> data;
@@ -140,9 +137,9 @@ Test::TestRunResult TestContactability::run(unsigned long long _history_id) cons
     }
     catch (...)
     {
-        return TestRunResult(
+        return TestRunResult{
                 LibFred::ContactTestStatus::ERROR,
-                std::string("failed to get country name"));
+                "failed to get country name"};
     }
 
     unsigned long long generated_pdf_id;
@@ -162,9 +159,9 @@ Test::TestRunResult TestContactability::run(unsigned long long _history_id) cons
     }
     catch (...)
     {
-        return TestRunResult(
+        return TestRunResult{
                 LibFred::ContactTestStatus::ERROR,
-                std::string("failed to generate pdf file"));
+                "failed to generate pdf file"};
     }
 
     bool error = false;
@@ -205,22 +202,18 @@ Test::TestRunResult TestContactability::run(unsigned long long _history_id) cons
 
     if (error)
     {
-        return TestRunResult(
+        return TestRunResult{
                 LibFred::ContactTestStatus::ERROR,
                 error_msg,
                 mail_ids,
-                message_ids);
+                message_ids};
     }
-    else
-    {
-        return TestRunResult(
-                LibFred::ContactTestStatus::MANUAL,
-                std::string(),
-                mail_ids,
-                message_ids);
-    }
+    return TestRunResult{
+            LibFred::ContactTestStatus::MANUAL,
+            std::string{},
+            mail_ids,
+            message_ids};
 }
-
 
 unsigned long long TestContactability::send_email(
         const std::string&          _contact_handle,
@@ -245,7 +238,6 @@ unsigned long long TestContactability::send_email(
             "");
 }
 
-
 unsigned long long TestContactability::send_letter(
         unsigned long long _contact_id,
         const std::string& _contact_handle,
@@ -263,6 +255,70 @@ unsigned long long TestContactability::send_letter(
             _contact_history_id,
             letter_comm_type_.c_str(),
             false);
+}
+
+TestContactability& TestContactability::set_email_manager(std::shared_ptr<LibFred::Mailer::Manager> _email_manager)
+{
+    email_manager_ = _email_manager;
+    return *this;
+}
+
+TestContactability& TestContactability::set_document_file_manager(
+        std::shared_ptr<LibFred::Document::Manager> _document_file_manager)
+{
+    document_file_manager_ = _document_file_manager;
+    return *this;
+}
+
+TestContactability& TestContactability::set_letter_manager(std::shared_ptr<LibFred::Messages::Manager> _letter_manager)
+{
+    letter_manager_ = _letter_manager;
+    return *this;
+}
+
+template <>
+std::string test_name<TestContactability>()
+{
+    return "contactability";
+}
+
+void TestDataProvider<TestContactability>::store_data(const LibFred::InfoContactOutput& _data)
+{
+    name_ = boost::algorithm::trim_copy(_data.info_contact_data.name.get_value_or_default());
+    email_ = boost::algorithm::trim_copy(_data.info_contact_data.email.get_value_or_default());
+    organization_ =
+            boost::algorithm::trim_copy(
+                    _data.info_contact_data.organization.get_value_or_default());
+    street1_ = boost::algorithm::trim_copy(_data.info_contact_data.place.get_value_or_default().street1);
+    street2_ =
+            boost::algorithm::trim_copy(
+                    _data.info_contact_data.place.get_value_or_default().street2.get_value_or_default());
+    street3_ =
+            boost::algorithm::trim_copy(
+                    _data.info_contact_data.place.get_value_or_default().street3.get_value_or_default());
+    city_ = boost::algorithm::trim_copy(_data.info_contact_data.place.get_value_or_default().city);
+    stateorprovince_ =
+            boost::algorithm::trim_copy(
+                    _data.info_contact_data.place.get_value_or_default().stateorprovince.get_value_or_default());
+    postalcode_ =
+            boost::algorithm::trim_copy(
+                    _data.info_contact_data.place.get_value_or_default().postalcode);
+    country_ = boost::algorithm::trim_copy(_data.info_contact_data.place.get_value_or_default().country);
+}
+
+std::vector<std::string> TestDataProvider<TestContactability>::get_string_data() const
+{
+    return {
+            name_,
+            email_,
+            organization_,
+            street1_,
+            street2_,
+            street3_,
+            city_,
+            stateorprovince_,
+            postalcode_,
+            country_};
 }
 
 } // namespace Fred::Backend::Admin::Contact::Verification

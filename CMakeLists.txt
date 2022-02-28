@@ -585,6 +585,26 @@ target_link_libraries(authentic_registrar PRIVATE Fred::library)
 add_common_library_target(buffer
     src/backend/buffer.cc)
 
+add_common_library_target(messages
+    src/deprecated/libfred/messages/messages_impl.cc)
+target_link_libraries(messages PRIVATE
+    db
+    Fred::library)
+
+add_common_library_target(contact_verification
+    src/backend/contact_verification/contact_verification_impl.cc
+    src/backend/contact_verification/public_request_contact_verification_impl.cc
+    src/deprecated/libfred/contact_verification/contact.cc
+    src/deprecated/libfred/contact_verification/contact_verification_checkers.cc
+    src/deprecated/libfred/contact_verification/contact_conditional_identification_impl.cc
+    src/deprecated/libfred/contact_verification/contact_identification_impl.cc
+    src/deprecated/libfred/contact_verification/contact_verification_state.cc
+    src/deprecated/libfred/contact_verification/contact_verification_validators.cc
+    src/deprecated/libfred/contact_verification/contact_verification_password.cc)
+target_link_libraries(contact_verification PRIVATE
+    Fred::library
+    util)
+
 add_common_library_target(public_request
     src/backend/public_request/create_authinfo_request_non_registry_email.cc
     src/backend/public_request/create_authinfo_request_registry_email.cc
@@ -608,10 +628,13 @@ add_common_library_target(public_request
     src/deprecated/libfred/public_request/public_request_authinfo_impl.cc
     src/deprecated/libfred/public_request/public_request_block_impl.cc
     src/deprecated/libfred/public_request/public_request_impl.cc
-    src/deprecated/libfred/public_request/public_request_personal_info_impl.cc)
+    src/deprecated/libfred/public_request/public_request_personal_info_impl.cc
+    src/bin/corba/admin/public_request_mojeid.cc)
 target_link_libraries(public_request PRIVATE
     buffer
     corba_mailer
+    messages
+    contact_verification
     Fred::library)
 
 add_common_library_target(banking
@@ -623,10 +646,6 @@ target_link_libraries(banking PRIVATE
     Fred::library
     ${XML2_LIBRARIES})
 target_include_directories(banking PUBLIC ${XML2_INCLUDE_DIRS})
-
-add_common_library_target(messages
-    src/deprecated/libfred/messages/messages_impl.cc)
-target_link_libraries(messages PRIVATE Fred::library)
 
 add_common_library_target(requests
     src/deprecated/libfred/requests/model_request.cc
@@ -641,18 +660,6 @@ add_common_library_target(requests
 target_link_libraries(requests PRIVATE
     fred-deprecated
     Fred::library)
-
-add_common_library_target(contact_verification
-    src/backend/contact_verification/contact_verification_impl.cc
-    src/backend/contact_verification/public_request_contact_verification_impl.cc
-    src/deprecated/libfred/contact_verification/contact.cc
-    src/deprecated/libfred/contact_verification/contact_verification_checkers.cc
-    src/deprecated/libfred/contact_verification/contact_conditional_identification_impl.cc
-    src/deprecated/libfred/contact_verification/contact_identification_impl.cc
-    src/deprecated/libfred/contact_verification/contact_verification_state.cc
-    src/deprecated/libfred/contact_verification/contact_verification_validators.cc
-    src/deprecated/libfred/contact_verification/contact_verification_password.cc)
-target_link_libraries(contact_verification PRIVATE Fred::library)
 
 add_common_library_target(admin_contact_verification
     src/backend/admin/contact/verification/create_test_impl_prototypes.cc
@@ -676,6 +683,7 @@ add_common_library_target(admin_contact_verification
     src/backend/admin/contact/verification/test_impl/test_email_exists_for_managed_zones.cc)
 target_link_libraries(admin_contact_verification PRIVATE
     Fred::library
+    messages
     ${XML2_LIBRARIES}
     resolv)
 target_include_directories(admin_contact_verification PUBLIC ${XML2_INCLUDE_DIRS})
@@ -1010,7 +1018,6 @@ add_common_executable_target(fred-adifd
     src/bin/corba/admin_contact_verification/server_i.cc
     src/deprecated/libfred/registrable_object/contact/util.cc
     src/bin/corba/fred-adifd.cc
-    src/bin/corba/admin/public_request_mojeid.cc
     src/bin/corba/admin_block/server_i.cc
     src/bin/corba/notification/server_i.cc
     src/bin/corba/notification/notification_corba_conversion.cc)

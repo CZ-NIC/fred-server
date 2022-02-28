@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,10 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
-/**
- *  @file
- *  registry record statement impl tests
- */
 
 #include "test/backend/record_statement/util.hh"
 #include "test/backend/record_statement/fixture.hh"
@@ -30,6 +26,8 @@
 #include "libfred/object_state/get_object_states.hh"
 
 #include "src/util/subprocess.hh"
+
+#include "util/factory_check.hh"
 
 #include <boost/test/unit_test.hpp>
 #include <boost/test/test_tools.hpp>
@@ -45,6 +43,43 @@
 
 
 BOOST_AUTO_TEST_SUITE(TestRecordStatement)
+
+BOOST_AUTO_TEST_CASE(test_factory_default_instance)
+{
+    const auto required_keys = std::vector<std::string>{
+            "Europe/Prague",
+            "UTC"};
+    const auto extended_keys = [&]()
+    {
+        std::vector<std::string> result;
+        result.reserve(required_keys.size() + 1);
+        result.insert(begin(result), begin(required_keys), end(required_keys));
+        result.push_back("abc");
+        return result;
+    }();
+    static const auto show_exception = [](std::function<void()> fnc)
+    {
+        try
+        {
+            fnc();
+        }
+        catch (const std::exception& e)
+        {
+            BOOST_TEST_ERROR(boost::format{"unexpected exception caught: %1%"} % e.what());
+            throw;
+        }
+    };
+    BOOST_REQUIRE_EQUAL(required_keys.size(), (std::set<std::string>{begin(required_keys), end(required_keys)}).size());
+    BOOST_REQUIRE_EQUAL(required_keys.size() + 1, (std::set<std::string>{begin(extended_keys), end(extended_keys)}.size()));
+    const auto& factory = Fred::Backend::RecordStatement::Impl::get_default_factory();
+    BOOST_REQUIRE_NO_THROW(show_exception([&]() { Util::FactoryHaveSupersetOfKeys::require(factory, required_keys); }));
+    BOOST_CHECK_EXCEPTION(Util::FactoryHaveSupersetOfKeys::require(factory, extended_keys), std::runtime_error,
+                          [](auto&& e) { BOOST_TEST_MESSAGE(boost::format{"expected exception caught: %1%"} % e.what()); return true; });
+    std::for_each(begin(required_keys), end(required_keys), [&factory](auto&& key)
+    {
+        BOOST_CHECK_NO_THROW(show_exception([&]() { factory[key](nullptr, nullptr); }));
+    });
+}
 
 BOOST_FIXTURE_TEST_CASE(domain_printout_xml, Test::domain_fixture)
 {

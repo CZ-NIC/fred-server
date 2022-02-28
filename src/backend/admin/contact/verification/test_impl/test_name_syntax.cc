@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2013-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,27 +16,19 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/admin/contact/verification/test_impl/test_name_syntax.hh"
 
-#include "libfred/registrable_object/contact/check_contact.hh"
-#include "libfred/registrable_object/contact/copy_contact.hh"
-#include "libfred/registrable_object/contact/create_contact.hh"
-#include "libfred/registrable_object/contact/delete_contact.hh"
-#include "libfred/registrable_object/contact/info_contact.hh"
-#include "libfred/registrable_object/contact/info_contact_diff.hh"
-#include "libfred/registrable_object/contact/merge_contact.hh"
-#include "libfred/registrable_object/contact/update_contact.hh"
 #include "libfred/registrable_object/contact/verification/enum_test_status.hh"
 
 #include <boost/algorithm/string/trim.hpp>
+
 
 namespace Fred {
 namespace Backend {
 namespace Admin {
 namespace Contact {
 namespace Verification {
-
-FACTORY_MODULE_INIT_DEFI(TestNameSyntax_init)
 
 Test::TestRunResult TestNameSyntax::run(unsigned long long _history_id) const
 {
@@ -47,14 +39,30 @@ Test::TestRunResult TestNameSyntax::run(unsigned long long _history_id) const
 
     if (name.find(' ') == std::string::npos)
     {
-        return TestRunResult(
+        return TestRunResult{
                 LibFred::ContactTestStatus::FAIL,
-                std::string("name has to contain at least two words separated by space"));
+                "name has to contain at least two words separated by space"};
     }
-    else
+    return TestRunResult{LibFred::ContactTestStatus::OK};
+}
+
+void TestDataProvider<TestNameSyntax>::store_data(const LibFred::InfoContactOutput& _data)
+{
+    if (!_data.info_contact_data.name.isnull())
     {
-        return TestRunResult(LibFred::ContactTestStatus::OK);
+        name_ = _data.info_contact_data.name.get_value_or_default();
     }
+}
+
+std::vector<std::string> TestDataProvider<TestNameSyntax>::get_string_data() const
+{
+    return {name_};
+}
+
+template <>
+std::string test_name<TestNameSyntax>()
+{
+    return "name_syntax";
 }
 
 } // namespace Fred::Backend::Admin::Contact::Verification

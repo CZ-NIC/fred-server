@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006-2020  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2006-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,17 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
-#include <boost/date_time/posix_time/time_formatters.hpp>
-#include <boost/date_time/local_time/local_time.hpp>
-#include <boost/date_time/c_local_time_adjustor.hpp>
 
-#include <boost/thread/thread.hpp>
-#include <boost/thread/xtime.hpp>
-#include <boost/bind.hpp>
-
-#include <math.h>
-#include <memory>
-#include <iomanip>
 #include "corba/Admin.hh"
 
 #include "src/bin/corba/admin/common.hh"
@@ -38,27 +28,41 @@
 #include "src/bin/corba/mailer_manager.hh"
 #include "src/deprecated/libfred/messages/messages_impl.hh"
 #include "src/deprecated/libfred/object_states.hh"
-#include "libfred/poll/get_request_fee_message.hh"
 #include "src/deprecated/libfred/banking/get_bank_accounts.hh"
 #include "src/deprecated/libfred/banking/payment_data.hh"
 #include "src/deprecated/libfred/public_request/public_request_authinfo_impl.hh"
 #include "src/deprecated/libfred/public_request/public_request_block_impl.hh"
 #include "src/deprecated/libfred/public_request/public_request_personal_info_impl.hh"
-#include "libfred/public_request/create_public_request.hh"
-#include "libfred/registrable_object/contact/undisclose_address.hh"
-#include "libfred/registrar/info_registrar.hh"
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/handle_registry_args.hh"
-#include "util/factory_check.hh"
-#include "util/log/logger.hh"
-#include "util/log/context.hh"
-#include "util/random/char_set/char_set.hh"
-#include "util/random/random.hh"
 #include "src/bin/corba/connection_releaser.hh"
 #include "src/bin/corba/epp_corba_client_impl.hh"
 #include "src/bin/corba/util/corba_conversions_string.hh"
 #include "src/bin/corba/util/corba_conversions_int.hh"
 #include "src/backend/contact_verification/public_request_contact_verification_impl.hh"
+
+#include "libfred/poll/get_request_fee_message.hh"
+#include "libfred/public_request/create_public_request.hh"
+#include "libfred/registrable_object/contact/undisclose_address.hh"
+#include "libfred/registrar/info_registrar.hh"
+
+#include "util/factory_check.hh"
+#include "util/log/logger.hh"
+#include "util/log/context.hh"
+#include "util/random/char_set/char_set.hh"
+#include "util/random/random.hh"
+
+#include <boost/date_time/posix_time/time_formatters.hpp>
+#include <boost/date_time/local_time/local_time.hpp>
+#include <boost/date_time/c_local_time_adjustor.hpp>
+
+#include <boost/thread/thread.hpp>
+#include <boost/thread/xtime.hpp>
+#include <boost/bind.hpp>
+
+#include <math.h>
+#include <memory>
+#include <iomanip>
 
 class Registry_RegistrarCertification_i;
 class Registry_RegistrarGroup_i;
@@ -95,27 +99,24 @@ ccReg_Admin_i::ccReg_Admin_i(const std::string _database, NameService *_ns
   }
 
   //factory_check - required keys are in factory
-  FactoryHaveSupersetOfKeysChecker<LibFred::PublicRequest::Factory>
-  ::KeyVector required_keys = boost::assign::list_of
-   (LibFred::PublicRequest::PRT_AUTHINFO_AUTO_PIF)
-   (LibFred::PublicRequest::PRT_AUTHINFO_EMAIL_PIF)
-   (LibFred::PublicRequest::PRT_AUTHINFO_POST_PIF)
-   (LibFred::PublicRequest::PRT_BLOCK_TRANSFER_EMAIL_PIF)
-   (LibFred::PublicRequest::PRT_BLOCK_CHANGES_EMAIL_PIF)
-   (LibFred::PublicRequest::PRT_UNBLOCK_TRANSFER_EMAIL_PIF)
-   (LibFred::PublicRequest::PRT_UNBLOCK_CHANGES_EMAIL_PIF)
-   (LibFred::PublicRequest::PRT_BLOCK_TRANSFER_POST_PIF)
-   (LibFred::PublicRequest::PRT_BLOCK_CHANGES_POST_PIF)
-   (LibFred::PublicRequest::PRT_UNBLOCK_TRANSFER_POST_PIF)
-   (LibFred::PublicRequest::PRT_UNBLOCK_CHANGES_POST_PIF);
-
-  FactoryHaveSupersetOfKeysChecker<LibFred::PublicRequest::Factory>
-      (required_keys).check();
+  Util::FactoryHaveSupersetOfKeys::require(
+        LibFred::PublicRequest::get_default_factory(),
+        { LibFred::PublicRequest::PRT_AUTHINFO_AUTO_PIF,
+          LibFred::PublicRequest::PRT_AUTHINFO_EMAIL_PIF,
+          LibFred::PublicRequest::PRT_AUTHINFO_POST_PIF,
+          LibFred::PublicRequest::PRT_BLOCK_TRANSFER_EMAIL_PIF,
+          LibFred::PublicRequest::PRT_BLOCK_CHANGES_EMAIL_PIF,
+          LibFred::PublicRequest::PRT_UNBLOCK_TRANSFER_EMAIL_PIF,
+          LibFred::PublicRequest::PRT_UNBLOCK_CHANGES_EMAIL_PIF,
+          LibFred::PublicRequest::PRT_BLOCK_TRANSFER_POST_PIF,
+          LibFred::PublicRequest::PRT_BLOCK_CHANGES_POST_PIF,
+          LibFred::PublicRequest::PRT_UNBLOCK_TRANSFER_POST_PIF,
+          LibFred::PublicRequest::PRT_UNBLOCK_CHANGES_POST_PIF });
 
   //factory_check - factory keys are in database
-  FactoryHaveSubsetOfKeysChecker<LibFred::PublicRequest::Factory>
-      (LibFred::PublicRequest::get_enum_public_request_type()).check();
-
+  Util::FactoryHaveSubsetOfKeys::require(
+        LibFred::PublicRequest::get_default_factory(),
+        LibFred::PublicRequest::get_enum_public_request_type());
 
   //instances held until deactivation
   Registry_Registrar_Certification_Manager_i * reg_cert_mgr_i
