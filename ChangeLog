@@ -2,6 +2,16 @@ UNRELEASED
 
   * Remove duplicate `libfred` tests
 
+2022-02-28 (2.50.0)
+
+  * Epp - generate update poll messages in all update operations when not done by sponsoring registrar
+
+  * Domain browser - normalize string data of contact (empty string / null values / whitespace) when finding merge candidates
+
+  * Rework object factories to manual registration instead of auto-registration which was not working properly
+
+  * Fix unix whois registrar search (upper case registrar handle)
+
 2022-02-01 (2.49.0)
 
   * Add possibility to mark registrar as internal
