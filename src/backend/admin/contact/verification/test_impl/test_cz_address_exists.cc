@@ -88,6 +88,14 @@ std::string xpath_house_number_match(
         std::vector<std::string> _numbers,
         std::vector<std::string> _xpath_lhs);
 
+struct XmlXPathObjectDeleter
+{
+    void operator()(xmlXPathObjectPtr ptr) const
+    {
+        xmlXPathFreeObject(ptr);
+    }
+};
+
 }//namespace Fred::Backend::Admin::Contact::Verification::{anonymous}
 
 const std::string TestCzAddress::street_delimiters_("\\/-,()| \t\n\r");
@@ -279,13 +287,14 @@ bool TestCzAddress::is_address_valid(
             city,
             postal_code);
 
-    xmlErrorPtr error = NULL;
+    xmlErrorPtr error = nullptr;
 
-    for (const std::string &query : xpath_queries)
+    for (const std::string& query : xpath_queries)
     {
-        boost::scoped_ptr<xmlXPathObject> xpathObj(xmlXPathEvalExpression(
+        const auto xpathObj = std::unique_ptr<xmlXPathObject, XmlXPathObjectDeleter>{
+                xmlXPathEvalExpression(
                         reinterpret_cast<const unsigned char*>(query.c_str()),
-                        xpathCtx_));
+                        xpathCtx_)};
 
         error = xmlGetLastError();
         if (error != nullptr)
@@ -367,9 +376,10 @@ std::string TestCzAddress::diagnose_problem(
     xmlErrorPtr error = nullptr;
     for (const std::string& query : xpath_queries)
     {
-        boost::scoped_ptr<xmlXPathObject> xpathObj(xmlXPathEvalExpression(
+        const auto xpathObj = std::unique_ptr<xmlXPathObject, XmlXPathObjectDeleter>{
+                xmlXPathEvalExpression(
                         reinterpret_cast<const unsigned char*>(query.c_str()),
-                        xpathCtx_));
+                        xpathCtx_)};
 
         error = xmlGetLastError();
         if (error != nullptr)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2021  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -40,10 +40,10 @@
 #include "src/util/setup_server.hh"
 
 #include <boost/assign/list_of.hpp>
-#include <boost/scoped_ptr.hpp>
 
 #include <cstdlib>
 #include <iostream>
+#include <memory>
 #include <string>
 
 const std::string server_name = "fred-akmd";
@@ -73,26 +73,27 @@ int main(int argc, char* argv[])
 
         corba_init();
 
-        boost::scoped_ptr<LibFred::Logger::LoggerClient> logger_client;
-        if (CfgArgs::instance()->get_handler_ptr_by_type<HandleAkmdArgs>()->enable_request_logger)
-        {
-            logger_client.reset(new LibFred::Logger::LoggerCorbaClientImpl());
-        }
-        else
-        {
-            logger_client.reset(new LibFred::Logger::DummyLoggerImpl());
-        }
+        static const auto make_logger_client =
+                [](const HandleAkmdArgs* akmd_args_handler) -> std::unique_ptr<LibFred::Logger::LoggerClient>
+                {
+                    if (akmd_args_handler->enable_request_logger)
+                    {
+                        return std::make_unique<LibFred::Logger::LoggerCorbaClientImpl>();
+                    }
+                    return std::make_unique<LibFred::Logger::DummyLoggerImpl>();
+                };
+        const auto* const akmd_args_handler = CfgArgs::instance()->get_handler_ptr_by_type<HandleAkmdArgs>();
 
         // create server object with poa and nameservice registration
         CorbaContainer::get_instance()->register_server(
                 new Registry::AutomaticKeysetManagement::Server_i(
                         server_name,
-                        CfgArgs::instance()->get_handler_ptr_by_type<HandleAkmdArgs>()->automatically_managed_keyset_prefix,
-                        CfgArgs::instance()->get_handler_ptr_by_type<HandleAkmdArgs>()->automatically_managed_keyset_registrar,
-                        CfgArgs::instance()->get_handler_ptr_by_type<HandleAkmdArgs>()->automatically_managed_keyset_tech_contact,
-                        CfgArgs::instance()->get_handler_ptr_by_type<HandleAkmdArgs>()->automatically_managed_keyset_zones,
-                        CfgArgs::instance()->get_handler_ptr_by_type<HandleAkmdArgs>()->disable_notifier,
-                        *logger_client),
+                        akmd_args_handler->automatically_managed_keyset_prefix,
+                        akmd_args_handler->automatically_managed_keyset_registrar,
+                        akmd_args_handler->automatically_managed_keyset_tech_contact,
+                        akmd_args_handler->automatically_managed_keyset_zones,
+                        akmd_args_handler->disable_notifier,
+                        *make_logger_client(akmd_args_handler)),
                 "AutomaticKeysetManagement");
         run_server(CfgArgs::instance(), CorbaContainer::get_instance());
     }
