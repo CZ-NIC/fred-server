@@ -39,12 +39,12 @@ class PublicRequestProcedure
 {
 public:
     PublicRequestProcedure(
-            const ProcessPublicRequestsArgs& _args,
-            const MessengerArgs& _messenger_args,
-            const FilemanArgs& _fileman_args)
-        : args_(_args),
-          messenger_args_(_messenger_args),
-          fileman_args_(_fileman_args)
+            ProcessPublicRequestsArgs _args,
+            MessengerArgs _messenger_args,
+            FilemanArgs _fileman_args)
+        : args_(std::move(_args)),
+          messenger_args_(std::move(_messenger_args)),
+          fileman_args_(std::move(_fileman_args))
         {
         }
 

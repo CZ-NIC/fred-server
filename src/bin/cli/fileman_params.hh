@@ -25,13 +25,6 @@
 struct FilemanArgs
 {
     std::string endpoint;
-
-    FilemanArgs() = default;
-
-    explicit FilemanArgs(const std::string&  _endpoint)
-        : endpoint(_endpoint)
-    {
-    }
 };
 
 #endif

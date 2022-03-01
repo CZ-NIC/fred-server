@@ -237,8 +237,8 @@ unsigned long long send_personal_info(
                         LibFiled::File::FileData{csv_document_content.begin(), csv_document_content.end()},
                         LibFiled::File::FileMimeType{"text/csv"});
 
-            return *attachment_uuid;
-        };
+        return *attachment_uuid;
+    };
 
     const auto get_attachment_en = [&](){
         std::string ident_type_repr;
@@ -294,8 +294,8 @@ unsigned long long send_personal_info(
                         LibFiled::File::FileData{csv_document_content.begin(), csv_document_content.end()},
                         LibFiled::File::FileMimeType{"text/csv"});
 
-            return *attachment_uuid;
-        };
+        return *attachment_uuid;
+    };
 
     const std::set<std::string> recipients = { email_to_answer.empty() ? info_contact_data.email.get_value() : email_to_answer };
     const Util::EmailData email_data(

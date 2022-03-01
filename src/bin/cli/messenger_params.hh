@@ -24,13 +24,6 @@
 struct MessengerArgs
 {
     std::string endpoint;
-
-    MessengerArgs() = default;
-
-    explicit MessengerArgs(const std::string&  _endpoint)
-        : endpoint(_endpoint)
-    {
-    }
 };
 
 #endif

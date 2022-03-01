@@ -60,7 +60,7 @@ unsigned long long send_joined_addresses_email(
                 std::back_inserter(email.attachments),
                 [](const auto& item) -> auto
                 {
-                        return LibHermes::Email::Email::AttachmentUuid{item};
+                    return LibHermes::Email::Email::AttachmentUuid{item};
                 });
 
         LibHermes::Email::EmailUid email_uid;
