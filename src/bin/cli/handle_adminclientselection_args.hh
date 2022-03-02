@@ -2795,6 +2795,7 @@ struct HandleAdminClientMessengerArgsGrp : HandleCommandGrpArgs
         handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }
+    MessengerArgs messenger_params;
 };
 
 struct HandleAdminClientFilemanArgsGrp : HandleCommandGrpArgs
@@ -2828,6 +2829,7 @@ struct HandleAdminClientFilemanArgsGrp : HandleCommandGrpArgs
         handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
     }
+    FilemanArgs fileman_params;
 };
 
 #endif

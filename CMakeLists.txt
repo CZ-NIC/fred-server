@@ -635,7 +635,9 @@ target_link_libraries(public_request PRIVATE
     corba_mailer
     messages
     contact_verification
-    Fred::library)
+    Fred::library
+    LibHermes::library
+    LibFiled::library)
 
 add_common_library_target(banking
     src/deprecated/libfred/banking/bank_common.cc

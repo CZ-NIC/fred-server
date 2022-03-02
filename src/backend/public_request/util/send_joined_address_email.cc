@@ -49,7 +49,7 @@ unsigned long long send_joined_addresses_email(
                 data.template_parameters.begin(),
                 data.template_parameters.end(),
                 std::inserter(email.context, email.context.end()),
-                [](const auto& item) -> auto
+                [](const auto& item)
                 {
                     return std::make_pair(LibHermes::StructKey{item.first}, LibHermes::StructValue{item.second});
                 });
@@ -58,7 +58,7 @@ unsigned long long send_joined_addresses_email(
                 data.attachments.begin(),
                 data.attachments.end(),
                 std::back_inserter(email.attachments),
-                [](const auto& item) -> auto
+                [](const auto& item)
                 {
                     return LibHermes::Email::Email::AttachmentUuid{item};
                 });
