@@ -33,6 +33,7 @@
 #include "libfred/registrar/info_registrar.hh"
 
 #include <array>
+#include <sstream>
 
 namespace Fred {
 namespace Backend {
@@ -229,12 +230,13 @@ unsigned long long send_personal_info(
                         {"Notifikační e-mail", info_contact_data.notifyemail.get_value_or_default()},
                         {"Určený registrátor", info_registrar_data.name.get_value_or_default()}
                     }));
+        std::istringstream csv_document_stream(csv_document_content);
 
         const auto attachment_uuid =
                 LibFiled::File::create(
                         connection,
                         LibFiled::File::FileName{"personal_info_cs.csv"},
-                        LibFiled::File::FileData{csv_document_content.begin(), csv_document_content.end()},
+                        csv_document_stream,
                         LibFiled::File::FileMimeType{"text/csv"});
 
         return *attachment_uuid;
@@ -286,12 +288,13 @@ unsigned long long send_personal_info(
                         {"Notification e-mail", info_contact_data.notifyemail.get_value_or_default()},
                         {"Designated registrar", info_registrar_data.name.get_value_or_default()}
                     }));
+        std::istringstream csv_document_stream(csv_document_content);
 
         const auto attachment_uuid =
                 LibFiled::File::create(
                         connection,
                         LibFiled::File::FileName{"personal_info_en.csv"},
-                        LibFiled::File::FileData{csv_document_content.begin(), csv_document_content.end()},
+                        csv_document_stream,
                         LibFiled::File::FileMimeType{"text/csv"});
 
         return *attachment_uuid;
