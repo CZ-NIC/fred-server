@@ -24,6 +24,7 @@
 struct MessengerArgs
 {
     std::string endpoint;
+    bool archive;
 };
 
 #endif

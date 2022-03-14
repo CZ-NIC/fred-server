@@ -237,7 +237,7 @@ std::string to_type(ObjectType object_type)
 
 unsigned long long send_request_block_email(
         const LibFred::LockedPublicRequestForUpdate& _locked_request,
-        const std::string& _messenger_endpoint,
+        const MessengerArgs& _messenger_args,
         Request request)
 {
     auto& ctx = _locked_request.get_ctx();
@@ -311,7 +311,7 @@ unsigned long long send_request_block_email(
             email_template_params,
             {});
 
-    return send_joined_addresses_email(_messenger_endpoint, email_data);
+    return send_joined_addresses_email(_messenger_args.endpoint, _messenger_args.archive, email_data);
 }
 
 auto get_public_request_process_function(const LibFred::PublicRequestTypeIface& public_request)
@@ -356,14 +356,14 @@ auto get_public_request_process_function(const LibFred::PublicRequestTypeIface& 
 void process_public_request_block_unblock_resolved(
         unsigned long long _public_request_id,
         const LibFred::PublicRequestTypeIface& _public_request_type,
-        const std::string& _messenger_endpoint)
+        const MessengerArgs& _messenger_args)
 {
     try
     {
         LibFred::OperationContextCreator ctx;
         const LibFred::PublicRequestLockGuardById locked_request(ctx, _public_request_id);
         const auto process_function = get_public_request_process_function(_public_request_type);
-        const auto email_id = send_request_block_email(locked_request, _messenger_endpoint, process_function.request);
+        const auto email_id = send_request_block_email(locked_request, _messenger_args, process_function.request);
         try
         {
             process_function(locked_request);

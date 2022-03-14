@@ -177,8 +177,8 @@ void PublicRequestProcedure::exec()
                     Fbpr::Process::process_public_request_personal_info_resolved(
                             request_id,
                             iface_personal_info_itr->second(),
-                            messenger_args_.endpoint,
-                            fileman_args_.endpoint);
+                            messenger_args_,
+                            fileman_args_);
                     continue;
                 }
                 const auto iface_authinfo_itr = type_authinfo_to_iface.find(request_type);
@@ -187,7 +187,7 @@ void PublicRequestProcedure::exec()
                     Fbpr::Process::process_public_request_authinfo_resolved(
                             request_id,
                             iface_authinfo_itr->second(),
-                            messenger_args_.endpoint);
+                            messenger_args_);
                     continue;
                 }
                 const auto iface_block_unblock_itr = type_block_unblock_to_iface.find(request_type);
@@ -196,7 +196,7 @@ void PublicRequestProcedure::exec()
                     Fbpr::Process::process_public_request_block_unblock_resolved(
                             request_id,
                             iface_block_unblock_itr->second(),
-                            messenger_args_.endpoint);
+                            messenger_args_);
                     continue;
                 }
             }

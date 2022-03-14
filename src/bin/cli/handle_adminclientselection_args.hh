@@ -2781,7 +2781,10 @@ struct HandleAdminClientMessengerArgsGrp : HandleCommandGrpArgs
              ("messenger", "messenger options")
              ("endpoint", boost::program_options::value<std::string>()->required()
                  ->notifier(save_arg<std::string>(messenger_params.endpoint)),
-                 "URI of Fred.Api.Messenger.Email service to connect to");
+                 "URI of Fred.Api.Messenger.Email service to connect to")
+             ("archive", boost::program_options::value<bool>()->required()
+                 ->notifier(save_arg<bool>(messenger_params.archive)),
+                 "archive the message");
         return cfg_opts;
     }
 

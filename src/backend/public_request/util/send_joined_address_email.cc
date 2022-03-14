@@ -70,7 +70,7 @@ unsigned long long send_joined_addresses_email(
                     LibHermes::Email::send(
                             connection,
                             email,
-                            LibHermes::Email::Archive{false},
+                            LibHermes::Email::Archive{_archive},
                             {});
         }
         catch (const std::exception& e)

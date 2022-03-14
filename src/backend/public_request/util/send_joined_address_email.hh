@@ -65,6 +65,7 @@ struct EmailData
 
 unsigned long long send_joined_addresses_email(
         const std::string& _messenger_endpoint,
+        bool _archive,
         const EmailData& data);
 
 } // namespace Fred::Backend::PublicRequest::Util

@@ -67,8 +67,8 @@ std::string pretty_print_address(const T& _address)
 
 unsigned long long send_personal_info(
         const LibFred::LockedPublicRequestForUpdate& _locked_request,
-        const std::string& _messenger_endpoint,
-        const std::string& _fileman_endpoint)
+        const MessengerArgs& _messenger_args,
+        const FilemanArgs& _fileman_args)
 {
     auto& ctx = _locked_request.get_ctx();
     const LibFred::PublicRequestInfo request_info = LibFred::InfoPublicRequest().exec(ctx, _locked_request);
@@ -308,7 +308,7 @@ unsigned long long send_personal_info(
             {get_attachment_cs(),
              get_attachment_en()});
 
-    return send_joined_addresses_email(_messenger_endpoint, email_data);
+    return send_joined_addresses_email(_messenger_args.endpoint, _messenger_args.archive, email_data);
 }
 
 } // namespace Fred::Backend::PublicRequest::Process::{anonymous}
@@ -316,14 +316,14 @@ unsigned long long send_personal_info(
 void process_public_request_personal_info_resolved(
         unsigned long long _public_request_id,
         const LibFred::PublicRequestTypeIface& _public_request_type,
-        const std::string& _messenger_endpoint,
-        const std::string& _fileman_endpoint)
+        const MessengerArgs& _messenger_args,
+        const FilemanArgs& _fileman_args)
 {
     try
     {
         LibFred::OperationContextCreator ctx;
         const LibFred::PublicRequestLockGuardById locked_request(ctx, _public_request_id);
-        const unsigned long long email_id = send_personal_info(locked_request, _messenger_endpoint, _fileman_endpoint);
+        const unsigned long long email_id = send_personal_info(locked_request, _messenger_args, _fileman_args);
         try
         {
             LibFred::UpdatePublicRequest()
