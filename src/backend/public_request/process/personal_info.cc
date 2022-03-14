@@ -181,7 +181,6 @@ unsigned long long send_personal_info(
             _fileman_endpoint}};
 
     const std::string ident_type = info_contact_data.ssntype.get_value_or_default();
-    constexpr unsigned db_enum_filetype_dot_personal_info_csv = 12;
     constexpr char separator = ';';
 
     const auto get_attachment_cs = [&](){
