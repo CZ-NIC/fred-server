@@ -486,7 +486,7 @@ using namespace LibFred::PublicRequest;
 
 const LibFred::PublicRequest::Factory& LibFred::PublicRequest::get_default_factory()
 {
-    static const auto factory = []()
+    static thread_local const auto factory = []()
     {
         Factory factory{};
         Fred::Backend::ContactVerification::PublicRequest::add_producers(factory);
