@@ -31,7 +31,7 @@ namespace Impl {
 
 const Factory& get_default_factory()
 {
-    static const auto factory = []()
+    static thread_local const auto factory = []()
     {
         Factory factory{};
         register_producer<Tz::Europe::Prague>(factory);

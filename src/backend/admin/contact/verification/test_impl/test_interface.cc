@@ -82,7 +82,7 @@ using namespace Fred::Backend::Admin::Contact::Verification;
 
 const test_factory& Fred::Backend::Admin::Contact::Verification::get_default_test_factory()
 {
-    static const auto factory = []()
+    static thread_local const auto factory = []()
     {
         test_factory factory{};
         factory.add_producer(make_test_producer<TestContactability>())
@@ -100,7 +100,7 @@ const test_factory& Fred::Backend::Admin::Contact::Verification::get_default_tes
 
 const test_data_provider_factory& Fred::Backend::Admin::Contact::Verification::get_default_test_data_provider_factory()
 {
-    static const auto factory = []()
+    static thread_local const auto factory = []()
     {
         test_data_provider_factory factory{};
         factory.add_producer(make_test_data_provider_producer<TestContactability>())
