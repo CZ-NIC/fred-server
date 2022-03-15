@@ -6,7 +6,7 @@ RUN apt-get -y clean     \
     && apt-get -y install curl gnupg2
 
 RUN printf 'deb http://archive.nic.cz/ubuntu focal main\n' > /etc/apt/sources.list.d/cz.nic.list \
-    && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 1C0200016A9AC5C6 \
+    && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E6DD3CAC7844804C \
     && printf 'deb http://apt.postgresql.org/pub/repos/apt/ focal-pgdg main\n' > /etc/apt/sources.list.d/postgres.list \
     && curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
     && apt-get -y update                 \
