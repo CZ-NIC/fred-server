@@ -80,9 +80,14 @@ using namespace LibFred::PublicRequest;
 LibFred::PublicRequest::Factory& LibFred::PublicRequest::add_authinfo_producers(Factory& factory)
 {
     return factory
-            .add_producer({PRT_AUTHINFO_AUTO_RIF, std::make_unique<AuthInfoRequestImpl>()})
-            .add_producer({PRT_AUTHINFO_AUTO_PIF, std::make_unique<AuthInfoRequestImpl>()})
-            .add_producer({PRT_AUTHINFO_EMAIL_PIF, std::make_unique<AuthInfoRequestImpl>()})
-            .add_producer({PRT_AUTHINFO_POST_PIF, std::make_unique<AuthInfoRequestImpl>()})
-            .add_producer({PRT_AUTHINFO_GOVERNMENT_PIF, std::make_unique<AuthInfoRequestImpl>()});
+            .add_producer({PRT_AUTHINFO_AUTO_RIF,
+                           LibFred::PublicRequest::make_public_request_producer<AuthInfoRequestImpl>()})
+            .add_producer({PRT_AUTHINFO_AUTO_PIF,
+                           LibFred::PublicRequest::make_public_request_producer<AuthInfoRequestImpl>()})
+            .add_producer({PRT_AUTHINFO_EMAIL_PIF,
+                           LibFred::PublicRequest::make_public_request_producer<AuthInfoRequestImpl>()})
+            .add_producer({PRT_AUTHINFO_POST_PIF,
+                           LibFred::PublicRequest::make_public_request_producer<AuthInfoRequestImpl>()})
+            .add_producer({PRT_AUTHINFO_GOVERNMENT_PIF,
+                           LibFred::PublicRequest::make_public_request_producer<AuthInfoRequestImpl>()});
 }

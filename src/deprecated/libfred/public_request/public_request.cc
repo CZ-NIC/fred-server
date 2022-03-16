@@ -306,14 +306,17 @@ public:
   {
     LOGGER.debug(boost::format("create public request: %1%") % _type);
 
-    PublicRequestImpl* const request = dynamic_cast<PublicRequestImpl*>(&(get_default_factory()[_type]));
-    if (!request)
+    auto request_producer = get_default_factory()[_type].get();
     {
-        throw std::runtime_error{"cannot create request"};
+        auto* const request = dynamic_cast<PublicRequestImpl*>(request_producer.get());
+        if (!request)
+        {
+            throw std::runtime_error{"cannot create request"};
+        }
+        request->setType(_type);
+        request->setManager((Manager *)this);
     }
-    request->setType(_type);
-    request->setManager((Manager *)this);
-    return request;
+    return request_producer.release();
   }
 
   List *loadRequest(Database::ID id) const override {

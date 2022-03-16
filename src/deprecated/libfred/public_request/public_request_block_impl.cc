@@ -80,16 +80,28 @@ using namespace LibFred::PublicRequest;
 LibFred::PublicRequest::Factory& LibFred::PublicRequest::add_block_producers(Factory& factory)
 {
     return factory
-            .add_producer({PRT_BLOCK_TRANSFER_EMAIL_PIF, std::make_unique<BlockUnblockRequestImpl>()})
-            .add_producer({PRT_BLOCK_CHANGES_EMAIL_PIF, std::make_unique<BlockUnblockRequestImpl>()})
-            .add_producer({PRT_UNBLOCK_TRANSFER_EMAIL_PIF, std::make_unique<BlockUnblockRequestImpl>()})
-            .add_producer({PRT_UNBLOCK_CHANGES_EMAIL_PIF, std::make_unique<BlockUnblockRequestImpl>()})
-            .add_producer({PRT_BLOCK_TRANSFER_POST_PIF, std::make_unique<BlockUnblockRequestImpl>()})
-            .add_producer({PRT_BLOCK_CHANGES_POST_PIF, std::make_unique<BlockUnblockRequestImpl>()})
-            .add_producer({PRT_UNBLOCK_TRANSFER_POST_PIF, std::make_unique<BlockUnblockRequestImpl>()})
-            .add_producer({PRT_UNBLOCK_CHANGES_POST_PIF, std::make_unique<BlockUnblockRequestImpl>()})
-            .add_producer({PRT_BLOCK_TRANSFER_GOVERNMENT_PIF, std::make_unique<BlockUnblockRequestImpl>()})
-            .add_producer({PRT_BLOCK_CHANGES_GOVERNMENT_PIF, std::make_unique<BlockUnblockRequestImpl>()})
-            .add_producer({PRT_UNBLOCK_TRANSFER_GOVERNMENT_PIF, std::make_unique<BlockUnblockRequestImpl>()})
-            .add_producer({PRT_UNBLOCK_CHANGES_GOVERNMENT_PIF, std::make_unique<BlockUnblockRequestImpl>()});
+            .add_producer({PRT_BLOCK_TRANSFER_EMAIL_PIF,
+                           LibFred::PublicRequest::make_public_request_producer<BlockUnblockRequestImpl>()})
+            .add_producer({PRT_BLOCK_CHANGES_EMAIL_PIF,
+                           LibFred::PublicRequest::make_public_request_producer<BlockUnblockRequestImpl>()})
+            .add_producer({PRT_UNBLOCK_TRANSFER_EMAIL_PIF,
+                           LibFred::PublicRequest::make_public_request_producer<BlockUnblockRequestImpl>()})
+            .add_producer({PRT_UNBLOCK_CHANGES_EMAIL_PIF,
+                           LibFred::PublicRequest::make_public_request_producer<BlockUnblockRequestImpl>()})
+            .add_producer({PRT_BLOCK_TRANSFER_POST_PIF,
+                           LibFred::PublicRequest::make_public_request_producer<BlockUnblockRequestImpl>()})
+            .add_producer({PRT_BLOCK_CHANGES_POST_PIF,
+                           LibFred::PublicRequest::make_public_request_producer<BlockUnblockRequestImpl>()})
+            .add_producer({PRT_UNBLOCK_TRANSFER_POST_PIF,
+                           LibFred::PublicRequest::make_public_request_producer<BlockUnblockRequestImpl>()})
+            .add_producer({PRT_UNBLOCK_CHANGES_POST_PIF,
+                           LibFred::PublicRequest::make_public_request_producer<BlockUnblockRequestImpl>()})
+            .add_producer({PRT_BLOCK_TRANSFER_GOVERNMENT_PIF,
+                           LibFred::PublicRequest::make_public_request_producer<BlockUnblockRequestImpl>()})
+            .add_producer({PRT_BLOCK_CHANGES_GOVERNMENT_PIF,
+                           LibFred::PublicRequest::make_public_request_producer<BlockUnblockRequestImpl>()})
+            .add_producer({PRT_UNBLOCK_TRANSFER_GOVERNMENT_PIF,
+                           LibFred::PublicRequest::make_public_request_producer<BlockUnblockRequestImpl>()})
+            .add_producer({PRT_UNBLOCK_CHANGES_GOVERNMENT_PIF,
+                           LibFred::PublicRequest::make_public_request_producer<BlockUnblockRequestImpl>()});
 }

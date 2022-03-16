@@ -196,6 +196,8 @@ LibFred::PublicRequest::Factory&
 Fred::Backend::ContactVerification::PublicRequest::add_producers(LibFred::PublicRequest::Factory& factory)
 {
     return factory
-            .add_producer({PRT_CONTACT_CONDITIONAL_IDENTIFICATION, std::make_unique<ConditionalContactIdentification>()})
-            .add_producer({PRT_CONTACT_IDENTIFICATION, std::make_unique<ContactIdentification>()});
+            .add_producer({PRT_CONTACT_CONDITIONAL_IDENTIFICATION,
+                           LibFred::PublicRequest::make_public_request_producer<ConditionalContactIdentification>()})
+            .add_producer({PRT_CONTACT_IDENTIFICATION,
+                           LibFred::PublicRequest::make_public_request_producer<ContactIdentification>()});
 }

@@ -43,6 +43,7 @@
 #include <boost/utility.hpp>
 
 #include <exception>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -264,7 +265,12 @@ public:
     virtual void setDemoMode(bool _demo_mode) = 0;
 };
 
-using Factory = Util::Factory<PublicRequest>;
+struct PublicRequestProducer
+{
+    virtual std::unique_ptr<PublicRequest> get() const = 0;
+};
+
+using Factory = Util::Factory<PublicRequestProducer>;
 
 const Factory& get_default_factory();
 

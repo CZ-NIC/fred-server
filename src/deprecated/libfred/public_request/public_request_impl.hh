@@ -53,6 +53,20 @@ void cancel_public_request(
 
 bool object_was_changed_since_request_create(const unsigned long long _request_id);
 
+template <typename T>
+std::unique_ptr<PublicRequestProducer> make_public_request_producer()
+{
+    class Producer : public PublicRequestProducer
+    {
+    private:
+        std::unique_ptr<PublicRequest> get() const override
+        {
+            return std::make_unique<T>();
+        }
+    };
+    return std::make_unique<Producer>();
+}
+
 class PublicRequestImpl
     : public LibFred::CommonObjectImpl,
       virtual public PublicRequest

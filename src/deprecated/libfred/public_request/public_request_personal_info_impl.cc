@@ -80,8 +80,12 @@ using namespace LibFred::PublicRequest;
 LibFred::PublicRequest::Factory& LibFred::PublicRequest::add_personal_info_producers(Factory& factory)
 {
     return factory
-            .add_producer({PRT_PERSONALINFO_AUTO_PIF, std::make_unique<PersonalInfoRequestImpl>()})
-            .add_producer({PRT_PERSONALINFO_EMAIL_PIF, std::make_unique<PersonalInfoRequestImpl>()})
-            .add_producer({PRT_PERSONALINFO_GOVERNMENT_PIF, std::make_unique<PersonalInfoRequestImpl>()})
-            .add_producer({PRT_PERSONALINFO_POST_PIF, std::make_unique<PersonalInfoRequestImpl>()});
+            .add_producer({PRT_PERSONALINFO_AUTO_PIF,
+                           LibFred::PublicRequest::make_public_request_producer<PersonalInfoRequestImpl>()})
+            .add_producer({PRT_PERSONALINFO_EMAIL_PIF,
+                           LibFred::PublicRequest::make_public_request_producer<PersonalInfoRequestImpl>()})
+            .add_producer({PRT_PERSONALINFO_GOVERNMENT_PIF,
+                           LibFred::PublicRequest::make_public_request_producer<PersonalInfoRequestImpl>()})
+            .add_producer({PRT_PERSONALINFO_POST_PIF,
+                           LibFred::PublicRequest::make_public_request_producer<PersonalInfoRequestImpl>()});
 }
