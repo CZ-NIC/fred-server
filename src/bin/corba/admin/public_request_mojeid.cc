@@ -158,12 +158,20 @@ LibFred::PublicRequest::Factory&
 CorbaConversion::Admin::add_producers(LibFred::PublicRequest::Factory& factory)
 {
     return factory
-            .add_producer({PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION, std::make_unique<MojeIdPublicRequestBase>()})
-            .add_producer({PRT_MOJEID_CONTACT_IDENTIFICATION, std::make_unique<MojeIdPublicRequestBase>()})
-            .add_producer({PRT_MOJEID_CONTACT_VALIDATION, std::make_unique<MojeIdContactValidation>()})
-            .add_producer({PRT_MOJEID_CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER, std::make_unique<MojeIdPublicRequestBase>()})
-            .add_producer({PRT_MOJEID_IDENTIFIED_CONTACT_TRANSFER, std::make_unique<MojeIdPublicRequestBase>()})
-            .add_producer({PRT_MOJEID_CONTACT_REIDENTIFICATION, std::make_unique<MojeIdPublicRequestBase>()})
-            .add_producer({PRT_MOJEID_CONTACT_PREVALIDATED_UNIDENTIFIED_TRANSFER, std::make_unique<MojeIdPublicRequestBase>()})
-            .add_producer({PRT_MOJEID_CONTACT_PREVALIDATED_TRANSFER, std::make_unique<MojeIdPublicRequestBase>()});
+            .add_producer({PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION,
+                           LibFred::PublicRequest::make_public_request_producer<MojeIdPublicRequestBase>()})
+            .add_producer({PRT_MOJEID_CONTACT_IDENTIFICATION,
+                           LibFred::PublicRequest::make_public_request_producer<MojeIdPublicRequestBase>()})
+            .add_producer({PRT_MOJEID_CONTACT_VALIDATION,
+                           LibFred::PublicRequest::make_public_request_producer<MojeIdContactValidation>()})
+            .add_producer({PRT_MOJEID_CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER,
+                           LibFred::PublicRequest::make_public_request_producer<MojeIdPublicRequestBase>()})
+            .add_producer({PRT_MOJEID_IDENTIFIED_CONTACT_TRANSFER,
+                           LibFred::PublicRequest::make_public_request_producer<MojeIdPublicRequestBase>()})
+            .add_producer({PRT_MOJEID_CONTACT_REIDENTIFICATION,
+                           LibFred::PublicRequest::make_public_request_producer<MojeIdPublicRequestBase>()})
+            .add_producer({PRT_MOJEID_CONTACT_PREVALIDATED_UNIDENTIFIED_TRANSFER,
+                           LibFred::PublicRequest::make_public_request_producer<MojeIdPublicRequestBase>()})
+            .add_producer({PRT_MOJEID_CONTACT_PREVALIDATED_TRANSFER,
+                           LibFred::PublicRequest::make_public_request_producer<MojeIdPublicRequestBase>()});
 }
