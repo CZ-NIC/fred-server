@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2013-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,10 +16,15 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/admin/contact/verification/contact_states/delete_all.hh"
 #include "src/backend/admin/contact/verification/contact_states/enum.hh"
 #include "src/backend/admin/contact/verification/related_records.hh"
 #include "src/backend/admin/contact/verification/run_all_enqueued_checks.hh"
+#include "src/deprecated/libfred/registrable_object/contact/verification/enum_testsuite_handle.hh"
+
+#include "util/log/context.hh"
+
 #include "libfred/object_state/cancel_object_state_request_id.hh"
 #include "libfred/object_state/create_object_state_request_id.hh"
 #include "libfred/object_state/perform_object_state_request.hh"
@@ -29,7 +34,6 @@
 #include "libfred/registrable_object/contact/verification/create_test.hh"
 #include "libfred/registrable_object/contact/verification/enum_check_status.hh"
 #include "libfred/registrable_object/contact/verification/enum_test_status.hh"
-#include "src/deprecated/libfred/registrable_object/contact/verification/enum_testsuite_handle.hh"
 #include "libfred/registrable_object/contact/verification/info_check.hh"
 #include "libfred/registrable_object/contact/verification/update_check.hh"
 #include "libfred/registrable_object/contact/verification/update_test.hh"
@@ -37,10 +41,10 @@
 #include <boost/assign/list_of.hpp>
 #include <boost/foreach.hpp>
 #include <boost/tuple/tuple.hpp>
+
 #include <memory>
 #include <set>
 
-#include "util/log/context.hh"
 
 namespace Fred {
 namespace Backend {
@@ -384,15 +388,14 @@ static void preprocess_check(
 
 static void run_test(
         LibFred::OperationContext& ctx,
-        const std::map<std::string, std::shared_ptr<Test> >&
-                _tests,
+        const Util::Factory<Test>& _tests,
         const uuid& _check_handle,
         const std::string& _test_handle,
         std::set<unsigned long long>& _related_mail_ids,
         std::set<unsigned long long>& _related_message_ids,
         Optional<unsigned long long> _logd_request_id)
 {
-    Test::TestRunResult temp_result = _tests.at(_test_handle)->run(
+    Test::TestRunResult temp_result = _tests[_test_handle].run(
             LibFred::InfoContactCheck(_check_handle).exec(ctx).contact_history_id);
 
     LibFred::UpdateContactTest(
@@ -421,7 +424,7 @@ static void run_test(
 
 
 std::vector<std::string> run_all_enqueued_checks(
-        const std::map<std::string, std::shared_ptr<Test> >& _tests,
+        const Util::Factory<Test>& _tests,
         Optional<unsigned long long> _logd_request_id)
 {
     Logging::Context log("run_all_enqueued_checks");

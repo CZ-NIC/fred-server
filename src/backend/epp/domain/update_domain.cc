@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/epp/domain/update_domain.hh"
 
 #include "src/backend/epp/domain/domain_enum_validation.hh"
@@ -26,6 +27,7 @@
 #include "src/backend/epp/param.hh"
 #include "src/backend/epp/reason.hh"
 #include "src/backend/epp/impl/util.hh"
+
 #include "libfred/registrable_object/contact/check_contact.hh"
 #include "libfred/registrable_object/domain/check_domain.hh"
 #include "libfred/registrable_object/domain/domain.hh"
@@ -38,8 +40,10 @@
 #include "libfred/registrable_object/nsset/check_nsset.hh"
 #include "libfred/registrable_object/nsset/handle_state.hh"
 #include "libfred/object/object_states_info.hh"
+#include "libfred/poll/create_poll_message.hh"
 #include "libfred/registrar/info_registrar.hh"
 #include "libfred/registrar/registrar_zone_access.hh"
+
 #include "util/db/nullable.hh"
 #include "util/optional_value.hh"
 
@@ -410,6 +414,10 @@ unsigned long long update_domain(
     try
     {
         const unsigned long long domain_new_history_id = update_domain.exec(_ctx);
+        if (!is_sponsoring_registrar)
+        {
+            LibFred::Poll::CreatePollMessage<LibFred::Poll::MessageType::update_domain>().exec(_ctx, domain_new_history_id);
+        }
         return domain_new_history_id;
     }
     catch (const LibFred::UpdateDomain::Exception& e)

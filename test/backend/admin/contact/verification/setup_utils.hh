@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2013-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -15,10 +15,6 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
- */
-/**
- *  @file
- *  setup utils for integration tests
  */
 
 #ifndef SETUP_UTILS_HH_EE8CE4C846E54B10BF252B1C0A414EAF
@@ -87,7 +83,7 @@ class DummyTestReturning: public Fred::Backend::Admin::Contact::Verification::Te
             }
         }
         TestRunResult run(unsigned long long) const {
-            return TestRunResult(return_status, return_status);
+            return TestRunResult{return_status, return_status};
         }
         static std::string registration_name() { return "DummyTestReturning"; }
 

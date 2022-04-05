@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,16 +16,14 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #ifndef PUBLIC_REQUEST_MOJEID_HH_B49E93ABF36F4D18A0E3190E6351A5AA
 #define PUBLIC_REQUEST_MOJEID_HH_B49E93ABF36F4D18A0E3190E6351A5AA
 
 #include "src/deprecated/libfred/public_request/public_request.hh"
-#include "util/factory.hh"
 
 namespace CorbaConversion {
 namespace Admin {
-
-FACTORY_MODULE_INIT_DECL(mojeid)
 
 const LibFred::PublicRequest::Type PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION = "mojeid_contact_conditional_identification";
 const LibFred::PublicRequest::Type PRT_MOJEID_CONTACT_IDENTIFICATION = "mojeid_contact_identification";
@@ -36,7 +34,9 @@ const LibFred::PublicRequest::Type PRT_MOJEID_CONTACT_REIDENTIFICATION = "mojeid
 const LibFred::PublicRequest::Type PRT_MOJEID_CONTACT_PREVALIDATED_UNIDENTIFIED_TRANSFER = "mojeid_prevalidated_unidentified_contact_transfer";
 const LibFred::PublicRequest::Type PRT_MOJEID_CONTACT_PREVALIDATED_TRANSFER = "mojeid_prevalidated_contact_transfer";
 
+LibFred::PublicRequest::Factory& add_producers(LibFred::PublicRequest::Factory& factory);
+
 } // namespace CorbaConversion::Admin
 } // namespace CorbaConversion
 
-#endif
+#endif//PUBLIC_REQUEST_MOJEID_HH_B49E93ABF36F4D18A0E3190E6351A5AA

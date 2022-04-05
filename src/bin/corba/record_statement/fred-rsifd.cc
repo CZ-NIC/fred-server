@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2021  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -20,7 +20,6 @@
  *  @file
  *  implementation of registry record statement server
  */
-
 
 #include "src/bin/corba/connection_releaser.hh"
 #include "src/bin/corba/mailer_manager.hh"
@@ -93,10 +92,6 @@ int main(int argc, char* argv[])
                         CfgArgs::instance()->get_handler_ptr_by_type<HandleRegistryArgs>()->fileclient_path,
                         CfgArgs::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgs>()->get_nameservice_host_port())
                         .release());
-
-        // hotfix!!!
-        Fred::Backend::RecordStatement::Impl::InstanceOfNecessaryImpl<Tz::Europe::Prague>::get();
-        Fred::Backend::RecordStatement::Impl::InstanceOfNecessaryImpl<Tz::UTC>::get();
 
         //create server object with poa and nameservice registration
         CorbaContainer::get_instance()

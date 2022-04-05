@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2012-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/contact_verification/contact_verification_impl.hh"
 
 #include "src/backend/contact_verification/public_request_contact_verification_impl.hh"
@@ -24,20 +25,22 @@
 #include "src/deprecated/libfred/contact_verification/contact.hh"
 #include "src/deprecated/libfred/contact_verification/contact_verification_state.hh"
 #include "src/deprecated/libfred/contact_verification/contact_verification_validators.hh"
-#include "libfred/db_settings.hh"
 #include "src/deprecated/libfred/object_states.hh"
 #include "src/deprecated/libfred/public_request/public_request_impl.hh"
 #include "src/deprecated/libfred/registrable_object/contact.hh"
-#include "libfred/registrable_object/contact/undisclose_address.hh"
 #include "src/deprecated/libfred/registry.hh"
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/handle_registry_args.hh"
+#include "src/util/types/birthdate.hh"
+#include "src/util/types/stringify.hh"
+
 #include "util/factory_check.hh"
 #include "util/log/logger.hh"
 #include "util/random/random.hh"
-#include "src/util/types/birthdate.hh"
-#include "src/util/types/stringify.hh"
 #include "util/util.hh"
+
+#include "libfred/db_settings.hh"
+#include "libfred/registrable_object/contact/undisclose_address.hh"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/assign.hpp>
@@ -56,7 +59,6 @@ static const std::string create_ctx_name(const std::string& _name)
     return str(boost::format("%1%-<%2%>") % _name % Random::Generator().get(0, 10000));
 }
 
-
 namespace Fred {
 namespace Backend {
 namespace ContactVerification {
@@ -74,9 +76,7 @@ std::string get_system_registrar_handle()
     throw std::runtime_error("missing configuration for system registrar");
 }
 
-} // namespace Fred::Backend::ContactVerification::{anonymous}
-
-static Fred::Backend::ContactVerification::DATA_VALIDATION_ERROR
+Fred::Backend::ContactVerification::DATA_VALIDATION_ERROR
 create_data_validation_error_not_available()
 {
     Fred::Backend::ContactVerification::FIELD_ERROR_MAP errors;
@@ -85,8 +85,7 @@ create_data_validation_error_not_available()
     return Fred::Backend::ContactVerification::DATA_VALIDATION_ERROR(errors);
 }
 
-
-static void log_data_validation_error(const LibFred::Contact::Verification::DataValidationError& _ex)
+void log_data_validation_error(const LibFred::Contact::Verification::DataValidationError& _ex)
 {
     std::string msg("Fred::Contact::Verification::DataValidationError:");
     for (LibFred::Contact::Verification::FieldErrorMap::const_iterator it = _ex.errors.begin();
@@ -99,8 +98,7 @@ static void log_data_validation_error(const LibFred::Contact::Verification::Data
     LOGGER.warning(msg);
 }
 
-
-static void log_data_validation_error(const Fred::Backend::ContactVerification::DATA_VALIDATION_ERROR& _ex)
+void log_data_validation_error(const Fred::Backend::ContactVerification::DATA_VALIDATION_ERROR& _ex)
 {
     std::string msg("Fred::Backend::ContactVerification::DATA_VALIDATION_ERROR:");
     for (Fred::Backend::ContactVerification::FIELD_ERROR_MAP::const_iterator it = _ex.errors.begin();
@@ -113,8 +111,7 @@ static void log_data_validation_error(const Fred::Backend::ContactVerification::
     LOGGER.warning(msg);
 }
 
-
-static Fred::Backend::ContactVerification::DATA_VALIDATION_ERROR
+Fred::Backend::ContactVerification::DATA_VALIDATION_ERROR
 translate_data_validation_error(LibFred::Contact::Verification::DataValidationError& _ex)
 {
     Fred::Backend::ContactVerification::FIELD_ERROR_MAP fem;
@@ -143,6 +140,7 @@ translate_data_validation_error(LibFred::Contact::Verification::DataValidationEr
     return Fred::Backend::ContactVerification::DATA_VALIDATION_ERROR(fem);
 }
 
+} // namespace Fred::Backend::ContactVerification::{anonymous}
 
 ContactVerificationImpl::ContactVerificationImpl(
         const std::string& _server_name,
@@ -158,18 +156,16 @@ ContactVerificationImpl::ContactVerificationImpl(
     try
     {
         // factory_check - required keys are in factory
-        FactoryHaveSupersetOfKeysChecker<LibFred::PublicRequest::Factory>
-        ::KeyVector required_keys = boost::assign::list_of(
-                PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION)(
-                PublicRequest::
-                PRT_CONTACT_IDENTIFICATION);
+        static const auto required_keys = std::vector<std::string>{
+                PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION,
+                PublicRequest::PRT_CONTACT_IDENTIFICATION};
 
-        FactoryHaveSupersetOfKeysChecker<LibFred::PublicRequest::Factory>(required_keys).check();
+        Util::FactoryHaveSupersetOfKeys::require(LibFred::PublicRequest::get_default_factory(), required_keys);
 
         // factory_check - factory keys are in database
-        FactoryHaveSubsetOfKeysChecker<LibFred::PublicRequest::Factory>(
-                LibFred::PublicRequest::get_enum_public_request_type()).check();
-
+        Util::FactoryHaveSubsetOfKeys::require(
+                LibFred::PublicRequest::get_default_factory(),
+                LibFred::PublicRequest::get_enum_public_request_type());
     }
     catch (std::exception& _ex)
     {
@@ -178,17 +174,12 @@ ContactVerificationImpl::ContactVerificationImpl(
     }
 }
 
-
-ContactVerificationImpl::~ContactVerificationImpl()
-{
-}
-
+ContactVerificationImpl::~ContactVerificationImpl() { }
 
 const std::string& ContactVerificationImpl::get_server_name()
 {
     return server_name_;
 }
-
 
 unsigned long long ContactVerificationImpl::createConditionalIdentification(
         const std::string& contact_handle,
@@ -287,7 +278,6 @@ unsigned long long ContactVerificationImpl::createConditionalIdentification(
         throw;
     }
 }
-
 
 unsigned long long ContactVerificationImpl::processConditionalIdentification(
         const std::string& request_id,
@@ -393,7 +383,6 @@ unsigned long long ContactVerificationImpl::processConditionalIdentification(
         throw;
     }
 }
-
 
 unsigned long long ContactVerificationImpl::processIdentification(
         const std::string& contact_handle,
@@ -557,8 +546,7 @@ unsigned long long ContactVerificationImpl::processIdentification(
         LOGGER.error("unknown exception");
         throw;
     }
-}            // ContactVerificationImpl::processIdentification
-
+}
 
 std::string ContactVerificationImpl::getRegistrarName(const std::string& registrar_handle)
 {

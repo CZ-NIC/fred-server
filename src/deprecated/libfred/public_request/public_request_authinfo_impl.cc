@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2012-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,43 +16,43 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
-#include "src/deprecated/libfred/public_request/public_request_authinfo_impl.hh"
 
+#include "src/deprecated/libfred/public_request/public_request_authinfo_impl.hh"
 #include "src/deprecated/libfred/public_request/public_request_impl.hh"
+
 #include "libfred/public_request/public_request_on_status_action.hh"
 
 #include <string>
 
+
 namespace LibFred {
 namespace PublicRequest {
 
-FACTORY_MODULE_INIT_DEFI(authinfo)
+namespace {
 
-
-class AuthInfoRequestImpl
-        : public PublicRequestImpl
+class AuthInfoRequestImpl : public PublicRequestImpl
 {
 public:
-    bool check() const
+    bool check() const override
     {
         return true;
     }
 
-    std::string getTemplateName() const
+    std::string getTemplateName() const override
     {
         return std::string();
     }
 
-    void fillTemplateParams(LibFred::Mailer::Parameters&) const
+    void fillTemplateParams(LibFred::Mailer::Parameters&) const override
     {
     }
 
-    TID sendEmail() const
+    TID sendEmail() const override
     {
         return 0;
     }
 
-    void save()
+    void save() override
     {
         if (this->getId() == 0)
         {
@@ -70,66 +70,24 @@ public:
     }
 };
 
-
-class AuthInfoRequestEPPImpl
-        : public AuthInfoRequestImpl,
-          public Util::FactoryAutoRegister<PublicRequest, AuthInfoRequestEPPImpl>
-{
-public:
-  static std::string registration_name()
-  {
-      return PRT_AUTHINFO_AUTO_RIF;
-  }
-};
-
-
-class AuthInfoRequestPIFAutoImpl
-        : public AuthInfoRequestImpl,
-          public Util::FactoryAutoRegister<PublicRequest, AuthInfoRequestPIFAutoImpl>
-{
-public:
-    static std::string registration_name()
-    {
-        return PRT_AUTHINFO_AUTO_PIF;
-    }
-};
-
-
-class AuthInfoRequestPIFEmailImpl
-        : public AuthInfoRequestImpl,
-          public Util::FactoryAutoRegister<PublicRequest, AuthInfoRequestPIFEmailImpl>
-{
-public:
-    static std::string registration_name()
-    {
-        return PRT_AUTHINFO_EMAIL_PIF;
-    }
-};
-
-
-class AuthInfoRequestPIFPostImpl
-        : public AuthInfoRequestImpl,
-          public Util::FactoryAutoRegister<PublicRequest, AuthInfoRequestPIFPostImpl>
-{
-public:
-    static std::string registration_name()
-    {
-        return PRT_AUTHINFO_POST_PIF;
-    }
-};
-
-
-class AuthInfoRequestPIFGovernmentImpl
-        : public AuthInfoRequestImpl,
-          public Util::FactoryAutoRegister<PublicRequest, AuthInfoRequestPIFGovernmentImpl>
-{
-public:
-    static std::string registration_name()
-    {
-        return PRT_AUTHINFO_GOVERNMENT_PIF;
-    }
-};
-
+} // namespace LibFred::PublicRequest::{anonymous}
 
 } // namespace LibFred::PublicRequest
 } // namespace LibFred
+
+using namespace LibFred::PublicRequest;
+
+LibFred::PublicRequest::Factory& LibFred::PublicRequest::add_authinfo_producers(Factory& factory)
+{
+    return factory
+            .add_producer({PRT_AUTHINFO_AUTO_RIF,
+                           LibFred::PublicRequest::make_public_request_producer<AuthInfoRequestImpl>()})
+            .add_producer({PRT_AUTHINFO_AUTO_PIF,
+                           LibFred::PublicRequest::make_public_request_producer<AuthInfoRequestImpl>()})
+            .add_producer({PRT_AUTHINFO_EMAIL_PIF,
+                           LibFred::PublicRequest::make_public_request_producer<AuthInfoRequestImpl>()})
+            .add_producer({PRT_AUTHINFO_POST_PIF,
+                           LibFred::PublicRequest::make_public_request_producer<AuthInfoRequestImpl>()})
+            .add_producer({PRT_AUTHINFO_GOVERNMENT_PIF,
+                           LibFred::PublicRequest::make_public_request_producer<AuthInfoRequestImpl>()});
+}

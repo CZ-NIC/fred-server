@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2013-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -63,7 +63,7 @@ namespace TestStatus = ::LibFred::ContactTestStatus;
 namespace CheckStatus = ::LibFred::ContactCheckStatus;
 
 typedef std::vector<Fred::Backend::Admin::Contact::Verification::Queue::enqueued_check> T_enq_ch;
-typedef std::map<std::string, std::shared_ptr<Fred::Backend::Admin::Contact::Verification::Test> > T_testimpl_map;
+using VerificationTestFactory = Util::Factory<Fred::Backend::Admin::Contact::Verification::Test>;
 
 void clean_queue() {
     std::string status_array =
@@ -178,16 +178,16 @@ void empty_automatic_testsuite() {
     ctx.commit_transaction();
 }
 
-T_testimpl_map create_dummy_automatic_testsuite() {
-    std::map< std::string, std::shared_ptr<Fred::Backend::Admin::Contact::Verification::Test> > test_impls;
+VerificationTestFactory create_dummy_automatic_testsuite()
+{
+    VerificationTestFactory test_impls;
 
     ::LibFred::OperationContextCreator ctx;
-    std::shared_ptr<Fred::Backend::Admin::Contact::Verification::Test> temp_ptr
-        (new DummyTestReturning(TestStatus::OK));
+    auto temp_ptr = std::make_unique<DummyTestReturning>(TestStatus::OK);
 
-    std::string handle = dynamic_cast<DummyTestReturning*>(temp_ptr.get())->get_handle();
+    std::string handle = temp_ptr.get()->get_handle();
 
-    test_impls[handle] = temp_ptr;
+    test_impls.add_producer({handle, std::move(temp_ptr)});
 
     setup_testdef_in_testsuite(handle, ::LibFred::TestsuiteHandle::AUTOMATIC);
     ctx.commit_transaction();
@@ -224,7 +224,7 @@ struct setup_already_checked_contacts {
         clean_queue();
         empty_automatic_testsuite();
 
-        T_testimpl_map dummy_testsuite = create_dummy_automatic_testsuite();
+        VerificationTestFactory dummy_testsuite = create_dummy_automatic_testsuite();
         std::vector<std::string> started_check_handles;
         for(int i=1; i <= count_; ++i) {
             T_enq_ch enqueued_checks = Fred::Backend::Admin::Contact::Verification::Queue::fill_check_queue(::LibFred::TestsuiteHandle::AUTOMATIC, 1).exec();

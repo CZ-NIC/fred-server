@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2011-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,16 +16,16 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #ifndef PUBLIC_REQUEST_IMPL_HH_21AC7B02F9C5497DA07D708E2DDAA8B5
 #define PUBLIC_REQUEST_IMPL_HH_21AC7B02F9C5497DA07D708E2DDAA8B5
 
 #include "src/deprecated/libfred/public_request/public_request.hh"
 #include "src/deprecated/libfred/common_impl.hh"
 
+
 namespace LibFred {
 namespace PublicRequest {
-
-
 
 std::string Status2Str(Status_PR _status);
 
@@ -34,7 +34,7 @@ std::string ObjectType2Str(ObjectType type);
 void insertNewStateRequest(
         Database::ID blockRequestID,
         Database::ID objectId,
-        const std::string & state_name);
+        const std::string& state_name);
 
 bool queryBlockRequest(
         Database::ID objectId,
@@ -43,22 +43,89 @@ bool queryBlockRequest(
         bool unblock);
 
 unsigned long long check_public_request(
-        const unsigned long long &_object_id,
-        const Type &_type);
+        unsigned long long _object_id,
+        const Type& _type);
 
 void cancel_public_request(
-        const unsigned long long &_object_id,
-        const Type &_type,
-        const unsigned long long &_request_id);
+        unsigned long long _object_id,
+        const Type& _type,
+        unsigned long long _request_id);
 
 bool object_was_changed_since_request_create(const unsigned long long _request_id);
 
-
+template <typename T>
+std::unique_ptr<PublicRequestProducer> make_public_request_producer()
+{
+    class Producer : public PublicRequestProducer
+    {
+    private:
+        std::unique_ptr<PublicRequest> get() const override
+        {
+            return std::make_unique<T>();
+        }
+    };
+    return std::make_unique<Producer>();
+}
 
 class PublicRequestImpl
     : public LibFred::CommonObjectImpl,
       virtual public PublicRequest
 {
+public:
+    Database::ID& get_answer_email_id() { return answer_email_id_; }
+    Manager* get_manager_ptr() { return man_; }
+    PublicRequestImpl();
+
+    explicit PublicRequestImpl(
+            Database::ID _id,
+            LibFred::PublicRequest::Type _type,
+            Database::ID _create_request_id,
+            Database::DateTime _create_time,
+            LibFred::PublicRequest::Status_PR _status,
+            Database::DateTime _resolve_time,
+            std::string _reason,
+            std::string _email_to_answer,
+            Database::ID _answer_email_id,
+            Database::ID _registrar_id,
+            std::string _registrar_handle,
+            std::string _registrar_name,
+            std::string _registrar_url);
+
+    void setManager(Manager* _man);
+
+    void init(Database::Row::Iterator& _it) override;
+    void save() override;
+    LibFred::PublicRequest::Type getType() const override;
+    void setType(LibFred::PublicRequest::Type _type) override;
+    LibFred::PublicRequest::Status_PR getStatus() const override;
+    void setStatus(LibFred::PublicRequest::Status_PR _status) override;
+    ptime getCreateTime() const override;
+    ptime getResolveTime() const override;
+    const std::string& getReason() const override;
+    void setReason(const std::string& _reason) override;
+    const std::string& getEmailToAnswer() const override;
+    void setEmailToAnswer(const std::string& _email) override;
+    const Database::ID getAnswerEmailId() const override;
+    const Database::ID getRequestId() const override;
+    const Database::ID getResolveRequestId() const override;
+    void setRequestId(const Database::ID& _create_request_id) override;
+    void setRegistrarId(const Database::ID& _registrar_id) override;
+    void addObject(const OID& _oid) override;
+    const OID& getObject(unsigned _idx) const override;
+    unsigned getObjectSize() const override;
+    const Database::ID getRegistrarId() const override;
+    const std::string getRegistrarHandle() const override;
+    const std::string getRegistrarName() const override;
+    const std::string getRegistrarUrl() const override;
+    std::string getEmails() const override;
+    TID sendEmail() const override;
+    void processAction(bool check) override;
+    virtual void invalidateAction();
+    void process(bool invalidated, bool check, unsigned long long _request_id) override;
+    unsigned getPDFType() const override;
+    virtual void postCreate();
+
+    Manager* getPublicRequestManager() const;
 protected:
     LibFred::PublicRequest::Type type_;
     Database::ID create_request_id_;
@@ -77,127 +144,27 @@ protected:
 
     std::vector<OID> objects_;
 
-protected:
     Manager* man_;
-
-public:
-    Database::ID& get_answer_email_id(){return answer_email_id_;}
-    Manager* get_manager_ptr(){return man_;}
-    PublicRequestImpl();
-
-    PublicRequestImpl(Database::ID _id,
-              LibFred::PublicRequest::Type _type,
-              Database::ID _create_request_id,
-              Database::DateTime _create_time,
-              LibFred::PublicRequest::Status_PR _status,
-              Database::DateTime _resolve_time,
-              std::string _reason,
-              std::string _email_to_answer,
-              Database::ID _answer_email_id,
-              Database::ID _registrar_id,
-              std::string _registrar_handle,
-              std::string _registrar_name,
-              std::string _registrar_url
-              );
-
-    void setManager(Manager* _man);
-
-    virtual void init(Database::Row::Iterator& _it);
-
-    virtual void save();
-
-    virtual LibFred::PublicRequest::Type getType() const;
-
-    virtual void setType(LibFred::PublicRequest::Type _type);
-
-    virtual LibFred::PublicRequest::Status_PR getStatus() const;
-
-    virtual void setStatus(LibFred::PublicRequest::Status_PR _status);
-
-    virtual ptime getCreateTime() const;
-
-    virtual ptime getResolveTime() const;
-
-    virtual const std::string& getReason() const;
-
-    virtual void setReason(const std::string& _reason);
-
-    virtual const std::string& getEmailToAnswer() const;
-
-    virtual void setEmailToAnswer(const std::string& _email);
-
-    virtual const Database::ID getAnswerEmailId() const;
-
-    virtual const Database::ID getRequestId() const;
-
-    virtual const Database::ID getResolveRequestId() const;
-
-    virtual void setRequestId(const Database::ID& _create_request_id);
-
-    virtual void setRegistrarId(const Database::ID& _registrar_id);
-
-    virtual void addObject(const OID& _oid);
-
-    virtual const OID& getObject(unsigned _idx) const;
-
-    virtual unsigned getObjectSize() const;
-
-    virtual const Database::ID getRegistrarId() const;
-
-    virtual const std::string getRegistrarHandle() const;
-
-    virtual const std::string getRegistrarName() const;
-
-    virtual const std::string getRegistrarUrl() const;
-
-    virtual std::string getEmails() const;
-
-    virtual TID sendEmail() const;
-
-    virtual void processAction(bool check);
-
-    virtual void invalidateAction();
-
-    virtual void process(bool invalidated, bool check, const unsigned long long &_request_id);
-
-    virtual unsigned getPDFType() const;
-
-    virtual void postCreate();
-
-    Manager* getPublicRequestManager() const;
 };
-
-
 
 class PublicRequestAuthImpl
     : virtual public PublicRequestAuth,
       public PublicRequestImpl
 {
-protected:
-    bool authenticated_;
-    std::string identification_;
-    std::string password_;
-
-
 public:
     PublicRequestAuthImpl();
 
-    virtual ~PublicRequestAuthImpl() { }
+    ~PublicRequestAuthImpl() override { }
 
-    virtual void init(Database::Row::Iterator& _it);
-
+    void init(Database::Row::Iterator& _it) override;
     virtual std::string getIdentification() const;
-
     virtual std::string getPassword() const;
-
-    virtual bool authenticate(const std::string &_password);
-
-    virtual void save();
-
-    virtual void process(bool _invalidated, bool _check, const unsigned long long &_request_id);
+    bool authenticate(const std::string &_password) override;
+    void save() override;
+    void process(bool _invalidated, bool _check, unsigned long long _request_id) override;
 
     /* just to be sure of empty impl (if someone would change base impl) */
-    virtual void postCreate();
+    void postCreate() override;
 
     /* don't use this methods for constucting email so far */
     std::string getTemplateName() const;
@@ -207,16 +174,19 @@ public:
     virtual std::string generatePasswords() = 0;
 
     bool check() const;
+protected:
+    bool authenticated_;
+    std::string identification_;
+    std::string password_;
 };
-
 
 COMPARE_CLASS_IMPL(PublicRequestImpl, CreateTime)
 COMPARE_CLASS_IMPL(PublicRequestImpl, ResolveTime)
 COMPARE_CLASS_IMPL(PublicRequestImpl, Type)
 COMPARE_CLASS_IMPL(PublicRequestImpl, Status)
 
-}
-}
+}//namespace LibFred::PublicRequest
+}//namespace LibFred
 
-#endif /* PUBLIC_REQUEST_IMPL_H_ */
+#endif//PUBLIC_REQUEST_IMPL_HH_21AC7B02F9C5497DA07D708E2DDAA8B5
 

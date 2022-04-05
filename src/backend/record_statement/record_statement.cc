@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -87,7 +87,8 @@ private:
 };
 
 #define LOGGING_CONTEXT(CTX_VAR, IMPL_OBJ) LogContext CTX_VAR((IMPL_OBJ), create_ctx_function_name(__FUNCTION__))
-}
+
+} // namespace Fred::Backend::RecordStatement::{anonymous}
 
 
 RecordStatementImpl::RecordStatementImpl(
@@ -96,10 +97,7 @@ RecordStatementImpl::RecordStatementImpl(
         const std::shared_ptr<LibFred::Mailer::Manager>& _mailer_manager,
         const std::string& _registry_timezone)
     : server_name_(_server_name),
-      impl_(Impl::Factory::produce(
-              _registry_timezone,
-              _doc_manager,
-              _mailer_manager))
+      impl_{Impl::get_default_factory()[_registry_timezone](_doc_manager, _mailer_manager)}
 {
 }
 

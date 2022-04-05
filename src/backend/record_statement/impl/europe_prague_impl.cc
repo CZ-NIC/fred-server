@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -24,7 +24,7 @@ namespace Backend {
 namespace RecordStatement {
 namespace Impl {
 
-template class InstanceOfNecessaryImpl<Tz::Europe::Prague>;
+template void register_producer<Tz::Europe::Prague>(Factory&);
 
 } // namespace Fred::Backend::RecordStatement::Impl
 } // namespace Fred::Backend::RecordStatement
