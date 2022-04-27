@@ -21,11 +21,13 @@
 
 #include "libfred/mailer.hh"
 
-#include <memory>
-#include <string>
-#include <set>
 #include <map>
+#include <memory>
+#include <set>
+#include <string>
+#include <tuple>
 
+#include <boost/optional/optional.hpp>
 #include <boost/uuid/uuid.hpp>
 
 namespace Fred {
@@ -43,20 +45,29 @@ struct FailedToSendMailToRecipient : std::exception
 
 struct EmailData
 {
+    struct Recipient
+    {
+        std::string email;
+        boost::optional<boost::uuids::uuid> uuid;
+    };
+
     EmailData(
-            const std::set<std::string>& _recipient_email_addresses,
+            const std::vector<Recipient>& _recipients,
+            const std::string& _type,
             const std::string& _template_name_subject,
             const std::string& _template_name_body,
             const std::map<std::string, std::string>& _template_parameters,
             const std::vector<boost::uuids::uuid>& _attachments)
-        : recipient_email_addresses(_recipient_email_addresses),
+        : recipients(_recipients),
+          type(_type),
           template_name_subject(_template_name_subject),
           template_name_body(_template_name_body),
           template_parameters(_template_parameters),
           attachments(_attachments)
     {
     }
-    const std::set<std::string> recipient_email_addresses;
+    const std::vector<Recipient> recipients;
+    const std::string type;
     const std::string template_name_subject;
     const std::string template_name_body;
     const std::map<std::string, std::string> template_parameters;

@@ -178,7 +178,7 @@ unsigned long long send_personal_info(
 
     LibFiled::Connection<LibFiled::Service::File> connection{
         LibFiled::Connection<LibFiled::Service::File>::ConnectionString{
-            _fileman_endpoint}};
+            _fileman_args.endpoint}};
 
     const std::string ident_type = info_contact_data.ssntype.get_value_or_default();
     constexpr char separator = ';';
@@ -299,9 +299,13 @@ unsigned long long send_personal_info(
         return *attachment_uuid;
     };
 
-    const std::set<std::string> recipients = { email_to_answer.empty() ? info_contact_data.email.get_value() : email_to_answer };
+    const std::vector<Util::EmailData::Recipient> recipients = {
+        Util::EmailData::Recipient{
+                    email_to_answer.empty() ? info_contact_data.email.get_value() : email_to_answer,
+                    get_raw_value_from(info_contact_data.uuid)}};
     const Util::EmailData email_data(
             recipients,
+            "send_personalinfo_pif",
             "send-personalinfo-pif-subject.txt",
             "send-personalinfo-pif-body.txt",
             email_template_params,

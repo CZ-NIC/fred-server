@@ -289,23 +289,24 @@ unsigned long long send_request_block_email(
         email_template_params.emplace("type", to_type(object_type));
     }
 
-    std::set<std::string> emails;
+    std::vector<Util::EmailData::Recipient> recipients;
     const auto email_to_answer = request_info.get_email_to_answer();
     if (!email_to_answer.isnull())
     {
-        emails.insert(email_to_answer.get_value()); // validity checked when public_request was created
+        recipients.push_back(Util::EmailData::Recipient{email_to_answer.get_value(), {}}); // validity checked when public_request was created
     }
     else
     {
-        emails = get_valid_registry_emails_of_registered_object(ctx, object_type, object_id);
-        if (emails.empty())
+        recipients = get_valid_registry_emails_of_registered_object(ctx, object_type, object_id);
+        if (recipients.empty())
         {
             throw NoContactEmail();
         }
     }
 
     const Util::EmailData email_data(
-            emails,
+            recipients,
+            "request_block",
             "request-block-subject.txt",
             "request-block-body.txt",
             email_template_params,

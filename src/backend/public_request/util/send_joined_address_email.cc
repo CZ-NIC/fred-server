@@ -29,63 +29,80 @@ namespace Backend {
 namespace PublicRequest {
 namespace Util {
 
+namespace {
+
+std::map<LibHermes::Email::RecipientEmail, std::set<LibHermes::Email::RecipientUuid>> to_libhermes_recipients(const std::vector<EmailData::Recipient>& _recipients)
+{
+    std::map<LibHermes::Email::RecipientEmail, std::set<LibHermes::Email::RecipientUuid>> result;
+    for (const auto& recipient : _recipients)
+    {
+        if (recipient.uuid != boost::none)
+        {
+            result[LibHermes::Email::RecipientEmail{recipient.email}].insert(LibHermes::Email::RecipientUuid{*recipient.uuid});
+        }
+        else
+        {
+            result[LibHermes::Email::RecipientEmail{recipient.email}]; // create the record if does not exist yet
+        }
+    }
+    return result;
+}
+
+} // namespace Fred::Backend::PublicRequest::Util::{anonymous}
+
 unsigned long long send_joined_addresses_email(
         const std::string& _messenger_endpoint,
+        bool _archive,
         const EmailData& data)
 {
     LibHermes::Connection<LibHermes::Service::EmailMessenger> connection{
         LibHermes::Connection<LibHermes::Service::EmailMessenger>::ConnectionString{
             _messenger_endpoint}};
 
-    for (const auto& recipient_email_address : data.recipient_email_addresses)
+    auto email =
+            LibHermes::Email::make_minimal_email(
+                    to_libhermes_recipients(data.recipients),
+                    LibHermes::Email::SubjectTemplate{data.template_name_subject},
+                    LibHermes::Email::BodyTemplate{data.template_name_body});
+
+    std::transform(
+            data.template_parameters.begin(),
+            data.template_parameters.end(),
+            std::inserter(email.context, email.context.end()),
+            [](const auto& item)
+            {
+                return std::make_pair(LibHermes::StructKey{item.first}, LibHermes::StructValue{item.second});
+            });
+
+    std::transform(
+            data.attachments.begin(),
+            data.attachments.end(),
+            std::back_inserter(email.attachments),
+            [](const auto& item)
+            {
+                return LibHermes::Email::AttachmentUuid{item};
+            });
+
+    LibHermes::Email::EmailUid email_uid;
+    try
     {
-        auto email =
-                LibHermes::Email::make_minimal_email(
-                        LibHermes::Email::Email::Recipient{boost::algorithm::trim_copy(recipient_email_address)},
-                        LibHermes::Email::Email::SubjectTemplate{data.template_name_subject},
-                        LibHermes::Email::Email::BodyTemplate{data.template_name_body});
-
-        std::transform(
-                data.template_parameters.begin(),
-                data.template_parameters.end(),
-                std::inserter(email.context, email.context.end()),
-                [](const auto& item)
-                {
-                    return std::make_pair(LibHermes::StructKey{item.first}, LibHermes::StructValue{item.second});
-                });
-
-        std::transform(
-                data.attachments.begin(),
-                data.attachments.end(),
-                std::back_inserter(email.attachments),
-                [](const auto& item)
-                {
-                    return LibHermes::Email::Email::AttachmentUuid{item};
-                });
-
-        LibHermes::Email::EmailUid email_uid;
-        try
-        {
-            email_uid =
-                    LibHermes::Email::send(
-                            connection,
-                            email,
-                            LibHermes::Email::Archive{_archive},
-                            {});
-        }
-        catch (const std::exception& e)
-        {
-            //LIBLOG_WARNING("std::exception caught while sending email: {}", e.what());
-            continue;
-        }
-        catch (...)
-        {
-            //LIBLOG_WARNING("exception caught while sending email");
-            continue;
-        }
-        // throw FailedToSendMailToRecipient();
-        // return email_uids
+        LibHermes::Email::batch_send(
+                connection,
+                email,
+                LibHermes::Email::Archive{_archive},
+                {});
     }
+    catch (const std::exception& e)
+    {
+        //LIBLOG_WARNING("std::exception caught while sending email: {}", e.what());
+        throw FailedToSendMailToRecipient();
+    }
+    catch (...)
+    {
+        //LIBLOG_WARNING("exception caught while sending email");
+        throw FailedToSendMailToRecipient();
+    }
+    // return email_uids
 }
 
 } // namespace Fred::Backend::PublicRequest::Util

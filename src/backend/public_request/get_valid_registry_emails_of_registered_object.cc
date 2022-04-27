@@ -18,16 +18,20 @@
  */
 #include "src/backend/public_request/get_valid_registry_emails_of_registered_object.hh"
 
-#include "src/backend/public_request/object_type.hh"
 #include "libfred/contact_verification/django_email_format.hh"
 #include "libfred/object/object_type.hh"
 #include "libfred/registrable_object/contact/info_contact.hh"
 #include "libfred/registrable_object/domain/info_domain.hh"
 #include "libfred/registrable_object/keyset/info_keyset.hh"
 #include "libfred/registrable_object/nsset/info_nsset.hh"
+#include "src/backend/public_request/object_type.hh"
 
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
+
+#include <set>
+#include <string>
+#include <tuple>
 
 namespace Fred {
 namespace Backend {
@@ -91,7 +95,7 @@ std::set<unsigned long long> get_registry_contacts_of_registered_object(
 
 } // namespace Fred::Backend::PublicRequest::{anonymous}
 
-std::set<std::string> get_valid_registry_emails_of_registered_object(
+std::vector<Util::EmailData::Recipient> get_valid_registry_emails_of_registered_object(
         LibFred::OperationContext& _ctx,
         ObjectType _object_type,
         unsigned long long _object_id)
@@ -99,25 +103,26 @@ std::set<std::string> get_valid_registry_emails_of_registered_object(
 
     const auto object_contacts = get_registry_contacts_of_registered_object(_ctx, _object_type, _object_id);
 
-    std::set<std::string> valid_emails;
+    std::vector<Util::EmailData::Recipient> recipients_with_valid_email;
 
     for (const auto contact_id : object_contacts)
     {
-        const std::string emails_comma_list =
-            LibFred::InfoContactById(contact_id).exec(_ctx).info_contact_data.email.get_value_or_default();
+        const auto info_contact_data =
+                LibFred::InfoContactById(contact_id).exec(_ctx).info_contact_data;
+
         std::vector<std::string> emails;
-        boost::split(emails, emails_comma_list, boost::is_any_of(","));
-        for (const auto & email: emails)
+        boost::split(emails, info_contact_data.email.get_value_or_default(), boost::is_any_of(","));
+        for (auto& email : emails)
         {
             const bool email_format_is_valid = DjangoEmailFormat().check(email);
             if (email_format_is_valid)
             {
-                valid_emails.insert(email);
+                recipients_with_valid_email.push_back(Util::EmailData::Recipient{email, get_raw_value_from(info_contact_data.uuid)});
             }
         }
     }
 
-    return valid_emails;
+    return recipients_with_valid_email;
 }
 
 } // namespace Fred::Backend::PublicRequest

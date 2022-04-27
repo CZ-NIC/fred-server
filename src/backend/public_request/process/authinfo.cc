@@ -72,7 +72,7 @@ enum class EmailType
     sendauthinfo_epp
 };
 
-std::string to_string(EmailType email_type)
+std::string get_email_type_name(EmailType email_type)
 {
     switch (email_type)
     {
@@ -177,16 +177,16 @@ unsigned long long send_authinfo_email(
             email_template_params.insert(LibFred::Mailer::Parameters::value_type("registrar_url", registrar_info.url.get_value_or("")));
         }
     }
-    std::set<std::string> emails;
+    std::vector<Util::EmailData::Recipient> recipients;
     const auto email_to_answer = request_info.get_email_to_answer();
     if (!email_to_answer.isnull())
     {
-        emails.insert(email_to_answer.get_value()); // validity checked when public_request was created
+        recipients.push_back(Util::EmailData::Recipient{email_to_answer.get_value(), boost::none}); // validity checked when public_request was created
     }
     else
     {
-        emails = get_valid_registry_emails_of_registered_object(ctx, convert_libfred_object_type_to_public_request_objecttype(object_type), object_id);
-        if (emails.empty())
+        recipients = get_valid_registry_emails_of_registered_object(ctx, convert_libfred_object_type_to_public_request_objecttype(object_type), object_id);
+        if (recipients.empty())
         {
             throw NoContactEmail();
         }
@@ -217,7 +217,8 @@ unsigned long long send_authinfo_email(
     email_template_params.insert(LibFred::Mailer::Parameters::value_type("authinfo", authinfo));
 
     const Util::EmailData email_data{
-            emails,
+            recipients,
+            get_email_type_name(_email_type),
             get_template_name_subject(_email_type),
             get_template_name_body(_email_type),
             email_template_params,
@@ -231,7 +232,7 @@ unsigned long long send_authinfo_email(
 void process_public_request_authinfo_resolved(
         unsigned long long _public_request_id,
         const LibFred::PublicRequestTypeIface& _public_request_type,
-        const MessengerArgs& _messenger_endpoint)
+        const MessengerArgs& _messenger_args)
 {
     try
     {
