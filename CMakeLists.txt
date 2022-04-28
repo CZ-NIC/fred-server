@@ -889,7 +889,8 @@ target_link_libraries(epp_impl PRIVATE
     epp_keyset_dns_key
     handle_rifd_args
     buffer
-    Fred::library)
+    Fred::library
+    LibHermes::library)
 
 add_common_library_target(log_impl
     src/bin/corba/log/log_impl_wrap.cc)

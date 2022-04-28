@@ -42,6 +42,8 @@
 #include "libfred/registrar/info_registrar.hh"
 #include "src/util/corba_wrapper_decl.hh"
 
+#include "libhermes/struct.hh"
+
 #include <functional>
 #include <stdexcept>
 
@@ -191,12 +193,12 @@ enum class Operation
     unblock
 };
 
-std::string to_otype(Operation operation)
+int to_otype(Operation operation)
 {
     switch (operation)
     {
-        case Operation::block: return "1";
-        case Operation::unblock: return "2";
+        case Operation::block: return 1;
+        case Operation::unblock: return 2;
     }
     throw std::runtime_error{"unexpected operation"};
 }
@@ -207,12 +209,12 @@ enum class Action
     transfer
 };
 
-std::string to_rtype(Action action)
+int to_rtype(Action action)
 {
     switch (action)
     {
-        case Action::change: return "1";
-        case Action::transfer: return "2";
+        case Action::change: return 1;
+        case Action::transfer: return 2;
     }
     throw std::runtime_error{"unexpected action"};
 }
@@ -223,14 +225,14 @@ struct Request
     Action action;
 };
 
-std::string to_type(ObjectType object_type)
+int to_type(ObjectType object_type)
 {
     switch (object_type)
     {
-        case ObjectType::contact: return "1";
-        case ObjectType::nsset: return "2";
-        case ObjectType::domain: return "3";
-        case ObjectType::keyset: return "4";
+        case ObjectType::contact: return 1;
+        case ObjectType::nsset: return 2;
+        case ObjectType::domain: return 3;
+        case ObjectType::keyset: return 4;
     }
     throw std::runtime_error{"unexpected object type"};
 }
@@ -266,7 +268,7 @@ unsigned long long send_request_block_email(
     const auto object_type = convert_libfred_object_type_to_public_request_objecttype(
             Conversion::Enums::from_db_handle<LibFred::Object_Type>(static_cast<std::string>(db_result[0][1])));
 
-    LibFred::Mailer::Parameters email_template_params;
+    LibHermes::Struct email_template_params;
     {
         const Database::Result dbres = ctx.get_conn().exec_params(
                 "SELECT (create_time AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Prague')::DATE "
@@ -281,12 +283,12 @@ unsigned long long send_request_block_email(
         {
             throw std::runtime_error{"too many public requests for given id"};
         }
-        email_template_params.emplace("reqid", std::to_string(public_request_id));
-        email_template_params.emplace("reqdate", static_cast<std::string>(dbres[0][0]));
-        email_template_params.emplace("handle", handle);
-        email_template_params.emplace("otype", to_otype(request.operation));
-        email_template_params.emplace("rtype", to_rtype(request.action));
-        email_template_params.emplace("type", to_type(object_type));
+        email_template_params.emplace(LibHermes::StructKey{"reqid"}, LibHermes::StructValue{std::to_string(public_request_id)});
+        email_template_params.emplace(LibHermes::StructKey{"reqdate"}, LibHermes::StructValue{static_cast<std::string>(dbres[0][0])});
+        email_template_params.emplace(LibHermes::StructKey{"handle"}, LibHermes::StructValue{handle});
+        email_template_params.emplace(LibHermes::StructKey{"otype"}, LibHermes::StructValue{to_otype(request.operation)});
+        email_template_params.emplace(LibHermes::StructKey{"rtype"}, LibHermes::StructValue{to_rtype(request.action)});
+        email_template_params.emplace(LibHermes::StructKey{"type"}, LibHermes::StructValue{to_type(object_type)});
     }
 
     std::vector<Util::EmailData::Recipient> recipients;

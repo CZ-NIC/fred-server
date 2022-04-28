@@ -38,6 +38,8 @@
 #include "libfred/registrar/info_registrar.hh"
 #include "src/util/corba_wrapper_decl.hh"
 
+#include "libhermes/struct.hh"
+
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
@@ -107,6 +109,7 @@ std::string get_template_name_subject(const EmailType& _email_type)
         case EmailType::sendauthinfo_pif: return "send-authinfo-subject.txt";
         case EmailType::sendauthinfo_epp: return "send_authinfo-subject.txt";
     }
+    throw std::runtime_error{"unexpected email type"};
 }
 
 std::string get_template_name_body(const EmailType& _email_type)
@@ -115,6 +118,7 @@ std::string get_template_name_body(const EmailType& _email_type)
         case EmailType::sendauthinfo_pif: return "send-authinfo-pif-body.txt";
         case EmailType::sendauthinfo_epp: return "send_authinfo-epp-body.txt";
     }
+    throw std::runtime_error{"unexpected email type"};
 }
 
 unsigned long long send_authinfo_email(
@@ -147,8 +151,8 @@ unsigned long long send_authinfo_email(
         throw std::runtime_error("too many objects for given id");
     }
     const std::string handle = static_cast<std::string>(db_result[0]["handle"]);
-    LibFred::Mailer::Parameters email_template_params;
-    email_template_params.insert(LibFred::Mailer::Parameters::value_type("handle", handle));
+    LibHermes::Struct email_template_params;
+    email_template_params.emplace(LibHermes::StructKey{"handle"}, LibHermes::StructValue{handle});
     const LibFred::Object_Type::Enum object_type =
             Conversion::Enums::from_db_handle<LibFred::Object_Type>(static_cast<std::string>(db_result[0]["object_type"]));
     if (_email_type == EmailType::sendauthinfo_pif)
@@ -165,16 +169,16 @@ unsigned long long send_authinfo_email(
         {
             throw std::runtime_error("too many public requests for given id");
         }
-        email_template_params.insert(LibFred::Mailer::Parameters::value_type("reqid", boost::lexical_cast<std::string>(public_request_id)));
-        email_template_params.insert(LibFred::Mailer::Parameters::value_type("reqdate", static_cast<std::string>(dbres[0][0])));
+        email_template_params.emplace(LibHermes::StructKey{"reqid"}, LibHermes::StructValue{boost::lexical_cast<std::string>(public_request_id)});
+        email_template_params.emplace(LibHermes::StructKey{"reqdate"}, LibHermes::StructValue{static_cast<std::string>(dbres[0][0])});
     }
     else if (_email_type == EmailType::sendauthinfo_epp)
     {
         if (!request_info.get_registrar_id().isnull())
         {
             const auto registrar_info = LibFred::InfoRegistrarById{request_info.get_registrar_id().get_value()}.exec(ctx).info_registrar_data;
-            email_template_params.insert(LibFred::Mailer::Parameters::value_type("registrar", registrar_info.name.get_value_or(registrar_info.handle)));
-            email_template_params.insert(LibFred::Mailer::Parameters::value_type("registrar_url", registrar_info.url.get_value_or("")));
+            email_template_params.emplace(LibHermes::StructKey{"registrar"}, LibHermes::StructValue{registrar_info.name.get_value_or(registrar_info.handle)});
+            email_template_params.emplace(LibHermes::StructKey{"registrar_url"}, LibHermes::StructValue{registrar_info.url.get_value_or("")});
         }
     }
     std::vector<Util::EmailData::Recipient> recipients;
@@ -192,29 +196,29 @@ unsigned long long send_authinfo_email(
         }
     }
 
-    std::string type;
+    int type;
     std::string authinfo;
     switch (object_type)
     {
         case LibFred::Object_Type::contact:
-            type = "1";
+            type = 1;
             authinfo = LibFred::InfoContactById(object_id).exec(ctx).info_contact_data.authinfopw;
             break;
         case LibFred::Object_Type::nsset:
-            type = "2";
+            type = 2;
             authinfo = LibFred::InfoNssetById(object_id).exec(ctx).info_nsset_data.authinfopw;
             break;
         case LibFred::Object_Type::domain:
-            type = "3";
+            type = 3;
             authinfo = LibFred::InfoDomainById(object_id).exec(ctx).info_domain_data.authinfopw;
             break;
         case LibFred::Object_Type::keyset:
-            type = "4";
+            type = 4;
             authinfo = LibFred::InfoKeysetById(object_id).exec(ctx).info_keyset_data.authinfopw;
             break;
     }
-    email_template_params.insert(LibFred::Mailer::Parameters::value_type("type", type));
-    email_template_params.insert(LibFred::Mailer::Parameters::value_type("authinfo", authinfo));
+    email_template_params.emplace(LibHermes::StructKey{"type"}, LibHermes::StructValue{type});
+    email_template_params.emplace(LibHermes::StructKey{"authinfo"}, LibHermes::StructValue{authinfo});
 
     const Util::EmailData email_data{
             recipients,

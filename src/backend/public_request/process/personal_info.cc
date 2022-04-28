@@ -32,6 +32,8 @@
 #include "libfred/registrable_object/contact/info_contact.hh"
 #include "libfred/registrar/info_registrar.hh"
 
+#include "libhermes/struct.hh"
+
 #include <array>
 #include <sstream>
 
@@ -90,18 +92,13 @@ unsigned long long send_personal_info(
         throw;
     }
 
-    LibFred::Mailer::Parameters email_template_params;
+    LibHermes::Struct email_template_params;
 
-    email_template_params.insert(LibFred::Mailer::Parameters::value_type("handle", info_contact_data.handle));
-    email_template_params.insert(
-            LibFred::Mailer::Parameters::value_type("organization", info_contact_data.organization.get_value_or_default()));
-    email_template_params.insert(
-            LibFred::Mailer::Parameters::value_type("name", info_contact_data.name.get_value_or_default()));
-    const std::string pretty_printed_address = info_contact_data.place.isnull()
-        ? std::string()
-        : pretty_print_address(info_contact_data.place.get_value());
-    email_template_params.insert(
-            LibFred::Mailer::Parameters::value_type("address", pretty_printed_address));
+    email_template_params.emplace(LibHermes::StructKey{"handle"}, LibHermes::StructValue{info_contact_data.handle});
+    email_template_params.emplace(LibHermes::StructKey{"organization"}, LibHermes::StructValue{info_contact_data.organization.get_value_or_default()});
+    email_template_params.emplace(LibHermes::StructKey{"name"}, LibHermes::StructValue{info_contact_data.name.get_value_or_default()});
+    const std::string pretty_printed_address = info_contact_data.place.isnull() ? std::string() : pretty_print_address(info_contact_data.place.get_value());
+    email_template_params.emplace(LibHermes::StructKey{"address"}, LibHermes::StructValue{pretty_printed_address});
     std::string mailing_address;
     std::string billing_address;
     std::string shipping_address_1;
@@ -129,51 +126,35 @@ unsigned long long send_personal_info(
                 break;
         }
     }
-    email_template_params.insert(
-            LibFred::Mailer::Parameters::value_type("mailing_address", mailing_address));
-    email_template_params.insert(
-            LibFred::Mailer::Parameters::value_type("billing_address", billing_address));
-    email_template_params.insert(
-            LibFred::Mailer::Parameters::value_type("shipping_address_1", shipping_address_1));
-    email_template_params.insert(
-            LibFred::Mailer::Parameters::value_type("shipping_address_2", shipping_address_2));
-    email_template_params.insert(
-            LibFred::Mailer::Parameters::value_type("shipping_address_3", shipping_address_3));
-    email_template_params.insert(
-            LibFred::Mailer::Parameters::value_type("ident_type", info_contact_data.ssntype.get_value_or_default()));
-    email_template_params.insert(
-            LibFred::Mailer::Parameters::value_type("ident_value", info_contact_data.ssn.get_value_or_default()));
-    email_template_params.insert(
-            LibFred::Mailer::Parameters::value_type("dic", info_contact_data.vat.get_value_or_default()));
-    email_template_params.insert(
-            LibFred::Mailer::Parameters::value_type("telephone", info_contact_data.telephone.get_value_or_default()));
-    email_template_params.insert(
-            LibFred::Mailer::Parameters::value_type("fax", info_contact_data.fax.get_value_or_default()));
+    email_template_params.emplace(LibHermes::StructKey{"mailing_address"}, LibHermes::StructValue{mailing_address});
+    email_template_params.emplace(LibHermes::StructKey{"billing_address"}, LibHermes::StructValue{billing_address});
+    email_template_params.emplace(LibHermes::StructKey{"shipping_address_1"}, LibHermes::StructValue{shipping_address_1});
+    email_template_params.emplace(LibHermes::StructKey{"shipping_address_2"}, LibHermes::StructValue{shipping_address_2});
+    email_template_params.emplace(LibHermes::StructKey{"shipping_address_3"}, LibHermes::StructValue{shipping_address_3});
+    email_template_params.emplace(LibHermes::StructKey{"ident_type"}, LibHermes::StructValue{info_contact_data.ssntype.get_value_or_default()});
+    email_template_params.emplace(LibHermes::StructKey{"ident_value"}, LibHermes::StructValue{info_contact_data.ssn.get_value_or_default()});
+    email_template_params.emplace(LibHermes::StructKey{"dic"}, LibHermes::StructValue{info_contact_data.vat.get_value_or_default()});
+    email_template_params.emplace(LibHermes::StructKey{"telephone"}, LibHermes::StructValue{info_contact_data.telephone.get_value_or_default()});
+    email_template_params.emplace(LibHermes::StructKey{"fax"}, LibHermes::StructValue{info_contact_data.fax.get_value_or_default()});
     if (info_contact_data.email.isnull())
     {
         throw NoContactEmail();
     }
-    email_template_params.insert(
-            LibFred::Mailer::Parameters::value_type("email", info_contact_data.email.get_value()));
-    email_template_params.insert(
-            LibFred::Mailer::Parameters::value_type("notify_email", info_contact_data.notifyemail.get_value_or_default()));
+    email_template_params.emplace(LibHermes::StructKey{"email"}, LibHermes::StructValue{info_contact_data.email.get_value()});
+    email_template_params.emplace(LibHermes::StructKey{"notify_email"}, LibHermes::StructValue{info_contact_data.notifyemail.get_value_or_default()});
 
     LibFred::InfoRegistrarData info_registrar_data;
     try
     {
         info_registrar_data = LibFred::InfoRegistrarByHandle(info_contact_data.sponsoring_registrar_handle)
             .exec(ctx).info_registrar_data;
-        email_template_params.insert(
-                LibFred::Mailer::Parameters::value_type("registrar_name", info_registrar_data.name.get_value_or_default()));
-        email_template_params.insert(
-                LibFred::Mailer::Parameters::value_type("registrar_url", info_registrar_data.url.get_value_or_default()));
+        email_template_params.emplace(LibHermes::StructKey{"registrar_name"}, LibHermes::StructValue{info_registrar_data.name.get_value_or_default()});
+        email_template_params.emplace(LibHermes::StructKey{"registrar_url"}, LibHermes::StructValue{info_registrar_data.url.get_value_or_default()});
     }
     catch (const LibFred::InfoRegistrarByHandle::Exception& ex)
     {
-        email_template_params.insert(
-                LibFred::Mailer::Parameters::value_type("registrar_name", std::string()));
-        email_template_params.insert(
-                LibFred::Mailer::Parameters::value_type("registrar_url", std::string()));
+        email_template_params.emplace(LibHermes::StructKey{"registrar_name"}, LibHermes::StructValue{""});
+        email_template_params.emplace(LibHermes::StructKey{"registrar_url"}, LibHermes::StructValue{""});
     }
 
     LibFiled::Connection<LibFiled::Service::File> connection{

@@ -64,15 +64,7 @@ unsigned long long send_joined_addresses_email(
                     to_libhermes_recipients(data.recipients),
                     LibHermes::Email::SubjectTemplate{data.template_name_subject},
                     LibHermes::Email::BodyTemplate{data.template_name_body});
-
-    std::transform(
-            data.template_parameters.begin(),
-            data.template_parameters.end(),
-            std::inserter(email.context, email.context.end()),
-            [](const auto& item)
-            {
-                return std::make_pair(LibHermes::StructKey{item.first}, LibHermes::StructValue{item.second});
-            });
+    email.context = data.template_parameters;
 
     std::transform(
             data.attachments.begin(),
