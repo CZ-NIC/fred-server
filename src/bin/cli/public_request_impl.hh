@@ -21,6 +21,8 @@
 
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/handle_database_args.hh"
+#include "src/util/cfg/handle_messenger_args.hh"
+#include "src/util/cfg/handle_fileman_args.hh"
 #include "src/util/corba_wrapper_decl.hh"
 #include "src/bin/cli/handle_adminclientselection_args.hh"
 #include "src/bin/cli/public_request_method.hh"
@@ -55,8 +57,8 @@ struct process_public_requests_impl
 
         Admin::PublicRequestProcedure public_request(
                 CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientProcessPublicRequestsArgsGrp>()->process_public_requests_params,
-                CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientMessengerArgsGrp>()->messenger_params,
-                CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientFilemanArgsGrp>()->fileman_params);
+                CfgArgGroups::instance()->get_handler_ptr_by_type<HandleMessengerArgsGrp>()->get_args(),
+                CfgArgGroups::instance()->get_handler_ptr_by_type<HandleFilemanArgsGrp>()->get_args());
         public_request.exec();
     }
 };

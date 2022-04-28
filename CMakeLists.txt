@@ -746,9 +746,12 @@ add_common_library_target(epp_keyset_dns_key
     src/backend/epp/keyset/dns_key.cc)
 target_link_libraries(epp_keyset_dns_key PRIVATE Fred::library)
 
+# TODO FIXME move messenger/fileman
 add_common_library_target(handle_database_args
     src/util/cfg/config_handler.cc
     src/util/cfg/handle_database_args.cc
+    src/util/cfg/handle_messenger_args.cc
+    src/util/cfg/handle_fileman_args.cc
     src/util/cfg/validate_args.cc)
 target_link_libraries(handle_database_args PRIVATE Fred::library)
 
