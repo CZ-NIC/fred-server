@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2011-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -86,15 +86,18 @@ struct ObjectRegularProcedureArgs
 {
     optional_string poll_except_types;//OBJECT_POLL_EXCEPT_TYPES_NAME
     optional_string notify_except_types;//OBJECT_NOTIFY_EXCEPT_TYPES_NAME
+    bool send_notifications;
 
     ObjectRegularProcedureArgs()
     {}//ctor
     ObjectRegularProcedureArgs(
             const optional_string& _poll_except_types
              , const optional_string& _notify_except_types
+             , bool _send_notifications
             )
     : poll_except_types(_poll_except_types)
     , notify_except_types(_notify_except_types)
+    , send_notifications(_send_notifications)
     {}//init ctor
 };//struct ObjectRegularProcedureArgs
 

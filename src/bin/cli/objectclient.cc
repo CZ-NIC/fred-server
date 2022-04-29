@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2008-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -275,10 +275,13 @@ ObjectClient::regular_procedure()
             LOGGER.error("Admin::ObjectClient::regular_procedure(): Error has occurred in deleteObject");
             return;
         }
-        const std::string notifyExcept = object_regular_procedure_params.notify_except_types.is_value_set()
-            ? object_regular_procedure_params.notify_except_types.get_value()
-            : std::string();
-        notifyMan->notifyStateChanges(notifyExcept, 0, NULL);
+        if (object_regular_procedure_params.send_notifications)
+        {
+            const std::string notifyExcept = object_regular_procedure_params.notify_except_types.is_value_set()
+                ? object_regular_procedure_params.notify_except_types.get_value()
+                : std::string();
+            notifyMan->notifyStateChanges(notifyExcept, 0, NULL);
+        }
 
         {
             LibFred::OperationContextCreator ctx;
