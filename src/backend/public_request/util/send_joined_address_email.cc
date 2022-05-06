@@ -18,9 +18,12 @@
  */
 #include "src/backend/public_request/util/send_joined_address_email.hh"
 
+#include "util/log/logger.hh"
+
 #include "libhermes/libhermes.hh"
 
 #include <boost/algorithm/string/trim.hpp>
+#include <boost/format.hpp>
 
 #include <sstream>
 
@@ -84,14 +87,20 @@ unsigned long long send_joined_addresses_email(
                 LibHermes::Email::Archive{_archive},
                 {});
     }
+    catch (const LibHermes::Email::SendFailed& e)
+    {
+        LOGGER.info(boost::str(boost::format("gRPC exception caught while sending email: gRPC error code: %1% error message: %2% grpc_message_json: %3%") %
+                               e.error_code() % e.error_message() % e.grpc_message_json()));
+        throw FailedToSendMailToRecipient();
+    }
     catch (const std::exception& e)
     {
-        //LIBLOG_WARNING("std::exception caught while sending email: {}", e.what());
+        LOGGER.info(boost::str(boost::format("std::exception caught while sending email: %1%") % e.what()));
         throw FailedToSendMailToRecipient();
     }
     catch (...)
     {
-        //LIBLOG_WARNING("exception caught while sending email");
+        LOGGER.info("exception caught while sending email");
         throw FailedToSendMailToRecipient();
     }
     // return email_uids
