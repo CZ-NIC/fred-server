@@ -78,7 +78,6 @@ unsigned long long send_joined_addresses_email(
                 return LibHermes::Email::AttachmentUuid{item};
             });
 
-    LibHermes::Email::EmailUid email_uid;
     try
     {
         LibHermes::Email::batch_send(
@@ -103,7 +102,7 @@ unsigned long long send_joined_addresses_email(
         LOGGER.info("exception caught while sending email");
         throw FailedToSendMailToRecipient();
     }
-    // return email_uids
+    return 0;
 }
 
 } // namespace Fred::Backend::PublicRequest::Util
