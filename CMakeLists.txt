@@ -13,7 +13,7 @@ endmacro()
 include("cmake/package.cmake")
 
 package(fred-server
-    FULL_VERSION "2.51.0-rc4")
+    FULL_VERSION "2.51.0")
 
 project(FredServer
     VERSION ${PACKAGE_VERSION}
