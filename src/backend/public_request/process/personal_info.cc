@@ -67,7 +67,7 @@ std::string pretty_print_address(const T& _address)
     return address.str();
 }
 
-unsigned long long send_personal_info(
+void send_personal_info(
         const LibFred::LockedPublicRequestForUpdate& _locked_request,
         const MessengerArgs& _messenger_args,
         const FilemanArgs& _fileman_args)
@@ -293,7 +293,7 @@ unsigned long long send_personal_info(
             {get_attachment_cs(),
              get_attachment_en()});
 
-    return send_joined_addresses_email(_messenger_args.endpoint, _messenger_args.archive, email_data);
+    send_joined_addresses_email(_messenger_args.endpoint, _messenger_args.archive, email_data);
 }
 
 } // namespace Fred::Backend::PublicRequest::Process::{anonymous}
@@ -308,11 +308,10 @@ void process_public_request_personal_info_resolved(
     {
         LibFred::OperationContextCreator ctx;
         const LibFred::PublicRequestLockGuardById locked_request(ctx, _public_request_id);
-        const unsigned long long email_id = send_personal_info(locked_request, _messenger_args, _fileman_args);
+        send_personal_info(locked_request, _messenger_args, _fileman_args);
         try
         {
             LibFred::UpdatePublicRequest()
-                .set_answer_email_id(email_id)
                 .set_on_status_action(LibFred::PublicRequest::OnStatusAction::processed)
                 .exec(locked_request, _public_request_type);
             ctx.commit_transaction();
@@ -320,17 +319,15 @@ void process_public_request_personal_info_resolved(
         catch (const std::exception& e)
         {
             ctx.get_log().info(
-                    boost::format("Request %1% update failed (%2%), but email %3% sent") %
+                    boost::format("Request %1% update failed (%2%), but email was sent") %
                     _public_request_id %
-                    e.what() %
-                    email_id);
+                    e.what());
         }
         catch (...)
         {
             ctx.get_log().info(
-                    boost::format("Request %1% update failed (unknown exception), but email %2% sent") %
-                    _public_request_id %
-                    email_id);
+                    boost::format("Request %1% update failed (unknown exception), but email was sent") %
+                    _public_request_id);
         }
     }
     catch (...)

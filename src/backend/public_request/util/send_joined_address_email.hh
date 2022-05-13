@@ -74,7 +74,7 @@ struct EmailData
     const std::vector<boost::uuids::uuid> attachments;
 };
 
-unsigned long long send_joined_addresses_email(
+void send_joined_addresses_email(
         const std::string& _messenger_endpoint,
         bool _archive,
         const EmailData& data);

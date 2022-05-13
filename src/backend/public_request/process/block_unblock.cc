@@ -237,7 +237,7 @@ int to_type(ObjectType object_type)
     throw std::runtime_error{"unexpected object type"};
 }
 
-unsigned long long send_request_block_email(
+void send_request_block_email(
         const LibFred::LockedPublicRequestForUpdate& _locked_request,
         const MessengerArgs& _messenger_args,
         Request request)
@@ -314,7 +314,7 @@ unsigned long long send_request_block_email(
             email_template_params,
             {});
 
-    return send_joined_addresses_email(_messenger_args.endpoint, _messenger_args.archive, email_data);
+    send_joined_addresses_email(_messenger_args.endpoint, _messenger_args.archive, email_data);
 }
 
 auto get_public_request_process_function(const LibFred::PublicRequestTypeIface& public_request)
@@ -366,7 +366,7 @@ void process_public_request_block_unblock_resolved(
         LibFred::OperationContextCreator ctx;
         const LibFred::PublicRequestLockGuardById locked_request(ctx, _public_request_id);
         const auto process_function = get_public_request_process_function(_public_request_type);
-        const auto email_id = send_request_block_email(locked_request, _messenger_args, process_function.request);
+        send_request_block_email(locked_request, _messenger_args, process_function.request);
         try
         {
             process_function(locked_request);
@@ -389,7 +389,6 @@ void process_public_request_block_unblock_resolved(
         try
         {
             LibFred::UpdatePublicRequest()
-                .set_answer_email_id(email_id)
                 .set_on_status_action(LibFred::PublicRequest::OnStatusAction::processed)
                 .exec(locked_request, _public_request_type);
             ctx.commit_transaction();
@@ -397,14 +396,14 @@ void process_public_request_block_unblock_resolved(
         catch (const std::exception& e)
         {
             ctx.get_log().info(
-                    boost::format("Request %1% update failed (%2%)") %
+                    boost::format("Request %1% update failed (%2%), but email was sent") %
                     _public_request_id %
                     e.what());
         }
         catch (...)
         {
             ctx.get_log().info(
-                    boost::format("Request %1% update failed (unknown exception)") %
+                    boost::format("Request %1% update failed (unknown exception), but email was sent") %
                     _public_request_id);
         }
     }

@@ -53,7 +53,7 @@ std::map<LibHermes::Email::RecipientEmail, std::set<LibHermes::Email::RecipientU
 
 } // namespace Fred::Backend::PublicRequest::Util::{anonymous}
 
-unsigned long long send_joined_addresses_email(
+void send_joined_addresses_email(
         const std::string& _messenger_endpoint,
         bool _archive,
         const EmailData& data)
@@ -102,7 +102,6 @@ unsigned long long send_joined_addresses_email(
         LOGGER.info("exception caught while sending email");
         throw FailedToSendMailToRecipient();
     }
-    return 0;
 }
 
 } // namespace Fred::Backend::PublicRequest::Util
