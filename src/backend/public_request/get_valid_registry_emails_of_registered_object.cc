@@ -117,7 +117,7 @@ std::set<Util::EmailData::Recipient> get_valid_registry_emails_of_registered_obj
             const bool email_format_is_valid = DjangoEmailFormat().check(email);
             if (email_format_is_valid)
             {
-                recipients_with_valid_email.push_back(Util::EmailData::Recipient{email, get_raw_value_from(info_contact_data.uuid)});
+                recipients_with_valid_email.insert(Util::EmailData::Recipient{email, get_raw_value_from(info_contact_data.uuid)});
             }
         }
     }

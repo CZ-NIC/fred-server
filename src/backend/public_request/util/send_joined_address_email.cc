@@ -53,9 +53,9 @@ std::map<LibHermes::Email::RecipientEmail, std::set<LibHermes::Email::RecipientU
 
 } // namespace Fred::Backend::PublicRequest::Util::{anonymous}
 
-void EmailData::Recipient::operator<(const EmailData::Recipient& _other)
+bool EmailData::Recipient::operator<(const EmailData::Recipient& _other) const
 {
-    return std::make_tuple(_other.email, _other.uuid) < std::make_tuple(email, uuid);
+    return std::make_tuple(email, uuid) < std::make_tuple(_other.email, _other.uuid);
 }
 
 void send_joined_addresses_email(

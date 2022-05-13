@@ -49,7 +49,7 @@ struct EmailData
     {
         std::string email;
         boost::optional<boost::uuids::uuid> uuid;
-        bool operator<(const Recipient) const;
+        bool operator<(const Recipient& _recipient) const;
     };
 
     EmailData(

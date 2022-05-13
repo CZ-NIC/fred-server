@@ -34,8 +34,8 @@ struct HandleFilemanArgs : public HandleArgs
     FilemanArgs fileman_args;
 
     std::shared_ptr<boost::program_options::options_description>
-    get_options_description();
-    void handle(int argc, char* argv[], FakedArgs& fa);
+    get_options_description() override;
+    void handle(int argc, char* argv[], FakedArgs& fa) override;
 };
 
 struct HandleFilemanArgsGrp : public HandleGrpArgs,
@@ -43,8 +43,8 @@ struct HandleFilemanArgsGrp : public HandleGrpArgs,
 {
 public:
     std::shared_ptr<boost::program_options::options_description>
-    get_options_description();
-    std::size_t handle(int argc, char* argv[], FakedArgs& fa, std::size_t option_group_index);
+    get_options_description() override;
+    std::size_t handle(int argc, char* argv[], FakedArgs& fa, std::size_t option_group_index) override;
     const FilemanArgs& get_args() const;
     const std::string& get_endpoint() const;
 };
