@@ -27,14 +27,12 @@
 #include <boost/uuid/uuid.hpp>
 
 #include <set>
-#include <string>
-#include <tuple>
 
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
 
-std::vector<Util::EmailData::Recipient> get_valid_registry_emails_of_registered_object(
+std::set<Util::EmailData::Recipient> get_valid_registry_emails_of_registered_object(
         LibFred::OperationContext& _ctx,
         ObjectType _object_type,
         unsigned long long _object_id);

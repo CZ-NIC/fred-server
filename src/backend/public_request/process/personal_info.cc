@@ -280,7 +280,7 @@ void send_personal_info(
         return *attachment_uuid;
     };
 
-    const std::vector<Util::EmailData::Recipient> recipients = {
+    const std::set<Util::EmailData::Recipient> recipients = {
         Util::EmailData::Recipient{
                     email_to_answer.empty() ? info_contact_data.email.get_value() : email_to_answer,
                     get_raw_value_from(info_contact_data.uuid)}};

@@ -103,7 +103,7 @@ EmailType get_email_type(const LibFred::PublicRequestTypeIface& public_request)
     throw std::runtime_error{"unexpected public request type: " + public_request_type};
 }
 
-std::string get_template_name_subject(const EmailType& _email_type)
+std::string get_template_name_subject(EmailType _email_type)
 {
     switch (_email_type) {
         case EmailType::sendauthinfo_pif: return "send-authinfo-subject.txt";
@@ -112,7 +112,7 @@ std::string get_template_name_subject(const EmailType& _email_type)
     throw std::runtime_error{"unexpected email type"};
 }
 
-std::string get_template_name_body(const EmailType& _email_type)
+std::string get_template_name_body(EmailType _email_type)
 {
     switch (_email_type) {
         case EmailType::sendauthinfo_pif: return "send-authinfo-pif-body.txt";
@@ -181,11 +181,11 @@ void send_authinfo_email(
             email_template_params.emplace(LibHermes::StructKey{"registrar_url"}, LibHermes::StructValue{registrar_info.url.get_value_or("")});
         }
     }
-    std::vector<Util::EmailData::Recipient> recipients;
+    std::set<Util::EmailData::Recipient> recipients;
     const auto email_to_answer = request_info.get_email_to_answer();
     if (!email_to_answer.isnull())
     {
-        recipients.push_back(Util::EmailData::Recipient{email_to_answer.get_value(), boost::none}); // validity checked when public_request was created
+        recipients.insert(Util::EmailData::Recipient{email_to_answer.get_value(), boost::none}); // validity checked when public_request was created
     }
     else
     {

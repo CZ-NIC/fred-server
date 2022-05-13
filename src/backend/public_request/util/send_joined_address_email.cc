@@ -25,7 +25,7 @@
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/format.hpp>
 
-#include <sstream>
+#include <tuple>
 
 namespace Fred {
 namespace Backend {
@@ -34,7 +34,7 @@ namespace Util {
 
 namespace {
 
-std::map<LibHermes::Email::RecipientEmail, std::set<LibHermes::Email::RecipientUuid>> to_libhermes_recipients(const std::vector<EmailData::Recipient>& _recipients)
+std::map<LibHermes::Email::RecipientEmail, std::set<LibHermes::Email::RecipientUuid>> to_libhermes_recipients(const std::set<EmailData::Recipient>& _recipients)
 {
     std::map<LibHermes::Email::RecipientEmail, std::set<LibHermes::Email::RecipientUuid>> result;
     for (const auto& recipient : _recipients)
@@ -52,6 +52,11 @@ std::map<LibHermes::Email::RecipientEmail, std::set<LibHermes::Email::RecipientU
 }
 
 } // namespace Fred::Backend::PublicRequest::Util::{anonymous}
+
+void EmailData::Recipient::operator<(const EmailData::Recipient& _other)
+{
+    return std::make_tuple(_other.email, _other.uuid) < std::make_tuple(email, uuid);
+}
 
 void send_joined_addresses_email(
         const std::string& _messenger_endpoint,

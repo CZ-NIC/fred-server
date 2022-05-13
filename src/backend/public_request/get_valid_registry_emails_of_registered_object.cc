@@ -30,8 +30,8 @@
 #include <boost/algorithm/string/classification.hpp>
 
 #include <set>
+#include <vector>
 #include <string>
-#include <tuple>
 
 namespace Fred {
 namespace Backend {
@@ -95,7 +95,7 @@ std::set<unsigned long long> get_registry_contacts_of_registered_object(
 
 } // namespace Fred::Backend::PublicRequest::{anonymous}
 
-std::vector<Util::EmailData::Recipient> get_valid_registry_emails_of_registered_object(
+std::set<Util::EmailData::Recipient> get_valid_registry_emails_of_registered_object(
         LibFred::OperationContext& _ctx,
         ObjectType _object_type,
         unsigned long long _object_id)
@@ -103,7 +103,7 @@ std::vector<Util::EmailData::Recipient> get_valid_registry_emails_of_registered_
 
     const auto object_contacts = get_registry_contacts_of_registered_object(_ctx, _object_type, _object_id);
 
-    std::vector<Util::EmailData::Recipient> recipients_with_valid_email;
+    std::set<Util::EmailData::Recipient> recipients_with_valid_email;
 
     for (const auto contact_id : object_contacts)
     {

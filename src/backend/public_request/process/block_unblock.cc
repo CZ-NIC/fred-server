@@ -291,11 +291,11 @@ void send_request_block_email(
         email_template_params.emplace(LibHermes::StructKey{"type"}, LibHermes::StructValue{to_type(object_type)});
     }
 
-    std::vector<Util::EmailData::Recipient> recipients;
+    std::set<Util::EmailData::Recipient> recipients;
     const auto email_to_answer = request_info.get_email_to_answer();
     if (!email_to_answer.isnull())
     {
-        recipients.push_back(Util::EmailData::Recipient{email_to_answer.get_value(), {}}); // validity checked when public_request was created
+        recipients.insert(Util::EmailData::Recipient{email_to_answer.get_value(), {}}); // validity checked when public_request was created
     }
     else
     {

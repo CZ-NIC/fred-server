@@ -49,10 +49,11 @@ struct EmailData
     {
         std::string email;
         boost::optional<boost::uuids::uuid> uuid;
+        bool operator<(const Recipient) const;
     };
 
     EmailData(
-            const std::vector<Recipient>& _recipients,
+            const std::set<Recipient>& _recipients,
             const std::string& _type,
             const std::string& _template_name_subject,
             const std::string& _template_name_body,
@@ -66,7 +67,7 @@ struct EmailData
           attachments(_attachments)
     {
     }
-    const std::vector<Recipient> recipients;
+    const std::set<Recipient> recipients;
     const std::string type;
     const std::string template_name_subject;
     const std::string template_name_body;
