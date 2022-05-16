@@ -49,17 +49,25 @@ namespace Process {
 
 namespace {
 
-ObjectType convert_libfred_object_type_to_public_request_objecttype(
-        const LibFred::Object_Type::Enum _libfred_object_type)
+ObjectType make_object_type(const std::string& _str)
 {
-        switch (_libfred_object_type)
+        if (_str == "contact")
         {
-            case LibFred::Object_Type::contact: return ObjectType::contact;
-            case LibFred::Object_Type::nsset: return ObjectType::nsset;
-            case LibFred::Object_Type::domain: return ObjectType::domain;
-            case LibFred::Object_Type::keyset: return ObjectType::keyset;
+            return ObjectType::contact;;
         }
-        throw std::runtime_error("unexpected LibFred::Object_Type");
+        else if (_str == "nsset")
+        {
+            return ObjectType::nsset;;
+        }
+        else if (_str == "domain")
+        {
+            return ObjectType::domain;;
+        }
+        else if (_str == "keyset")
+        {
+            return ObjectType::keyset;;
+        }
+        throw std::runtime_error("unexpected object type");
 }
 
 enum class EmailType
@@ -148,8 +156,7 @@ void send_authinfo_email(
     const auto object_uuid = boost::uuids::string_generator{}(static_cast<std::string>(db_result[0]["object_uuid"]));
     LibHermes::Struct email_template_params;
     email_template_params.emplace(LibHermes::StructKey{"handle"}, LibHermes::StructValue{handle});
-    const auto object_type = convert_libfred_object_type_to_public_request_objecttype(
-            Conversion::Enums::from_db_handle<LibFred::Object_Type>(static_cast<std::string>(db_result[0]["object_type"])));
+    const auto object_type = make_object_type(static_cast<std::string>(db_result[0]["object_type"]));
     if (_email_type == EmailType::sendauthinfo_pif)
     {
         const Database::Result dbres = ctx.get_conn().exec_params(

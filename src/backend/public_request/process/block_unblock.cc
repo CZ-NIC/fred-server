@@ -177,16 +177,25 @@ void process(const LibFred::LockedPublicRequestForUpdate& _locked_request)
     LibFred::PerformObjectStateRequest(object_id).exec(ctx);
 }
 
-ObjectType convert_libfred_object_type_to_public_request_objecttype(LibFred::Object_Type::Enum libfred_object_type)
+ObjectType make_object_type(const std::string& _str)
 {
-        switch (libfred_object_type)
+        if (_str == "contact")
         {
-            case LibFred::Object_Type::contact: return ObjectType::contact;
-            case LibFred::Object_Type::nsset: return ObjectType::nsset;
-            case LibFred::Object_Type::domain: return ObjectType::domain;
-            case LibFred::Object_Type::keyset: return ObjectType::keyset;
+            return ObjectType::contact;;
         }
-        throw std::runtime_error("unexpected LibFred::Object_Type");
+        else if (_str == "nsset")
+        {
+            return ObjectType::nsset;;
+        }
+        else if (_str == "domain")
+        {
+            return ObjectType::domain;;
+        }
+        else if (_str == "keyset")
+        {
+            return ObjectType::keyset;;
+        }
+        throw std::runtime_error("unexpected object type");
 }
 
 enum class Operation
@@ -270,8 +279,7 @@ void send_request_block_email(
     }
     const std::string handle = static_cast<std::string>(db_result[0][0]);
     const auto object_uuid = boost::uuids::string_generator{}(static_cast<std::string>(db_result[0]["object_uuid"]));
-    const auto object_type = convert_libfred_object_type_to_public_request_objecttype(
-            Conversion::Enums::from_db_handle<LibFred::Object_Type>(static_cast<std::string>(db_result[0][1])));
+    const auto object_type = make_object_type(static_cast<std::string>(db_result[0][1]));
 
     LibHermes::Struct email_template_params;
     {
