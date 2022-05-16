@@ -25,6 +25,7 @@
 #include "src/backend/public_request/process/exceptions.hh"
 #include "src/backend/public_request/type/get_iface_of.hh"
 #include "src/backend/public_request/type/public_request_block_unblock.hh"
+#include "src/backend/public_request/util/make_object_type.hh"
 #include "src/backend/public_request/util/send_joined_address_email.hh"
 #include "libfred/object/object_state.hh"
 #include "libfred/object/object_states_info.hh"
@@ -177,27 +178,6 @@ void process(const LibFred::LockedPublicRequestForUpdate& _locked_request)
     LibFred::PerformObjectStateRequest(object_id).exec(ctx);
 }
 
-ObjectType make_object_type(const std::string& _str)
-{
-        if (_str == "contact")
-        {
-            return ObjectType::contact;;
-        }
-        else if (_str == "nsset")
-        {
-            return ObjectType::nsset;;
-        }
-        else if (_str == "domain")
-        {
-            return ObjectType::domain;;
-        }
-        else if (_str == "keyset")
-        {
-            return ObjectType::keyset;;
-        }
-        throw std::runtime_error("unexpected object type");
-}
-
 enum class Operation
 {
     block,
@@ -279,7 +259,7 @@ void send_request_block_email(
     }
     const std::string handle = static_cast<std::string>(db_result[0][0]);
     const auto object_uuid = boost::uuids::string_generator{}(static_cast<std::string>(db_result[0]["object_uuid"]));
-    const auto object_type = make_object_type(static_cast<std::string>(db_result[0][1]));
+    const auto object_type = Util::make_object_type(static_cast<std::string>(db_result[0][1]));
 
     LibHermes::Struct email_template_params;
     {

@@ -23,6 +23,7 @@
 #include "src/backend/public_request/process/exceptions.hh"
 #include "src/backend/public_request/type/get_iface_of.hh"
 #include "src/backend/public_request/type/public_request_authinfo.hh"
+#include "src/backend/public_request/util/make_object_type.hh"
 #include "src/backend/public_request/util/send_joined_address_email.hh"
 #include "libfred/object/object_states_info.hh"
 #include "libfred/object/object_type.hh"
@@ -48,27 +49,6 @@ namespace PublicRequest {
 namespace Process {
 
 namespace {
-
-ObjectType make_object_type(const std::string& _str)
-{
-        if (_str == "contact")
-        {
-            return ObjectType::contact;;
-        }
-        else if (_str == "nsset")
-        {
-            return ObjectType::nsset;;
-        }
-        else if (_str == "domain")
-        {
-            return ObjectType::domain;;
-        }
-        else if (_str == "keyset")
-        {
-            return ObjectType::keyset;;
-        }
-        throw std::runtime_error("unexpected object type");
-}
 
 enum class EmailType
 {
@@ -156,7 +136,7 @@ void send_authinfo_email(
     const auto object_uuid = boost::uuids::string_generator{}(static_cast<std::string>(db_result[0]["object_uuid"]));
     LibHermes::Struct email_template_params;
     email_template_params.emplace(LibHermes::StructKey{"handle"}, LibHermes::StructValue{handle});
-    const auto object_type = make_object_type(static_cast<std::string>(db_result[0]["object_type"]));
+    const auto object_type = Util::make_object_type(static_cast<std::string>(db_result[0]["object_type"]));
     if (_email_type == EmailType::sendauthinfo_pif)
     {
         const Database::Result dbres = ctx.get_conn().exec_params(
@@ -198,27 +178,30 @@ void send_authinfo_email(
         }
     }
 
-    int type;
-    std::string authinfo;
-    switch (object_type)
-    {
-        case ObjectType::contact:
-            type = 1;
-            authinfo = LibFred::InfoContactById(object_id).exec(ctx).info_contact_data.authinfopw;
-            break;
-        case ObjectType::nsset:
-            type = 2;
-            authinfo = LibFred::InfoNssetById(object_id).exec(ctx).info_nsset_data.authinfopw;
-            break;
-        case ObjectType::domain:
-            type = 3;
-            authinfo = LibFred::InfoDomainById(object_id).exec(ctx).info_domain_data.authinfopw;
-            break;
-        case ObjectType::keyset:
-            type = 4;
-            authinfo = LibFred::InfoKeysetById(object_id).exec(ctx).info_keyset_data.authinfopw;
-            break;
-    }
+    const int type = [&](){
+        switch (object_type)
+        {
+            case ObjectType::contact: return 1;
+            case ObjectType::nsset: return 2;
+            case ObjectType::domain: return 3;
+            case ObjectType::keyset: return 4;
+        }
+        throw std::runtime_error("unexpected value of ObjectType");
+    }();
+    const std::string authinfo = [&](){
+        switch (object_type)
+        {
+            case ObjectType::contact:
+                return LibFred::InfoContactById(object_id).exec(ctx).info_contact_data.authinfopw;
+            case ObjectType::nsset:
+                return LibFred::InfoNssetById(object_id).exec(ctx).info_nsset_data.authinfopw;
+            case ObjectType::domain:
+                return LibFred::InfoDomainById(object_id).exec(ctx).info_domain_data.authinfopw;
+            case ObjectType::keyset:
+                return LibFred::InfoKeysetById(object_id).exec(ctx).info_keyset_data.authinfopw;
+        }
+        throw std::runtime_error("unexpected value of ObjectType");
+    }();
     email_template_params.emplace(LibHermes::StructKey{"type"}, LibHermes::StructValue{type});
     email_template_params.emplace(LibHermes::StructKey{"authinfo"}, LibHermes::StructValue{authinfo});
 

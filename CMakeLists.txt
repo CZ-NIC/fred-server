@@ -623,6 +623,7 @@ add_common_library_target(public_request
     src/backend/public_request/type/impl/public_request_authinfo.cc
     src/backend/public_request/type/impl/public_request_block_unblock.cc
     src/backend/public_request/type/impl/public_request_personal_info.cc
+    src/backend/public_request/util/make_object_type.cc
     src/backend/public_request/util/send_joined_address_email.cc
     src/deprecated/libfred/public_request/public_request.cc
     src/deprecated/libfred/public_request/public_request_authinfo_impl.cc
