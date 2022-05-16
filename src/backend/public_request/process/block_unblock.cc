@@ -44,6 +44,8 @@
 
 #include "libhermes/struct.hh"
 
+#include <boost/uuid/string_generator.hpp>
+
 #include <functional>
 #include <stdexcept>
 
@@ -246,13 +248,15 @@ void send_request_block_email(
     const auto public_request_id = _locked_request.get_id();
     const LibFred::PublicRequestInfo request_info = LibFred::InfoPublicRequest().exec(ctx, _locked_request);
     const auto object_id = request_info.get_object_id().get_value(); // oops
+
     const std::string sql_query =
-            "SELECT obr.name, "
+            "SELECT oreg.name, "
+                   "oreg.uuid AS object_uuid, "
                    "eot.name "
-            "FROM object_registry obr "
-            "JOIN enum_object_type eot ON eot.id = obr.type "
-            "WHERE obr.id = $1::BIGINT AND "
-                  "obr.erdate IS NULL";
+            "FROM object_registry oreg "
+            "JOIN enum_object_type eot ON eot.id = oreg.type "
+            "WHERE oreg.id = $1::BIGINT AND "
+                  "oreg.erdate IS NULL";
     const Database::Result db_result = ctx.get_conn().exec_params(
             sql_query,
             Database::query_param_list(object_id));
@@ -265,6 +269,7 @@ void send_request_block_email(
         throw std::runtime_error("too many objects for given id");
     }
     const std::string handle = static_cast<std::string>(db_result[0][0]);
+    const auto object_uuid = boost::uuids::string_generator{}(static_cast<std::string>(db_result[0]["object_uuid"]));
     const auto object_type = convert_libfred_object_type_to_public_request_objecttype(
             Conversion::Enums::from_db_handle<LibFred::Object_Type>(static_cast<std::string>(db_result[0][1])));
 
@@ -312,6 +317,8 @@ void send_request_block_email(
             "request-block-subject.txt",
             "request-block-body.txt",
             email_template_params,
+            object_type,
+            object_uuid,
             {});
 
     send_joined_addresses_email(_messenger_args.endpoint, _messenger_args.archive, email_data);

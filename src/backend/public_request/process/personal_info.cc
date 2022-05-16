@@ -19,6 +19,7 @@
 #include "src/backend/public_request/process/personal_info.hh"
 
 #include "src/backend/public_request/exceptions.hh"
+#include "src/backend/public_request/object_type.hh"
 #include "src/backend/public_request/util/send_joined_address_email.hh"
 #include "src/util/corba_wrapper_decl.hh"
 #include "src/util/csv/csv.hh"
@@ -290,6 +291,8 @@ void send_personal_info(
             "send-personalinfo-pif-subject.txt",
             "send-personalinfo-pif-body.txt",
             email_template_params,
+            ObjectType::contact,
+            get_raw_value_from(info_contact_data.uuid),
             {get_attachment_cs(),
              get_attachment_en()});
 

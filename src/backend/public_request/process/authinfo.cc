@@ -40,6 +40,8 @@
 
 #include "libhermes/struct.hh"
 
+#include <boost/uuid/string_generator.hpp>
+
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
@@ -52,18 +54,10 @@ ObjectType convert_libfred_object_type_to_public_request_objecttype(
 {
         switch (_libfred_object_type)
         {
-            case LibFred::Object_Type::contact:
-                return ObjectType::contact;
-
-            case LibFred::Object_Type::nsset:
-                return ObjectType::nsset;
-
-            case LibFred::Object_Type::domain:
-                return ObjectType::domain;
-
-            case LibFred::Object_Type::keyset:
-                return ObjectType::keyset;
-
+            case LibFred::Object_Type::contact: return ObjectType::contact;
+            case LibFred::Object_Type::nsset: return ObjectType::nsset;
+            case LibFred::Object_Type::domain: return ObjectType::domain;
+            case LibFred::Object_Type::keyset: return ObjectType::keyset;
         }
         throw std::runtime_error("unexpected LibFred::Object_Type");
 }
@@ -78,10 +72,8 @@ std::string get_email_type_name(EmailType email_type)
 {
     switch (email_type)
     {
-        case EmailType::sendauthinfo_pif:
-            return "sendauthinfo_pif";
-        case EmailType::sendauthinfo_epp:
-            return "sendauthinfo_epp";
+        case EmailType::sendauthinfo_pif: return "sendauthinfo_pif";
+        case EmailType::sendauthinfo_epp: return "sendauthinfo_epp";
     }
     throw std::runtime_error{"unexpected email type"};
 }
@@ -132,7 +124,9 @@ void send_authinfo_email(
     const auto object_id = request_info.get_object_id().get_value(); // oops
     // clang-format off
     const std::string sql_query =
-            "SELECT oreg.name AS handle, eot.name AS object_type "
+            "SELECT oreg.name AS handle, "
+                   "oreg.uuid AS object_uuid, "
+                   "eot.name AS object_type "
               "FROM object_registry oreg "
               "JOIN enum_object_type eot "
                 "ON oreg.type = eot.id "
@@ -151,10 +145,11 @@ void send_authinfo_email(
         throw std::runtime_error("too many objects for given id");
     }
     const std::string handle = static_cast<std::string>(db_result[0]["handle"]);
+    const auto object_uuid = boost::uuids::string_generator{}(static_cast<std::string>(db_result[0]["object_uuid"]));
     LibHermes::Struct email_template_params;
     email_template_params.emplace(LibHermes::StructKey{"handle"}, LibHermes::StructValue{handle});
-    const LibFred::Object_Type::Enum object_type =
-            Conversion::Enums::from_db_handle<LibFred::Object_Type>(static_cast<std::string>(db_result[0]["object_type"]));
+    const auto object_type = convert_libfred_object_type_to_public_request_objecttype(
+            Conversion::Enums::from_db_handle<LibFred::Object_Type>(static_cast<std::string>(db_result[0]["object_type"])));
     if (_email_type == EmailType::sendauthinfo_pif)
     {
         const Database::Result dbres = ctx.get_conn().exec_params(
@@ -189,7 +184,7 @@ void send_authinfo_email(
     }
     else
     {
-        recipients = get_valid_registry_emails_of_registered_object(ctx, convert_libfred_object_type_to_public_request_objecttype(object_type), object_id);
+        recipients = get_valid_registry_emails_of_registered_object(ctx, object_type, object_id);
         if (recipients.empty())
         {
             throw NoContactEmail();
@@ -200,19 +195,19 @@ void send_authinfo_email(
     std::string authinfo;
     switch (object_type)
     {
-        case LibFred::Object_Type::contact:
+        case ObjectType::contact:
             type = 1;
             authinfo = LibFred::InfoContactById(object_id).exec(ctx).info_contact_data.authinfopw;
             break;
-        case LibFred::Object_Type::nsset:
+        case ObjectType::nsset:
             type = 2;
             authinfo = LibFred::InfoNssetById(object_id).exec(ctx).info_nsset_data.authinfopw;
             break;
-        case LibFred::Object_Type::domain:
+        case ObjectType::domain:
             type = 3;
             authinfo = LibFred::InfoDomainById(object_id).exec(ctx).info_domain_data.authinfopw;
             break;
-        case LibFred::Object_Type::keyset:
+        case ObjectType::keyset:
             type = 4;
             authinfo = LibFred::InfoKeysetById(object_id).exec(ctx).info_keyset_data.authinfopw;
             break;
@@ -226,6 +221,8 @@ void send_authinfo_email(
             get_template_name_subject(_email_type),
             get_template_name_body(_email_type),
             email_template_params,
+            object_type,
+            object_uuid,
             {}};
 
     send_joined_addresses_email(_messenger_args.endpoint, _messenger_args.archive, email_data);

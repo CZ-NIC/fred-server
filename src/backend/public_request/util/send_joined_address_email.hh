@@ -19,6 +19,8 @@
 #ifndef SEND_JOINED_ADDRESS_EMAIL_HH_AE7242E0D3EE4527ADDE0B27DE242FE7
 #define SEND_JOINED_ADDRESS_EMAIL_HH_AE7242E0D3EE4527ADDE0B27DE242FE7
 
+#include "src/backend/public_request/object_type.hh"
+
 #include "libhermes/struct.hh"
 
 #include <map>
@@ -58,20 +60,17 @@ struct EmailData
             const std::string& _template_name_subject,
             const std::string& _template_name_body,
             const LibHermes::Struct& _template_parameters,
-            const std::vector<boost::uuids::uuid>& _attachments)
-        : recipients(_recipients),
-          type(_type),
-          template_name_subject(_template_name_subject),
-          template_name_body(_template_name_body),
-          template_parameters(_template_parameters),
-          attachments(_attachments)
-    {
-    }
+            ObjectType object_type, 
+            boost::uuids::uuid _object_uuid,
+            const std::vector<boost::uuids::uuid>& _attachments);
+
     const std::set<Recipient> recipients;
     const std::string type;
     const std::string template_name_subject;
     const std::string template_name_body;
     const LibHermes::Struct template_parameters;
+    const ObjectType object_type;
+    const boost::uuids::uuid object_uuid;
     const std::vector<boost::uuids::uuid> attachments;
 };
 

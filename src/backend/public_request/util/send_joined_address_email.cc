@@ -23,6 +23,7 @@
 #include "libhermes/libhermes.hh"
 
 #include <boost/algorithm/string/trim.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <boost/format.hpp>
 
 #include <tuple>
@@ -51,7 +52,39 @@ std::map<LibHermes::Email::RecipientEmail, std::set<LibHermes::Email::RecipientU
     return result;
 }
 
+LibHermes::ReferenceType to_libhermes_reference_type(ObjectType _object_type)
+{
+    switch (_object_type)
+    {
+        case ObjectType::contact: return LibHermes::ReferenceType::contact;
+        case ObjectType::domain: return LibHermes::ReferenceType::domain;
+        case ObjectType::nsset: return LibHermes::ReferenceType::nsset;
+        case ObjectType::keyset: return LibHermes::ReferenceType::keyset;
+    }
+    throw std::logic_error("unexpected value of LibFred::Object_Type");
+}
+
 } // namespace Fred::Backend::PublicRequest::Util::{anonymous}
+
+EmailData::EmailData(
+        const std::set<Recipient>& _recipients,
+        const std::string& _type,
+        const std::string& _template_name_subject,
+        const std::string& _template_name_body,
+        const LibHermes::Struct& _template_parameters,
+        ObjectType _object_type, 
+        boost::uuids::uuid _object_uuid,
+        const std::vector<boost::uuids::uuid>& _attachments)
+    : recipients(_recipients),
+      type(_type),
+      template_name_subject(_template_name_subject),
+      template_name_body(_template_name_body),
+      template_parameters(_template_parameters),
+      object_type(_object_type),
+      object_uuid(_object_uuid),
+      attachments(_attachments)
+{
+}
 
 bool EmailData::Recipient::operator<(const EmailData::Recipient& _other) const
 {
@@ -89,7 +122,9 @@ void send_joined_addresses_email(
                 connection,
                 email,
                 LibHermes::Email::Archive{_archive},
-                {});
+                {LibHermes::Reference{
+                        to_libhermes_reference_type(data.object_type),
+                        boost::uuids::to_string(data.object_uuid)}});
     }
     catch (const LibHermes::Email::SendFailed& e)
     {
