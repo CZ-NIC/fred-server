@@ -239,9 +239,9 @@ void send_request_block_email(
     const auto object_id = request_info.get_object_id().get_value(); // oops
 
     const std::string sql_query =
-            "SELECT oreg.name, "
+            "SELECT oreg.name AS handle, "
                    "oreg.uuid AS object_uuid, "
-                   "eot.name "
+                   "eot.name AS object_type "
             "FROM object_registry oreg "
             "JOIN enum_object_type eot ON eot.id = oreg.type "
             "WHERE oreg.id = $1::BIGINT AND "
@@ -257,9 +257,9 @@ void send_request_block_email(
     {
         throw std::runtime_error("too many objects for given id");
     }
-    const std::string handle = static_cast<std::string>(db_result[0][0]);
+    const std::string handle = static_cast<std::string>(db_result[0]["handle"]);
     const auto object_uuid = boost::uuids::string_generator{}(static_cast<std::string>(db_result[0]["object_uuid"]));
-    const auto object_type = Util::make_object_type(static_cast<std::string>(db_result[0][1]));
+    const auto object_type = Util::make_object_type(static_cast<std::string>(db_result[0]["object_type"]));
 
     LibHermes::Struct email_template_params;
     {
@@ -361,7 +361,19 @@ void process_public_request_block_unblock_resolved(
         LibFred::OperationContextCreator ctx;
         const LibFred::PublicRequestLockGuardById locked_request(ctx, _public_request_id);
         const auto process_function = get_public_request_process_function(_public_request_type);
-        send_request_block_email(locked_request, _messenger_args, process_function.request);
+        try
+        {
+            send_request_block_email(locked_request, _messenger_args, process_function.request);
+        }
+        catch (const std::exception& e)
+        {
+            ctx.get_log().info(boost::format("Request %1% sending email failed (%2%)") % _public_request_id % e.what());
+        }
+        catch (...)
+        {
+            ctx.get_log().info(boost::format("Request %1% sending email failed") % _public_request_id);
+        }
+
         try
         {
             process_function(locked_request);

@@ -311,7 +311,19 @@ void process_public_request_personal_info_resolved(
     {
         LibFred::OperationContextCreator ctx;
         const LibFred::PublicRequestLockGuardById locked_request(ctx, _public_request_id);
-        send_personal_info(locked_request, _messenger_args, _fileman_args);
+        try
+        {
+            send_personal_info(locked_request, _messenger_args, _fileman_args);
+        }
+        catch (const std::exception& e)
+        {
+            ctx.get_log().info(boost::format("Request %1% sending email failed (%2%)") % _public_request_id % e.what());
+        }
+        catch (...)
+        {
+            ctx.get_log().info(boost::format("Request %1% sending email failed") % _public_request_id);
+        }
+
         try
         {
             LibFred::UpdatePublicRequest()

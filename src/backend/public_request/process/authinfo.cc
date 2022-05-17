@@ -229,10 +229,20 @@ void process_public_request_authinfo_resolved(
     {
         LibFred::OperationContextCreator ctx;
         const LibFred::PublicRequestLockGuardById locked_request(ctx, _public_request_id);
-        send_authinfo_email(
-                locked_request,
-                _messenger_args,
-                get_email_type(_public_request_type));
+
+        try
+        {
+            send_authinfo_email(locked_request, _messenger_args, get_email_type(_public_request_type));
+        }
+        catch (const std::exception& e)
+        {
+            ctx.get_log().info(boost::format("Request %1% sending email failed (%2%)") % _public_request_id % e.what());
+        }
+        catch (...)
+        {
+            ctx.get_log().info(boost::format("Request %1% sending email failed") % _public_request_id);
+        }
+
         try
         {
             LibFred::UpdatePublicRequest()
