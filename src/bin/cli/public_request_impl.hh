@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2018-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -21,6 +21,8 @@
 
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/handle_database_args.hh"
+#include "src/util/cfg/handle_messenger_args.hh"
+#include "src/util/cfg/handle_fileman_args.hh"
 #include "src/util/corba_wrapper_decl.hh"
 #include "src/bin/cli/handle_adminclientselection_args.hh"
 #include "src/bin/cli/public_request_method.hh"
@@ -55,11 +57,8 @@ struct process_public_requests_impl
 
         Admin::PublicRequestProcedure public_request(
                 CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientProcessPublicRequestsArgsGrp>()->process_public_requests_params,
-                static_cast<std::shared_ptr<LibFred::Mailer::Manager>>(
-                        std::make_shared<MailerManager>(CorbaContainer::get_instance()->getNS())),
-                static_cast<std::shared_ptr<LibFred::File::Transferer>>(
-                        std::make_shared<FileManagerClient>(CorbaContainer::get_instance()->getNS()))
-            );
+                CfgArgGroups::instance()->get_handler_ptr_by_type<HandleMessengerArgsGrp>()->get_args(),
+                CfgArgGroups::instance()->get_handler_ptr_by_type<HandleFilemanArgsGrp>()->get_args());
         public_request.exec();
     }
 };

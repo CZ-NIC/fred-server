@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2020  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2018-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -25,6 +25,7 @@
 #include "src/backend/public_request/process/exceptions.hh"
 #include "src/backend/public_request/type/get_iface_of.hh"
 #include "src/backend/public_request/type/public_request_block_unblock.hh"
+#include "src/backend/public_request/util/make_object_type.hh"
 #include "src/backend/public_request/util/send_joined_address_email.hh"
 #include "libfred/object/object_state.hh"
 #include "libfred/object/object_states_info.hh"
@@ -41,6 +42,10 @@
 #include "libfred/registrable_object/contact/info_contact.hh"
 #include "libfred/registrar/info_registrar.hh"
 #include "src/util/corba_wrapper_decl.hh"
+
+#include "libhermes/struct.hh"
+
+#include <boost/uuid/string_generator.hpp>
 
 #include <functional>
 #include <stdexcept>
@@ -173,30 +178,18 @@ void process(const LibFred::LockedPublicRequestForUpdate& _locked_request)
     LibFred::PerformObjectStateRequest(object_id).exec(ctx);
 }
 
-ObjectType convert_libfred_object_type_to_public_request_objecttype(LibFred::Object_Type::Enum libfred_object_type)
-{
-        switch (libfred_object_type)
-        {
-            case LibFred::Object_Type::contact: return ObjectType::contact;
-            case LibFred::Object_Type::nsset: return ObjectType::nsset;
-            case LibFred::Object_Type::domain: return ObjectType::domain;
-            case LibFred::Object_Type::keyset: return ObjectType::keyset;
-        }
-        throw std::runtime_error("unexpected LibFred::Object_Type");
-}
-
 enum class Operation
 {
     block,
     unblock
 };
 
-std::string to_otype(Operation operation)
+int to_otype(Operation operation)
 {
     switch (operation)
     {
-        case Operation::block: return "1";
-        case Operation::unblock: return "2";
+        case Operation::block: return 1;
+        case Operation::unblock: return 2;
     }
     throw std::runtime_error{"unexpected operation"};
 }
@@ -207,12 +200,12 @@ enum class Action
     transfer
 };
 
-std::string to_rtype(Action action)
+int to_rtype(Action action)
 {
     switch (action)
     {
-        case Action::change: return "1";
-        case Action::transfer: return "2";
+        case Action::change: return 1;
+        case Action::transfer: return 2;
     }
     throw std::runtime_error{"unexpected action"};
 }
@@ -223,34 +216,36 @@ struct Request
     Action action;
 };
 
-std::string to_type(ObjectType object_type)
+int to_type(ObjectType object_type)
 {
     switch (object_type)
     {
-        case ObjectType::contact: return "1";
-        case ObjectType::nsset: return "2";
-        case ObjectType::domain: return "3";
-        case ObjectType::keyset: return "4";
+        case ObjectType::contact: return 1;
+        case ObjectType::nsset: return 2;
+        case ObjectType::domain: return 3;
+        case ObjectType::keyset: return 4;
     }
     throw std::runtime_error{"unexpected object type"};
 }
 
-unsigned long long send_request_block_email(
+void send_request_block_email(
         const LibFred::LockedPublicRequestForUpdate& _locked_request,
-        std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager,
+        const MessengerArgs& _messenger_args,
         Request request)
 {
     auto& ctx = _locked_request.get_ctx();
     const auto public_request_id = _locked_request.get_id();
     const LibFred::PublicRequestInfo request_info = LibFred::InfoPublicRequest().exec(ctx, _locked_request);
     const auto object_id = request_info.get_object_id().get_value(); // oops
+
     const std::string sql_query =
-            "SELECT obr.name, "
-                   "eot.name "
-            "FROM object_registry obr "
-            "JOIN enum_object_type eot ON eot.id = obr.type "
-            "WHERE obr.id = $1::BIGINT AND "
-                  "obr.erdate IS NULL";
+            "SELECT oreg.name AS handle, "
+                   "oreg.uuid AS object_uuid, "
+                   "eot.name AS object_type "
+            "FROM object_registry oreg "
+            "JOIN enum_object_type eot ON eot.id = oreg.type "
+            "WHERE oreg.id = $1::BIGINT AND "
+                  "oreg.erdate IS NULL";
     const Database::Result db_result = ctx.get_conn().exec_params(
             sql_query,
             Database::query_param_list(object_id));
@@ -262,11 +257,11 @@ unsigned long long send_request_block_email(
     {
         throw std::runtime_error("too many objects for given id");
     }
-    const std::string handle = static_cast<std::string>(db_result[0][0]);
-    const auto object_type = convert_libfred_object_type_to_public_request_objecttype(
-            Conversion::Enums::from_db_handle<LibFred::Object_Type>(static_cast<std::string>(db_result[0][1])));
+    const std::string handle = static_cast<std::string>(db_result[0]["handle"]);
+    const auto object_uuid = boost::uuids::string_generator{}(static_cast<std::string>(db_result[0]["object_uuid"]));
+    const auto object_type = Util::make_object_type(static_cast<std::string>(db_result[0]["object_type"]));
 
-    LibFred::Mailer::Parameters email_template_params;
+    LibHermes::Struct email_template_params;
     {
         const Database::Result dbres = ctx.get_conn().exec_params(
                 "SELECT (create_time AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Prague')::DATE "
@@ -281,31 +276,40 @@ unsigned long long send_request_block_email(
         {
             throw std::runtime_error{"too many public requests for given id"};
         }
-        email_template_params.emplace("reqid", std::to_string(public_request_id));
-        email_template_params.emplace("reqdate", static_cast<std::string>(dbres[0][0]));
-        email_template_params.emplace("handle", handle);
-        email_template_params.emplace("otype", to_otype(request.operation));
-        email_template_params.emplace("rtype", to_rtype(request.action));
-        email_template_params.emplace("type", to_type(object_type));
+        email_template_params.emplace(LibHermes::StructKey{"reqid"}, LibHermes::StructValue{std::to_string(public_request_id)});
+        email_template_params.emplace(LibHermes::StructKey{"reqdate"}, LibHermes::StructValue{static_cast<std::string>(dbres[0][0])});
+        email_template_params.emplace(LibHermes::StructKey{"handle"}, LibHermes::StructValue{handle});
+        email_template_params.emplace(LibHermes::StructKey{"otype"}, LibHermes::StructValue{to_otype(request.operation)});
+        email_template_params.emplace(LibHermes::StructKey{"rtype"}, LibHermes::StructValue{to_rtype(request.action)});
+        email_template_params.emplace(LibHermes::StructKey{"type"}, LibHermes::StructValue{to_type(object_type)});
     }
 
-    std::set<std::string> emails;
+    std::set<Util::EmailData::Recipient> recipients;
     const auto email_to_answer = request_info.get_email_to_answer();
     if (!email_to_answer.isnull())
     {
-        emails.insert(email_to_answer.get_value()); // validity checked when public_request was created
+        recipients.insert(Util::EmailData::Recipient{email_to_answer.get_value(), {}}); // validity checked when public_request was created
     }
     else
     {
-        emails = get_valid_registry_emails_of_registered_object(ctx, object_type, object_id);
-        if (emails.empty())
+        recipients = get_valid_registry_emails_of_registered_object(ctx, object_type, object_id);
+        if (recipients.empty())
         {
             throw NoContactEmail();
         }
     }
 
-    const Util::EmailData data(emails, "request_block", email_template_params, std::vector<unsigned long long>());
-    return send_joined_addresses_email(_mailer_manager, data);
+    const Util::EmailData email_data(
+            recipients,
+            "request_block",
+            "request-block-subject.txt",
+            "request-block-body.txt",
+            email_template_params,
+            object_type,
+            object_uuid,
+            {});
+
+    send_joined_addresses_email(_messenger_args.endpoint, _messenger_args.archive, email_data);
 }
 
 auto get_public_request_process_function(const LibFred::PublicRequestTypeIface& public_request)
@@ -350,14 +354,26 @@ auto get_public_request_process_function(const LibFred::PublicRequestTypeIface& 
 void process_public_request_block_unblock_resolved(
         unsigned long long _public_request_id,
         const LibFred::PublicRequestTypeIface& _public_request_type,
-        std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager)
+        const MessengerArgs& _messenger_args)
 {
     try
     {
         LibFred::OperationContextCreator ctx;
         const LibFred::PublicRequestLockGuardById locked_request(ctx, _public_request_id);
         const auto process_function = get_public_request_process_function(_public_request_type);
-        const auto email_id = send_request_block_email(locked_request, _mailer_manager, process_function.request);
+        try
+        {
+            send_request_block_email(locked_request, _messenger_args, process_function.request);
+        }
+        catch (const std::exception& e)
+        {
+            ctx.get_log().info(boost::format("Request %1% sending email failed (%2%)") % _public_request_id % e.what());
+        }
+        catch (...)
+        {
+            ctx.get_log().info(boost::format("Request %1% sending email failed") % _public_request_id);
+        }
+
         try
         {
             process_function(locked_request);
@@ -380,7 +396,6 @@ void process_public_request_block_unblock_resolved(
         try
         {
             LibFred::UpdatePublicRequest()
-                .set_answer_email_id(email_id)
                 .set_on_status_action(LibFred::PublicRequest::OnStatusAction::processed)
                 .exec(locked_request, _public_request_type);
             ctx.commit_transaction();
@@ -388,14 +403,14 @@ void process_public_request_block_unblock_resolved(
         catch (const std::exception& e)
         {
             ctx.get_log().info(
-                    boost::format("Request %1% update failed (%2%)") %
+                    boost::format("Request %1% update failed (%2%), but email was sent") %
                     _public_request_id %
                     e.what());
         }
         catch (...)
         {
             ctx.get_log().info(
-                    boost::format("Request %1% update failed (unknown exception)") %
+                    boost::format("Request %1% update failed (unknown exception), but email was sent") %
                     _public_request_id);
         }
     }

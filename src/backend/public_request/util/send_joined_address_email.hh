@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2018-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -19,12 +19,18 @@
 #ifndef SEND_JOINED_ADDRESS_EMAIL_HH_AE7242E0D3EE4527ADDE0B27DE242FE7
 #define SEND_JOINED_ADDRESS_EMAIL_HH_AE7242E0D3EE4527ADDE0B27DE242FE7
 
-#include "libfred/mailer.hh"
+#include "src/backend/public_request/object_type.hh"
 
-#include <memory>
-#include <string>
-#include <set>
+#include "libhermes/struct.hh"
+
 #include <map>
+#include <memory>
+#include <set>
+#include <string>
+#include <tuple>
+
+#include <boost/optional/optional.hpp>
+#include <boost/uuid/uuid.hpp>
 
 namespace Fred {
 namespace Backend {
@@ -41,25 +47,36 @@ struct FailedToSendMailToRecipient : std::exception
 
 struct EmailData
 {
-    EmailData(
-            const std::set<std::string>& _recipient_email_addresses,
-            const std::string& _template_name,
-            const std::map<std::string, std::string>& _template_parameters,
-            const std::vector<unsigned long long>& _attachments)
-        : recipient_email_addresses(_recipient_email_addresses),
-          template_name(_template_name),
-          template_parameters(_template_parameters),
-          attachments(_attachments)
+    struct Recipient
     {
-    }
-    const std::set<std::string> recipient_email_addresses;
-    const std::string template_name;
-    const std::map<std::string, std::string> template_parameters;
-    const std::vector<unsigned long long> attachments;
+        std::string email;
+        boost::optional<boost::uuids::uuid> uuid;
+        bool operator<(const Recipient& _recipient) const;
+    };
+
+    EmailData(
+            const std::set<Recipient>& _recipients,
+            const std::string& _type,
+            const std::string& _template_name_subject,
+            const std::string& _template_name_body,
+            const LibHermes::Struct& _template_parameters,
+            ObjectType object_type, 
+            boost::uuids::uuid _object_uuid,
+            const std::vector<boost::uuids::uuid>& _attachments);
+
+    const std::set<Recipient> recipients;
+    const std::string type;
+    const std::string template_name_subject;
+    const std::string template_name_body;
+    const LibHermes::Struct template_parameters;
+    const ObjectType object_type;
+    const boost::uuids::uuid object_uuid;
+    const std::vector<boost::uuids::uuid> attachments;
 };
 
-unsigned long long send_joined_addresses_email(
-        std::shared_ptr<LibFred::Mailer::Manager> mailer,
+void send_joined_addresses_email(
+        const std::string& _messenger_endpoint,
+        bool _archive,
         const EmailData& data);
 
 } // namespace Fred::Backend::PublicRequest::Util

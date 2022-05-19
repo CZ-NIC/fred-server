@@ -50,6 +50,8 @@
 #include "src/bin/cli/handle_adminclientselection_args.hh"
 #include "src/util/cfg/handle_registry_args.hh"
 #include "src/util/cfg/handle_sms_args.hh"
+#include "src/util/cfg/handle_messenger_args.hh"
+#include "src/util/cfg/handle_fileman_args.hh"
 #include "src/util/cfg/check_args.hh"
 #include "src/util/cfg/command_selection_args.hh"
 
@@ -170,11 +172,17 @@ HandlerGrpVector sms_gv = boost::assign::list_of
 HandlerGrpVector create_expired_domain_gv = boost::assign::list_of
         (HandleGrpArgsPtr(
                 new HandleCreateExpiredDomainArgsGrp));
+HandlerGrpVector messenger_gv = boost::assign::list_of
+    (HandleGrpArgsPtr(
+            new HandleMessengerArgsGrp));
+HandlerGrpVector fileman_gv = boost::assign::list_of
+    (HandleGrpArgsPtr(
+            new HandleFilemanArgsGrp));
 
 HandlerPtrGrid global_hpg = gv_list
     (help_gv)(help_dates_gv)
     .addCommandOptions(cog)
-    (config_gv)(loging_gv)(database_gv)(corbans_gv)(registry_gv)(sms_gv)(create_expired_domain_gv);
+    (config_gv)(loging_gv)(database_gv)(corbans_gv)(registry_gv)(sms_gv)(create_expired_domain_gv)(messenger_gv)(fileman_gv);
 
 void setup_admin_logging(CfgArgGroups* cfg_instance_ptr)
 {

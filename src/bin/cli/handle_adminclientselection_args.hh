@@ -48,6 +48,8 @@
 #include "src/bin/cli/public_request_params.hh"
 #include "src/bin/cli/domain_name_validation_params.hh"
 #include "src/bin/cli/charge_registry_access_fee_params.hh"
+#include "src/bin/cli/messenger_params.hh"
+#include "src/bin/cli/fileman_params.hh"
 
 #include <iostream>
 #include <exception>
@@ -1711,7 +1713,8 @@ public:
  * \class HandleAdminClientChargeRequestFeeArgsGrp
  * \brief charge request fee to a registrar(s)
  */
-class HandleAdminClientChargeRequestFeeArgsGrp : public HandleCommandGrpArgs {
+class HandleAdminClientChargeRequestFeeArgsGrp : public HandleCommandGrpArgs
+{
 public:
     ChargeRequestFeeArgs params;
     CommandDescription get_command_option()
@@ -2334,7 +2337,8 @@ public:
 /**
  * admin client contact_verification_fill_queue_automatic_testsuite options handler
  */
-class HandleContactVerificationFillQueueArgsGrp : public HandleCommandGrpArgs {
+class HandleContactVerificationFillQueueArgsGrp : public HandleCommandGrpArgs
+{
     private:
         const char* name() const { return "contact_verification_fill_queue"; }
         typedef boost::program_options::options_description options_description;
@@ -2389,7 +2393,8 @@ class HandleContactVerificationFillQueueArgsGrp : public HandleCommandGrpArgs {
 /**
  * admin client contact_verification_enqueue_check  options handler
  */
-class HandleContactVerificationEnqueueCheckArgsGrp : public HandleCommandGrpArgs {
+class HandleContactVerificationEnqueueCheckArgsGrp : public HandleCommandGrpArgs
+{
     private:
         const char* name() const { return "contact_verification_enqueue_check";}
         typedef boost::program_options::options_description options_description;
@@ -2426,7 +2431,8 @@ class HandleContactVerificationEnqueueCheckArgsGrp : public HandleCommandGrpArgs
 /**
  * admin client contact_verification_start_enqueued_checks  options handler
  */
-class HandleContactVerificationStartEnqueuedChecksArgsGrp : public HandleCommandGrpArgs {
+class HandleContactVerificationStartEnqueuedChecksArgsGrp : public HandleCommandGrpArgs
+{
     private:
         const char* name() const { return "contact_verification_start_enqueued_checks";}
         typedef boost::program_options::options_description options_description;
@@ -2590,7 +2596,8 @@ class HandleAdminClientCreateExpiredDomainArgsGrp : public HandleCommandGrpArgs
         }//handle
 };//class HandleAdminClientCreateExpiredDomainArgsGrp
 
-class HandleSendObjectEventNotificationEmailsArgsGrp : public HandleCommandGrpArgs {
+class HandleSendObjectEventNotificationEmailsArgsGrp : public HandleCommandGrpArgs
+{
     private:
         static const char* get_command_name() { return "notify_email_objects_events"; }
     public:

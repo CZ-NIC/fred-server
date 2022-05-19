@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2018-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -19,8 +19,12 @@
 #include "src/backend/public_request/process/personal_info.hh"
 
 #include "src/backend/public_request/exceptions.hh"
+#include "src/backend/public_request/object_type.hh"
 #include "src/backend/public_request/util/send_joined_address_email.hh"
-#include "src/bin/corba/mailer_manager.hh"
+#include "src/util/corba_wrapper_decl.hh"
+#include "src/util/csv/csv.hh"
+
+#include "libfiled/libfiled.hh"
 #include "libfred/opcontext.hh"
 #include "libfred/public_request/info_public_request.hh"
 #include "libfred/public_request/public_request_lock_guard.hh"
@@ -28,10 +32,11 @@
 #include "libfred/public_request/update_public_request.hh"
 #include "libfred/registrable_object/contact/info_contact.hh"
 #include "libfred/registrar/info_registrar.hh"
-#include "src/util/corba_wrapper_decl.hh"
-#include "src/util/csv/csv.hh"
+
+#include "libhermes/struct.hh"
 
 #include <array>
+#include <sstream>
 
 namespace Fred {
 namespace Backend {
@@ -63,10 +68,10 @@ std::string pretty_print_address(const T& _address)
     return address.str();
 }
 
-unsigned long long send_personal_info(
+void send_personal_info(
         const LibFred::LockedPublicRequestForUpdate& _locked_request,
-        std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager,
-        std::shared_ptr<LibFred::File::Transferer> _file_manager_client)
+        const MessengerArgs& _messenger_args,
+        const FilemanArgs& _fileman_args)
 {
     auto& ctx = _locked_request.get_ctx();
     const LibFred::PublicRequestInfo request_info = LibFred::InfoPublicRequest().exec(ctx, _locked_request);
@@ -88,18 +93,13 @@ unsigned long long send_personal_info(
         throw;
     }
 
-    LibFred::Mailer::Parameters email_template_params;
+    LibHermes::Struct email_template_params;
 
-    email_template_params.insert(LibFred::Mailer::Parameters::value_type("handle", info_contact_data.handle));
-    email_template_params.insert(
-            LibFred::Mailer::Parameters::value_type("organization", info_contact_data.organization.get_value_or_default()));
-    email_template_params.insert(
-            LibFred::Mailer::Parameters::value_type("name", info_contact_data.name.get_value_or_default()));
-    const std::string pretty_printed_address = info_contact_data.place.isnull()
-        ? std::string()
-        : pretty_print_address(info_contact_data.place.get_value());
-    email_template_params.insert(
-            LibFred::Mailer::Parameters::value_type("address", pretty_printed_address));
+    email_template_params.emplace(LibHermes::StructKey{"handle"}, LibHermes::StructValue{info_contact_data.handle});
+    email_template_params.emplace(LibHermes::StructKey{"organization"}, LibHermes::StructValue{info_contact_data.organization.get_value_or_default()});
+    email_template_params.emplace(LibHermes::StructKey{"name"}, LibHermes::StructValue{info_contact_data.name.get_value_or_default()});
+    const std::string pretty_printed_address = info_contact_data.place.isnull() ? std::string() : pretty_print_address(info_contact_data.place.get_value());
+    email_template_params.emplace(LibHermes::StructKey{"address"}, LibHermes::StructValue{pretty_printed_address});
     std::string mailing_address;
     std::string billing_address;
     std::string shipping_address_1;
@@ -127,61 +127,45 @@ unsigned long long send_personal_info(
                 break;
         }
     }
-    email_template_params.insert(
-            LibFred::Mailer::Parameters::value_type("mailing_address", mailing_address));
-    email_template_params.insert(
-            LibFred::Mailer::Parameters::value_type("billing_address", billing_address));
-    email_template_params.insert(
-            LibFred::Mailer::Parameters::value_type("shipping_address_1", shipping_address_1));
-    email_template_params.insert(
-            LibFred::Mailer::Parameters::value_type("shipping_address_2", shipping_address_2));
-    email_template_params.insert(
-            LibFred::Mailer::Parameters::value_type("shipping_address_3", shipping_address_3));
-    email_template_params.insert(
-            LibFred::Mailer::Parameters::value_type("ident_type", info_contact_data.ssntype.get_value_or_default()));
-    email_template_params.insert(
-            LibFred::Mailer::Parameters::value_type("ident_value", info_contact_data.ssn.get_value_or_default()));
-    email_template_params.insert(
-            LibFred::Mailer::Parameters::value_type("dic", info_contact_data.vat.get_value_or_default()));
-    email_template_params.insert(
-            LibFred::Mailer::Parameters::value_type("telephone", info_contact_data.telephone.get_value_or_default()));
-    email_template_params.insert(
-            LibFred::Mailer::Parameters::value_type("fax", info_contact_data.fax.get_value_or_default()));
+    email_template_params.emplace(LibHermes::StructKey{"mailing_address"}, LibHermes::StructValue{mailing_address});
+    email_template_params.emplace(LibHermes::StructKey{"billing_address"}, LibHermes::StructValue{billing_address});
+    email_template_params.emplace(LibHermes::StructKey{"shipping_address_1"}, LibHermes::StructValue{shipping_address_1});
+    email_template_params.emplace(LibHermes::StructKey{"shipping_address_2"}, LibHermes::StructValue{shipping_address_2});
+    email_template_params.emplace(LibHermes::StructKey{"shipping_address_3"}, LibHermes::StructValue{shipping_address_3});
+    email_template_params.emplace(LibHermes::StructKey{"ident_type"}, LibHermes::StructValue{info_contact_data.ssntype.get_value_or_default()});
+    email_template_params.emplace(LibHermes::StructKey{"ident_value"}, LibHermes::StructValue{info_contact_data.ssn.get_value_or_default()});
+    email_template_params.emplace(LibHermes::StructKey{"dic"}, LibHermes::StructValue{info_contact_data.vat.get_value_or_default()});
+    email_template_params.emplace(LibHermes::StructKey{"telephone"}, LibHermes::StructValue{info_contact_data.telephone.get_value_or_default()});
+    email_template_params.emplace(LibHermes::StructKey{"fax"}, LibHermes::StructValue{info_contact_data.fax.get_value_or_default()});
     if (info_contact_data.email.isnull())
     {
         throw NoContactEmail();
     }
-    email_template_params.insert(
-            LibFred::Mailer::Parameters::value_type("email", info_contact_data.email.get_value()));
-    email_template_params.insert(
-            LibFred::Mailer::Parameters::value_type("notify_email", info_contact_data.notifyemail.get_value_or_default()));
+    email_template_params.emplace(LibHermes::StructKey{"email"}, LibHermes::StructValue{info_contact_data.email.get_value()});
+    email_template_params.emplace(LibHermes::StructKey{"notify_email"}, LibHermes::StructValue{info_contact_data.notifyemail.get_value_or_default()});
 
     LibFred::InfoRegistrarData info_registrar_data;
     try
     {
         info_registrar_data = LibFred::InfoRegistrarByHandle(info_contact_data.sponsoring_registrar_handle)
             .exec(ctx).info_registrar_data;
-        email_template_params.insert(
-                LibFred::Mailer::Parameters::value_type("registrar_name", info_registrar_data.name.get_value_or_default()));
-        email_template_params.insert(
-                LibFred::Mailer::Parameters::value_type("registrar_url", info_registrar_data.url.get_value_or_default()));
+        email_template_params.emplace(LibHermes::StructKey{"registrar_name"}, LibHermes::StructValue{info_registrar_data.name.get_value_or_default()});
+        email_template_params.emplace(LibHermes::StructKey{"registrar_url"}, LibHermes::StructValue{info_registrar_data.url.get_value_or_default()});
     }
     catch (const LibFred::InfoRegistrarByHandle::Exception& ex)
     {
-        email_template_params.insert(
-                LibFred::Mailer::Parameters::value_type("registrar_name", std::string()));
-        email_template_params.insert(
-                LibFred::Mailer::Parameters::value_type("registrar_url", std::string()));
+        email_template_params.emplace(LibHermes::StructKey{"registrar_name"}, LibHermes::StructValue{""});
+        email_template_params.emplace(LibHermes::StructKey{"registrar_url"}, LibHermes::StructValue{""});
     }
 
+    LibFiled::Connection<LibFiled::Service::File> connection{
+        LibFiled::Connection<LibFiled::Service::File>::ConnectionString{
+            _fileman_args.endpoint}};
 
     const std::string ident_type = info_contact_data.ssntype.get_value_or_default();
-
-    std::vector<unsigned long long> attachments;
-    attachments.reserve(2);
-    constexpr unsigned db_enum_filetype_dot_personal_info_csv = 12;
     constexpr char separator = ';';
-    {
+
+    const auto get_attachment_cs = [&](){
         std::string ident_type_repr;
         if (ident_type == "RC")
         {
@@ -227,18 +211,19 @@ unsigned long long send_personal_info(
                         {"Notifikační e-mail", info_contact_data.notifyemail.get_value_or_default()},
                         {"Určený registrátor", info_registrar_data.name.get_value_or_default()}
                     }));
+        std::istringstream csv_document_stream(csv_document_content);
 
+        const auto attachment_uuid =
+                LibFiled::File::create(
+                        connection,
+                        LibFiled::File::FileName{"personal_info_cs.csv"},
+                        csv_document_stream,
+                        LibFiled::File::FileMimeType{"text/csv"});
 
-        std::vector<char> in_buffer(csv_document_content.begin(), csv_document_content.end());
-        const unsigned long long attachment_id = _file_manager_client->upload(
-                in_buffer,
-                "personal_info_cs.csv",
-                "text/csv",
-                db_enum_filetype_dot_personal_info_csv);
-        attachments.emplace_back(attachment_id);
-    }
+        return *attachment_uuid;
+    };
 
-    {
+    const auto get_attachment_en = [&](){
         std::string ident_type_repr;
         if (ident_type == "RC")
         {
@@ -264,7 +249,6 @@ unsigned long long send_personal_info(
         {
             ident_type_repr = "Birthdate";
         }
-
         const std::string csv_document_content =
             Fred::Util::to_csv_string_using_separator<separator>(std::vector<std::array<std::string, 2>>({
                         {"Contact ID in the registry", info_contact_data.handle},
@@ -285,19 +269,34 @@ unsigned long long send_personal_info(
                         {"Notification e-mail", info_contact_data.notifyemail.get_value_or_default()},
                         {"Designated registrar", info_registrar_data.name.get_value_or_default()}
                     }));
+        std::istringstream csv_document_stream(csv_document_content);
 
-        std::vector<char> in_buffer(csv_document_content.begin(), csv_document_content.end());
-        const unsigned long long attachment_id = _file_manager_client->upload(
-                in_buffer,
-                "personal_info_en.csv",
-                "text/csv",
-                db_enum_filetype_dot_personal_info_csv);
-        attachments.emplace_back(attachment_id);
-    }
+        const auto attachment_uuid =
+                LibFiled::File::create(
+                        connection,
+                        LibFiled::File::FileName{"personal_info_en.csv"},
+                        csv_document_stream,
+                        LibFiled::File::FileMimeType{"text/csv"});
 
-    const std::set<std::string> recipients = { email_to_answer.empty() ? info_contact_data.email.get_value() : email_to_answer };
-    const Util::EmailData data(recipients, "sendpersonalinfo_pif", email_template_params, attachments);
-    return send_joined_addresses_email(_mailer_manager, data);
+        return *attachment_uuid;
+    };
+
+    const std::set<Util::EmailData::Recipient> recipients = {
+        Util::EmailData::Recipient{
+                    email_to_answer.empty() ? info_contact_data.email.get_value() : email_to_answer,
+                    get_raw_value_from(info_contact_data.uuid)}};
+    const Util::EmailData email_data(
+            recipients,
+            "send_personalinfo_pif",
+            "send-personalinfo-pif-subject.txt",
+            "send-personalinfo-pif-body.txt",
+            email_template_params,
+            ObjectType::contact,
+            get_raw_value_from(info_contact_data.uuid),
+            {get_attachment_cs(),
+             get_attachment_en()});
+
+    send_joined_addresses_email(_messenger_args.endpoint, _messenger_args.archive, email_data);
 }
 
 } // namespace Fred::Backend::PublicRequest::Process::{anonymous}
@@ -305,18 +304,29 @@ unsigned long long send_personal_info(
 void process_public_request_personal_info_resolved(
         unsigned long long _public_request_id,
         const LibFred::PublicRequestTypeIface& _public_request_type,
-        std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager,
-        std::shared_ptr<LibFred::File::Transferer> _file_manager_client)
+        const MessengerArgs& _messenger_args,
+        const FilemanArgs& _fileman_args)
 {
     try
     {
         LibFred::OperationContextCreator ctx;
         const LibFred::PublicRequestLockGuardById locked_request(ctx, _public_request_id);
-        const unsigned long long email_id = send_personal_info(locked_request, _mailer_manager, _file_manager_client);
+        try
+        {
+            send_personal_info(locked_request, _messenger_args, _fileman_args);
+        }
+        catch (const std::exception& e)
+        {
+            ctx.get_log().info(boost::format("Request %1% sending email failed (%2%)") % _public_request_id % e.what());
+        }
+        catch (...)
+        {
+            ctx.get_log().info(boost::format("Request %1% sending email failed") % _public_request_id);
+        }
+
         try
         {
             LibFred::UpdatePublicRequest()
-                .set_answer_email_id(email_id)
                 .set_on_status_action(LibFred::PublicRequest::OnStatusAction::processed)
                 .exec(locked_request, _public_request_type);
             ctx.commit_transaction();
@@ -324,17 +334,15 @@ void process_public_request_personal_info_resolved(
         catch (const std::exception& e)
         {
             ctx.get_log().info(
-                    boost::format("Request %1% update failed (%2%), but email %3% sent") %
+                    boost::format("Request %1% update failed (%2%), but email was sent") %
                     _public_request_id %
-                    e.what() %
-                    email_id);
+                    e.what());
         }
         catch (...)
         {
             ctx.get_log().info(
-                    boost::format("Request %1% update failed (unknown exception), but email %2% sent") %
-                    _public_request_id %
-                    email_id);
+                    boost::format("Request %1% update failed (unknown exception), but email was sent") %
+                    _public_request_id);
         }
     }
     catch (...)

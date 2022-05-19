@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2022  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,25 +16,38 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
-#ifndef AUTHINFO_HH_F36A7EC6F242440990E2AB46C3F298BC
-#define AUTHINFO_HH_F36A7EC6F242440990E2AB46C3F298BC
 
-#include "libfred/public_request/public_request_type_iface.hh"
-#include "src/bin/cli/messenger_params.hh"
+#include "src/backend/public_request/util/make_object_type.hh"
+
+#include <stdexcept>
 
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
-namespace Process {
+namespace Util {
 
-void process_public_request_authinfo_resolved(
-        unsigned long long _public_request_id,
-        const LibFred::PublicRequestTypeIface& _public_request_type,
-        const MessengerArgs& _messenger_args);
+ObjectType make_object_type(const std::string& _str)
+{
+        if (_str == "contact")
+        {
+            return ObjectType::contact;
+        }
+        else if (_str == "nsset")
+        {
+            return ObjectType::nsset;
+        }
+        else if (_str == "domain")
+        {
+            return ObjectType::domain;
+        }
+        else if (_str == "keyset")
+        {
+            return ObjectType::keyset;
+        }
+        throw std::runtime_error("unexpected object type");
+}
 
-} // namespace Fred::Backend::PublicRequest::Process
+} // namespace Fred::Backend::PublicRequest::Util
 } // namespace Fred::Backend::PublicRequest
 } // namespace Fred::Backend
 } // namespace Fred
-
-#endif

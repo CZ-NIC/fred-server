@@ -623,6 +623,7 @@ add_common_library_target(public_request
     src/backend/public_request/type/impl/public_request_authinfo.cc
     src/backend/public_request/type/impl/public_request_block_unblock.cc
     src/backend/public_request/type/impl/public_request_personal_info.cc
+    src/backend/public_request/util/make_object_type.cc
     src/backend/public_request/util/send_joined_address_email.cc
     src/deprecated/libfred/public_request/public_request.cc
     src/deprecated/libfred/public_request/public_request_authinfo_impl.cc
@@ -635,7 +636,9 @@ target_link_libraries(public_request PRIVATE
     corba_mailer
     messages
     contact_verification
-    Fred::library)
+    Fred::library
+    LibHermes::library
+    LibFiled::library)
 
 add_common_library_target(banking
     src/deprecated/libfred/banking/bank_common.cc
@@ -744,9 +747,12 @@ add_common_library_target(epp_keyset_dns_key
     src/backend/epp/keyset/dns_key.cc)
 target_link_libraries(epp_keyset_dns_key PRIVATE Fred::library)
 
+# TODO FIXME move messenger/fileman
 add_common_library_target(handle_database_args
     src/util/cfg/config_handler.cc
     src/util/cfg/handle_database_args.cc
+    src/util/cfg/handle_messenger_args.cc
+    src/util/cfg/handle_fileman_args.cc
     src/util/cfg/validate_args.cc)
 target_link_libraries(handle_database_args PRIVATE Fred::library)
 
@@ -887,7 +893,8 @@ target_link_libraries(epp_impl PRIVATE
     epp_keyset_dns_key
     handle_rifd_args
     buffer
-    Fred::library)
+    Fred::library
+    LibHermes::library)
 
 add_common_library_target(log_impl
     src/bin/corba/log/log_impl_wrap.cc)
