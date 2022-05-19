@@ -24,6 +24,7 @@
 #include "src/backend/public_request/type/get_iface_of.hh"
 #include "src/backend/public_request/type/public_request_authinfo.hh"
 #include "src/backend/public_request/util/make_object_type.hh"
+#include "src/backend/public_request/util/get_public_request_uuid.hh"
 #include "src/backend/public_request/util/send_joined_address_email.hh"
 #include "libfred/object/object_states_info.hh"
 #include "libfred/object/object_type.hh"
@@ -137,6 +138,7 @@ void send_authinfo_email(
     LibHermes::Struct email_template_params;
     email_template_params.emplace(LibHermes::StructKey{"handle"}, LibHermes::StructValue{handle});
     const auto object_type = Util::make_object_type(static_cast<std::string>(db_result[0]["object_type"]));
+    const auto public_request_uuid = Util::get_public_request_uuid(ctx, public_request_id);
     if (_email_type == EmailType::sendauthinfo_pif)
     {
         const Database::Result dbres = ctx.get_conn().exec_params(
@@ -213,6 +215,7 @@ void send_authinfo_email(
             email_template_params,
             object_type,
             object_uuid,
+            public_request_uuid,
             {}};
 
     send_joined_addresses_email(_messenger_args.endpoint, _messenger_args.archive, email_data);

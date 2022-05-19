@@ -67,22 +67,24 @@ LibHermes::Reference::Type to_libhermes_reference_type(ObjectType _object_type)
 } // namespace Fred::Backend::PublicRequest::Util::{anonymous}
 
 EmailData::EmailData(
-        const std::set<Recipient>& _recipients,
-        const std::string& _type,
-        const std::string& _template_name_subject,
-        const std::string& _template_name_body,
-        const LibHermes::Struct& _template_parameters,
+        std::set<Recipient> _recipients,
+        std::string _type,
+        std::string _template_name_subject,
+        std::string _template_name_body,
+        LibHermes::Struct _template_parameters,
         ObjectType _object_type, 
         boost::uuids::uuid _object_uuid,
-        const std::vector<boost::uuids::uuid>& _attachments)
-    : recipients(_recipients),
-      type(_type),
-      template_name_subject(_template_name_subject),
-      template_name_body(_template_name_body),
-      template_parameters(_template_parameters),
-      object_type(_object_type),
-      object_uuid(_object_uuid),
-      attachments(_attachments)
+        boost::uuids::uuid _public_request_uuid,
+        std::vector<boost::uuids::uuid> _attachments)
+    : recipients(std::move(_recipients)),
+      type(std::move(_type)),
+      template_name_subject(std::move(_template_name_subject)),
+      template_name_body(std::move(_template_name_body)),
+      template_parameters(std::move(_template_parameters)),
+      object_type(std::move(_object_type)),
+      object_uuid(std::move(_object_uuid)),
+      public_request_uuid(std::move(_public_request_uuid)),
+      attachments(std::move(_attachments))
 {
 }
 
@@ -106,6 +108,7 @@ void send_joined_addresses_email(
                     LibHermes::Email::SubjectTemplate{data.template_name_subject},
                     LibHermes::Email::BodyTemplate{data.template_name_body});
     email.context = data.template_parameters;
+    email.type = LibHermes::Email::Type{data.type};
 
     std::transform(
             data.attachments.begin(),
@@ -124,7 +127,10 @@ void send_joined_addresses_email(
                 LibHermes::Email::Archive{_archive},
                 {LibHermes::Reference{
                         to_libhermes_reference_type(data.object_type),
-                        LibHermes::Reference::Value{boost::uuids::to_string(data.object_uuid)}}});
+                        LibHermes::Reference::Value{boost::uuids::to_string(data.object_uuid)}},
+                 LibHermes::Reference{
+                        LibHermes::Reference::Type{"public-request"},
+                        LibHermes::Reference::Value{boost::uuids::to_string(data.public_request_uuid)}}});
     }
     catch (const LibHermes::Email::SendFailed& e)
     {

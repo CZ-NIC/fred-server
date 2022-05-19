@@ -55,23 +55,25 @@ struct EmailData
     };
 
     EmailData(
-            const std::set<Recipient>& _recipients,
-            const std::string& _type,
-            const std::string& _template_name_subject,
-            const std::string& _template_name_body,
-            const LibHermes::Struct& _template_parameters,
-            ObjectType object_type, 
+            std::set<Recipient> _recipients,
+            std::string _type,
+            std::string _template_name_subject,
+            std::string _template_name_body,
+            LibHermes::Struct _template_parameters,
+            ObjectType object_type,
             boost::uuids::uuid _object_uuid,
-            const std::vector<boost::uuids::uuid>& _attachments);
+            boost::uuids::uuid _public_request_uuid,
+            std::vector<boost::uuids::uuid> _attachments);
 
-    const std::set<Recipient> recipients;
-    const std::string type;
-    const std::string template_name_subject;
-    const std::string template_name_body;
-    const LibHermes::Struct template_parameters;
-    const ObjectType object_type;
-    const boost::uuids::uuid object_uuid;
-    const std::vector<boost::uuids::uuid> attachments;
+    std::set<Recipient> recipients;
+    std::string type;
+    std::string template_name_subject;
+    std::string template_name_body;
+    LibHermes::Struct template_parameters;
+    ObjectType object_type;
+    boost::uuids::uuid object_uuid;
+    boost::uuids::uuid public_request_uuid;
+    std::vector<boost::uuids::uuid> attachments;
 };
 
 void send_joined_addresses_email(
