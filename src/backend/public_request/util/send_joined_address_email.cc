@@ -52,14 +52,14 @@ std::map<LibHermes::Email::RecipientEmail, std::set<LibHermes::Email::RecipientU
     return result;
 }
 
-LibHermes::ReferenceType to_libhermes_reference_type(ObjectType _object_type)
+LibHermes::Reference::Type to_libhermes_reference_type(ObjectType _object_type)
 {
     switch (_object_type)
     {
-        case ObjectType::contact: return LibHermes::ReferenceType::contact;
-        case ObjectType::domain: return LibHermes::ReferenceType::domain;
-        case ObjectType::nsset: return LibHermes::ReferenceType::nsset;
-        case ObjectType::keyset: return LibHermes::ReferenceType::keyset;
+        case ObjectType::contact: return LibHermes::Reference::Type{"contact"};
+        case ObjectType::domain: return LibHermes::Reference::Type{"domain"};
+        case ObjectType::nsset: return LibHermes::Reference::Type{"nsset"};
+        case ObjectType::keyset: return LibHermes::Reference::Type{"keyset"};
     }
     throw std::logic_error("unexpected value of LibFred::Object_Type");
 }
@@ -124,7 +124,7 @@ void send_joined_addresses_email(
                 LibHermes::Email::Archive{_archive},
                 {LibHermes::Reference{
                         to_libhermes_reference_type(data.object_type),
-                        boost::uuids::to_string(data.object_uuid)}});
+                        LibHermes::Reference::Value{boost::uuids::to_string(data.object_uuid)}}});
     }
     catch (const LibHermes::Email::SendFailed& e)
     {
