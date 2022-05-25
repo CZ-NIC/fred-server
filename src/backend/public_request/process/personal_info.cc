@@ -20,6 +20,7 @@
 
 #include "src/backend/public_request/exceptions.hh"
 #include "src/backend/public_request/object_type.hh"
+#include "src/backend/public_request/util/get_public_request_uuid.hh"
 #include "src/backend/public_request/util/send_joined_address_email.hh"
 #include "src/util/corba_wrapper_decl.hh"
 #include "src/util/csv/csv.hh"
@@ -74,8 +75,10 @@ void send_personal_info(
         const FilemanArgs& _fileman_args)
 {
     auto& ctx = _locked_request.get_ctx();
+    const auto public_request_id = _locked_request.get_id();
     const LibFred::PublicRequestInfo request_info = LibFred::InfoPublicRequest().exec(ctx, _locked_request);
     const auto contact_id = request_info.get_object_id().get_value(); // oops
+    const auto public_request_uuid = Util::get_public_request_uuid(ctx, public_request_id);
 
     const std::string email_to_answer = request_info.get_email_to_answer().get_value_or_default();
 
@@ -293,6 +296,7 @@ void send_personal_info(
             email_template_params,
             ObjectType::contact,
             get_raw_value_from(info_contact_data.uuid),
+            public_request_uuid,
             {get_attachment_cs(),
              get_attachment_en()});
 

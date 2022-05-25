@@ -26,6 +26,7 @@
 #include "src/backend/public_request/type/get_iface_of.hh"
 #include "src/backend/public_request/type/public_request_block_unblock.hh"
 #include "src/backend/public_request/util/make_object_type.hh"
+#include "src/backend/public_request/util/get_public_request_uuid.hh"
 #include "src/backend/public_request/util/send_joined_address_email.hh"
 #include "libfred/object/object_state.hh"
 #include "libfred/object/object_states_info.hh"
@@ -34,6 +35,7 @@
 #include "libfred/object_state/lock_object_state_request_lock.hh"
 #include "libfred/object_state/perform_object_state_request.hh"
 #include "libfred/object_state/typedefs.hh"
+#include "libfred/opcontext.hh"
 #include "libfred/public_request/info_public_request.hh"
 #include "src/deprecated/libfred/public_request/public_request_impl.hh"
 #include "libfred/public_request/public_request_lock_guard.hh"
@@ -258,8 +260,9 @@ void send_request_block_email(
         throw std::runtime_error("too many objects for given id");
     }
     const std::string handle = static_cast<std::string>(db_result[0]["handle"]);
-    const auto object_uuid = boost::uuids::string_generator{}(static_cast<std::string>(db_result[0]["object_uuid"]));
     const auto object_type = Util::make_object_type(static_cast<std::string>(db_result[0]["object_type"]));
+    const auto object_uuid = boost::uuids::string_generator{}(static_cast<std::string>(db_result[0]["object_uuid"]));
+    const auto public_request_uuid = Util::get_public_request_uuid(ctx, public_request_id);
 
     LibHermes::Struct email_template_params;
     {
@@ -307,6 +310,7 @@ void send_request_block_email(
             email_template_params,
             object_type,
             object_uuid,
+            public_request_uuid,
             {});
 
     send_joined_addresses_email(_messenger_args.endpoint, _messenger_args.archive, email_data);
