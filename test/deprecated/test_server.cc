@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2010-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -18,53 +18,102 @@
  */
 #define BOOST_TEST_MODULE Test Server
 
+#include "test/poc/parallel-tests/setup/cfg.hh"
+#include "test/poc/parallel-tests/fixtures/has_fresh_database.hh"
+
+#include "src/util/cfg/handle_args.hh"
+#include "src/util/cfg/handle_contactverification_args.hh"
+#include "src/util/cfg/handle_corbanameservice_args.hh"
+#include "src/util/cfg/handle_database_args.hh"
+#include "src/util/cfg/handle_domainbrowser_args.hh"
+#include "src/util/cfg/handle_logging_args.hh"
+#include "src/util/cfg/handle_mojeid_args.hh"
+#include "src/util/cfg/handle_registry_args.hh"
+#include "src/util/cfg/handle_rifd_args.hh"
+#include "src/util/cfg/handle_server_args.hh"
+#include "src/util/cfg/handle_threadgroup_args.hh"
+#include "src/util/corba_wrapper.hh"
+#include "src/util/setup_server.hh"
+
+#include "util/log/logger.hh"
+
+#include <boost/test/unit_test.hpp>
+
+#include <chrono>
+#include <iomanip>
+#include <iostream>
 #include <utility>
 
-#include "test/deprecated/test_server.hh"
 
-#include "config.h" // needed for CONFIG_FILE
+namespace {
 
-//args processing config for custom main
-HandlerPtrVector global_hpv =
-boost::assign::list_of
-(HandleArgsPtr(new HandleTestsArgs(CONFIG_FILE)))
-(HandleArgsPtr(new HandleServerArgs))
-(HandleArgsPtr(new HandleLoggingArgs))
-(HandleArgsPtr(new HandleDatabaseArgs))
-(HandleArgsPtr(new HandleCorbaNameServiceArgs))
-(HandleArgsPtr(new HandleThreadGroupArgs))
-(HandleArgsPtr(new HandleRegistryArgs))
-(HandleArgsPtr(new HandleRifdArgs))
-(HandleArgsPtr(new HandleContactVerificationArgs))
-(HandleArgsPtr(new HandleMojeIdArgs))
-(HandleArgsPtr(new HandleDomainBrowserArgs))
-;
-
-#include "src/util/cfg/test_custom_main.hh"
-
-class ElapsedTimeFixture
+class ElapsedTime
 {
-    ElapsedTime et_;
 public:
-    ElapsedTimeFixture()
-    : et_("elapsed time: ", cout_print())
-    {}
-};
-
-BOOST_GLOBAL_FIXTURE(ElapsedTimeFixture);
-
-
-class LoggingFixture {
-public:
-    LoggingFixture() {
-        // setting up logger
-        setup_logging(CfgArgs::instance());
+    ElapsedTime() : start_{std::chrono::system_clock::now()} { }
+    ~ElapsedTime()
+    {
+        const auto dt = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now() - start_).count();
+        const auto seconds = dt / 1'000'000;
+        const auto microseconds = dt % 1'000'000;
+        std::cout << "Elapsed time: ";
+        if (3600 <= seconds)
+        {
+            std::cout << (seconds / 3600) << ":"
+                      << std::setw(2) << std::setfill('0') << ((seconds / 60) % 60);
+        }
+        else
+        {
+            std::cout << (seconds / 60);
+        }
+        std::cout << ":" << std::setw(2) << std::setfill('0') << (seconds % 60) << "."
+                  << std::setw(6) << std::setfill('0') << microseconds << std::endl;
     }
-
+    std::chrono::time_point<std::chrono::system_clock> start_;
 };
 
-BOOST_GLOBAL_FIXTURE( LoggingFixture );
+void dummy_setup() { }
 
+class GlobalFixture : ElapsedTime
+{
+public:
+    GlobalFixture()
+        : database_administrator_{
+                []()
+                {
+                    const HandlerPtrVector config_handlers = {
+                            std::make_shared<HandleLoggingArgs>(),
+                            std::make_shared<HandleServerArgs>(),
+                            std::make_shared<HandleDatabaseArgs>(),
+                            std::make_shared<HandleCorbaNameServiceArgs>(),
+                            std::make_shared<HandleThreadGroupArgs>(),
+                            std::make_shared<HandleRegistryArgs>(),
+                            std::make_shared<HandleRifdArgs>(),
+                            std::make_shared<HandleContactVerificationArgs>(),
+                            std::make_shared<HandleDomainBrowserArgs>(),
+                            std::make_shared<HandleMojeIdArgs>()};
+                    return Test::Cfg::handle_command_line_args(config_handlers, dummy_setup);
+                }()}
+    {
+        Test::HasFreshDatabase::set_restore_test_database_procedure(database_administrator_.get_restore_test_database_procedure());
+        ::LOGGER.info("tests start");
+    }
+    ~GlobalFixture()
+    {
+        try
+        {
+            ::LOGGER.info("tests done");
+            Test::HasFreshDatabase::clear_restore_test_database_procedure();
+        }
+        catch (...) { }
+    }
+private:
+    Test::Cfg::DatabaseAdministrator database_administrator_;
+};
+
+}//namespace {anonymous}
+
+BOOST_GLOBAL_FIXTURE(GlobalFixture);
 
 
 BOOST_AUTO_TEST_SUITE(TestCpp)
@@ -161,5 +210,4 @@ BOOST_AUTO_TEST_CASE( test_const_member_init )
     BOOST_REQUIRE_EQUAL(ci.get_cstr(), 5);
 }
 
-BOOST_AUTO_TEST_SUITE_END();//TestCpp
-
+BOOST_AUTO_TEST_SUITE_END()//TestCpp

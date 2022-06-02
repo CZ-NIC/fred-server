@@ -8,17 +8,6 @@ macro(set_default variable_name variable_value)
     endif()
 endmacro()
 
-# project details
-
-include("cmake/package.cmake")
-
-package(fred-server
-    FULL_VERSION "2.52.0-rc3")
-
-project(FredServer
-    VERSION ${PACKAGE_VERSION}
-    LANGUAGES CXX)
-
 # build options
 
 option(CMAKE_EXPORT_COMPILE_COMMANDS "If enabled, generates a compile_commands.json file containing the exact compiler calls." ON)
@@ -29,6 +18,17 @@ set_default(CMAKE_BUILD_TYPE "Release")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2")
 
 option(LIBFRED_BUILD_TESTS "Build libfred tests" YES)
+
+# project details
+
+include("cmake/package.cmake")
+
+package(fred-server
+    FULL_VERSION "2.52.0-rc3")
+
+project(FredServer
+    VERSION ${PACKAGE_VERSION}
+    LANGUAGES CXX)
 
 # dependencies
 
@@ -976,6 +976,20 @@ add_common_library_target(administrativeblocking_impl
 target_link_libraries(administrativeblocking_impl PRIVATE Fred::library)
 
 add_common_library_target(test-setup-fixtures
+    test/poc/parallel-tests/fixtures/contact.cc
+    test/poc/parallel-tests/fixtures/domain.cc
+    test/poc/parallel-tests/fixtures/epp.cc
+    test/poc/parallel-tests/fixtures/has_fresh_database.cc
+    test/poc/parallel-tests/fixtures/keyset.cc
+    test/poc/parallel-tests/fixtures/nsset.cc
+    test/poc/parallel-tests/fixtures/operation_context.cc
+    test/poc/parallel-tests/fixtures/registrar.cc
+    test/poc/parallel-tests/fixtures/zone.cc
+    test/poc/parallel-tests/fixtures/zone_access.cc
+    test/poc/parallel-tests/setup/arguments.cc
+    test/poc/parallel-tests/setup/cfg.cc
+    test/poc/parallel-tests/setup/run_in_background.cc
+    test/poc/parallel-tests/setup/test_tree_list.cc
     test/setup/fixtures.cc
     test/setup/fixtures_utils.cc
     test/setup/tests_common.cc)
@@ -1726,6 +1740,26 @@ target_link_libraries(test-epp
     handle_rifd_args
     corba_mailer
     test-setup-fixtures
+    Threads::Threads
+    Boost::system
+    Boost::regex
+    Boost::random
+    Boost::thread
+    Boost::date_time)
+
+# test-poc-parallel
+add_common_executable_target(test-poc-parallel
+    test/poc/parallel-tests/main.cc
+    test/poc/parallel-tests/test_contact.cc
+    test/poc/parallel-tests/test_create_domain.cc
+    test/poc/parallel-tests/test_domain_browser.cc)
+target_link_libraries(test-poc-parallel
+    db
+    util
+    handle_rifd_args
+    test-setup-fixtures
+    domain_browser_impl
+    epp_impl
     Threads::Threads
     Boost::system
     Boost::regex
