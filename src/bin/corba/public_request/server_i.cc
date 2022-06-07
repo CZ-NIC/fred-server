@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/bin/corba/public_request/server_i.hh"
 #include "src/backend/buffer.hh"
 #include "src/backend/public_request/create_authinfo_request_non_registry_email.hh"
@@ -33,9 +34,13 @@
 #include "src/bin/corba/util/corba_conversions_buffer.hh"
 #include "src/bin/corba/util/corba_conversions_string.hh"
 #include "src/deprecated/libfred/documents.hh"
-#include "libfred/mailer.hh"
-#include "libfred/public_request/create_public_request.hh"
 #include "src/util/corba_conversion.hh"
+
+#include "libfred/mailer.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/public_request/create_public_request.hh"
+#include "libfred/registrar/info_registrar.hh"
+
 #include "util/optional_value.hh"
 
 #include <map>
@@ -75,11 +80,19 @@ Optional<unsigned long long> unwrap_nullableulonglong_to_optional_unsigned_long_
     return dst;
 }
 
+auto get_registrar_id(const std::string& authinfo_registrar)
+{
+    LibFred::OperationContextCreator ctx;
+    auto id = LibFred::InfoRegistrarByHandle{authinfo_registrar}.exec(ctx).info_registrar_data.id;
+    ctx.commit_transaction();
+    return id;
+}
+
 } // namespace CorbaConversion::PublicRequest::{anonymous}
 
-Server_i::Server_i(const std::string& _server_name [[gnu::unused]])
-{
-}
+Server_i::Server_i(const std::string& _server_name [[gnu::unused]], const std::string& authinfo_registrar)
+    : authinfo_registrar_id_{get_registrar_id(authinfo_registrar)}
+{ }
 
 Server_i::~Server_i()
 {
@@ -96,6 +109,7 @@ Server_i::~Server_i()
                 Fred::Backend::PublicRequest::create_authinfo_request_registry_email(
                         unwrap_objecttype_pr_to_objecttype(object_type),
                         LibFred::Corba::unwrap_string_from_const_char_ptr(object_handle),
+                        authinfo_registrar_id_,
                         unwrap_nullableulonglong_to_optional_unsigned_long_long(log_request_id));
         ::CORBA::ULongLong result;
         CorbaConversion::wrap_int(public_request_id, result);
@@ -160,6 +174,7 @@ CORBA::ULongLong Server_i::create_authinfo_request_non_registry_email(
                 Fred::Backend::PublicRequest::create_authinfo_request_non_registry_email(
                         unwrap_objecttype_pr_to_objecttype(object_type),
                         LibFred::Corba::unwrap_string_from_const_char_ptr(object_handle),
+                        authinfo_registrar_id_,
                         unwrap_nullableulonglong_to_optional_unsigned_long_long(log_request_id),
                         unwrap_confirmedby_to_confirmedby(confirmation_method),
                         LibFred::Corba::unwrap_string_from_const_char_ptr(specified_email));

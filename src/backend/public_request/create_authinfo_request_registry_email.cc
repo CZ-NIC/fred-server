@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/public_request/create_authinfo_request_registry_email.hh"
 
 #include "src/backend/public_request/confirmed_by.hh"
@@ -69,6 +70,7 @@ private:
 unsigned long long create_authinfo_request_registry_email(
         ObjectType object_type,
         const std::string& object_handle,
+        unsigned long long registrar_id,
         const Optional<unsigned long long>& log_request_id)
 {
     LOGGING_CONTEXT(log_ctx);
@@ -92,7 +94,8 @@ unsigned long long create_authinfo_request_registry_email(
             throw NoContactEmail();
         }
         const auto public_request_id = LibFred::CreatePublicRequest()
-            .exec(locked_object, Type::get_iface_of<Type::AuthinfoAuto>(), log_request_id);
+                .set_registrar_id(registrar_id)
+                .exec(locked_object, Type::get_iface_of<Type::AuthinfoAuto>(), log_request_id);
         LibFred::UpdatePublicRequest()
             .set_status(LibFred::PublicRequest::Status::resolved)
             .exec(locked_object, Type::get_iface_of<Type::AuthinfoAuto>(), log_request_id);
