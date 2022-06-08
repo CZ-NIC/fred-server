@@ -8,6 +8,11 @@ UNRELEASED
 
 * Remove obsolete ``getRequestCount*`` (moved to LoggerCorba)
 
+2022-04-29 (2.51.0)
+-------------------
+
+* Add ``--send_notifications`` option to fred-admin ``--object_regular_procedure`` call. Default is not to send email notifications.
+
 2022-02-28 (2.50.0)
 -------------------
 

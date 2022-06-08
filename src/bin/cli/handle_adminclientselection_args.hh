@@ -2166,6 +2166,10 @@ struct HandleAdminClientObjectRegularProcedureArgsGrp:HandleCommandGrpArgs
              boost::program_options::value<Checked::string>()->notifier(
                      save_optional_string(regular_procedure_params.notify_except_types)),
              "list of notification types ignored in notification")
+            ("send_notifications",
+             boost::program_options::value<bool>()->zero_tokens()->notifier(
+                     save_arg<bool>(regular_procedure_params.send_notifications)),
+             "send notifications via old build-in mailer (instead of new independent client)")
             ("object_delete_limit",
              boost::program_options::value<Checked::ulonglong>()->notifier(
                      save_optional_ulonglong(delete_objects_params.object_delete_limit)),
