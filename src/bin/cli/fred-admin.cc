@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "libfred/db_settings.hh"
 #include "src/util/corba_wrapper.hh"
 #include "util/log/add_log_device.hh"
@@ -56,6 +57,8 @@
 #include "src/util/cfg/command_selection_args.hh"
 
 #include "src/util/cfg/config_handler.hh"
+
+#include "libfred/object/object.hh"
 
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
@@ -248,6 +251,10 @@ int main(int argc, char* argv[])
 
         // setting up logger
         setup_admin_logging(CfgArgGroups::instance());
+
+        // set global authinfo TTL
+        LibFred::UpdateObject::set_authinfo_ttl(
+                CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_authinfo_ttl());
 
         // config dump
         if(CfgArgGroups::instance()->get_handler_ptr_by_type<HandleLoggingArgsGrp>()->get_log_config_dump())
