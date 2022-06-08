@@ -18,7 +18,7 @@
  */
 #include "src/backend/epp/contact/impl/contact_data_share_policy_rules.hh"
 
-#include "libfred/object/generate_authinfo_password.hh"
+#include "libfred/object/check_authinfo.hh"
 #include "libfred/registrable_object/contact/update_contact.hh"
 #include "libfred/registrar/info_registrar.hh"
 
@@ -115,18 +115,13 @@ bool contact_is_registrars_domain_admin_contact(
             Database::query_param_list(registrar_id)(contact_id)).size();
 }
 
-void authorize_registrar_request(const LibFred::InfoContactData& contact_data, const Password& password)
+void authorize_registrar_request(
+        LibFred::OperationContext& ctx,
+        const LibFred::InfoContactData& contact_data,
+        const Password& password)
 {
-    const auto authinfo = Password{contact_data.authinfopw};
-    if (authinfo.is_empty())
-    {
-        struct AuthinfoIsDisabled : ContactDataSharePolicyRules::InvalidAuthorizationInformation, std::exception
-        {
-            const char* what() const noexcept override { return "authinfo is disabled"; }
-        };
-        throw AuthinfoIsDisabled{};
-    }
-    if (authinfo != password)
+    if (LibFred::Object::CheckAuthinfo{LibFred::Object::ObjectId{contact_data.id}}
+                .exec(ctx, *password, LibFred::Object::CheckAuthinfo::increment_usage))
     {
         struct AuthinfoDoesNotMatch : ContactDataSharePolicyRules::InvalidAuthorizationInformation, std::exception
         {
@@ -290,20 +285,12 @@ LibFred::InfoContactData& ContactDataSharePolicyRules::apply(
         const auto session_registrar =
                 LibFred::InfoRegistrarById{session_data.registrar_id}.exec(ctx).info_registrar_data;
         if (this->show_private_data_to<ContactRegistrarRelationship::AuthorizedRegistrar>() &&
-            !contact_authinfopw.is_empty())
+            !contact_authinfopw->empty())
         {
-            authorize_registrar_request(contact_data, contact_authinfopw);
-            LibFred::UpdateContactById{contact_data.id, session_registrar.handle}
-                    .set_authinfo(LibFred::generate_authinfo_pw().password_)
-                    .exec(ctx);
-            contact_data = std::move(LibFred::InfoContactById{contact_data.id}.exec(ctx).info_contact_data);
+            authorize_registrar_request(ctx, contact_data, contact_authinfopw);
             show_private_data = true;
         }
         const bool is_sponsoring_registrar = session_registrar.handle == contact_data.sponsoring_registrar_handle;
-        if (!is_sponsoring_registrar)
-        {
-            contact_data.authinfopw.clear();
-        }
         if (!show_private_data && is_visibility_restricted(show_private_data_to_))
         {
             const auto is_domain_holder = [&]()

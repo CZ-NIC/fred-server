@@ -19,7 +19,6 @@
 
 #include "src/backend/epp/password.hh"
 
-#include <stdexcept>
 #include <utility>
 
 namespace Epp {
@@ -28,25 +27,14 @@ Password::Password(std::string value)
     : value_{std::move(value)}
 { }
 
-bool Password::is_empty() const noexcept
+const std::string& Password::operator*() const noexcept
 {
-    return value_.empty();
+    return value_;
+}
+
+const std::string* Password::operator->() const noexcept
+{
+    return &value_;
 }
 
 } // namespace Epp
-
-using namespace Epp;
-
-bool Epp::operator==(const Password& lhs, const Password& rhs)
-{
-    if (lhs.is_empty() || rhs.is_empty())
-    {
-        throw std::invalid_argument{"both passwords must be set"};
-    }
-    return lhs.value_ == rhs.value_;
-}
-
-bool Epp::operator!=(const Password& lhs, const Password& rhs)
-{
-    return !(lhs == rhs);
-}
