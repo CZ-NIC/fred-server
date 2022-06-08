@@ -19,8 +19,12 @@
 
 #include "src/backend/domain_browser/domain_browser.hh"
 
+#include "src/util/cfg/config_handler.hh"
+#include "src/util/cfg/handle_registry_args.hh"
+
 #include "libfred/object/object_impl.hh"
 #include "libfred/object/object_states_info.hh"
+#include "libfred/object/store_authinfo.hh"
 #include "libfred/object_state/cancel_object_state_request_id.hh"
 #include "libfred/object_state/create_object_state_request_id.hh"
 #include "libfred/object_state/get_object_state_descriptions.hh"
@@ -37,6 +41,7 @@
 #include "libfred/registrable_object/keyset/info_keyset.hh"
 #include "libfred/registrable_object/nsset/info_nsset.hh"
 #include "libfred/registrar/info_registrar.hh"
+
 #include "util/log/context.hh"
 #include "util/map_at.hh"
 #include "util/random/random.hh"
@@ -302,19 +307,6 @@ std::vector<std::string> DomainBrowser::get_object_states(
             Database::query_param_list(object_id));
 
     return split_object_states_string(static_cast<std::string>(state_res[0]["state_codes"]));
-}
-
-
-std::string DomainBrowser::filter_authinfo(
-        bool user_is_owner,
-        const std::string& authinfopw)
-{
-    if (user_is_owner)
-    {
-        return authinfopw;
-    }
-
-    return "********";         // if not
 }
 
 
@@ -593,9 +585,6 @@ ContactDetail DomainBrowser::getContactDetail(
         detail.transfer_time = contact_info.info_contact_data.transfer_time;
 
         detail.is_owner = (user_contact_id == contact_id);
-        detail.authinfopw = filter_authinfo(
-                detail.is_owner,
-                contact_info.info_contact_data.authinfopw);
 
         detail.name = contact_info.info_contact_data.name;
         detail.organization = contact_info.info_contact_data.organization;
@@ -709,7 +698,6 @@ DomainDetail DomainBrowser::getDomainDetail(
         detail.nsset = nsset;
         detail.keyset = keyset;
 
-        bool set_authinfo = detail.is_owner;
         detail.admins.reserve(domain_info.info_domain_data.admin_contacts.size());
         for (const auto& admin_contact : domain_info.info_domain_data.admin_contacts)
         {
@@ -728,14 +716,9 @@ DomainDetail DomainBrowser::getDomainDetail(
 
             if (admin.id == user_contact_id)
             {
-                set_authinfo = true;        // reveal authinfo to admin
                 detail.is_admin = true;
             }
         }
-
-        detail.authinfopw = filter_authinfo(
-                set_authinfo,
-                domain_info.info_domain_data.authinfopw);
 
         detail.state_codes = get_object_states(
                 ctx,
@@ -845,12 +828,9 @@ NssetDetail DomainBrowser::getNssetDetail(
 
             if (admin.id == user_contact_id)
             {
-                detail.is_owner = true;                                    // reveal authinfo
+                detail.is_owner = true;
             }
         }
-        detail.authinfopw = filter_authinfo(
-                detail.is_owner,
-                nsset_info.info_nsset_data.authinfopw);
         detail.hosts = nsset_info.info_nsset_data.dns_hosts;
 
         detail.state_codes = get_object_states(
@@ -964,13 +944,9 @@ KeysetDetail DomainBrowser::getKeysetDetail(
 
             if (admin.id == user_contact_id)
             {
-                detail.is_owner = true;                                    // reveal authinfo
+                detail.is_owner = true;
             }
         }
-
-        detail.authinfopw = filter_authinfo(
-                detail.is_owner,
-                keyset_info.info_keyset_data.authinfopw);
 
         detail.dnskeys.reserve(keyset_info.info_keyset_data.dns_keys.size());
         for (std::vector<LibFred::DnsKey>::const_iterator ci = keyset_info.info_keyset_data.dns_keys.begin();
@@ -1093,11 +1069,38 @@ bool DomainBrowser::setContactDiscloseFlags(
     return true;
 }
 
+namespace {
+
+auto get_authinfo_ttl()
+{
+    static const auto ttl = []()
+    {
+        try
+        {
+            return CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_authinfo_ttl();
+        }
+        catch (...) { }
+        try
+        {
+            return CfgArgs::instance()->get_handler_ptr_by_type<HandleRegistryArgs>()->authinfo_ttl;
+        }
+        catch (...) { }
+        return std::chrono::seconds{14 * 24 * 3600};
+    }();
+    return ttl;
+}
+
+auto get_registrar_id(LibFred::OperationContext& ctx, const std::string& registrar_handle)
+{
+    return LibFred::InfoRegistrarByHandle{registrar_handle}.exec(ctx).info_registrar_data.id;
+}
+
+}//namespace Fred::Backend::DomainBrowser::{anonymous}
 
 bool DomainBrowser::setContactAuthInfo(
         unsigned long long user_contact_id,
         const std::string& authinfo,
-        unsigned long long request_id)
+        unsigned long long request_id [[gnu::unused]])
 {
     Logging::Context lctx_server(create_ctx_name(get_server_name()));
     Logging::Context lctx("set-contact-auth-info");
@@ -1126,15 +1129,10 @@ bool DomainBrowser::setContactAuthInfo(
             throw ObjectBlocked();
         }
 
-        const auto& info_contact_data = std::get<LibFred::InfoContactOutput>(user_info).info_contact_data;
-        if (info_contact_data.authinfopw == authinfo)
-        {
-            return false;
-        }
-
-        exec_update_contact(ctx, LibFred::UpdateContactById{user_contact_id, update_registrar_}
-                .set_authinfo(authinfo)
-                .set_logd_request_id(request_id));
+        LibFred::Object::StoreAuthinfo{
+                LibFred::Object::ObjectId{user_contact_id},
+                get_registrar_id(ctx, update_registrar_),
+                get_authinfo_ttl()}.exec(ctx, authinfo);
         ctx.commit_transaction();
     }
     catch (...)
