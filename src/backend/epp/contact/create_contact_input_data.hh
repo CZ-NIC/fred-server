@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #ifndef CREATE_CONTACT_INPUT_DATA_HH_616155610E4842C6BAC450787A8269EB//date "+%s.%N"|md5sum|tr "[a-f]" "[A-F]"
 #define CREATE_CONTACT_INPUT_DATA_HH_616155610E4842C6BAC450787A8269EB
 
@@ -23,10 +24,10 @@
 #include "src/backend/epp/contact/street_traits.hh"
 #include "src/backend/epp/contact/hideable.hh"
 
+#include <boost/optional.hpp>
+
 #include <string>
 #include <vector>
-
-#include <boost/optional.hpp>
 
 namespace Epp {
 namespace Contact {
@@ -53,7 +54,6 @@ struct CreateContactInputData
     Hideable<std::string> notify_email;
     Hideable<std::string> vat;
     HideableOptional<ContactIdent> ident;
-    boost::optional<std::string> authinfopw;
 };
 
 }//namespace Epp::Contact

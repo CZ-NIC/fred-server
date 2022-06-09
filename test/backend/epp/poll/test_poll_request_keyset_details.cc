@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2020  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -28,6 +28,7 @@
 #include "src/util/tz/get_psql_handle_of.hh"
 #include "src/util/tz/utc.hh"
 
+#include "libfred/object/check_authinfo.hh"
 #include "libfred/poll/create_poll_message.hh"
 #include "libfred/poll/create_update_object_poll_message.hh"
 
@@ -55,8 +56,6 @@ void check_equal(
     BOOST_CHECK_EQUAL(output_data.handle, keyset_data.handle);
     BOOST_CHECK_EQUAL(output_data.sponsoring_registrar_handle, keyset_data.sponsoring_registrar_handle);
     BOOST_CHECK_EQUAL(output_data.creating_registrar_handle, keyset_data.create_registrar_handle);
-
-    BOOST_REQUIRE(output_data.authinfopw);
 
     BOOST_CHECK_EQUAL(output_data.crdate, keyset_data.creation_time);
     BOOST_CHECK_EQUAL(output_data.last_transfer, keyset_data.transfer_time);
@@ -86,27 +85,28 @@ void check_equal(
 
 struct HasKeysetUpdate : virtual Test::Backend::Epp::autorollbacking_context
 {
-    ::LibFred::InfoKeysetData old_keyset_data;
-    ::LibFred::InfoKeysetData new_keyset_data;
-
     HasKeysetUpdate()
+        : keyset_data{
+            [&]()
+            {
+                Util::mark_all_messages_as_seen(ctx);
+                const Test::keyset keyset(ctx, Optional<std::string>(), Optional<std::string>(), Tz::get_psql_handle_of<Tz::UTC>());
+                return keyset.info_data;
+            }()}
     {
-        Util::mark_all_messages_as_seen(ctx);
-        static const char new_passwd[] = "doesntmatter_38E166961BEE";
-
-        const Test::keyset keyset(ctx, Optional<std::string>(), Optional<std::string>(), Tz::get_psql_handle_of<Tz::UTC>());
-        old_keyset_data = new_keyset_data = keyset.info_data;
-
-        new_keyset_data.authinfopw = new_passwd;
-
-        unsigned long long new_history_id =
-            ::LibFred::UpdateKeyset(keyset.info_data.handle,
-                               keyset.info_data.sponsoring_registrar_handle
-                ).set_authinfo(new_passwd).exec(ctx);
-
+        const auto new_history_id =
+                ::LibFred::UpdateKeyset(
+                        keyset_data.handle,
+                        keyset_data.sponsoring_registrar_handle)
+                .set_authinfo(new_passwd)
+                .exec(ctx);
         ::LibFred::Poll::CreateUpdateObjectPollMessage().exec(ctx, new_history_id);
     }
+    ::LibFred::InfoKeysetData keyset_data;
+    static const char new_passwd[];
 };
+
+const char HasKeysetUpdate::new_passwd[] = "doesntmatter_38E166961BEE";
 
 } // namespace {anonymous}
 
@@ -121,10 +121,13 @@ BOOST_FIXTURE_TEST_CASE(successful_request_keyset_details, HasKeysetUpdate)
     BOOST_CHECK_NO_THROW(output =
         ::Epp::Poll::poll_request_get_update_keyset_details(ctx, mesage_detail.message_id, mesage_detail.registrar_id));
 
-    check_equal(output.old_data, old_keyset_data);
-    check_equal(output.new_data, new_keyset_data);
+    check_equal(output.old_data, keyset_data);
+    check_equal(output.new_data, keyset_data);
 
-    BOOST_CHECK(*output.old_data.authinfopw != *output.new_data.authinfopw);
+    BOOST_CHECK_LT(
+            0,
+            LibFred::Object::CheckAuthinfo{LibFred::Object::ObjectId{keyset_data.id}}
+                    .exec(ctx, new_passwd, LibFred::Object::CheckAuthinfo::increment_usage));
     BOOST_CHECK(output.old_data.last_update.isnull());
     BOOST_CHECK(!output.new_data.last_update.isnull());
 
@@ -156,10 +159,10 @@ BOOST_FIXTURE_TEST_CASE(failed_request_keyset_details, HasKeysetUpdate)
     BOOST_CHECK_EQUAL(after_message_count, 1);
 }
 
-BOOST_AUTO_TEST_SUITE_END(); // Backend/Epp/Poll/PollRequest/PollRequestKeysetDetails
-BOOST_AUTO_TEST_SUITE_END(); // Backend/Epp/Poll/PollRequest
-BOOST_AUTO_TEST_SUITE_END(); // Backend/Epp/Poll
-BOOST_AUTO_TEST_SUITE_END(); // Backend/Epp
-BOOST_AUTO_TEST_SUITE_END(); // Backend
+BOOST_AUTO_TEST_SUITE_END()//Backend/Epp/Poll/PollRequest/PollRequestKeysetDetails
+BOOST_AUTO_TEST_SUITE_END()//Backend/Epp/Poll/PollRequest
+BOOST_AUTO_TEST_SUITE_END()//Backend/Epp/Poll
+BOOST_AUTO_TEST_SUITE_END()//Backend/Epp
+BOOST_AUTO_TEST_SUITE_END()//Backend
 
 } // namespace Test

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/epp/domain/info_domain.hh"
 #include "src/backend/epp/domain/impl/domain_output.hh"
 
@@ -52,15 +53,10 @@ InfoDomainOutputData info_domain(
                         .exec(_ctx, "UTC")
                         .info_domain_data;
 
-        const std::string session_registrar_handle =
-            LibFred::InfoRegistrarById(_session_data.registrar_id).exec(_ctx).info_registrar_data.handle;
-        const bool info_is_for_sponsoring_registrar =
-            info_domain_data.sponsoring_registrar_handle == session_registrar_handle;
-
         const std::vector<LibFred::ObjectStateData> object_state_data =
             LibFred::GetObjectStates(info_domain_data.id).exec(_ctx);
 
-        return get_info_domain_output(info_domain_data, object_state_data, info_is_for_sponsoring_registrar);
+        return get_info_domain_output(info_domain_data, object_state_data);
     }
     catch (const LibFred::InfoDomainByFqdn::Exception& e)
     {

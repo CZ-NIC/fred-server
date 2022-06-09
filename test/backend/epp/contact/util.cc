@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2021  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "test/backend/epp/contact/util.hh"
 
 #include "src/backend/epp/contact/info_contact.hh"
@@ -112,12 +113,6 @@ bool is_public(const ::Epp::Contact::Hideable<T>& hideable)
     throw std::runtime_error("no publishability specified");
 }
 
-void check_equal_authinfopw(const boost::optional<std::string>& epp_data_authinfopw, const std::string fred_data_authinfopw)
-{
-    BOOST_REQUIRE(epp_data_authinfopw != boost::none);
-    BOOST_CHECK_EQUAL(*epp_data_authinfopw, fred_data_authinfopw);
-}
-
 void check_equal_except_authinfo(const ::Epp::Contact::InfoContactOutputData& epp_data, const ::LibFred::InfoContactData& fred_data)
 {
     BOOST_CHECK_EQUAL(boost::to_upper_copy(epp_data.handle), fred_data.handle);
@@ -206,13 +201,11 @@ bool is_empty(const ::Epp::Contact::HideableOptional<T>& hideable)
 void check_equal(const ::Epp::Contact::InfoContactOutputData& epp_data, const ::LibFred::InfoContactData& fred_data)
 {
     check_equal_except_authinfo(epp_data, fred_data);
-    check_equal_authinfopw(epp_data.authinfopw, fred_data.authinfopw);
 }
 
 void check_equal_but_no_authinfopw(const ::Epp::Contact::InfoContactOutputData& epp_data, const ::LibFred::InfoContactData& fred_data)
 {
     check_equal_except_authinfo(epp_data, fred_data);
-    BOOST_CHECK_EQUAL(epp_data.authinfopw, boost::none);
 }
 
 void check_equal_except_authinfo_respect_discloseflags(const ::Epp::Contact::InfoContactOutputData& epp_data, const ::LibFred::InfoContactData& fred_data)

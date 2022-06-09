@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2020  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/bin/corba/epp/keyset/keyset_corba_conversions.hh"
 
 #include "corba/EPP.hh"
@@ -48,7 +49,6 @@ unwrap_ccReg_DSRecord_str(
     _dst = Epp::Keyset::DsRecord(key_tag, alg, digest_type, digest, max_sig_life);
 }
 
-
 void
 unwrap_ccReg_DNSKey_str(
         const ccReg::DNSKey_str& _src,
@@ -63,7 +63,6 @@ unwrap_ccReg_DNSKey_str(
     const std::string key = unwrap_string(_src.key);
     _dst = Epp::Keyset::DnsKey(flags, protocol, alg, key);
 }
-
 
 ccReg::CheckAvail
 wrap_keyset_handle_check_result(
@@ -89,7 +88,6 @@ wrap_keyset_handle_check_result(
     throw std::runtime_error("unknown keyset handle check result");
 }
 
-
 void
 wrap_Epp_InfoKeysetOutputData_TechContacts(
         const Epp::Keyset::InfoKeysetOutputData::TechContacts& _src,
@@ -103,7 +101,6 @@ wrap_Epp_InfoKeysetOutputData_TechContacts(
         _dst[idx] = data_ptr->c_str();
     }
 }
-
 
 void
 wrap_Epp_InfoKeysetOutputData_DnsKeys(
@@ -138,7 +135,6 @@ unwrap_TechContact_to_vector_string(const ccReg::TechContact& _tech_contacts)
     return result;
 }
 
-
 std::vector<Epp::Keyset::DsRecord>
 unwrap_ccReg_DSRecord_to_vector_Epp_Keyset_DsRecord(const ccReg::DSRecord& _ds_records)
 {
@@ -155,7 +151,6 @@ unwrap_ccReg_DSRecord_to_vector_Epp_Keyset_DsRecord(const ccReg::DSRecord& _ds_r
     return result;
 }
 
-
 std::vector<Epp::Keyset::DnsKey>
 unwrap_ccReg_DNSKey_to_vector_Epp_Keyset_DnsKey(const ccReg::DNSKey& _dns_keys)
 {
@@ -171,7 +166,6 @@ unwrap_ccReg_DNSKey_to_vector_Epp_Keyset_DnsKey(const ccReg::DNSKey& _dns_keys)
 
     return result;
 }
-
 
 void
 wrap_Epp_Keyset_Localized_CheckKeysetLocalizedResponse_Results(
@@ -202,7 +196,6 @@ wrap_Epp_Keyset_Localized_CheckKeysetLocalizedResponse_Results(
     }
 }
 
-
 void
 wrap_Epp_Keyset_Localized_InfoKeysetLocalizedOutputData(
         const Epp::Keyset::InfoKeysetLocalizedOutputData& _src,
@@ -217,12 +210,11 @@ wrap_Epp_Keyset_Localized_InfoKeysetLocalizedOutputData(
     _dst.CrDate = wrap_boost_posix_time_ptime_to_string(_src.crdate);
     _dst.UpDate = wrap_Nullable_boost_posix_time_ptime_to_string(_src.last_update);
     _dst.TrDate = wrap_Nullable_boost_posix_time_ptime_to_string(_src.last_transfer);
-    _dst.AuthInfoPw = wrap_string_to_corba_string(_src.authinfopw ? *_src.authinfopw : std::string());
+    _dst.AuthInfoPw = wrap_string_to_corba_string("");
     _dst.dsrec.length(0); // has to be empty
     wrap_Epp_InfoKeysetOutputData_DnsKeys(_src.dns_keys, _dst.dnsk);
     wrap_Epp_InfoKeysetOutputData_TechContacts(_src.tech_contacts, _dst.tech);
 }
-
 
 } // namespace LibFred::Cobra
 } // namespace Cobra

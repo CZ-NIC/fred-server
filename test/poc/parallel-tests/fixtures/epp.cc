@@ -46,7 +46,6 @@ DefaultCreateDomainInputData::DefaultCreateDomainInputData()
                 "", // registrant
                 "", // nsset
                 "", // keyset
-                std::string{"authinfopw"}, //_authinfopw
                 ::Epp::Domain::DomainRegistrationTime{1, ::Epp::Domain::DomainRegistrationTime::Unit::year}, // _period
                 {}, // Util::vector_of<std::string>("CONTACT1")("CONTACT2"),
                 ::Epp::Domain::EnumValidationExtension{}}
@@ -62,7 +61,7 @@ CreateDomainInputData::CreateDomainInputData(
         const std::string& nsset,
         const std::string& keyset,
         const std::vector<std::string>& admin_contacts_add)
-    : data{fqdn, registrant, nsset, keyset, std::string{"authinfopw"}, //_authinfopw
+    : data{fqdn, registrant, nsset, keyset,
            ::Epp::Domain::DomainRegistrationTime{1, ::Epp::Domain::DomainRegistrationTime::Unit::year}, // _period
            admin_contacts_add,
            boost::none}
@@ -93,7 +92,7 @@ TheSameDomain::TheSameDomain(::LibFred::OperationContext& ctx, const ::Epp::Doma
             data.fqdn,
             sponsoring_registrar.data.handle,
             data.registrant,
-            *data.authinfopw,
+            {}, // authinfopw
             Nullable<std::string>{data.nsset},
             Nullable<std::string>{data.keyset},
             data.admin_contacts,

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/epp/poll/poll_request_get_update_nsset_details.hh"
 #include "src/backend/epp/nsset/impl/nsset_output.hh"
 #include "src/backend/epp/poll/message_type.hh"
@@ -44,34 +45,26 @@ struct HistoryNssetData
 
 HistoryNssetData get_history_nsset_data(
         LibFred::OperationContext& ctx,
-        unsigned long long registrar_id,
         unsigned long long old_history_id,
         unsigned long long new_history_id)
 {
-    const std::string session_registrar_handle =
-            LibFred::InfoRegistrarById(registrar_id).exec(ctx).info_registrar_data.handle;
-
     const LibFred::InfoNssetData old_history_data =
             LibFred::InfoNssetHistoryByHistoryid(old_history_id).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()).info_nsset_data;
-    const bool old_info_is_for_sponsoring_registrar = old_history_data.sponsoring_registrar_handle == session_registrar_handle;
     const std::vector<LibFred::ObjectStateData> old_nsset_states_data =
             LibFred::GetObjectStatesByHistoryId(old_history_id).exec(ctx).object_state_at_end;
 
     const LibFred::InfoNssetData new_history_data =
             LibFred::InfoNssetHistoryByHistoryid(new_history_id).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()).info_nsset_data;
-    const bool new_info_is_for_sponsoring_registrar = new_history_data.sponsoring_registrar_handle == session_registrar_handle;
     const std::vector<LibFred::ObjectStateData> new_nsset_states_data =
             LibFred::GetObjectStatesByHistoryId(new_history_id).exec(ctx).object_state_at_begin;
 
     HistoryNssetData retval;
     retval.old_data = Epp::Nsset::get_info_nsset_output(
             old_history_data,
-            old_nsset_states_data,
-            old_info_is_for_sponsoring_registrar);
+            old_nsset_states_data);
     retval.new_data = Epp::Nsset::get_info_nsset_output(
             new_history_data,
-            new_nsset_states_data,
-            new_info_is_for_sponsoring_registrar);
+            new_nsset_states_data);
     return retval;
 }
 
@@ -115,7 +108,6 @@ PollRequestUpdateNssetOutputData poll_request_get_update_nsset_details(
     {
         const HistoryNssetData history_nsset_data = get_history_nsset_data(
                 ctx,
-                registrar_id,
                 old_history_id,
                 new_history_id);
         return PollRequestUpdateNssetOutputData(history_nsset_data.old_data, history_nsset_data.new_data);

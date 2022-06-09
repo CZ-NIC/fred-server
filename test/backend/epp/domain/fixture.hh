@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #ifndef FIXTURE_HH_FD001D96A2114C02B77C4A3E5C347AE8
 #define FIXTURE_HH_FD001D96A2114C02B77C4A3E5C347AE8
 
@@ -138,7 +139,6 @@ struct DefaultCreateDomainInputData : ::Epp::Domain::CreateDomainInputData
                   "", // _registrant
                   "", // _nsset
                   "", // _keyset
-                  boost::optional<std::string>("authinfopw"), //_authinfopw
                   ::Epp::Domain::DomainRegistrationTime(1, ::Epp::Domain::DomainRegistrationTime::Unit::year), // _period
                   std::vector<std::string>(), // Util::vector_of<std::string>("CONTACT1")("CONTACT2"),
                   boost::optional< ::Epp::Domain::EnumValidationExtension>())
@@ -161,7 +161,6 @@ struct CreateDomainInputData
                   _registrant,
                   _nsset,
                   _keyset,
-                  boost::optional<std::string>("authinfopw"), //_authinfopw
                   ::Epp::Domain::DomainRegistrationTime(1, ::Epp::Domain::DomainRegistrationTime::Unit::year), // _period
                   _admin_contacts_add,
                   boost::optional< ::Epp::Domain::EnumValidationExtension>())
@@ -251,7 +250,6 @@ struct Domain
     Contact::Contact registrant;
     ::LibFred::InfoDomainData data;
 
-
     Domain(
             ::LibFred::OperationContext& _ctx,
             const std::string& _registrar_handle,
@@ -262,15 +260,12 @@ struct Domain
         ::LibFred::CreateDomain(_fqdn, _registrar_handle, registrant.data.handle).exec(_ctx);
         data = ::LibFred::InfoDomainByFqdn(_fqdn).exec(_ctx, "UTC").info_domain_data;
     }
-
-
 };
 
 struct EnumDomain
 {
     Contact::Contact registrant;
     ::LibFred::InfoDomainData data;
-
 
     EnumDomain(
             ::LibFred::OperationContext& _ctx,
@@ -279,7 +274,6 @@ struct EnumDomain
             const std::string& _registrant_handle = "REGISTRANT")
         : registrant(_ctx, _registrar_handle, _registrant_handle)
     {
-
         const std::string tmp_fqdn = "tmpdomain.cz";
 
         ::LibFred::CreateDomain(tmp_fqdn, _registrar_handle, registrant.data.handle).exec(_ctx);
@@ -294,15 +288,11 @@ struct EnumDomain
 
         data = ::LibFred::InfoDomainByFqdn(_enum_fqdn).exec(_ctx, "UTC").info_domain_data;
     }
-
-
 };
 
 struct NonexistentEnumDomain
     : EnumDomain
 {
-
-
     NonexistentEnumDomain(
             ::LibFred::OperationContext& _ctx,
             const std::string& _registrar_handle,
@@ -315,15 +305,11 @@ struct NonexistentEnumDomain
     {
         data.fqdn = NonexistentEnumFqdn().fqdn;
     }
-
-
 };
 
 struct BlacklistedDomain
     : Domain
 {
-
-
     BlacklistedDomain(
             ::LibFred::OperationContext& _ctx,
             const std::string& _registrar_handle,
@@ -335,15 +321,12 @@ struct BlacklistedDomain
                 "VALUES ($1::text, NOW(), '')",
                 Database::query_param_list(data.fqdn));
     }
-
-
 };
 
 struct DomainWithStatusRequest
     : Domain
 {
     const std::string status;
-
 
     DomainWithStatusRequest(
             ::LibFred::OperationContext& _ctx,
@@ -354,15 +337,11 @@ struct DomainWithStatusRequest
     {
         ObjectWithStatus(_ctx, data.id, _status);
     }
-
-
 };
 
 struct DomainWithStatus
     : DomainWithStatusRequest
 {
-
-
     DomainWithStatus(
             ::LibFred::OperationContext& _ctx,
             const std::string& _registrar_handle,
@@ -374,90 +353,67 @@ struct DomainWithStatus
     {
         ::LibFred::PerformObjectStateRequest(data.id).exec(_ctx);
     }
-
-
 };
 
 struct DomainWithStatusServerDeleteProhibited
     : DomainWithStatus
 {
-
-
     DomainWithStatusServerDeleteProhibited(
             ::LibFred::OperationContext& _ctx,
             const std::string& _registrar_handle)
         : DomainWithStatus(_ctx, _registrar_handle, "serverDeleteProhibited")
     {
     }
-
-
 };
 
 struct DomainWithStatusServerUpdateProhibited
     : DomainWithStatus
 {
-
-
     DomainWithStatusServerUpdateProhibited(
             ::LibFred::OperationContext& _ctx,
             const std::string& _registrar_handle)
         : DomainWithStatus(_ctx, _registrar_handle, "serverUpdateProhibited")
     {
     }
-
-
 };
 
 struct DomainWithServerTransferProhibited
     : DomainWithStatus
 {
-
-
     DomainWithServerTransferProhibited(
             ::LibFred::OperationContext& _ctx,
             const std::string& _registrar_handle)
         : DomainWithStatus(_ctx, _registrar_handle, "serverTransferProhibited")
     {
     }
-
-
 };
 
 struct DomainWithStatusRequestServerTransferProhibited
     : DomainWithStatusRequest
 {
-
-
     DomainWithStatusRequestServerTransferProhibited(
             ::LibFred::OperationContext& _ctx,
             const std::string& _registrar_handle)
         : DomainWithStatusRequest(_ctx, _registrar_handle, "serverTransferProhibited")
     {
     }
-
-
 };
 
 struct DomainWithStatusRequestServerUpdateProhibited
     : DomainWithStatusRequest
 {
-
-
     DomainWithStatusRequestServerUpdateProhibited(
             ::LibFred::OperationContext& _ctx,
             const std::string& _registrar_handle)
         : DomainWithStatusRequest(_ctx, _registrar_handle, "serverUpdateProhibited")
     {
     }
-
-
 };
 
 struct FullDomain
 {
     Contact::Contact registrant;
     ::LibFred::InfoDomainData data;
-
 
     FullDomain(
             ::LibFred::OperationContext& _ctx,
@@ -479,10 +435,7 @@ struct FullDomain
 
         data = ::LibFred::InfoDomainByFqdn("fulldomain.cz").exec(_ctx, "UTC").info_domain_data;
     }
-
-
 };
-
 
 // fixtures
 
@@ -492,16 +445,12 @@ struct HasSystemRegistrarWithSessionAndDomain
     Session session;
     Domain domain;
 
-
     HasSystemRegistrarWithSessionAndDomain(::LibFred::OperationContext& _ctx)
         : system_registrar(_ctx),
           session(_ctx, system_registrar.data.id),
           domain(_ctx, system_registrar.data.handle)
-
     {
     }
-
-
 };
 
 struct HasRegistrarWithSessionAndDomain
@@ -510,15 +459,12 @@ struct HasRegistrarWithSessionAndDomain
     Session session;
     Domain domain;
 
-
     HasRegistrarWithSessionAndDomain(::LibFred::OperationContext& _ctx)
         : registrar(_ctx),
           session(_ctx, registrar.data.id),
           domain(_ctx, registrar.data.handle)
     {
     }
-
-
 };
 
 struct HasRegistrarWithSessionAndBlacklistedDomain
@@ -527,16 +473,12 @@ struct HasRegistrarWithSessionAndBlacklistedDomain
     Session session;
     BlacklistedDomain blacklisted_domain;
 
-
     HasRegistrarWithSessionAndBlacklistedDomain(::LibFred::OperationContext& _ctx)
         : registrar(_ctx),
           session(_ctx, registrar.data.id),
           blacklisted_domain(_ctx, registrar.data.handle)
-
     {
     }
-
-
 };
 
 struct HasSystemRegistrarWithSessionAndBlacklistedDomain
@@ -545,15 +487,12 @@ struct HasSystemRegistrarWithSessionAndBlacklistedDomain
     Session session;
     BlacklistedDomain blacklisted_domain;
 
-
     HasSystemRegistrarWithSessionAndBlacklistedDomain(::LibFred::OperationContext& _ctx)
         : system_registrar(_ctx),
           session(_ctx, system_registrar.data.id),
           blacklisted_domain(_ctx, system_registrar.data.handle)
     {
     }
-
-
 };
 
 struct HasRegistrarNotInZoneWithSessionAndDomain
@@ -562,16 +501,12 @@ struct HasRegistrarNotInZoneWithSessionAndDomain
     Session session;
     Domain domain;
 
-
     HasRegistrarNotInZoneWithSessionAndDomain(::LibFred::OperationContext& _ctx)
         : registrar_not_in_zone(_ctx),
           session(_ctx, registrar_not_in_zone.data.id),
           domain(_ctx, registrar_not_in_zone.data.handle)
-
     {
     }
-
-
 };
 
 struct HasRegistrarWithSessionAndDomainAndDifferentRegistrar
@@ -581,7 +516,6 @@ struct HasRegistrarWithSessionAndDomainAndDifferentRegistrar
     Domain domain;
     Registrar different_registrar;
 
-
     HasRegistrarWithSessionAndDomainAndDifferentRegistrar(::LibFred::OperationContext& _ctx)
         : registrar(_ctx),
           session(_ctx, registrar.data.id),
@@ -589,8 +523,6 @@ struct HasRegistrarWithSessionAndDomainAndDifferentRegistrar
           different_registrar(_ctx, "REG-TEST2")
     {
     }
-
-
 };
 
 struct HasRegistrarWithSessionAndDomainOfDifferentRegistrar
@@ -600,7 +532,6 @@ struct HasRegistrarWithSessionAndDomainOfDifferentRegistrar
     Registrar different_registrar;
     Domain domain_of_different_registrar;
 
-
     HasRegistrarWithSessionAndDomainOfDifferentRegistrar(::LibFred::OperationContext& _ctx)
         : registrar(_ctx),
           session(_ctx, registrar.data.id),
@@ -608,15 +539,12 @@ struct HasRegistrarWithSessionAndDomainOfDifferentRegistrar
           domain_of_different_registrar(_ctx, different_registrar.data.handle)
     {
     }
-
-
 };
 
 struct HasDomainWithdServerTransferProhibitedAndDifferentRegistrar
 {
     Registrar different_registrar;
     DomainWithServerTransferProhibited domain_with_server_transfer_prohibited;
-
 
     HasDomainWithdServerTransferProhibitedAndDifferentRegistrar(::LibFred::OperationContext& _ctx)
         : different_registrar(_ctx, "REG-TEST2"),
@@ -626,10 +554,7 @@ struct HasDomainWithdServerTransferProhibitedAndDifferentRegistrar
                 domain_with_server_transfer_prohibited.data.sponsoring_registrar_handle !=
                 different_registrar.data.handle);
     }
-
-
 };
-
 
 struct HasRegistrarWithSessionAndCreateDomainInputData
 {
@@ -641,7 +566,6 @@ struct HasRegistrarWithSessionAndCreateDomainInputData
     Contact::Contact contact1;
     Contact::Contact contact2;
     CreateDomainInputData create_domain_input_data;
-
 
     HasRegistrarWithSessionAndCreateDomainInputData(::LibFred::OperationContext& _ctx)
         : registrar(_ctx),
@@ -658,8 +582,6 @@ struct HasRegistrarWithSessionAndCreateDomainInputData
                   Util::vector_of<std::string>(contact1.data.handle)(contact2.data.handle))
     {
     }
-
-
 };
 
 struct HasRegistrarWithSessionAndRenewDomainInputData
@@ -698,7 +620,6 @@ struct HasRegistrarWithSessionAndDomainAndRenewDomainInputData
               boost::optional< ::Epp::Domain::EnumValidationExtension>())
     {
     }
-
 };
 
 struct HasRegistrarWithSessionAndCreateDomainInputDataAndRenewDomainInputData
@@ -734,7 +655,6 @@ struct HasRegistrarWithSessionAndCreateDomainInputDataAndRenewDomainInputData
               boost::optional< ::Epp::Domain::EnumValidationExtension>())
     {
     }
-
 };
 
 struct HasRegistrarWithSessionAndDomainAndCreateDomainInputDataAndRenewDomainInputData
@@ -848,9 +768,7 @@ struct HasDataForUpdateDomain
 
         tmpcontacts_rem_ = Util::vector_of<std::string>
                                ("WHATEVER");
-
     }
-
 };
 
 } // namespace Test::Backend::Epp::Domain

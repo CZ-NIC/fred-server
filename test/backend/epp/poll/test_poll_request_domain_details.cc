@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2020  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -28,6 +28,7 @@
 #include "src/util/tz/get_psql_handle_of.hh"
 #include "src/util/tz/utc.hh"
 
+#include "libfred/object/check_authinfo.hh"
 #include "libfred/poll/create_poll_message.hh"
 #include "libfred/poll/create_update_object_poll_message.hh"
 
@@ -57,8 +58,6 @@ void check_equal(
     BOOST_CHECK_EQUAL(output_data.crdate, domain_data.creation_time);
     BOOST_CHECK_EQUAL(output_data.last_transfer, domain_data.transfer_time);
     BOOST_CHECK_EQUAL(output_data.exdate, domain_data.expiration_date);
-    BOOST_REQUIRE(output_data.authinfopw);
-    BOOST_CHECK_EQUAL(*output_data.authinfopw, domain_data.authinfopw);
 
     std::set<std::string> info_domain_data_admin_contacts;
     for (const auto& object_id_handle_pair : domain_data.admin_contacts)
@@ -85,27 +84,29 @@ void check_equal(
 
 struct HasDomainUpdate : virtual Test::Backend::Epp::autorollbacking_context
 {
-    ::LibFred::InfoDomainData old_domain_data;
-    ::LibFred::InfoDomainData new_domain_data;
-
     HasDomainUpdate()
+        : domain_data{
+            [&]()
+            {
+                Util::mark_all_messages_as_seen(ctx);
+                const Test::domain domain(ctx, Tz::get_psql_handle_of<Tz::UTC>());
+                return domain.info_data;
+            }()}
     {
-        Util::mark_all_messages_as_seen(ctx);
-        static const char new_passwd[] = "doesntmatter_38E166961BEE";
-
-        const Test::domain domain(ctx, Tz::get_psql_handle_of<Tz::UTC>());
-        old_domain_data = new_domain_data = domain.info_data;
-
-        new_domain_data.authinfopw = new_passwd;
-
-        unsigned long long new_history_id =
-            ::LibFred::UpdateDomain(domain.info_data.fqdn,
-                               domain.info_data.sponsoring_registrar_handle
-                ).set_authinfo(new_passwd).exec(ctx);
+        const auto new_history_id =
+                ::LibFred::UpdateDomain(
+                        domain_data.fqdn,
+                        domain_data.sponsoring_registrar_handle)
+                .set_authinfo(new_passwd)
+                .exec(ctx);
 
         ::LibFred::Poll::CreateUpdateObjectPollMessage().exec(ctx, new_history_id);
     }
+    static const char new_passwd[];
+    ::LibFred::InfoDomainData domain_data;
 };
+
+const char HasDomainUpdate::new_passwd[] = "doesntmatter_38E166961BEE";
 
 } // namespace {anonymous}
 
@@ -120,10 +121,13 @@ BOOST_FIXTURE_TEST_CASE(successful_request_domain_details, HasDomainUpdate)
     BOOST_CHECK_NO_THROW(output =
         ::Epp::Poll::poll_request_get_update_domain_details(ctx, mesage_detail.message_id, mesage_detail.registrar_id));
 
-    check_equal(output.old_data, old_domain_data);
-    check_equal(output.new_data, new_domain_data);
+    check_equal(output.old_data, domain_data);
+    check_equal(output.new_data, domain_data);
 
-    BOOST_CHECK(*output.old_data.authinfopw != *output.new_data.authinfopw);
+    BOOST_CHECK_LT(
+            0,
+            LibFred::Object::CheckAuthinfo{LibFred::Object::ObjectId{domain_data.id}}
+                    .exec(ctx, new_passwd, LibFred::Object::CheckAuthinfo::increment_usage));
     BOOST_CHECK(output.old_data.last_update.isnull());
     BOOST_CHECK(!output.new_data.last_update.isnull());
 
@@ -155,10 +159,10 @@ BOOST_FIXTURE_TEST_CASE(failed_request_domain_details, HasDomainUpdate)
     BOOST_CHECK_EQUAL(after_message_count, 1);
 }
 
-BOOST_AUTO_TEST_SUITE_END(); // Backend/Epp/Poll/PollRequest/PollRequestDomainDetails
-BOOST_AUTO_TEST_SUITE_END(); // Backend/Epp/Poll/PollRequest
-BOOST_AUTO_TEST_SUITE_END(); // Backend/Epp/Poll
-BOOST_AUTO_TEST_SUITE_END(); // Backend/Epp
-BOOST_AUTO_TEST_SUITE_END(); // Backend
+BOOST_AUTO_TEST_SUITE_END()//Backend/Epp/Poll/PollRequest/PollRequestDomainDetails
+BOOST_AUTO_TEST_SUITE_END()//Backend/Epp/Poll/PollRequest
+BOOST_AUTO_TEST_SUITE_END()//Backend/Epp/Poll
+BOOST_AUTO_TEST_SUITE_END()//Backend/Epp
+BOOST_AUTO_TEST_SUITE_END()//Backend
 
 } // namespace Test

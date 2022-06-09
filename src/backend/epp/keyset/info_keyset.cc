@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/epp/keyset/info_keyset.hh"
 #include "src/backend/epp/keyset/impl/keyset_output.hh"
 
@@ -24,7 +25,6 @@
 #include "src/backend/epp/epp_result_failure.hh"
 #include "src/backend/epp/exception.hh"
 #include "libfred/registrable_object/keyset/info_keyset.hh"
-#include "libfred/registrar/info_registrar.hh"
 
 #include <string>
 
@@ -48,13 +48,9 @@ InfoKeysetOutputData info_keyset(
         const LibFred::InfoKeysetData info_keyset_data =
             LibFred::InfoKeysetByHandle(_keyset_handle).exec(_ctx, "UTC").info_keyset_data;
 
-        const std::string session_registrar_handle =
-            LibFred::InfoRegistrarById(_session_data.registrar_id).exec(_ctx).info_registrar_data.handle;
-        const bool info_is_for_sponsoring_registrar = info_keyset_data.sponsoring_registrar_handle == session_registrar_handle;
-
         const std::vector<LibFred::ObjectStateData> keyset_states_data = LibFred::GetObjectStates(info_keyset_data.id).exec(_ctx);
 
-        return get_info_keyset_output(info_keyset_data, keyset_states_data, info_is_for_sponsoring_registrar);
+        return get_info_keyset_output(info_keyset_data, keyset_states_data);
     }
     catch (const LibFred::InfoKeysetByHandle::Exception& e)
     {

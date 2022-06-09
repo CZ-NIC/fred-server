@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/epp/keyset/create_keyset.hh"
 
 #include "src/backend/epp/epp_response_failure.hh"
@@ -489,7 +490,7 @@ CreateKeysetResult create_keyset(
                 LibFred::CreateKeyset(
                         _keyset_data.keyset_handle,
                         LibFred::InfoRegistrarById(_session_data.registrar_id).exec(_ctx).info_registrar_data.handle,
-                        _keyset_data.authinfopw,
+                        {}, // authinfo
                         dns_keys,
                         _keyset_data.tech_contacts)
                         .exec(_ctx, _session_data.logd_request_id, "UTC");

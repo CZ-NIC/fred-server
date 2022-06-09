@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/epp/domain/info_domain_localized.hh"
 
 #include "src/backend/epp/domain/info_domain.hh"
@@ -81,7 +82,6 @@ InfoDomainLocalizedResponse info_domain_localized(
                         info_domain_output_data.last_update,
                         info_domain_output_data.last_transfer,
                         info_domain_output_data.exdate,
-                        info_domain_output_data.authinfopw,
                         info_domain_output_data.admin,
                         info_domain_output_data.ext_enum_domain_validation,
                         info_domain_output_data.tmpcontact);

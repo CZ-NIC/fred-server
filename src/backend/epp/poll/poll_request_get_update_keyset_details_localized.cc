@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/epp/poll/poll_request_get_update_keyset_details_localized.hh"
 #include "src/backend/epp/poll/poll_request_get_update_keyset_details.hh"
 #include "src/backend/epp/impl/action.hh"
@@ -65,7 +66,6 @@ PollRequestUpdateKeysetLocalizedResponse poll_request_get_update_keyset_details_
                     output_data.old_data.crdate,
                     output_data.old_data.last_update,
                     output_data.old_data.last_transfer,
-                    output_data.old_data.authinfopw,
                     output_data.old_data.ds_records,
                     output_data.old_data.dns_keys,
                     output_data.old_data.tech_contacts),
@@ -79,7 +79,6 @@ PollRequestUpdateKeysetLocalizedResponse poll_request_get_update_keyset_details_
                     output_data.new_data.crdate,
                     output_data.new_data.last_update,
                     output_data.new_data.last_transfer,
-                    output_data.new_data.authinfopw,
                     output_data.new_data.ds_records,
                     output_data.new_data.dns_keys,
                     output_data.new_data.tech_contacts));

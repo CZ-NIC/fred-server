@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #ifndef INFO_NSSET_LOCALIZED_OUTPUT_DATA_HH_E09825B0CC864FB69CE407DA737A40BC
 #define INFO_NSSET_LOCALIZED_OUTPUT_DATA_HH_E09825B0CC864FB69CE407DA737A40BC
 
@@ -25,7 +26,6 @@
 #include "util/db/nullable.hh"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/optional.hpp>
 
 #include <map>
 #include <string>
@@ -45,11 +45,9 @@ struct InfoNssetLocalizedOutputData
     boost::posix_time::ptime crdate;
     Nullable<boost::posix_time::ptime> last_update;
     Nullable<boost::posix_time::ptime> last_transfer;
-    boost::optional<std::string> authinfopw;
     std::vector<DnsHostOutput> dns_host;
     std::vector<std::string> tech_contacts;
     short tech_check_level;
-
 
     InfoNssetLocalizedOutputData(
             const std::string& _handle,
@@ -61,7 +59,6 @@ struct InfoNssetLocalizedOutputData
             const boost::posix_time::ptime& _crdate,
             const Nullable<boost::posix_time::ptime>& _last_update,
             const Nullable<boost::posix_time::ptime>& _last_transfer,
-            const boost::optional<std::string>& _authinfopw,
             const std::vector<DnsHostOutput>& _dns_host,
             const std::vector<std::string>& _tech_contacts,
             short _tech_check_level)
@@ -74,14 +71,11 @@ struct InfoNssetLocalizedOutputData
           crdate(_crdate),
           last_update(_last_update),
           last_transfer(_last_transfer),
-          authinfopw(_authinfopw),
           dns_host(_dns_host),
           tech_contacts(_tech_contacts),
           tech_check_level(_tech_check_level)
     {
     }
-
-
 };
 
 } // namespace Epp::Nsset

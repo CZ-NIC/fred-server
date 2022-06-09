@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2020  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/bin/corba/epp/domain/domain_corba_conversions.hh"
 
 #include "corba/EPP.hh"
@@ -169,8 +170,7 @@ wrap_Epp_Domain_InfoDomainLocalizedOutputData(
 
     _dst.ExDate = LibFred::Corba::wrap_string_to_corba_string(boost::gregorian::to_iso_extended_string(_src.exdate));
 
-    _dst.AuthInfoPw = LibFred::Corba::wrap_string_to_corba_string(
-            _src.authinfopw ? *_src.authinfopw : std::string());
+    _dst.AuthInfoPw = wrap_string_to_corba_string("");
 
     _dst.admin.length(_src.admin.size());
     unsigned long dst_admin_index = 0;

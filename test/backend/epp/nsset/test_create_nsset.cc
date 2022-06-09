@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -15,9 +15,6 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
- */
-/**
- *  @file
  */
 
 #include "test/backend/epp/fixture.hh"
@@ -158,7 +155,6 @@ bool handle_contact_reference_predicate (const std::string& handle, const ::LibF
 void check_equal(const ::Epp::Nsset::CreateNssetInputData& create_data, const ::Epp::Nsset::CreateNssetConfigData& config_data, const ::LibFred::InfoNssetData& info_data)
 {
     BOOST_CHECK_EQUAL( boost::to_upper_copy( create_data.handle ), info_data.handle );
-    BOOST_CHECK_EQUAL( *create_data.authinfopw, info_data.authinfopw );
 
     BOOST_CHECK_EQUAL(create_data.dns_hosts.size(), info_data.dns_hosts.size());
     BOOST_CHECK(std::equal (create_data.dns_hosts.begin(), create_data.dns_hosts.end(),

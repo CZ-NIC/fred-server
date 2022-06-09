@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "test/backend/epp/fixture.hh"
 #include "test/backend/epp/contact/fixture.hh"
 #include "test/backend/epp/util.hh"
@@ -153,7 +154,6 @@ void check_equal(const ::Epp::Contact::CreateContactInputData &create_data, cons
         BOOST_CHECK_EQUAL(create_data.mailing_address->country_code, addresses_itr->second.country);
     }
 
-    BOOST_CHECK_EQUAL(create_data.authinfopw ? *create_data.authinfopw : std::string("not set"), info_data.authinfopw);
     BOOST_CHECK_EQUAL(is_public(create_data.name), info_data.disclosename);
     BOOST_CHECK_EQUAL(is_public(create_data.organization), info_data.discloseorganization);
     BOOST_CHECK_EQUAL(is_public(create_data.address), info_data.discloseaddress);

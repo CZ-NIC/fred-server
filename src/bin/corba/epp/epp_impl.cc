@@ -2365,7 +2365,7 @@ ccReg::Response* ccReg_EPP_i::NSSetDelete(
 
 ccReg::Response* ccReg_EPP_i::NSSetCreate(
         const char* _nsset_handle,
-        const char* _authinfopw,
+        const char* _authinfopw [[gnu::unused]],
         const ccReg::TechContact& _tech_contacts,
         const ccReg::DNSHost& _dns_hosts,
         CORBA::Short _tech_check_level,
@@ -2375,10 +2375,10 @@ ccReg::Response* ccReg_EPP_i::NSSetCreate(
     const Epp::RequestParams epp_request_params = LibFred::Corba::unwrap_EppParams(_epp_params);
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
-    try {
+    try
+    {
         const Epp::Nsset::CreateNssetInputData create_nsset_input_data(
                 LibFred::Corba::unwrap_string_from_const_char_ptr(_nsset_handle),
-                LibFred::Corba::unwrap_string_from_const_char_ptr(_authinfopw),
                 LibFred::Corba::unwrap_ccreg_techcontacts_to_vector_string(_tech_contacts),
                 LibFred::Corba::unwrap_ccreg_dnshosts_to_vector_dnshosts(_dns_hosts),
                 LibFred::Corba::unwrap_tech_check_level(_tech_check_level));
@@ -2680,7 +2680,7 @@ ccReg::Response* ccReg_EPP_i::DomainCreate(
         const char* _registrant,
         const char* _nsset,
         const char* _keyset,
-        const char* _authinfopw,
+        const char* _authinfopw [[gnu::unused]],
         const ccReg::Period_str& _period,
         const ccReg::AdminContact& _admin_contact,
         ccReg::timestamp_out _create_time,
@@ -2691,17 +2691,13 @@ ccReg::Response* ccReg_EPP_i::DomainCreate(
     const Epp::RequestParams epp_request_params = LibFred::Corba::unwrap_EppParams(_epp_params);
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
-    try {
-        const std::string authinfopw_value = LibFred::Corba::unwrap_string_from_const_char_ptr(_authinfopw);
-
+    try
+    {
         const Epp::Domain::CreateDomainInputData create_domain_input_data(
                 LibFred::Corba::unwrap_string_from_const_char_ptr(_fqdn),
                 LibFred::Corba::unwrap_string_from_const_char_ptr(_registrant),
                 LibFred::Corba::unwrap_string_from_const_char_ptr(_nsset),
                 LibFred::Corba::unwrap_string_from_const_char_ptr(_keyset),
-                authinfopw_value.empty()
-                        ? boost::optional<std::string>()
-                        : boost::optional<std::string>(authinfopw_value),
                 LibFred::Corba::Epp::Domain::unwrap_domain_registration_period(_period),
                 LibFred::Corba::Epp::Domain::unwrap_ccreg_admincontacts_to_vector_string(_admin_contact),
                 LibFred::Corba::Epp::Domain::unwrap_enum_validation_extension_list(_enum_validation_extension_list));
@@ -2970,7 +2966,7 @@ testDNSKeyDuplicity(ccReg::DNSKey_str first, ccReg::DNSKey_str second)
 
 ccReg::Response* ccReg_EPP_i::KeySetCreate(
         const char* _keyset_handle,
-        const char* _authinfopw,
+        const char* _authinfopw [[gnu::unused]],
         const ccReg::TechContact& _tech_contacts,
         const ccReg::DSRecord& _ds_records,
         const ccReg::DNSKey& _dns_keys,
@@ -2980,11 +2976,10 @@ ccReg::Response* ccReg_EPP_i::KeySetCreate(
     const Epp::RequestParams epp_request_params = LibFred::Corba::unwrap_EppParams(_epp_params);
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
-    try {
-        const std::string authinfopw_value = LibFred::Corba::unwrap_string_from_const_char_ptr(_authinfopw);
+    try
+    {
         const Epp::Keyset::CreateKeysetInputData create_keyset_input_data(
                 LibFred::Corba::unwrap_string_from_const_char_ptr(_keyset_handle),
-                authinfopw_value.empty() ? Optional<std::string>() : Optional<std::string>(authinfopw_value),
                 LibFred::Corba::unwrap_TechContact_to_vector_string(_tech_contacts),
                 LibFred::Corba::unwrap_ccReg_DSRecord_to_vector_Epp_Keyset_DsRecord(_ds_records),
                 LibFred::Corba::unwrap_ccReg_DNSKey_to_vector_Epp_Keyset_DnsKey(_dns_keys));
@@ -3031,9 +3026,9 @@ ccReg::Response* ccReg_EPP_i::KeySetCreate(
 
         _create_time = create_time._retn();
         return return_value._retn();
-
     }
-    catch (const Epp::EppResponseFailureLocalized& e) {
+    catch (const Epp::EppResponseFailureLocalized& e)
+    {
         throw LibFred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
