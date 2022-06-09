@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "test/backend/epp/contact/fixture.hh"
 #include "test/backend/epp/contact/util.hh"
 #include "test/backend/epp/util.hh"
@@ -447,7 +448,7 @@ BOOST_FIXTURE_TEST_CASE(contact_data_share_policy_rules_test, autorollbacking_co
                 ctx,
                 session_a,
                 contact_a,
-                Share::all);
+                Share::all_except_authinfo);
     BOOST_TEST_MESSAGE("AdminContact b-a");
     check<ContactRegistrarRelationship::SponsoringRegistrarOfDomainWhereContactIs::AdminContact>(
                 ctx,
@@ -505,7 +506,7 @@ BOOST_FIXTURE_TEST_CASE(contact_data_share_policy_rules_test, autorollbacking_co
                 ctx,
                 sysreg_session,
                 contact_sys,
-                Share::all);
+                Share::all_except_authinfo);
     BOOST_TEST_MESSAGE("SponsoringRegistrar + SystemRegistrar sys-sys");
     check<ContactRegistrarRelationship::SponsoringRegistrar,
           ContactRegistrarRelationship::SystemRegistrar>(
