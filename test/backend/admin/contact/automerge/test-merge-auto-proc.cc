@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2014-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -517,11 +517,6 @@ BOOST_AUTO_TEST_CASE(test_compare_verbose)
               BOOST_CHECK(ci.second.update_time.get_value().first.isnull());
               BOOST_CHECK(!ci.second.update_time.get_value().second.isnull());
               contact_diff.update_time = ci.second.update_time;
-          }
-
-          if (contact_diff.authinfopw.isset())
-          {
-              contact_diff.authinfopw = ci.second.authinfopw;
           }
 
           smooth_out_uuid_diffs(ci.second, contact_diff);
