@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2018-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/public_request/create_authinfo_request_non_registry_email.hh"
 
 #include "src/backend/public_request/confirmed_by.hh"
@@ -24,6 +25,7 @@
 #include "src/backend/public_request/lock_request_type.hh"
 #include "src/backend/public_request/type/get_iface_of.hh"
 #include "src/backend/public_request/type/public_request_authinfo.hh"
+
 #include "libfred/object/get_id_of_registered.hh"
 #include "libfred/object/object_states_info.hh"
 #include "libfred/opcontext.hh"
@@ -31,6 +33,7 @@
 #include "libfred/public_request/public_request_lock_guard.hh"
 #include "libfred/public_request/public_request_object_lock_guard.hh"
 #include "libfred/public_request/update_public_request.hh"
+
 #include "util/log/context.hh"
 #include "util/optional_value.hh"
 
@@ -64,6 +67,7 @@ private:
 unsigned long long create_authinfo_request_non_registry_email(
         ObjectType object_type,
         const std::string& object_handle,
+        unsigned long long registrar_id,
         const Optional<unsigned long long>& log_request_id,
         ConfirmedBy confirmation_method,
         const std::string& specified_email)
@@ -79,7 +83,9 @@ unsigned long long create_authinfo_request_non_registry_email(
         {
             throw ObjectTransferProhibited();
         }
-        const auto create_public_request_op = LibFred::CreatePublicRequest().set_email_to_answer(specified_email);
+        const auto create_public_request_op = LibFred::CreatePublicRequest()
+                .set_registrar_id(registrar_id)
+                .set_email_to_answer(specified_email);
         switch (confirmation_method)
         {
             case ConfirmedBy::email:

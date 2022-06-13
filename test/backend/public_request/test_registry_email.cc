@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,8 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/public_request/create_authinfo_request_registry_email.hh"
 #include "src/backend/public_request/exceptions.hh"
+
 #include "libfred/mailer.hh"
 #include "libfred/object/object_type.hh"
 #include "libfred/public_request/update_public_request.hh"
@@ -25,7 +27,8 @@
 #include "libfred/registrable_object/domain/info_domain_data.hh"
 #include "libfred/registrable_object/keyset/info_keyset_data.hh"
 #include "libfred/registrable_object/nsset/info_nsset_data.hh"
-#include "libfred/registrar/info_registrar_data.hh"
+#include "libfred/registrar/info_registrar.hh"
+
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/faked_args.hh"
 #include "src/util/corba_wrapper_decl.hh"
@@ -72,7 +75,7 @@ struct registry_email_fixture : Test::instantiate_db_template
     registry_email_fixture()
     {
         LibFred::OperationContextCreator ctx;
-        LibFred::InfoRegistrarData registrar = Test::exec(
+        auto registrar = Test::exec(
                 Test::CreateX_factory<::LibFred::CreateRegistrar>()
                     .make(),
                 ctx);
@@ -105,18 +108,22 @@ struct registry_email_fixture : Test::instantiate_db_template
         contact_pr_id = Fred::Backend::PublicRequest::create_authinfo_request_registry_email(
                 Fred::Backend::PublicRequest::ObjectType::contact,
                 contact.handle,
+                registrar.id,
                 Optional<unsigned long long>());
         nsset_pr_id = Fred::Backend::PublicRequest::create_authinfo_request_registry_email(
                 Fred::Backend::PublicRequest::ObjectType::nsset,
                 nsset.handle,
+                registrar.id,
                 Optional<unsigned long long>());
         domain_pr_id = Fred::Backend::PublicRequest::create_authinfo_request_registry_email(
                 Fred::Backend::PublicRequest::ObjectType::domain,
                 domain.fqdn,
+                registrar.id,
                 Optional<unsigned long long>());
         keyset_pr_id = Fred::Backend::PublicRequest::create_authinfo_request_registry_email(
                 Fred::Backend::PublicRequest::ObjectType::keyset,
                 keyset.handle,
+                registrar.id,
                 Optional<unsigned long long>());
     }
     LibFred::InfoContactData contact;
@@ -137,6 +144,15 @@ BOOST_FIXTURE_TEST_CASE(authinfo_request_to_registry_email, registry_email_fixtu
     BOOST_CHECK_EQUAL(request.size(), 1);
 }
 
+namespace {
+
+auto get_registrar_id(LibFred::OperationContext& ctx, const std::string& authinfo_registrar)
+{
+    return LibFred::InfoRegistrarByHandle{authinfo_registrar}.exec(ctx).info_registrar_data.id;
+}
+
+}//namespace {anonymous}
+
 BOOST_FIXTURE_TEST_CASE(authinfo_request_to_invalid_registry_email, registry_email_fixture)
 {
     LibFred::OperationContextCreator ctx;
@@ -144,6 +160,7 @@ BOOST_FIXTURE_TEST_CASE(authinfo_request_to_invalid_registry_email, registry_ema
         Fred::Backend::PublicRequest::create_authinfo_request_registry_email(
                 Fred::Backend::PublicRequest::ObjectType::contact,
                 contact_with_invalid_email.handle,
+                get_registrar_id(ctx, contact_with_invalid_email.sponsoring_registrar_handle),
                 Optional<unsigned long long>()),
         Fred::Backend::PublicRequest::NoContactEmail);
 }
@@ -162,6 +179,7 @@ BOOST_FIXTURE_TEST_CASE(no_entity_email, Test::instantiate_db_template)
         Fred::Backend::PublicRequest::create_authinfo_request_registry_email(
                 Fred::Backend::PublicRequest::ObjectType::contact,
                 contact.handle,
+                get_registrar_id(ctx, contact.sponsoring_registrar_handle),
                 Optional<unsigned long long>());
         BOOST_ERROR("exception of no email awaited");
     }
@@ -172,6 +190,7 @@ BOOST_FIXTURE_TEST_CASE(no_entity_email, Test::instantiate_db_template)
         Fred::Backend::PublicRequest::create_authinfo_request_registry_email(
                 Fred::Backend::PublicRequest::ObjectType::nsset,
                 nsset.handle,
+                get_registrar_id(ctx, nsset.sponsoring_registrar_handle),
                 Optional<unsigned long long>());
         BOOST_ERROR("exception of no email awaited");
     }
@@ -182,6 +201,7 @@ BOOST_FIXTURE_TEST_CASE(no_entity_email, Test::instantiate_db_template)
         Fred::Backend::PublicRequest::create_authinfo_request_registry_email(
                 Fred::Backend::PublicRequest::ObjectType::domain,
                 domain.fqdn,
+                get_registrar_id(ctx, domain.sponsoring_registrar_handle),
                 Optional<unsigned long long>());
         BOOST_ERROR("exception of no email awaited");
     }
@@ -192,6 +212,7 @@ BOOST_FIXTURE_TEST_CASE(no_entity_email, Test::instantiate_db_template)
         Fred::Backend::PublicRequest::create_authinfo_request_registry_email(
                 Fred::Backend::PublicRequest::ObjectType::keyset,
                 keyset.handle,
+                get_registrar_id(ctx, keyset.sponsoring_registrar_handle),
                 Optional<unsigned long long>());
         BOOST_ERROR("exception of no email awaited");
     }
@@ -200,10 +221,12 @@ BOOST_FIXTURE_TEST_CASE(no_entity_email, Test::instantiate_db_template)
 
 BOOST_FIXTURE_TEST_CASE(no_object, Test::instantiate_db_template)
 {
+    ::LibFred::OperationContextCreator ctx;
     BOOST_CHECK_THROW(
             Fred::Backend::PublicRequest::create_authinfo_request_registry_email(
                 Fred::Backend::PublicRequest::ObjectType::contact,
                 "test handle",
+                Test::registrar::make(ctx, "REG-NO-OBJECT").id,
                 Optional<unsigned long long>()),
             Fred::Backend::PublicRequest::ObjectNotFound);
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2018-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,7 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
-#ifndef CREATE_AUTHINFO_REQUEST_NON_REGISTRY_EMAIL_HH_67BB79B643874178B5A64F030C86791C
+
+#ifndef CREATE_AUTHINFO_REQUEST_NON_REGISTRY_EMAIL_HH_67BB79B643874178B5A64F030C86791C//date "+%s.%N"|md5sum|tr "[a-f]" "[A-F]"
 #define CREATE_AUTHINFO_REQUEST_NON_REGISTRY_EMAIL_HH_67BB79B643874178B5A64F030C86791C
 
 #include "src/backend/public_request/confirmed_by.hh"
@@ -33,6 +34,7 @@ namespace PublicRequest {
 unsigned long long create_authinfo_request_non_registry_email(
         ObjectType object_type,
         const std::string& object_handle,
+        unsigned long long registrar_id,
         const Optional<unsigned long long>& log_request_id,
         ConfirmedBy confirmation_method,
         const std::string& specified_email);
@@ -41,4 +43,4 @@ unsigned long long create_authinfo_request_non_registry_email(
 } // namespace Fred::Backend
 } // namespace Fred
 
-#endif
+#endif//CREATE_AUTHINFO_REQUEST_NON_REGISTRY_EMAIL_HH_67BB79B643874178B5A64F030C86791C
