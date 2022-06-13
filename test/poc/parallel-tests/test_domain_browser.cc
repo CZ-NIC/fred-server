@@ -16,8 +16,12 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/domain_browser/domain_browser.hh"
 
+#include "libfred/object/check_authinfo.hh"
+#include "libfred/object_state/object_has_state.hh"
+#include "libfred/object_state/cancel_object_state_request_id.hh"
 #include "libfred/registrable_object/contact/create_contact.hh"
 #include "libfred/registrable_object/contact/contact_state.hh"
 #include "libfred/registrable_object/contact/info_contact.hh"
@@ -34,8 +38,6 @@
 #include "libfred/registrable_object/nsset/info_nsset.hh"
 #include "libfred/registrable_object/nsset/nsset_state.hh"
 #include "libfred/registrable_object/nsset/update_nsset.hh"
-#include "libfred/object_state/object_has_state.hh"
-#include "libfred/object_state/cancel_object_state_request_id.hh"
 #include "libfred/registrar/create_registrar.hh"
 #include "libfred/registrar/info_registrar.hh"
 #include "libfred/registrar/info_registrar_diff.hh"
@@ -400,7 +402,7 @@ public:
                 make_fqdn<Test::CzZone>("test", index_++),
                 sponsoring_registrar.data.handle,
                 registrant.data.handle,
-                std::string{"testpasswd"},//const Optional<std::string>& authinfo
+                std::string{},//const Optional<std::string>& authinfo
                 nsset.data.handle,
                 keyset.data.handle,
                 { admin_contact.data.handle },
@@ -443,7 +445,7 @@ public:
                 make_fqdn<Test::CzZone>("test", index_++),
                 sponsoring_registrar.data.handle,
                 registrant.data.handle,
-                std::string{"testpasswd"},//const Optional<std::string>& authinfo
+                {},//const Optional<std::string>& authinfo
                 nsset.data.handle,
                 keyset.data.handle,
                 { admin_contact.data.handle },
@@ -658,7 +660,6 @@ BOOST_FIXTURE_TEST_CASE(get_my_contact_detail, GetMyContactDetailFixture)
     BOOST_CHECK_EQUAL(cd.creation_time, my_contact_info.info_contact_data.creation_time);
     BOOST_CHECK_EQUAL(cd.update_time.get_value_or_default(), my_contact_info.info_contact_data.update_time.get_value_or_default());
     BOOST_CHECK_EQUAL(cd.transfer_time.get_value_or_default(), my_contact_info.info_contact_data.transfer_time.get_value_or_default());
-    BOOST_CHECK_EQUAL(cd.authinfopw, my_contact_info.info_contact_data.authinfopw);
     BOOST_CHECK_EQUAL(cd.name.get_value_or_default(), my_contact_info.info_contact_data.name.get_value_or_default());
     BOOST_CHECK_EQUAL(cd.organization.get_value_or_default(), my_contact_info.info_contact_data.organization.get_value_or_default());
 
@@ -721,7 +722,6 @@ BOOST_FIXTURE_TEST_CASE(get_contact_detail, GetContactFixture)
     BOOST_CHECK_EQUAL(cd.creation_time, test_contact_info.info_contact_data.creation_time);
     BOOST_CHECK_EQUAL(cd.update_time.get_value_or_default(), test_contact_info.info_contact_data.update_time.get_value_or_default());
     BOOST_CHECK_EQUAL(cd.transfer_time.get_value_or_default(), test_contact_info.info_contact_data.transfer_time.get_value_or_default());
-    BOOST_CHECK_EQUAL(cd.authinfopw, "********");
     BOOST_CHECK_EQUAL(cd.name.get_value_or_default(), test_contact_info.info_contact_data.name.get_value_or_default());
     BOOST_CHECK_EQUAL(cd.organization.get_value_or_default(), test_contact_info.info_contact_data.organization.get_value_or_default());
 
@@ -891,7 +891,6 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_detail, GetMyDomainFixture)
     BOOST_CHECK_EQUAL(d.sponsoring_registrar.name, sponsoring_registrar_info.info_registrar_data.name.get_value_or_default());
     BOOST_CHECK_EQUAL(d.creation_time, my_domain_info.info_domain_data.creation_time);
     BOOST_CHECK_EQUAL(d.update_time.get_value_or_default(), my_domain_info.info_domain_data.update_time.get_value_or_default());
-    BOOST_CHECK_EQUAL(d.authinfopw, my_domain_info.info_domain_data.authinfopw);
     BOOST_CHECK_EQUAL(d.registrant.id, mojeid_contact.data.id);
     BOOST_CHECK_EQUAL(d.registrant.handle, mojeid_contact.data.handle);
     BOOST_CHECK_EQUAL(d.registrant.name, (mojeid_contact.data.organization.get_value_or_default().empty()
@@ -992,8 +991,6 @@ BOOST_FIXTURE_TEST_CASE(get_nsset_detail, GetNssetFixture)
     BOOST_CHECK_EQUAL(n.update_registrar.handle, "");
     BOOST_CHECK_EQUAL(n.update_registrar.name, "");
 
-    BOOST_CHECK_EQUAL(n.authinfopw, "********");
-
     BOOST_CHECK_EQUAL(n.admins.at(0).id, admin_contact_info.info_contact_data.id);
     BOOST_CHECK_EQUAL(n.admins.at(0).handle, admin_contact_info.info_contact_data.handle);
     BOOST_CHECK_EQUAL(n.admins.at(0).name, (admin_contact_info.info_contact_data.organization.get_value_or_default().empty()
@@ -1092,8 +1089,6 @@ BOOST_FIXTURE_TEST_CASE(get_keyset_detail, GetKeysetFixture)
     BOOST_CHECK_EQUAL(k.update_registrar.id, 0);
     BOOST_CHECK_EQUAL(k.update_registrar.handle, "");
     BOOST_CHECK_EQUAL(k.update_registrar.name, "");
-
-    BOOST_CHECK_EQUAL(k.authinfopw, "********");
 
     BOOST_CHECK_EQUAL(k.admins.at(0).id, admin_contact_info.info_contact_data.id);
     BOOST_CHECK_EQUAL(k.admins.at(0).handle, admin_contact_info.info_contact_data.handle);
@@ -1387,9 +1382,10 @@ BOOST_FIXTURE_TEST_CASE(set_contact_authinfo, SetContactAuthinfoFixture)
     BOOST_CHECK(dombr.setContactAuthInfo(identified_mojeid_contact.data.id, "newauthinfo", 42));
 
     const auto my_contact_info = ::LibFred::InfoContactByHandle{identified_mojeid_contact.data.handle}.exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
-    BOOST_CHECK_EQUAL(my_contact_info.info_contact_data.authinfopw, "newauthinfo");
-    BOOST_REQUIRE(!my_contact_info.logd_request_id.isnull());
-    BOOST_CHECK_EQUAL(my_contact_info.logd_request_id.get_value(), 42);
+    BOOST_CHECK_LT(
+            0,
+            LibFred::Object::CheckAuthinfo{LibFred::Object::ObjectId{my_contact_info.info_contact_data.id}}
+                    .exec(ctx, "newauthinfo", LibFred::Object::CheckAuthinfo::increment_usage));
 }
 
 struct SetValidatedContactAuthinfoFixture : MainFixture
@@ -1412,7 +1408,10 @@ BOOST_FIXTURE_TEST_CASE(set_validated_contact_authinfo, SetValidatedContactAuthi
     BOOST_CHECK(dombr.setContactAuthInfo(validated_mojeid_contact.data.id, "newauthinfo", 0));
 
     const auto my_contact_info = ::LibFred::InfoContactByHandle{validated_mojeid_contact.data.handle}.exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
-    BOOST_CHECK_EQUAL(my_contact_info.info_contact_data.authinfopw, "newauthinfo");
+    BOOST_CHECK_LT(
+            0,
+            LibFred::Object::CheckAuthinfo{LibFred::Object::ObjectId{my_contact_info.info_contact_data.id}}
+                    .exec(ctx, "newauthinfo", LibFred::Object::CheckAuthinfo::increment_usage));
 }
 
 struct SetContactAuthinfoUserNotInMojeidFixture : MainFixture
@@ -1503,26 +1502,6 @@ BOOST_FIXTURE_TEST_CASE(set_contact_authinfo_contact_blocked, SetContactAuthinfo
         BOOST_CHECK(true);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
-}
-
-struct SetContactAuthinfoTheSameFixture : MainFixture
-{
-    SetContactAuthinfoTheSameFixture()
-        : MainFixture{},
-          identified_mojeid_contact{
-                UserContactProducer::operator()(ctx, reg_mojeid, flag_mojeid_contact, flag_identified_contact)},
-          dombr{Test::Commit{ctx}, reg_mojeid}
-    { }
-    MojeidContact  identified_mojeid_contact;
-    DomainBrowserImplInstanceFixture dombr;
-};
-
-/**
- * test setContactAuthInfo the same authinfo
- */
-BOOST_FIXTURE_TEST_CASE(set_contact_authinfo_the_same, SetContactAuthinfoTheSameFixture)
-{
-    BOOST_CHECK(!dombr.setContactAuthInfo(identified_mojeid_contact.data.id, identified_mojeid_contact.data.authinfopw, 0));
 }
 
 struct SetContactAuthinfoTooLongFixture : MainFixture

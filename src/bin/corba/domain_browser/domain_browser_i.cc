@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2020  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2014-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -417,7 +417,7 @@ Registry::DomainBrowser::ContactDetail* Server_i::getContactDetail(
                 CorbaConversion::Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(
                         detail_impl.update_time);
 
-        contact_detail->auth_info = LibFred::Corba::wrap_string_to_corba_string(detail_impl.authinfopw);
+        contact_detail->auth_info = LibFred::Corba::wrap_string_to_corba_string(std::string());
         contact_detail->name = LibFred::Corba::wrap_string_to_corba_string(
                 detail_impl.name.get_value_or_default());
         contact_detail->organization = LibFred::Corba::wrap_string_to_corba_string(
@@ -549,7 +549,7 @@ Registry::DomainBrowser::NSSetDetail* Server_i::getNssetDetail(
         nsset_detail->update_registrar.name = LibFred::Corba::wrap_string_to_corba_string(
                 detail_impl.update_registrar.name);
 
-        nsset_detail->auth_info = LibFred::Corba::wrap_string_to_corba_string(detail_impl.authinfopw);
+        nsset_detail->auth_info = LibFred::Corba::wrap_string_to_corba_string(std::string());
 
         nsset_detail->admins.length(detail_impl.admins.size());
         for (std::size_t i = 0; i < detail_impl.admins.size(); ++i)
@@ -638,7 +638,7 @@ Registry::DomainBrowser::DomainDetail* Server_i::getDomainDetail(
                 CorbaConversion::Util::wrap_Nullable_boost_posix_time_ptime_to_NullableIsoDateTime(
                         detail_impl.update_time);
 
-        domain_detail->auth_info = LibFred::Corba::wrap_string_to_corba_string(detail_impl.authinfopw);
+        domain_detail->auth_info = LibFred::Corba::wrap_string_to_corba_string(std::string());
         domain_detail->registrant.id = detail_impl.registrant.id;
         domain_detail->registrant.handle = LibFred::Corba::wrap_string_to_corba_string(
                 detail_impl.registrant.handle);
@@ -758,7 +758,7 @@ Registry::DomainBrowser::KeysetDetail* Server_i::getKeysetDetail(
         keyset_detail->update_registrar.name = LibFred::Corba::wrap_string_to_corba_string(
                 detail_impl.update_registrar.name);
 
-        keyset_detail->auth_info = LibFred::Corba::wrap_string_to_corba_string(detail_impl.authinfopw);
+        keyset_detail->auth_info = LibFred::Corba::wrap_string_to_corba_string(std::string());
 
         keyset_detail->admins.length(detail_impl.admins.size());
         for (std::size_t i = 0; i < detail_impl.admins.size(); ++i)

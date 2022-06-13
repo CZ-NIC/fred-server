@@ -23,6 +23,12 @@
 #include "src/util/cfg/handle_mojeid_args.hh"
 #include "src/util/cfg/handle_domainbrowser_args.hh"
 
+#include "libfred/object/check_authinfo.hh"
+#include "libfred/object_state/object_has_state.hh"
+#include "libfred/object_state/create_object_state_request_id.hh"
+#include "libfred/object_state/cancel_object_state_request_id.hh"
+#include "libfred/object_state/perform_object_state_request.hh"
+#include "libfred/object_state/lock_object_state_request_lock.hh"
 #include "libfred/registrable_object/domain/info_domain.hh"
 #include "libfred/registrable_object/domain/create_domain.hh"
 #include "libfred/registrable_object/domain/update_domain.hh"
@@ -35,11 +41,6 @@
 #include "libfred/registrable_object/contact/create_contact.hh"
 #include "libfred/registrable_object/contact/info_contact.hh"
 #include "libfred/registrable_object/contact/update_contact.hh"
-#include "libfred/object_state/object_has_state.hh"
-#include "libfred/object_state/create_object_state_request_id.hh"
-#include "libfred/object_state/cancel_object_state_request_id.hh"
-#include "libfred/object_state/perform_object_state_request.hh"
-#include "libfred/object_state/lock_object_state_request_lock.hh"
 #include "libfred/registrar/create_registrar.hh"
 #include "libfred/registrar/info_registrar.hh"
 #include "libfred/registrar/info_registrar_diff.hh"
@@ -435,7 +436,6 @@ BOOST_FIXTURE_TEST_CASE(get_my_contact_detail, get_my_contact_detail_fixture )
     BOOST_CHECK(cd.creation_time == my_contact_info.info_contact_data.creation_time);
     BOOST_CHECK(cd.update_time.get_value_or_default() == my_contact_info.info_contact_data.update_time.get_value_or_default());
     BOOST_CHECK(cd.transfer_time.get_value_or_default() == my_contact_info.info_contact_data.transfer_time.get_value_or_default());
-    BOOST_CHECK(cd.authinfopw == my_contact_info.info_contact_data.authinfopw);
     BOOST_CHECK(cd.name.get_value_or_default() == my_contact_info.info_contact_data.name.get_value_or_default());
     BOOST_CHECK(cd.organization.get_value_or_default() == my_contact_info.info_contact_data.organization.get_value_or_default());
 
@@ -491,7 +491,6 @@ BOOST_FIXTURE_TEST_CASE(get_contact_detail, get_contact_fixture )
     BOOST_CHECK(cd.creation_time == test_contact_info.info_contact_data.creation_time);
     BOOST_CHECK(cd.update_time.get_value_or_default() == test_contact_info.info_contact_data.update_time.get_value_or_default());
     BOOST_CHECK(cd.transfer_time.get_value_or_default() == test_contact_info.info_contact_data.transfer_time.get_value_or_default());
-    BOOST_CHECK(cd.authinfopw == "********");
     BOOST_CHECK(cd.name.get_value_or_default() == test_contact_info.info_contact_data.name.get_value_or_default());
     BOOST_CHECK(cd.organization.get_value_or_default() == test_contact_info.info_contact_data.organization.get_value_or_default());
 
@@ -639,7 +638,7 @@ struct get_my_domain_fixture
         ::LibFred::CreateDomain(test_fqdn//const std::string& fqdn
                     , test_registrar_handle//const std::string& registrar
                     , user_contact_handle//const std::string& registrant
-                    , Optional<std::string>("testpasswd")//const Optional<std::string>& authinfo
+                    , {}//const Optional<std::string>& authinfo
                     , Nullable<std::string>(test_nsset_handle)//const Optional<Nullable<std::string> >& nsset
                     , Nullable<std::string>(test_keyset_handle)//const Optional<Nullable<std::string> >& keyset
                     , Util::vector_of<std::string>(admin_contact_fixture::test_contact_handle)//const std::vector<std::string>& admin_contacts
@@ -679,7 +678,7 @@ struct get_domain_fixture
         ::LibFred::CreateDomain(test_fqdn//const std::string& fqdn
                     , test_registrar_handle//const std::string& registrar
                     , registrant_contact_fixture::test_contact_handle//const std::string& registrant
-                    , Optional<std::string>("testpasswd")//const Optional<std::string>& authinfo
+                    , {}//const Optional<std::string>& authinfo
                     , Nullable<std::string>(test_nsset_handle)//const Optional<Nullable<std::string> >& nsset
                     , Nullable<std::string>(test_keyset_handle)//const Optional<Nullable<std::string> >& keyset
                     , Util::vector_of<std::string>(admin_contact_fixture::test_contact_handle)//const std::vector<std::string>& admin_contacts
@@ -720,7 +719,6 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_detail, get_my_domain_fixture )
     BOOST_CHECK(d.sponsoring_registrar.name == sponsoring_registrar_info.info_registrar_data.name.get_value_or_default());
     BOOST_CHECK(d.creation_time == my_domain_info.info_domain_data.creation_time);
     BOOST_CHECK(d.update_time.get_value_or_default() == my_domain_info.info_domain_data.update_time.get_value_or_default());
-    BOOST_CHECK(d.authinfopw == my_domain_info.info_domain_data.authinfopw);
     BOOST_CHECK(d.registrant.id == user_contact_info.info_contact_data.id);
     BOOST_CHECK(d.registrant.handle == user_contact_info.info_contact_data.handle);
     BOOST_CHECK(d.registrant.name == (user_contact_info.info_contact_data.organization.get_value_or_default().empty()
@@ -805,8 +803,6 @@ BOOST_FIXTURE_TEST_CASE(get_nsset_detail, get_nsset_fixture )
     BOOST_CHECK(n.update_registrar.id == 0);
     BOOST_CHECK(n.update_registrar.handle == "");
     BOOST_CHECK(n.update_registrar.name == "");
-
-    BOOST_CHECK(n.authinfopw == "********");
 
     BOOST_CHECK(n.admins.at(0).id == admin_contact_info.info_contact_data.id);
     BOOST_CHECK(n.admins.at(0).handle == admin_contact_info.info_contact_data.handle);
@@ -893,8 +889,6 @@ BOOST_FIXTURE_TEST_CASE(get_keyset_detail, get_keyset_fixture )
     BOOST_CHECK(k.update_registrar.id == 0);
     BOOST_CHECK(k.update_registrar.handle == "");
     BOOST_CHECK(k.update_registrar.name == "");
-
-    BOOST_CHECK(k.authinfopw == "********");
 
     BOOST_CHECK(k.admins.at(0).id == admin_contact_info.info_contact_data.id);
     BOOST_CHECK(k.admins.at(0).handle == admin_contact_info.info_contact_data.handle);
@@ -1161,7 +1155,7 @@ struct set_contact_authinfo_fixture
 /**
  * test call setContactAuthInfo with private data
 */
-BOOST_FIXTURE_TEST_CASE(set_contact_authinfo, set_contact_authinfo_fixture )
+BOOST_FIXTURE_TEST_CASE(set_contact_authinfo, set_contact_authinfo_fixture)
 {
     {
         ::LibFred::OperationContextCreator ctx;
@@ -1174,11 +1168,13 @@ BOOST_FIXTURE_TEST_CASE(set_contact_authinfo, set_contact_authinfo_fixture )
 
     ::LibFred::OperationContextCreator ctx;
     BOOST_CHECK(impl.setContactAuthInfo(
-        user_contact_info.info_contact_data.id,"newauthinfo", 42));
+        user_contact_info.info_contact_data.id, "newauthinfo", 42));
 
     ::LibFred::InfoContactOutput my_contact_info = ::LibFred::InfoContactByHandle(user_contact_handle).exec(ctx, Fred::Backend::DomainBrowser::DomainBrowser::output_timezone);
-    BOOST_CHECK(my_contact_info.info_contact_data.authinfopw.compare("newauthinfo")==0);
-    BOOST_CHECK(!my_contact_info.logd_request_id.isnull() && my_contact_info.logd_request_id.get_value() == 42);
+    BOOST_CHECK_LT(
+            0,
+            LibFred::Object::CheckAuthinfo{LibFred::Object::ObjectId{my_contact_info.info_contact_data.id}}
+                    .exec(ctx, "newauthinfo", LibFred::Object::CheckAuthinfo::increment_usage));
 }
 
 struct set_validated_contact_authinfo_fixture
@@ -1220,8 +1216,7 @@ BOOST_FIXTURE_TEST_CASE(set_contact_authinfo_user_not_in_mojeid, set_contact_aut
     try
     {
         ::LibFred::OperationContextCreator ctx;
-        impl.setContactAuthInfo(
-            user_contact_info.info_contact_data.id,"newauthinfo", 0);
+        impl.setContactAuthInfo(user_contact_info.info_contact_data.id, "newauthinfo", 0);
         BOOST_ERROR("unreported missing user");
     }
     catch( const Fred::Backend::DomainBrowser::UserNotExists& ex)
@@ -1244,8 +1239,7 @@ BOOST_FIXTURE_TEST_CASE(set_contact_authinfo_user_not_identified, set_contact_au
     try
     {
         ::LibFred::OperationContextCreator ctx;
-        impl.setContactAuthInfo(
-            user_contact_info.info_contact_data.id,"newauthinfo", 0);
+        impl.setContactAuthInfo(user_contact_info.info_contact_data.id, "newauthinfo", 0);
         BOOST_ERROR("unreported missing user identification");
     }
     catch( const Fred::Backend::DomainBrowser::AccessDenied& ex)
@@ -1275,8 +1269,7 @@ BOOST_FIXTURE_TEST_CASE(set_contact_authinfo_contact_blocked, set_contact_authin
     try
     {
         ::LibFred::OperationContextCreator ctx;
-        impl.setContactAuthInfo(
-            user_contact_info.info_contact_data.id,"newauthinfo", 0);
+        impl.setContactAuthInfo(user_contact_info.info_contact_data.id, "newauthinfo", 0);
         BOOST_ERROR("unreported blocked user contact");
     }
     catch( const Fred::Backend::DomainBrowser::ObjectBlocked& ex)
@@ -1287,40 +1280,11 @@ BOOST_FIXTURE_TEST_CASE(set_contact_authinfo_contact_blocked, set_contact_authin
 }
 
 
-struct set_contact_authinfo_the_same_fixture
-: mojeid_user_contact_fixture
-, domain_browser_impl_instance_fixture
-{};
-/**
- * test setContactAuthInfo the same authinfo
- */
-BOOST_FIXTURE_TEST_CASE(set_contact_authinfo_the_same, set_contact_authinfo_the_same_fixture )
-{
-    {
-        ::LibFred::OperationContextCreator ctx;
-        ::LibFred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
-        , Util::set_of<std::string>(::LibFred::ObjectState::IDENTIFIED_CONTACT)).exec(ctx);
-        ::LibFred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
-        ctx.commit_transaction();
-    }
-
-    {
-        ::LibFred::OperationContextCreator ctx;
-        BOOST_CHECK(impl.setContactAuthInfo(
-            user_contact_info.info_contact_data.id,
-            user_contact_info.info_contact_data.authinfopw, 0) == false);
-    }
-}
-
-struct set_contact_authinfo_not_owner_fixture
-: mojeid_user_contact_fixture
-, domain_browser_impl_instance_fixture
-{};
-
 struct set_contact_authinfo_too_long_fixture
 : mojeid_user_contact_fixture
 , domain_browser_impl_instance_fixture
 {};
+
 /**
  * test setContactAuthInfo too long
  */
@@ -1338,13 +1302,14 @@ BOOST_FIXTURE_TEST_CASE(set_contact_authinfo_too_long, set_contact_authinfo_too_
     {
         ::LibFred::OperationContextCreator ctx;
         impl.setContactAuthInfo(
-            user_contact_info.info_contact_data.id,
-            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-            "aaaaaaaaaaaaaa", 0);
+                user_contact_info.info_contact_data.id,
+                "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                "aaaaaaaaaaaaaa",
+                0);
         BOOST_ERROR("unreported authinfo too long");
     }
     catch( const Fred::Backend::DomainBrowser::IncorrectUsage& ex)
@@ -1354,7 +1319,7 @@ BOOST_FIXTURE_TEST_CASE(set_contact_authinfo_too_long, set_contact_authinfo_too_
     }
 }
 
-BOOST_AUTO_TEST_SUITE_END();//setContactAuthInfo
+BOOST_AUTO_TEST_SUITE_END()//setContactAuthInfo
 
 BOOST_AUTO_TEST_SUITE(setObjectBlockStatus)
 
@@ -1374,7 +1339,7 @@ struct registrant_domain_fixture
         ::LibFred::CreateDomain(test_fqdn//const std::string& fqdn
                     , test_registrar_handle//const std::string& registrar
                     , user_contact_handle//const std::string& registrant
-                    , Optional<std::string>("testpasswd")//const Optional<std::string>& authinfo
+                    , {}//const Optional<std::string>& authinfo
                     , Nullable<std::string>(test_nsset_handle)//const Optional<Nullable<std::string> >& nsset
                     , Nullable<std::string>(test_keyset_handle)//const Optional<Nullable<std::string> >& keyset
                     , Util::vector_of<std::string>(admin_contact_fixture::test_contact_handle)//const std::vector<std::string>& admin_contacts
@@ -1488,7 +1453,7 @@ struct admin_domain_fixture
         ::LibFred::CreateDomain(test_fqdn//const std::string& fqdn
                     , test_registrar_handle//const std::string& registrar
                     , admin_contact_fixture::test_contact_handle//const std::string& registrant
-                    , Optional<std::string>("testpasswd")//const Optional<std::string>& authinfo
+                    , {}//const Optional<std::string>& authinfo
                     , Nullable<std::string>(test_nsset_handle)//const Optional<Nullable<std::string> >& nsset
                     , Nullable<std::string>(test_keyset_handle)//const Optional<Nullable<std::string> >& keyset
                     , Util::vector_of<std::string>(user_contact_handle)//const std::vector<std::string>& admin_contacts
@@ -2055,7 +2020,7 @@ struct get_my_domains_fixture
             ::LibFred::CreateDomain(fqdn.str()//const std::string& fqdn
                 , test_registrar_handle//const std::string& registrar
                 , user_contact_handle//const std::string& registrant
-                , Optional<std::string>("testpasswd")//const Optional<std::string>& authinfo
+                , {}//const Optional<std::string>& authinfo
                 , Nullable<std::string>(test_nsset_handle)//const Optional<Nullable<std::string> >& nsset
                 , Nullable<std::string>(test_keyset_handle)//const Optional<Nullable<std::string> >& keyset
                 , Util::vector_of<std::string>(admin_contact_fixture::test_contact_handle)//const std::vector<std::string>& admin_contacts
