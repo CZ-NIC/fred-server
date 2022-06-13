@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/epp/contact/impl/contact_output.hh"
 
 #include "src/backend/epp/contact/status_value.hh"
@@ -215,11 +216,7 @@ InfoContactOutputData get_info_contact_output(
                 _authinfopw,
                 _session_data,
                 _data);
-    InfoContactOutputData retval = get_info_contact_output(_data, _object_state_data);
-
-    retval.authinfopw = string_to_optional(_data.authinfopw);
-
-    return retval;
+    return get_info_contact_output(_data, _object_state_data);
 }
 
 InfoContactOutputData get_info_contact_output(
