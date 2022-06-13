@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2020  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/bin/corba/epp/contact/contact_corba_conversions.hh"
 #include "src/backend/epp/contact/contact_data.hh"
 #include "src/backend/epp/update_operation.hh"
@@ -467,7 +468,6 @@ void unwrap_ContactData(const ccReg::ContactData& src, Epp::Contact::ContactData
     dst.notify_email = make_hideable_optional_string(src.NotifyEmail, src.DiscloseFlags.NotifyEmail);
     dst.vat = make_hideable_optional_string(src.VAT, src.DiscloseFlags.VAT);
     dst.ident = make_hideable_optional_contact_ident(src.identtype, src.ident, src.DiscloseFlags.Ident);
-    unwrap_contact_create_string(src.AuthInfoPw, dst.authinfopw);
 }
 
 namespace {
@@ -693,7 +693,7 @@ void wrap_InfoContactLocalizedOutputData(
     const Ident ident = wrap_ident(*src.ident);
     dst.ident = ident.value;
     dst.identtype = ident.type;
-    dst.AuthInfoPw = wrap_optional_string_to_corba_string(src.authinfopw);
+    dst.AuthInfoPw = wrap_string_to_corba_string("");
     dst.DiscloseFlags.Name = wrap_privacy_policy(src.name);
     dst.DiscloseFlags.Organization = wrap_privacy_policy(src.organization);
     dst.DiscloseFlags.Address = wrap_privacy_policy(src.address);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -15,9 +15,6 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
- */
-/**
- *  @file
  */
 
 #include "test/backend/epp/util.hh"
@@ -80,9 +77,6 @@ BOOST_FIXTURE_TEST_CASE(info_fail_nonexistent_handle, supply_ctx<HasRegistrarWit
 
 static void check_equal(const ::Epp::Nsset::InfoNssetOutputData& nsset_data, const ::LibFred::InfoNssetData& info_data) {
     BOOST_CHECK_EQUAL( boost::to_upper_copy( nsset_data.handle ), info_data.handle );
-
-    BOOST_REQUIRE(nsset_data.authinfopw);
-    BOOST_CHECK_EQUAL( *nsset_data.authinfopw, info_data.authinfopw );
 
     BOOST_CHECK_EQUAL( nsset_data.dns_hosts.size(), info_data.dns_hosts.size() );
     for(std::size_t i = 0; i < nsset_data.dns_hosts.size(); ++i)

@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/epp/contact/info_contact_localized.hh"
 #include "src/backend/epp/contact/info_contact.hh"
 
@@ -110,7 +111,6 @@ InfoContactLocalizedResponse info_contact_localized(
         dst_data.notify_email = src_data.notify_email;
         dst_data.VAT = src_data.VAT;
         dst_data.ident = src_data.personal_id;
-        dst_data.authinfopw = src_data.authinfopw;
 
         InfoContactLocalizedResponse response(
                 EppResponseSuccessLocalized(

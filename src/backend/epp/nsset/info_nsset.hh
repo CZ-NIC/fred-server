@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #ifndef INFO_NSSET_HH_9C05C3D3135F4A3F98BD3132C4441E61
 #define INFO_NSSET_HH_9C05C3D3135F4A3F98BD3132C4441E61
 
@@ -29,11 +30,11 @@
 
 #include <boost/asio/ip/address.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/optional.hpp>
 
 #include <set>
 #include <string>
 #include <vector>
+
 namespace Epp {
 namespace Nsset {
 
@@ -50,7 +51,6 @@ struct InfoNssetOutputData
             const boost::posix_time::ptime& _crdate,
             const Nullable<boost::posix_time::ptime>& _last_update,
             const Nullable<boost::posix_time::ptime>& _last_transfer,
-            const boost::optional<std::string>& _authinfopw,
             const std::vector<DnsHostOutput>& _dns_hosts,
             const std::vector<std::string>& _tech_contacts,
             short _tech_check_level);
@@ -63,7 +63,6 @@ struct InfoNssetOutputData
     boost::posix_time::ptime crdate;
     Nullable<boost::posix_time::ptime> last_update;
     Nullable<boost::posix_time::ptime> last_transfer;
-    boost::optional<std::string> authinfopw;
     std::vector<DnsHostOutput> dns_hosts;
     std::vector<std::string> tech_contacts;
     short tech_check_level;

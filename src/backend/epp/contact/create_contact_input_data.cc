@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/epp/contact/create_contact_input_data.hh"
 
 #include "src/backend/epp/contact/contact_data.hh"
@@ -88,8 +89,7 @@ CreateContactInputData::CreateContactInputData(const ContactData& src)
       email(remove_optionality(trim(src.email))),
       notify_email(remove_optionality(trim(src.notify_email))),
       vat(remove_optionality(trim(src.vat))),
-      ident(src.ident),
-      authinfopw(src.authinfopw)
+      ident(src.ident)
 { }
 
 }//namespace Epp::Contact

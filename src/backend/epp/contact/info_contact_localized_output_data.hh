@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #ifndef INFO_CONTACT_LOCALIZED_OUTPUT_DATA_HH_2F08A74A2E1F4EA09D32D78E0D3FDF36
 #define INFO_CONTACT_LOCALIZED_OUTPUT_DATA_HH_2F08A74A2E1F4EA09D32D78E0D3FDF36
 
@@ -67,8 +68,7 @@ struct InfoContactLocalizedOutputData
             const HideableOptional<std::string>& _email,
             const HideableOptional<std::string>& _notify_email,
             const HideableOptional<std::string>& _VAT,
-            const HideableOptional<ContactIdent>& _ident,
-            const boost::optional<std::string>& _authinfopw)
+            const HideableOptional<ContactIdent>& _ident)
         : handle(_handle),
           roid(_roid),
           sponsoring_registrar_handle(_sponsoring_registrar_handle),
@@ -87,8 +87,7 @@ struct InfoContactLocalizedOutputData
           email(_email),
           notify_email(_notify_email),
           VAT(_VAT),
-          ident(_ident),
-          authinfopw(_authinfopw)
+          ident(_ident)
     { }
 
     std::string handle;
@@ -110,7 +109,6 @@ struct InfoContactLocalizedOutputData
     HideableOptional<std::string> notify_email;
     HideableOptional<std::string> VAT;
     HideableOptional<ContactIdent> ident;
-    boost::optional<std::string> authinfopw;
 };
 
 } // namespace Epp::Contact

@@ -222,20 +222,9 @@ InfoContactOutputData get_info_contact_output(
 InfoContactOutputData get_info_contact_output(
         const LibFred::InfoContactData& _data,
         const std::vector<LibFred::ObjectStateData>& _object_state_data,
-        bool _include_authinfo)
+        bool _include_authinfo [[gnu::unused]])
 {
-    InfoContactOutputData retval = get_info_contact_output(_data, _object_state_data);
-
-    if (_include_authinfo)
-    {
-        retval.authinfopw = _data.authinfopw;
-    }
-    else
-    {
-        retval.authinfopw = boost::none;
-    }
-
-    return retval;
+    return get_info_contact_output(_data, _object_state_data);
 }
 
 }//namespace Epp::Contact

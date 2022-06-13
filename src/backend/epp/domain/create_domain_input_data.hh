@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #ifndef CREATE_DOMAIN_INPUT_DATA_HH_8AEC65DBEE314051AF0BA1B83AA57B8A
 #define CREATE_DOMAIN_INPUT_DATA_HH_8AEC65DBEE314051AF0BA1B83AA57B8A
 
@@ -37,7 +38,6 @@ struct CreateDomainInputData
     std::string registrant;
     std::string nsset;
     std::string keyset;
-    boost::optional<std::string> authinfopw;
     DomainRegistrationTime period;
     std::vector<std::string> admin_contacts;
     boost::optional<EnumValidationExtension> enum_validation_extension;
@@ -47,7 +47,6 @@ struct CreateDomainInputData
             const std::string& _registrant,
             const std::string& _nsset,
             const std::string& _keyset,
-            const boost::optional<std::string>& _authinfopw,
             const DomainRegistrationTime& _period,
             const std::vector<std::string>& _admin_contacts,
             const boost::optional<EnumValidationExtension>& _enum_validation_extension)
@@ -55,13 +54,11 @@ struct CreateDomainInputData
           registrant(_registrant),
           nsset(_nsset),
           keyset(_keyset),
-          authinfopw(_authinfopw),
           period(_period),
           admin_contacts(_admin_contacts),
           enum_validation_extension(_enum_validation_extension)
     {
     }
-
 };
 
 } // namespace Epp::Domain

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/epp/nsset/info_nsset_localized.hh"
 
 #include "src/backend/epp/epp_response_failure.hh"
@@ -79,7 +80,6 @@ InfoNssetLocalizedResponse info_nsset_localized(
                         info_nsset_output_data.crdate,
                         info_nsset_output_data.last_update,
                         info_nsset_output_data.last_transfer,
-                        info_nsset_output_data.authinfopw,
                         info_nsset_output_data.dns_hosts,
                         info_nsset_output_data.tech_contacts,
                         info_nsset_output_data.tech_check_level);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #ifndef CONTACT_DATA_HH_2ADE4FD677064F6994115E79385BB28D//date "+%s.%N"|md5sum|tr "[a-f]" "[A-F]"
 #define CONTACT_DATA_HH_2ADE4FD677064F6994115E79385BB28D
 
@@ -51,7 +52,6 @@ struct ContactData
     HideableOptional<std::string> notify_email;
     HideableOptional<std::string> vat;
     HideableOptional<ContactIdent> ident;
-    boost::optional<std::string> authinfopw;
     ContactData get_trimmed_copy()const;
 };
 

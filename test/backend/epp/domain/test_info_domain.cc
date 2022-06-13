@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "test/backend/epp/domain/fixture.hh"
 #include "test/backend/epp/util.hh"
 
@@ -71,8 +72,6 @@ void check_equal(
     BOOST_CHECK_EQUAL(_info_domain_output_data.last_update, _info_domain_data.update_time);
     BOOST_CHECK_EQUAL(_info_domain_output_data.last_transfer, _info_domain_data.transfer_time);
     BOOST_CHECK_EQUAL(_info_domain_output_data.exdate, _info_domain_data.expiration_date);
-    BOOST_REQUIRE(_info_domain_output_data.authinfopw);
-    BOOST_CHECK_EQUAL(*_info_domain_output_data.authinfopw, _info_domain_data.authinfopw);
 
     std::set<std::string> info_domain_data_admin_contacts =
             vector_of_Fred_RegistrableObject_Contact_ContactReference_to_set_of_string(_info_domain_data.admin_contacts);

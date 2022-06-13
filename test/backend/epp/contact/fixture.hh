@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #ifndef FIXTURE_HH_D413188368CF45BEA79CE297BB880BDD
 #define FIXTURE_HH_D413188368CF45BEA79CE297BB880BDD
 
@@ -137,7 +138,6 @@ struct DefaultCreateContactInputData : ::Epp::Contact::CreateContactInputData
         this->notify_email = ::Epp::Contact::make_public_data(std::string("jan.notify@novak.novak"));
         this->vat = ::Epp::Contact::make_public_data(std::string("MyVATstring"));
         this->ident = ::Epp::Contact::make_public_data(boost::optional<::Epp::Contact::ContactIdent>());
-        this->authinfopw = "authInfo123";
     }
     const std::string handle;
 };

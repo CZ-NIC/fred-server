@@ -719,76 +719,6 @@ BOOST_FIXTURE_TEST_CASE(create_duplicated_admin, ::Test::EppFixture<::Test::HasR
             });
 }
 
-BOOST_FIXTURE_TEST_CASE(create_empty_authinfopw, ::Test::EppFixture<::Test::HasRegistrarWithSessionAndCreateDomainInputData>)
-{
-    create_domain_input_data.data.authinfopw = boost::optional<std::string>("");
-
-    BOOST_REQUIRE_NO_THROW(::Epp::Domain::create_domain(
-            ctx,
-            create_domain_input_data.data,
-            ::Test::DefaultCreateDomainConfigData{},
-            session.data));
-
-    const auto info_data = ::LibFred::InfoDomainByFqdn(create_domain_input_data.data.fqdn).exec(ctx, "UTC").info_domain_data;
-    BOOST_TEST_MESSAGE(info_data.to_string());
-
-    const auto expected_expiration_date_local = Test::get_current_local_date(ctx) + boost::gregorian::years{1};
-
-    BOOST_CHECK_EQUAL(info_data.fqdn, create_domain_input_data.data.fqdn);
-    BOOST_CHECK_EQUAL(info_data.registrant.handle, create_domain_input_data.data.registrant);
-    BOOST_CHECK_EQUAL(info_data.nsset.get_value().handle, create_domain_input_data.data.nsset);
-    BOOST_CHECK_EQUAL(info_data.keyset.get_value().handle, create_domain_input_data.data.keyset);
-    BOOST_CHECK_EQUAL(info_data.authinfopw.length(), 8);
-    BOOST_CHECK_EQUAL(info_data.authinfopw.find_first_not_of(::LibFred::get_chars_allowed_in_generated_authinfopw()), std::string::npos);
-    BOOST_CHECK_EQUAL(info_data.expiration_date, expected_expiration_date_local);
-
-    BOOST_TEST_MESSAGE("info_data.admin_contacts.size(): " << info_data.admin_contacts.size());
-    BOOST_REQUIRE_LE(2, info_data.admin_contacts.size());
-    BOOST_TEST_MESSAGE("create_domain_input_data.data.admin_contacts " + create_domain_input_data.data.admin_contacts.at(0));
-    BOOST_TEST_MESSAGE("create_domain_input_data.data.admin_contacts " + create_domain_input_data.data.admin_contacts.at(1));
-
-    BOOST_CHECK_EQUAL(info_data.admin_contacts.size(), create_domain_input_data.data.admin_contacts.size());
-    BOOST_REQUIRE_LE(create_domain_input_data.data.admin_contacts.size(), info_data.admin_contacts.size());
-    BOOST_CHECK(std::equal(create_domain_input_data.data.admin_contacts.begin(), create_domain_input_data.data.admin_contacts.end(), info_data.admin_contacts.begin(), [](auto&& handle, auto&& pair) { return handle == pair.handle; }));
-
-    BOOST_CHECK(info_data.enum_domain_validation.isnull());
-}
-
-BOOST_FIXTURE_TEST_CASE(create_authinfopw_not_set, ::Test::EppFixture<::Test::HasRegistrarWithSessionAndCreateDomainInputData>)
-{
-    create_domain_input_data.data.authinfopw = boost::optional<std::string>();
-
-    BOOST_REQUIRE_NO_THROW(::Epp::Domain::create_domain(
-            ctx,
-            create_domain_input_data.data,
-            ::Test::DefaultCreateDomainConfigData{},
-            session.data));
-
-    const auto info_data = ::LibFred::InfoDomainByFqdn(create_domain_input_data.data.fqdn).exec(ctx, "UTC").info_domain_data;
-    BOOST_TEST_MESSAGE(info_data.to_string());
-
-    const auto expected_expiration_date_local = Test::get_current_local_date(ctx) + boost::gregorian::years{1};
-
-    BOOST_CHECK_EQUAL(info_data.fqdn, create_domain_input_data.data.fqdn);
-    BOOST_CHECK_EQUAL(info_data.registrant.handle, create_domain_input_data.data.registrant);
-    BOOST_CHECK_EQUAL(info_data.nsset.get_value().handle, create_domain_input_data.data.nsset);
-    BOOST_CHECK_EQUAL(info_data.keyset.get_value().handle, create_domain_input_data.data.keyset);
-    BOOST_CHECK_EQUAL(info_data.authinfopw.length(), 8);
-    BOOST_CHECK_EQUAL(info_data.authinfopw.find_first_not_of(::LibFred::get_chars_allowed_in_generated_authinfopw()), std::string::npos);
-    BOOST_CHECK_EQUAL(info_data.expiration_date, expected_expiration_date_local);
-
-    BOOST_TEST_MESSAGE("info_data.admin_contacts.size(): " << info_data.admin_contacts.size());
-    BOOST_REQUIRE_LE(2, info_data.admin_contacts.size());
-    BOOST_TEST_MESSAGE("create_domain_input_data.data.admin_contacts " + create_domain_input_data.data.admin_contacts.at(0));
-    BOOST_TEST_MESSAGE("create_domain_input_data.data.admin_contacts " + create_domain_input_data.data.admin_contacts.at(1));
-
-    BOOST_CHECK_EQUAL(info_data.admin_contacts.size(), create_domain_input_data.data.admin_contacts.size());
-    BOOST_REQUIRE_LE(create_domain_input_data.data.admin_contacts.size(), info_data.admin_contacts.size());
-    BOOST_CHECK(std::equal(create_domain_input_data.data.admin_contacts.begin(), create_domain_input_data.data.admin_contacts.end(), info_data.admin_contacts.begin(), [](auto&& handle, auto&& pair) { return handle == pair.handle; }));
-
-    BOOST_CHECK(info_data.enum_domain_validation.isnull());
-}
-
 using CreateInvalidDomainBySystemRegistrarSuccessFixture = ::Test::EppFixture<::Test::HasRegistrarWithSessionAndCreateDomainInputData, ::Test::HasSystemRegistrar>;
 BOOST_FIXTURE_TEST_CASE(create_invalid_domain_by_system_registrar_success, CreateInvalidDomainBySystemRegistrarSuccessFixture)
 {
@@ -876,7 +806,6 @@ BOOST_FIXTURE_TEST_CASE(create_ok, ::Test::EppFixture<::Test::HasRegistrarWithSe
     BOOST_CHECK_EQUAL(info_data.registrant.handle, create_domain_input_data.data.registrant);
     BOOST_CHECK_EQUAL(info_data.nsset.get_value().handle, create_domain_input_data.data.nsset);
     BOOST_CHECK_EQUAL(info_data.keyset.get_value().handle, create_domain_input_data.data.keyset);
-    BOOST_CHECK_EQUAL(info_data.authinfopw, *create_domain_input_data.data.authinfopw);
     BOOST_TEST_MESSAGE("info_data.expiration_date: " << info_data.expiration_date << " expected_expiration_date_local: " << expected_expiration_date_local);
     BOOST_CHECK_EQUAL(info_data.expiration_date, expected_expiration_date_local);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/epp/keyset/info_keyset_localized.hh"
 
 #include "src/backend/epp/impl/action.hh"
@@ -76,7 +77,6 @@ InfoKeysetLocalizedResponse info_keyset_localized(
                         info_keyset_data.crdate,
                         info_keyset_data.last_update,
                         info_keyset_data.last_transfer,
-                        info_keyset_data.authinfopw,
                         info_keyset_data.ds_records,
                         info_keyset_data.dns_keys,
                         info_keyset_data.tech_contacts);
