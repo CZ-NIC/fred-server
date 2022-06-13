@@ -38,6 +38,7 @@
 #include "src/util/cfg/handle_rifd_args.hh"
 
 #include "libfred/db_settings.hh"
+#include "libfred/object/object.hh"
 
 #include "util/log/logger.hh"
 #include "util/log/context.hh"
@@ -82,6 +83,10 @@ int main(int argc, char *argv[])
 
         // setting up logger
         setup_logging(CfgArgs::instance());
+
+        // set global authinfo TTL
+        LibFred::UpdateObject::set_authinfo_ttl(
+                CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgs>()->authinfo_ttl);
 
         Logging::Context ctx(server_name);
 

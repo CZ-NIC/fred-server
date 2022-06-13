@@ -117,7 +117,7 @@ int main(int argc, char* argv[])
 
         auto my_public_request = std::make_unique<CorbaConversion::PublicRequest::Server_i>(
                 server_name,
-                registry_args_ptr->authinfo_registrar);
+                registry_args_ptr->system_registrar);
 
         std::unique_ptr<CorbaConversion::Contact::Verification::ContactVerification_i> contact_vrf_iface(
                 new CorbaConversion::Contact::Verification::ContactVerification_i("fred-pifd-cv"));

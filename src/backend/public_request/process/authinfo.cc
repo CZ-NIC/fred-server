@@ -28,6 +28,9 @@
 #include "src/backend/public_request/util/get_public_request_uuid.hh"
 #include "src/backend/public_request/util/send_joined_address_email.hh"
 #include "src/backend/public_request/get_valid_registry_emails_of_registered_object.hh"
+
+#include "src/util/cfg/config_handler.hh"
+#include "src/util/cfg/handle_registry_args.hh"
 #include "src/util/corba_wrapper_decl.hh"
 
 #include "libfred/object/object_states_info.hh"
@@ -106,12 +109,20 @@ std::string get_template_name_body(EmailType _email_type)
 
 auto get_authinfo_ttl()
 {
-    static constexpr auto seconds_per_hour = 3600;
-    static constexpr auto hours_per_day = 24;
-    static constexpr auto seconds_per_day = hours_per_day * seconds_per_hour;
-    using Days = std::chrono::duration<std::chrono::seconds::rep, std::ratio<seconds_per_day>>;
-    static constexpr auto ttl = std::chrono::duration_cast<std::chrono::seconds>(Days{14});
-    static_assert(ttl.count() == 14 * 24 * 3600);
+    static const auto ttl = []()
+    {
+        try
+        {
+            return CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_authinfo_ttl();
+        }
+        catch (...) { }
+        try
+        {
+            return CfgArgs::instance()->get_handler_ptr_by_type<HandleRegistryArgs>()->authinfo_ttl;
+        }
+        catch (...) { }
+        return std::chrono::seconds{14 * 24 * 3600};
+    }();
     return ttl;
 }
 
