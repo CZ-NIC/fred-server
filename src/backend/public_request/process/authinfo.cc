@@ -88,7 +88,7 @@ std::string get_template_name_subject(EmailType _email_type)
 {
     switch (_email_type) {
         case EmailType::sendauthinfo_pif: return "send-authinfo-subject.txt";
-        case EmailType::sendauthinfo_epp: return "send_authinfo-subject.txt";
+        case EmailType::sendauthinfo_epp: return "send-authinfo-subject.txt";
     }
     throw std::runtime_error{"unexpected email type"};
 }
@@ -97,7 +97,7 @@ std::string get_template_name_body(EmailType _email_type)
 {
     switch (_email_type) {
         case EmailType::sendauthinfo_pif: return "send-authinfo-pif-body.txt";
-        case EmailType::sendauthinfo_epp: return "send_authinfo-epp-body.txt";
+        case EmailType::sendauthinfo_epp: return "send-authinfo-epp-body.txt";
     }
     throw std::runtime_error{"unexpected email type"};
 }

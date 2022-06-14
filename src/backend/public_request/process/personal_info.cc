@@ -290,9 +290,9 @@ void send_personal_info(
                     get_raw_value_from(info_contact_data.uuid)}};
     const Util::EmailData email_data(
             recipients,
-            "send_personalinfo_pif",
-            "send-personalinfo-pif-subject.txt",
-            "send-personalinfo-pif-body.txt",
+            "sendpersonalinfo_pif",
+            "send-personal-info-pif-subject.txt",
+            "send-personal-info-pif-body.txt",
             email_template_params,
             ObjectType::contact,
             get_raw_value_from(info_contact_data.uuid),
