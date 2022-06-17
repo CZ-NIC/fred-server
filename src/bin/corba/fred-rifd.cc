@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
 
         // set global authinfo TTL
         LibFred::UpdateObject::set_authinfo_ttl(
-                CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgs>()->authinfo_ttl);
+                CfgArgs::instance()->get_handler_ptr_by_type<HandleRegistryArgs>()->authinfo_ttl);
 
         Logging::Context ctx(server_name);
 
