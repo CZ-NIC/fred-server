@@ -123,7 +123,7 @@ public:
         disable_epp_notifier_cltrid_prefix = vm["registry.disable_epp_notifier_cltrid_prefix"].as<std::string>();
         registry_timezone = vm["registry.registry_timezone"].as<std::string>();
         system_registrar = vm["registry.system_registrar"].as<std::string>();
-        authinfo_ttl = vm["registry.authinfo_ttl"].as<std::chrono::seconds>();
+        authinfo_ttl = std::chrono::seconds{vm["registry.authinfo_ttl"].as<unsigned long long>()};
     }
     bool restricted_handles;
     bool disable_epp_notifier;
