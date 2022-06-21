@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/epp/contact/transfer_contact.hh"
 
 #include "src/backend/epp/epp_response_failure.hh"
@@ -76,7 +77,6 @@ unsigned long long transfer_contact(
         throw;
     }
 
-
     contact_data_before_transfer =
             LibFred::InfoContactByHandle(_contact_handle)
                     .set_lock()
@@ -105,10 +105,6 @@ unsigned long long transfer_contact(
         {
             throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
         }
-    }
-
-    if (contact_data_before_transfer.authinfopw != _authinfopw) {
-        throw EppResponseFailure(EppResultFailure(EppResultCode::invalid_authorization_information));
     }
 
     try {
