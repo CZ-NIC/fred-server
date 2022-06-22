@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2015-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -28,13 +28,7 @@
 
 namespace Fred {
 namespace Backend {
-
 namespace MojeId {
-
-std::string contact_transfer_request_generate_passwords(const LibFred::LockedPublicRequestsOfObjectForUpdate& _locked_contact);
-
-std::string contact_identification_generate_passwords();
-
 namespace PublicRequest {
 
 class ContactConditionalIdentification : public LibFred::PublicRequestAuthTypeIface
@@ -203,4 +197,4 @@ private:
 } // namespace Fred::Backend
 } // namespace Fred
 
-#endif
+#endif//MOJEID_PUBLIC_REQUEST_HH_84FE8D19EBEB44C998CD55B92E3E2ABE
