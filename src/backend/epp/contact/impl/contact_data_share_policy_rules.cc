@@ -120,15 +120,17 @@ void authorize_registrar_request(
         const LibFred::InfoContactData& contact_data,
         const Password& password)
 {
-    if (LibFred::Object::CheckAuthinfo{LibFred::Object::ObjectId{contact_data.id}}
-                .exec(ctx, *password, LibFred::Object::CheckAuthinfo::increment_usage))
+    const bool password_matched = 0 < LibFred::Object::CheckAuthinfo{LibFred::Object::ObjectId{contact_data.id}}
+                                            .exec(ctx, *password, LibFred::Object::CheckAuthinfo::increment_usage);
+    if (password_matched)
     {
-        struct AuthinfoDoesNotMatch : ContactDataSharePolicyRules::InvalidAuthorizationInformation, std::exception
-        {
-            const char* what() const noexcept override { return "authinfo does not match"; }
-        };
-        throw AuthinfoDoesNotMatch{};
+        return;
     }
+    struct AuthinfoDoesNotMatch : ContactDataSharePolicyRules::InvalidAuthorizationInformation, std::exception
+    {
+        const char* what() const noexcept override { return "authinfo does not match"; }
+    };
+    throw AuthinfoDoesNotMatch{};
 }
 
 template <typename T>
