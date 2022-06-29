@@ -654,6 +654,45 @@ public:
 
 
 /**
+ * \class HandleAdminClientInvoiceExportArgsGrp
+ * \brief admin client invoice_export options handler
+ */
+class HandleAdminClientInvoiceExportArgsGrp : public HandleCommandGrpArgs
+{
+public:
+
+    bool invoice_dont_send;
+
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("invoice_export");
+    }
+
+    std::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("invoice_export options")));
+        cfg_opts->add_options()
+            ("invoice_export", "export unexportd invoices")
+            ("invoice_dont_send",boost::program_options
+                ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(invoice_dont_send))
+                 , "don't send mails with invoices during export")
+                ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientInvoiceExportArgsGrp
+
+
+/**
  * \class HandleAdminClientInvoiceCreditArgsGrp
  * \brief admin client invoice_credit options handler
  */

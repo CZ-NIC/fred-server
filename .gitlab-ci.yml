@@ -24,7 +24,7 @@ stages:
   before_script:
     - install -m 700 -d $HOME/.ssh
     - install -m 600 $SRC_DIR/{id_rsa,id_rsa.pub,known_hosts} $HOME/.ssh/
-    - ./scripts/dependencies.sh -r
+    - ./scripts/dependencies.sh
   script:
     - cmake .
     - job_count=$(($(grep -c processor /proc/cpuinfo) / 2 + 1))
