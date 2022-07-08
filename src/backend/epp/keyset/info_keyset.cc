@@ -20,6 +20,7 @@
 #include "src/backend/epp/keyset/info_keyset.hh"
 #include "src/backend/epp/keyset/impl/keyset_output.hh"
 
+#include "src/backend/epp/authorization_required.hh"
 #include "src/backend/epp/epp_response_failure.hh"
 #include "src/backend/epp/epp_result_code.hh"
 #include "src/backend/epp/epp_result_failure.hh"
@@ -35,6 +36,7 @@ InfoKeysetOutputData info_keyset(
         LibFred::OperationContext& _ctx,
         const std::string& _keyset_handle,
         const InfoKeysetConfigData&,
+        const Password& _authinfopw,
         const SessionData& _session_data)
 {
     if (!is_session_registrar_valid(_session_data))
@@ -50,6 +52,13 @@ InfoKeysetOutputData info_keyset(
 
         const std::vector<LibFred::ObjectStateData> keyset_states_data = LibFred::GetObjectStates(info_keyset_data.id).exec(_ctx);
 
+        if (!_authinfopw->empty())
+        {
+            authorization_required(
+                    _ctx,
+                    LibFred::Object::ObjectId{info_keyset_data.id},
+                    _authinfopw);
+        }
         return get_info_keyset_output(info_keyset_data, keyset_states_data);
     }
     catch (const LibFred::InfoKeysetByHandle::Exception& e)

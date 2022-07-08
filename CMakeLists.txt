@@ -787,6 +787,7 @@ add_common_library_target(epp_impl
     src/backend/epp/epp_result_success_localized.cc
     src/backend/epp/epp_extended_error.cc
     src/backend/epp/epp_extended_error_localized.cc
+    src/backend/epp/authorization_required.cc
     src/backend/epp/password.cc
     src/backend/epp/session_data.cc
     src/backend/epp/impl/conditionally_enqueue_notification.cc

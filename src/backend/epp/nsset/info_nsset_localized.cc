@@ -39,7 +39,6 @@
 #include <boost/format/free_funcs.hpp>
 
 #include <algorithm>
-#include <boost/foreach.hpp>
 #include <set>
 #include <stdexcept>
 #include <string>
@@ -51,6 +50,7 @@ namespace Nsset {
 InfoNssetLocalizedResponse info_nsset_localized(
         const std::string& _nsset_handle,
         const InfoNssetConfigData& _info_nsset_config_data,
+        const Password& _authinfopw,
         const SessionData& _session_data)
 {
     Logging::Context logging_ctx1("rifd");
@@ -67,6 +67,7 @@ InfoNssetLocalizedResponse info_nsset_localized(
                         ctx,
                         _nsset_handle,
                         _info_nsset_config_data,
+                        _authinfopw,
                         _session_data);
 
         const InfoNssetLocalizedOutputData info_nsset_localized_output_data =
@@ -84,13 +85,14 @@ InfoNssetLocalizedResponse info_nsset_localized(
                         info_nsset_output_data.tech_contacts,
                         info_nsset_output_data.tech_check_level);
 
-        return InfoNssetLocalizedResponse(
+        auto response = InfoNssetLocalizedResponse(
                 EppResponseSuccessLocalized(
                         ctx,
                         EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
                         _session_data.lang),
                 info_nsset_localized_output_data);
-
+        ctx.commit_transaction();
+        return response;
     }
     catch (const EppResponseFailure& e)
     {
@@ -120,7 +122,6 @@ InfoNssetLocalizedResponse info_nsset_localized(
                 _session_data.lang);
     }
 }
-
 
 } // namespace Epp::Nsset
 } // namespace Epp

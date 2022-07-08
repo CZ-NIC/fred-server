@@ -20,10 +20,12 @@
 #include "src/backend/epp/domain/info_domain.hh"
 #include "src/backend/epp/domain/impl/domain_output.hh"
 
+#include "src/backend/epp/authorization_required.hh"
 #include "src/backend/epp/epp_response_failure.hh"
 #include "src/backend/epp/epp_result_code.hh"
 #include "src/backend/epp/epp_result_failure.hh"
 #include "src/backend/epp/exception.hh"
+
 #include "libfred/registrable_object/domain/info_domain.hh"
 #include "libfred/registrable_object/domain/info_domain_data.hh"
 #include "libfred/zone/zone.hh"
@@ -38,6 +40,7 @@ InfoDomainOutputData info_domain(
         LibFred::OperationContext& _ctx,
         const std::string& _fqdn,
         const InfoDomainConfigData&,
+        const Password& _authinfopw,
         const SessionData& _session_data)
 {
     if (!is_session_registrar_valid(_session_data))
@@ -56,6 +59,13 @@ InfoDomainOutputData info_domain(
         const std::vector<LibFred::ObjectStateData> object_state_data =
             LibFred::GetObjectStates(info_domain_data.id).exec(_ctx);
 
+        if (!_authinfopw->empty())
+        {
+            authorization_required(
+                    _ctx,
+                    LibFred::Object::ObjectId{info_domain_data.id},
+                    _authinfopw);
+        }
         return get_info_domain_output(info_domain_data, object_state_data);
     }
     catch (const LibFred::InfoDomainByFqdn::Exception& e)

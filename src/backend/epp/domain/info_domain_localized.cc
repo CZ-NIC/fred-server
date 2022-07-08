@@ -49,6 +49,7 @@ namespace Domain {
 InfoDomainLocalizedResponse info_domain_localized(
         const std::string& _fqdn,
         const InfoDomainConfigData& _info_domain_config_data,
+        const Password& _authinfopw,
         const SessionData& _session_data)
 {
     Logging::Context logging_ctx("rifd");
@@ -65,6 +66,7 @@ InfoDomainLocalizedResponse info_domain_localized(
                         ctx,
                         _fqdn,
                         _info_domain_config_data,
+                        _authinfopw,
                         _session_data);
 
         const InfoDomainLocalizedOutputData info_domain_localized_output_data =
@@ -86,13 +88,14 @@ InfoDomainLocalizedResponse info_domain_localized(
                         info_domain_output_data.ext_enum_domain_validation,
                         info_domain_output_data.tmpcontact);
 
-        return InfoDomainLocalizedResponse(
+        auto response = InfoDomainLocalizedResponse(
                 EppResponseSuccessLocalized(
                         ctx,
                         EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
                         _session_data.lang),
                 info_domain_localized_output_data);
-
+        ctx.commit_transaction();
+        return response;
     }
     catch (const EppResponseFailure& e)
     {
@@ -123,7 +126,6 @@ InfoDomainLocalizedResponse info_domain_localized(
     }
 
 }
-
 
 } // namespace Epp::Domain
 } // namespace Epp

@@ -20,10 +20,12 @@
 #include "src/backend/epp/nsset/impl/nsset_output.hh"
 #include "src/backend/epp/nsset/info_nsset.hh"
 
+#include "src/backend/epp/authorization_required.hh"
 #include "src/backend/epp/epp_response_failure.hh"
 #include "src/backend/epp/epp_result_code.hh"
 #include "src/backend/epp/epp_result_failure.hh"
 #include "src/backend/epp/exception.hh"
+
 #include "libfred/registrable_object/nsset/info_nsset.hh"
 #include "libfred/registrar/info_registrar.hh"
 
@@ -66,6 +68,7 @@ InfoNssetOutputData info_nsset(
         LibFred::OperationContext& _ctx,
         const std::string& _nsset_handle,
         const InfoNssetConfigData&,
+        const Password& _authinfopw,
         const SessionData& _session_data)
 {
     if (!is_session_registrar_valid(_session_data))
@@ -82,6 +85,13 @@ InfoNssetOutputData info_nsset(
         const std::vector<LibFred::ObjectStateData> object_states_data =
             LibFred::GetObjectStates(info_nsset_data.id).exec(_ctx);
 
+        if (!_authinfopw->empty())
+        {
+            authorization_required(
+                    _ctx,
+                    LibFred::Object::ObjectId{info_nsset_data.id},
+                    _authinfopw);
+        }
         return get_info_nsset_output(info_nsset_data, object_states_data);
     }
     catch (const LibFred::InfoNssetByHandle::Exception& e)
