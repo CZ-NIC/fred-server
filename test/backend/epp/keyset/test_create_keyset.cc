@@ -171,6 +171,7 @@ void check_created_keyset(const KeysetCreateData &data)
                     ctx,
                     data.keyset_handle,
                     DefaultInfoKeysetConfigData(),
+                    ::Epp::Password{},
                     DefaultSessionData().set_registrar_id(data.registrar_id));
         ctx.commit_transaction();
         BOOST_CHECK(info_data.handle == data.keyset_handle);
@@ -457,9 +458,9 @@ BOOST_FIXTURE_TEST_CASE(create, ObjectsProvider)
     create_with_correct_data_but_invalid_handle_by< Registrar::SYS >(data_sys, *this);
 }
 
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END()//Backend/Epp/Keyset/CreateKeyset
+BOOST_AUTO_TEST_SUITE_END()//Backend/Epp/Keyset
+BOOST_AUTO_TEST_SUITE_END()//Backend/Epp
+BOOST_AUTO_TEST_SUITE_END()//Backend
 
 } // namespace Test

@@ -41,9 +41,12 @@
 #include "src/backend/epp/domain/transfer_domain_config_data.hh"
 #include "src/backend/epp/domain/update_domain_config_data.hh"
 #include "src/backend/epp/domain/update_domain_input_data.hh"
+#include "src/backend/epp/password.hh"
+
 #include "libfred/registrable_object/contact/create_contact.hh"
 #include "libfred/registrable_object/domain/create_domain.hh"
 #include "libfred/registrable_object/domain/info_domain.hh"
+#include "libfred/registrable_object/domain/update_domain.hh"
 #include "libfred/registrable_object/keyset/create_keyset.hh"
 #include "libfred/registrable_object/nsset/create_nsset.hh"
 #include "libfred/registrable_object/nsset/nsset_dns_host.hh"
@@ -465,6 +468,24 @@ struct HasRegistrarWithSessionAndDomain
           domain(_ctx, registrar.data.handle)
     {
     }
+};
+
+struct HasRegistrarWithSessionAndDomainWithAuthinfo
+{
+    HasRegistrarWithSessionAndDomainWithAuthinfo(::LibFred::OperationContext& _ctx)
+        : registrar{_ctx},
+          session{_ctx, registrar.data.id},
+          domain{_ctx, registrar.data.handle},
+          password{"domain-password"}
+    {
+        ::LibFred::UpdateDomain{domain.data.fqdn, registrar.data.handle}
+                .set_authinfo(*password)
+                .exec(_ctx);
+    }
+    Registrar registrar;
+    Session session;
+    Domain domain;
+    ::Epp::Password password;
 };
 
 struct HasRegistrarWithSessionAndBlacklistedDomain

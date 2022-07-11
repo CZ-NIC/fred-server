@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #ifndef FIXTURE_HH_3EE8595B6FD3495EA94DB11F74D71AAA
 #define FIXTURE_HH_3EE8595B6FD3495EA94DB11F74D71AAA
 
@@ -26,7 +27,11 @@
 #include "src/backend/epp/keyset/info_keyset_config_data.hh"
 #include "src/backend/epp/keyset/transfer_keyset_config_data.hh"
 #include "src/backend/epp/keyset/update_keyset_config_data.hh"
+
 #include "libfred/registrable_object/keyset/handle_state.hh"
+#include "libfred/registrable_object/keyset/info_keyset.hh"
+#include "libfred/registrable_object/keyset/update_keyset.hh"
+
 #include "test/backend/epp/contact/fixture.hh"
 #include "test/backend/epp/fixture.hh"
 #include "test/setup/fixtures.hh"
@@ -88,12 +93,18 @@ struct DefaultTransferKeysetConfigData : ::Epp::Keyset::TransferKeysetConfigData
     }
 };
 
-struct Keyset {
-    std::string handle;
-    Keyset(::LibFred::OperationContext& _ctx, const std::string& _registrar_handle) {
-        handle = "KEYSET";
-        ::LibFred::CreateKeyset(handle, _registrar_handle).exec(_ctx);
-    }
+struct Keyset
+{
+    Keyset(::LibFred::OperationContext& _ctx, const std::string& _registrar_handle)
+        : data{[&]()
+                {
+                    const auto keyset_id = ::LibFred::CreateKeyset("KEYSET", _registrar_handle).exec(_ctx).create_object_result.object_id;
+                    return ::LibFred::InfoKeysetById{keyset_id}.exec(_ctx).info_keyset_data;
+                }()},
+          handle{data.handle}
+    { }
+    ::LibFred::InfoKeysetData data;
+    const std::string& handle;
 };
 
 struct KeysetWithTechContact
@@ -151,6 +162,24 @@ public:
     template < ::LibFred::Keyset::HandleState::Registrability REGISTRABILITY,
                ::LibFred::Keyset::HandleState::SyntaxValidity VALIDITY >
     static std::string get_keyset_handle(::LibFred::OperationContext&);
+};
+
+struct HasRegistrarWithSessionAndKeysetWithAuthinfo
+{
+    HasRegistrarWithSessionAndKeysetWithAuthinfo(::LibFred::OperationContext& _ctx)
+        : registrar{_ctx},
+          session{_ctx, registrar.data.id},
+          keyset{_ctx, registrar.data.handle},
+          password{"domain-password"}
+    {
+        ::LibFred::UpdateKeyset{keyset.data.handle, registrar.data.handle}
+                .set_authinfo(*password)
+                .exec(_ctx);
+    }
+    Registrar registrar;
+    Session session;
+    Keyset keyset;
+    ::Epp::Password password;
 };
 
 } // namespace Test::Backend::Epp::Keyset

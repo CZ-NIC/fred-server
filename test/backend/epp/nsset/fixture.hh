@@ -24,11 +24,6 @@
 #include "test/backend/epp/util.hh"
 #include "test/setup/fixtures.hh"
 
-#include "libfred/object_state/create_object_state_request_id.hh"
-#include "libfred/object_state/get_object_states.hh"
-#include "libfred/object_state/perform_object_state_request.hh"
-#include "libfred/registrable_object/contact/create_contact.hh"
-
 #include "src/backend/epp/nsset/check_nsset_config_data.hh"
 #include "src/backend/epp/nsset/create_nsset_config_data.hh"
 #include "src/backend/epp/nsset/create_nsset_localized.hh"
@@ -38,6 +33,13 @@
 #include "src/backend/epp/nsset/transfer_nsset_config_data.hh"
 #include "src/backend/epp/nsset/update_nsset_config_data.hh"
 #include "src/backend/epp/nsset/update_nsset_localized.hh"
+#include "src/backend/epp/password.hh"
+
+#include "libfred/object_state/create_object_state_request_id.hh"
+#include "libfred/object_state/get_object_states.hh"
+#include "libfred/object_state/perform_object_state_request.hh"
+#include "libfred/registrable_object/contact/create_contact.hh"
+#include "libfred/registrable_object/nsset/update_nsset.hh"
 
 #include <set>
 #include <string>
@@ -533,6 +535,24 @@ struct has_nsset_with_input_data_set : HasRegistrar {
             .exec(ctx);
         nsset = ::LibFred::InfoNssetByHandle(create_nsset_input_data.handle).exec(ctx).info_nsset_data;
     }
+};
+
+struct HasRegistrarWithSessionAndNssetWithAuthinfo
+{
+    HasRegistrarWithSessionAndNssetWithAuthinfo(::LibFred::OperationContext& _ctx)
+        : registrar{_ctx},
+          session{_ctx, registrar.data.id},
+          nsset{_ctx, registrar.data.handle},
+          password{"domain-password"}
+    {
+        ::LibFred::UpdateNsset{nsset.data.handle, registrar.data.handle}
+                .set_authinfo(*password)
+                .exec(_ctx);
+    }
+    Registrar registrar;
+    Session session;
+    Nsset nsset;
+    ::Epp::Password password;
 };
 
 } // namespace Test::Backend::Epp::Nsset

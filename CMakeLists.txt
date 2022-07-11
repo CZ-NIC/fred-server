@@ -1717,6 +1717,7 @@ add_common_executable_target(test-epp
     test/backend/epp/domain/test_domain_billing.cc
     test/backend/epp/keyset/fixture.cc
     test/backend/epp/keyset/test_create_keyset.cc
+    test/backend/epp/keyset/test_info_keyset.cc
     test/backend/epp/nsset/test_check_nsset.cc
     test/backend/epp/nsset/test_info_nsset.cc
     test/backend/epp/nsset/test_delete_nsset.cc
