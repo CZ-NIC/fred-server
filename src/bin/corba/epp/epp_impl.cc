@@ -2267,6 +2267,7 @@ ccReg::Response* ccReg_EPP_i::KeySetTransfer(
 
 ccReg::Response* ccReg_EPP_i::NSSetInfo(
         const char* _nsset_handle,
+        const char* _authinfopw,
         ccReg::NSSet_out _nsset_info,
         const ccReg::EppParams& _epp_params)
 {
@@ -2292,6 +2293,7 @@ ccReg::Response* ccReg_EPP_i::NSSetInfo(
                 Epp::Nsset::info_nsset_localized(
                         LibFred::Corba::unwrap_string(_nsset_handle),
                         info_nsset_config_data,
+                        Epp::Password{LibFred::Corba::unwrap_string(_authinfopw)},
                         session_data);
 
         ccReg::NSSet_var nsset_info = new ccReg::NSSet(LibFred::Corba::wrap_localized_info_nsset(info_nsset_localized_response.data));
@@ -2504,13 +2506,15 @@ ccReg::Response* ccReg_EPP_i::NSSetUpdate(
 
 ccReg::Response* ccReg_EPP_i::DomainInfo(
         const char* _fqdn,
+        const char* _authinfopw,
         ccReg::Domain_out _domain_info,
         const ccReg::EppParams& _epp_params)
 {
     const Epp::RequestParams epp_request_params = LibFred::Corba::unwrap_EppParams(_epp_params);
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
-    try {
+    try
+    {
         const Epp::RegistrarSessionData registrar_session_data =
                 Epp::get_registrar_session_data(
                         epp_sessions_,
@@ -2529,6 +2533,7 @@ ccReg::Response* ccReg_EPP_i::DomainInfo(
                 Epp::Domain::info_domain_localized(
                         LibFred::Corba::unwrap_string_from_const_char_ptr(_fqdn),
                         info_domain_config_data,
+                        Epp::Password{LibFred::Corba::unwrap_string(_authinfopw)},
                         session_data);
 
         ccReg::Domain_var domain_info = new ccReg::Domain;
@@ -2824,6 +2829,7 @@ ccReg::Response* ccReg_EPP_i::DomainRenew(
 
 ccReg::Response* ccReg_EPP_i::KeySetInfo(
         const char* const _keyset_handle,
+        const char* const _authinfopw,
         ccReg::KeySet_out _keyset_info,
         const ccReg::EppParams& _epp_params)
 {
@@ -2853,6 +2859,7 @@ ccReg::Response* ccReg_EPP_i::KeySetInfo(
                 Epp::Keyset::info_keyset_localized(
                         keyset_handle,
                         info_keyset_config_data,
+                        Epp::Password{LibFred::Corba::unwrap_string(_authinfopw)},
                         session_data);
 
         ccReg::KeySet_var keyset_info = new ccReg::KeySet;

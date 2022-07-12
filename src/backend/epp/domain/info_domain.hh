@@ -23,6 +23,7 @@
 #include "src/backend/epp/domain/domain_enum_validation.hh"
 #include "src/backend/epp/domain/info_domain_config_data.hh"
 #include "src/backend/epp/domain/status_value.hh"
+#include "src/backend/epp/password.hh"
 #include "src/backend/epp/session_data.hh"
 #include "libfred/registrable_object/domain/enum_validation_extension.hh"
 #include "libfred/object/object_state.hh"
@@ -67,6 +68,7 @@ InfoDomainOutputData info_domain(
         LibFred::OperationContext& _ctx,
         const std::string& _fqdn,
         const InfoDomainConfigData& _info_domain_config_data,
+        const Password& _authinfopw,
         const SessionData& _session_data);
 
 } // namespace Epp::Domain

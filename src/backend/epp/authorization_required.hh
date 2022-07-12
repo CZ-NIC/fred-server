@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -17,27 +17,21 @@
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef INFO_NSSET_LOCALIZED_HH_BF05EC1AF971477EA1286FF9EF528469
-#define INFO_NSSET_LOCALIZED_HH_BF05EC1AF971477EA1286FF9EF528469
+#ifndef AUTHORIZATION_REQUIRED_HH_61B14361C45AD2671DB1ECC88BC2AAFA//date "+%s.%N"|md5sum|tr "[a-f]" "[A-F]"
+#define AUTHORIZATION_REQUIRED_HH_61B14361C45AD2671DB1ECC88BC2AAFA
 
-#include "src/backend/epp/nsset/info_nsset_config_data.hh"
-#include "src/backend/epp/nsset/info_nsset_localized_response.hh"
 #include "src/backend/epp/password.hh"
-#include "src/backend/epp/session_data.hh"
 
-#include <string>
+#include "libfred/opcontext.hh"
+#include "libfred/object/types.hh"
 
 namespace Epp {
-namespace Nsset {
 
-InfoNssetLocalizedResponse info_nsset_localized(
-        const std::string& _nsset_handle,
-        const InfoNssetConfigData& _info_nsset_config_data,
-        const Password& _authinfopw,
-        const SessionData& _session_data);
+void authorization_required(
+        LibFred::OperationContext& ctx,
+        LibFred::Object::ObjectId object_id,
+        const Password& password);
 
-
-} // namespace Epp::Nsset
 } // namespace Epp
 
-#endif
+#endif//AUTHORIZATION_REQUIRED_HH_61B14361C45AD2671DB1ECC88BC2AAFA

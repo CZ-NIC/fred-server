@@ -787,6 +787,7 @@ add_common_library_target(epp_impl
     src/backend/epp/epp_result_success_localized.cc
     src/backend/epp/epp_extended_error.cc
     src/backend/epp/epp_extended_error_localized.cc
+    src/backend/epp/authorization_required.cc
     src/backend/epp/password.cc
     src/backend/epp/session_data.cc
     src/backend/epp/impl/conditionally_enqueue_notification.cc
@@ -1716,6 +1717,7 @@ add_common_executable_target(test-epp
     test/backend/epp/domain/test_domain_billing.cc
     test/backend/epp/keyset/fixture.cc
     test/backend/epp/keyset/test_create_keyset.cc
+    test/backend/epp/keyset/test_info_keyset.cc
     test/backend/epp/nsset/test_check_nsset.cc
     test/backend/epp/nsset/test_info_nsset.cc
     test/backend/epp/nsset/test_delete_nsset.cc

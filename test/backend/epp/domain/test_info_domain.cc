@@ -115,6 +115,7 @@ BOOST_FIXTURE_TEST_CASE(fail_invalid_registrar_id, supply_ctx<HasSessionWithUnau
             ctx,
             "domain.cz",
             DefaultInfoDomainConfigData(),
+            ::Epp::Password{},
             session_with_unauthenticated_registrar.data
         ),
         ::Epp::EppResponseFailure,
@@ -128,6 +129,13 @@ bool fail_nonexistent_fqdn_exception(const ::Epp::EppResponseFailure& e) {
     return true;
 }
 
+bool fail_invalid_authinfo(const ::Epp::EppResponseFailure& e)
+{
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::invalid_authorization_information);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
+}
+
 BOOST_FIXTURE_TEST_CASE(fail_nonexistent_fqdn,  supply_ctx<HasRegistrarWithSessionAndNonexistentFqdn>)
 {
     BOOST_CHECK_EXCEPTION(
@@ -135,6 +143,7 @@ BOOST_FIXTURE_TEST_CASE(fail_nonexistent_fqdn,  supply_ctx<HasRegistrarWithSessi
             ctx,
             nonexistent_fqdn.fqdn,
             DefaultInfoDomainConfigData(),
+            ::Epp::Password{},
             session.data
         ),
         ::Epp::EppResponseFailure,
@@ -149,14 +158,42 @@ BOOST_FIXTURE_TEST_CASE(ok, supply_ctx<HasRegistrarWithSessionAndDomain>)
             ctx,
             domain.data.fqdn,
             DefaultInfoDomainConfigData(),
+            ::Epp::Password{},
             session.data
         ),
         domain.data);
 }
 
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
+BOOST_FIXTURE_TEST_CASE(invalid_authinfo, supply_ctx<HasRegistrarWithSessionAndDomainWithAuthinfo>)
+{
+    BOOST_CHECK_EXCEPTION(
+        ::Epp::Domain::info_domain(
+            ctx,
+            domain.data.fqdn,
+            DefaultInfoDomainConfigData(),
+            ::Epp::Password{"invalid-" + *password},
+            session.data
+        ),
+        ::Epp::EppResponseFailure,
+        fail_invalid_authinfo);
+}
+
+BOOST_FIXTURE_TEST_CASE(authinfo_ok, supply_ctx<HasRegistrarWithSessionAndDomainWithAuthinfo>)
+{
+    check_equal(
+        ::Epp::Domain::info_domain(
+            ctx,
+            domain.data.fqdn,
+            DefaultInfoDomainConfigData(),
+            password,
+            session.data
+        ),
+        domain.data);
+}
+
+BOOST_AUTO_TEST_SUITE_END()//Backend/Epp/Domain/InfoDomain
+BOOST_AUTO_TEST_SUITE_END()//Backend/Epp/Domain
+BOOST_AUTO_TEST_SUITE_END()//Backend/Epp
+BOOST_AUTO_TEST_SUITE_END()//Backend
 
 } // namespace Test

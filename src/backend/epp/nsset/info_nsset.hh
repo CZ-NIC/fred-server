@@ -23,12 +23,13 @@
 #include "src/backend/epp/nsset/dns_host_output.hh"
 #include "src/backend/epp/nsset/info_nsset_config_data.hh"
 #include "src/backend/epp/nsset/status_value.hh"
+#include "src/backend/epp/password.hh"
 #include "src/backend/epp/session_data.hh"
 #include "src/backend/epp/session_lang.hh"
+
 #include "libfred/opcontext.hh"
 #include "util/db/nullable.hh"
 
-#include <boost/asio/ip/address.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <set>
@@ -72,6 +73,7 @@ InfoNssetOutputData info_nsset(
         LibFred::OperationContext& _ctx,
         const std::string& _nsset_handle,
         const InfoNssetConfigData& _info_nsset_config_data,
+        const Password& _authinfopw,
         const SessionData& _session_data);
 
 } // namespace Epp::Nsset

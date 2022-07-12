@@ -52,6 +52,7 @@ BOOST_FIXTURE_TEST_CASE(info_invalid_registrar_id, supply_ctx<HasSessionWithUnau
                     ctx,
                     ValidHandle().handle,
                     DefaultInfoNssetConfigData(),
+                    ::Epp::Password{},
                     session_with_unauthenticated_registrar.data),
             ::Epp::EppResponseFailure,
             info_invalid_registrar_id_exception);
@@ -70,6 +71,7 @@ BOOST_FIXTURE_TEST_CASE(info_fail_nonexistent_handle, supply_ctx<HasRegistrarWit
                     ctx,
                     NonexistentHandle().handle,
                     DefaultInfoNssetConfigData(),
+                    ::Epp::Password{},
                     session.data),
             ::Epp::EppResponseFailure,
             info_fail_nonexistent_handle_exception);
@@ -106,45 +108,50 @@ BOOST_FIXTURE_TEST_CASE(info_ok_full_data, supply_ctx<HasRegistrarWithSessionAnd
             ctx,
             nsset.data.handle,
             DefaultInfoNssetConfigData(),
+            ::Epp::Password{},
             session.data
         ),
         nsset.data
     );
 }
 
-struct has_nsset_with_external_and_nonexternal_states : has_nsset {
-    std::set<std::string> external_states;
-    std::set<std::string> nonexternal_states;
+bool fail_invalid_authinfo(const ::Epp::EppResponseFailure& e)
+{
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::invalid_authorization_information);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
+}
 
-    has_nsset_with_external_and_nonexternal_states() {
-        external_states = boost::assign::list_of("serverDeleteProhibited")("serverUpdateProhibited").convert_to_container<std::set<std::string> >();
-        nonexternal_states = boost::assign::list_of("deleteCandidate").convert_to_container<std::set<std::string> >();
+BOOST_FIXTURE_TEST_CASE(invalid_authinfo, supply_ctx<HasRegistrarWithSessionAndNssetWithAuthinfo>)
+{
+    BOOST_CHECK_EXCEPTION(
+        ::Epp::Nsset::info_nsset(
+            ctx,
+            nsset.data.handle,
+            DefaultInfoNssetConfigData(),
+            ::Epp::Password{"invalid-" + *password},
+            session.data
+        ),
+        ::Epp::EppResponseFailure,
+        fail_invalid_authinfo);
+}
 
-        ctx.get_conn().exec_params(
-            "UPDATE enum_object_states "
-                "SET external = 'true'::bool, manual = 'true'::bool "
-                "WHERE name = ANY( $1::text[] )",
-            Database::query_param_list("{" + boost::algorithm::join(external_states, ", ") + "}")
-        );
+BOOST_FIXTURE_TEST_CASE(authinfo_ok, supply_ctx<HasRegistrarWithSessionAndNssetWithAuthinfo>)
+{
+    check_equal(
+        ::Epp::Nsset::info_nsset(
+            ctx,
+            nsset.data.handle,
+            DefaultInfoNssetConfigData(),
+            password,
+            session.data
+        ),
+        nsset.data);
+}
 
-        ctx.get_conn().exec_params(
-            "UPDATE enum_object_states "
-                "SET external = 'false'::bool, manual = 'true'::bool "
-                "WHERE name = ANY( $1::text[] )",
-            Database::query_param_list("{" + boost::algorithm::join(nonexternal_states, ", ") + "}")
-        );
-
-        ::LibFred::CreateObjectStateRequestId(nsset.id, external_states).exec(ctx);
-        ::LibFred::CreateObjectStateRequestId(nsset.id, nonexternal_states).exec(ctx);
-        ::LibFred::PerformObjectStateRequest(nsset.id).exec(ctx);
-
-        ctx.commit_transaction();
-    }
-};
-
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END()//Backend/Epp/Nsset/InfoNsset
+BOOST_AUTO_TEST_SUITE_END()//Backend/Epp/Nsset
+BOOST_AUTO_TEST_SUITE_END()//Backend/Epp
+BOOST_AUTO_TEST_SUITE_END()//Backend
 
 } // namespace Test
