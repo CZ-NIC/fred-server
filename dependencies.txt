@@ -4,3 +4,4 @@ fred/libhermes 5.0.0 external/lib/libhermes
 fred/libfiled 1.0.0 external/lib/libfiled
 fred/idl authinfo-ttl external/idl
 fred/db 2.47.0 external/db
+# rebuild after fix of libfred
