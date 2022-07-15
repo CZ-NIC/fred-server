@@ -17,8 +17,8 @@
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef INVOICE_EXPORT_IMPL_HH_CDADC880BA034564AC8CAB737366B8F9
-#define INVOICE_EXPORT_IMPL_HH_CDADC880BA034564AC8CAB737366B8F9
+#ifndef INVOICE_EXPORT_LIST_IMPL_HH_0390F82D29944D649E148E49880B7952
+#define INVOICE_EXPORT_LIST_IMPL_HH_0390F82D29944D649E148E49880B7952
 
 #include "src/bin/cli/handle_adminclientselection_args.hh"
 #include "src/util/cfg/config_handler_decl.hh"
@@ -31,9 +31,9 @@
 #include "src/bin/cli/invoice_export.hh"
 #include "util/log/context.hh"
 
-void invoice_export_impl()
+void invoice_export_list_impl()
 {
-    Logging::Context ctx("invoice_export_impl");
+    Logging::Context ctx("invoice_export_list_impl");
 
     FakedArgs orb_fa = CfgArgGroups::instance()->fa;
 
@@ -49,13 +49,10 @@ void invoice_export_impl()
                                  ns_args_ptr->get_nameservice_port(),
                                  ns_args_ptr->get_nameservice_context());
 
-    Admin::invoice_export(
-            CfgArgGroups::instance()->get_handler_ptr_by_type<HandleMessengerArgsGrp>()->get_args(),
+    Admin::invoice_export_list(
             CfgArgGroups::instance()->get_handler_ptr_by_type<HandleFilemanArgsGrp>()->get_args(),
-            CfgArgGroups::instance()->get_handler_ptr_by_type<HandleSecretaryArgsGrp>()->get_args(),
-            CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientInvoiceExportArgsGrp>()->invoice_dont_send,
-            CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientInvoiceExportArgsGrp>()->invoice_id,
-            CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientInvoiceExportArgsGrp>()->debug_context);
+            CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientInvoiceExportListArgsGrp>()->limit,
+            CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientInvoiceExportListArgsGrp>()->invoice_id);
 };
 
 #endif

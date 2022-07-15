@@ -38,9 +38,9 @@ namespace Admin {
 
 namespace {
 
-enum InvoiceType {
-  IT_DEPOSIT = 0,
-  IT_ACCOUNT = 1
+enum struct InvoiceType {
+  it_deposit = 0,
+  it_account = 1
 };
 
 struct Subject
@@ -86,13 +86,14 @@ struct PaymentSource
 };
 
 //this relies on PaymentActionType (operation_id - 1) in invoice_add_action
-enum PaymentActionType {
-        PAT_CREATE_DOMAIN
-        , PAT_RENEW_DOMAIN
-        , PAT_REQUESTS_OVER_LIMIT
-        , PAT_ADMINISTRATIVE_FEE
-        , PAT_FEE 
-        , PAT_MONTHLY_FEE
+enum PaymentActionType
+{
+    pat_create_domain,
+    pat_renew_domain,
+    pat_requests_over_limit,
+    pat_administrative_fee,
+    pat_fee,
+    pat_monthly_fee
 };
 
 struct PaymentAction
@@ -139,6 +140,40 @@ struct Invoice
     std::vector<PaymentAction> actions;
     std::vector<Payment> paid; ///< list of paid vat rates
 };
+
+std::string format_money(Money _value)
+{
+    return _value.get_string(".2f");
+}
+
+std::string to_string(PaymentActionType _payment_action)
+{
+    if (_payment_action == PaymentActionType::pat_create_domain)
+    {
+        return "RREG";
+    }
+    if (_payment_action == PaymentActionType::pat_renew_domain)
+    {
+        return "RUDR";
+    }
+    if (_payment_action == PaymentActionType::pat_requests_over_limit)
+    {
+        return "REPP";
+    }
+    if (_payment_action == PaymentActionType::pat_administrative_fee)
+    {
+        return "RPOA";
+    }
+    if (_payment_action == PaymentActionType::pat_fee)
+    {
+        return "RPOP";
+    }
+    if (_payment_action == PaymentActionType::pat_monthly_fee)
+    {
+        return "RPOP";
+    }
+    return "RUNK";
+}
 
 static const constexpr char* invoice_query =
         "SELECT vat, total, totalvat, operations_price FROM invoice WHERE id=$1::BIGINT";
@@ -201,18 +236,6 @@ static const constexpr char* account_invoice_with_annual_partitioning_query =
  "group by 1,2";
 // clang-format on
 
-//void export_invoice(const Invoice& _invoice, std::ostream _out)
-//{
-//    LibFiled::Connection<LibFiled::Service::File> fileman_connection{
-//            LibFiled::Connection<LibFiled::Service::File>::ConnectionString{
-//                    _fileman_args.endpoint}};
-//
-//    LibFiled::File::read(
-//            fileman_connection,
-//            LibFiled::File::FileUuid{_invoice.file_xml_uuid},
-//            _out);
-//}
-
 LibTypist::Struct make_subject_context(const Subject& _subject)
 {
     return LibTypist::Struct{
@@ -231,47 +254,42 @@ LibTypist::Struct make_subject_context(const Subject& _subject)
 
 LibTypist::Struct make_invoice_context(const Invoice& _invoice)
 {
+    LOGGER.debug("make_invoice_context");
     if (_invoice.crtime.date().is_special())
     {
-        throw std::runtime_error("doExport invoice crtime date is special");
+        throw std::runtime_error("make_invoice_context: invoice crtime date is special");
     }
     if (_invoice.tax_date.is_special())
     {
-        throw std::runtime_error("doExport invoice taxdate is special");
+        throw std::runtime_error("make_invoice_context: invoice taxdate is special");
     }
-    if (_invoice.type == IT_ACCOUNT)
+    if (_invoice.type == InvoiceType::it_account)
     {
         if (_invoice.account_period.begin().is_special())
         {
-            throw std::runtime_error("doExport invoice period_from is special");
+            throw std::runtime_error("make_invoice_context: invoice period_from is special");
         }
         if (_invoice.account_period.end().is_special())
         {
-            throw std::runtime_error("doExport invoice period_to is special");
+            throw std::runtime_error("make_invoice_context: invoice period_to is special");
         }
     }
-    // setting locale for proper date and time format
-    // do not use system locale - locale("") because of
-    // unpredictable formatting behavior
-    //_out.imbue(std::locale(std::locale(_out.getloc(), new time_facet("%Y-%m-%d %T")), new boost::gregorian::date_facet("%Y-%m-%d")));
 
+    LibTypist::Struct context;
     const auto buyer_context = make_subject_context(_invoice.client);
-    //const auto supplier_context = make(_invoice.supplier); // obsolete
 
     auto invoice_context =
             LibTypist::Struct{
-                    {LibTypist::StructKey{"number"}, LibTypist::StructValue{boost::lexical_cast<std::string>(_invoice.number)}},
+                    {LibTypist::StructKey{"number"}, LibTypist::StructValue{std::to_string(_invoice.number)}},
                     {LibTypist::StructKey{"variable_symbol"}, LibTypist::StructValue{_invoice.var_symbol}},
                     {LibTypist::StructKey{"date"}, LibTypist::StructValue{to_iso_extended_string(_invoice.crtime.date())}},
                     {LibTypist::StructKey{"tax_date"}, LibTypist::StructValue{to_iso_extended_string(_invoice.tax_date)}}};
 
-    if (_invoice.type == IT_ACCOUNT)
+    if (_invoice.type == InvoiceType::it_account)
     {
         invoice_context[LibTypist::StructKey{"period_from"}] = LibTypist::StructValue{to_iso_extended_string(_invoice.account_period.begin())};
         invoice_context[LibTypist::StructKey{"period_to"}] = LibTypist::StructValue{to_iso_extended_string(_invoice.account_period.end())};
     }
-
-    std::vector<LibTypist::StructValue> vat_rates;
 
     struct MoneyRecord
     {
@@ -280,8 +298,9 @@ LibTypist::Struct make_invoice_context(const Invoice& _invoice)
         Money vat;
     };
 
-    if (_invoice.type == IT_ACCOUNT)
+    if (_invoice.type == InvoiceType::it_account)
     {
+        LOGGER.debug("make_invoice_context: account invoice");
         struct AccountInvoiceRecord
         {
             Decimal vat_rate;
@@ -302,8 +321,9 @@ LibTypist::Struct make_invoice_context(const Invoice& _invoice)
 
             if (result.size() < 1)
             {
-                throw std::runtime_error("ExporterArchiver::doExport IT_ACCOUNT query failed");
+                throw std::runtime_error("make_invoice_context it_account query failed");
             }
+
             constexpr auto row = 0;
             account_invoice_record.vat_rate = Decimal(static_cast<std::string>(result[row][0]));
             account_invoice_record.self.price_without_vat = Money(static_cast<std::string>(result[row][1]));
@@ -329,6 +349,8 @@ LibTypist::Struct make_invoice_context(const Invoice& _invoice)
                 account_invoice_record.records[vat_rate][year].vat = Money(static_cast<std::string>(result[row][4]));
             }
 
+            std::vector<LibTypist::StructValue> vat_rates;
+
             for (const auto& vat_rate_record : account_invoice_record.records)
             {
                 const auto vat_rate = vat_rate_record.first;
@@ -347,22 +369,22 @@ LibTypist::Struct make_invoice_context(const Invoice& _invoice)
                 if (account_invoice_record.vat_rate == vat_rate) // add this account invoice to vat details
                 {
                     vat_rates_entry_context[LibTypist::StructKey{"vat_rate"}] = LibTypist::StructValue{boost::lexical_cast<std::string>(account_invoice_record.vat_rate)};
-                    vat_rates_entry_context[LibTypist::StructKey{"total_base"}] = LibTypist::StructValue{boost::lexical_cast<std::string>(account_invoice_record.self.price_without_vat)};
-                    vat_rates_entry_context[LibTypist::StructKey{"paid_vat"}] = LibTypist::StructValue{boost::lexical_cast<std::string>(account_invoice_record.self.vat)};
-                    vat_rates_entry_context[LibTypist::StructKey{"total"}] = LibTypist::StructValue{boost::lexical_cast<std::string>(all_years_money_record.price_with_vat)};
-                    vat_rates_entry_context[LibTypist::StructKey{"total_vat"}] = LibTypist::StructValue{boost::lexical_cast<std::string>(all_years_money_record.vat)};
-                    vat_rates_entry_context[LibTypist::StructKey{"paid"}] = LibTypist::StructValue{boost::lexical_cast<std::string>(all_years_money_record.price_with_vat - account_invoice_record.self.price_with_vat)};
-                    vat_rates_entry_context[LibTypist::StructKey{"paid_vat"}] = LibTypist::StructValue{boost::lexical_cast<std::string>(all_years_money_record.vat - account_invoice_record.self.vat)};
+                    vat_rates_entry_context[LibTypist::StructKey{"total_base"}] = LibTypist::StructValue{format_money(account_invoice_record.self.price_without_vat)};
+                    vat_rates_entry_context[LibTypist::StructKey{"total_vat"}] = LibTypist::StructValue{format_money(account_invoice_record.self.vat)};
+                    vat_rates_entry_context[LibTypist::StructKey{"price"}] = LibTypist::StructValue{format_money(all_years_money_record.price_with_vat)};
+                    vat_rates_entry_context[LibTypist::StructKey{"price_vat"}] = LibTypist::StructValue{format_money(all_years_money_record.vat)};
+                    vat_rates_entry_context[LibTypist::StructKey{"paid"}] = LibTypist::StructValue{format_money(all_years_money_record.price_with_vat - account_invoice_record.self.price_with_vat)};
+                    vat_rates_entry_context[LibTypist::StructKey{"paid_vat"}] = LibTypist::StructValue{format_money(all_years_money_record.vat - account_invoice_record.self.vat)};
                 }
                 else
                 {
                     vat_rates_entry_context[LibTypist::StructKey{"vat_rate"}] = LibTypist::StructValue{boost::lexical_cast<std::string>(vat_rate)};
-                    vat_rates_entry_context[LibTypist::StructKey{"total_base"}] = LibTypist::StructValue{boost::lexical_cast<std::string>(all_years_money_record.price_without_vat)};
-                    vat_rates_entry_context[LibTypist::StructKey{"paid_vat"}] = LibTypist::StructValue{boost::lexical_cast<std::string>(all_years_money_record.vat)};
-                    vat_rates_entry_context[LibTypist::StructKey{"total"}] = LibTypist::StructValue{boost::lexical_cast<std::string>(all_years_money_record.price_with_vat)};
-                    vat_rates_entry_context[LibTypist::StructKey{"total_vat"}] = LibTypist::StructValue{boost::lexical_cast<std::string>(all_years_money_record.vat)};
-                    vat_rates_entry_context[LibTypist::StructKey{"paid"}] = LibTypist::StructValue{boost::lexical_cast<std::string>(all_years_money_record.price_with_vat)};
-                    vat_rates_entry_context[LibTypist::StructKey{"paid_vat"}] = LibTypist::StructValue{boost::lexical_cast<std::string>(all_years_money_record.vat)};
+                    vat_rates_entry_context[LibTypist::StructKey{"total_base"}] = LibTypist::StructValue{format_money(all_years_money_record.price_without_vat)};
+                    vat_rates_entry_context[LibTypist::StructKey{"total_vat"}] = LibTypist::StructValue{format_money(all_years_money_record.vat)};
+                    vat_rates_entry_context[LibTypist::StructKey{"price"}] = LibTypist::StructValue{format_money(all_years_money_record.price_with_vat)};
+                    vat_rates_entry_context[LibTypist::StructKey{"price_vat"}] = LibTypist::StructValue{format_money(all_years_money_record.vat)};
+                    vat_rates_entry_context[LibTypist::StructKey{"paid"}] = LibTypist::StructValue{format_money(all_years_money_record.price_with_vat)};
+                    vat_rates_entry_context[LibTypist::StructKey{"paid_vat"}] = LibTypist::StructValue{format_money(all_years_money_record.vat)};
                 }
 
                 std::vector<LibTypist::StructValue> deffered_income_context;
@@ -373,20 +395,32 @@ LibTypist::Struct make_invoice_context(const Invoice& _invoice)
 
                     const LibTypist::Struct year_context{
                             {LibTypist::StructKey{"year"}, LibTypist::StructValue{std::to_string(year)}},
-                            {LibTypist::StructKey{"base"}, LibTypist::StructValue{boost::lexical_cast<std::string>(year_money_record.price_without_vat)}},
-                            {LibTypist::StructKey{"vat"}, LibTypist::StructValue{boost::lexical_cast<std::string>(year_money_record.vat)}},
-                            {LibTypist::StructKey{"total"}, LibTypist::StructValue{boost::lexical_cast<std::string>(year_money_record.price_with_vat)}}};
+                            {LibTypist::StructKey{"base"}, LibTypist::StructValue{format_money(year_money_record.price_without_vat)}},
+                            {LibTypist::StructKey{"vat"}, LibTypist::StructValue{format_money(year_money_record.vat)}},
+                            {LibTypist::StructKey{"total"}, LibTypist::StructValue{format_money(year_money_record.price_with_vat)}}};
                     deffered_income_context.push_back(LibTypist::StructValue{year_context});
                 }
                 vat_rates_entry_context[LibTypist::StructKey{"deffered_income"}] = LibTypist::StructValue{deffered_income_context};
                 vat_rates.push_back(LibTypist::StructValue{vat_rates_entry_context});
             }
+            if (!vat_rates.empty())
+            {
+                context[LibTypist::StructKey{"vat_rates"}] = LibTypist::StructValue{vat_rates};
+            }
         }
 
-        invoice_context[LibTypist::StructKey{"total"}] = LibTypist::StructValue{boost::lexical_cast<std::string>(account_invoice_record.operations_price)};
+        invoice_context[LibTypist::StructKey{"total"}] = LibTypist::StructValue{format_money(account_invoice_record.self.price_with_vat)};
+        invoice_context[LibTypist::StructKey{"price_base"}] = LibTypist::StructValue{format_money(account_invoice_record.operations_price)};
+//<< TAGSTART(sumarize)
+//<< TAG(total, OUTMONEY(account_invoice_record.operations_price))
+//<< TAG(paid, OUTMONEY(account_invoice_record.self.price_without_vat - account_invoice_record.operations_price))
+//<< TAG(to_be_paid, OUTMONEY(account_invoice_record.self.price_with_vat))
+//<< TAGEND(sumarize)
+//<< TAGEND(delivery); 
     }
-    else // IT_DEPOSIT
+    else // it_deposit
     {
+        LOGGER.debug("make_invoice_context: deposit (advance) invoice");
         struct AdvanceInvoiceRecord
         {
             MoneyRecord self;
@@ -401,7 +435,7 @@ LibTypist::Struct make_invoice_context(const Invoice& _invoice)
 
         if (result.size() != 1)
         {
-            throw std::runtime_error("ExporterArchiver::doExport IT_DEPOSIT query failed");
+            throw std::runtime_error("make_invoice_context: it_deposit query failed");
         }
 
         AdvanceInvoiceRecord advance_invoice_record;
@@ -415,11 +449,20 @@ LibTypist::Struct make_invoice_context(const Invoice& _invoice)
 
         LibTypist::Struct vat_rates_entry_context{
                 {LibTypist::StructKey{"vat_rate"}, LibTypist::StructValue{boost::lexical_cast<std::string>(vat_rate)}},
-                {LibTypist::StructKey{"base"}, LibTypist::StructValue{boost::lexical_cast<std::string>(advance_invoice_record.self.price_without_vat)}},
-                {LibTypist::StructKey{"vat"}, LibTypist::StructValue{boost::lexical_cast<std::string>(advance_invoice_record.self.vat)}},
-                {LibTypist::StructKey{"total"}, LibTypist::StructValue{boost::lexical_cast<std::string>(advance_invoice_record.self.price_with_vat)}}};
+                {LibTypist::StructKey{"base"}, LibTypist::StructValue{format_money(advance_invoice_record.self.price_without_vat)}},
+                {LibTypist::StructKey{"vat"}, LibTypist::StructValue{format_money(advance_invoice_record.self.vat)}},
+                {LibTypist::StructKey{"total"}, LibTypist::StructValue{format_money(advance_invoice_record.self.price_with_vat)}}};
 
-        vat_rates.push_back(LibTypist::StructValue{vat_rates_entry_context});
+        context[LibTypist::StructKey{"vat_rates"}] =
+                LibTypist::StructValue{std::vector<LibTypist::StructValue>{{LibTypist::StructValue{vat_rates_entry_context}}}};
+
+        // TODO null since 2012? invoice_context[LibTypist::StructKey{"total"}] = LibTypist::StructValue{format_money(advance_invoice_record.operations_price)};
+        invoice_context[LibTypist::StructKey{"total"}] = LibTypist::StructValue{format_money(Money{"0"})};
+//<< TAGSTART(sumarize)
+//<< TAG(total, OUTMONEY(advance_invoice_record.operations_price))
+//<< TAG(paid, OUTMONEY(Money("0")))
+//<< TAG(to_be_paid, OUTMONEY(Money("0")))
+//<< TAGEND(sumarize)
     }
 
     std::vector<LibTypist::StructValue> advance_invoices;
@@ -430,19 +473,23 @@ LibTypist::Struct make_invoice_context(const Invoice& _invoice)
             const auto payment_source = _invoice.sources.at(source_idx);
             advance_invoices.push_back(LibTypist::StructValue{LibTypist::Struct{
                     {LibTypist::StructKey{"number"}, LibTypist::StructValue{std::to_string(payment_source.number)}},
-                    {LibTypist::StructKey{"consumed_base"}, LibTypist::StructValue{boost::lexical_cast<std::string>(payment_source.price)}},
-                    {LibTypist::StructKey{"balance"}, LibTypist::StructValue{boost::lexical_cast<std::string>(payment_source.credit)}},
-                    {LibTypist::StructKey{"consumed_vat"}, LibTypist::StructValue{boost::lexical_cast<std::string>(payment_source.vat)}},
+                    {LibTypist::StructKey{"consumed_base"}, LibTypist::StructValue{format_money(payment_source.price)}},
+                    {LibTypist::StructKey{"balance"}, LibTypist::StructValue{format_money(payment_source.credit)}},
+                    {LibTypist::StructKey{"consumed_vat"}, LibTypist::StructValue{format_money(payment_source.vat)}},
                     {LibTypist::StructKey{"vat_rate"}, LibTypist::StructValue{boost::lexical_cast<std::string>(payment_source.vat_rate)}},
-                    {LibTypist::StructKey{"consumed"}, LibTypist::StructValue{boost::lexical_cast<std::string>(payment_source.price + payment_source.vat)}},
-                    {LibTypist::StructKey{"total_base"}, LibTypist::StructValue{boost::lexical_cast<std::string>(payment_source.total_price)}},
-                    {LibTypist::StructKey{"total_vat"}, LibTypist::StructValue{boost::lexical_cast<std::string>(payment_source.total_vat)}},
-                    {LibTypist::StructKey{"total"}, LibTypist::StructValue{boost::lexical_cast<std::string>(payment_source.total_price + payment_source.total_vat)}},
+                    {LibTypist::StructKey{"consumed"}, LibTypist::StructValue{format_money(payment_source.price + payment_source.vat)}},
+                    {LibTypist::StructKey{"total_base"}, LibTypist::StructValue{format_money(payment_source.total_price)}},
+                    {LibTypist::StructKey{"total_vat"}, LibTypist::StructValue{format_money(payment_source.total_vat)}},
+                    {LibTypist::StructKey{"total"}, LibTypist::StructValue{format_money(payment_source.total_price + payment_source.total_vat)}},
                     {LibTypist::StructKey{"datetime"}, LibTypist::StructValue{to_iso_extended_string(payment_source.crtime)}}
             }});
         }
+        if (!advance_invoices.empty())
+        {
+            context[LibTypist::StructKey{"advance_invoices"}] = LibTypist::StructValue{advance_invoices};
+        }
     }
-    std::vector<LibTypist::StructValue> items_context;
+    std::vector<LibTypist::StructValue> items;
     if (_invoice.actions.size())
     {
         for (unsigned action_idx = 0; action_idx < _invoice.actions.size(); action_idx++)
@@ -450,45 +497,28 @@ LibTypist::Struct make_invoice_context(const Invoice& _invoice)
             const auto payment_action = _invoice.actions.at(action_idx);
             LibTypist::Struct item_context{
                     {LibTypist::StructKey{"subject"}, LibTypist::StructValue{payment_action.object_name}},
-                    // clang-format off
-                    {LibTypist::StructKey{"code"}, LibTypist::StructValue{std::string{
-                            (payment_action.action == PAT_CREATE_DOMAIN ? "RREG"
-                            : (payment_action.action == PAT_RENEW_DOMAIN ? "RUDR"
-                              : (payment_action.action == PAT_REQUESTS_OVER_LIMIT ? "REPP"
-                                : (payment_action.action == PAT_ADMINISTRATIVE_FEE ? "RPOA"
-                                  : (payment_action.action == PAT_FEE ? "RPOP"
-                                    : (payment_action.action == PAT_MONTHLY_FEE ? "RPOP"
-                                      : "RUNK")
-                                    )
-                                  )
-                                )
-                              )
-                            )}
-                    }},
-                    // clang-format on
+                    {LibTypist::StructKey{"code"}, LibTypist::StructValue{to_string(payment_action.action)}},
                     {LibTypist::StructKey{"datetime"}, LibTypist::StructValue{to_iso_extended_string(payment_action.action_time)}},
-                    {LibTypist::StructKey{"count"}, LibTypist::StructValue{boost::lexical_cast<std::string>(payment_action.units_count)}},
-                    {LibTypist::StructKey{"price"}, LibTypist::StructValue{boost::lexical_cast<std::string>(payment_action.price_per_unit)}},
-                    {LibTypist::StructKey{"total"}, LibTypist::StructValue{boost::lexical_cast<std::string>(payment_action.price)}},
+                    {LibTypist::StructKey{"count"}, LibTypist::StructValue{std::to_string(payment_action.units_count)}},
+                    {LibTypist::StructKey{"price"}, LibTypist::StructValue{format_money(payment_action.price_per_unit)}},
+                    {LibTypist::StructKey{"total"}, LibTypist::StructValue{format_money(payment_action.price)}},
                     {LibTypist::StructKey{"vat_rate"}, LibTypist::StructValue{boost::lexical_cast<std::string>(payment_action.vat_rate)}}};
             if (!payment_action.exdate.is_special())
             {
                 item_context[LibTypist::StructKey{"expiration_date"}] = LibTypist::StructValue{to_iso_extended_string(payment_action.exdate)};
             };
-            items_context.push_back(LibTypist::StructValue{item_context});
+            items.push_back(LibTypist::StructValue{item_context});
+        }
+        if (!items.empty())
+        {
+           context[LibTypist::StructKey{"items"}] = LibTypist::StructValue{items};
         }
     }
 
-    return LibTypist::Struct{
-            {LibTypist::StructKey{"context"},
-                    LibTypist::StructValue{LibTypist::Struct{
-                            {LibTypist::StructKey{"buyer"}, LibTypist::StructValue{buyer_context}},
-                            //{LibTypist::StructKey{"supplier"}, // LibTypist::StructValue{supplier_context}},
-                            {LibTypist::StructKey{"vat_ratest"}, LibTypist::StructValue{vat_rates}},
-                            {LibTypist::StructKey{"invoice"}, LibTypist::StructValue{invoice_context}},
-                            {LibTypist::StructKey{"delivery"}, LibTypist::StructValue{vat_rates}},
-                            {LibTypist::StructKey{"advance_invoices"}, LibTypist::StructValue{advance_invoices}},
-                            {LibTypist::StructKey{"items"}, LibTypist::StructValue{items_context}}}}}};
+    context[LibTypist::StructKey{"buyer"}] = LibTypist::StructValue{buyer_context};
+    context[LibTypist::StructKey{"invoice"}] = LibTypist::StructValue{invoice_context};
+
+    return LibTypist::Struct{{LibTypist::StructKey{"context"}, LibTypist::StructValue{context}}};
 }
 
 void invoice_save_file_uuid(unsigned long long _invoice_id, const boost::uuids::uuid& _file_pdf_uuid, const boost::uuids::uuid& _file_xml_uuid)
@@ -506,7 +536,7 @@ void invoice_save_file_uuid(unsigned long long _invoice_id, const boost::uuids::
         sql_params.push_back(boost::lexical_cast<std::string>(_file_xml_uuid));
         sql << ",file_xml_uuid=$" << sql_params.size() << "::UUID ";
 
-        sql_params.push_back(boost::lexical_cast<std::string>(_invoice_id));
+        sql_params.push_back(std::to_string(_invoice_id));
         sql << " WHERE id=$" << sql_params.size() << "::BIGINT ";
 
         conn.exec_params(sql.str(), sql_params);
@@ -527,99 +557,89 @@ void invoice_save_file_uuid(unsigned long long _invoice_id, const boost::uuids::
 void export_and_archive_invoice(
         const SecretaryArgs& _secretary_args,
         const FilemanArgs& _fileman_args,
-        const Invoice& _invoice)
+        const Invoice& _invoice,
+        bool _debug_context)
 {
-    try
+    LOGGER.debug(boost::str(boost::format("export_and_archive_invoice: invoice id %1% number %2% type %3%") % _invoice.id % _invoice.number % (_invoice.type == InvoiceType::it_account ? "account" : "advance")));
+    const auto invoice_context = make_invoice_context(_invoice);
+
+    LibTypist::Connection secretary_connection{
+            LibTypist::Connection::ConnectionString{_secretary_args.endpoint}};
+
+    const auto template_name_html =
+            LibTypist::TemplateName{std::string{
+                    (_invoice.type == InvoiceType::it_deposit ? "advance-invoice" : "invoice")} +
+                    (_invoice.client.country == "CZ" ? "-cs" : "-en") + ".html"};
+
+    if (_debug_context)
     {
-        const auto invoice_context = make_invoice_context(_invoice);
-
-        LibTypist::Connection secretary_connection{
-                LibTypist::Connection::ConnectionString{_secretary_args.endpoint}};
-
-        const auto template_name_html =
-                LibTypist::TemplateName{std::string{
-                        (_invoice.type == IT_DEPOSIT ? "advance-invoice" : "invoice")} +
-                        (_invoice.client.country == "CZ" ? "-cs" : "-en") + ".html"};
-
-        std::stringstream file_pdf_rawdata;
-LOGGER.debug("DEBUG2 render1 "+*template_name_html);
-        LibTypist::render(
-                secretary_connection,
-                template_name_html,
-                LibTypist::ContentType{"application/pdf"},
-                invoice_context,
-                file_pdf_rawdata);
-std::ofstream output_pdf(std::to_string(_invoice.number) + ".pdf", std::ofstream::out);
-output_pdf << file_pdf_rawdata.str();
-output_pdf.close();
-
-        const auto template_name_xml =
-                LibTypist::TemplateName{_invoice.type == IT_DEPOSIT ? "advance-invoice.xml" : "invoice.xml"};
-
-        std::stringstream file_xml_rawdata;
-LOGGER.debug("DEBUG3 render2");
-        LibTypist::render(
-                secretary_connection,
-                template_name_xml,
-                LibTypist::ContentType{"text/html"},
-                invoice_context,
-                file_xml_rawdata);
-std::ofstream output_xml(std::to_string(_invoice.number) + ".xml", std::ofstream::out);
-output_xml << file_xml_rawdata.str();
-output_xml.close();
-
-
-LOGGER.debug("DEBUG3: "+_fileman_args.endpoint);
-        LibFiled::Connection<LibFiled::Service::File> fileman_connection{
-                LibFiled::Connection<LibFiled::Service::File>::ConnectionString{
-                        _fileman_args.endpoint}};
-
-LOGGER.debug("DEBUG4 create file pdf");
-        const auto file_pdf_uuid =
-                LibFiled::File::create(
-                        fileman_connection,
-                        LibFiled::File::FileName{std::to_string(_invoice.number) + ".pdf"},
-                        file_pdf_rawdata,
-                        LibFiled::File::FileMimeType{"application/pdf"});
-
-        LOGGER.debug(boost::str(boost::format("export_and_archive_invoice: pdf file uuid: %1% ") % boost::uuids::to_string(*file_pdf_uuid)));
-
-LOGGER.debug("DEBUG4 create file xml");
-        const auto file_xml_uuid =
-                LibFiled::File::create(
-                        fileman_connection,
-                        LibFiled::File::FileName{std::to_string(_invoice.number) + ".xml"},
-                        file_xml_rawdata,
-                        LibFiled::File::FileMimeType{"application/xml"});
-
-        LOGGER.debug(boost::str(boost::format("export_and_archive_invoice: xml file uuid: %1% ") % boost::uuids::to_string(*file_xml_uuid)));
-
-        invoice_save_file_uuid(_invoice.id, *file_pdf_uuid, *file_xml_uuid);
+        LOGGER.debug("invoice_export: debug_context");
+        std::cout << LibTypist::to_json_string(invoice_context) << std::endl;
+        return;
     }
-    catch (...)
-    {
-        LOGGER.error("Exception in export_and_archive_invoice");
-        throw;
-    }
+
+    std::stringstream file_pdf_rawdata;
+    LOGGER.debug(boost::str(boost::format("export_and_archive_invoice: render pdf using template %1%") % *template_name_html));
+    LibTypist::render(
+            secretary_connection,
+            template_name_html,
+            LibTypist::ContentType{"application/pdf"},
+            invoice_context,
+            file_pdf_rawdata);
+//std::ofstream output_pdf(std::to_string(_invoice.number) + ".pdf", std::ofstream::out);
+//output_pdf << file_pdf_rawdata.str();
+//output_pdf.close();
+
+    const auto template_name_xml =
+            LibTypist::TemplateName{_invoice.type == InvoiceType::it_deposit ? "advance-invoice.xml" : "invoice.xml"};
+
+    std::stringstream file_xml_rawdata;
+    LOGGER.debug(boost::str(boost::format("export_and_archive_invoice: render xml using template %1%") % *template_name_xml));
+    LibTypist::render(
+            secretary_connection,
+            template_name_xml,
+            LibTypist::ContentType{"text/html"},
+            invoice_context,
+            file_xml_rawdata);
+//std::ofstream output_xml(std::to_string(_invoice.number) + ".xml", std::ofstream::out);
+//output_xml << file_xml_rawdata.str();
+//output_xml.close();
+
+
+    LOGGER.debug(boost::str(boost::format("export_and_archive_invoice: connecting to fileman at %1%") % _fileman_args.endpoint));
+    LibFiled::Connection<LibFiled::Service::File> fileman_connection{
+            LibFiled::Connection<LibFiled::Service::File>::ConnectionString{
+                    _fileman_args.endpoint}};
+
+    LOGGER.debug("export_and_archive_invoice: archiving pdf file to fileman");
+    const auto file_pdf_uuid =
+            LibFiled::File::create(
+                    fileman_connection,
+                    LibFiled::File::FileName{std::to_string(_invoice.number) + ".pdf"},
+                    file_pdf_rawdata,
+                    LibFiled::File::FileMimeType{"application/pdf"});
+
+    LOGGER.debug(boost::str(boost::format("export_and_archive_invoice: pdf file uuid: %1%") % boost::uuids::to_string(*file_pdf_uuid)));
+
+    LOGGER.debug("export_and_archive_invoice: archiving xml file to fileman");
+    const auto file_xml_uuid =
+            LibFiled::File::create(
+                    fileman_connection,
+                    LibFiled::File::FileName{std::to_string(_invoice.number) + ".xml"},
+                    file_xml_rawdata,
+                    LibFiled::File::FileMimeType{"application/xml"});
+
+    LOGGER.debug(boost::str(boost::format("export_and_archive_invoice: xml file uuid: %1%") % boost::uuids::to_string(*file_xml_uuid)));
+
+    LOGGER.debug("export_and_archive_invoice: update invoice table - add files");
+    invoice_save_file_uuid(_invoice.id, *file_pdf_uuid, *file_xml_uuid);
 }
 
-//void load_invoice_xml(const Invoice& _invoice, std::ostream& _out)
-//{
-//    LibFiled::Connection<LibFiled::Service::File> fileman_connection{
-//            LibFiled::Connection<LibFiled::Service::File>::ConnectionString{
-//                    _fileman_args.endpoint}};
-//
-//    LibFiled::File::read(
-//            fileman_connection,
-//            LibFiled::File::FileUuid{invoice.file_xml_uuid},
-//            out);
-//}
-
-enum ArchiveFilter
+enum struct ArchiveFilter
 {
-    AF_IGNORE,
-    AF_SET,
-    AF_UNSET
+    af_ignore,
+    af_set,
+    af_unset
 };
 
 bool do_use_coef(boost::posix_time::ptime crtime, Decimal vat_rate, Money total_without_vat, Money total_vat)
@@ -656,13 +676,13 @@ void init_vat_list()
     if (vatList.empty())
     {
         Database::Connection conn = Database::Manager::acquire();
-        Database::Result res = conn.exec("SELECT vat, koef, valid_to FROM price_vat");
-        for (unsigned i = 0; i < res.size(); ++i)
+        Database::Result db_result = conn.exec("SELECT vat, koef, valid_to FROM price_vat");
+        for (const auto& row : db_result)
         {
             vatList.push_back(Vat{
-                    Decimal(std::string(res[i][0])),
-                    Decimal(std::string(res[i][1])),
-                    boost::gregorian::date(res[i][2].isnull() ? boost::gregorian::date(not_a_date_time) : from_string(res[i][2]))});
+                    Decimal(std::string(row[0])),
+                    Decimal(std::string(row[1])),
+                    boost::gregorian::date(row[2].isnull() ? boost::gregorian::date(not_a_date_time) : from_string(row[2]))});
         }
     }
 }
@@ -678,19 +698,19 @@ Money count_vat(Money price_without_vat, Decimal vat_rate, bool use_coef) {
     Money vat;
     if (!use_coef) {
         vat = price_without_vat * (vat_rate / Decimal("100"));
-        LOGGER.debug(
-            std::string("count_vat: ")+ vat.get_string()
-            + " price: " + price_without_vat.get_string()+ " vat_rate: " + vat_rate.get_string()
-            + " base: true use_coef: false");
+        //LOGGER.debug(
+        //    std::string("count_vat: ")+ vat.get_string()
+        //    + " price: " + price_without_vat.get_string()+ " vat_rate: " + vat_rate.get_string()
+        //    + " base: true use_coef: false");
     }
     else {
         const Vat *v = get_vat(vat_rate);
         Decimal coef = v ? v->koef : Decimal("0");
         vat = (price_without_vat * coef / (Decimal("1") - coef)).round_half_up(2);
-        LOGGER.debug(
-            std::string("count_vat: ")+ vat.get_string()
-            + " price: " + price_without_vat.get_string()+ " vat_rate: " + vat_rate.get_string()
-            + " base: true use_coef: true coef: " + coef.get_string());
+        //LOGGER.debug(
+        //    std::string("count_vat: ")+ vat.get_string()
+        //    + " price: " + price_without_vat.get_string()+ " vat_rate: " + vat_rate.get_string()
+        //    + " base: true use_coef: true coef: " + coef.get_string());
     }
     return vat;
 }
@@ -713,18 +733,18 @@ void invoice_add_action(Invoice& invoice, Database::Row::Iterator& _col) {
     Decimal vat_rate(_vat_rate);
     Money price_per_unit(_price_per_unit);
 
-    LOGGER.debug(
-        boost::format(
-        "invoice_add_action _price %1% _vat_rate %2% object_name %3% PaymentActionType %4%"
-        " units %5% _price_per_unit %6% id %7%")
-        % _price
-        % _vat_rate
-        % object_name
-        % type
-        % units
-        % _price_per_unit
-        % id
-    );
+    //LOGGER.debug(
+    //    boost::format(
+    //    "invoice_add_action _price %1% _vat_rate %2% object_name %3% PaymentActionType %4%"
+    //    " units %5% _price_per_unit %6% id %7%")
+    //    % _price
+    //    % _vat_rate
+    //    % object_name
+    //    % type
+    //    % units
+    //    % _price_per_unit
+    //    % id
+    //);
 
     const constexpr bool use_coef = false;
     invoice.actions.push_back(
@@ -803,7 +823,7 @@ void invoice_add_source(Invoice& invoice, Database::Row::Iterator& _col)
 }
 
 struct MailItem {
-    std::string registrarEmail; ///< address to deliver email
+    std::string registrar_email; ///< address to deliver email
     boost::uuids::uuid registrarUuid;
     boost::gregorian::date from; ///< start of invoicing period 
     boost::gregorian::date to; ///< end of invoicing period 
@@ -811,7 +831,7 @@ struct MailItem {
     boost::optional<boost::uuids::uuid> file_xml_uuid;
     unsigned long long generation; ///< filled if source is invoice generation
     unsigned long long invoice; ///< filled if successful generation or advance invoice
-    std::string zoneFqdn;
+    std::string zone_fqdn;
 };
 
 LibHermes::Email::Type get_mail_type_name(bool _generation, bool _invoice) {
@@ -853,126 +873,535 @@ LibHermes::Email::BodyTemplate get_template_name_body(bool _generation, bool _in
 
 void send_invoices(const MessengerArgs& _messenger_args)
 {
-LOGGER.debug("DEBUG0 send");
+    LOGGER.debug("send_invoices");
     typedef std::vector<MailItem> MailItems; ///< type for notification list
     MailItems mail_items; ///< list of notifications to send
 
-        // load
+    // load
 
-        Database::Connection conn = Database::Manager::acquire();
+    Database::Connection conn = Database::Manager::acquire();
 
-        std::stringstream sql;
+    std::stringstream sql;
 
-        sql << "SELECT r.email, r.uuid, g.fromdate, g.todate, "
-        << "i.file_uuid, i.file_xml_uuid, g.id, i.id, z.fqdn "
-        << "FROM registrar r, invoice i "
-        << "LEFT JOIN invoice_generation g ON (g.invoice_id=i.id) "
-        << "LEFT JOIN invoice_mails im ON (im.invoiceid=i.id) "
-        << "LEFT JOIN zone z ON (z.id = i.zone_id) "
-        << "WHERE i.registrar_id=r.id "
-        << "AND im.mailid ISNULL "
-        << "AND NOT(r.email ISNULL OR TRIM(r.email)='')"
-        << "UNION "
-        << "SELECT r.email, r.uuid, g.fromdate, g.todate, NULL, NULL, g.id, "
-        << "NULL, z.fqdn "
-        << "FROM registrar r, invoice_generation g "
-        << "LEFT JOIN invoice_mails im ON (im.genid=g.id) "
-        << "LEFT JOIN zone z ON (z.id = g.zone_id) "
-        << "WHERE g.registrar_id=r.id AND g.invoice_id ISNULL "
-        << "AND im.mailid ISNULL "
-        << "AND NOT(r.email ISNULL OR TRIM(r.email)='')";
+    sql << "SELECT r.email, "
+                  "r.uuid, "
+                  "g.fromdate, "
+                  "g.todate, "
+                  "i.file_uuid, "
+                  "i.file_xml_uuid, "
+                  "g.id, "
+                  "i.id, "
+                  "z.fqdn "
+             "FROM registrar r, "
+                  "invoice i "
+             "LEFT JOIN invoice_generation g "
+               "ON g.invoice_id = i.id "
+             "LEFT JOIN invoice_mails im "
+               "ON im.invoiceid = i.id "
+             "LEFT JOIN zone z "
+               "ON z.id = i.zone_id "
+            "WHERE i.registrar_id = r.id "
+              "AND im.mailid IS NULL "
+              "AND NOT(r.email IS NULL OR TRIM(r.email) = '') "
 
-        Database::Result res = conn.exec(sql.str());
-        for (unsigned i=0; i < res.size(); ++i)
-        mail_items.push_back(MailItem{
-              res[i][0],
-              boost::uuids::string_generator()(static_cast<std::string>(res[i][1])),
-              (boost::gregorian::date(res[i][2].isnull()? boost::gregorian::date(not_a_date_time) : from_string(static_cast<std::string>(res[i][2])))),
-              (boost::gregorian::date(res[i][3].isnull()? boost::gregorian::date(not_a_date_time) : from_string(static_cast<std::string>(res[i][3])))),
-              res[i][4].isnull() ? boost::optional<boost::uuids::uuid>{} : boost::uuids::string_generator()(static_cast<std::string>(res[i][4])),
-              res[i][5].isnull() ? boost::optional<boost::uuids::uuid>{} : boost::uuids::string_generator()(static_cast<std::string>(res[i][5])),
-              res[i][6],
-              res[i][7],
-              res[i][8]
-          });
+            "UNION "
 
-        // send
+           "SELECT r.email, "
+                  "r.uuid, "
+                  "g.fromdate, "
+                  "g.todate, "
+                  "NULL, "
+                  "NULL, "
+                  "g.id, "
+                  "NULL, "
+                  "z.fqdn "
+             "FROM registrar r, "
+                  "invoice_generation g "
+             "LEFT JOIN invoice_mails im "
+               "ON im.genid = g.id "
+             "LEFT JOIN zone z "
+               "ON z.id = g.zone_id "
+             "WHERE g.registrar_id = r.id "
+               "AND g.invoice_id IS NULL "
+               "AND im.mailid IS NULL "
+               "AND NOT(r.email IS NULL OR TRIM(r.email) = '')";
 
-        LibHermes::Connection<LibHermes::Service::EmailMessenger> connection{
-                LibHermes::Connection<LibHermes::Service::EmailMessenger>::ConnectionString{
-                        _messenger_args.endpoint}};
+    Database::Result db_result = conn.exec(sql.str());
+    for (const auto& row : db_result)
+    mail_items.push_back(MailItem{
+          row[0],
+          boost::uuids::string_generator()(static_cast<std::string>(row[1])),
+          (boost::gregorian::date(row[2].isnull() ? boost::gregorian::date(not_a_date_time) : from_string(static_cast<std::string>(row[2])))),
+          (boost::gregorian::date(row[3].isnull() ? boost::gregorian::date(not_a_date_time) : from_string(static_cast<std::string>(row[3])))),
+          row[4].isnull() ? boost::none : boost::optional<boost::uuids::uuid>{boost::uuids::string_generator()(static_cast<std::string>(row[4]))},
+          row[5].isnull() ? boost::none : boost::optional<boost::uuids::uuid>{boost::uuids::string_generator()(static_cast<std::string>(row[5]))},
+          row[6].isnull() ? 0 : boost::lexical_cast<unsigned long long>(static_cast<std::string>(row[6])),
+          row[7].isnull() ? 0 : boost::lexical_cast<unsigned long long>(static_cast<std::string>(row[7])),
+          row[8]
+      });
 
-        for (const auto& mail_item : mail_items)
+    LOGGER.debug(boost::str(boost::format("send_invoices: found %1% items to send") % mail_items.size()));
+
+    LibHermes::Connection<LibHermes::Service::EmailMessenger> connection{
+            LibHermes::Connection<LibHermes::Service::EmailMessenger>::ConnectionString{
+                    _messenger_args.endpoint}};
+
+    for (const auto& mail_item : mail_items)
+    {
+        try
         {
-            try
-            {
-                LibHermes::Struct email_template_params;
-                std::stringstream dateBuffer;
-                dateBuffer.imbue(std::locale(dateBuffer.getloc(), new date_facet("%d.%m.%Y")));
-                dateBuffer << mail_item.from;
-                email_template_params[LibHermes::StructKey{"fromdate"}] = LibHermes::StructValue{dateBuffer.str()};
-                dateBuffer.str("");
-                dateBuffer << mail_item.to;
-                email_template_params[LibHermes::StructKey{"todate"}] = LibHermes::StructValue{dateBuffer.str()};
-                email_template_params[LibHermes::StructKey{"zone"}] = LibHermes::StructValue{mail_item.zoneFqdn};
+            LibHermes::Struct email_template_params;
+            std::stringstream dateBuffer;
+            dateBuffer.imbue(std::locale(dateBuffer.getloc(), new date_facet("%d.%m.%Y")));
+            dateBuffer << mail_item.from;
+            email_template_params[LibHermes::StructKey{"fromdate"}] = LibHermes::StructValue{dateBuffer.str()};
+            dateBuffer.str("");
+            dateBuffer << mail_item.to;
+            email_template_params[LibHermes::StructKey{"todate"}] = LibHermes::StructValue{dateBuffer.str()};
+            email_template_params[LibHermes::StructKey{"zone"}] = LibHermes::StructValue{mail_item.zone_fqdn};
 
-                auto email =
-                        LibHermes::Email::make_minimal_email(
-                                {{LibHermes::Email::RecipientEmail{mail_item.registrarEmail}, {}}},
-                                get_template_name_subject(mail_item.generation, mail_item.invoice),
-                                get_template_name_body(mail_item.generation, mail_item.invoice));
-                email.type = get_mail_type_name(mail_item.generation, mail_item.invoice);
-                email.context = email_template_params;
+            auto email =
+                    LibHermes::Email::make_minimal_email(
+                            {{LibHermes::Email::RecipientEmail{mail_item.registrar_email}, {}}},
+                            get_template_name_subject(mail_item.generation, mail_item.invoice),
+                            get_template_name_body(mail_item.generation, mail_item.invoice));
+            email.type = get_mail_type_name(mail_item.generation, mail_item.invoice);
+            email.context = email_template_params;
+            if (mail_item.file_pdf_uuid != boost::none && mail_item.file_xml_uuid != boost::none)
+            {
                 email.attachments = {
                         LibHermes::Email::AttachmentUuid{*mail_item.file_pdf_uuid},
-                        LibHermes::Email::AttachmentUuid{*mail_item.file_xml_uuid},
-                };
-                const auto email_uuid =
-                        LibHermes::Email::send(
-                                connection,
-                                email,
-                                LibHermes::Email::Archive{_messenger_args.archive},
-                                {LibHermes::Reference{
-                                        LibHermes::Reference::Type{"registrar"},
-                                        LibHermes::Reference::Value{boost::uuids::to_string(mail_item.registrarUuid)}}});
+                        LibHermes::Email::AttachmentUuid{*mail_item.file_xml_uuid}};
+            }
 
-                // store
-                //{
-LOGGER.debug("DE//BUG0 store");
-                //      const auto sql =
-                //              std::string{"INSERT INTO invoice_mails (invoiceid, genid, mailid) VALUES ("} +
-                //             (mail_item.invoice ? std::to_string(mail_item.invoice) : std::string{"NULL"}) + ", " +
-                //             (mail_item.generation ? std::to_string(mail_item.generation) : std::string{"NULL"}) + ", "
-                //             "'" + *email_uuid + "'::UUID)";
-                //      Database::Connection conn = Database::Manager::acquire();
-                //      conn.exec(sql);
-                //}
+            LOGGER.debug("send_invoices: sending email");
 
-            }
-            catch (const LibHermes::Email::SendFailed& e)
+            const auto email_uid =
+                    LibHermes::Email::send(
+                            connection,
+                            email,
+                            LibHermes::Email::Archive{_messenger_args.archive},
+                            {LibHermes::Reference{
+                                    LibHermes::Reference::Type{"registrar"},
+                                    LibHermes::Reference::Value{boost::uuids::to_string(mail_item.registrarUuid)}}});
+
+            LOGGER.debug(boost::str(boost::format("send_invoices: email uid: %1%") % *email_uid));
+
             {
-                LOGGER.error(
-                        std::string(" Error while send mail in Mails class email: ") + mail_item.registrarEmail +
-                        " pdf file uuid: " + boost::lexical_cast<std::string>(*mail_item.file_pdf_uuid) +
-                        " xml file uuid: " + boost::lexical_cast<std::string>(*mail_item.file_xml_uuid) +
-                        " invoice id: " + boost::lexical_cast<std::string>(mail_item.invoice) +
-                        " zone fqdn: " + mail_item.zoneFqdn);
-                LOGGER.info(boost::str(boost::format("gRPC exception caught while sending email: gRPC error code: %1% error message: %2% grpc_message_json: %3%") %
-                            e.error_code() % e.error_message() % e.grpc_message_json()));
-                throw std::runtime_error("failed to send email to recipient");
+                LOGGER.debug("send_invoices: store");
+                const auto sql =
+                        std::string{"INSERT INTO invoice_mails (invoiceid, genid, mailid) VALUES ("} +
+                        (mail_item.invoice ? std::to_string(mail_item.invoice) : std::string{"NULL"}) + ", " +
+                        (mail_item.generation ? std::to_string(mail_item.generation) : std::string{"NULL"}) + ", "
+                        "0)";
+                        //"'" + *email_uuid + "'::TEXT)";
+                Database::Connection conn = Database::Manager::acquire();
+                conn.exec(sql);
             }
-            catch (const std::exception& e)
-            {
-                LOGGER.info(boost::str(boost::format("std::exception caught while sending email: %1%") % e.what()));
-                throw std::runtime_error("failed to send email to recipient");
-            }
-            catch (...)
-            {
-                LOGGER.info("exception caught while sending email");
-                throw std::runtime_error("failed to send email to recipient");
-            }
+ 
         }
+        catch (const LibHermes::Email::SendFailed& e)
+        {
+            LOGGER.error(
+                    std::string(" Error while send mail in Mails class email: ") + mail_item.registrar_email +
+                    " invoice id: " + std::to_string(mail_item.invoice));
+            LOGGER.info(boost::str(boost::format("gRPC exception caught while sending email: gRPC error code: %1% error message: %2% grpc_message_json: %3%") %
+                        e.error_code() % e.error_message() % e.grpc_message_json()));
+            throw std::runtime_error("failed to send email to recipient");
+        }
+        catch (const std::exception& e)
+        {
+            LOGGER.info(boost::str(boost::format("std::exception caught while sending email: %1%") % e.what()));
+            throw std::runtime_error("failed to send email to recipient");
+        }
+        catch (...)
+        {
+            LOGGER.info("exception caught while sending email");
+            throw std::runtime_error("failed to send email to recipient");
+        }
+    }
+}
 
+std::vector<Invoice> get_invoices(bool _taxdate_is_last_month, bool _unexported, unsigned long long _invoice_id)
+{
+    std::vector<Invoice> invoices;
+    //const unsigned long long idFilter = 0;
+    //const unsigned long long registrarFilter = 0;
+    //const std::string registrarHandleFilter;
+    //const unsigned long long zoneFilter = 0;
+    //const unsigned typeFilter = 0;
+    //const std::string varSymbolFilter;
+    //const std::string numberFilter;
+    //const boost::posix_time::time_period crDateFilter = boost::posix_time::time_period(boost::posix_time::ptime(neg_infin), boost::posix_time::ptime(pos_infin));
+    //const boost::posix_time::time_period taxDateFilter = boost::posix_time::time_period(boost::posix_time::ptime(neg_infin), boost::posix_time::ptime(pos_infin));
+    //const ArchiveFilter archiveFilter = ArchiveFilter::af_ignore;
+    //const unsigned long long objectIdFilter = 0;
+    //const std::string objectNameFilter;
+    //const std::string advanceNumberFilter;
+
+
+    LOGGER.debug("invoice_export: connection");
+    Database::Connection conn = Database::Manager::acquire();
+
+    Database::QueryParams sql_params;
+    sql_params.reserve(20);
+    std::stringstream sql;
+    std::stringstream from;
+    std::stringstream where;
+
+    // clang format-off
+     sql << "SELECT DISTINCT i.id "
+              "INTO TEMPORARY tmp_invoice_filter_result ";
+      from << "FROM invoice i ";
+    where << "WHERE 1=1 ";
+    // clang format-on
+    if (_invoice_id)
+    {
+        sql_params.push_back(std::to_string(_invoice_id));
+        where << "AND " << "i.id" << "= $" << sql_params.size() << "::BIGINT ";
+    }
+    //if (registrarFilter)
+    //{
+    //    sql_params.push_back(boost::lexical_cast<std::string>(registrarFilter));
+    //    where << "AND " << "i.registrar_id" << "= $" << sql_params.size() << "::BIGINT ";
+    //}
+    //if (zoneFilter)
+    //{
+    //    sql_params.push_back(boost::lexical_cast<std::string>(zoneFilter));
+    //    where << "AND " << "i.zone_id" << "= $" << sql_params.size() << "::BIGINT ";
+    //}
+    //if (typeFilter && typeFilter <= 2)
+    //{
+    //    from << ", invoice_prefix ip ";
+    //    where << "AND i.invoice_prefix_id=ip.id ";
+    //    sql_params.push_back(boost::lexical_cast<std::string>(typeFilter-1));
+    //    where << "AND " << "ip.typ" << "=$" << sql_params.size() << "::INTEGER ";
+    //}
+    //if (!varSymbolFilter.empty() || !registrarHandleFilter.empty())
+    //{
+    //    from << ", registrar r ";
+    //    where << "AND i.registrar_id=r.id ";
+    //    if (!varSymbolFilter.empty())
+    //    {
+    //        sql_params.push_back(boost::lexical_cast<std::string>(varSymbolFilter));
+    //        where << "AND "
+    //               << "TRIM(r.varsymb)" << " ILIKE TRANSLATE($" << sql_params.size() << "::TEXT,'*?','%_') ";
+    //    }
+    //    if (!registrarHandleFilter.empty())
+    //    {
+    //        sql_params.push_back(boost::lexical_cast<std::string>(registrarHandleFilter));
+    //        where << "AND "
+    //               << "r.handle" << " ILIKE TRANSLATE($" << sql_params.size() << "::TEXT,'*?','%_') ";
+    //    }
+    //}
+    //if (!numberFilter.empty())
+    //{
+    //    sql_params.push_back(boost::lexical_cast<std::string>(numberFilter));
+    //    where << "AND "
+    //        << "(i.prefix)::TEXT" << " ILIKE TRANSLATE($" << sql_params.size() << "::TEXT,'*?','%_') ";
+    //}
+    //if (!crDateFilter.begin().is_special())
+    //{
+    //    sql_params.push_back(boost::lexical_cast<std::string>(
+    //            to_iso_extended_string(crDateFilter.begin().date())));
+    //     where << "AND " << "i.crdate" << ">=$"
+    //       <<  sql_params.size() << "::TIMESTAMP ";
+    //}
+    //if (!crDateFilter.end().is_special())
+    //{
+    //    sql_params.push_back(
+    //        to_iso_extended_string(crDateFilter.end().date() + boost::gregorian::days(1))
+    //        );
+    //    where << "AND " << "i.crdate" << " < $"
+    //            <<  sql_params.size() << "::TIMESTAMP ";
+    //}
+    //if ((!taxDateFilter.begin().is_special()))
+    //{
+    //    sql_params.push_back(boost::lexical_cast<std::string>(
+    //        to_iso_extended_string(taxDateFilter.begin())));
+    //   where << "AND " << "i.taxdate" << ">=$"
+    //     <<  sql_params.size() << "::TIMESTAMP ";
+    //}
+    //if ((!taxDateFilter.end().is_special()))
+    //{
+    //    sql_params.push_back(
+    //        to_iso_extended_string(taxDateFilter.end().date() + boost::gregorian::days(1)));
+    //    where << "AND " << "i.taxdate" << " < $"
+    //        << sql_params.size() << "::TIMESTAMP ";
+    //}
+    if (_taxdate_is_last_month)
+    {
+        where << "AND " << "i.taxdate" << " >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '1' month) "
+                 "AND " << "i.taxdate" << " <  DATE_TRUNC('month', CURRENT_DATE) ";
+    }
+    if (_unexported)
+    {
+        where << "AND i.file IS NULL ";
+    }
+    else
+    {
+        where << "AND i.file IS NOT NULL ";
+    }
+    //switch (archiveFilter)
+    //{
+    //    case ArchiveFilter::af_ignore: break;
+    //    case ArchiveFilter::af_set: where << "AND NOT(i.file ISNULL) "; break;
+    //    case ArchiveFilter::af_unset: where << "AND i.file ISNULL "; break;
+    //    default: break;
+    //}
+    //if (objectIdFilter)
+    //{
+    //    from << ", invoice_operation io ";
+    //    where << "AND i.id=io.ac_invoice_id ";
+    //    sql_params.push_back(boost::lexical_cast<std::string>(objectIdFilter));
+    //    where << "AND " << "io.object_id" << "=$" << sql_params.size() << "::BIGINT ";
+    //}
+    //if (!objectNameFilter.empty())
+    //{
+    //    from << ", invoice_operation ioh, object_registry obr ";
+    //    where << "AND i.id=ioh.ac_invoice_id AND obr.id=ioh.object_id ";
+    //    sql_params.push_back(boost::lexical_cast<std::string>(objectNameFilter));
+    //    where << "AND "
+    //           << "obr.name" << " ILIKE TRANSLATE($" << sql_params.size() << "::TEXT,'*?','%_') ";
+    //}
+
+    //if (!advanceNumberFilter.empty())
+    //{
+    //    from << ", invoice_operation io2 "
+    //    << ", invoice_operation_charge_map iocm "
+    //    << ", invoice advi ";
+    //    where << "AND i.id=io2.ac_invoice_id "
+    //    << "AND iocm.invoice_operation_id=io2.id AND iocm.invoice_id=advi.id ";
+    //    sql_params.push_back(boost::lexical_cast<std::string>(advanceNumberFilter));
+    //    where << "AND "
+    //           << "(advi.prefix)::TEXT" << " ILIKE TRANSLATE($" << sql_params.size() << "::TEXT,'*?','%_') ";
+    //}
+    sql << from.rdbuf() << where.rdbuf();
+
+    LOGGER.debug("invoice_export: select tmp");
+    conn.exec("DROP TABLE IF EXISTS tmp_invoice_filter_result ");
+    conn.exec_params(sql.str(), sql_params);
+    conn.exec("ANALYZE tmp_invoice_filter_result");
+
+    LOGGER.debug("invoice_export: select invoice");
+    Database::Result db_result = conn.exec(
+            // clang-format off
+            "SELECT i.id, "
+                   "i.zone_id, "
+                   "i.crdate::TIMESTAMPTZ AT TIME ZONE 'Europe/Prague', "
+                   "i.taxdate, "
+                   "ig.fromdate, "
+                   "ig.todate, "
+                   "ip.typ, "
+                   "i.prefix, "
+                   "i.registrar_id, "
+                   "i.balance, "
+                   "i.operations_price, "
+                   "i.vat, "
+                   "i.total, "
+                   "i.totalvat, "
+                   "i.file, "    // i.file_uuid FIXME
+                   "i.fileXML, " // i.file_xml_uuid
+                   "r.organization, "
+                   "r.street1, "
+                   "r.city, "
+                   "r.postalcode, "
+                   "TRIM(r.ico), "
+                   "TRIM(r.dic), "
+                   "TRIM(r.varsymb), "
+                   "r.handle, "
+                   "r.vat, "
+                   "r.id, "
+                   "z.fqdn, "
+                   "r.country "
+              "FROM tmp_invoice_filter_result it "
+              "JOIN invoice i "
+                "ON it.id = i.id "
+              "JOIN zone z "
+                "ON i.zone_id = z.id "
+              "JOIN registrar r "
+                "ON i.registrar_id = r.id "
+              "JOIN invoice_prefix ip "
+                "ON ip.id = i.invoice_prefix_id "
+              "LEFT JOIN invoice_generation ig "
+                "ON i.id = ig.invoice_id "
+             "ORDER BY it.id"
+            // clang-format on
+    );
+
+    for (const auto& row : db_result)
+    {
+        LOGGER.debug(
+            boost::format(
+            "db_result i.id %1% i.zone_id %2% i.typ %3% i.prefix %4% i.registrar_id %5% i.balance %6% i.operations_price %7% i.vat %8% i.total %9% i.totalvat %10%")
+            % std::string(row[0])
+            % std::string(row[1])
+            % (static_cast<int>(row[6]) == 0 ? "it_deposit" : "it_account")
+            % std::string(row[7])
+            % std::string(row[8])
+            % std::string(row[9])
+            % std::string(row[10])
+            % std::string(row[11])
+            % std::string(row[12])
+            % std::string(row[13])
+        );
+
+        Database::ID id = row[0];
+        Database::ID zone = row[1];
+        std::string fqdn = row[26];
+        Database::DateTime create_time = (boost::posix_time::ptime(row[2].isnull() ? boost::posix_time::ptime(not_a_date_time) : time_from_string(row[2])));
+        Database::Date tax_date = (boost::gregorian::date(row[3].isnull() ? boost::gregorian::date(not_a_date_time) : from_string(row[3])));
+        Database::Date from_date = (boost::gregorian::date(row[4].isnull() ? boost::gregorian::date(neg_infin) : from_string(row[4])));
+        Database::Date to_date = (boost::gregorian::date(row[5].isnull() ? boost::gregorian::date(pos_infin) : from_string(row[5])));
+        InvoiceType type = (int(row[6]) == 0 ? InvoiceType::it_deposit : InvoiceType::it_account);
+        unsigned long long number = row[7];
+        Database::ID registrar_id = row[8];
+        Money credit = std::string(row[9]);
+        Money price = std::string(row[10]);
+        std::string vat_rate = row[11];
+        Money total = std::string(row[12]);
+        Money total_vat = std::string(row[13]);
+        //Database::ID filePDF = row[14]; // file_uuid TODO trigger
+        //Database::ID fileXML = row[15]; // file_xml_uuid
+        std::string client_organization = row[16];
+        std::string client_street1 = row[17];
+        std::string client_city = row[18];
+        std::string client_postal_code = row[19];
+        std::string client_ico = row[20];
+        std::string client_dic = row[21];
+        std::string client_var_symb = row[22];
+        std::string client_handle = row[23];
+        bool client_vat = row[24];
+        unsigned long long client_id = row[25];
+        std::string client_country = row[27];
+
+        boost::gregorian::date_period account_period(from_date, to_date);
+LOGGER.debug(std::string{"DEBUG client "} + std::to_string(client_id) + " " + client_handle + " " + client_organization + " " + client_street1 + " " + client_city + " " + client_postal_code + " " + client_country + " " + client_ico + " " + client_dic + " " + (client_vat ? "VAT" : "NOVAT"));
+        Subject client{
+                client_id,
+                client_handle,
+                "",
+                client_organization,
+                client_street1,
+                client_city,
+                client_postal_code,
+                client_country,
+                client_ico,
+                client_dic,
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                client_vat};
+
+        invoices.push_back(
+                Invoice{id,
+                        zone,
+                        fqdn,
+                        create_time,
+                        tax_date,
+                        account_period,
+                        type,
+                        number,
+                        registrar_id,
+                        credit,
+                        price,
+                        Decimal(vat_rate),
+                        total,
+                        total_vat,
+                        boost::none,
+                        boost::none,
+                        client_var_symb,
+                        client,
+                        {}, {}, {}});
+
+    }
+
+    LOGGER.debug(boost::str(boost::format("got %1% invoices") % invoices.size()));
+    return invoices;
+}
+
+void add_actions(std::vector<Invoice>& _invoices)
+{
+    LOGGER.debug("add_actions");
+    /* append list of actions to all selected invoices
+     * it handle situation when action come from source advance invoices
+     * with different vat rates by grouping
+     * this is ignored on partial load
+     */
+    Database::Connection conn = Database::Manager::acquire();
+    Database::SelectQuery action_query;
+    action_query.select() << "tmp.id, SUM(icm.price), i.vat, o.name, "
+                          << "io.crdate::TIMESTAMPtz AT TIME ZONE 'Europe/Prague', "
+                          << "io.date_from, io.date_to, io.operation_id, io.quantity, "
+                          << "CASE "
+                          << "  WHEN io.quantity = 0 THEN 0 "
+                          << "  ELSE SUM(icm.price) / io.quantity END, "
+                          << "o.id";
+    action_query.from() << "tmp_invoice_filter_result tmp "
+                        << "JOIN invoice_operation io ON (tmp.id = io.ac_invoice_id) "
+                        << "JOIN invoice_operation_charge_map icm ON (io.id = icm.invoice_operation_id) "
+                        << "JOIN invoice i ON (icm.invoice_id = i.id) "
+                        << "LEFT JOIN object_registry o ON (io.object_id = o.id) ";
+    action_query.group_by() << "tmp.id, o.name, io.crdate, io.date_from, io.date_to, "
+                            << "io.operation_id, io.quantity, o.id, i.vat";
+    action_query.order_by() << "tmp.id";
+
+    Database::Result result_actions = conn.exec(action_query);
+    LOGGER.debug(boost::str(boost::format("add_actions: found %1% actions") % std::to_string(result_actions.size())));
+    for (Database::Result::Iterator it = result_actions.begin(); it != result_actions.end(); ++it)
+    {
+        Database::Row::Iterator col = (*it).begin();
+        Database::ID invoice_id = *col;
+
+        const auto invoice = find_if(_invoices.begin(), _invoices.end(), [&invoice_id](const Invoice& i){ return i.id == invoice_id; });
+        if (invoice != _invoices.end())
+        {
+            invoice_add_action(*invoice, ++col);
+        }
+    }
+}
+
+void add_sources(std::vector<Invoice>& _invoices)
+{
+    LOGGER.debug("add_sources");
+    Database::Connection conn = Database::Manager::acquire();
+    //append list of sources to all selected invoices
+    Database::SelectQuery source_query;
+    // clang-format off
+    source_query.select() << "tmp.id, "
+                             "icm.credit, "
+                             "sri.vat, "
+                             "sri.prefix, "
+                             "icm.balance, "
+                             "sri.id, "
+                             "sri.total, "
+                             "sri.totalvat, "
+                             "sri.crdate";
+      source_query.from() << "tmp_invoice_filter_result tmp "
+                        "JOIN invoice_credit_payment_map icm "
+                          "ON tmp.id = icm.ac_invoice_id "
+                        "JOIN invoice sri "
+                          "ON icm.ad_invoice_id = sri.id ";
+    source_query.order_by() << "tmp.id";
+    // clang-format on
+
+    Database::Result result_sources = conn.exec(source_query);
+    LOGGER.debug(boost::str(boost::format("add_sources: found %1% sources") % std::to_string(result_sources.size())));
+    for (Database::Result::Iterator it = result_sources.begin(); it != result_sources.end(); ++it)
+    {
+        Database::Row::Iterator col = (*it).begin();
+        Database::ID invoice_id = *col;
+
+        const auto invoice = find_if(_invoices.begin(), _invoices.end(), [&invoice_id](const Invoice& i) { return i.id == invoice_id; });
+        if (invoice != _invoices.end())
+        {
+            invoice_add_source(*invoice, ++col);
+        }
+    }
+    conn.exec("DROP TABLE tmp_invoice_filter_result "); // FIXME
 }
 
 } // namespace
@@ -981,434 +1410,114 @@ void invoice_export(
         const MessengerArgs& _messenger_args,
         const FilemanArgs& _fileman_args,
         const SecretaryArgs& _secretary_args,
-        bool _invoice_dont_send)
+        bool _invoice_dont_send,
+        unsigned long long _invoice_id,
+        bool _debug_context)
 {
-    const unsigned long long idFilter = 0;
-    const unsigned long long registrarFilter = 0;
-    const std::string registrarHandleFilter;
-    const unsigned long long zoneFilter = 0;
-    const unsigned typeFilter = 0;
-    const std::string varSymbolFilter;
-    const std::string numberFilter;
-    const boost::posix_time::time_period crDateFilter = boost::posix_time::time_period(boost::posix_time::ptime(neg_infin), boost::posix_time::ptime(pos_infin));
-    const boost::posix_time::time_period taxDateFilter = boost::posix_time::time_period(boost::posix_time::ptime(neg_infin), boost::posix_time::ptime(pos_infin));
-    const ArchiveFilter archiveFilter = AF_IGNORE;
-    const unsigned long long objectIdFilter = 0;
-    const std::string objectNameFilter;
-    const std::string advanceNumberFilter;
-
-    LOGGER.debug("invoice_export: invoice_export");
-    std::vector<Invoice> invoices;
+    Logging::Context ctx("invoice export");
     try
     {
-
-        Logging::Context ctx("invoice export");
-        try
-        {
-            LOGGER.debug("invoice_export: connection");
-            Database::Connection conn = Database::Manager::acquire();
-
-            Database::QueryParams sql_params;
-            sql_params.reserve(20);
-            std::stringstream sql;
-
-            sql << "SELECT DISTINCT i.id "
-            << "INTO TEMPORARY tmp_invoice_filter_result ";
-            std::stringstream from;
-            from << "FROM invoice i ";
-            std::stringstream where;
-            where << "WHERE 1=1 ";
-            if (idFilter)
-            {
-                sql_params.push_back(boost::lexical_cast<std::string>(idFilter));
-                where << "AND " << "i.id" << "= $" << sql_params.size() << "::BIGINT ";
-            }
-            if (registrarFilter)
-            {
-                sql_params.push_back(boost::lexical_cast<std::string>(registrarFilter));
-                where << "AND " << "i.registrar_id" << "= $" << sql_params.size() << "::BIGINT ";
-            }
-            if (zoneFilter)
-            {
-                sql_params.push_back(boost::lexical_cast<std::string>(zoneFilter));
-                where << "AND " << "i.zone_id" << "= $" << sql_params.size() << "::BIGINT ";
-            }
-            if (typeFilter && typeFilter <= 2)
-            {
-                from << ", invoice_prefix ip ";
-                where << "AND i.invoice_prefix_id=ip.id ";
-                sql_params.push_back(boost::lexical_cast<std::string>(typeFilter-1));
-                where << "AND " << "ip.typ" << "=$" << sql_params.size() << "::INTEGER ";
-            }
-            if (!varSymbolFilter.empty() || !registrarHandleFilter.empty())
-            {
-                from << ", registrar r ";
-                where << "AND i.registrar_id=r.id ";
-                if (!varSymbolFilter.empty())
-                {
-                    sql_params.push_back(boost::lexical_cast<std::string>(varSymbolFilter));
-                    where << "AND "
-                           << "TRIM(r.varsymb)" << " ILIKE TRANSLATE($" << sql_params.size() << "::TEXT,'*?','%_') ";
-                }
-                if (!registrarHandleFilter.empty())
-                {
-                    sql_params.push_back(boost::lexical_cast<std::string>(registrarHandleFilter));
-                    where << "AND "
-                           << "r.handle" << " ILIKE TRANSLATE($" << sql_params.size() << "::TEXT,'*?','%_') ";
-                }
-            }
-            if (!numberFilter.empty())
-            {
-                sql_params.push_back(boost::lexical_cast<std::string>(numberFilter));
-                where << "AND "
-                    << "(i.prefix)::TEXT" << " ILIKE TRANSLATE($" << sql_params.size() << "::TEXT,'*?','%_') ";
-            }
-            if (!crDateFilter.begin().is_special())
-            {
-                sql_params.push_back(boost::lexical_cast<std::string>(
-                        to_iso_extended_string(crDateFilter.begin().date())));
-                 where << "AND " << "i.crdate" << ">=$"
-                   <<  sql_params.size() << "::TIMESTAMP ";
-            }
-            if (!crDateFilter.end().is_special())
-            {
-                sql_params.push_back(
-                    to_iso_extended_string(crDateFilter.end().date() + boost::gregorian::days(1))
-                    );
-                where << "AND " << "i.crdate" << " < $"
-                        <<  sql_params.size() << "::TIMESTAMP ";
-            }
-            if ((!taxDateFilter.begin().is_special()))
-            {
-                sql_params.push_back(boost::lexical_cast<std::string>(
-                    to_iso_extended_string(taxDateFilter.begin())));
-               where << "AND " << "i.taxdate" << ">=$"
-                 <<  sql_params.size() << "::TIMESTAMP ";
-            }
-            if ((!taxDateFilter.end().is_special()))
-            {
-                sql_params.push_back(
-                    to_iso_extended_string(taxDateFilter.end().date() + boost::gregorian::days(1)));
-                where << "AND " << "i.taxdate" << " < $"
-                    << sql_params.size() << "::TIMESTAMP ";
-            }
-            switch (archiveFilter)
-            {
-                case AF_IGNORE: break;
-                case AF_SET: where << "AND NOT(i.file ISNULL) "; break;
-                case AF_UNSET: where << "AND i.file ISNULL "; break;
-                default: break;
-            }
-            if (objectIdFilter)
-            {
-                from << ", invoice_operation io ";
-                where << "AND i.id=io.ac_invoice_id ";
-                sql_params.push_back(boost::lexical_cast<std::string>(objectIdFilter));
-                where << "AND " << "io.object_id" << "=$" << sql_params.size() << "::BIGINT ";
-            }
-            if (!objectNameFilter.empty())
-            {
-                from << ", invoice_operation ioh, object_registry obr ";
-                where << "AND i.id=ioh.ac_invoice_id AND obr.id=ioh.object_id ";
-                sql_params.push_back(boost::lexical_cast<std::string>(objectNameFilter));
-                where << "AND "
-                       << "obr.name" << " ILIKE TRANSLATE($" << sql_params.size() << "::TEXT,'*?','%_') ";
-            }
-
-            if (!advanceNumberFilter.empty())
-            {
-                from << ", invoice_operation io2 "
-                << ", invoice_operation_charge_map iocm "
-                << ", invoice advi ";
-                where << "AND i.id=io2.ac_invoice_id "
-                << "AND iocm.invoice_operation_id=io2.id AND iocm.invoice_id=advi.id ";
-                sql_params.push_back(boost::lexical_cast<std::string>(advanceNumberFilter));
-                where << "AND "
-                       << "(advi.prefix)::TEXT" << " ILIKE TRANSLATE($" << sql_params.size() << "::TEXT,'*?','%_') ";
-            }
-            sql << from.rdbuf() << where.rdbuf();
-
-            LOGGER.debug("invoice_export: select tmp");
-            Database::Result res1 = conn.exec_params(sql.str(), sql_params);
-            Database::Result res2 = conn.exec("ANALYZE tmp_invoice_filter_result");
-
-            LOGGER.debug("invoice_export: select invoice");
-            Database::Result res3 = conn.exec(
-                    // clang-format off
-                    "SELECT i.id, "
-                           "i.zone_id, "
-                           "i.crdate::TIMESTAMPTZ AT TIME ZONE 'Europe/Prague', "
-                           "i.taxdate, "
-                           "ig.fromdate, "
-                           "ig.todate, "
-                           "ip.typ, "
-                           "i.prefix, "
-                           "i.registrar_id, "
-                           "i.balance, "
-                           "i.operations_price, "
-                           "i.vat, "
-                           "i.total, "
-                           "i.totalvat, "
-                           "i.file, "    // i.file_uuid FIXME
-                           "i.fileXML, " // i.file_xml_uuid
-                           "r.organization, "
-                           "r.street1, "
-                           "r.city, "
-                           "r.postalcode, "
-                           "TRIM(r.ico), "
-                           "TRIM(r.dic), "
-                           "TRIM(r.varsymb), "
-                           "r.handle, "
-                           "r.vat, "
-                           "r.id, "
-                           "z.fqdn, "
-                           "r.country "
-                      "FROM tmp_invoice_filter_result it "
-                      "JOIN invoice i "
-                        "ON it.id = i.id "
-                      "JOIN zone z "
-                        "ON i.zone_id = z.id "
-                      "JOIN registrar r "
-                        "ON i.registrar_id = r.id "
-                      "JOIN invoice_prefix ip "
-                        "ON ip.id = i.invoice_prefix_id "
-                      "LEFT JOIN invoice_generation ig "
-                        "ON i.id = ig.invoice_id "
-                     "ORDER BY it.id"
-                    // clang-format on
-            );
-
-            for (unsigned i = 0; i < res3.size(); ++i)
-            {
-                LOGGER.debug(
-                    boost::format(
-                    "res3 i.id %1% i.zone_id %2% i.typ %3% i.prefix %4%"
-                    " i.registrar_id %5% i.balance %6% i.operations_price %7% i.vat %8%"
-                    " i.total %9% i.totalvat %10%")
-                    % std::string(res3[i][0])
-                    % std::string(res3[i][1])
-                    % (int(res3[i][6]) == 0 ? IT_DEPOSIT : IT_ACCOUNT)
-                    % std::string(res3[i][7])
-                    % std::string(res3[i][8])
-                    % std::string(res3[i][9])
-                    % std::string(res3[i][10])
-                    % std::string(res3[i][11])
-                    % std::string(res3[i][12])
-                    % std::string(res3[i][13])
-                );
-
-                Database::ID id = res3[i][0];
-                Database::ID zone = res3[i][1];
-                std::string fqdn = res3[i][26];
-                Database::DateTime create_time = (boost::posix_time::ptime(res3[i][2].isnull() ? boost::posix_time::ptime(not_a_date_time) : time_from_string(res3[i][2])));
-                Database::Date tax_date = (boost::gregorian::date(res3[i][3].isnull() ? boost::gregorian::date(not_a_date_time) : from_string(res3[i][3])));
-                Database::Date from_date = (boost::gregorian::date(res3[i][4].isnull() ? boost::gregorian::date(neg_infin) : from_string(res3[i][4])));
-                Database::Date to_date = (boost::gregorian::date(res3[i][5].isnull() ? boost::gregorian::date(pos_infin) : from_string(res3[i][5])));
-                InvoiceType type = (int(res3[i][6]) == 0 ? IT_DEPOSIT : IT_ACCOUNT);
-                unsigned long long number = res3[i][7];
-                Database::ID registrar_id = res3[i][8];
-                Money credit = std::string(res3[i][9]);
-                Money price = std::string(res3[i][10]);
-                std::string vat_rate = res3[i][11];
-                Money total = std::string(res3[i][12]);
-                Money total_vat = std::string(res3[i][13]);
-                //Database::ID filePDF = res3[i][14]; // file_uuid TODO trigger
-                //Database::ID fileXML = res3[i][15]; // file_xml_uuid
-                std::string c_organization = res3[i][16];
-                std::string c_street1 = res3[i][17];
-                std::string c_city = res3[i][18];
-                std::string c_postal_code = res3[i][19];
-                std::string c_ico = res3[i][20];
-                std::string c_dic = res3[i][21];
-                std::string c_var_symb = res3[i][22];
-                std::string c_handle = res3[i][23];
-                bool c_vat = res3[i][24];
-                unsigned long long c_id = res3[i][25];
-                std::string c_country = res3[i][27];
-
-                boost::gregorian::date_period account_period(from_date, to_date);
-                Subject client{
-                        c_id,
-                        c_handle,
-                        c_organization,
-                        "",
-                        c_street1,
-                        c_city,
-                        c_postal_code,
-                        c_country,
-                        c_ico,
-                        c_dic,
-                        "",
-                        "",
-                        "",
-                        "",
-                        "",
-                        "",
-                        c_vat};
-
-                //////Database::SelectQuery source_query;
-                //////// clang-format off
-                //////  source_query.select() << "tmp.id, "
-                //////                           "icm.credit, "
-                //////                           "sri.vat, "
-                //////                           "sri.prefix, "
-                //////                           "icm.balance, "
-                //////                           "sri.id, "
-                //////                           "sri.total, "
-                //////                           "sri.totalvat, "
-                //////                           "sri.crdate";
-                //////    source_query.from() << "tmp_invoice_filter_result tmp "
-                //////                      "JOIN invoice_credit_payment_map icm "
-                //////                        "ON tmp.id = icm.ac_invoice_id "
-                //////                      "JOIN invoice sri "
-                //////                        "ON icm.ad_invoice_id = sri.id ";
-                //////source_query.order_by() << "tmp.id";
-                //////// clang-format on
-
-                //////Database::Result result_sources = conn.exec(source_query);
-                //////LOGGER.debug("invoice_export: found " + result_sources.size() + " sources");
-                //////for (Database::Result::Iterator it = result_sources.begin(); it != result_sources.end(); ++it)
-                //////{
-                //////    Database::Row::Iterator col = (*it).begin();
-                //////    Database::ID invoice_id = *col;
-
-                //////    const auto invoice = find_if(invoices.begin(), invoices.end(), [&invoice_id](const Invoice& i) { return i.id == invoice_id; });
-                //////    if (invoice != invoices.end())
-                //////    {
-                //////        invoice_add_source(*invoice, ++col);
-                //////    }
-                //////}
-
-                invoices.push_back(
-                        Invoice{id,
-                                zone,
-                                fqdn,
-                                create_time,
-                                tax_date,
-                                account_period,
-                                type,
-                                number,
-                                registrar_id,
-                                credit,
-                                price,
-                                Decimal(vat_rate),
-                                total,
-                                total_vat,
-                                boost::none,
-                                boost::none,
-                                c_var_symb,
-                                client,
-                                {}, {}, {}});
-
-            }//for res3
-
-            /* append list of actions to all selected invoices
-             * it handle situation when action come from source advance invoices
-             * with different vat rates by grouping
-             * this is ignored on partial load
-             */
-            {
-                Database::SelectQuery action_query;
-                action_query.select() << "tmp.id, SUM(icm.price), i.vat, o.name, "
-                                      << "io.crdate::TIMESTAMPtz AT TIME ZONE 'Europe/Prague', "
-                                      << "io.date_from, io.date_to, io.operation_id, io.quantity, "
-                                      << "CASE "
-                                      << "  WHEN io.quantity = 0 THEN 0 "
-                                      << "  ELSE SUM(icm.price) / io.quantity END, "
-                                      << "o.id";
-                action_query.from() << "tmp_invoice_filter_result tmp "
-                                    << "JOIN invoice_operation io ON (tmp.id = io.ac_invoice_id) "
-                                    << "JOIN invoice_operation_charge_map icm ON (io.id = icm.invoice_operation_id) "
-                                    << "JOIN invoice i ON (icm.invoice_id = i.id) "
-                                    << "LEFT JOIN object_registry o ON (io.object_id = o.id) ";
-                action_query.group_by() << "tmp.id, o.name, io.crdate, io.date_from, io.date_to, "
-                                        << "io.operation_id, io.quantity, o.id, i.vat";
-                action_query.order_by() << "tmp.id";
-
-                Database::Result result_actions = conn.exec(action_query);
-LOGGER.debug(std::string{"invoice_export: found "} + std::to_string(result_actions.size()) + " actions");
-                for (Database::Result::Iterator it = result_actions.begin(); it != result_actions.end(); ++it)
-                {
-                    Database::Row::Iterator col = (*it).begin();
-                    Database::ID invoice_id = *col;
-
-                    const auto invoice = find_if(invoices.begin(), invoices.end(), [&invoice_id](const Invoice& i){ return i.id == invoice_id; });
-                    if (invoice != invoices.end())
-                    {
-                        invoice_add_action(*invoice, ++col);
-                    }
-                }
-            }
-
-            //append list of sources to all selected invoices
-            {
-                Database::SelectQuery source_query;
-                source_query.select() << "tmp.id, icm.credit, sri.vat, sri.prefix, "
-                                      << "icm.balance, sri.id, sri.total, "
-                                      << "sri.totalvat, sri.crdate";
-                source_query.from() << "tmp_invoice_filter_result tmp "
-                                    << "JOIN invoice_credit_payment_map icm ON (tmp.id = icm.ac_invoice_id) "
-                                    << "JOIN invoice sri ON (icm.ad_invoice_id = sri.id) ";
-                source_query.order_by() << "tmp.id";
-
-                Database::Result result_sources = conn.exec(source_query);
-LOGGER.debug(std::string{"invoice_export: found "} + std::to_string(result_sources.size()) + " sources");
-                for (Database::Result::Iterator it = result_sources.begin(); it != result_sources.end(); ++it)
-                {
-                    Database::Row::Iterator col = (*it).begin();
-                    Database::ID invoice_id = *col;
-
-                    const auto invoice = find_if(invoices.begin(), invoices.end(), [&invoice_id](const Invoice& i) { return i.id == invoice_id; });
-                    if (invoice != invoices.end())
-                    {
-                        invoice_add_source(*invoice, ++col);
-                    }
-                }
-            }
-            // delete temporary table
-            conn.exec("DROP TABLE tmp_invoice_filter_result ");
-        }
-        catch (Database::Exception& ex)
-        {
-            std::string message = ex.what();
-            if (message.find(Database::Connection::getTimeoutString()) != std::string::npos)
-            {
-                LOGGER.error("timeout");
-            }
-            else
-            {
-                LOGGER.error(boost::format("%1%") % ex.what());
-            }
-            throw;
-        }
-        catch (std::exception& ex)
-        {
-            LOGGER.error(boost::format("%1%") % ex.what());
-            throw;
-        }
-
+        std::vector<Invoice> invoices = get_invoices(false, true, _invoice_id);
+        add_actions(invoices);
+        add_sources(invoices);
 
         for (const auto& invoice : invoices)
         {
-            export_and_archive_invoice(_secretary_args, _fileman_args, invoice);
+            export_and_archive_invoice(_secretary_args, _fileman_args, invoice, _debug_context);
         }
 
-LOGGER.debug("DEBUGX dontsend:"+_invoice_dont_send?"dont":"DO");
+        if (_debug_context)
+        {
+            return;
+        }
+
         if (!_invoice_dont_send)
         {
             send_invoices(_messenger_args);
         }
+        else
+        {
+            LOGGER.debug("invoice_export: invoice_dont_send");
+        }
+    }
+    catch (Database::Exception& ex)
+    {
+        std::string message = ex.what();
+        if (message.find(Database::Connection::getTimeoutString()) != std::string::npos)
+        {
+            LOGGER.error("timeout");
+        }
+        else
+        {
+            LOGGER.error(boost::format("%1%") % ex.what());
+        }
+        throw;
     }
     catch (const std::exception& ex)
     {
-        LOGGER.error(std::string("Exception in archiveInvoices: ") + ex.what());
+        LOGGER.error(boost::format("%1%") % ex.what());
         throw;
     }
     catch (...)
     {
-        LOGGER.error("Exception in archiveInvoices.");
+        LOGGER.error("Exception in invoice_export.");
+        throw;
+    }
+}
+
+void invoice_export_list(
+        const FilemanArgs& _fileman_args,
+        int limit,
+        unsigned long long _invoice_id)
+{
+    LOGGER.debug("invoice_export_list");
+    try
+    {
+        std::vector<Invoice> invoices = get_invoices(true, false, _invoice_id);
+        std::cout << "<?xml version='1.0' encoding='utf-8'?>" << std::endl;
+        if (invoices.size() > 1)
+        {
+            std::cout << "<list>" << std::endl;
+        }
+        LibFiled::Connection<LibFiled::Service::File> fileman_connection{
+                LibFiled::Connection<LibFiled::Service::File>::ConnectionString{
+                        _fileman_args.endpoint}};
+        for (const auto& invoice : invoices)
+        {
+            LibFiled::File::read(
+                    fileman_connection,
+                    LibFiled::File::FileUuid{*invoice.file_xml_uuid},
+                    std::cout);
+        }
+        if (invoices.size() > 1)
+        {
+            std::cout << "</list>" << std::endl;
+        }
+    }
+    catch (Database::Exception& ex)
+    {
+        std::string message = ex.what();
+        if (message.find(Database::Connection::getTimeoutString()) != std::string::npos)
+        {
+            LOGGER.error("timeout");
+        }
+        else
+        {
+            LOGGER.error(boost::format("%1%") % ex.what());
+        }
+        throw;
+    }
+    catch (const std::exception& ex)
+    {
+        LOGGER.error(std::string("Exception in invoice_export_list: ") + ex.what());
+        throw;
+    }
+    catch (...)
+    {
+        LOGGER.error("Exception in invoice_export_list.");
         throw;
     }
 }
 
 } // namespace Admin
+

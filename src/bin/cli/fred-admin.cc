@@ -41,6 +41,7 @@
 #include "src/bin/cli/domain_name_validation_init.hh"
 #include "src/bin/cli/public_request_impl.hh"
 #include "src/bin/cli/invoice_export_impl.hh"
+#include "src/bin/cli/invoice_export_list_impl.hh"
 
 #include "src/util/cfg/handle_general_args.hh"
 #include "src/util/cfg/handle_logging_args.hh"
@@ -149,7 +150,8 @@ CommandHandlerPtrVector chpv = boost::assign::list_of
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientProcessPublicRequestsArgsGrp), process_public_requests_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleChargeRegistryAccessFeeAnnualArgsGrp), charge_registry_access_fee_annual_impl))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleChargeRegistryAccessFeeMonthlyArgsGrp), charge_registry_access_fee_monthly_impl))
-    (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientInvoiceExportArgsGrp), invoice_export_impl));
+    (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientInvoiceExportArgsGrp), invoice_export_impl))
+    (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientInvoiceExportListArgsGrp), invoice_export_list_impl));
 
 CommandOptionGroups cog(chpv);
 

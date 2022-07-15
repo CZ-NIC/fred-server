@@ -30,7 +30,14 @@ void invoice_export(
             const MessengerArgs& _messenger_args,
             const FilemanArgs& _fileman_args,
             const SecretaryArgs& _secretary_args,
-            bool _invoice_dont_send);
+            bool _invoice_dont_send,
+            unsigned long long _invoice_id,
+            bool _debug_context);
+
+void invoice_export_list(
+            const FilemanArgs& _fileman_args,
+            int limit,
+            unsigned long long _invoice_id);
 
 } // namespace Admin
 

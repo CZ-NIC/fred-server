@@ -662,6 +662,8 @@ class HandleAdminClientInvoiceExportArgsGrp : public HandleCommandGrpArgs
 public:
 
     bool invoice_dont_send;
+    unsigned long long invoice_id;
+    bool debug_context;
 
     CommandDescription get_command_option()
     {
@@ -679,6 +681,12 @@ public:
             ("invoice_dont_send",boost::program_options
                 ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(invoice_dont_send))
                  , "don't send mails with invoices during export")
+            ("invoice_id",boost::program_options
+                ::value<unsigned long long>()->notifier(save_arg<unsigned long long>(invoice_id))
+                 , "only process invoice of given id")
+            ("debug_context",boost::program_options
+                ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(debug_context))
+                 , "don't send mails with invoices during export")
                 ;
         return cfg_opts;
     }//get_options_description
@@ -690,6 +698,48 @@ public:
         return option_group_index;
     }//handle
 };//class HandleAdminClientInvoiceExportArgsGrp
+
+
+/**
+ * \class HandleAdminClientInvoiceExportListArgsGrp
+ * \brief admin client invoice_export_list options handler
+ */
+class HandleAdminClientInvoiceExportListArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    int limit;
+    unsigned long long invoice_id;
+
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("invoice_export_list");
+    }
+
+    std::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("invoice_export_list options")));
+        cfg_opts->add_options()
+            ("invoice_export_list", "export list of invoices")
+            ("limit", boost::program_options
+                ::value<int>()->notifier(save_arg<int>(limit))
+                , "limit")
+            ("invoice_id",boost::program_options
+                ::value<unsigned long long>()->notifier(save_arg<unsigned long long>(invoice_id))
+                 , "only process invoice of given id")
+                ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientInvoiceExportListArgsGrp
 
 
 /**
