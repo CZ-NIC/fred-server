@@ -1,7 +1,7 @@
 # <repository> <commitish> <clone-path>
 fred/libfred 5.2.0 external/lib/libfred
 fred/libhermes 5.0.0 external/lib/libhermes
-fred/libtypist 2-reveal-final-context-as-json external/lib/libtypist
+fred/libtypist 3-ssl external/lib/libtypist
 fred/libfiled release/1.1 external/lib/libfiled
 fred/idl 2.38.0 external/idl
 fred/db 2.47.0 external/db
