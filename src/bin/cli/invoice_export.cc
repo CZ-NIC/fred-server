@@ -1139,24 +1139,6 @@ std::vector<Invoice> get_invoices(
     //    where << "AND " << "i.taxdate" << " < $"
     //        << sql_params.size() << "::TIMESTAMP ";
     //}
-    if (!_invoice_id)
-    {
-        if (_taxdate_from != boost::none)
-        {
-            where << "AND " << "i.taxdate" << " >= '" << to_iso_extended_string(*_taxdate_from) <<  "'::TIMESTAMP ";
-        }
-        else {
-            where << "AND " << "i.taxdate" << " >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '1' month) ";
-        }
-        if (_taxdate_to != boost::none)
-        {
-            where << "AND " << "i.taxdate" << " < '" << to_iso_extended_string(*_taxdate_to) << "'::TIMESTAMP ";
-        }
-        else
-        {
-            where << "AND " << "i.taxdate" << " <  DATE_TRUNC('month', CURRENT_DATE) ";
-        }
-    }
     if (_export_state_policy == ExportedStatePolicy::unexported)
     {
         where << "AND i.file_uuid IS NULL "; // file_xml_uuid can be null for legacy invoices
@@ -1164,6 +1146,24 @@ std::vector<Invoice> get_invoices(
     else if (_export_state_policy == ExportedStatePolicy::exported)
     {
         where << "AND i.file_uuid IS NOT NULL ";
+        if (!_invoice_id)
+        {
+            if (_taxdate_from != boost::none)
+            {
+                where << "AND " << "i.taxdate" << " >= '" << to_iso_extended_string(*_taxdate_from) <<  "'::TIMESTAMP ";
+            }
+            else {
+                where << "AND " << "i.taxdate" << " >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '1' month) ";
+            }
+            if (_taxdate_to != boost::none)
+            {
+                where << "AND " << "i.taxdate" << " < '" << to_iso_extended_string(*_taxdate_to) << "'::TIMESTAMP ";
+            }
+            else
+            {
+                where << "AND " << "i.taxdate" << " <  DATE_TRUNC('month', CURRENT_DATE) ";
+            }
+        }
     }
     //switch (archiveFilter)
     //{
@@ -1442,7 +1442,7 @@ void invoice_export(
     {
         const auto taxdate_from = boost::none;
         const auto taxdate_to = boost::none;
-        std::vector<Invoice> invoices = get_invoices(_invoice_id, taxdate_from, taxdate_to, _limit, ExportedStatePolicy::unexported);
+        std::vector<Invoice> invoices = get_invoices(_invoice_id, taxdate_from, taxdate_to, _limit, _debug_context ? ExportedStatePolicy::ignore : ExportedStatePolicy::unexported);
         add_actions(invoices);
         add_sources(invoices);
 
