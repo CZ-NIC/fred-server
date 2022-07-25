@@ -23,13 +23,12 @@
 #include "src/bin/cli/handle_adminclientselection_args.hh"
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/handle_corbanameservice_args.hh"
-#include "src/util/cfg/handle_database_args.hh"
 #include "src/util/cfg/handle_fileman_args.hh"
-#include "src/util/cfg/handle_messenger_args.hh"
-#include "src/util/cfg/handle_secretary_args.hh"
 #include "src/util/corba_wrapper_decl.hh"
 #include "src/bin/cli/invoice_export.hh"
 #include "util/log/context.hh"
+
+#include <boost/date_time/gregorian/gregorian.hpp>
 
 void invoice_export_list_impl()
 {
@@ -49,10 +48,19 @@ void invoice_export_list_impl()
                                  ns_args_ptr->get_nameservice_port(),
                                  ns_args_ptr->get_nameservice_context());
 
+    const auto taxdate_from = CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientInvoiceExportListArgsGrp>()->taxdate_from.is_value_set()
+        ? boost::optional<boost::gregorian::date>{boost::gregorian::from_string(CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientInvoiceExportListArgsGrp>()->taxdate_from)}
+        : boost::none;
+    const auto taxdate_to = CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientInvoiceExportListArgsGrp>()->taxdate_to.is_value_set()
+        ? boost::optional<boost::gregorian::date>{boost::gregorian::from_string(CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientInvoiceExportListArgsGrp>()->taxdate_to)}
+        : boost::none;
+
     Admin::invoice_export_list(
             CfgArgGroups::instance()->get_handler_ptr_by_type<HandleFilemanArgsGrp>()->get_args(),
-            CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientInvoiceExportListArgsGrp>()->limit,
-            CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientInvoiceExportListArgsGrp>()->invoice_id);
+            CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientInvoiceExportListArgsGrp>()->invoice_id,
+            taxdate_from,
+            taxdate_to,
+            CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientInvoiceExportListArgsGrp>()->limit);
 };
 
 #endif

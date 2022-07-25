@@ -55,6 +55,7 @@ void invoice_export_impl()
             CfgArgGroups::instance()->get_handler_ptr_by_type<HandleSecretaryArgsGrp>()->get_args(),
             CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientInvoiceExportArgsGrp>()->invoice_dont_send,
             CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientInvoiceExportArgsGrp>()->invoice_id,
+            CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientInvoiceExportArgsGrp>()->limit,
             CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientInvoiceExportArgsGrp>()->debug_context);
 };
 

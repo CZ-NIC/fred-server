@@ -660,9 +660,9 @@ public:
 class HandleAdminClientInvoiceExportArgsGrp : public HandleCommandGrpArgs
 {
 public:
-
     bool invoice_dont_send;
     unsigned long long invoice_id;
+    int limit;
     bool debug_context;
 
     CommandDescription get_command_option()
@@ -683,10 +683,13 @@ public:
                  , "don't send mails with invoices during export")
             ("invoice_id",boost::program_options
                 ::value<unsigned long long>()->notifier(save_arg<unsigned long long>(invoice_id))
-                 , "only process invoice of given id")
+                 , "only process invoice with given id")
+            ("limit", boost::program_options
+                ::value<int>()->default_value(1000)->notifier(save_arg<int>(limit))
+                , "limit")
             ("debug_context",boost::program_options
                 ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(debug_context))
-                 , "don't send mails with invoices during export")
+                 , "do not export or send invoice(s), just print context to stdout")
                 ;
         return cfg_opts;
     }//get_options_description
@@ -709,6 +712,8 @@ class HandleAdminClientInvoiceExportListArgsGrp : public HandleCommandGrpArgs
 public:
     int limit;
     unsigned long long invoice_id;
+    optional_string taxdate_from;
+    optional_string taxdate_to;
 
     CommandDescription get_command_option()
     {
@@ -723,8 +728,16 @@ public:
                         std::string("invoice_export_list options")));
         cfg_opts->add_options()
             ("invoice_export_list", "export list of invoices")
+            ("taxdate_from", boost::program_options
+                ::value<Checked::string>()->notifier(save_optional_string(taxdate_from))
+                , "default is the first day of the last month, "
+                  "meaning is start of interval including \"taxdate_from\" arg format YYYY-MM-DD")
+            ("taxdate_to", boost::program_options
+                ::value<Checked::string>()->notifier(save_optional_string(taxdate_to))
+                , "default is first day of this month, "
+                  "meaning is end of interval NOT including \"taxdate_to\" arg format YYYY-MM-DD")
             ("limit", boost::program_options
-                ::value<int>()->notifier(save_arg<int>(limit))
+                ::value<int>()->default_value(1000)->notifier(save_arg<int>(limit))
                 , "limit")
             ("invoice_id",boost::program_options
                 ::value<unsigned long long>()->notifier(save_arg<unsigned long long>(invoice_id))

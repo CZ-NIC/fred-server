@@ -24,6 +24,9 @@
 #include "src/bin/cli/messenger_params.hh"
 #include "src/bin/cli/secretary_params.hh"
 
+#include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/optional.hpp>
+
 namespace Admin {
 
 void invoice_export(
@@ -32,12 +35,15 @@ void invoice_export(
             const SecretaryArgs& _secretary_args,
             bool _invoice_dont_send,
             unsigned long long _invoice_id,
+            int _limit,
             bool _debug_context);
 
 void invoice_export_list(
             const FilemanArgs& _fileman_args,
-            int limit,
-            unsigned long long _invoice_id);
+            unsigned long long _invoice_id,
+            boost::optional<boost::gregorian::date> _taxdate_from,
+            boost::optional<boost::gregorian::date> _taxdate_to,
+            int limit);
 
 } // namespace Admin
 

@@ -32,6 +32,7 @@
 #include "util/log/context.hh"
 #include "util/decimal/decimal.hh"
 
+#include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/optional.hpp>
 
 namespace Admin {
@@ -129,13 +130,10 @@ struct Invoice
     Decimal vat_rate;
     Money total;
     Money total_vat;
-    //unsigned long long filePDF;
-    //unsigned long long fileXML;
     boost::optional<boost::uuids::uuid> file_pdf_uuid;
     boost::optional<boost::uuids::uuid> file_xml_uuid;
     std::string var_symbol;
     Subject client;
-    //static Subject supplier;
     std::vector<PaymentSource> sources;
     std::vector<PaymentAction> actions;
     std::vector<Payment> paid; ///< list of paid vat rates
@@ -1022,7 +1020,19 @@ void send_invoices(const MessengerArgs& _messenger_args)
     }
 }
 
-std::vector<Invoice> get_invoices(bool _taxdate_is_last_month, bool _unexported, unsigned long long _invoice_id)
+enum struct ExportedStatePolicy
+{
+    ignore,
+    unexported,
+    exported
+};
+
+std::vector<Invoice> get_invoices(
+        unsigned long long _invoice_id,
+        boost::optional<boost::gregorian::date> _taxdate_from,
+        boost::optional<boost::gregorian::date> _taxdate_to,
+        int _limit,
+        ExportedStatePolicy _export_state_policy)
 {
     std::vector<Invoice> invoices;
     //const unsigned long long idFilter = 0;
@@ -1129,18 +1139,31 @@ std::vector<Invoice> get_invoices(bool _taxdate_is_last_month, bool _unexported,
     //    where << "AND " << "i.taxdate" << " < $"
     //        << sql_params.size() << "::TIMESTAMP ";
     //}
-    if (_taxdate_is_last_month)
+    if (!_invoice_id)
     {
-        where << "AND " << "i.taxdate" << " >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '1' month) "
-                 "AND " << "i.taxdate" << " <  DATE_TRUNC('month', CURRENT_DATE) ";
+        if (_taxdate_from != boost::none)
+        {
+            where << "AND " << "i.taxdate" << " >= '" << to_iso_extended_string(*_taxdate_from) <<  "'::TIMESTAMP ";
+        }
+        else {
+            where << "AND " << "i.taxdate" << " >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '1' month) ";
+        }
+        if (_taxdate_to != boost::none)
+        {
+            where << "AND " << "i.taxdate" << " < '" << to_iso_extended_string(*_taxdate_to) << "'::TIMESTAMP ";
+        }
+        else
+        {
+            where << "AND " << "i.taxdate" << " <  DATE_TRUNC('month', CURRENT_DATE) ";
+        }
     }
-    if (_unexported)
+    if (_export_state_policy == ExportedStatePolicy::unexported)
     {
-        where << "AND i.file IS NULL ";
+        where << "AND i.file_uuid IS NULL "; // file_xml_uuid can be null for legacy invoices
     }
-    else
+    else if (_export_state_policy == ExportedStatePolicy::exported)
     {
-        where << "AND i.file IS NOT NULL ";
+        where << "AND i.file_uuid IS NOT NULL ";
     }
     //switch (archiveFilter)
     //{
@@ -1200,8 +1223,8 @@ std::vector<Invoice> get_invoices(bool _taxdate_is_last_month, bool _unexported,
                    "i.vat, "
                    "i.total, "
                    "i.totalvat, "
-                   "i.file, "    // i.file_uuid FIXME
-                   "i.fileXML, " // i.file_xml_uuid
+                   "i.file_uuid, "
+                   "i.file_xml_uuid, "
                    "r.organization, "
                    "r.street1, "
                    "r.city, "
@@ -1253,7 +1276,7 @@ std::vector<Invoice> get_invoices(bool _taxdate_is_last_month, bool _unexported,
         Database::Date tax_date = (boost::gregorian::date(row[3].isnull() ? boost::gregorian::date(not_a_date_time) : from_string(row[3])));
         Database::Date from_date = (boost::gregorian::date(row[4].isnull() ? boost::gregorian::date(neg_infin) : from_string(row[4])));
         Database::Date to_date = (boost::gregorian::date(row[5].isnull() ? boost::gregorian::date(pos_infin) : from_string(row[5])));
-        InvoiceType type = (int(row[6]) == 0 ? InvoiceType::it_deposit : InvoiceType::it_account);
+        InvoiceType type = (static_cast<int>(row[6]) == 0 ? InvoiceType::it_deposit : InvoiceType::it_account);
         unsigned long long number = row[7];
         Database::ID registrar_id = row[8];
         Money credit = std::string(row[9]);
@@ -1261,8 +1284,8 @@ std::vector<Invoice> get_invoices(bool _taxdate_is_last_month, bool _unexported,
         std::string vat_rate = row[11];
         Money total = std::string(row[12]);
         Money total_vat = std::string(row[13]);
-        //Database::ID filePDF = row[14]; // file_uuid TODO trigger
-        //Database::ID fileXML = row[15]; // file_xml_uuid
+        boost::optional<boost::uuids::uuid> file_pdf_uuid = row[14].isnull() ? boost::none : boost::optional<boost::uuids::uuid>{boost::uuids::string_generator()(static_cast<std::string>(row[14]))};
+        boost::optional<boost::uuids::uuid> file_xml_uuid = row[15].isnull() ? boost::none : boost::optional<boost::uuids::uuid>{boost::uuids::string_generator()(static_cast<std::string>(row[15]))};
         std::string client_organization = row[16];
         std::string client_street1 = row[17];
         std::string client_city = row[18];
@@ -1276,7 +1299,6 @@ std::vector<Invoice> get_invoices(bool _taxdate_is_last_month, bool _unexported,
         std::string client_country = row[27];
 
         boost::gregorian::date_period account_period(from_date, to_date);
-LOGGER.debug(std::string{"DEBUG client "} + std::to_string(client_id) + " " + client_handle + " " + client_organization + " " + client_street1 + " " + client_city + " " + client_postal_code + " " + client_country + " " + client_ico + " " + client_dic + " " + (client_vat ? "VAT" : "NOVAT"));
         Subject client{
                 client_id,
                 client_handle,
@@ -1311,8 +1333,8 @@ LOGGER.debug(std::string{"DEBUG client "} + std::to_string(client_id) + " " + cl
                         Decimal(vat_rate),
                         total,
                         total_vat,
-                        boost::none,
-                        boost::none,
+                        file_pdf_uuid,
+                        file_xml_uuid,
                         client_var_symb,
                         client,
                         {}, {}, {}});
@@ -1412,12 +1434,15 @@ void invoice_export(
         const SecretaryArgs& _secretary_args,
         bool _invoice_dont_send,
         unsigned long long _invoice_id,
+        int _limit,
         bool _debug_context)
 {
     Logging::Context ctx("invoice export");
     try
     {
-        std::vector<Invoice> invoices = get_invoices(false, true, _invoice_id);
+        const auto taxdate_from = boost::none;
+        const auto taxdate_to = boost::none;
+        std::vector<Invoice> invoices = get_invoices(_invoice_id, taxdate_from, taxdate_to, _limit, ExportedStatePolicy::unexported);
         add_actions(invoices);
         add_sources(invoices);
 
@@ -1467,13 +1492,15 @@ void invoice_export(
 
 void invoice_export_list(
         const FilemanArgs& _fileman_args,
-        int limit,
-        unsigned long long _invoice_id)
+        unsigned long long _invoice_id,
+        boost::optional<boost::gregorian::date> _taxdate_from,
+        boost::optional<boost::gregorian::date> _taxdate_to,
+        int _limit)
 {
     LOGGER.debug("invoice_export_list");
     try
     {
-        std::vector<Invoice> invoices = get_invoices(true, false, _invoice_id);
+        std::vector<Invoice> invoices = get_invoices(_invoice_id, _taxdate_from, _taxdate_to, _limit, ExportedStatePolicy::exported);
         std::cout << "<?xml version='1.0' encoding='utf-8'?>" << std::endl;
         if (invoices.size() > 1)
         {
@@ -1484,6 +1511,8 @@ void invoice_export_list(
                         _fileman_args.endpoint}};
         for (const auto& invoice : invoices)
         {
+            LOGGER.debug(boost::str(boost::format("invoice_export_list: invoice id %1%") % invoice.id));
+            LOGGER.debug(boost::str(boost::format("invoice_export_list: invoice_xml_uuid %1%") % *invoice.file_xml_uuid));
             LibFiled::File::read(
                     fileman_connection,
                     LibFiled::File::FileUuid{*invoice.file_xml_uuid},
