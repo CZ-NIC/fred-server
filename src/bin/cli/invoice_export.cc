@@ -407,8 +407,9 @@ LibTypist::Struct make_invoice_context(const Invoice& _invoice)
             }
         }
 
-        invoice_context[LibTypist::StructKey{"total"}] = LibTypist::StructValue{format_money(account_invoice_record.self.price_with_vat)};
         invoice_context[LibTypist::StructKey{"price_base"}] = LibTypist::StructValue{format_money(account_invoice_record.operations_price)};
+        invoice_context[LibTypist::StructKey{"paid_base"}] = LibTypist::StructValue{format_money(account_invoice_record.self.price_without_vat - account_invoice_record.operations_price)};
+        invoice_context[LibTypist::StructKey{"total"}] = LibTypist::StructValue{format_money(account_invoice_record.self.price_with_vat)};
 //<< TAGSTART(sumarize)
 //<< TAG(total, OUTMONEY(account_invoice_record.operations_price))
 //<< TAG(paid, OUTMONEY(account_invoice_record.self.price_without_vat - account_invoice_record.operations_price))
@@ -447,9 +448,13 @@ LibTypist::Struct make_invoice_context(const Invoice& _invoice)
 
         LibTypist::Struct vat_rates_entry_context{
                 {LibTypist::StructKey{"vat_rate"}, LibTypist::StructValue{boost::lexical_cast<std::string>(vat_rate)}},
-                {LibTypist::StructKey{"base"}, LibTypist::StructValue{format_money(advance_invoice_record.self.price_without_vat)}},
-                {LibTypist::StructKey{"vat"}, LibTypist::StructValue{format_money(advance_invoice_record.self.vat)}},
-                {LibTypist::StructKey{"total"}, LibTypist::StructValue{format_money(advance_invoice_record.self.price_with_vat)}}};
+                {LibTypist::StructKey{"total_base"}, LibTypist::StructValue{format_money(advance_invoice_record.self.price_without_vat)}},
+                {LibTypist::StructKey{"total_vat"}, LibTypist::StructValue{format_money(advance_invoice_record.self.vat)}},
+                {LibTypist::StructKey{"total"}, LibTypist::StructValue{format_money(advance_invoice_record.self.price_with_vat)}},
+                {LibTypist::StructKey{"price"}, LibTypist::StructValue{format_money(advance_invoice_record.self.price_with_vat)}},
+                {LibTypist::StructKey{"price_vat"}, LibTypist::StructValue{format_money(advance_invoice_record.self.vat)}},
+                {LibTypist::StructKey{"paid"}, LibTypist::StructValue{format_money(advance_invoice_record.self.price_with_vat)}},
+                {LibTypist::StructKey{"paid_vat"}, LibTypist::StructValue{format_money(advance_invoice_record.self.vat)}}};
 
         context[LibTypist::StructKey{"vat_rates"}] =
                 LibTypist::StructValue{std::vector<LibTypist::StructValue>{{LibTypist::StructValue{vat_rates_entry_context}}}};
@@ -576,61 +581,73 @@ void export_and_archive_invoice(
         return;
     }
 
-    std::stringstream file_pdf_rawdata;
-    LOGGER.debug(boost::str(boost::format("export_and_archive_invoice: render pdf using template %1%") % *template_name_html));
-    LibTypist::render(
-            secretary_connection,
-            template_name_html,
-            LibTypist::ContentType{"application/pdf"},
-            invoice_context,
-            file_pdf_rawdata);
-//std::ofstream output_pdf(std::to_string(_invoice.number) + ".pdf", std::ofstream::out);
-//output_pdf << file_pdf_rawdata.str();
-//output_pdf.close();
+    try
+    {
+        std::stringstream file_pdf_rawdata;
+        LOGGER.debug(boost::str(boost::format("export_and_archive_invoice: render pdf using template %1%") % *template_name_html));
+        LibTypist::render(
+                secretary_connection,
+                template_name_html,
+                LibTypist::ContentType{"application/pdf"},
+                invoice_context,
+                file_pdf_rawdata);
+    //std::ofstream output_pdf(std::to_string(_invoice.number) + ".pdf", std::ofstream::out);
+    //output_pdf << file_pdf_rawdata.str();
+    //output_pdf.close();
 
-    const auto template_name_xml =
-            LibTypist::TemplateName{_invoice.type == InvoiceType::it_deposit ? "advance-invoice.xml" : "invoice.xml"};
+        const auto template_name_xml =
+                LibTypist::TemplateName{_invoice.type == InvoiceType::it_deposit ? "advance-invoice.xml" : "invoice.xml"};
 
-    std::stringstream file_xml_rawdata;
-    LOGGER.debug(boost::str(boost::format("export_and_archive_invoice: render xml using template %1%") % *template_name_xml));
-    LibTypist::render(
-            secretary_connection,
-            template_name_xml,
-            LibTypist::ContentType{"text/html"},
-            invoice_context,
-            file_xml_rawdata);
-//std::ofstream output_xml(std::to_string(_invoice.number) + ".xml", std::ofstream::out);
-//output_xml << file_xml_rawdata.str();
-//output_xml.close();
+        std::stringstream file_xml_rawdata;
+        LOGGER.debug(boost::str(boost::format("export_and_archive_invoice: render xml using template %1%") % *template_name_xml));
+        LibTypist::render(
+                secretary_connection,
+                template_name_xml,
+                LibTypist::ContentType{"text/html"},
+                invoice_context,
+                file_xml_rawdata);
+    //std::ofstream output_xml(std::to_string(_invoice.number) + ".xml", std::ofstream::out);
+    //output_xml << file_xml_rawdata.str();
+    //output_xml.close();
 
 
-    LOGGER.debug(boost::str(boost::format("export_and_archive_invoice: connecting to fileman at %1%") % _fileman_args.endpoint));
-    LibFiled::Connection<LibFiled::Service::File> fileman_connection{
-            LibFiled::Connection<LibFiled::Service::File>::ConnectionString{
-                    _fileman_args.endpoint}};
+        LOGGER.debug(boost::str(boost::format("export_and_archive_invoice: connecting to fileman at %1%") % _fileman_args.endpoint));
+        LibFiled::Connection<LibFiled::Service::File> fileman_connection{
+                LibFiled::Connection<LibFiled::Service::File>::ConnectionString{
+                        _fileman_args.endpoint}};
 
-    LOGGER.debug("export_and_archive_invoice: archiving pdf file to fileman");
-    const auto file_pdf_uuid =
-            LibFiled::File::create(
-                    fileman_connection,
-                    LibFiled::File::FileName{std::to_string(_invoice.number) + ".pdf"},
-                    file_pdf_rawdata,
-                    LibFiled::File::FileMimeType{"application/pdf"});
+        LOGGER.debug("export_and_archive_invoice: archiving pdf file to fileman");
+        const auto file_pdf_uuid =
+                LibFiled::File::create(
+                        fileman_connection,
+                        LibFiled::File::FileName{std::to_string(_invoice.number) + ".pdf"},
+                        file_pdf_rawdata,
+                        LibFiled::File::FileMimeType{"application/pdf"});
 
-    LOGGER.debug(boost::str(boost::format("export_and_archive_invoice: pdf file uuid: %1%") % boost::uuids::to_string(*file_pdf_uuid)));
+        LOGGER.debug(boost::str(boost::format("export_and_archive_invoice: pdf file uuid: %1%") % boost::uuids::to_string(*file_pdf_uuid)));
 
-    LOGGER.debug("export_and_archive_invoice: archiving xml file to fileman");
-    const auto file_xml_uuid =
-            LibFiled::File::create(
-                    fileman_connection,
-                    LibFiled::File::FileName{std::to_string(_invoice.number) + ".xml"},
-                    file_xml_rawdata,
-                    LibFiled::File::FileMimeType{"application/xml"});
+        LOGGER.debug("export_and_archive_invoice: archiving xml file to fileman");
+        const auto file_xml_uuid =
+                LibFiled::File::create(
+                        fileman_connection,
+                        LibFiled::File::FileName{std::to_string(_invoice.number) + ".xml"},
+                        file_xml_rawdata,
+                        LibFiled::File::FileMimeType{"application/xml"});
 
-    LOGGER.debug(boost::str(boost::format("export_and_archive_invoice: xml file uuid: %1%") % boost::uuids::to_string(*file_xml_uuid)));
+        LOGGER.debug(boost::str(boost::format("export_and_archive_invoice: xml file uuid: %1%") % boost::uuids::to_string(*file_xml_uuid)));
 
-    LOGGER.debug("export_and_archive_invoice: update invoice table - add files");
-    invoice_save_file_uuid(_invoice.id, *file_pdf_uuid, *file_xml_uuid);
+        LOGGER.debug("export_and_archive_invoice: update invoice table - add files");
+        invoice_save_file_uuid(_invoice.id, *file_pdf_uuid, *file_xml_uuid);
+    }
+    catch (const LibTypist::HttpResponseResult& e)
+    {
+        if (e.status() == 502)
+        {
+            LOGGER.debug("export_and_archive_invoice: got network exception - Bad Gateway. Skipping this invoice for now.");
+            return;
+        }
+        throw;
+    }
 }
 
 enum struct ArchiveFilter
