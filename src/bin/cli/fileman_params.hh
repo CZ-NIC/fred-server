@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2022  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,22 +16,15 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
-#ifndef PUBLIC_REQUEST_PARAMS_HH_D11401DE20AD4684A355DD9612889EBA
-#define PUBLIC_REQUEST_PARAMS_HH_D11401DE20AD4684A355DD9612889EBA
 
-#include <vector>
+#ifndef FILEMAN_PARAMS_HH_9534241C31034AC9B22052FD98AA9DC1
+#define FILEMAN_PARAMS_HH_9534241C31034AC9B22052FD98AA9DC1
+
 #include <string>
 
-struct ProcessPublicRequestsArgs
+struct FilemanArgs
 {
-    std::vector<std::string> types;
-
-    ProcessPublicRequestsArgs() = default;
-
-    explicit ProcessPublicRequestsArgs(const std::vector<std::string>&  _public_requests_types)
-        : types(_public_requests_types)
-    {
-    }
+    std::string endpoint;
 };
 
 #endif

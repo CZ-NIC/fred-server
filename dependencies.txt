@@ -2,3 +2,5 @@
 fred/libfred 5.2.0 external/lib/libfred
 fred/idl master external/idl
 fred/db master external/db
+fred/libhermes master external/lib/libhermes
+fred/libfiled master external/lib/libfiled

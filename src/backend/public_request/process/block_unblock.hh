@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2020  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2018-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -19,8 +19,8 @@
 #ifndef BLOCK_UNBLOCK_HH_FC176C0453EF424088B10AC225C96498
 #define BLOCK_UNBLOCK_HH_FC176C0453EF424088B10AC225C96498
 
-#include "libfred/mailer.hh"
 #include "libfred/public_request/public_request_type_iface.hh"
+#include "src/bin/cli/messenger_params.hh"
 
 namespace Fred {
 namespace Backend {
@@ -30,7 +30,7 @@ namespace Process {
 void process_public_request_block_unblock_resolved(
         unsigned long long _public_request_id,
         const LibFred::PublicRequestTypeIface& _public_request_type,
-        std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager);
+        const MessengerArgs& _messenger_args);
 
 } // namespace Fred::Backend::PublicRequest::Process
 } // namespace Fred::Backend::PublicRequest

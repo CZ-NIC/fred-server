@@ -301,3 +301,19 @@ automatically_managed_keyset_zones = cz
 disable_notifier = false
 # Enable changes to registry object logging through request logger component
 enable_request_logger = true
+
+###
+### Messenger settings
+### * endpoint - URI of Fred.Messenger.Api.Email gRPC service
+### * archive - archive email message
+###
+[messenger]
+endpoint = localhost:50051
+archive = yes
+
+###
+### Fileman settings
+### * endpoint - URI of Fred.Fileman.Api.File gRPC service
+###
+[fileman]
+endpoint = localhost:50051

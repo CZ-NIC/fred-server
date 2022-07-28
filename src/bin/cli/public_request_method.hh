@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2018-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -26,6 +26,8 @@
 #include "libfred/mailer.hh"
 #include "src/deprecated/libfred/file_transferer.hh"
 #include "src/bin/cli/public_request_params.hh"
+#include "src/bin/cli/messenger_params.hh"
+#include "src/bin/cli/fileman_params.hh"
 
 #include <boost/program_options.hpp>
 #include <iostream>
@@ -37,20 +39,20 @@ class PublicRequestProcedure
 {
 public:
     PublicRequestProcedure(
-            const ProcessPublicRequestsArgs& _args,
-            std::shared_ptr<LibFred::Mailer::Manager> _mailer_manager,
-            std::shared_ptr<LibFred::File::Transferer> _file_manager_client)
-        : args_(_args),
-          mailer_manager_(std::move(_mailer_manager)),
-          file_manager_client_(std::move(_file_manager_client))
+            ProcessPublicRequestsArgs _args,
+            MessengerArgs _messenger_args,
+            FilemanArgs _fileman_args)
+        : args_(std::move(_args)),
+          messenger_args_(std::move(_messenger_args)),
+          fileman_args_(std::move(_fileman_args))
         {
         }
 
     void exec();
 private:
     ProcessPublicRequestsArgs args_;
-    std::shared_ptr<LibFred::Mailer::Manager> mailer_manager_;
-    std::shared_ptr<LibFred::File::Transferer> file_manager_client_;
+    MessengerArgs messenger_args_;
+    FilemanArgs fileman_args_;
 };
 
 } // namespace Admin;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2018-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -20,16 +20,19 @@
 #define GET_VALID_REGISTRY_EMAILS_OF_REGISTERED_OBJECT_HH_368F424059874406A9FA167E52DC3804
 
 #include "src/backend/public_request/object_type.hh"
+#include "src/backend/public_request/util/send_joined_address_email.hh"
+
 #include "libfred/opcontext.hh"
 
+#include <boost/uuid/uuid.hpp>
+
 #include <set>
-#include <string>
 
 namespace Fred {
 namespace Backend {
 namespace PublicRequest {
 
-std::set<std::string> get_valid_registry_emails_of_registered_object(
+std::set<Util::EmailData::Recipient> get_valid_registry_emails_of_registered_object(
         LibFred::OperationContext& _ctx,
         ObjectType _object_type,
         unsigned long long _object_id);

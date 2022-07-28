@@ -8,6 +8,11 @@ UNRELEASED
 
 * Remove obsolete ``getRequestCount*`` (moved to LoggerCorba)
 
+2022-05-19 (2.52.0)
+-------------------
+
+* Public requests - switch from mailer/pyfred and fileman to messenger and libfiled
+
 2022-04-29 (2.51.0)
 -------------------
 

@@ -15,6 +15,10 @@ RUN dnf -y install              \
         openssl-devel           \
         minizip-compat-devel    \
         omniORB-devel           \
+        grpc-devel              \
+        grpc-plugins            \
+        protobuf-devel          \
+        protobuf-compiler       \
     && dnf clean all            \
     && rm -rf /var/cache/yum
 
