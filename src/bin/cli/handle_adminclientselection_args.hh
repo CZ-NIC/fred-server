@@ -677,7 +677,7 @@ public:
                 new boost::program_options::options_description(
                         std::string("invoice_export options")));
         cfg_opts->add_options()
-            ("invoice_export", "export unexportd invoices")
+            ("invoice_export", "export unexported invoices")
             ("invoice_dont_send",boost::program_options
                 ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(invoice_dont_send))
                  , "don't send mails with invoices during export")
