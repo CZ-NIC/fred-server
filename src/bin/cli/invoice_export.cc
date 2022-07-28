@@ -40,8 +40,8 @@ namespace Admin {
 namespace {
 
 enum struct InvoiceType {
-  it_deposit = 0,
-  it_account = 1
+  deposit,
+  account
 };
 
 struct Subject
@@ -89,12 +89,12 @@ struct PaymentSource
 //this relies on PaymentActionType (operation_id - 1) in invoice_add_action
 enum PaymentActionType
 {
-    pat_create_domain,
-    pat_renew_domain,
-    pat_requests_over_limit,
-    pat_administrative_fee,
-    pat_fee,
-    pat_monthly_fee
+    create_domain = 1,
+    renew_domain = 2,
+    requests_over_limit = 3,
+    administrative_fee = 4,
+    fee = 5,
+    monthly_fee = 6
 };
 
 struct PaymentAction
@@ -146,29 +146,14 @@ std::string format_money(Money _value)
 
 std::string to_string(PaymentActionType _payment_action)
 {
-    if (_payment_action == PaymentActionType::pat_create_domain)
+    switch (_payment_action)
     {
-        return "RREG";
-    }
-    if (_payment_action == PaymentActionType::pat_renew_domain)
-    {
-        return "RUDR";
-    }
-    if (_payment_action == PaymentActionType::pat_requests_over_limit)
-    {
-        return "REPP";
-    }
-    if (_payment_action == PaymentActionType::pat_administrative_fee)
-    {
-        return "RPOA";
-    }
-    if (_payment_action == PaymentActionType::pat_fee)
-    {
-        return "RPOP";
-    }
-    if (_payment_action == PaymentActionType::pat_monthly_fee)
-    {
-        return "RPOP";
+        case PaymentActionType::create_domain: return "RREG"; break;
+        case PaymentActionType::renew_domain: return "RUDR"; break;
+        case PaymentActionType::requests_over_limit: return "REPP"; break;
+        case PaymentActionType::administrative_fee: return "RPOA"; break;
+        case PaymentActionType::fee: return "RPOP"; break;
+        case PaymentActionType::monthly_fee: return "RPOP"; break;
     }
     return "RUNK";
 }
@@ -231,7 +216,7 @@ static const constexpr char* account_invoice_with_annual_partitioning_query =
                    "ORDER BY 1,2,3 "
                ") AS baz "
        ") AS moo "
- "group by 1,2";
+ "GROUP BY 1,2";
 // clang-format on
 
 LibTypist::Struct make_subject_context(const Subject& _subject)
@@ -261,7 +246,7 @@ LibTypist::Struct make_invoice_context(const Invoice& _invoice)
     {
         throw std::runtime_error("make_invoice_context: invoice taxdate is special");
     }
-    if (_invoice.type == InvoiceType::it_account)
+    if (_invoice.type == InvoiceType::account)
     {
         if (_invoice.account_period.begin().is_special())
         {
@@ -283,7 +268,7 @@ LibTypist::Struct make_invoice_context(const Invoice& _invoice)
                     {LibTypist::StructKey{"date"}, LibTypist::StructValue{to_iso_extended_string(_invoice.crtime.date())}},
                     {LibTypist::StructKey{"tax_date"}, LibTypist::StructValue{to_iso_extended_string(_invoice.tax_date)}}};
 
-    if (_invoice.type == InvoiceType::it_account)
+    if (_invoice.type == InvoiceType::account)
     {
         invoice_context[LibTypist::StructKey{"period_from"}] = LibTypist::StructValue{to_iso_extended_string(_invoice.account_period.begin())};
         invoice_context[LibTypist::StructKey{"period_to"}] = LibTypist::StructValue{to_iso_extended_string(_invoice.account_period.end())};
@@ -296,7 +281,7 @@ LibTypist::Struct make_invoice_context(const Invoice& _invoice)
         Money vat;
     };
 
-    if (_invoice.type == InvoiceType::it_account)
+    if (_invoice.type == InvoiceType::account)
     {
         LOGGER.debug("make_invoice_context: account invoice");
         struct AccountInvoiceRecord
@@ -319,7 +304,7 @@ LibTypist::Struct make_invoice_context(const Invoice& _invoice)
 
             if (result.size() < 1)
             {
-                throw std::runtime_error("make_invoice_context it_account query failed");
+                throw std::runtime_error("make_invoice_context account query failed");
             }
 
             constexpr auto row = 0;
@@ -410,14 +395,8 @@ LibTypist::Struct make_invoice_context(const Invoice& _invoice)
         invoice_context[LibTypist::StructKey{"price_base"}] = LibTypist::StructValue{format_money(account_invoice_record.operations_price)};
         invoice_context[LibTypist::StructKey{"paid_base"}] = LibTypist::StructValue{format_money(account_invoice_record.self.price_without_vat - account_invoice_record.operations_price)};
         invoice_context[LibTypist::StructKey{"total"}] = LibTypist::StructValue{format_money(account_invoice_record.self.price_with_vat)};
-//<< TAGSTART(sumarize)
-//<< TAG(total, OUTMONEY(account_invoice_record.operations_price))
-//<< TAG(paid, OUTMONEY(account_invoice_record.self.price_without_vat - account_invoice_record.operations_price))
-//<< TAG(to_be_paid, OUTMONEY(account_invoice_record.self.price_with_vat))
-//<< TAGEND(sumarize)
-//<< TAGEND(delivery); 
     }
-    else // it_deposit
+    else // deposit
     {
         LOGGER.debug("make_invoice_context: deposit (advance) invoice");
         struct AdvanceInvoiceRecord
@@ -434,7 +413,7 @@ LibTypist::Struct make_invoice_context(const Invoice& _invoice)
 
         if (result.size() != 1)
         {
-            throw std::runtime_error("make_invoice_context: it_deposit query failed");
+            throw std::runtime_error("make_invoice_context: deposit query failed");
         }
 
         AdvanceInvoiceRecord advance_invoice_record;
@@ -459,13 +438,7 @@ LibTypist::Struct make_invoice_context(const Invoice& _invoice)
         context[LibTypist::StructKey{"vat_rates"}] =
                 LibTypist::StructValue{std::vector<LibTypist::StructValue>{{LibTypist::StructValue{vat_rates_entry_context}}}};
 
-        // TODO null since 2012? invoice_context[LibTypist::StructKey{"total"}] = LibTypist::StructValue{format_money(advance_invoice_record.operations_price)};
         invoice_context[LibTypist::StructKey{"total"}] = LibTypist::StructValue{format_money(Money{"0"})};
-//<< TAGSTART(sumarize)
-//<< TAG(total, OUTMONEY(advance_invoice_record.operations_price))
-//<< TAG(paid, OUTMONEY(Money("0")))
-//<< TAG(to_be_paid, OUTMONEY(Money("0")))
-//<< TAGEND(sumarize)
     }
 
     std::vector<LibTypist::StructValue> advance_invoices;
@@ -563,7 +536,7 @@ void export_and_archive_invoice(
         const Invoice& _invoice,
         bool _debug_context)
 {
-    LOGGER.debug(boost::str(boost::format("export_and_archive_invoice: invoice id %1% number %2% type %3%") % _invoice.id % _invoice.number % (_invoice.type == InvoiceType::it_account ? "account" : "advance")));
+    LOGGER.debug(boost::str(boost::format("export_and_archive_invoice: invoice id %1% number %2% type %3%") % _invoice.id % _invoice.number % (_invoice.type == InvoiceType::account ? "account" : "advance")));
     const auto invoice_context = make_invoice_context(_invoice);
 
     LibTypist::Connection secretary_connection{
@@ -571,7 +544,7 @@ void export_and_archive_invoice(
 
     const auto template_name_html =
             LibTypist::TemplateName{std::string{
-                    (_invoice.type == InvoiceType::it_deposit ? "advance-invoice" : "invoice")} +
+                    (_invoice.type == InvoiceType::deposit ? "advance-invoice" : "invoice")} +
                     (_invoice.client.country == "CZ" ? "-cs" : "-en") + ".html"};
 
     if (_debug_context)
@@ -596,7 +569,7 @@ void export_and_archive_invoice(
     //output_pdf.close();
 
         const auto template_name_xml =
-                LibTypist::TemplateName{_invoice.type == InvoiceType::it_deposit ? "advance-invoice.xml" : "invoice.xml"};
+                LibTypist::TemplateName{_invoice.type == InvoiceType::deposit ? "advance-invoice.xml" : "invoice.xml"};
 
         std::stringstream file_xml_rawdata;
         LOGGER.debug(boost::str(boost::format("export_and_archive_invoice: render xml using template %1%") % *template_name_xml));
@@ -652,9 +625,9 @@ void export_and_archive_invoice(
 
 enum struct ArchiveFilter
 {
-    af_ignore,
-    af_set,
-    af_unset
+    ignore,
+    set,
+    unset
 };
 
 bool do_use_coef(boost::posix_time::ptime crtime, Decimal vat_rate, Money total_without_vat, Money total_vat)
@@ -713,19 +686,11 @@ Money count_vat(Money price_without_vat, Decimal vat_rate, bool use_coef) {
     Money vat;
     if (!use_coef) {
         vat = price_without_vat * (vat_rate / Decimal("100"));
-        //LOGGER.debug(
-        //    std::string("count_vat: ")+ vat.get_string()
-        //    + " price: " + price_without_vat.get_string()+ " vat_rate: " + vat_rate.get_string()
-        //    + " base: true use_coef: false");
     }
     else {
         const Vat *v = get_vat(vat_rate);
         Decimal coef = v ? v->koef : Decimal("0");
         vat = (price_without_vat * coef / (Decimal("1") - coef)).round_half_up(2);
-        //LOGGER.debug(
-        //    std::string("count_vat: ")+ vat.get_string()
-        //    + " price: " + price_without_vat.get_string()+ " vat_rate: " + vat_rate.get_string()
-        //    + " base: true use_coef: true coef: " + coef.get_string());
     }
     return vat;
 }
@@ -747,19 +712,6 @@ void invoice_add_action(Invoice& invoice, Database::Row::Iterator& _col) {
     Money price(_price);
     Decimal vat_rate(_vat_rate);
     Money price_per_unit(_price_per_unit);
-
-    //LOGGER.debug(
-    //    boost::format(
-    //    "invoice_add_action _price %1% _vat_rate %2% object_name %3% PaymentActionType %4%"
-    //    " units %5% _price_per_unit %6% id %7%")
-    //    % _price
-    //    % _vat_rate
-    //    % object_name
-    //    % type
-    //    % units
-    //    % _price_per_unit
-    //    % id
-    //);
 
     const constexpr bool use_coef = false;
     invoice.actions.push_back(
@@ -1052,20 +1004,6 @@ std::vector<Invoice> get_invoices(
         ExportedStatePolicy _export_state_policy)
 {
     std::vector<Invoice> invoices;
-    //const unsigned long long idFilter = 0;
-    //const unsigned long long registrarFilter = 0;
-    //const std::string registrarHandleFilter;
-    //const unsigned long long zoneFilter = 0;
-    //const unsigned typeFilter = 0;
-    //const std::string varSymbolFilter;
-    //const std::string numberFilter;
-    //const boost::posix_time::time_period crDateFilter = boost::posix_time::time_period(boost::posix_time::ptime(neg_infin), boost::posix_time::ptime(pos_infin));
-    //const boost::posix_time::time_period taxDateFilter = boost::posix_time::time_period(boost::posix_time::ptime(neg_infin), boost::posix_time::ptime(pos_infin));
-    //const ArchiveFilter archiveFilter = ArchiveFilter::af_ignore;
-    //const unsigned long long objectIdFilter = 0;
-    //const std::string objectNameFilter;
-    //const std::string advanceNumberFilter;
-
 
     LOGGER.debug("invoice_export: connection");
     Database::Connection conn = Database::Manager::acquire();
@@ -1087,75 +1025,6 @@ std::vector<Invoice> get_invoices(
         sql_params.push_back(std::to_string(_invoice_id));
         where << "AND " << "i.id" << "= $" << sql_params.size() << "::BIGINT ";
     }
-    //if (registrarFilter)
-    //{
-    //    sql_params.push_back(boost::lexical_cast<std::string>(registrarFilter));
-    //    where << "AND " << "i.registrar_id" << "= $" << sql_params.size() << "::BIGINT ";
-    //}
-    //if (zoneFilter)
-    //{
-    //    sql_params.push_back(boost::lexical_cast<std::string>(zoneFilter));
-    //    where << "AND " << "i.zone_id" << "= $" << sql_params.size() << "::BIGINT ";
-    //}
-    //if (typeFilter && typeFilter <= 2)
-    //{
-    //    from << ", invoice_prefix ip ";
-    //    where << "AND i.invoice_prefix_id=ip.id ";
-    //    sql_params.push_back(boost::lexical_cast<std::string>(typeFilter-1));
-    //    where << "AND " << "ip.typ" << "=$" << sql_params.size() << "::INTEGER ";
-    //}
-    //if (!varSymbolFilter.empty() || !registrarHandleFilter.empty())
-    //{
-    //    from << ", registrar r ";
-    //    where << "AND i.registrar_id=r.id ";
-    //    if (!varSymbolFilter.empty())
-    //    {
-    //        sql_params.push_back(boost::lexical_cast<std::string>(varSymbolFilter));
-    //        where << "AND "
-    //               << "TRIM(r.varsymb)" << " ILIKE TRANSLATE($" << sql_params.size() << "::TEXT,'*?','%_') ";
-    //    }
-    //    if (!registrarHandleFilter.empty())
-    //    {
-    //        sql_params.push_back(boost::lexical_cast<std::string>(registrarHandleFilter));
-    //        where << "AND "
-    //               << "r.handle" << " ILIKE TRANSLATE($" << sql_params.size() << "::TEXT,'*?','%_') ";
-    //    }
-    //}
-    //if (!numberFilter.empty())
-    //{
-    //    sql_params.push_back(boost::lexical_cast<std::string>(numberFilter));
-    //    where << "AND "
-    //        << "(i.prefix)::TEXT" << " ILIKE TRANSLATE($" << sql_params.size() << "::TEXT,'*?','%_') ";
-    //}
-    //if (!crDateFilter.begin().is_special())
-    //{
-    //    sql_params.push_back(boost::lexical_cast<std::string>(
-    //            to_iso_extended_string(crDateFilter.begin().date())));
-    //     where << "AND " << "i.crdate" << ">=$"
-    //       <<  sql_params.size() << "::TIMESTAMP ";
-    //}
-    //if (!crDateFilter.end().is_special())
-    //{
-    //    sql_params.push_back(
-    //        to_iso_extended_string(crDateFilter.end().date() + boost::gregorian::days(1))
-    //        );
-    //    where << "AND " << "i.crdate" << " < $"
-    //            <<  sql_params.size() << "::TIMESTAMP ";
-    //}
-    //if ((!taxDateFilter.begin().is_special()))
-    //{
-    //    sql_params.push_back(boost::lexical_cast<std::string>(
-    //        to_iso_extended_string(taxDateFilter.begin())));
-    //   where << "AND " << "i.taxdate" << ">=$"
-    //     <<  sql_params.size() << "::TIMESTAMP ";
-    //}
-    //if ((!taxDateFilter.end().is_special()))
-    //{
-    //    sql_params.push_back(
-    //        to_iso_extended_string(taxDateFilter.end().date() + boost::gregorian::days(1)));
-    //    where << "AND " << "i.taxdate" << " < $"
-    //        << sql_params.size() << "::TIMESTAMP ";
-    //}
     if (_export_state_policy == ExportedStatePolicy::unexported)
     {
         where << "AND i.file_uuid IS NULL "; // file_xml_uuid can be null for legacy invoices
@@ -1182,40 +1051,6 @@ std::vector<Invoice> get_invoices(
             }
         }
     }
-    //switch (archiveFilter)
-    //{
-    //    case ArchiveFilter::af_ignore: break;
-    //    case ArchiveFilter::af_set: where << "AND NOT(i.file ISNULL) "; break;
-    //    case ArchiveFilter::af_unset: where << "AND i.file ISNULL "; break;
-    //    default: break;
-    //}
-    //if (objectIdFilter)
-    //{
-    //    from << ", invoice_operation io ";
-    //    where << "AND i.id=io.ac_invoice_id ";
-    //    sql_params.push_back(boost::lexical_cast<std::string>(objectIdFilter));
-    //    where << "AND " << "io.object_id" << "=$" << sql_params.size() << "::BIGINT ";
-    //}
-    //if (!objectNameFilter.empty())
-    //{
-    //    from << ", invoice_operation ioh, object_registry obr ";
-    //    where << "AND i.id=ioh.ac_invoice_id AND obr.id=ioh.object_id ";
-    //    sql_params.push_back(boost::lexical_cast<std::string>(objectNameFilter));
-    //    where << "AND "
-    //           << "obr.name" << " ILIKE TRANSLATE($" << sql_params.size() << "::TEXT,'*?','%_') ";
-    //}
-
-    //if (!advanceNumberFilter.empty())
-    //{
-    //    from << ", invoice_operation io2 "
-    //    << ", invoice_operation_charge_map iocm "
-    //    << ", invoice advi ";
-    //    where << "AND i.id=io2.ac_invoice_id "
-    //    << "AND iocm.invoice_operation_id=io2.id AND iocm.invoice_id=advi.id ";
-    //    sql_params.push_back(boost::lexical_cast<std::string>(advanceNumberFilter));
-    //    where << "AND "
-    //           << "(advi.prefix)::TEXT" << " ILIKE TRANSLATE($" << sql_params.size() << "::TEXT,'*?','%_') ";
-    //}
     sql << from.rdbuf() << where.rdbuf();
 
     LOGGER.debug("invoice_export: select tmp");
@@ -1276,7 +1111,7 @@ std::vector<Invoice> get_invoices(
             "db_result i.id %1% i.zone_id %2% i.typ %3% i.prefix %4% i.registrar_id %5% i.balance %6% i.operations_price %7% i.vat %8% i.total %9% i.totalvat %10%")
             % std::string(row[0])
             % std::string(row[1])
-            % (static_cast<int>(row[6]) == 0 ? "it_deposit" : "it_account")
+            % (static_cast<int>(row[6]) == 0 ? "deposit" : "account")
             % std::string(row[7])
             % std::string(row[8])
             % std::string(row[9])
@@ -1293,7 +1128,7 @@ std::vector<Invoice> get_invoices(
         Database::Date tax_date = (boost::gregorian::date(row[3].isnull() ? boost::gregorian::date(not_a_date_time) : from_string(row[3])));
         Database::Date from_date = (boost::gregorian::date(row[4].isnull() ? boost::gregorian::date(neg_infin) : from_string(row[4])));
         Database::Date to_date = (boost::gregorian::date(row[5].isnull() ? boost::gregorian::date(pos_infin) : from_string(row[5])));
-        InvoiceType type = (static_cast<int>(row[6]) == 0 ? InvoiceType::it_deposit : InvoiceType::it_account);
+        InvoiceType type = (static_cast<int>(row[6]) == 0 ? InvoiceType::deposit : InvoiceType::account);
         unsigned long long number = row[7];
         Database::ID registrar_id = row[8];
         Money credit = std::string(row[9]);
