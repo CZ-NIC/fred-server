@@ -53,7 +53,7 @@ struct Subject
     std::string street;
     std::string city;
     std::string zip;
-    std::string country;
+    std::string country_code;
     std::string ico;
     std::string vat_number;
     std::string registration;
@@ -86,15 +86,15 @@ struct PaymentSource
     boost::posix_time::ptime crtime;
 };
 
-//this relies on PaymentActionType (operation_id - 1) in invoice_add_action
+// this relies on PaymentActionType (operation_id - 1) in invoice_add_action
 enum PaymentActionType
 {
-    create_domain = 1,
-    renew_domain = 2,
-    requests_over_limit = 3,
-    administrative_fee = 4,
-    fee = 5,
-    monthly_fee = 6
+    create_domain = 0,
+    renew_domain = 1,
+    requests_over_limit = 2,
+    administrative_fee = 3,
+    fee = 4,
+    monthly_fee = 5
 };
 
 struct PaymentAction
@@ -148,12 +148,12 @@ std::string to_string(PaymentActionType _payment_action)
 {
     switch (_payment_action)
     {
-        case PaymentActionType::create_domain: return "RREG"; break;
-        case PaymentActionType::renew_domain: return "RUDR"; break;
-        case PaymentActionType::requests_over_limit: return "REPP"; break;
-        case PaymentActionType::administrative_fee: return "RPOA"; break;
-        case PaymentActionType::fee: return "RPOP"; break;
-        case PaymentActionType::monthly_fee: return "RPOP"; break;
+        case PaymentActionType::create_domain: return "RREG";
+        case PaymentActionType::renew_domain: return "RUDR";
+        case PaymentActionType::requests_over_limit: return "REPP";
+        case PaymentActionType::administrative_fee: return "RPOA";
+        case PaymentActionType::fee: return "RPOP";
+        case PaymentActionType::monthly_fee: return "RPOP";
     }
     return "RUNK";
 }
@@ -229,7 +229,7 @@ LibTypist::Struct make_subject_context(const Subject& _subject)
                             {LibTypist::StructKey{"street"}, LibTypist::StructValue{_subject.street}},
                             {LibTypist::StructKey{"postal_code"}, LibTypist::StructValue{_subject.zip}},
                             {LibTypist::StructKey{"city"}, LibTypist::StructValue{_subject.city}},
-                            {LibTypist::StructKey{"country"}, LibTypist::StructValue{_subject.country}}}}},
+                            {LibTypist::StructKey{"country_code"}, LibTypist::StructValue{_subject.country_code}}}}},
             {LibTypist::StructKey{"vat_identification_number"}, LibTypist::StructValue{_subject.vat_number}},
             {LibTypist::StructKey{"company_registration_number"}, LibTypist::StructValue{_subject.ico}}};
 }
@@ -415,31 +415,31 @@ LibTypist::Struct make_invoice_context(const Invoice& _invoice)
             throw std::runtime_error("make_invoice_context: deposit query failed");
         }
 
+        AdvanceInvoiceRecord advance_invoice_record;
 
         const auto row = db_result[0];
         const auto vat_rate = Decimal(static_cast<std::string>(row[0]));
-        const AdvanceInvoiceRecord advance_invoice_record{
-            {Money(static_cast<std::string>(row[1])),
-             advance_invoice_record.self.price_without_vat + advance_invoice_record.self.vat,
-             Money(static_cast<std::string>(row[2]))},
-            Decimal(static_cast<std::string>(row[3]))};
+        advance_invoice_record.self.price_without_vat = Money(static_cast<std::string>(row[1]));
+        advance_invoice_record.self.vat = Money(static_cast<std::string>(row[2]));
+        advance_invoice_record.self.price_with_vat = advance_invoice_record.self.price_without_vat + advance_invoice_record.self.vat;
+        advance_invoice_record.operations_price = Decimal(static_cast<std::string>(row[3]));
 
-            LibTypist::Struct vat_rates_entry_context{
-                    {LibTypist::StructKey{"vat_rate"}, LibTypist::StructValue{boost::lexical_cast<std::string>(vat_rate)}},
-                    {LibTypist::StructKey{"total_base"}, LibTypist::StructValue{format_money(advance_invoice_record.self.price_without_vat)}},
-                    {LibTypist::StructKey{"total_vat"}, LibTypist::StructValue{format_money(advance_invoice_record.self.vat)}},
-                    {LibTypist::StructKey{"total"}, LibTypist::StructValue{format_money(advance_invoice_record.self.price_with_vat)}},
-                    {LibTypist::StructKey{"price"}, LibTypist::StructValue{format_money(advance_invoice_record.self.price_with_vat)}},
-                    {LibTypist::StructKey{"price_vat"}, LibTypist::StructValue{format_money(advance_invoice_record.self.vat)}},
-                    {LibTypist::StructKey{"paid"}, LibTypist::StructValue{format_money(advance_invoice_record.self.price_with_vat)}},
-                    {LibTypist::StructKey{"paid_vat"}, LibTypist::StructValue{format_money(advance_invoice_record.self.vat)}}};
+        LibTypist::Struct vat_rates_entry_context{
+                {LibTypist::StructKey{"vat_rate"}, LibTypist::StructValue{boost::lexical_cast<std::string>(vat_rate)}},
+                {LibTypist::StructKey{"total_base"}, LibTypist::StructValue{format_money(advance_invoice_record.self.price_without_vat)}},
+                {LibTypist::StructKey{"total_vat"}, LibTypist::StructValue{format_money(advance_invoice_record.self.vat)}},
+                {LibTypist::StructKey{"total"}, LibTypist::StructValue{format_money(advance_invoice_record.self.price_with_vat)}},
+                {LibTypist::StructKey{"price"}, LibTypist::StructValue{format_money(advance_invoice_record.self.price_with_vat)}},
+                {LibTypist::StructKey{"price_vat"}, LibTypist::StructValue{format_money(advance_invoice_record.self.vat)}},
+                {LibTypist::StructKey{"paid"}, LibTypist::StructValue{format_money(advance_invoice_record.self.price_with_vat)}},
+                {LibTypist::StructKey{"paid_vat"}, LibTypist::StructValue{format_money(advance_invoice_record.self.vat)}}};
 
-            context[LibTypist::StructKey{"vat_rates"}] =
-                    LibTypist::StructValue{std::vector<LibTypist::StructValue>{{LibTypist::StructValue{vat_rates_entry_context}}}};
+        context[LibTypist::StructKey{"vat_rates"}] =
+                LibTypist::StructValue{std::vector<LibTypist::StructValue>{{LibTypist::StructValue{vat_rates_entry_context}}}};
 
-            invoice_context[LibTypist::StructKey{"price_base"}] = LibTypist::StructValue{format_money(Money{""})}; // legacy reasons, to keep empty total
-            invoice_context[LibTypist::StructKey{"paid_base"}] = LibTypist::StructValue{format_money(Money{"0"})};
-            invoice_context[LibTypist::StructKey{"total"}] = LibTypist::StructValue{format_money(Money{"0"})};
+        invoice_context[LibTypist::StructKey{"price_base"}] = LibTypist::StructValue{format_money(Money{""})}; // legacy reasons, to keep empty total
+        invoice_context[LibTypist::StructKey{"paid_base"}] = LibTypist::StructValue{format_money(Money{"0"})};
+        invoice_context[LibTypist::StructKey{"total"}] = LibTypist::StructValue{format_money(Money{"0"})};
     }
 
     std::vector<LibTypist::StructValue> advance_invoices;
@@ -544,7 +544,7 @@ void export_and_archive_invoice(
     const auto template_name_html =
             LibTypist::TemplateName{std::string{
                     (_invoice.type == InvoiceType::deposit ? "advance-invoice" : "invoice")} +
-                    (_invoice.client.country == "CZ" ? "-cs" : "-en") + ".html"};
+                    (_invoice.client.country_code == "CZ" ? "-cs" : "-en") + ".html"};
 
     if (_debug_context)
     {
@@ -563,9 +563,6 @@ void export_and_archive_invoice(
                 LibTypist::ContentType{"application/pdf"},
                 invoice_context,
                 file_pdf_rawdata);
-    //std::ofstream output_pdf(std::to_string(_invoice.number) + ".pdf", std::ofstream::out);
-    //output_pdf << file_pdf_rawdata.str();
-    //output_pdf.close();
 
         const auto template_name_xml =
                 LibTypist::TemplateName{_invoice.type == InvoiceType::deposit ? "advance-invoice.xml" : "invoice.xml"};
@@ -578,10 +575,6 @@ void export_and_archive_invoice(
                 LibTypist::ContentType{"text/html"},
                 invoice_context,
                 file_xml_rawdata);
-    //std::ofstream output_xml(std::to_string(_invoice.number) + ".xml", std::ofstream::out);
-    //output_xml << file_xml_rawdata.str();
-    //output_xml.close();
-
 
         LOGGER.debug(boost::str(boost::format("export_and_archive_invoice: connecting to fileman at %1%") % _fileman_args.endpoint));
         LibFiled::Connection<LibFiled::Service::File> fileman_connection{
@@ -702,7 +695,7 @@ void invoice_add_action(Invoice& invoice, const Database::Row& _col) {
     Database::Date fromdate = _col[5];
     Database::Date exdate = _col[6];
     int operation_id = _col[7];
-    PaymentActionType type = PaymentActionType(operation_id - 1); //PaymentActionType = id -1
+    PaymentActionType type = PaymentActionType(operation_id - 1);
 
     unsigned units = _col[8];
     std::string _price_per_unit = std::string(_col[9]);
@@ -1122,7 +1115,6 @@ std::vector<Invoice> get_invoices(
 
         Database::ID id = row[0];
         Database::ID zone = row[1];
-        std::string fqdn = row[26];
         Database::DateTime create_time = (boost::posix_time::ptime(row[2].isnull() ? boost::posix_time::ptime(not_a_date_time) : time_from_string(row[2])));
         Database::Date tax_date = (boost::gregorian::date(row[3].isnull() ? boost::gregorian::date(not_a_date_time) : from_string(row[3])));
         Database::Date from_date = (boost::gregorian::date(row[4].isnull() ? boost::gregorian::date(neg_infin) : from_string(row[4])));
@@ -1147,7 +1139,8 @@ std::vector<Invoice> get_invoices(
         std::string client_handle = row[23];
         bool client_vat = row[24];
         unsigned long long client_id = row[25];
-        std::string client_country = row[27];
+        std::string fqdn = row[26];
+        std::string client_country_code = row[27];
 
         boost::gregorian::date_period account_period(from_date, to_date);
         Subject client{
@@ -1158,7 +1151,7 @@ std::vector<Invoice> get_invoices(
                 client_street1,
                 client_city,
                 client_postal_code,
-                client_country,
+                client_country_code,
                 client_ico,
                 client_dic,
                 "",

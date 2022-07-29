@@ -682,7 +682,7 @@ public:
                 ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(invoice_dont_send))
                  , "don't send mails with invoices during export")
             ("invoice_id",boost::program_options
-                ::value<unsigned long long>()->notifier(save_arg<unsigned long long>(invoice_id))
+                ::value<unsigned long long>()->default_value(0)->notifier(save_arg<unsigned long long>(invoice_id))
                  , "only process invoice with given id")
             ("limit", boost::program_options
                 ::value<int>()->default_value(1000)->notifier(save_arg<int>(limit))
@@ -740,7 +740,7 @@ public:
                 ::value<int>()->default_value(1000)->notifier(save_arg<int>(limit))
                 , "limit")
             ("invoice_id",boost::program_options
-                ::value<unsigned long long>()->notifier(save_arg<unsigned long long>(invoice_id))
+                ::value<unsigned long long>()->default_value(0)->notifier(save_arg<unsigned long long>(invoice_id))
                  , "only process invoice of given id")
                 ;
         return cfg_opts;
