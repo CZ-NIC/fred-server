@@ -222,6 +222,7 @@ static const constexpr char* account_invoice_with_annual_partitioning_query =
 LibTypist::Struct make_subject_context(const Subject& _subject)
 {
     return LibTypist::Struct{
+            {LibTypist::StructKey{"id"}, LibTypist::StructValue{std::to_string(_subject.id)}},
             {LibTypist::StructKey{"organization"}, LibTypist::StructValue{_subject.fullname}},
             {LibTypist::StructKey{"address"},
                     LibTypist::StructValue{LibTypist::Struct{
@@ -231,8 +232,6 @@ LibTypist::Struct make_subject_context(const Subject& _subject)
                             {LibTypist::StructKey{"country"}, LibTypist::StructValue{_subject.country}}}}},
             {LibTypist::StructKey{"vat_identification_number"}, LibTypist::StructValue{_subject.vat_number}},
             {LibTypist::StructKey{"company_registration_number"}, LibTypist::StructValue{_subject.ico}}};
-    // TODO getRegistration?
-    // TODO getReclamation?
 }
 
 LibTypist::Struct make_invoice_context(const Invoice& _invoice)
@@ -297,39 +296,39 @@ LibTypist::Struct make_invoice_context(const Invoice& _invoice)
         Database::Connection conn = Database::Manager::acquire();
         AccountInvoiceRecord account_invoice_record;
         {
-            const Database::Result result =
+            const Database::Result db_result =
                     conn.exec_params(
                             invoice_query,
                             Database::query_param_list(_invoice.id));
 
-            if (result.size() < 1)
+            if (db_result.size() < 1)
             {
                 throw std::runtime_error("make_invoice_context account query failed");
             }
 
-            constexpr auto row = 0;
-            account_invoice_record.vat_rate = Decimal(static_cast<std::string>(result[row][0]));
-            account_invoice_record.self.price_without_vat = Money(static_cast<std::string>(result[row][1]));
-            account_invoice_record.self.vat = Money(static_cast<std::string>(result[row][2]));
+            const auto row = db_result[0];
+            account_invoice_record.vat_rate = Decimal(static_cast<std::string>(row[0]));
+            account_invoice_record.self.price_without_vat = Money(static_cast<std::string>(row[1]));
+            account_invoice_record.self.vat = Money(static_cast<std::string>(row[2]));
             account_invoice_record.self.price_with_vat = account_invoice_record.self.price_without_vat + account_invoice_record.self.vat;
-            account_invoice_record.operations_price = Decimal(static_cast<std::string>(result[row][3]));
+            account_invoice_record.operations_price = Decimal(static_cast<std::string>(row[3]));
         }
 
-        const Database::Result result =
+        const Database::Result db_result =
                 conn.exec_params(
                         account_invoice_with_annual_partitioning_query,
                         Database::query_param_list(_invoice.id));
 
-        if (result.size() > 0)
+        if (db_result.size() > 0)
         {
 
-            for (std::size_t row = 0; row < result.size(); ++row)
+            for (const auto& row : db_result)
             {
-                const auto year = static_cast<unsigned>(result[row][0]);
-                const auto vat_rate = Decimal(static_cast<std::string>(result[row][1]));
-                account_invoice_record.records[vat_rate][year].price_without_vat = Money(static_cast<std::string>(result[row][2]));
-                account_invoice_record.records[vat_rate][year].price_with_vat = Money(static_cast<std::string>(result[row][3]));
-                account_invoice_record.records[vat_rate][year].vat = Money(static_cast<std::string>(result[row][4]));
+                const auto year = static_cast<unsigned>(row[0]);
+                const auto vat_rate = Decimal(static_cast<std::string>(row[1]));
+                account_invoice_record.records[vat_rate][year].price_without_vat = Money(static_cast<std::string>(row[2]));
+                account_invoice_record.records[vat_rate][year].price_with_vat = Money(static_cast<std::string>(row[3]));
+                account_invoice_record.records[vat_rate][year].vat = Money(static_cast<std::string>(row[4]));
             }
 
             std::vector<LibTypist::StructValue> vat_rates;
@@ -370,7 +369,7 @@ LibTypist::Struct make_invoice_context(const Invoice& _invoice)
                     vat_rates_entry_context[LibTypist::StructKey{"paid_vat"}] = LibTypist::StructValue{format_money(all_years_money_record.vat)};
                 }
 
-                std::vector<LibTypist::StructValue> deffered_income_context;
+                std::vector<LibTypist::StructValue> deferred_income_context;
                 for (const auto& year_record : account_invoice_record.records[vat_rate])
                 {
                     const auto year = year_record.first;
@@ -381,9 +380,9 @@ LibTypist::Struct make_invoice_context(const Invoice& _invoice)
                             {LibTypist::StructKey{"base"}, LibTypist::StructValue{format_money(year_money_record.price_without_vat)}},
                             {LibTypist::StructKey{"vat"}, LibTypist::StructValue{format_money(year_money_record.vat)}},
                             {LibTypist::StructKey{"total"}, LibTypist::StructValue{format_money(year_money_record.price_with_vat)}}};
-                    deffered_income_context.push_back(LibTypist::StructValue{year_context});
+                    deferred_income_context.push_back(LibTypist::StructValue{year_context});
                 }
-                vat_rates_entry_context[LibTypist::StructKey{"deffered_income"}] = LibTypist::StructValue{deffered_income_context};
+                vat_rates_entry_context[LibTypist::StructKey{"deferred_income"}] = LibTypist::StructValue{deferred_income_context};
                 vat_rates.push_back(LibTypist::StructValue{vat_rates_entry_context});
             }
             if (!vat_rates.empty())
@@ -406,47 +405,48 @@ LibTypist::Struct make_invoice_context(const Invoice& _invoice)
         };
 
         Database::Connection conn = Database::Manager::acquire();
-        Database::Result result =
+        Database::Result db_result =
                 conn.exec_params(
                         invoice_query,
                         Database::query_param_list(_invoice.id));
 
-        if (result.size() != 1)
+        if (db_result.size() != 1)
         {
             throw std::runtime_error("make_invoice_context: deposit query failed");
         }
 
-        AdvanceInvoiceRecord advance_invoice_record;
 
-        constexpr auto row = 0;
-        const auto vat_rate = Decimal(static_cast<std::string>(result[row][0]));
-        advance_invoice_record.self.price_without_vat = Money(static_cast<std::string>(result[row][1]));
-        advance_invoice_record.self.vat = Money(static_cast<std::string>(result[row][2]));
-        advance_invoice_record.self.price_with_vat = advance_invoice_record.self.price_without_vat + advance_invoice_record.self.vat;
-        advance_invoice_record.operations_price = Decimal(static_cast<std::string>(result[row][3]));
+        const auto row = db_result[0];
+        const auto vat_rate = Decimal(static_cast<std::string>(row[0]));
+        const AdvanceInvoiceRecord advance_invoice_record{
+            {Money(static_cast<std::string>(row[1])),
+             advance_invoice_record.self.price_without_vat + advance_invoice_record.self.vat,
+             Money(static_cast<std::string>(row[2]))},
+            Decimal(static_cast<std::string>(row[3]))};
 
-        LibTypist::Struct vat_rates_entry_context{
-                {LibTypist::StructKey{"vat_rate"}, LibTypist::StructValue{boost::lexical_cast<std::string>(vat_rate)}},
-                {LibTypist::StructKey{"total_base"}, LibTypist::StructValue{format_money(advance_invoice_record.self.price_without_vat)}},
-                {LibTypist::StructKey{"total_vat"}, LibTypist::StructValue{format_money(advance_invoice_record.self.vat)}},
-                {LibTypist::StructKey{"total"}, LibTypist::StructValue{format_money(advance_invoice_record.self.price_with_vat)}},
-                {LibTypist::StructKey{"price"}, LibTypist::StructValue{format_money(advance_invoice_record.self.price_with_vat)}},
-                {LibTypist::StructKey{"price_vat"}, LibTypist::StructValue{format_money(advance_invoice_record.self.vat)}},
-                {LibTypist::StructKey{"paid"}, LibTypist::StructValue{format_money(advance_invoice_record.self.price_with_vat)}},
-                {LibTypist::StructKey{"paid_vat"}, LibTypist::StructValue{format_money(advance_invoice_record.self.vat)}}};
+            LibTypist::Struct vat_rates_entry_context{
+                    {LibTypist::StructKey{"vat_rate"}, LibTypist::StructValue{boost::lexical_cast<std::string>(vat_rate)}},
+                    {LibTypist::StructKey{"total_base"}, LibTypist::StructValue{format_money(advance_invoice_record.self.price_without_vat)}},
+                    {LibTypist::StructKey{"total_vat"}, LibTypist::StructValue{format_money(advance_invoice_record.self.vat)}},
+                    {LibTypist::StructKey{"total"}, LibTypist::StructValue{format_money(advance_invoice_record.self.price_with_vat)}},
+                    {LibTypist::StructKey{"price"}, LibTypist::StructValue{format_money(advance_invoice_record.self.price_with_vat)}},
+                    {LibTypist::StructKey{"price_vat"}, LibTypist::StructValue{format_money(advance_invoice_record.self.vat)}},
+                    {LibTypist::StructKey{"paid"}, LibTypist::StructValue{format_money(advance_invoice_record.self.price_with_vat)}},
+                    {LibTypist::StructKey{"paid_vat"}, LibTypist::StructValue{format_money(advance_invoice_record.self.vat)}}};
 
-        context[LibTypist::StructKey{"vat_rates"}] =
-                LibTypist::StructValue{std::vector<LibTypist::StructValue>{{LibTypist::StructValue{vat_rates_entry_context}}}};
+            context[LibTypist::StructKey{"vat_rates"}] =
+                    LibTypist::StructValue{std::vector<LibTypist::StructValue>{{LibTypist::StructValue{vat_rates_entry_context}}}};
 
-        invoice_context[LibTypist::StructKey{"total"}] = LibTypist::StructValue{format_money(Money{"0"})};
+            invoice_context[LibTypist::StructKey{"price_base"}] = LibTypist::StructValue{format_money(Money{""})}; // legacy reasons, to keep empty total
+            invoice_context[LibTypist::StructKey{"paid_base"}] = LibTypist::StructValue{format_money(Money{"0"})};
+            invoice_context[LibTypist::StructKey{"total"}] = LibTypist::StructValue{format_money(Money{"0"})};
     }
 
     std::vector<LibTypist::StructValue> advance_invoices;
     if (_invoice.sources.size())
     {
-        for (unsigned source_idx = 0; source_idx < _invoice.sources.size(); source_idx++)
+        for (const auto payment_source : _invoice.sources)
         {
-            const auto payment_source = _invoice.sources.at(source_idx);
             advance_invoices.push_back(LibTypist::StructValue{LibTypist::Struct{
                     {LibTypist::StructKey{"number"}, LibTypist::StructValue{std::to_string(payment_source.number)}},
                     {LibTypist::StructKey{"consumed_base"}, LibTypist::StructValue{format_money(payment_source.price)}},
@@ -468,9 +468,8 @@ LibTypist::Struct make_invoice_context(const Invoice& _invoice)
     std::vector<LibTypist::StructValue> items;
     if (_invoice.actions.size())
     {
-        for (unsigned action_idx = 0; action_idx < _invoice.actions.size(); action_idx++)
+        for (const auto payment_action : _invoice.actions)
         {
-            const auto payment_action = _invoice.actions.at(action_idx);
             LibTypist::Struct item_context{
                     {LibTypist::StructKey{"subject"}, LibTypist::StructValue{payment_action.object_name}},
                     {LibTypist::StructKey{"code"}, LibTypist::StructValue{to_string(payment_action.action)}},
@@ -614,7 +613,7 @@ void export_and_archive_invoice(
     }
     catch (const LibTypist::HttpResponseResult& e)
     {
-        if (e.status() == 502)
+        if (e.result() == 502)
         {
             LOGGER.debug("export_and_archive_invoice: got network exception - Bad Gateway. Skipping this invoice for now.");
             return;
@@ -695,19 +694,19 @@ Money count_vat(Money price_without_vat, Decimal vat_rate, bool use_coef) {
     return vat;
 }
 
-void invoice_add_action(Invoice& invoice, Database::Row::Iterator& _col) {
-    std::string _price = std::string(*_col);
-    std::string _vat_rate = std::string(*(++_col));
-    std::string object_name = *(++_col);
-    Database::DateTime action_time = *(++_col);
-    Database::Date fromdate = *(++_col);
-    Database::Date exdate = *(++_col);
-    int operation_id = *(++_col);
+void invoice_add_action(Invoice& invoice, const Database::Row& _col) {
+    std::string _price = std::string(_col[1]);
+    std::string _vat_rate = std::string(_col[2]);
+    std::string object_name = _col[3];
+    Database::DateTime action_time = _col[4];
+    Database::Date fromdate = _col[5];
+    Database::Date exdate = _col[6];
+    int operation_id = _col[7];
     PaymentActionType type = PaymentActionType(operation_id - 1); //PaymentActionType = id -1
 
-    unsigned units = *(++_col);
-    std::string _price_per_unit = std::string(*(++_col));
-    Database::ID id = *(++_col);
+    unsigned units = _col[8];
+    std::string _price_per_unit = std::string(_col[9]);
+    Database::ID id = _col[10];
 
     Money price(_price);
     Decimal vat_rate(_vat_rate);
@@ -729,16 +728,16 @@ void invoice_add_action(Invoice& invoice, Database::Row::Iterator& _col) {
                     id});
   }
 
-void invoice_add_source(Invoice& invoice, Database::Row::Iterator& _col)
+void invoice_add_source(Invoice& invoice, const Database::Row& _col)
 {
-    std::string _price = std::string(*_col);
-    std::string _vat_rate = std::string(*(++_col));
-    unsigned long long number = *(++_col);
-    std::string _credit = std::string(*(++_col));
-    Database::ID id = *(++_col);
-    std::string _total_price = std::string(*(++_col));
-    std::string _total_vat = std::string(*(++_col));
-    Database::DateTime crtime = *(++_col);
+    std::string _price = std::string(_col[1]);
+    std::string _vat_rate = std::string(_col[2]);
+    unsigned long long number = _col[3];
+    std::string _credit = std::string(_col[4]);
+    Database::ID id = _col[5];
+    std::string _total_price = std::string(_col[6]);
+    std::string _total_vat = std::string(_col[7]);
+    Database::DateTime crtime = _col[8];
 
     Money price(_price);
     Decimal vat_rate(_vat_rate);
@@ -1223,17 +1222,16 @@ void add_actions(std::vector<Invoice>& _invoices)
                             << "io.operation_id, io.quantity, o.id, i.vat";
     action_query.order_by() << "tmp.id";
 
-    Database::Result result_actions = conn.exec(action_query);
-    LOGGER.debug(boost::str(boost::format("add_actions: found %1% actions") % std::to_string(result_actions.size())));
-    for (Database::Result::Iterator it = result_actions.begin(); it != result_actions.end(); ++it)
+    Database::Result db_result_actions = conn.exec(action_query);
+    LOGGER.debug(boost::str(boost::format("add_actions: found %1% actions") % std::to_string(db_result_actions.size())));
+    for (const auto& action : db_result_actions)
     {
-        Database::Row::Iterator col = (*it).begin();
-        Database::ID invoice_id = *col;
+        Database::ID invoice_id = action[0];
 
         const auto invoice = find_if(_invoices.begin(), _invoices.end(), [&invoice_id](const Invoice& i){ return i.id == invoice_id; });
         if (invoice != _invoices.end())
         {
-            invoice_add_action(*invoice, ++col);
+            invoice_add_action(*invoice, action);
         }
     }
 }
@@ -1262,17 +1260,16 @@ void add_sources(std::vector<Invoice>& _invoices)
     source_query.order_by() << "tmp.id";
     // clang-format on
 
-    Database::Result result_sources = conn.exec(source_query);
-    LOGGER.debug(boost::str(boost::format("add_sources: found %1% sources") % std::to_string(result_sources.size())));
-    for (Database::Result::Iterator it = result_sources.begin(); it != result_sources.end(); ++it)
+    Database::Result db_result_sources = conn.exec(source_query);
+    LOGGER.debug(boost::str(boost::format("add_sources: found %1% sources") % std::to_string(db_result_sources.size())));
+    for (const auto& source : db_result_sources)
     {
-        Database::Row::Iterator col = (*it).begin();
-        Database::ID invoice_id = *col;
+        Database::ID invoice_id = source[0];
 
         const auto invoice = find_if(_invoices.begin(), _invoices.end(), [&invoice_id](const Invoice& i) { return i.id == invoice_id; });
         if (invoice != _invoices.end())
         {
-            invoice_add_source(*invoice, ++col);
+            invoice_add_source(*invoice, source);
         }
     }
     conn.exec("DROP TABLE tmp_invoice_filter_result "); // FIXME
