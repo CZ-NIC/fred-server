@@ -503,7 +503,7 @@ void invoice_save_file_uuid(unsigned long long _invoice_id, const boost::uuids::
     {
         Database::Connection conn = Database::Manager::acquire();
         Database::QueryParams sql_params;
-        std::stringstream sql;
+        std::ostringstream sql;
 
         sql_params.push_back(boost::lexical_cast<std::string>(_file_pdf_uuid));
         sql << "UPDATE invoice SET file_uuid=$" << sql_params.size() << "::UUID ";
@@ -840,7 +840,7 @@ void send_invoices(const MessengerArgs& _messenger_args)
 
     Database::Connection conn = Database::Manager::acquire();
 
-    std::stringstream sql;
+    std::ostringstream sql;
 
     sql << "SELECT r.email, "
                   "r.uuid, "
@@ -910,7 +910,7 @@ void send_invoices(const MessengerArgs& _messenger_args)
         try
         {
             LibHermes::Struct email_template_params;
-            std::stringstream dateBuffer;
+            std::ostringstream dateBuffer;
             dateBuffer.imbue(std::locale(dateBuffer.getloc(), new date_facet("%d.%m.%Y")));
             dateBuffer << mail_item.from;
             email_template_params[LibHermes::StructKey{"fromdate"}] = LibHermes::StructValue{dateBuffer.str()};
@@ -1002,9 +1002,9 @@ std::vector<Invoice> get_invoices(
 
     Database::QueryParams sql_params;
     sql_params.reserve(20);
-    std::stringstream sql;
-    std::stringstream from;
-    std::stringstream where;
+    std::ostringstream sql;
+    std::ostringstream from;
+    std::ostringstream where;
 
     // clang format-off
      sql << "SELECT DISTINCT i.id "
@@ -1044,6 +1044,13 @@ std::vector<Invoice> get_invoices(
         }
     }
     sql << from.rdbuf() << where.rdbuf();
+
+    if (_limit > 0)
+    {
+        std::ostringstream limit;
+        limit << "LIMIT " << std::to_string(_limit);
+        sql << limit.rdbuf();
+    }
 
     LOGGER.debug("invoice_export: select tmp");
     conn.exec("DROP TABLE IF EXISTS tmp_invoice_filter_result ");
