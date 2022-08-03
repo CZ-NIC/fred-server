@@ -234,7 +234,12 @@ LibTypist::Struct make_subject_context(const Subject& _subject)
                             {LibTypist::StructKey{"city"}, LibTypist::StructValue{_subject.city}},
                             {LibTypist::StructKey{"country_code"}, LibTypist::StructValue{_subject.country_code}}}}},
             {LibTypist::StructKey{"vat_identification_number"}, LibTypist::StructValue{_subject.vat_number}},
-            {LibTypist::StructKey{"company_registration_number"}, LibTypist::StructValue{_subject.ico}}};
+            {LibTypist::StructKey{"company_registration_number"}, LibTypist::StructValue{_subject.ico}},
+            {LibTypist::StructKey{"url"}, LibTypist::StructValue{_subject.url}},
+            {LibTypist::StructKey{"email"}, LibTypist::StructValue{_subject.email}},
+            {LibTypist::StructKey{"phone"}, LibTypist::StructValue{_subject.phone}},
+            {LibTypist::StructKey{"fax"}, LibTypist::StructValue{_subject.fax}},
+            {LibTypist::StructKey{"is_vat_payer"}, LibTypist::StructValue{_subject.vat_apply}}};
 }
 
 LibTypist::Struct make_invoice_context(const Invoice& _invoice)
