@@ -35,6 +35,9 @@
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/optional.hpp>
 
+#include <algorithm>
+#include <sstream>
+
 namespace Admin {
 
 namespace {
@@ -1350,26 +1353,43 @@ void invoice_export_list(
     try
     {
         std::vector<Invoice> invoices = get_invoices(_invoice_id, _taxdate_from, _taxdate_to, _limit, ExportedStatePolicy::exported);
+        const auto needs_xml_list_tag = invoices.size() > 1;
         std::cout << "<?xml version='1.0' encoding='utf-8'?>" << std::endl;
-        if (invoices.size() > 1)
+        if (needs_xml_list_tag)
         {
-            std::cout << "<list>" << std::endl;
+            std::cout << "<list>";
         }
         LibFiled::Connection<LibFiled::Service::File> fileman_connection{
                 LibFiled::Connection<LibFiled::Service::File>::ConnectionString{
                         _fileman_args.endpoint}};
-        for (const auto& invoice : invoices)
+        std::for_each(rbegin(invoices), rend(invoices), [&](auto&& invoice)
         {
             LOGGER.debug(boost::str(boost::format("invoice_export_list: invoice id %1%") % invoice.id));
             LOGGER.debug(boost::str(boost::format("invoice_export_list: invoice_xml_uuid %1%") % *invoice.file_xml_uuid));
+            std::ostringstream buffer;
             LibFiled::File::read(
                     fileman_connection,
                     LibFiled::File::FileUuid{*invoice.file_xml_uuid},
-                    std::cout);
-        }
-        if (invoices.size() > 1)
+                    buffer);
+            std::string strbuf{buffer.rdbuf()->str()};
+            if (!strbuf.empty() && strbuf.substr(0, 6) == "<?xml ")
+            {
+                auto pos = strbuf.find('>');
+                if (pos != std::string::npos)
+                {
+                    strbuf.erase(0, pos + 1);
+                }
+            }
+            boost::algorithm::trim(strbuf);
+            std::cout << strbuf;
+        });
+        if (needs_xml_list_tag)
         {
-            std::cout << "</list>" << std::endl;
+            std::cout << "</list>";
+        }
+        if (!invoices.empty())
+        {
+            std::cout << std::endl;
         }
     }
     catch (Database::Exception& ex)
