@@ -2,7 +2,7 @@ UNRELEASED
 
   * Remove duplicate `libfred` tests
 
-2022-07-28 (2.53.0)
+2022-07-28 (2.53.1)
 
   * Invoicing
     - switch from doc2pdf to secretary/libytpist
