@@ -3,4 +3,4 @@ fred/libfred 5.2.0 external/lib/libfred
 fred/libhermes 5.0.0 external/lib/libhermes
 fred/libfiled 1.0.0 external/lib/libfiled
 fred/idl 2.38.0 external/idl
-fred/db 2.47.0 external/db
+fred/db 2.50.0 external/db
