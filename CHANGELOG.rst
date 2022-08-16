@@ -8,6 +8,15 @@ UNRELEASED
 
 * Remove obsolete ``getRequestCount*`` (moved to LoggerCorba)
 
+2022-07-28 (2.53.1)
+-------------------
+
+* Invoicing
+
+  - switch from ``doc2pdf`` to ``secretary/libtypist``
+  - switch from ``pyfred/mailer`` to ``messenger/libhermes``
+  - switch from ``pyfred/filemanager`` to ``fileman/libfiled``
+
 2022-05-19 (2.52.0)
 -------------------
 

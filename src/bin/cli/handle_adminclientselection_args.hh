@@ -654,6 +654,108 @@ public:
 
 
 /**
+ * \class HandleAdminClientInvoiceExportArgsGrp
+ * \brief admin client invoice_export options handler
+ */
+class HandleAdminClientInvoiceExportArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    bool invoice_dont_send;
+    unsigned long long invoice_id;
+    int limit;
+    bool debug_context;
+
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("invoice_export");
+    }
+
+    std::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("invoice_export options")));
+        cfg_opts->add_options()
+            ("invoice_export", "export unexported invoices")
+            ("invoice_dont_send",boost::program_options
+                ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(invoice_dont_send))
+                 , "don't send mails with invoices during export")
+            ("invoice_id",boost::program_options
+                ::value<unsigned long long>()->default_value(0)->notifier(save_arg<unsigned long long>(invoice_id))
+                 , "only process invoice with given id")
+            ("limit", boost::program_options
+                ::value<int>()->default_value(1000)->notifier(save_arg<int>(limit))
+                , "limit number of processed invoices (0 = no limit)")
+            ("debug_context",boost::program_options
+                ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(debug_context))
+                 , "do not export or send invoice(s), just print context to stdout")
+                ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientInvoiceExportArgsGrp
+
+
+/**
+ * \class HandleAdminClientInvoiceExportListArgsGrp
+ * \brief admin client invoice_export_list options handler
+ */
+class HandleAdminClientInvoiceExportListArgsGrp : public HandleCommandGrpArgs
+{
+public:
+    int limit;
+    unsigned long long invoice_id;
+    optional_string taxdate_from;
+    optional_string taxdate_to;
+
+    CommandDescription get_command_option()
+    {
+        return CommandDescription("invoice_export_list");
+    }
+
+    std::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description(
+                        std::string("invoice_export_list options")));
+        cfg_opts->add_options()
+            ("invoice_export_list", "export list of invoices")
+            ("taxdate_from", boost::program_options
+                ::value<Checked::string>()->notifier(save_optional_string(taxdate_from))
+                , "default is the first day of the last month, "
+                  "meaning is start of interval including \"taxdate_from\" arg format YYYY-MM-DD")
+            ("taxdate_to", boost::program_options
+                ::value<Checked::string>()->notifier(save_optional_string(taxdate_to))
+                , "default is first day of this month, "
+                  "meaning is end of interval NOT including \"taxdate_to\" arg format YYYY-MM-DD")
+            ("limit", boost::program_options
+                ::value<int>()->default_value(1000)->notifier(save_arg<int>(limit))
+                , "limit number of processed invoices (0 = no limit)")
+            ("invoice_id",boost::program_options
+                ::value<unsigned long long>()->default_value(0)->notifier(save_arg<unsigned long long>(invoice_id))
+                 , "only process invoice of given id")
+                ;
+        return cfg_opts;
+    }//get_options_description
+    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
+            , std::size_t option_group_index)
+    {
+        boost::program_options::variables_map vm;
+        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
+        return option_group_index;
+    }//handle
+};//class HandleAdminClientInvoiceExportListArgsGrp
+
+
+/**
  * \class HandleAdminClientInvoiceCreditArgsGrp
  * \brief admin client invoice_credit options handler
  */

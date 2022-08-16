@@ -4,3 +4,4 @@ fred/idl master external/idl
 fred/db master external/db
 fred/libhermes master external/lib/libhermes
 fred/libfiled master external/lib/libfiled
+fred/libtypist master external/lib/libtypist
