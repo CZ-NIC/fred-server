@@ -48,6 +48,7 @@ public:
     const MessengerArgs& get_args() const;
     const std::string& get_endpoint() const;
     bool get_archive() const;
+    bool get_archive_rendered() const;
 };
 
 #endif
