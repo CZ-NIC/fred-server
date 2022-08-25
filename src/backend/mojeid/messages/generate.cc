@@ -84,7 +84,7 @@ struct PossibleRequestTypes<CommChannel::sms>
                "$" + _params.add(type[1]) + "::TEXT";
     }
 
-    static Generate::MessageId generate_message(
+    static void generate_message(
             LibFred::OperationContext& _ctx,
             Multimanager& _multimanager,
             const MojeId::MessengerConfiguration& _messenger_configuration,
@@ -97,31 +97,27 @@ struct PossibleRequestTypes<CommChannel::sms>
     {
         if (PubReqCCI().get_public_request_type() == _public_request_type)
         {
-            const Generate::MessageId message_id =
-                Generate::Into<CommChannel::sms>::for_given_request<PubReqCCI>(
-                        _ctx,
-                        _multimanager,
-                        _messenger_configuration,
-                        _locked_request,
-                        _locked_contact,
-                        _check_message_limits,
-                        _link_hostname_part,
-                        _contact_history_id);
-            return message_id;
+            Generate::Into<CommChannel::sms>::for_given_request<PubReqCCI>(
+                    _ctx,
+                    _multimanager,
+                    _messenger_configuration,
+                    _locked_request,
+                    _locked_contact,
+                    _check_message_limits,
+                    _link_hostname_part,
+                    _contact_history_id);
         }
         if (PubReqPUCT().get_public_request_type() == _public_request_type)
         {
-            const Generate::MessageId message_id =
-                Generate::Into<CommChannel::sms>::for_given_request<PubReqPUCT>(
-                        _ctx,
-                        _multimanager,
-                        _messenger_configuration,
-                        _locked_request,
-                        _locked_contact,
-                        _check_message_limits,
-                        _link_hostname_part,
-                        _contact_history_id);
-            return message_id;
+            Generate::Into<CommChannel::sms>::for_given_request<PubReqPUCT>(
+                    _ctx,
+                    _multimanager,
+                    _messenger_configuration,
+                    _locked_request,
+                    _locked_contact,
+                    _check_message_limits,
+                    _link_hostname_part,
+                    _contact_history_id);
         }
         throw std::runtime_error("unexpected public request type: " + _public_request_type);
     }
@@ -146,7 +142,7 @@ struct PossibleRequestTypes<CommChannel::letter>
                "$" + _params.add(type[1]) + "::TEXT";
     }
 
-    static Generate::MessageId generate_message(
+    static void generate_message(
             LibFred::OperationContext& _ctx,
             Multimanager& _multimanager,
             const MojeId::MessengerConfiguration& _messenger_configuration,
@@ -160,31 +156,27 @@ struct PossibleRequestTypes<CommChannel::letter>
         static const CommChannel::Enum channel_letter = CommChannel::letter;
         if (PubReqCI().get_public_request_type() == _public_request_type)
         {
-            const Generate::MessageId message_id =
-                Generate::Into<channel_letter>::for_given_request<PubReqCI>(
-                        _ctx,
-                        _multimanager,
-                        _messenger_configuration,
-                        _locked_request,
-                        _locked_contact,
-                        _check_message_limits,
-                        _link_hostname_part,
-                        _contact_history_id);
-            return message_id;
+            Generate::Into<channel_letter>::for_given_request<PubReqCI>(
+                    _ctx,
+                    _multimanager,
+                    _messenger_configuration,
+                    _locked_request,
+                    _locked_contact,
+                    _check_message_limits,
+                    _link_hostname_part,
+                    _contact_history_id);
         }
         if (PubReqCR().get_public_request_type() == _public_request_type)
         {
-            const Generate::MessageId message_id =
-                Generate::Into<channel_letter>::for_given_request<PubReqCR>(
-                        _ctx,
-                        _multimanager,
-                        _messenger_configuration,
-                        _locked_request,
-                        _locked_contact,
-                        _check_message_limits,
-                        _link_hostname_part,
-                        _contact_history_id);
-            return message_id;
+            Generate::Into<channel_letter>::for_given_request<PubReqCR>(
+                    _ctx,
+                    _multimanager,
+                    _messenger_configuration,
+                    _locked_request,
+                    _locked_contact,
+                    _check_message_limits,
+                    _link_hostname_part,
+                    _contact_history_id);
         }
         throw std::runtime_error("unexpected public request type: " + _public_request_type);
     }
@@ -218,7 +210,7 @@ struct PossibleRequestTypes<CommChannel::email>
                "$" + _params.add(type[4]) + "::TEXT";
     }
 
-    static Generate::MessageId generate_message(
+    static void generate_message(
             LibFred::OperationContext& _ctx,
             Multimanager& _multimanager,
             const MojeId::MessengerConfiguration& _messenger_configuration,
@@ -232,73 +224,63 @@ struct PossibleRequestTypes<CommChannel::email>
         static const CommChannel::Enum channel_email = CommChannel::email;
         if (PubReqCCI().get_public_request_type() == _public_request_type)
         {
-            const Generate::MessageId message_id =
-                Generate::Into<channel_email>::for_given_request<PubReqCCI>(
-                        _ctx,
-                        _multimanager,
-                        _messenger_configuration,
-                        _locked_request,
-                        _locked_contact,
-                        _check_message_limits,
-                        _link_hostname_part,
-                        _contact_history_id);
-            return message_id;
+            Generate::Into<channel_email>::for_given_request<PubReqCCI>(
+                    _ctx,
+                    _multimanager,
+                    _messenger_configuration,
+                    _locked_request,
+                    _locked_contact,
+                    _check_message_limits,
+                    _link_hostname_part,
+                    _contact_history_id);
         }
         if (PubReqCICT().get_public_request_type() == _public_request_type)
         {
-            const Generate::MessageId message_id =
-                Generate::Into<channel_email>::for_given_request<PubReqCICT>(
-                        _ctx,
-                        _multimanager,
-                        _messenger_configuration,
-                        _locked_request,
-                        _locked_contact,
-                        _check_message_limits,
-                        _link_hostname_part,
-                        _contact_history_id);
-            return message_id;
+            Generate::Into<channel_email>::for_given_request<PubReqCICT>(
+                    _ctx,
+                    _multimanager,
+                    _messenger_configuration,
+                    _locked_request,
+                    _locked_contact,
+                    _check_message_limits,
+                    _link_hostname_part,
+                    _contact_history_id);
         }
         if (PubReqICT().get_public_request_type() == _public_request_type)
         {
-            const Generate::MessageId message_id =
-                Generate::Into<channel_email>::for_given_request<PubReqICT>(
-                        _ctx,
-                        _multimanager,
-                        _messenger_configuration,
-                        _locked_request,
-                        _locked_contact,
-                        _check_message_limits,
-                        _link_hostname_part,
-                        _contact_history_id);
-            return message_id;
+            Generate::Into<channel_email>::for_given_request<PubReqICT>(
+                    _ctx,
+                    _multimanager,
+                    _messenger_configuration,
+                    _locked_request,
+                    _locked_contact,
+                    _check_message_limits,
+                    _link_hostname_part,
+                    _contact_history_id);
         }
         if (PubReqPCT().get_public_request_type() == _public_request_type)
         {
-            const Generate::MessageId message_id =
-                Generate::Into<channel_email>::for_given_request<PubReqPCT>(
-                        _ctx,
-                        _multimanager,
-                        _messenger_configuration,
-                        _locked_request,
-                        _locked_contact,
-                        _check_message_limits,
-                        _link_hostname_part,
-                        _contact_history_id);
-            return message_id;
+            Generate::Into<channel_email>::for_given_request<PubReqPCT>(
+                    _ctx,
+                    _multimanager,
+                    _messenger_configuration,
+                    _locked_request,
+                    _locked_contact,
+                    _check_message_limits,
+                    _link_hostname_part,
+                    _contact_history_id);
         }
         if (PubReqPUCT().get_public_request_type() == _public_request_type)
         {
-            const Generate::MessageId message_id =
-                Generate::Into<channel_email>::for_given_request<PubReqPUCT>(
-                        _ctx,
-                        _multimanager,
-                        _messenger_configuration,
-                        _locked_request,
-                        _locked_contact,
-                        _check_message_limits,
-                        _link_hostname_part,
-                        _contact_history_id);
-            return message_id;
+            Generate::Into<channel_email>::for_given_request<PubReqPUCT>(
+                    _ctx,
+                    _multimanager,
+                    _messenger_configuration,
+                    _locked_request,
+                    _locked_contact,
+                    _check_message_limits,
+                    _link_hostname_part,
+                    _contact_history_id);
         }
         throw std::runtime_error("unexpected public request type: " + _public_request_type);
     }
@@ -604,7 +586,7 @@ template <>
 struct generate_message<CommChannel::sms,
                         Fred::Backend::MojeId::PublicRequest::ContactConditionalIdentification>
 {
-    static Generate::MessageId for_given_request(
+    static void for_given_request(
             LibFred::OperationContext& _ctx,
             Multimanager& _multimanager,
             const MojeId::MessengerConfiguration& _messenger_configuration,
@@ -650,14 +632,13 @@ struct generate_message<CommChannel::sms,
 
         try
         {
-            const auto sms_uid =
-                    LibHermes::Sms::send(
-                            connection,
-                            message_data,
-                            LibHermes::Sms::Archive{_messenger_configuration.archive},
-                            {LibHermes::Reference{
-                                    LibHermes::Reference::Type{"public-request"},
-                                    LibHermes::Reference::Value{boost::uuids::to_string(public_request_uuid)}}});
+            LibHermes::Sms::send(
+                    connection,
+                    message_data,
+                    LibHermes::Sms::Archive{_messenger_configuration.archive},
+                    {LibHermes::Reference{
+                            LibHermes::Reference::Type{"public-request"},
+                            LibHermes::Reference::Value{boost::uuids::to_string(public_request_uuid)}}});
         }
         catch (const LibHermes::Sms::SendFailed& e)
         {
@@ -674,9 +655,6 @@ struct generate_message<CommChannel::sms,
             _ctx.get_log().warning(boost::str(boost::format("exception caught while sending sms about public request with uuid %1%") % boost::uuids::to_string(public_request_uuid)));
             throw;
         }
-
-        const GeneralId message_id{0}; // TODO FIXME
-        return message_id;
     }
 
 };
@@ -685,7 +663,7 @@ template <>
 struct generate_message<CommChannel::sms,
                         Fred::Backend::MojeId::PublicRequest::PrevalidatedUnidentifiedContactTransfer>
 {
-    static Generate::MessageId for_given_request(
+    static void for_given_request(
             LibFred::OperationContext& _ctx,
             Multimanager& _multimanager,
             const MojeId::MessengerConfiguration& _messenger_configuration,
@@ -695,7 +673,7 @@ struct generate_message<CommChannel::sms,
             const std::string& _link_hostname_part,
             const Optional<GeneralId>& _contact_history_id)
     {
-        return generate_message<CommChannel::sms,
+        generate_message<CommChannel::sms,
                 Fred::Backend::MojeId::PublicRequest::ContactConditionalIdentification>::
                for_given_request(
                 _ctx,
@@ -710,7 +688,7 @@ struct generate_message<CommChannel::sms,
 
 };
 
-Generate::MessageId send_auth_owner_letter(
+void send_auth_owner_letter(
         LibFred::OperationContext& _ctx,
         LibFred::Messages::Manager& _msg_manager,
         LibFred::Document::Manager& _doc_manager,
@@ -783,31 +761,24 @@ Generate::MessageId send_auth_owner_letter(
     const auto contact_uuid = get_raw_value_from(_data.uuid);
     const auto public_request_uuid = get_public_request_uuid(_ctx, _public_request_id);
 
-    // TODO FIXME when template ready
     LibHermes::Struct template_parameters{
-            {LibHermes::StructKey{"actual_date"}, LibHermes::StructValue{boost::gregorian::to_iso_extended_string(letter_date)}},
-            {LibHermes::StructKey{"name"}, LibHermes::StructValue{*recipient_address.name}},
-            {LibHermes::StructKey{"organization"}, LibHermes::StructValue{*recipient_address.organization}},
-            {LibHermes::StructKey{"street"}, LibHermes::StructValue{*(recipient_address.street_field[0])}},
-            {LibHermes::StructKey{"city"}, LibHermes::StructValue{*recipient_address.city}},
-            {LibHermes::StructKey{"stateorprovince"}, LibHermes::StructValue{*recipient_address.state_or_province}},
-            {LibHermes::StructKey{"postal_code"}, LibHermes::StructValue{*recipient_address.postal_code}},
-            {LibHermes::StructKey{"country"}, LibHermes::StructValue{country_name_fallback_code}},
-            // account
+            {LibHermes::StructKey{"date"}, LibHermes::StructValue{boost::gregorian::to_iso_extended_string(letter_date)}},
+            {LibHermes::StructKey{"address"},
+                    LibHermes::StructValue{LibHermes::Struct{
+                            {LibHermes::StructKey{"name"}, LibHermes::StructValue{*recipient_address.name}},
+                            {LibHermes::StructKey{"organization"}, LibHermes::StructValue{*recipient_address.organization}},
+                            {LibHermes::StructKey{"streets"}, {LibHermes::StructValue{*(recipient_address.street_field[0])}}},
+                            {LibHermes::StructKey{"postal_code"}, LibHermes::StructValue{*recipient_address.postal_code}},
+                            {LibHermes::StructKey{"city"}, LibHermes::StructValue{*recipient_address.city}},
+                            {LibHermes::StructKey{"country_code"}, LibHermes::StructValue{country_name_fallback_code}},
+                            {LibHermes::StructKey{"state_or_province"}, LibHermes::StructValue{*recipient_address.state_or_province}}}}},
             {LibHermes::StructKey{"username"}, LibHermes::StructValue{boost::algorithm::to_lower_copy(contact_handle)}},
-            {LibHermes::StructKey{"first_name"}, LibHermes::StructValue{firstname}},
-            {LibHermes::StructKey{"username"}, LibHermes::StructValue{lastname}},
-            {LibHermes::StructKey{"sex"}, LibHermes::StructValue{sex}},
-            {LibHermes::StructKey{"email"}, LibHermes::StructValue{_data.email.get_value_or_default()}},
-            {LibHermes::StructKey{"mobile"}, LibHermes::StructValue{_data.telephone.get_value_or_default()}},
-            {LibHermes::StructKey{"state"}, LibHermes::StructValue{contact_state}},
-            // auth/codes
             {LibHermes::StructKey{"pin"}, LibHermes::StructValue{_pin3}}};
 
     auto message_data =
             LibHermes::Letter::make_minimal_message(
                     recipient_address,
-                    LibHermes::Letter::BodyTemplate{"mojeid-pin3-cs.txt"}); // TODO FIXME when template ready
+                    LibHermes::Letter::BodyTemplate{"mojeid-pin3.html"});
 
     message_data.recipient_uuids = std::vector<LibHermes::Letter::RecipientUuid>{LibHermes::Letter::RecipientUuid(contact_uuid)};
     message_data.type = LibHermes::Letter::Type{std::string{"mojeid_pin3"}};
@@ -819,15 +790,14 @@ Generate::MessageId send_auth_owner_letter(
 
     try
     {
-        const auto letter_uid =
-                LibHermes::Letter::send(
-                        connection,
-                        message_data,
-                        LibHermes::Letter::Archive{_messenger_configuration.archive},
-                        LibHermes::Letter::ArchiveRendered{_messenger_configuration.archive_rendered},
-                        {LibHermes::Reference{
-                                LibHermes::Reference::Type{"public-request"},
-                                LibHermes::Reference::Value{boost::uuids::to_string(public_request_uuid)}}});
+        LibHermes::Letter::send(
+                connection,
+                message_data,
+                LibHermes::Letter::Archive{_messenger_configuration.archive},
+                LibHermes::Letter::ArchiveRendered{_messenger_configuration.archive_rendered},
+                {LibHermes::Reference{
+                        LibHermes::Reference::Type{"public-request"},
+                        LibHermes::Reference::Value{boost::uuids::to_string(public_request_uuid)}}});
     }
 
     catch (const LibHermes::Letter::SendFailed& e)
@@ -845,16 +815,13 @@ Generate::MessageId send_auth_owner_letter(
         _ctx.get_log().warning(boost::str(boost::format("exception caught while sending letter about public_request with uuid %1%") % boost::uuids::to_string(public_request_uuid)));
         throw;
     }
-
-    const GeneralId message_id{0}; // TODO FIXME
-    return message_id;
 }
 
 
 template <>
 struct generate_message<CommChannel::letter, Fred::Backend::MojeId::PublicRequest::ContactIdentification>
 {
-    static Generate::MessageId for_given_request(
+    static void for_given_request(
             LibFred::OperationContext& _ctx,
             Multimanager& _multimanager,
             const MojeId::MessengerConfiguration& _messenger_configuration,
@@ -931,7 +898,7 @@ struct generate_message<CommChannel::letter, Fred::Backend::MojeId::PublicReques
                 _ctx,
                 contact_data.id);
 
-        const Generate::MessageId message_id = send_auth_owner_letter(
+        send_auth_owner_letter(
                 _ctx,
                 _multimanager.select<LibFred::Messages::Manager>(),
                 _multimanager.select<LibFred::Document::Manager>(),
@@ -942,7 +909,6 @@ struct generate_message<CommChannel::letter, Fred::Backend::MojeId::PublicReques
                 validated_contact,
                 _locked_request.get_id(),
                 letter_time);
-        return message_id;
     }
 
 };
@@ -950,7 +916,7 @@ struct generate_message<CommChannel::letter, Fred::Backend::MojeId::PublicReques
 template <>
 struct generate_message<CommChannel::letter, Fred::Backend::MojeId::PublicRequest::ContactReidentification>
 {
-    static Generate::MessageId for_given_request(
+    static void for_given_request(
             LibFred::OperationContext& _ctx,
             Multimanager& _multimanager,
             const MojeId::MessengerConfiguration& _messenger_configuration,
@@ -1003,19 +969,17 @@ struct generate_message<CommChannel::letter, Fred::Backend::MojeId::PublicReques
                 _ctx,
                 contact_data.id);
 
-        const Generate::MessageId message_id =
-                send_auth_owner_letter(
-                        _ctx,
-                        _multimanager.select<LibFred::Messages::Manager>(),
-                        _multimanager.select<LibFred::Document::Manager>(),
-                        _messenger_configuration,
-                        doc_type,
-                        contact_data,
-                        pin3,
-                        validated_contact,
-                        _locked_request.get_id(),
-                        letter_time);
-        return message_id;
+        send_auth_owner_letter(
+                _ctx,
+                _multimanager.select<LibFred::Messages::Manager>(),
+                _multimanager.select<LibFred::Document::Manager>(),
+                _messenger_configuration,
+                doc_type,
+                contact_data,
+                pin3,
+                validated_contact,
+                _locked_request.get_id(),
+                letter_time);
     }
 
 };
@@ -1112,7 +1076,7 @@ LibHermes::Email::BodyTemplate get_libhermes_email_body_template(const std::stri
     throw std::runtime_error{"unexpected _mail_type"};
 };
 
-Generate::MessageId send_email(
+void send_email(
         const std::string& _mail_type,
         LibFred::OperationContext& _ctx,
         Multimanager& _multimanager,
@@ -1250,8 +1214,6 @@ Generate::MessageId send_email(
         _ctx.get_log().warning(boost::str(boost::format("exception caught while sending email about public_request with uuid %1%") % boost::uuids::to_string(public_request_uuid)));
         throw;
     }
-    const GeneralId message_id{0}; // TODO FIXME
-    return message_id;
 }
 
 
@@ -1259,7 +1221,7 @@ template <>
 struct generate_message<CommChannel::email,
                         Fred::Backend::MojeId::PublicRequest::ContactConditionalIdentification>
 {
-    static Generate::MessageId for_given_request(
+    static void for_given_request(
             LibFred::OperationContext& _ctx,
             Multimanager& _multimanager,
             const MojeId::MessengerConfiguration& _messenger_configuration,
@@ -1289,7 +1251,7 @@ template <>
 struct generate_message<CommChannel::email,
                         Fred::Backend::MojeId::PublicRequest::ConditionallyIdentifiedContactTransfer>
 {
-    static Generate::MessageId for_given_request(
+    static void for_given_request(
             LibFred::OperationContext& _ctx,
             Multimanager& _multimanager,
             const MojeId::MessengerConfiguration& _messenger_configuration,
@@ -1318,7 +1280,7 @@ struct generate_message<CommChannel::email,
 template <>
 struct generate_message<CommChannel::email, Fred::Backend::MojeId::PublicRequest::IdentifiedContactTransfer>
 {
-    static Generate::MessageId for_given_request(
+    static void for_given_request(
             LibFred::OperationContext& _ctx,
             Multimanager& _multimanager,
             const MojeId::MessengerConfiguration& _messenger_configuration,
@@ -1348,7 +1310,7 @@ template <>
 struct generate_message<CommChannel::email,
                         Fred::Backend::MojeId::PublicRequest::PrevalidatedUnidentifiedContactTransfer>
 {
-    static Generate::MessageId for_given_request(
+    static void for_given_request(
             LibFred::OperationContext& _ctx,
             Multimanager& _multimanager,
             const MojeId::MessengerConfiguration& _messenger_configuration,
@@ -1377,7 +1339,7 @@ struct generate_message<CommChannel::email,
 template <>
 struct generate_message<CommChannel::email, Fred::Backend::MojeId::PublicRequest::PrevalidatedContactTransfer>
 {
-    static Generate::MessageId for_given_request(
+    static void for_given_request(
             LibFred::OperationContext& _ctx,
             Multimanager& _multimanager,
             const MojeId::MessengerConfiguration& _messenger_configuration,
@@ -1505,7 +1467,7 @@ void Generate::Into<COMM_CHANNEL>::for_new_requests(
             const PublicRequestObjectLocked locked_contact(static_cast<GeneralId>(dbres[idx][2]));
             const GeneralId contact_history_id  = static_cast<GeneralId>(dbres[idx][3]);
             LibFred::OperationContextCreator ctx;
-            const MessageId message_id = PossibleRequestTypes<COMM_CHANNEL>::generate_message(
+            PossibleRequestTypes<COMM_CHANNEL>::generate_message(
                     ctx,
                     _multimanager,
                     _messenger_configuration,
@@ -1515,10 +1477,6 @@ void Generate::Into<COMM_CHANNEL>::for_new_requests(
                     _check_message_limits,
                     _link_hostname_part,
                     contact_history_id);
-            JoinMessage<COMM_CHANNEL>::with_public_request(
-                    ctx,
-                    locked_request,
-                    message_id);
             ctx.commit_transaction();
         }
         catch (const std::exception& e)
@@ -1589,7 +1547,7 @@ template void Generate::enable<CommChannel::letter>(
 
 template <CommChannel::Enum COMM_CHANNEL>
 template <typename PUBLIC_REQUEST_TYPE>
-Generate::MessageId Generate::Into<COMM_CHANNEL>::for_given_request(
+void Generate::Into<COMM_CHANNEL>::for_given_request(
         LibFred::OperationContext& _ctx,
         Multimanager& _multimanager,
         const MojeId::MessengerConfiguration& _messenger_configuration,
@@ -1599,7 +1557,7 @@ Generate::MessageId Generate::Into<COMM_CHANNEL>::for_given_request(
         const std::string& _link_hostname_part,
         const Optional<GeneralId>& _contact_history_id)
 {
-    return generate_message<COMM_CHANNEL, PUBLIC_REQUEST_TYPE>::for_given_request(
+    generate_message<COMM_CHANNEL, PUBLIC_REQUEST_TYPE>::for_given_request(
             _ctx,
             _multimanager,
             _messenger_configuration,
@@ -1611,7 +1569,7 @@ Generate::MessageId Generate::Into<COMM_CHANNEL>::for_given_request(
 }
 
 
-template Generate::MessageId Generate::Into<CommChannel::sms>::
+template void Generate::Into<CommChannel::sms>::
 for_given_request<Fred::Backend::MojeId::PublicRequest::ContactConditionalIdentification>(
         LibFred::OperationContext& _ctx,
         Multimanager& _multimanager,
@@ -1623,7 +1581,7 @@ for_given_request<Fred::Backend::MojeId::PublicRequest::ContactConditionalIdenti
         const Optional<GeneralId>& _contact_history_id);
 
 
-template Generate::MessageId Generate::Into<CommChannel::sms>::
+template void Generate::Into<CommChannel::sms>::
 for_given_request<Fred::Backend::MojeId::PublicRequest::PrevalidatedUnidentifiedContactTransfer>(
         LibFred::OperationContext& _ctx,
         Multimanager& _multimanager,
@@ -1635,7 +1593,7 @@ for_given_request<Fred::Backend::MojeId::PublicRequest::PrevalidatedUnidentified
         const Optional<GeneralId>& _contact_history_id);
 
 
-template Generate::MessageId Generate::Into<CommChannel::letter>::
+template void Generate::Into<CommChannel::letter>::
 for_given_request<Fred::Backend::MojeId::PublicRequest::ContactIdentification>(
         LibFred::OperationContext& _ctx,
         Multimanager& _multimanager,
@@ -1647,7 +1605,7 @@ for_given_request<Fred::Backend::MojeId::PublicRequest::ContactIdentification>(
         const Optional<GeneralId>& _contact_history_id);
 
 
-template Generate::MessageId Generate::Into<CommChannel::letter>::
+template void Generate::Into<CommChannel::letter>::
 for_given_request<Fred::Backend::MojeId::PublicRequest::ContactReidentification>(
         LibFred::OperationContext& _ctx,
         Multimanager& _multimanager,
@@ -1659,7 +1617,7 @@ for_given_request<Fred::Backend::MojeId::PublicRequest::ContactReidentification>
         const Optional<GeneralId>& _contact_history_id);
 
 
-template Generate::MessageId Generate::Into<CommChannel::email>::
+template void Generate::Into<CommChannel::email>::
 for_given_request<Fred::Backend::MojeId::PublicRequest::ContactConditionalIdentification>(
         LibFred::OperationContext& _ctx,
         Multimanager& _multimanager,
@@ -1671,7 +1629,7 @@ for_given_request<Fred::Backend::MojeId::PublicRequest::ContactConditionalIdenti
         const Optional<GeneralId>& _contact_history_id);
 
 
-template Generate::MessageId Generate::Into<CommChannel::email>::
+template void Generate::Into<CommChannel::email>::
 for_given_request<Fred::Backend::MojeId::PublicRequest::ConditionallyIdentifiedContactTransfer>(
         LibFred::OperationContext& _ctx,
         Multimanager& _multimanager,
@@ -1683,7 +1641,7 @@ for_given_request<Fred::Backend::MojeId::PublicRequest::ConditionallyIdentifiedC
         const Optional<GeneralId>& _contact_history_id);
 
 
-template Generate::MessageId Generate::Into<CommChannel::email>::
+template void Generate::Into<CommChannel::email>::
 for_given_request<Fred::Backend::MojeId::PublicRequest::IdentifiedContactTransfer>(
         LibFred::OperationContext& _ctx,
         Multimanager& _multimanager,
@@ -1695,7 +1653,7 @@ for_given_request<Fred::Backend::MojeId::PublicRequest::IdentifiedContactTransfe
         const Optional<GeneralId>& _contact_history_id);
 
 
-template Generate::MessageId Generate::Into<CommChannel::email>::
+template void Generate::Into<CommChannel::email>::
 for_given_request<Fred::Backend::MojeId::PublicRequest::PrevalidatedUnidentifiedContactTransfer>(
         LibFred::OperationContext& _ctx,
         Multimanager& _multimanager,
@@ -1707,7 +1665,7 @@ for_given_request<Fred::Backend::MojeId::PublicRequest::PrevalidatedUnidentified
         const Optional<GeneralId>& _contact_history_id);
 
 
-template Generate::MessageId Generate::Into<CommChannel::email>::
+template void Generate::Into<CommChannel::email>::
 for_given_request<Fred::Backend::MojeId::PublicRequest::PrevalidatedContactTransfer>(
         LibFred::OperationContext& _ctx,
         Multimanager& _multimanager,

@@ -24,14 +24,15 @@
 #ifndef GENERATE_HH_01DB2767767C4522BF6CA4CFBABEEC17
 #define GENERATE_HH_01DB2767767C4522BF6CA4CFBABEEC17
 
-#include "libfred/mailer.hh"
-#include "libfred/opcontext.hh"
-#include "libfred/public_request/public_request_lock_guard.hh"
-#include "libfred/public_request/public_request_object_lock_guard.hh"
 #include "src/backend/mojeid/messenger_configuration.hh"
 #include "src/deprecated/libfred/documents.hh"
 #include "src/deprecated/libfred/messages/messages_impl.hh"
 #include "util/optional_value.hh"
+
+#include "libfred/mailer.hh"
+#include "libfred/opcontext.hh"
+#include "libfred/public_request/public_request_lock_guard.hh"
+#include "libfred/public_request/public_request_object_lock_guard.hh"
 
 #include <boost/noncopyable.hpp>
 
@@ -148,7 +149,7 @@ protected:
 
 
         template <typename PUBLIC_REQUEST_TYPE>
-        static MessageId for_given_request(
+        static void for_given_request(
                 LibFred::OperationContext& _ctx,
                 Multimanager& _multimanager,
                 const MojeId::MessengerConfiguration& _messenger_configuration,
