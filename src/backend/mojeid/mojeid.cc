@@ -3318,8 +3318,7 @@ void MojeIdImpl::generate_sms_messages() const
 
         LibFred::OperationContextCreator ctx;
         typedef Messages::CommChannel CommChannel;
-        Messages::DefaultMultimanager multimanager;
-        Messages::Generate::Into<CommChannel::sms>::for_new_requests(ctx, multimanager, messenger_configuration);
+        Messages::Generate::Into<CommChannel::sms>::for_new_requests(ctx, messenger_configuration);
         ctx.commit_transaction();
         return;
     }
@@ -3371,9 +3370,8 @@ void MojeIdImpl::generate_letter_messages() const
 
         LibFred::OperationContextCreator ctx;
         typedef Messages::CommChannel CommChannel;
-        Messages::DefaultMultimanager multimanager;
         Messages::Generate::Into<CommChannel::letter>::for_new_requests(
-                ctx, multimanager, messenger_configuration, check_limits::sent_letters());
+                ctx, messenger_configuration, check_limits::sent_letters());
         ctx.commit_transaction();
         return;
     }
@@ -3426,10 +3424,8 @@ void MojeIdImpl::generate_email_messages() const
         LibFred::OperationContextCreator ctx;
         typedef Messages::CommChannel CommChannel;
         const std::string link_hostname_part = CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIdArgs>()->hostname;
-        Messages::DefaultMultimanager multimanager;
         Messages::Generate::Into<CommChannel::email>::for_new_requests(
                 ctx,
-                multimanager,
                 messenger_configuration,
                 Messages::Generate::message_checker_always_success(),
                 link_hostname_part);

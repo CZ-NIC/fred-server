@@ -57,52 +57,6 @@ struct CommChannel
 
 };
 
-class Multimanager
-    : private boost::noncopyable
-{
-public:
-    template <typename MANAGER>
-    MANAGER& select();
-
-
-protected:
-    virtual ~Multimanager()
-    {
-    }
-
-private:
-    virtual LibFred::Document::Manager* document() = 0;
-    virtual LibFred::Mailer::Manager* mailer() = 0;
-    virtual LibFred::Messages::Manager* messages() = 0;
-
-    template <typename MANAGER, bool>
-    struct traits;
-
-};
-
-class DefaultMultimanager
-    : public Multimanager
-{
-public:
-    DefaultMultimanager()
-    {
-    }
-
-    ~DefaultMultimanager()
-    {
-    }
-
-private:
-    virtual LibFred::Document::Manager* document();
-    virtual LibFred::Mailer::Manager* mailer();
-    virtual LibFred::Messages::Manager* messages();
-
-
-    std::unique_ptr<LibFred::Mailer::Manager> mailer_manager_ptr_;
-    std::unique_ptr<LibFred::Document::Manager> document_manager_ptr_;
-    LibFred::Messages::ManagerPtr messages_manager_ptr_;
-};
-
 class Generate
 {
 public:
@@ -142,7 +96,6 @@ protected:
     {
         static void for_new_requests(
                 LibFred::OperationContext& _ctx,
-                Multimanager& _multimanager,
                 const MojeId::MessengerConfiguration& _messenger_configuration,
                 const message_checker& _check_message_limits = message_checker_always_success(),
                 const std::string& _link_hostname_part = "");
@@ -151,7 +104,6 @@ protected:
         template <typename PUBLIC_REQUEST_TYPE>
         static void for_given_request(
                 LibFred::OperationContext& _ctx,
-                Multimanager& _multimanager,
                 const MojeId::MessengerConfiguration& _messenger_configuration,
                 const LibFred::LockedPublicRequest& _locked_request,
                 const LibFred::LockedPublicRequestsOfObject& _locked_contact,

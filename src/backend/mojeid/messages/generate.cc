@@ -19,7 +19,6 @@
 #include "src/backend/mojeid/messages/generate.hh"
 #include "src/backend/mojeid/mojeid.hh"
 #include "src/backend/mojeid/mojeid_public_request.hh"
-#include "src/bin/corba/mailer_manager.hh"
 #include "src/deprecated/libfred/common_object.hh"
 #include "libfred/object/object_state.hh"
 #include "libfred/public_request/public_request_status.hh"
@@ -86,7 +85,6 @@ struct PossibleRequestTypes<CommChannel::sms>
 
     static void generate_message(
             LibFred::OperationContext& _ctx,
-            Multimanager& _multimanager,
             const MojeId::MessengerConfiguration& _messenger_configuration,
             const std::string& _public_request_type,
             const LibFred::LockedPublicRequest& _locked_request,
@@ -99,7 +97,6 @@ struct PossibleRequestTypes<CommChannel::sms>
         {
             Generate::Into<CommChannel::sms>::for_given_request<PubReqCCI>(
                     _ctx,
-                    _multimanager,
                     _messenger_configuration,
                     _locked_request,
                     _locked_contact,
@@ -111,7 +108,6 @@ struct PossibleRequestTypes<CommChannel::sms>
         {
             Generate::Into<CommChannel::sms>::for_given_request<PubReqPUCT>(
                     _ctx,
-                    _multimanager,
                     _messenger_configuration,
                     _locked_request,
                     _locked_contact,
@@ -144,7 +140,6 @@ struct PossibleRequestTypes<CommChannel::letter>
 
     static void generate_message(
             LibFred::OperationContext& _ctx,
-            Multimanager& _multimanager,
             const MojeId::MessengerConfiguration& _messenger_configuration,
             const std::string& _public_request_type,
             const LibFred::LockedPublicRequest& _locked_request,
@@ -158,7 +153,6 @@ struct PossibleRequestTypes<CommChannel::letter>
         {
             Generate::Into<channel_letter>::for_given_request<PubReqCI>(
                     _ctx,
-                    _multimanager,
                     _messenger_configuration,
                     _locked_request,
                     _locked_contact,
@@ -170,7 +164,6 @@ struct PossibleRequestTypes<CommChannel::letter>
         {
             Generate::Into<channel_letter>::for_given_request<PubReqCR>(
                     _ctx,
-                    _multimanager,
                     _messenger_configuration,
                     _locked_request,
                     _locked_contact,
@@ -212,7 +205,6 @@ struct PossibleRequestTypes<CommChannel::email>
 
     static void generate_message(
             LibFred::OperationContext& _ctx,
-            Multimanager& _multimanager,
             const MojeId::MessengerConfiguration& _messenger_configuration,
             const std::string& _public_request_type,
             const LibFred::LockedPublicRequest& _locked_request,
@@ -226,7 +218,6 @@ struct PossibleRequestTypes<CommChannel::email>
         {
             Generate::Into<channel_email>::for_given_request<PubReqCCI>(
                     _ctx,
-                    _multimanager,
                     _messenger_configuration,
                     _locked_request,
                     _locked_contact,
@@ -238,7 +229,6 @@ struct PossibleRequestTypes<CommChannel::email>
         {
             Generate::Into<channel_email>::for_given_request<PubReqCICT>(
                     _ctx,
-                    _multimanager,
                     _messenger_configuration,
                     _locked_request,
                     _locked_contact,
@@ -250,7 +240,6 @@ struct PossibleRequestTypes<CommChannel::email>
         {
             Generate::Into<channel_email>::for_given_request<PubReqICT>(
                     _ctx,
-                    _multimanager,
                     _messenger_configuration,
                     _locked_request,
                     _locked_contact,
@@ -262,7 +251,6 @@ struct PossibleRequestTypes<CommChannel::email>
         {
             Generate::Into<channel_email>::for_given_request<PubReqPCT>(
                     _ctx,
-                    _multimanager,
                     _messenger_configuration,
                     _locked_request,
                     _locked_contact,
@@ -274,7 +262,6 @@ struct PossibleRequestTypes<CommChannel::email>
         {
             Generate::Into<channel_email>::for_given_request<PubReqPUCT>(
                     _ctx,
-                    _multimanager,
                     _messenger_configuration,
                     _locked_request,
                     _locked_contact,
@@ -588,7 +575,6 @@ struct generate_message<CommChannel::sms,
 {
     static void for_given_request(
             LibFred::OperationContext& _ctx,
-            Multimanager& _multimanager,
             const MojeId::MessengerConfiguration& _messenger_configuration,
             const LibFred::LockedPublicRequest& _locked_request,
             const LibFred::LockedPublicRequestsOfObject& _locked_contact,
@@ -665,7 +651,6 @@ struct generate_message<CommChannel::sms,
 {
     static void for_given_request(
             LibFred::OperationContext& _ctx,
-            Multimanager& _multimanager,
             const MojeId::MessengerConfiguration& _messenger_configuration,
             const LibFred::LockedPublicRequest& _locked_request,
             const LibFred::LockedPublicRequestsOfObject& _locked_contact,
@@ -675,23 +660,20 @@ struct generate_message<CommChannel::sms,
     {
         generate_message<CommChannel::sms,
                 Fred::Backend::MojeId::PublicRequest::ContactConditionalIdentification>::
-               for_given_request(
-                _ctx,
-                _multimanager,
-                _messenger_configuration,
-                _locked_request,
-                _locked_contact,
-                _check_message_limits,
-                _link_hostname_part,
-                _contact_history_id);
+                for_given_request(
+                        _ctx,
+                        _messenger_configuration,
+                        _locked_request,
+                        _locked_contact,
+                        _check_message_limits,
+                        _link_hostname_part,
+                        _contact_history_id);
     }
 
 };
 
 void send_auth_owner_letter(
         LibFred::OperationContext& _ctx,
-        LibFred::Messages::Manager& _msg_manager,
-        LibFred::Document::Manager& _doc_manager,
         const MojeId::MessengerConfiguration& _messenger_configuration,
         LibFred::Document::GenerationType _doc_type,
         const LibFred::InfoContactData& _data,
@@ -823,7 +805,6 @@ struct generate_message<CommChannel::letter, Fred::Backend::MojeId::PublicReques
 {
     static void for_given_request(
             LibFred::OperationContext& _ctx,
-            Multimanager& _multimanager,
             const MojeId::MessengerConfiguration& _messenger_configuration,
             const LibFred::LockedPublicRequest& _locked_request,
             const LibFred::LockedPublicRequestsOfObject& _locked_contact,
@@ -883,7 +864,7 @@ struct generate_message<CommChannel::letter, Fred::Backend::MojeId::PublicReques
         const LibFred::Document::GenerationType doc_type =
                 send_via_optys
                         ? LibFred::Document::
-                                  GT_CONTACT_IDENTIFICATION_LETTER_PIN3_OPTYS
+                                  GT_CONTACT_IDENTIFICATION_LETTER_PIN3_OPTYS // TODO OPTYS
                         : LibFred::Document::
                                   GT_CONTACT_IDENTIFICATION_LETTER_PIN3;
         const bool use_historic_data = _contact_history_id.isset();
@@ -900,8 +881,6 @@ struct generate_message<CommChannel::letter, Fred::Backend::MojeId::PublicReques
 
         send_auth_owner_letter(
                 _ctx,
-                _multimanager.select<LibFred::Messages::Manager>(),
-                _multimanager.select<LibFred::Document::Manager>(),
                 _messenger_configuration,
                 doc_type,
                 contact_data,
@@ -918,7 +897,6 @@ struct generate_message<CommChannel::letter, Fred::Backend::MojeId::PublicReques
 {
     static void for_given_request(
             LibFred::OperationContext& _ctx,
-            Multimanager& _multimanager,
             const MojeId::MessengerConfiguration& _messenger_configuration,
             const LibFred::LockedPublicRequest& _locked_request,
             const LibFred::LockedPublicRequestsOfObject& _locked_contact,
@@ -971,8 +949,6 @@ struct generate_message<CommChannel::letter, Fred::Backend::MojeId::PublicReques
 
         send_auth_owner_letter(
                 _ctx,
-                _multimanager.select<LibFred::Messages::Manager>(),
-                _multimanager.select<LibFred::Document::Manager>(),
                 _messenger_configuration,
                 doc_type,
                 contact_data,
@@ -1079,7 +1055,6 @@ LibHermes::Email::BodyTemplate get_libhermes_email_body_template(const std::stri
 void send_email(
         const std::string& _mail_type,
         LibFred::OperationContext& _ctx,
-        Multimanager& _multimanager,
         const MojeId::MessengerConfiguration& _messenger_configuration,
         const LibFred::LockedPublicRequest& _locked_request,
         const LibFred::LockedPublicRequestsOfObject& _locked_contact,
@@ -1223,7 +1198,6 @@ struct generate_message<CommChannel::email,
 {
     static void for_given_request(
             LibFred::OperationContext& _ctx,
-            Multimanager& _multimanager,
             const MojeId::MessengerConfiguration& _messenger_configuration,
             const LibFred::LockedPublicRequest& _locked_request,
             const LibFred::LockedPublicRequestsOfObject& _locked_contact,
@@ -1236,7 +1210,6 @@ struct generate_message<CommChannel::email,
         return send_email(
                 mail_type,
                 _ctx,
-                _multimanager,
                 _messenger_configuration,
                 _locked_request,
                 _locked_contact,
@@ -1253,7 +1226,6 @@ struct generate_message<CommChannel::email,
 {
     static void for_given_request(
             LibFred::OperationContext& _ctx,
-            Multimanager& _multimanager,
             const MojeId::MessengerConfiguration& _messenger_configuration,
             const LibFred::LockedPublicRequest& _locked_request,
             const LibFred::LockedPublicRequestsOfObject& _locked_contact,
@@ -1266,7 +1238,6 @@ struct generate_message<CommChannel::email,
         return send_email(
                 mail_type,
                 _ctx,
-                _multimanager,
                 _messenger_configuration,
                 _locked_request,
                 _locked_contact,
@@ -1282,7 +1253,6 @@ struct generate_message<CommChannel::email, Fred::Backend::MojeId::PublicRequest
 {
     static void for_given_request(
             LibFred::OperationContext& _ctx,
-            Multimanager& _multimanager,
             const MojeId::MessengerConfiguration& _messenger_configuration,
             const LibFred::LockedPublicRequest& _locked_request,
             const LibFred::LockedPublicRequestsOfObject& _locked_contact,
@@ -1295,7 +1265,6 @@ struct generate_message<CommChannel::email, Fred::Backend::MojeId::PublicRequest
         return send_email(
                 mail_type,
                 _ctx,
-                _multimanager,
                 _messenger_configuration,
                 _locked_request,
                 _locked_contact,
@@ -1312,7 +1281,6 @@ struct generate_message<CommChannel::email,
 {
     static void for_given_request(
             LibFred::OperationContext& _ctx,
-            Multimanager& _multimanager,
             const MojeId::MessengerConfiguration& _messenger_configuration,
             const LibFred::LockedPublicRequest& _locked_request,
             const LibFred::LockedPublicRequestsOfObject& _locked_contact,
@@ -1325,7 +1293,6 @@ struct generate_message<CommChannel::email,
         return send_email(
                 mail_type,
                 _ctx,
-                _multimanager,
                 _messenger_configuration,
                 _locked_request,
                 _locked_contact,
@@ -1341,7 +1308,6 @@ struct generate_message<CommChannel::email, Fred::Backend::MojeId::PublicRequest
 {
     static void for_given_request(
             LibFred::OperationContext& _ctx,
-            Multimanager& _multimanager,
             const MojeId::MessengerConfiguration& _messenger_configuration,
             const LibFred::LockedPublicRequest& _locked_request,
             const LibFred::LockedPublicRequestsOfObject& _locked_contact,
@@ -1354,7 +1320,6 @@ struct generate_message<CommChannel::email, Fred::Backend::MojeId::PublicRequest
         return send_email(
                 mail_type,
                 _ctx,
-                _multimanager,
                 _messenger_configuration,
                 _locked_request,
                 _locked_contact,
@@ -1367,89 +1332,9 @@ struct generate_message<CommChannel::email, Fred::Backend::MojeId::PublicRequest
 
 } // namespace Fred::Backend::MojeId::Messages::{anonymous}
 
-template <bool X>
-struct Multimanager::traits<LibFred::Document::Manager, X>
-{
-    static LibFred::Document::Manager* get(Multimanager* mm_ptr)
-    {
-        return mm_ptr->document();
-    }
-
-};
-
-template <bool X>
-struct Multimanager::traits<LibFred::Mailer::Manager, X>
-{
-    static LibFred::Mailer::Manager* get(Multimanager* mm_ptr)
-    {
-        return mm_ptr->mailer();
-    }
-
-};
-
-template <bool X>
-struct Multimanager::traits<LibFred::Messages::Manager, X>
-{
-    static LibFred::Messages::Manager* get(Multimanager* mm_ptr)
-    {
-        return mm_ptr->messages();
-    }
-
-};
-
-template <typename MANAGER>
-MANAGER& Multimanager::select()
-{
-    return *traits<MANAGER, false>::get(this);
-}
-
-
-LibFred::Document::Manager* DefaultMultimanager::document()
-{
-    if (document_manager_ptr_.get() == NULL)
-    {
-        const HandleRegistryArgs* const rconf =
-            CfgArgs::instance()->get_handler_ptr_by_type<HandleRegistryArgs>();
-        document_manager_ptr_ =
-            LibFred::Document::Manager::create(
-                    rconf->docgen_path,
-                    rconf->docgen_template_path,
-                    rconf->fileclient_path,
-                    CfgArgs::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgs>()
-                    ->get_nameservice_host_port());
-    }
-    return document_manager_ptr_.get();
-}
-
-
-LibFred::Mailer::Manager* DefaultMultimanager::mailer()
-{
-    if (mailer_manager_ptr_.get() == NULL)
-    {
-        mailer_manager_ptr_ =
-            std::unique_ptr<LibFred::Mailer::Manager>(
-                    new MailerManager(
-                            CorbaContainer::get_instance()
-                            ->getNS()));
-    }
-    return mailer_manager_ptr_.get();
-}
-
-
-LibFred::Messages::Manager* DefaultMultimanager::messages()
-{
-    if (messages_manager_ptr_.get() == NULL)
-    {
-        messages_manager_ptr_ = LibFred::Messages::create_manager();
-    }
-    return messages_manager_ptr_.get();
-}
-
-
 template <CommChannel::Enum COMM_CHANNEL>
 void Generate::Into<COMM_CHANNEL>::for_new_requests(
         LibFred::OperationContext& _ctx,
-        Multimanager& _multimanager,
         const MojeId::MessengerConfiguration& _messenger_configuration,
         const message_checker& _check_message_limits,
         const std::string& _link_hostname_part)
@@ -1469,7 +1354,6 @@ void Generate::Into<COMM_CHANNEL>::for_new_requests(
             LibFred::OperationContextCreator ctx;
             PossibleRequestTypes<COMM_CHANNEL>::generate_message(
                     ctx,
-                    _multimanager,
                     _messenger_configuration,
                     public_request_type,
                     locked_request,
@@ -1493,7 +1377,6 @@ void Generate::Into<COMM_CHANNEL>::for_new_requests(
 
 template void Generate::Into<CommChannel::sms>::for_new_requests(
         LibFred::OperationContext& _ctx,
-        Multimanager& _multimanager,
         const MojeId::MessengerConfiguration& _messenger_configuration,
         const message_checker& _check_message_limits,
         const std::string& _link_hostname_part);
@@ -1501,7 +1384,6 @@ template void Generate::Into<CommChannel::sms>::for_new_requests(
 
 template void Generate::Into<CommChannel::email>::for_new_requests(
         LibFred::OperationContext& _ctx,
-        Multimanager& _multimanager,
         const MojeId::MessengerConfiguration& _messenger_configuration,
         const message_checker& _check_message_limits,
         const std::string& _link_hostname_part);
@@ -1509,7 +1391,6 @@ template void Generate::Into<CommChannel::email>::for_new_requests(
 
 template void Generate::Into<CommChannel::letter>::for_new_requests(
         LibFred::OperationContext& _ctx,
-        Multimanager& _multimanager,
         const MojeId::MessengerConfiguration& _messenger_configuration,
         const message_checker& _check_message_limits,
         const std::string& _link_hostname_part);
@@ -1549,7 +1430,6 @@ template <CommChannel::Enum COMM_CHANNEL>
 template <typename PUBLIC_REQUEST_TYPE>
 void Generate::Into<COMM_CHANNEL>::for_given_request(
         LibFred::OperationContext& _ctx,
-        Multimanager& _multimanager,
         const MojeId::MessengerConfiguration& _messenger_configuration,
         const LibFred::LockedPublicRequest& _locked_request,
         const LibFred::LockedPublicRequestsOfObject& _locked_contact,
@@ -1559,7 +1439,6 @@ void Generate::Into<COMM_CHANNEL>::for_given_request(
 {
     generate_message<COMM_CHANNEL, PUBLIC_REQUEST_TYPE>::for_given_request(
             _ctx,
-            _multimanager,
             _messenger_configuration,
             _locked_request,
             _locked_contact,
@@ -1572,7 +1451,6 @@ void Generate::Into<COMM_CHANNEL>::for_given_request(
 template void Generate::Into<CommChannel::sms>::
 for_given_request<Fred::Backend::MojeId::PublicRequest::ContactConditionalIdentification>(
         LibFred::OperationContext& _ctx,
-        Multimanager& _multimanager,
         const MojeId::MessengerConfiguration& _messenger_configuration,
         const LibFred::LockedPublicRequest& _locked_request,
         const LibFred::LockedPublicRequestsOfObject& _locked_contact,
@@ -1584,7 +1462,6 @@ for_given_request<Fred::Backend::MojeId::PublicRequest::ContactConditionalIdenti
 template void Generate::Into<CommChannel::sms>::
 for_given_request<Fred::Backend::MojeId::PublicRequest::PrevalidatedUnidentifiedContactTransfer>(
         LibFred::OperationContext& _ctx,
-        Multimanager& _multimanager,
         const MojeId::MessengerConfiguration& _messenger_configuration,
         const LibFred::LockedPublicRequest& _locked_request,
         const LibFred::LockedPublicRequestsOfObject& _locked_contact,
@@ -1596,7 +1473,6 @@ for_given_request<Fred::Backend::MojeId::PublicRequest::PrevalidatedUnidentified
 template void Generate::Into<CommChannel::letter>::
 for_given_request<Fred::Backend::MojeId::PublicRequest::ContactIdentification>(
         LibFred::OperationContext& _ctx,
-        Multimanager& _multimanager,
         const MojeId::MessengerConfiguration& _messenger_configuration,
         const LibFred::LockedPublicRequest& _locked_request,
         const LibFred::LockedPublicRequestsOfObject& _locked_contact,
@@ -1608,7 +1484,6 @@ for_given_request<Fred::Backend::MojeId::PublicRequest::ContactIdentification>(
 template void Generate::Into<CommChannel::letter>::
 for_given_request<Fred::Backend::MojeId::PublicRequest::ContactReidentification>(
         LibFred::OperationContext& _ctx,
-        Multimanager& _multimanager,
         const MojeId::MessengerConfiguration& _messenger_configuration,
         const LibFred::LockedPublicRequest& _locked_request,
         const LibFred::LockedPublicRequestsOfObject& _locked_contact,
@@ -1620,7 +1495,6 @@ for_given_request<Fred::Backend::MojeId::PublicRequest::ContactReidentification>
 template void Generate::Into<CommChannel::email>::
 for_given_request<Fred::Backend::MojeId::PublicRequest::ContactConditionalIdentification>(
         LibFred::OperationContext& _ctx,
-        Multimanager& _multimanager,
         const MojeId::MessengerConfiguration& _messenger_configuration,
         const LibFred::LockedPublicRequest& _locked_request,
         const LibFred::LockedPublicRequestsOfObject& _locked_contact,
@@ -1632,7 +1506,6 @@ for_given_request<Fred::Backend::MojeId::PublicRequest::ContactConditionalIdenti
 template void Generate::Into<CommChannel::email>::
 for_given_request<Fred::Backend::MojeId::PublicRequest::ConditionallyIdentifiedContactTransfer>(
         LibFred::OperationContext& _ctx,
-        Multimanager& _multimanager,
         const MojeId::MessengerConfiguration& _messenger_configuration,
         const LibFred::LockedPublicRequest& _locked_request,
         const LibFred::LockedPublicRequestsOfObject& _locked_contact,
@@ -1644,7 +1517,6 @@ for_given_request<Fred::Backend::MojeId::PublicRequest::ConditionallyIdentifiedC
 template void Generate::Into<CommChannel::email>::
 for_given_request<Fred::Backend::MojeId::PublicRequest::IdentifiedContactTransfer>(
         LibFred::OperationContext& _ctx,
-        Multimanager& _multimanager,
         const MojeId::MessengerConfiguration& _messenger_configuration,
         const LibFred::LockedPublicRequest& _locked_request,
         const LibFred::LockedPublicRequestsOfObject& _locked_contact,
@@ -1656,7 +1528,6 @@ for_given_request<Fred::Backend::MojeId::PublicRequest::IdentifiedContactTransfe
 template void Generate::Into<CommChannel::email>::
 for_given_request<Fred::Backend::MojeId::PublicRequest::PrevalidatedUnidentifiedContactTransfer>(
         LibFred::OperationContext& _ctx,
-        Multimanager& _multimanager,
         const MojeId::MessengerConfiguration& _messenger_configuration,
         const LibFred::LockedPublicRequest& _locked_request,
         const LibFred::LockedPublicRequestsOfObject& _locked_contact,
@@ -1668,7 +1539,6 @@ for_given_request<Fred::Backend::MojeId::PublicRequest::PrevalidatedUnidentified
 template void Generate::Into<CommChannel::email>::
 for_given_request<Fred::Backend::MojeId::PublicRequest::PrevalidatedContactTransfer>(
         LibFred::OperationContext& _ctx,
-        Multimanager& _multimanager,
         const MojeId::MessengerConfiguration& _messenger_configuration,
         const LibFred::LockedPublicRequest& _locked_request,
         const LibFred::LockedPublicRequestsOfObject& _locked_contact,
