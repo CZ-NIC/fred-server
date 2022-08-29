@@ -706,14 +706,6 @@ void send_auth_owner_letter(
                             : "male";
 
     const LibFred::InfoContactData::Address addr = _data.get_address<LibFred::ContactAddressType::MAILING>();
-    // LibFred::Messages::PostalAddress pa;
-    // pa.name = name;
-    // pa.organization = _data.organization.get_value_or_default();
-    // pa.street1 = addr.street1;
-    // pa.city = addr.city;
-    // pa.state = addr.stateorprovince.get_value_or_default();
-    // pa.code = addr.postalcode;
-    // pa.country = addr.country;
 
     Database::query_param_list params(addr.country);
     const std::string sql =
@@ -725,10 +717,19 @@ void send_auth_owner_letter(
     const boost::optional<std::string> country_name_cs = !dbres[0][0].isnull() ? boost::optional<std::string>{static_cast<std::string>(dbres[0][0])} : boost::none;
     const std::string country_name_fallback_code = !dbres[0][1].isnull() ? static_cast<std::string>(dbres[0][1]) : addr.country;
 
+    std::vector<LibHermes::Letter::RecipientAddress::Street> recipient_address_street_fields{LibHermes::Letter::RecipientAddress::Street{addr.street1}};
+    if (addr.street2.isset())
+    {
+        recipient_address_street_fields.push_back(LibHermes::Letter::RecipientAddress::Street{addr.street2.get_value()});
+    }
+    if (addr.street3.isset())
+    {
+        recipient_address_street_fields.push_back(LibHermes::Letter::RecipientAddress::Street{addr.street3.get_value()});
+    }
     const LibHermes::Letter::RecipientAddress recipient_address{
             LibHermes::Letter::RecipientAddress::Name{name},
             LibHermes::Letter::RecipientAddress::Organization{_data.organization.get_value_or_default()},
-            std::vector<LibHermes::Letter::RecipientAddress::Street>{LibHermes::Letter::RecipientAddress::Street{addr.street1}},
+            recipient_address_street_fields,
             LibHermes::Letter::RecipientAddress::City{addr.city},
             LibHermes::Letter::RecipientAddress::StateOrProvince{addr.stateorprovince.get_value_or_default()},
             LibHermes::Letter::RecipientAddress::PostalCode{addr.postalcode},
@@ -781,7 +782,6 @@ void send_auth_owner_letter(
                         LibHermes::Reference::Type{"public-request"},
                         LibHermes::Reference::Value{boost::uuids::to_string(public_request_uuid)}}});
     }
-
     catch (const LibHermes::Letter::SendFailed& e)
     {
         _ctx.get_log().warning(boost::str(boost::format("gRPC exception caught while sending letter about public request with uuid %1%: gRPC error code: %2%, error message: %3%, grpc_message_json: %4%") % boost::uuids::to_string(public_request_uuid) % e.error_code() % e.error_message() % e.grpc_message_json()));
@@ -1037,7 +1037,7 @@ LibHermes::Email::SubjectTemplate get_libhermes_email_subject_template(const std
         return LibHermes::Email::SubjectTemplate{"mojeid-verified-contact-transfer-subject.txt"};
     }
     throw std::runtime_error{"unexpected _mail_type"};
-};
+}
 
 LibHermes::Email::BodyTemplate get_libhermes_email_body_template(const std::string& _mail_type)
 {
@@ -1050,7 +1050,7 @@ LibHermes::Email::BodyTemplate get_libhermes_email_body_template(const std::stri
         return LibHermes::Email::BodyTemplate{"mojeid-verified-contact-transfer-body.txt"};
     }
     throw std::runtime_error{"unexpected _mail_type"};
-};
+}
 
 void send_email(
         const std::string& _mail_type,
@@ -1131,7 +1131,7 @@ void send_email(
                     ? boost::gregorian::to_iso_extended_string(
                               birthdate_from_string_to_date(contact_data.ssn.get_value_or_default()))
                     : std::string{};
-    const std::string  public_request_status{"2"};
+    const std::string public_request_status{"2"};
 
     LibHermes::Struct template_parameters{
             {LibHermes::StructKey{"reqdate"}, LibHermes::StructValue{boost::gregorian::to_iso_extended_string(email_time.date())}},
