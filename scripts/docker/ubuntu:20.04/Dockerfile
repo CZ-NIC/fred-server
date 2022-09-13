@@ -44,6 +44,7 @@ RUN printf 'deb http://archive.nic.cz/ubuntu focal main\n' > /etc/apt/sources.li
             libgrpc++-dev                \
             libprotobuf-dev              \
             libprotobuf17                \
+            nlohmann-json3-dev           \
             protobuf-compiler            \
             protobuf-compiler-grpc       \
     && apt-get -y clean                  \

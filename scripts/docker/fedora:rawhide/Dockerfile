@@ -20,5 +20,6 @@ RUN dnf -y install              \
         grpc-plugins            \
         protobuf-devel          \
         protobuf-compiler       \
+        json-devel              \
     && dnf clean all            \
     && rm -rf /var/cache/yum

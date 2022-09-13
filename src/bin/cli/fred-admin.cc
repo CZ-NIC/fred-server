@@ -41,6 +41,8 @@
 #include "src/bin/cli/charge_client_impl.hh"
 #include "src/bin/cli/domain_name_validation_init.hh"
 #include "src/bin/cli/public_request_impl.hh"
+#include "src/bin/cli/invoice_export_impl.hh"
+#include "src/bin/cli/invoice_export_list_impl.hh"
 
 #include "src/util/cfg/handle_general_args.hh"
 #include "src/util/cfg/handle_logging_args.hh"
@@ -53,6 +55,7 @@
 #include "src/util/cfg/handle_sms_args.hh"
 #include "src/util/cfg/handle_messenger_args.hh"
 #include "src/util/cfg/handle_fileman_args.hh"
+#include "src/util/cfg/handle_secretary_args.hh"
 #include "src/util/cfg/check_args.hh"
 #include "src/util/cfg/command_selection_args.hh"
 
@@ -149,7 +152,9 @@ CommandHandlerPtrVector chpv = boost::assign::list_of
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientCreateExpiredDomainArgsGrp), create_expired_domain_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientProcessPublicRequestsArgsGrp), process_public_requests_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleChargeRegistryAccessFeeAnnualArgsGrp), charge_registry_access_fee_annual_impl))
-    (CommandHandlerParam(HandleCommandArgsPtr(new HandleChargeRegistryAccessFeeMonthlyArgsGrp), charge_registry_access_fee_monthly_impl));
+    (CommandHandlerParam(HandleCommandArgsPtr(new HandleChargeRegistryAccessFeeMonthlyArgsGrp), charge_registry_access_fee_monthly_impl))
+    (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientInvoiceExportArgsGrp), invoice_export_impl))
+    (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientInvoiceExportListArgsGrp), invoice_export_list_impl));
 
 CommandOptionGroups cog(chpv);
 
@@ -181,11 +186,14 @@ HandlerGrpVector messenger_gv = boost::assign::list_of
 HandlerGrpVector fileman_gv = boost::assign::list_of
     (HandleGrpArgsPtr(
             new HandleFilemanArgsGrp));
+HandlerGrpVector secretary_gv = boost::assign::list_of
+    (HandleGrpArgsPtr(
+            new HandleSecretaryArgsGrp));
 
 HandlerPtrGrid global_hpg = gv_list
     (help_gv)(help_dates_gv)
     .addCommandOptions(cog)
-    (config_gv)(loging_gv)(database_gv)(corbans_gv)(registry_gv)(sms_gv)(create_expired_domain_gv)(messenger_gv)(fileman_gv);
+    (config_gv)(loging_gv)(database_gv)(corbans_gv)(registry_gv)(sms_gv)(create_expired_domain_gv)(messenger_gv)(fileman_gv)(secretary_gv);
 
 void setup_admin_logging(CfgArgGroups* cfg_instance_ptr)
 {

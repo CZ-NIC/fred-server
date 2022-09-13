@@ -316,4 +316,11 @@ archive = yes
 ### * endpoint - URI of Fred.Fileman.Api.File gRPC service
 ###
 [fileman]
-endpoint = localhost:50051
+endpoint = localhost:50052
+
+###
+### Secretary settings
+### * endpoint - URI of Secretary ReST service
+###
+[secretary]
+endpoint = localhost:50053

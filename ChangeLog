@@ -2,6 +2,13 @@ UNRELEASED
 
   * Remove duplicate `libfred` tests
 
+2022-07-28 (2.53.1)
+
+  * Invoicing
+    - switch from doc2pdf to secretary/libytpist
+    - switch from mailer/pyfred to messenger/libhermes
+    - switch from filamen/file manager to fileman/libfiled
+
 2022-05-19 (2.52.0)
 
   * Public requests - switch from mailer/pyfred and fileman to messenger and libfiled

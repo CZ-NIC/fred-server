@@ -8,6 +8,17 @@ macro(set_default variable_name variable_value)
     endif()
 endmacro()
 
+# project details
+
+include("cmake/package.cmake")
+
+package(fred-server
+    FULL_VERSION "2.53.1")
+
+project(FredServer
+    VERSION ${PACKAGE_VERSION}
+    LANGUAGES CXX)
+
 # build options
 
 option(CMAKE_EXPORT_COMPILE_COMMANDS "If enabled, generates a compile_commands.json file containing the exact compiler calls." ON)
@@ -18,17 +29,6 @@ set_default(CMAKE_BUILD_TYPE "Release")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2")
 
 option(LIBFRED_BUILD_TESTS "Build libfred tests" YES)
-
-# project details
-
-include("cmake/package.cmake")
-
-package(fred-server
-    FULL_VERSION "2.52.0-rc3")
-
-project(FredServer
-    VERSION ${PACKAGE_VERSION}
-    LANGUAGES CXX)
 
 # dependencies
 
@@ -748,12 +748,13 @@ add_common_library_target(epp_keyset_dns_key
     src/backend/epp/keyset/dns_key.cc)
 target_link_libraries(epp_keyset_dns_key PRIVATE Fred::library)
 
-# TODO FIXME move messenger/fileman
+# TODO FIXME move messenger/fileman/secretary
 add_common_library_target(handle_database_args
     src/util/cfg/config_handler.cc
     src/util/cfg/handle_database_args.cc
     src/util/cfg/handle_messenger_args.cc
     src/util/cfg/handle_fileman_args.cc
+    src/util/cfg/handle_secretary_args.cc
     src/util/cfg/validate_args.cc)
 target_link_libraries(handle_database_args PRIVATE Fred::library)
 
@@ -1389,7 +1390,8 @@ add_common_executable_target(fred-admin
     src/bin/cli/public_request_method.cc
     src/bin/cli/registrarclient.cc
     src/bin/cli/remove_delete_candidates.cc
-    src/util/optys/upload_client.cc)
+    src/util/optys/upload_client.cc
+    src/bin/cli/invoice_export.cc)
 target_link_libraries(fred-admin
     admin_contact_merge
     admin_contact_verification
@@ -1423,6 +1425,9 @@ target_link_libraries(fred-admin
     public_request
     optys_util
     Fred::library
+    LibHermes::library
+    LibFiled::library
+    LibTypist::library
     Threads::Threads
     ${LIBCURL_LIBRARIES}
     ${MINIZIP_LIBRARIES}
