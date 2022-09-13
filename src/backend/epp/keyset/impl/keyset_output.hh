@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #ifndef KEYSET_OUTPUT_HH_9A6DDDEE23EE40D2A15877A699B5EE90
 #define KEYSET_OUTPUT_HH_9A6DDDEE23EE40D2A15877A699B5EE90
 
@@ -30,8 +31,7 @@ namespace Keyset {
 
 InfoKeysetOutputData get_info_keyset_output(
     const LibFred::InfoKeysetData& _data,
-    const std::vector<LibFred::ObjectStateData>& _object_state_data,
-    bool _info_is_for_sponsoring_registrar);
+    const std::vector<LibFred::ObjectStateData>& _object_state_data);
 
 } // namespace Epp::Keyset
 } // namespace Epp

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #ifndef INFO_KEYSET_OUTPUT_DATA_HH_C2D418CDD9C94231AB79FF944AD8D17E
 #define INFO_KEYSET_OUTPUT_DATA_HH_C2D418CDD9C94231AB79FF944AD8D17E
 
@@ -25,7 +26,6 @@
 #include "util/db/nullable.hh"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/optional.hpp>
 
 #include <set>
 #include <string>
@@ -49,7 +49,6 @@ struct InfoKeysetOutputData
     boost::posix_time::ptime crdate; ///< Creation date and time
     Nullable<boost::posix_time::ptime> last_update; ///< Date and time of last change
     Nullable<boost::posix_time::ptime> last_transfer; ///< Date and time of last transfer
-    boost::optional<std::string> authinfopw; ///< Password for keyset transfer
     DsRecords ds_records; ///< List of ds records
     DnsKeys dns_keys; ///< List of dnskeys
     TechContacts tech_contacts; ///< List of technical contacts identifier

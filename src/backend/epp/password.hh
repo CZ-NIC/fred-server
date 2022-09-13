@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #ifndef PASSWORD_HH_82E5F2E4C257E300E9986A34FBCDCD8B//date "+%s.%N"|md5sum|tr "[a-f]" "[A-F]"
 #define PASSWORD_HH_82E5F2E4C257E300E9986A34FBCDCD8B
 
@@ -23,18 +24,13 @@
 
 namespace Epp {
 
-class Password;
-bool operator==(const Password& lhs, const Password& rhs);
-bool operator!=(const Password& lhs, const Password& rhs);
-
 class Password
 {
 public:
     explicit Password(std::string value = "");
-    bool is_empty() const noexcept;
+    const std::string& operator*() const noexcept;
+    const std::string* operator->() const noexcept;
 private:
-    friend bool operator==(const Password& lhs, const Password& rhs);
-    friend bool operator!=(const Password& lhs, const Password& rhs);
     std::string value_;
 };
 

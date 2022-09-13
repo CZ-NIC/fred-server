@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,12 +16,14 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #ifndef INFO_DOMAIN_HH_37A73F9984AD4E138824846417BEF50B
 #define INFO_DOMAIN_HH_37A73F9984AD4E138824846417BEF50B
 
 #include "src/backend/epp/domain/domain_enum_validation.hh"
 #include "src/backend/epp/domain/info_domain_config_data.hh"
 #include "src/backend/epp/domain/status_value.hh"
+#include "src/backend/epp/password.hh"
 #include "src/backend/epp/session_data.hh"
 #include "libfred/registrable_object/domain/enum_validation_extension.hh"
 #include "libfred/object/object_state.hh"
@@ -30,7 +32,6 @@
 
 #include <boost/date_time/gregorian/greg_date.hpp>
 #include <boost/date_time/posix_time/ptime.hpp>
-#include <boost/optional.hpp>
 
 #include <set>
 #include <string>
@@ -40,7 +41,6 @@ namespace Domain {
 
 struct InfoDomainOutputData
 {
-
     typedef std::set<StatusValue::Enum> States;
 
     std::string roid; ///< Domain repository ID
@@ -56,11 +56,9 @@ struct InfoDomainOutputData
     Nullable<boost::posix_time::ptime> last_update; ///< Date and time of last change
     Nullable<boost::posix_time::ptime> last_transfer; ///< Date and time of last transfer
     boost::gregorian::date exdate;
-    boost::optional<std::string> authinfopw; ///< Password for keyset transfer
     std::set<std::string> admin; ///< List of contacts identifier
     Nullable<EnumValidationExtension> ext_enum_domain_validation; ///< ENUM domain validation extension info
     std::set<std::string> tmpcontact; ///< List of contacts identifier OBSOLETE
-
 };
 
 /**
@@ -70,8 +68,8 @@ InfoDomainOutputData info_domain(
         LibFred::OperationContext& _ctx,
         const std::string& _fqdn,
         const InfoDomainConfigData& _info_domain_config_data,
+        const Password& _authinfopw,
         const SessionData& _session_data);
-
 
 } // namespace Epp::Domain
 } // namespace Epp

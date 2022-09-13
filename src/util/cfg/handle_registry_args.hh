@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2010-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -21,7 +21,7 @@
  *  basic server config
  */
 
-#ifndef HANDLE_REGISTRY_ARGS_HH_E333CDA4CFDA4E62B878A4F46236938B
+#ifndef HANDLE_REGISTRY_ARGS_HH_E333CDA4CFDA4E62B878A4F46236938B//date "+%s.%N"|md5sum|tr "[a-f]" "[A-F]"
 #define HANDLE_REGISTRY_ARGS_HH_E333CDA4CFDA4E62B878A4F46236938B
 
 #include "src/util/cfg/faked_args.hh"
@@ -29,8 +29,9 @@
 
 #include "src/backend/epp/nsset/impl/limits.hh"
 
-#include <iostream>
+#include <chrono>
 #include <exception>
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -91,11 +92,14 @@ public:
                  "value must be from PostgreSQL pg_timezone_names.name")
                 ("registry.system_registrar",
                  boost::program_options::value<std::string>()->required(),
-                 "handle of registrar with system privileges for restricted actions");
+                 "handle of registrar with system privileges for restricted actions")
+                ("registry.authinfo_ttl",
+                 boost::program_options::value<unsigned long long>()->default_value(14 * 24 * 3600),
+                 "TTL of object authinfos");
 
         return opts_descs;
     }
-    void handle(int _argc, char* _argv[], FakedArgs &_fa)
+    void handle(int _argc, char* _argv[], FakedArgs &_fa) override
     {
         boost::program_options::variables_map vm;
         handler_parse_args()(get_options_description(), vm, _argc, _argv, _fa);
@@ -119,6 +123,7 @@ public:
         disable_epp_notifier_cltrid_prefix = vm["registry.disable_epp_notifier_cltrid_prefix"].as<std::string>();
         registry_timezone = vm["registry.registry_timezone"].as<std::string>();
         system_registrar = vm["registry.system_registrar"].as<std::string>();
+        authinfo_ttl = std::chrono::seconds{vm["registry.authinfo_ttl"].as<unsigned long long>()};
     }
     bool restricted_handles;
     bool disable_epp_notifier;
@@ -133,6 +138,7 @@ public:
     std::string disable_epp_notifier_cltrid_prefix;
     std::string registry_timezone;
     std::string system_registrar;
+    std::chrono::seconds authinfo_ttl;
 };
 
 /**
@@ -206,6 +212,10 @@ public:
     {
         return HandleRegistryArgs::system_registrar;
     }
+    auto get_authinfo_ttl() const
+    {
+        return HandleRegistryArgs::authinfo_ttl;
+    }
 };
 
-#endif
+#endif//HANDLE_REGISTRY_ARGS_HH_E333CDA4CFDA4E62B878A4F46236938B

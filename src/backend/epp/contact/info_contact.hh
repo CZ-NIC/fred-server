@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #ifndef INFO_CONTACT_HH_FDF0BE2833874CB0A8E8CD911C1D2572//date "+%s.%N"|md5sum|tr "[a-f]" "[A-F]"
 #define INFO_CONTACT_HH_FDF0BE2833874CB0A8E8CD911C1D2572
 
@@ -63,7 +64,6 @@ struct InfoContactOutputData
     HideableOptional<std::string> notify_email;
     HideableOptional<std::string> VAT;
     HideableOptional<ContactIdent> personal_id;
-    boost::optional<std::string> authinfopw;
 };
 
 InfoContactOutputData info_contact(

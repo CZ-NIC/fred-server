@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #ifndef CREATE_KEYSET_INPUT_DATA_HH_3C34D885A0094715AD693F362E39B633
 #define CREATE_KEYSET_INPUT_DATA_HH_3C34D885A0094715AD693F362E39B633
 
@@ -32,27 +33,21 @@ namespace Keyset {
 struct CreateKeysetInputData
 {
     const std::string keyset_handle;
-    const Optional<std::string> authinfopw;
     const std::vector<std::string> tech_contacts;
     const std::vector<Keyset::DsRecord> ds_records;
     const std::vector<Keyset::DnsKey> dns_keys;
 
-
     CreateKeysetInputData(
             const std::string& _keyset_handle,
-            const Optional<std::string>& _authinfopw,
             const std::vector<std::string>& _tech_contacts,
             const std::vector<Keyset::DsRecord>& _ds_records,
             const std::vector<Keyset::DnsKey>& _dns_keys)
         : keyset_handle(_keyset_handle),
-          authinfopw(_authinfopw),
           tech_contacts(_tech_contacts),
           ds_records(_ds_records),
           dns_keys(_dns_keys)
     {
     }
-
-
 };
 
 } // namespace Epp::Keyset

@@ -384,8 +384,9 @@ public:
       */
     ccReg::Response* NSSetInfo(
             const char* _nsset_handle,
+            const char* _authinfopw,
             ccReg::NSSet_out _nsset_info,
-            const ccReg::EppParams& _epp_params);
+            const ccReg::EppParams& _epp_params) override;
 
     ccReg::Response* NSSetTransfer(
             const char* _nsset_handle,
@@ -436,8 +437,9 @@ public:
 
     ccReg::Response* KeySetInfo(
             const char* _keyset_handle,
+            const char* _authinfopw,
             ccReg::KeySet_out _keyset_info,
-            const ccReg::EppParams& _epp_params);
+            const ccReg::EppParams& _epp_params) override;
 
     ccReg::Response* KeySetTransfer(
             const char* _keyset_handle,
@@ -499,9 +501,10 @@ public:
             const ccReg::EppParams& _epp_params);
 
     /**
-      * DomainInfo - get information obout domain identified by its FQDN
+      * DomainInfo - get information about domain identified by its FQDN
       *
       * \param _fqdn - identifier of domain - fully qualified domain name
+      * \param _authinfopw - optional check of domain's authinfo password
       * \param _domain_info - output information
       * \param _epp_params - parameters of EPP session
       *
@@ -511,8 +514,9 @@ public:
       */
     ccReg::Response* DomainInfo(
             const char* _fqdn,
+            const char* _authinfopw,
             ccReg::Domain_out _domain_info,
-            const ccReg::EppParams& _epp_params);
+            const ccReg::EppParams& _epp_params) override;
 
     ccReg::Response* DomainRenew(
             const char* _fqdn,

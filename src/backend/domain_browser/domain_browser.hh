@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2014-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -114,7 +114,6 @@ struct ContactDetail
     boost::posix_time::ptime creation_time; /**< creation time of the contact in set local zone*/
     Nullable<boost::posix_time::ptime> update_time; /**< last update time of the contact in set local zone*/
     Nullable<boost::posix_time::ptime> transfer_time; /**<last transfer time in set local zone*/
-    std::string authinfopw; /**< password for transfer */
     Nullable<std::string> name; /**< name of contact person */
     Nullable<std::string> organization; /**< full trade name of organization */
     LibFred::Contact::PlaceAddress permanent_address; /**< required contact address */
@@ -151,7 +150,6 @@ struct DomainDetail
     RegistryReference sponsoring_registrar; /**< registrar administering the domain */
     boost::posix_time::ptime creation_time; /**< creation time of the domain in set local zone*/
     Nullable<boost::posix_time::ptime> update_time; /**< last update time of the domain in set local zone*/
-    std::string authinfopw; /**< password for transfer */
     RegistryReference registrant; /**< owner of domain*/
     boost::gregorian::date expiration_date; /**< domain expiration local date */
     Nullable<LibFred::ENUMValidationExtension> enum_domain_validation; /**< ENUM domain validation extension info, is ENUM domain if set */
@@ -186,7 +184,6 @@ struct NssetDetail
     Nullable<boost::posix_time::ptime> update_time; /**< last update time of the nsset in set local zone*/
     RegistryReference create_registrar; /**< registrar that created the nsset */
     RegistryReference update_registrar; /**< registrar that updated the nsset */
-    std::string authinfopw; /**< password for transfer */
     std::vector<RegistryReference> admins; /**< nsset admin contacts */
     std::vector<LibFred::DnsHost> hosts; /**< nsset DNS hosts */
     std::vector<std::string> state_codes; /**< object states names from db. table enum_object_states*/
@@ -228,7 +225,6 @@ struct KeysetDetail
     Nullable<boost::posix_time::ptime> update_time; /**< last update time of the keyset in set local zone*/
     RegistryReference create_registrar; /**< registrar that created the keyset */
     RegistryReference update_registrar; /**< registrar that updated the keyset */
-    std::string authinfopw; /**< password for transfer */
     std::vector<RegistryReference> admins; /**< keyset admin contacts */
     std::vector<DNSKey> dnskeys; /**< DNS keys */
     std::vector<std::string> state_codes; /**< object states names from db. table enum_object_states */
@@ -619,17 +615,6 @@ private:
     std::vector<std::string> get_object_states(
             LibFred::OperationContext& ctx,
             unsigned long long object_id);
-
-
-    /**
-     * Fill authinfo into given string.
-     * @param user_is_owner means that user contact owns requested object so that transfer password can be revealed
-     * @param authinfopw is transfer password of requested object
-     * @return transfer password returned to the user, if user is not owner of requested object output is "********"
-     */
-    std::string filter_authinfo(
-            bool user_is_owner,
-            const std::string& authinfopw);
 
 
     /**

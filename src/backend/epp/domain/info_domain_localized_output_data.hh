@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #ifndef INFO_DOMAIN_LOCALIZED_OUTPUT_DATA_HH_D50AD7C097314544AA415FDCA3BB1211
 #define INFO_DOMAIN_LOCALIZED_OUTPUT_DATA_HH_D50AD7C097314544AA415FDCA3BB1211
 
@@ -37,7 +38,6 @@ namespace Domain {
 
 struct InfoDomainLocalizedOutputData
 {
-
     std::string roid; ///< Domain repository ID
     std::string fqdn; ///< Domain FQDN
     std::string registrant;
@@ -51,11 +51,9 @@ struct InfoDomainLocalizedOutputData
     Nullable<boost::posix_time::ptime> last_update; ///< Date and time of last change
     Nullable<boost::posix_time::ptime> last_transfer; ///< Date and time of last transfer
     boost::gregorian::date exdate;
-    boost::optional<std::string> authinfopw; ///< Password for keyset transfer
     std::set<std::string> admin; ///< List of contacts identifier
     Nullable<EnumValidationExtension> ext_enum_domain_validation; ///< ENUM domain validation extension info
     std::set<std::string> tmpcontact; ///< List of contacts identifier OBSOLETE
-
 
     InfoDomainLocalizedOutputData(
             const std::string& _roid,
@@ -71,7 +69,6 @@ struct InfoDomainLocalizedOutputData
             const Nullable<boost::posix_time::ptime>& _last_update,
             const Nullable<boost::posix_time::ptime>& _last_transfer,
             const boost::gregorian::date& _exdate,
-            const boost::optional<std::string>& _authinfopw,
             const std::set<std::string>& _admin,
             const Nullable<EnumValidationExtension>& _ext_enum_domain_validation,
             const std::set<std::string>& _tmpcontact)
@@ -88,14 +85,11 @@ struct InfoDomainLocalizedOutputData
           last_update(_last_update),
           last_transfer(_last_transfer),
           exdate(_exdate),
-          authinfopw(_authinfopw),
           admin(_admin),
           ext_enum_domain_validation(_ext_enum_domain_validation),
           tmpcontact(_tmpcontact)
     {
     }
-
-
 };
 
 } // namespace Epp::Domain

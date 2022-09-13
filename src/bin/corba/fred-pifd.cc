@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2011-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -43,11 +43,6 @@
 #include "src/util/cfg/handle_registry_args.hh"
 #include "src/util/cfg/handle_server_args.hh"
 
-#include <cstdlib>
-#include <iostream>
-#include <stdexcept>
-#include <string>
-
 #include <boost/assign/list_of.hpp>
 #include <boost/date_time.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -55,8 +50,13 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/thread.hpp>
 #include <boost/thread/barrier.hpp>
-#include <utility>
 
+#include <cstdlib>
+#include <iostream>
+#include <memory>
+#include <stdexcept>
+#include <string>
+#include <utility>
 
 const std::string server_name = "fred-pifd";
 
@@ -115,8 +115,9 @@ int main(int argc, char* argv[])
 
         std::unique_ptr<CorbaConversion::Whois::Server_impl> my_whois2(new CorbaConversion::Whois::Server_impl("Whois2"));
 
-        std::unique_ptr<CorbaConversion::PublicRequest::Server_i> my_public_request(
-                new CorbaConversion::PublicRequest::Server_i(server_name));
+        auto my_public_request = std::make_unique<CorbaConversion::PublicRequest::Server_i>(
+                server_name,
+                registry_args_ptr->system_registrar);
 
         std::unique_ptr<CorbaConversion::Contact::Verification::ContactVerification_i> contact_vrf_iface(
                 new CorbaConversion::Contact::Verification::ContactVerification_i("fred-pifd-cv"));

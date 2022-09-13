@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/public_request/process/authinfo.hh"
 
 #include "src/backend/public_request/exceptions.hh"
@@ -26,23 +27,27 @@
 #include "src/backend/public_request/util/make_object_type.hh"
 #include "src/backend/public_request/util/get_public_request_uuid.hh"
 #include "src/backend/public_request/util/send_joined_address_email.hh"
+#include "src/backend/public_request/get_valid_registry_emails_of_registered_object.hh"
+
+#include "src/util/cfg/config_handler.hh"
+#include "src/util/cfg/handle_registry_args.hh"
+#include "src/util/corba_wrapper_decl.hh"
+
 #include "libfred/object/object_states_info.hh"
 #include "libfred/object/object_type.hh"
-#include "src/backend/public_request/get_valid_registry_emails_of_registered_object.hh"
+#include "libfred/object/store_authinfo.hh"
+#include "libfred/object/generate_authinfo_password.hh"
 #include "libfred/public_request/info_public_request.hh"
 #include "libfred/public_request/public_request_lock_guard.hh"
 #include "libfred/public_request/public_request_on_status_action.hh"
 #include "libfred/public_request/update_public_request.hh"
-#include "libfred/registrable_object/contact/info_contact.hh"
-#include "libfred/registrable_object/domain/info_domain.hh"
-#include "libfred/registrable_object/keyset/info_keyset.hh"
-#include "libfred/registrable_object/nsset/info_nsset.hh"
 #include "libfred/registrar/info_registrar.hh"
-#include "src/util/corba_wrapper_decl.hh"
 
 #include "libhermes/struct.hh"
 
 #include <boost/uuid/string_generator.hpp>
+
+#include <utility>
 
 namespace Fred {
 namespace Backend {
@@ -102,6 +107,25 @@ std::string get_template_name_body(EmailType _email_type)
     throw std::runtime_error{"unexpected email type"};
 }
 
+auto get_authinfo_ttl()
+{
+    static const auto ttl = []()
+    {
+        try
+        {
+            return CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_authinfo_ttl();
+        }
+        catch (...) { }
+        try
+        {
+            return CfgArgs::instance()->get_handler_ptr_by_type<HandleRegistryArgs>()->authinfo_ttl;
+        }
+        catch (...) { }
+        return std::chrono::seconds{14 * 24 * 3600};
+    }();
+    return ttl;
+}
+
 void send_authinfo_email(
         const LibFred::LockedPublicRequestForUpdate& _locked_request,
         const MessengerArgs& _messenger_args,
@@ -110,6 +134,10 @@ void send_authinfo_email(
     auto& ctx = _locked_request.get_ctx();
     const auto public_request_id = _locked_request.get_id();
     const LibFred::PublicRequestInfo request_info = LibFred::InfoPublicRequest().exec(ctx, _locked_request);
+    if (request_info.get_registrar_id().isnull())
+    {
+        throw std::runtime_error{"no registrar specified"};
+    }
     const auto object_id = request_info.get_object_id().get_value(); // oops
     // clang-format off
     const std::string sql_query =
@@ -139,6 +167,7 @@ void send_authinfo_email(
     email_template_params.emplace(LibHermes::StructKey{"handle"}, LibHermes::StructValue{handle});
     const auto object_type = Util::make_object_type(static_cast<std::string>(db_result[0]["object_type"]));
     const auto public_request_uuid = Util::get_public_request_uuid(ctx, public_request_id);
+    const auto registrar_info = LibFred::InfoRegistrarById{request_info.get_registrar_id().get_value()}.exec(ctx).info_registrar_data;
     if (_email_type == EmailType::sendauthinfo_pif)
     {
         const Database::Result dbres = ctx.get_conn().exec_params(
@@ -160,7 +189,6 @@ void send_authinfo_email(
     {
         if (!request_info.get_registrar_id().isnull())
         {
-            const auto registrar_info = LibFred::InfoRegistrarById{request_info.get_registrar_id().get_value()}.exec(ctx).info_registrar_data;
             email_template_params.emplace(LibHermes::StructKey{"registrar"}, LibHermes::StructValue{registrar_info.name.get_value_or(registrar_info.handle)});
             email_template_params.emplace(LibHermes::StructKey{"registrar_url"}, LibHermes::StructValue{registrar_info.url.get_value_or("")});
         }
@@ -180,7 +208,8 @@ void send_authinfo_email(
         }
     }
 
-    const int type = [&](){
+    static const auto to_libhermes_type = [](ObjectType object_type)
+    {
         switch (object_type)
         {
             case ObjectType::contact: return 1;
@@ -189,23 +218,18 @@ void send_authinfo_email(
             case ObjectType::keyset: return 4;
         }
         throw std::runtime_error("unexpected value of ObjectType");
-    }();
-    const std::string authinfo = [&](){
-        switch (object_type)
-        {
-            case ObjectType::contact:
-                return LibFred::InfoContactById(object_id).exec(ctx).info_contact_data.authinfopw;
-            case ObjectType::nsset:
-                return LibFred::InfoNssetById(object_id).exec(ctx).info_nsset_data.authinfopw;
-            case ObjectType::domain:
-                return LibFred::InfoDomainById(object_id).exec(ctx).info_domain_data.authinfopw;
-            case ObjectType::keyset:
-                return LibFred::InfoKeysetById(object_id).exec(ctx).info_keyset_data.authinfopw;
-        }
-        throw std::runtime_error("unexpected value of ObjectType");
-    }();
-    email_template_params.emplace(LibHermes::StructKey{"type"}, LibHermes::StructValue{type});
-    email_template_params.emplace(LibHermes::StructKey{"authinfo"}, LibHermes::StructValue{authinfo});
+    };
+    const auto get_plaintext_password = [&]()
+    {
+        auto password = LibFred::generate_authinfo_pw().password_;
+        LibFred::Object::StoreAuthinfo{
+                LibFred::Object::ObjectId{object_id},
+                registrar_info.id,
+                get_authinfo_ttl()}.exec(ctx, password);
+        return password;
+    };
+    email_template_params.emplace(LibHermes::StructKey{"type"}, LibHermes::StructValue{to_libhermes_type(object_type)});
+    email_template_params.emplace(LibHermes::StructKey{"authinfo"}, LibHermes::StructValue{get_plaintext_password()});
 
     const Util::EmailData email_data{
             recipients,

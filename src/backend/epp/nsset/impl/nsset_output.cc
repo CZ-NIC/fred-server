@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/epp/nsset/impl/nsset_output.hh"
 
 #include "src/deprecated/libfred/registrable_object/nsset.hh"
@@ -34,8 +35,7 @@ namespace Nsset {
 
 InfoNssetOutputData get_info_nsset_output(
     const LibFred::InfoNssetData& _data,
-    const std::vector<LibFred::ObjectStateData>& _object_state_data,
-    bool _info_is_for_sponsoring_registrar)
+    const std::vector<LibFred::ObjectStateData>& _object_state_data)
 {
     std::vector<std::string> tech_contacts;
     tech_contacts.reserve(_data.tech_contacts.size());
@@ -58,7 +58,6 @@ InfoNssetOutputData get_info_nsset_output(
         }
     }
 
-    const bool authinfopw_has_to_be_hidden = !_info_is_for_sponsoring_registrar;
     return InfoNssetOutputData(
         _data.handle,
         _data.roid,
@@ -69,7 +68,6 @@ InfoNssetOutputData get_info_nsset_output(
         _data.creation_time,
         _data.update_time,
         _data.transfer_time,
-        authinfopw_has_to_be_hidden ? boost::optional<std::string>() : _data.authinfopw,
         make_epp_dnshosts_output(_data.dns_hosts),
         tech_contacts,
         _data.tech_check_level.get_value_or(0));

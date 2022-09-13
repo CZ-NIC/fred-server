@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #ifndef NSSET_OUTPUT_HH_E733861A880745A8B2CA2681046834B8
 #define NSSET_OUTPUT_HH_E733861A880745A8B2CA2681046834B8
 
@@ -28,8 +29,7 @@ namespace Nsset {
 
 InfoNssetOutputData get_info_nsset_output(
     const LibFred::InfoNssetData& _data,
-    const std::vector<LibFred::ObjectStateData>& _object_state_data,
-    bool _info_is_for_sponsoring_registrar);
+    const std::vector<LibFred::ObjectStateData>& _object_state_data);
 
 } // namespace Epp::Nsset
 } // namespace Epp

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/epp/keyset/info_keyset_localized.hh"
 
 #include "src/backend/epp/impl/action.hh"
@@ -47,6 +48,7 @@ namespace Keyset {
 InfoKeysetLocalizedResponse info_keyset_localized(
         const std::string& _keyset_handle,
         const InfoKeysetConfigData& _info_keyset_config_data,
+        const Password& _authinfopw,
         const SessionData& _session_data)
 {
     Logging::Context logging_ctx1("rifd");
@@ -63,6 +65,7 @@ InfoKeysetLocalizedResponse info_keyset_localized(
                         ctx,
                         _keyset_handle,
                         _info_keyset_config_data,
+                        _authinfopw,
                         _session_data);
 
         const InfoKeysetLocalizedOutputData info_keyset_localized_output_data =
@@ -76,18 +79,18 @@ InfoKeysetLocalizedResponse info_keyset_localized(
                         info_keyset_data.crdate,
                         info_keyset_data.last_update,
                         info_keyset_data.last_transfer,
-                        info_keyset_data.authinfopw,
                         info_keyset_data.ds_records,
                         info_keyset_data.dns_keys,
                         info_keyset_data.tech_contacts);
 
-        return InfoKeysetLocalizedResponse(
+        auto response = InfoKeysetLocalizedResponse(
                 EppResponseSuccessLocalized(
                         ctx,
                         EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
                         _session_data.lang),
                 info_keyset_localized_output_data);
-
+        ctx.commit_transaction();
+        return response;
     }
     catch (const EppResponseFailure& e)
     {
@@ -117,7 +120,6 @@ InfoKeysetLocalizedResponse info_keyset_localized(
                 _session_data.lang);
     }
 }
-
 
 } // namespace Epp::Keyset
 } // namespace Epp

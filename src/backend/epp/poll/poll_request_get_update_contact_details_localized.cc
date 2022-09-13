@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2018-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/epp/poll/poll_request_get_update_contact_details_localized.hh"
 
 #include "src/backend/epp/contact/contact_ident.hh"
@@ -81,8 +82,7 @@ Contact::InfoContactLocalizedOutputData localize(
             src.email,
             src.notify_email,
             src.VAT,
-            src.personal_id,
-            src.authinfopw);
+            src.personal_id);
 }
 
 }//namespace Epp::Poll::{anonymous}

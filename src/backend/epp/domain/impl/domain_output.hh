@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #ifndef DOMAIN_OUTPUT_HH_185F3D29A6954423AF5335D867A82AFD
 #define DOMAIN_OUTPUT_HH_185F3D29A6954423AF5335D867A82AFD
 
@@ -30,11 +31,9 @@ namespace Domain {
 
 InfoDomainOutputData get_info_domain_output(
     const LibFred::InfoDomainData& _data,
-    const std::vector<LibFred::ObjectStateData>& _object_state_data,
-    bool _info_is_for_sponsoring_registrar);
+    const std::vector<LibFred::ObjectStateData>& _object_state_data);
 
 } // namespace Epp::Domain
 } // namespace Epp
-
 
 #endif

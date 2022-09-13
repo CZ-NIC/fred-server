@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,24 +16,26 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #ifndef INFO_NSSET_HH_9C05C3D3135F4A3F98BD3132C4441E61
 #define INFO_NSSET_HH_9C05C3D3135F4A3F98BD3132C4441E61
 
 #include "src/backend/epp/nsset/dns_host_output.hh"
 #include "src/backend/epp/nsset/info_nsset_config_data.hh"
 #include "src/backend/epp/nsset/status_value.hh"
+#include "src/backend/epp/password.hh"
 #include "src/backend/epp/session_data.hh"
 #include "src/backend/epp/session_lang.hh"
+
 #include "libfred/opcontext.hh"
 #include "util/db/nullable.hh"
 
-#include <boost/asio/ip/address.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/optional.hpp>
 
 #include <set>
 #include <string>
 #include <vector>
+
 namespace Epp {
 namespace Nsset {
 
@@ -50,7 +52,6 @@ struct InfoNssetOutputData
             const boost::posix_time::ptime& _crdate,
             const Nullable<boost::posix_time::ptime>& _last_update,
             const Nullable<boost::posix_time::ptime>& _last_transfer,
-            const boost::optional<std::string>& _authinfopw,
             const std::vector<DnsHostOutput>& _dns_hosts,
             const std::vector<std::string>& _tech_contacts,
             short _tech_check_level);
@@ -63,7 +64,6 @@ struct InfoNssetOutputData
     boost::posix_time::ptime crdate;
     Nullable<boost::posix_time::ptime> last_update;
     Nullable<boost::posix_time::ptime> last_transfer;
-    boost::optional<std::string> authinfopw;
     std::vector<DnsHostOutput> dns_hosts;
     std::vector<std::string> tech_contacts;
     short tech_check_level;
@@ -73,6 +73,7 @@ InfoNssetOutputData info_nsset(
         LibFred::OperationContext& _ctx,
         const std::string& _nsset_handle,
         const InfoNssetConfigData& _info_nsset_config_data,
+        const Password& _authinfopw,
         const SessionData& _session_data);
 
 } // namespace Epp::Nsset

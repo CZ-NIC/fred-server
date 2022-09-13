@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2020  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/bin/corba/epp/nsset/nsset_corba_conversions.hh"
 
 #include "src/bin/corba/epp/corba_conversions.hh"
@@ -64,7 +65,6 @@ unwrap_inet_addr_to_vector_asio_addr(const ccReg::InetAddress& in)
     return ret;
 }
 
-
 static ccReg::CheckAvail
 wrap_nsset_handle_check_result(
         const boost::optional<Epp::Nsset::NssetHandleRegistrationObstructionLocalized>& _obstruction)
@@ -89,7 +89,6 @@ wrap_nsset_handle_check_result(
     throw std::runtime_error("unknown_nsset_state");
 }
 
-
 /**
  * integral types conversion with overflow detection to be replaced by CORBA wrappers
  */
@@ -113,9 +112,7 @@ numeric_cast_by_ref(
     dst = boost::numeric_cast<TARGET_INTEGRAL_TYPE>(src);
 }
 
-
 } // namespace {anonymous}
-
 
 std::vector<std::string>
 unwrap_ccreg_techcontacts_to_vector_string(const ccReg::TechContact& in)
@@ -133,7 +130,6 @@ unwrap_ccreg_techcontacts_to_vector_string(const ccReg::TechContact& in)
 
     return ret;
 }
-
 
 std::vector<Epp::Nsset::DnsHostInput>
 unwrap_ccreg_dnshosts_to_vector_dnshosts(const ccReg::DNSHost& in)
@@ -155,7 +151,6 @@ unwrap_ccreg_dnshosts_to_vector_dnshosts(const ccReg::DNSHost& in)
     return ret;
 }
 
-
 boost::optional<short>
 unwrap_tech_check_level(CORBA::Short level)
 {
@@ -163,7 +158,6 @@ unwrap_tech_check_level(CORBA::Short level)
            ? boost::optional<short>()
            : boost::optional<short>(boost::numeric_cast<short>(level));
 }
-
 
 /**
  * @returns check results in the same order as input handles
@@ -194,7 +188,6 @@ wrap_localized_check_info(
     return result;
 }
 
-
 ccReg::NSSet
 wrap_localized_info_nsset(const Epp::Nsset::InfoNssetLocalizedOutputData& _input)
 {
@@ -214,8 +207,7 @@ wrap_localized_info_nsset(const Epp::Nsset::InfoNssetLocalizedOutputData& _input
     // XXX IDL nonsense
     result.TrDate = wrap_Nullable_boost_posix_time_ptime_to_string(_input.last_transfer);
 
-    result.AuthInfoPw = Corba::wrap_string_to_corba_string(
-            _input.authinfopw ? *_input.authinfopw : std::string());
+    result.AuthInfoPw = wrap_string_to_corba_string("");
 
     {
         result.dns.length(_input.dns_host.size());
@@ -254,7 +246,6 @@ wrap_localized_info_nsset(const Epp::Nsset::InfoNssetLocalizedOutputData& _input
 
     return result;
 }
-
 
 } // namespace LibFred::Corba
 } // namespace Corba
