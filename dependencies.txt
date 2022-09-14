@@ -1,7 +1,7 @@
 # <repository> <commitish> <clone-path>
-fred/libfred authinfo-ttl external/lib/libfred
+fred/libfred 5.3.0 external/lib/libfred
 fred/libhermes 5.0.0 external/lib/libhermes
-fred/idl authinfo-ttl external/idl
+fred/idl 2.39.0 external/idl
 fred/libtypist 1.0.1 external/lib/libtypist
 fred/libfiled 1.1.0 external/lib/libfiled
 fred/db 2.51.0 external/db
