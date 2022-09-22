@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,17 +16,13 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #ifndef FIXTURE_HH_B7B28C030F75482EAE1FA769C8C5C412
 #define FIXTURE_HH_B7B28C030F75482EAE1FA769C8C5C412
 
 #include "test/backend/epp/contact/fixture.hh"
 #include "test/backend/epp/util.hh"
 #include "test/setup/fixtures.hh"
-
-#include "libfred/object_state/create_object_state_request_id.hh"
-#include "libfred/object_state/get_object_states.hh"
-#include "libfred/object_state/perform_object_state_request.hh"
-#include "libfred/registrable_object/contact/create_contact.hh"
 
 #include "src/backend/epp/nsset/check_nsset_config_data.hh"
 #include "src/backend/epp/nsset/create_nsset_config_data.hh"
@@ -37,6 +33,13 @@
 #include "src/backend/epp/nsset/transfer_nsset_config_data.hh"
 #include "src/backend/epp/nsset/update_nsset_config_data.hh"
 #include "src/backend/epp/nsset/update_nsset_localized.hh"
+#include "src/backend/epp/password.hh"
+
+#include "libfred/object_state/create_object_state_request_id.hh"
+#include "libfred/object_state/get_object_states.hh"
+#include "libfred/object_state/perform_object_state_request.hh"
+#include "libfred/registrable_object/contact/create_contact.hh"
+#include "libfred/registrable_object/nsset/update_nsset.hh"
 
 #include <set>
 #include <string>
@@ -195,7 +198,6 @@ struct FullNsset {
                 (::LibFred::DnsHost("a.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("11.0.0.3"))(ip::address::from_string("11.1.1.3")))) //add_dns
                 (::LibFred::DnsHost("c.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("11.0.0.4"))(ip::address::from_string("11.1.1.4")))) //add_dns
                 )
-            .set_authinfo("abcdef1234")
             .set_tech_contacts(Util::vector_of<std::string>(admin_contact3_handle)(admin_contact2_handle))
             .set_tech_check_level(3)
             .exec(_ctx);
@@ -211,15 +213,12 @@ struct HasRegistrarWithSessionAndNsset
     Session session;
     Nsset nsset;
 
-
     HasRegistrarWithSessionAndNsset(::LibFred::OperationContext& _ctx)
         : registrar(_ctx),
           session(_ctx, registrar.data.id),
           nsset(_ctx, registrar.data.handle)
     {
     }
-
-
 };
 
 struct HasRegistrarWithSessionAndNssetOfDifferentRegistrar
@@ -229,7 +228,6 @@ struct HasRegistrarWithSessionAndNssetOfDifferentRegistrar
     Registrar different_registrar;
     Nsset nsset_of_different_registrar;
 
-
     HasRegistrarWithSessionAndNssetOfDifferentRegistrar(::LibFred::OperationContext& _ctx)
         : registrar(_ctx),
           session(_ctx, registrar.data.id),
@@ -237,8 +235,6 @@ struct HasRegistrarWithSessionAndNssetOfDifferentRegistrar
           nsset_of_different_registrar(_ctx, different_registrar.data.handle)
     {
     }
-
-
 };
 
 struct HasRegistrarWithSessionAndFullNsset
@@ -247,22 +243,18 @@ struct HasRegistrarWithSessionAndFullNsset
     Session session;
     FullNsset nsset;
 
-
     HasRegistrarWithSessionAndFullNsset(::LibFred::OperationContext& _ctx)
         : registrar(_ctx),
           session(_ctx, registrar.data.id),
           nsset(_ctx, registrar.data.handle)
     {
     }
-
-
 };
 
 struct NssetWithStatusRequest
     : Nsset
 {
     const std::string status;
-
 
     NssetWithStatusRequest(
             ::LibFred::OperationContext& _ctx,
@@ -273,15 +265,11 @@ struct NssetWithStatusRequest
     {
         ObjectWithStatus(_ctx, data.id, _status);
     }
-
-
 };
 
 struct NssetWithStatus
     : NssetWithStatusRequest
 {
-
-
     NssetWithStatus(
             ::LibFred::OperationContext& _ctx,
             const std::string& _registrar_handle,
@@ -293,120 +281,89 @@ struct NssetWithStatus
     {
         ::LibFred::PerformObjectStateRequest(data.id).exec(_ctx);
     }
-
-
 };
 
 struct NssetWithServerDeleteProhibited
     : NssetWithStatus
 {
-
-
     NssetWithServerDeleteProhibited(
             ::LibFred::OperationContext& _ctx,
             const std::string& _registrar_handle)
         : NssetWithStatus(_ctx, _registrar_handle, "serverDeleteProhibited")
     {
     }
-
-
 };
 
 struct NssetWithStatusServerUpdateProhibited
     : NssetWithStatus
 {
-
-
     NssetWithStatusServerUpdateProhibited(
             ::LibFred::OperationContext& _ctx,
             const std::string& _registrar_handle)
         : NssetWithStatus(_ctx, _registrar_handle, "serverUpdateProhibited")
     {
     }
-
-
 };
 
 struct NssetWithStatusServerTransferProhibited
     : NssetWithStatus
 {
-
-
     NssetWithStatusServerTransferProhibited(
             ::LibFred::OperationContext& _ctx,
             const std::string& _registrar_handle)
         : NssetWithStatus(_ctx, _registrar_handle, "serverTransferProhibited")
     {
     }
-
-
 };
 
 struct NssetWithStatusRequestServerTransferProhibited
     : NssetWithStatusRequest
 {
-
-
     NssetWithStatusRequestServerTransferProhibited(
             ::LibFred::OperationContext& _ctx,
             const std::string& _registrar_handle)
         : NssetWithStatusRequest(_ctx, _registrar_handle, "serverTransferProhibited")
     {
     }
-
-
 };
 
 struct NssetWithStatusRequestServerUpdateProhibited
     : NssetWithStatusRequest
 {
-
-
     NssetWithStatusRequestServerUpdateProhibited(
             ::LibFred::OperationContext& _ctx,
             const std::string& _registrar_handle)
         : NssetWithStatusRequest(_ctx, _registrar_handle, "serverUpdateProhibited")
     {
     }
-
-
 };
-
 
 struct NssetWithStatusDeleteCandidate
     : NssetWithStatus
 {
-
-
     NssetWithStatusDeleteCandidate(
             ::LibFred::OperationContext& _ctx,
             const std::string& _registrar_handle)
         : NssetWithStatus(_ctx, _registrar_handle, "deleteCandidate")
     {
     }
-
-
 };
-
 
 struct NssetWithStatusRequestDeleteCandidate
     : NssetWithStatusRequest
 {
-
-
     NssetWithStatusRequestDeleteCandidate(
             ::LibFred::OperationContext& _ctx,
             const std::string& _registrar_handle)
         : NssetWithStatusRequest(_ctx, _registrar_handle, "deleteCandidate")
     {
     }
-
-
 };
 
 // obsolete
 
-struct HasRegistrar : virtual autorollbacking_context {
+struct HasRegistrar : virtual autorollbacking_context
+{
     ::LibFred::InfoRegistrarData registrar;
 
     HasRegistrar()
@@ -464,7 +421,6 @@ struct has_nsset_input_data_set : HasRegistrar
     : create_nsset_input_data(
             ::Epp::Nsset::CreateNssetInputData(
                     "NSSET1",
-                    boost::optional<std::string>("authInfo123"),
                     Util::vector_of<std::string>
                         ("TEST-ADMIN-CONTACT2")
                         ("TEST-ADMIN-CONTACT3"),
@@ -511,7 +467,6 @@ struct has_nsset_input_data_set : HasRegistrar
     }
 };
 
-
 struct has_nsset_with_input_data_set : HasRegistrar {
     ::LibFred::InfoNssetData nsset;
     ::Epp::Nsset::CreateNssetInputData create_nsset_input_data;
@@ -526,7 +481,6 @@ struct has_nsset_with_input_data_set : HasRegistrar {
     : create_nsset_input_data(
             ::Epp::Nsset::CreateNssetInputData(
                     "NSSET1",
-                    boost::optional<std::string>("authInfo123"),
                     Util::vector_of<std::string>
                         ("TEST-ADMIN-CONTACT2")
                         ("TEST-ADMIN-CONTACT3"),
@@ -576,15 +530,30 @@ struct has_nsset_with_input_data_set : HasRegistrar {
                 (::LibFred::DnsHost(create_nsset_input_data.dns_hosts.at(0).fqdn, ::Epp::Nsset::make_ipaddrs(create_nsset_input_data.dns_hosts.at(0).inet_addr) )) //add_dns
                 (::LibFred::DnsHost(create_nsset_input_data.dns_hosts.at(1).fqdn, ::Epp::Nsset::make_ipaddrs(create_nsset_input_data.dns_hosts.at(1).inet_addr) )) //add_dns
                 )
-            .set_authinfo(create_nsset_input_data.authinfopw ? *create_nsset_input_data.authinfopw : std::string())
             .set_tech_contacts(Util::vector_of<std::string>(admin_contact2_handle)(admin_contact3_handle))
             .set_tech_check_level(*create_nsset_input_data.tech_check_level)
             .exec(ctx);
         nsset = ::LibFred::InfoNssetByHandle(create_nsset_input_data.handle).exec(ctx).info_nsset_data;
-
     }
 };
 
+struct HasRegistrarWithSessionAndNssetWithAuthinfo
+{
+    HasRegistrarWithSessionAndNssetWithAuthinfo(::LibFred::OperationContext& _ctx)
+        : registrar{_ctx},
+          session{_ctx, registrar.data.id},
+          nsset{_ctx, registrar.data.handle},
+          password{"domain-password"}
+    {
+        ::LibFred::UpdateNsset{nsset.data.handle, registrar.data.handle}
+                .set_authinfo(*password)
+                .exec(_ctx);
+    }
+    Registrar registrar;
+    Session session;
+    Nsset nsset;
+    ::Epp::Password password;
+};
 
 } // namespace Test::Backend::Epp::Nsset
 } // namespace Test::Backend::Epp

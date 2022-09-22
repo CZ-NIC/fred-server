@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2008-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "test/backend/epp/keyset/fixture.hh"
 
 #include "src/backend/epp/epp_response_failure.hh"
@@ -105,7 +106,6 @@ struct KeysetCreateData
     std::string keyset_handle;
     unsigned long long registrar_id;
     std::string registrar_handle;
-    Optional< std::string > authinfopw;
     std::vector< std::string > tech_contacts;
     std::vector< ::Epp::Keyset::DsRecord > ds_records;
     std::vector< ::Epp::Keyset::DnsKey > dns_keys;
@@ -134,7 +134,6 @@ KeysetCreateData create_successfully_by(const ObjectsProvider &objects_provider)
                 ctx,
                 ::Epp::Keyset::CreateKeysetInputData(
                         data.keyset_handle,
-                        data.authinfopw,
                         data.tech_contacts,
                         data.ds_records,
                         data.dns_keys),
@@ -172,14 +171,12 @@ void check_created_keyset(const KeysetCreateData &data)
                     ctx,
                     data.keyset_handle,
                     DefaultInfoKeysetConfigData(),
+                    ::Epp::Password{},
                     DefaultSessionData().set_registrar_id(data.registrar_id));
         ctx.commit_transaction();
         BOOST_CHECK(info_data.handle == data.keyset_handle);
         BOOST_CHECK(info_data.creating_registrar_handle == data.registrar_handle);
         BOOST_CHECK(info_data.sponsoring_registrar_handle == data.registrar_handle);
-        BOOST_REQUIRE(info_data.authinfopw);
-        BOOST_CHECK(!(*info_data.authinfopw).empty());
-        BOOST_CHECK(!data.authinfopw.isset() || (*info_data.authinfopw == data.authinfopw.get_value()));
         BOOST_CHECK(info_data.tech_contacts.size() == data.tech_contacts.size());
         BOOST_CHECK(!info_data.tech_contacts.empty());
         for (std::vector< std::string >::const_iterator tech_contact_ptr = data.tech_contacts.begin();
@@ -224,7 +221,6 @@ void create_by_invalid_registrar(const KeysetCreateData &data)
                     ctx,
                     ::Epp::Keyset::CreateKeysetInputData(
                             data.keyset_handle,
-                            data.authinfopw,
                             data.tech_contacts,
                             data.ds_records,
                             data.dns_keys),
@@ -260,7 +256,6 @@ void create_with_correct_data_but_registered_handle_by(const KeysetCreateData &d
                     ctx,
                     ::Epp::Keyset::CreateKeysetInputData(
                             data.keyset_handle,
-                            data.authinfopw,
                             data.tech_contacts,
                             data.ds_records,
                             data.dns_keys),
@@ -358,7 +353,6 @@ void create_with_correct_data_but_protected_handle_by(const KeysetCreateData &da
                     ctx,
                     ::Epp::Keyset::CreateKeysetInputData(
                             data.keyset_handle,
-                            data.authinfopw,
                             data.tech_contacts,
                             data.ds_records,
                             data.dns_keys),
@@ -395,7 +389,6 @@ void create_with_correct_data_but_invalid_handle_by(const KeysetCreateData &data
                     ctx,
                     ::Epp::Keyset::CreateKeysetInputData(
                             invalid_keyset_handle,
-                            data.authinfopw,
                             data.tech_contacts,
                             data.ds_records,
                             data.dns_keys),
@@ -465,9 +458,9 @@ BOOST_FIXTURE_TEST_CASE(create, ObjectsProvider)
     create_with_correct_data_but_invalid_handle_by< Registrar::SYS >(data_sys, *this);
 }
 
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END()//Backend/Epp/Keyset/CreateKeyset
+BOOST_AUTO_TEST_SUITE_END()//Backend/Epp/Keyset
+BOOST_AUTO_TEST_SUITE_END()//Backend/Epp
+BOOST_AUTO_TEST_SUITE_END()//Backend
 
 } // namespace Test

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #ifndef CREATE_NSSET_INPUT_DATA_HH_5460288F04D649A9A702EE75C65597DC
 #define CREATE_NSSET_INPUT_DATA_HH_5460288F04D649A9A702EE75C65597DC
 
@@ -32,27 +33,21 @@ namespace Nsset {
 struct CreateNssetInputData
 {
     std::string handle;
-    boost::optional<std::string> authinfopw;
     std::vector<std::string> tech_contacts;
     std::vector<DnsHostInput> dns_hosts;
     boost::optional<short> tech_check_level;
 
-
     CreateNssetInputData(
             const std::string& _handle,
-            const boost::optional<std::string>& _authinfopw,
             const std::vector<std::string>& _tech_contacts,
             const std::vector<DnsHostInput>& _dns_hosts,
             const boost::optional<short>& _tech_check_level)
         : handle(_handle),
-          authinfopw(_authinfopw),
           tech_contacts(_tech_contacts),
           dns_hosts(_dns_hosts),
           tech_check_level(_tech_check_level)
     {
     }
-
-
 };
 
 } // namespace Epp::Nsset

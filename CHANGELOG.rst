@@ -8,6 +8,16 @@ UNRELEASED
 
 * Remove obsolete ``getRequestCount*`` (moved to LoggerCorba)
 
+2022-09-22 (2.54.1)
+-------------------
+
+* Fix registrar epp auth operations in ``libfred`` (bump deps)
+
+2022-09-14 (2.54.0)
+-------------------
+
+* Registry objects authinfo password is now stored hashed and has ttl (expiration timestamp)
+
 2022-07-28 (2.53.1)
 -------------------
 

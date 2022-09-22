@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,15 +16,18 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/public_request/confirmed_by.hh"
 #include "src/backend/public_request/create_authinfo_request_non_registry_email.hh"
 #include "src/backend/public_request/exceptions.hh"
+
 #include "libfred/object/object_type.hh"
 #include "libfred/public_request/create_public_request.hh"
 #include "libfred/registrable_object/contact/info_contact_data.hh"
 #include "libfred/registrable_object/domain/info_domain_data.hh"
 #include "libfred/registrable_object/keyset/info_keyset_data.hh"
 #include "libfred/registrable_object/nsset/info_nsset_data.hh"
+#include "libfred/registrar/info_registrar.hh"
 
 #include "test/setup/fixtures_utils.hh"
 #include "test/setup/fixtures.hh"
@@ -36,6 +39,15 @@
 
 BOOST_AUTO_TEST_SUITE(TestPublicRequest)
 BOOST_AUTO_TEST_SUITE(NonRegistryEmail)
+
+namespace {
+
+auto get_registrar_id(LibFred::OperationContext& ctx, const std::string& authinfo_registrar)
+{
+    return LibFred::InfoRegistrarByHandle{authinfo_registrar}.exec(ctx).info_registrar_data.id;
+}
+
+}//namespace {anonymous}
 
 class non_registry_email_fixture : public Test::instantiate_db_template
 {
@@ -51,48 +63,56 @@ public:
         email_contact_id = Fred::Backend::PublicRequest::create_authinfo_request_non_registry_email(
                 Fred::Backend::PublicRequest::ObjectType::contact,
                 contact.handle,
+                get_registrar_id(ctx, contact.sponsoring_registrar_handle),
                 Optional<unsigned long long>(),
                 Fred::Backend::PublicRequest::ConfirmedBy::email,
                 email);
         post_contact_id = Fred::Backend::PublicRequest::create_authinfo_request_non_registry_email(
                 Fred::Backend::PublicRequest::ObjectType::contact,
                 contact.handle,
+                get_registrar_id(ctx, contact.sponsoring_registrar_handle),
                 Optional<unsigned long long>(),
                 Fred::Backend::PublicRequest::ConfirmedBy::letter,
                 email);
         email_nsset_id = Fred::Backend::PublicRequest::create_authinfo_request_non_registry_email(
                 Fred::Backend::PublicRequest::ObjectType::nsset,
                 nsset.handle,
+                get_registrar_id(ctx, nsset.sponsoring_registrar_handle),
                 Optional<unsigned long long>(),
                 Fred::Backend::PublicRequest::ConfirmedBy::email,
                 email);
         post_nsset_id = Fred::Backend::PublicRequest::create_authinfo_request_non_registry_email(
                 Fred::Backend::PublicRequest::ObjectType::nsset,
                 nsset.handle,
+                get_registrar_id(ctx, nsset.sponsoring_registrar_handle),
                 Optional<unsigned long long>(),
                 Fred::Backend::PublicRequest::ConfirmedBy::letter,
                 email);
         email_domain_id = Fred::Backend::PublicRequest::create_authinfo_request_non_registry_email(
                 Fred::Backend::PublicRequest::ObjectType::domain,
                 domain.fqdn,
+                get_registrar_id(ctx, domain.sponsoring_registrar_handle),
                 Optional<unsigned long long>(),
                 Fred::Backend::PublicRequest::ConfirmedBy::email,
                 email);
         post_domain_id = Fred::Backend::PublicRequest::create_authinfo_request_non_registry_email(
                 Fred::Backend::PublicRequest::ObjectType::domain,
                 domain.fqdn,
+                get_registrar_id(ctx, domain.sponsoring_registrar_handle),
                 Optional<unsigned long long>(),
                 Fred::Backend::PublicRequest::ConfirmedBy::letter,
                 email);
         email_keyset_id = Fred::Backend::PublicRequest::create_authinfo_request_non_registry_email(
                 Fred::Backend::PublicRequest::ObjectType::keyset,
                 keyset.handle,
+                get_registrar_id(ctx, keyset.sponsoring_registrar_handle),
                 Optional<unsigned long long>(),
                 Fred::Backend::PublicRequest::ConfirmedBy::email,
                 email);
         post_keyset_id = Fred::Backend::PublicRequest::create_authinfo_request_non_registry_email(
                 Fred::Backend::PublicRequest::ObjectType::keyset,
                 keyset.handle,
+                get_registrar_id(ctx, keyset.sponsoring_registrar_handle),
                 Optional<unsigned long long>(),
                 Fred::Backend::PublicRequest::ConfirmedBy::letter,
                 email);
@@ -139,10 +159,12 @@ BOOST_FIXTURE_TEST_CASE(authinfo_request_to_non_registry_email, non_registry_ema
 
 BOOST_FIXTURE_TEST_CASE(no_object, Test::instantiate_db_template)
 {
+    ::LibFred::OperationContextCreator ctx;
     BOOST_CHECK_THROW(
             Fred::Backend::PublicRequest::create_authinfo_request_non_registry_email(
                 Fred::Backend::PublicRequest::ObjectType::contact,
                 "test handle",
+                Test::registrar::make(ctx, "REG-NO-OBJECT").id,
                 Optional<unsigned long long>(),
                 Fred::Backend::PublicRequest::ConfirmedBy::email,
                 "some@email.com"),
@@ -151,10 +173,12 @@ BOOST_FIXTURE_TEST_CASE(no_object, Test::instantiate_db_template)
 
 BOOST_FIXTURE_TEST_CASE(invalid_email, non_registry_email_fixture)
 {
+    ::LibFred::OperationContextCreator ctx;
     BOOST_CHECK_THROW(
             Fred::Backend::PublicRequest::create_authinfo_request_non_registry_email(
                     Fred::Backend::PublicRequest::ObjectType::contact,
                     contact.handle,
+                    get_registrar_id(ctx, contact.sponsoring_registrar_handle),
                     Optional<unsigned long long>(),
                     Fred::Backend::PublicRequest::ConfirmedBy::email,
                     "wrongemail"),

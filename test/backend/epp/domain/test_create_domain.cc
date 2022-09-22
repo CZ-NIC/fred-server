@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2008-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "test/backend/epp/fixture.hh"
 #include "test/backend/epp/domain/fixture.hh"
 #include "test/backend/epp/util.hh"
@@ -754,90 +755,6 @@ BOOST_FIXTURE_TEST_CASE(create_duplicated_admin, supply_ctx<HasRegistrarWithSess
             create_duplicated_admin_exception);
 }
 
-BOOST_FIXTURE_TEST_CASE(create_empty_authinfopw, supply_ctx<HasRegistrarWithSessionAndCreateDomainInputData>)
-{
-    create_domain_input_data.data.authinfopw = boost::optional<std::string>("");
-
-    ::Epp::Domain::create_domain(
-            ctx,
-            create_domain_input_data.data,
-            DefaultCreateDomainConfigData(),
-            session.data);
-
-    ::LibFred::InfoDomainData info_data = ::LibFred::InfoDomainByFqdn(create_domain_input_data.data.fqdn).exec(ctx,"UTC").info_domain_data;
-    BOOST_TEST_MESSAGE(info_data.to_string());
-
-    //warning: timestamp conversion using local system timezone
-    const boost::gregorian::date current_local_date = boost::date_time::c_local_adjustor<ptime>::utc_to_local(
-        boost::posix_time::time_from_string(static_cast<std::string>(ctx.get_conn().exec(
-            "SELECT CURRENT_TIMESTAMP AT TIME ZONE 'UTC'")[0][0]))).date();
-
-    const boost::gregorian::date expected_expiration_date_local = boost::gregorian::from_simple_string(
-        static_cast<std::string>(ctx.get_conn().exec_params("select ($1::date + '1 year'::interval)::date",
-                Database::query_param_list(current_local_date))[0][0]));
-
-    BOOST_CHECK(info_data.fqdn == create_domain_input_data.data.fqdn);
-    BOOST_CHECK(info_data.registrant.handle == create_domain_input_data.data.registrant);
-    BOOST_CHECK(info_data.nsset.get_value().handle == create_domain_input_data.data.nsset);
-    BOOST_CHECK(info_data.keyset.get_value().handle == create_domain_input_data.data.keyset);
-    BOOST_CHECK(info_data.authinfopw.length() == 8);
-    BOOST_CHECK(info_data.authinfopw.find_first_not_of(::LibFred::get_chars_allowed_in_generated_authinfopw()) == std::string::npos);
-    BOOST_CHECK(info_data.expiration_date == expected_expiration_date_local);
-
-    BOOST_TEST_MESSAGE("info_data.admin_contacts.size(): "<< info_data.admin_contacts.size());
-
-    BOOST_TEST_MESSAGE("create_domain_input_data.data.admin_contacts " + create_domain_input_data.data.admin_contacts.at(0));
-    BOOST_TEST_MESSAGE("create_domain_input_data.data.admin_contacts " + create_domain_input_data.data.admin_contacts.at(1));
-
-    BOOST_CHECK(info_data.admin_contacts.size() == create_domain_input_data.data.admin_contacts.size());
-    BOOST_CHECK(std::equal (create_domain_input_data.data.admin_contacts.begin(), create_domain_input_data.data.admin_contacts.end(),
-            info_data.admin_contacts.begin(), handle_contact_reference_predicate));
-
-    BOOST_CHECK(info_data.enum_domain_validation.isnull());
-}
-
-BOOST_FIXTURE_TEST_CASE(create_authinfopw_not_set, supply_ctx<HasRegistrarWithSessionAndCreateDomainInputData>)
-{
-    create_domain_input_data.data.authinfopw = boost::optional<std::string>();
-
-    ::Epp::Domain::create_domain(
-            ctx,
-            create_domain_input_data.data,
-            DefaultCreateDomainConfigData(),
-            session.data);
-
-    ::LibFred::InfoDomainData info_data = ::LibFred::InfoDomainByFqdn(create_domain_input_data.data.fqdn).exec(ctx,"UTC").info_domain_data;
-    BOOST_TEST_MESSAGE(info_data.to_string());
-
-    //warning: timestamp conversion using local system timezone
-    const boost::gregorian::date current_local_date = boost::date_time::c_local_adjustor<ptime>::utc_to_local(
-        boost::posix_time::time_from_string(static_cast<std::string>(ctx.get_conn().exec(
-            "SELECT CURRENT_TIMESTAMP AT TIME ZONE 'UTC'")[0][0]))).date();
-
-    const boost::gregorian::date expected_expiration_date_local = boost::gregorian::from_simple_string(
-        static_cast<std::string>(ctx.get_conn().exec_params("select ($1::date + '1 year'::interval)::date",
-                Database::query_param_list(current_local_date))[0][0]));
-
-    BOOST_CHECK(info_data.fqdn == create_domain_input_data.data.fqdn);
-    BOOST_CHECK(info_data.registrant.handle == create_domain_input_data.data.registrant);
-    BOOST_CHECK(info_data.nsset.get_value().handle == create_domain_input_data.data.nsset);
-    BOOST_CHECK(info_data.keyset.get_value().handle == create_domain_input_data.data.keyset);
-    BOOST_CHECK(info_data.authinfopw.length() == 8);
-    BOOST_CHECK(info_data.authinfopw.find_first_not_of(::LibFred::get_chars_allowed_in_generated_authinfopw()) == std::string::npos);
-    BOOST_CHECK(info_data.expiration_date == expected_expiration_date_local);
-
-    BOOST_TEST_MESSAGE("info_data.admin_contacts.size(): "<< info_data.admin_contacts.size());
-
-    BOOST_TEST_MESSAGE("create_domain_input_data.data.admin_contacts " + create_domain_input_data.data.admin_contacts.at(0));
-    BOOST_TEST_MESSAGE("create_domain_input_data.data.admin_contacts " + create_domain_input_data.data.admin_contacts.at(1));
-
-    BOOST_CHECK(info_data.admin_contacts.size() == create_domain_input_data.data.admin_contacts.size());
-    BOOST_CHECK(std::equal (create_domain_input_data.data.admin_contacts.begin(), create_domain_input_data.data.admin_contacts.end(),
-            info_data.admin_contacts.begin(), handle_contact_reference_predicate));
-
-    BOOST_CHECK(info_data.enum_domain_validation.isnull());
-}
-
 BOOST_FIXTURE_TEST_CASE(create_invalid_domain_by_system_registrar_success, supply_ctx<HasRegistrarWithSessionAndCreateDomainInputData>)
 {
     create_domain_input_data.data.fqdn = std::string("xn--j--ra-xqa.cz"); // já--ra.cz
@@ -904,7 +821,6 @@ BOOST_FIXTURE_TEST_CASE(create_ok, supply_ctx<HasRegistrarWithSessionAndCreateDo
     BOOST_CHECK(info_data.registrant.handle == create_domain_input_data.data.registrant);
     BOOST_CHECK(info_data.nsset.get_value().handle == create_domain_input_data.data.nsset);
     BOOST_CHECK(info_data.keyset.get_value().handle == create_domain_input_data.data.keyset);
-    BOOST_CHECK(info_data.authinfopw == create_domain_input_data.data.authinfopw);
     BOOST_TEST_MESSAGE("info_data.expiration_date: " << info_data.expiration_date << " expected_expiration_date_local: " << expected_expiration_date_local);
     BOOST_CHECK(info_data.expiration_date == expected_expiration_date_local);
 
@@ -918,12 +834,11 @@ BOOST_FIXTURE_TEST_CASE(create_ok, supply_ctx<HasRegistrarWithSessionAndCreateDo
             info_data.admin_contacts.begin(), handle_contact_reference_predicate));
 
     BOOST_CHECK(info_data.enum_domain_validation.isnull());
-
 }
 
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END()//Backend/Epp/Domain/CreateDomain
+BOOST_AUTO_TEST_SUITE_END()//Backend/Epp/Domain
+BOOST_AUTO_TEST_SUITE_END()//Backend/Epp
+BOOST_AUTO_TEST_SUITE_END()//Backend
 
 } // namespace Test

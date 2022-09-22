@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/epp/poll/poll_request_get_update_domain_details.hh"
 #include "src/backend/epp/poll/message_type.hh"
 #include "src/backend/epp/epp_response_failure.hh"
@@ -54,25 +55,21 @@ HistoryDomainData get_history_domain_data(
 
     const LibFred::InfoDomainData old_history_data =
             LibFred::InfoDomainHistoryByHistoryid(old_history_id).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()).info_domain_data;
-    const bool old_info_is_for_sponsoring_registrar = old_history_data.sponsoring_registrar_handle == session_registrar_handle;
     const std::vector<LibFred::ObjectStateData> old_domain_states_data =
             LibFred::GetObjectStatesByHistoryId(old_history_id).exec(ctx).object_state_at_end;
 
     const LibFred::InfoDomainData new_history_data =
             LibFred::InfoDomainHistoryByHistoryid(new_history_id).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()).info_domain_data;
-    const bool new_info_is_for_sponsoring_registrar = new_history_data.sponsoring_registrar_handle == session_registrar_handle;
     const std::vector<LibFred::ObjectStateData> new_domain_states_data =
             LibFred::GetObjectStatesByHistoryId(new_history_id).exec(ctx).object_state_at_begin;
 
     HistoryDomainData retval;
     retval.old_data = Epp::Domain::get_info_domain_output(
             old_history_data,
-            old_domain_states_data,
-            old_info_is_for_sponsoring_registrar);
+            old_domain_states_data);
     retval.new_data = Epp::Domain::get_info_domain_output(
             new_history_data,
-            new_domain_states_data,
-            new_info_is_for_sponsoring_registrar);
+            new_domain_states_data);
     return retval;
 }
 

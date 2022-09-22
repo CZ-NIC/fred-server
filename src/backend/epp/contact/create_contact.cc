@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/epp/contact/create_contact.hh"
 #include "src/backend/epp/contact/contact_change.hh"
 #include "src/backend/epp/contact/impl/get_personal_id_union.hh"
@@ -195,7 +196,7 @@ CreateContactResult create_contact(
         LibFred::CreateContact create_contact_op(
             contact_handle,
             LibFred::InfoRegistrarById(session_data.registrar_id).exec(ctx).info_registrar_data.handle,
-            to_optional(contact_data.authinfopw),
+            {},//authinfopw
             to_optional(*contact_data.name),
             to_optional(*contact_data.organization),
             place,

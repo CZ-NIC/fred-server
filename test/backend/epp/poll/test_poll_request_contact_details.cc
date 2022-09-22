@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2020  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2018-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -78,7 +78,6 @@ struct HasContactUpdateBySponsoringRegistrarButContactOwnsDomain : virtual Test:
         const Test::contact different_contact(ctx, Optional<std::string>{}, Optional<std::string>{}, Tz::get_psql_handle_of<Tz::UTC>());
         static const char new_passwd[] = "doesntmatter_38E166961BEE";
         old_contact_data = new_contact_data = contact.info_data;
-        new_contact_data.authinfopw = new_passwd;
         const Test::registrar different_registrar(ctx);
         LibFred::InfoDomainData domain =
                 Test::exec(
@@ -109,7 +108,6 @@ struct HasContactUpdateBySponsoringRegistrarButContactAdministratesDomain : virt
         const Test::contact different_contact(ctx, Optional<std::string>{}, Optional<std::string>{}, Tz::get_psql_handle_of<Tz::UTC>());
         static const char new_passwd[] = "doesntmatter_38E166961BEE";
         old_contact_data = new_contact_data = contact.info_data;
-        new_contact_data.authinfopw = new_passwd;
         const Test::registrar different_registrar(ctx);
         LibFred::InfoDomainData domain =
                 ::LibFred::InfoDomainById(
@@ -142,7 +140,6 @@ struct HasContactUpdate : virtual Test::Backend::Epp::autorollbacking_context
         const Test::contact contact(ctx, Optional<std::string>{}, Optional<std::string>{}, Tz::get_psql_handle_of<Tz::UTC>());
         static const char new_passwd[] = "doesntmatter_38E166961BEE";
         old_contact_data = new_contact_data = contact.info_data;
-        new_contact_data.authinfopw = new_passwd;
         const Test::registrar different_registrar(ctx);
 
         const unsigned long long new_history_id =
@@ -217,7 +214,6 @@ BOOST_FIXTURE_TEST_CASE(successful_request_contact_details, HasContactUpdate)
     Contact::check_equal(output.old_data, old_contact_data);
     Contact::check_equal(output.new_data, new_contact_data);
 
-    BOOST_CHECK(*output.old_data.authinfopw != *output.new_data.authinfopw);
     BOOST_CHECK(output.old_data.last_update == boost::none);
     BOOST_CHECK(output.new_data.last_update != boost::none);
 

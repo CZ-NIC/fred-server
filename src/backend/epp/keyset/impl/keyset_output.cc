@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/epp/keyset/impl/keyset_output.hh"
 #include "src/backend/epp/keyset/status_value.hh"
 #include "libfred/registrable_object/keyset/info_keyset.hh"
@@ -26,8 +27,7 @@ namespace Keyset {
 
 InfoKeysetOutputData get_info_keyset_output(
     const LibFred::InfoKeysetData& _data,
-    const std::vector<LibFred::ObjectStateData>& _object_state_data,
-    bool _info_is_for_sponsoring_registrar)
+    const std::vector<LibFred::ObjectStateData>& _object_state_data)
 {
     InfoKeysetOutputData ret;
 
@@ -53,8 +53,6 @@ InfoKeysetOutputData get_info_keyset_output(
     ret.crdate = _data.creation_time;
     ret.last_update = _data.update_time;
     ret.last_transfer = _data.transfer_time;
-    const bool authinfopw_has_to_be_hidden = !_info_is_for_sponsoring_registrar;
-    ret.authinfopw = authinfopw_has_to_be_hidden ? boost::optional<std::string>() : _data.authinfopw;
     // ret.ds_records = ... // LibFred::InfoKeysetData doesn't contain any ds record informations
     {
         typedef std::vector<LibFred::DnsKey> FredDnsKeys;

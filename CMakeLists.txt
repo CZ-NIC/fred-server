@@ -13,7 +13,7 @@ endmacro()
 include("cmake/package.cmake")
 
 package(fred-server
-    FULL_VERSION "2.53.1")
+    FULL_VERSION "2.54.1")
 
 project(FredServer
     VERSION ${PACKAGE_VERSION}
@@ -791,6 +791,7 @@ add_common_library_target(epp_impl
     src/backend/epp/epp_result_success_localized.cc
     src/backend/epp/epp_extended_error.cc
     src/backend/epp/epp_extended_error_localized.cc
+    src/backend/epp/authorization_required.cc
     src/backend/epp/password.cc
     src/backend/epp/session_data.cc
     src/backend/epp/impl/conditionally_enqueue_notification.cc
@@ -979,6 +980,20 @@ add_common_library_target(administrativeblocking_impl
 target_link_libraries(administrativeblocking_impl PRIVATE Fred::library)
 
 add_common_library_target(test-setup-fixtures
+    test/poc/parallel-tests/fixtures/contact.cc
+    test/poc/parallel-tests/fixtures/domain.cc
+    test/poc/parallel-tests/fixtures/epp.cc
+    test/poc/parallel-tests/fixtures/has_fresh_database.cc
+    test/poc/parallel-tests/fixtures/keyset.cc
+    test/poc/parallel-tests/fixtures/nsset.cc
+    test/poc/parallel-tests/fixtures/operation_context.cc
+    test/poc/parallel-tests/fixtures/registrar.cc
+    test/poc/parallel-tests/fixtures/zone.cc
+    test/poc/parallel-tests/fixtures/zone_access.cc
+    test/poc/parallel-tests/setup/arguments.cc
+    test/poc/parallel-tests/setup/cfg.cc
+    test/poc/parallel-tests/setup/run_in_background.cc
+    test/poc/parallel-tests/setup/test_tree_list.cc
     test/setup/fixtures.cc
     test/setup/fixtures_utils.cc
     test/setup/tests_common.cc)
@@ -1688,6 +1703,7 @@ add_common_executable_target(test-epp
     test/backend/epp/domain/test_domain_billing.cc
     test/backend/epp/keyset/fixture.cc
     test/backend/epp/keyset/test_create_keyset.cc
+    test/backend/epp/keyset/test_info_keyset.cc
     test/backend/epp/nsset/test_check_nsset.cc
     test/backend/epp/nsset/test_info_nsset.cc
     test/backend/epp/nsset/test_delete_nsset.cc
@@ -1712,6 +1728,26 @@ target_link_libraries(test-epp
     handle_rifd_args
     corba_mailer
     test-setup-fixtures
+    Threads::Threads
+    Boost::system
+    Boost::regex
+    Boost::random
+    Boost::thread
+    Boost::date_time)
+
+# test-poc-parallel
+add_common_executable_target(test-poc-parallel
+    test/poc/parallel-tests/main.cc
+    test/poc/parallel-tests/test_contact.cc
+    test/poc/parallel-tests/test_create_domain.cc
+    test/poc/parallel-tests/test_domain_browser.cc)
+target_link_libraries(test-poc-parallel
+    db
+    util
+    handle_rifd_args
+    test-setup-fixtures
+    domain_browser_impl
+    epp_impl
     Threads::Threads
     Boost::system
     Boost::regex

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,11 +16,13 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #ifndef INFO_NSSET_LOCALIZED_HH_BF05EC1AF971477EA1286FF9EF528469
 #define INFO_NSSET_LOCALIZED_HH_BF05EC1AF971477EA1286FF9EF528469
 
 #include "src/backend/epp/nsset/info_nsset_config_data.hh"
 #include "src/backend/epp/nsset/info_nsset_localized_response.hh"
+#include "src/backend/epp/password.hh"
 #include "src/backend/epp/session_data.hh"
 
 #include <string>
@@ -31,6 +33,7 @@ namespace Nsset {
 InfoNssetLocalizedResponse info_nsset_localized(
         const std::string& _nsset_handle,
         const InfoNssetConfigData& _info_nsset_config_data,
+        const Password& _authinfopw,
         const SessionData& _session_data);
 
 

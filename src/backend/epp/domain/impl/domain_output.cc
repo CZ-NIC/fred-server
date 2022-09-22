@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2017-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/epp/domain/impl/domain_output.hh"
 
 #include "util/db/nullable.hh"
@@ -30,8 +31,7 @@ namespace Domain {
 
 InfoDomainOutputData get_info_domain_output(
     const LibFred::InfoDomainData& _data,
-    const std::vector<LibFred::ObjectStateData>& _object_state_data,
-    bool _info_is_for_sponsoring_registrar)
+    const std::vector<LibFred::ObjectStateData>& _object_state_data)
 {
     InfoDomainOutputData ret;
 
@@ -67,9 +67,6 @@ InfoDomainOutputData get_info_domain_output(
     ret.last_update = _data.update_time;
     ret.last_transfer = _data.transfer_time;
     ret.exdate = _data.expiration_date;
-
-    const bool authinfopw_has_to_be_hidden = !_info_is_for_sponsoring_registrar;
-    ret.authinfopw = authinfopw_has_to_be_hidden ? boost::optional<std::string>() : _data.authinfopw;
 
     for (const auto& admin_contact : _data.admin_contacts)
     {

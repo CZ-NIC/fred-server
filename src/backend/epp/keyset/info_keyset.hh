@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -21,6 +21,7 @@
 
 #include "src/backend/epp/keyset/info_keyset_config_data.hh"
 #include "src/backend/epp/keyset/info_keyset_output_data.hh"
+#include "src/backend/epp/password.hh"
 #include "src/backend/epp/session_data.hh"
 #include "libfred/opcontext.hh"
 
@@ -36,6 +37,7 @@ InfoKeysetOutputData info_keyset(
         LibFred::OperationContext& _ctx,
         const std::string& _keyset_handle,
         const InfoKeysetConfigData& _info_keyset_config_data,
+        const Password& _authinfopw,
         const SessionData& _session_data);
 
 

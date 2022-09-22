@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2021  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2010-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -15,10 +15,6 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
- */
-/**
- *  @file
- *  mojeid implementation
  */
 
 #include "src/backend/mojeid/mojeid.hh"
@@ -36,6 +32,7 @@
 
 #include "libfred/notifier/enqueue_notification.hh"
 #include "libfred/object/object_states_info.hh"
+#include "libfred/object/store_authinfo.hh"
 #include "libfred/object_state/cancel_object_state_request_id.hh"
 #include "libfred/object_state/create_object_state_request_id.hh"
 #include "libfred/object_state/perform_object_state_request.hh"
@@ -79,6 +76,7 @@
 #include <algorithm>
 #include <functional>
 #include <iomanip>
+#include <limits>
 #include <map>
 #include <type_traits>
 #include <utility>
@@ -108,6 +106,32 @@ unsigned long long get_registrar_id(const std::string& _registrar_handle)
         }
         throw;
     }
+}
+
+auto make_authinfo_password()
+{
+    Random::Generator generator;
+    const auto get_random_char = [&]()
+    {
+        return generator.get(std::numeric_limits<char>::min(), std::numeric_limits<char>::max());
+    };
+    static constexpr auto authinfo_length = 16;
+    std::string authinfo_password;
+    authinfo_password.reserve(authinfo_length);
+    std::generate_n(std::back_inserter(authinfo_password), authinfo_length, get_random_char);
+    return authinfo_password;
+}
+
+auto set_contact_authinfo_password(
+        LibFred::OperationContext& ctx,
+        const LibFred::Object::ObjectId& contact_id,
+        unsigned long long system_registrar_id)
+{
+    auto authinfo_password = make_authinfo_password();
+    static constexpr auto authinfo_ttl = std::chrono::seconds{1};
+    LibFred::Object::StoreAuthinfo{contact_id, system_registrar_id, authinfo_ttl}
+            .exec(ctx, authinfo_password);
+    return authinfo_password;
 }
 
 } // namespace Fred::Backend::MojeId::{anonymous}
@@ -1707,9 +1731,13 @@ MojeIdImplData::InfoContact MojeIdImpl::update_transfer_contact_prepare(
             }
             if (current_data.sponsoring_registrar_handle != mojeid_registrar_.handle())
             {
+                const auto authinfo_password = set_contact_authinfo_password(
+                        ctx,
+                        LibFred::Object::ObjectId{current_data.id},
+                        system_registrar_.id());
                 LibFred::TransferContact transfer_contact_op(current_data.id,
                         mojeid_registrar_.handle(),
-                        current_data.authinfopw,
+                        authinfo_password,
                         0 < _log_request_id ? _log_request_id
                                             : Nullable<MojeIdImpl::LogRequestId>());
                 //transfer contact to 'REG-MOJEID' sponsoring registrar
@@ -2117,9 +2145,13 @@ MojeIdImpl::ContactId MojeIdImpl::process_registration_request(
             }
             if (contact.sponsoring_registrar_handle != mojeid_registrar_.handle())
             {
+                const auto authinfo_password = set_contact_authinfo_password(
+                        ctx,
+                        LibFred::Object::ObjectId{contact.id},
+                        system_registrar_.id());
                 LibFred::TransferContact transfer_contact_op(contact.id,
                         mojeid_registrar_.handle(),
-                        contact.authinfopw,
+                        authinfo_password,
                         0 < _log_request_id ? _log_request_id
                                             : Nullable<MojeIdImpl::LogRequestId>());
                 //transfer contact to 'REG-MOJEID' sponsoring registrar

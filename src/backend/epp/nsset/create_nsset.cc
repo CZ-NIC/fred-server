@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/epp/nsset/create_nsset.hh"
 
 #include "src/backend/epp/epp_response_failure.hh"
@@ -249,9 +250,7 @@ CreateNssetResult create_nsset(
                 LibFred::CreateNsset(
                         _nsset_data.handle,
                         LibFred::InfoRegistrarById(_session_data.registrar_id).exec(_ctx).info_registrar_data.handle,
-                        _nsset_data.authinfopw
-                                ? Optional<std::string>(*_nsset_data.authinfopw)
-                                : Optional<std::string>(),
+                        {}, // authinfopw
                         nsset_tech_check_level,
                         make_fred_dns_hosts(_nsset_data.dns_hosts),
                         _nsset_data.tech_contacts,
@@ -281,7 +280,6 @@ CreateNssetResult create_nsset(
         throw;
     }
 }
-
 
 } // namespace Epp::Nsset
 } // namespace Epp

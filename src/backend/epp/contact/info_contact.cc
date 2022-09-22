@@ -57,9 +57,9 @@ InfoContactOutputData info_contact(
     try
     {
         auto info_contact_operation = LibFred::InfoContactByHandle{_contact_handle};
-        if (!_authinfopw.is_empty())
+        if (!_authinfopw->empty())
         {
-            info_contact_operation.set_lock();  // authinfopw can be regenerated
+            info_contact_operation.set_lock();  // authinfopw usage counter can be incremented
         }
         const auto info_contact_data = info_contact_operation.exec(_ctx, "UTC").info_contact_data;
 

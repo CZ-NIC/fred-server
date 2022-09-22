@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2019  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2016-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #include "src/backend/epp/contact/transfer_contact_localized.hh"
 #include "src/backend/epp/contact/transfer_contact.hh"
 
@@ -85,7 +86,7 @@ EppResponseSuccessLocalized transfer_contact_localized(
     }
     catch (const EppResponseFailure& e) {
         LibFred::OperationContextCreator ctx;
-        ctx.get_log().info(std::string("delete_domain_localized: ") + e.what());
+        ctx.get_log().info(std::string("transfer_contact_localized: ") + e.what());
         throw EppResponseFailureLocalized(
                 ctx,
                 e,
