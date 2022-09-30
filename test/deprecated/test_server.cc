@@ -16,7 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #define BOOST_TEST_MODULE Test Server
+
+#include <boost/test/included/unit_test.hpp>
 
 #include "test/poc/parallel-tests/setup/cfg.hh"
 #include "test/poc/parallel-tests/fixtures/has_fresh_database.hh"
@@ -37,13 +40,10 @@
 
 #include "util/log/logger.hh"
 
-#include <boost/test/unit_test.hpp>
-
 #include <chrono>
 #include <iomanip>
 #include <iostream>
 #include <utility>
-
 
 namespace {
 
