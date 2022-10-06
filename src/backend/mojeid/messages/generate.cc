@@ -675,7 +675,6 @@ struct generate_message<CommChannel::sms,
 void send_auth_owner_letter(
         LibFred::OperationContext& _ctx,
         const MojeId::MessengerConfiguration& _messenger_configuration,
-        LibFred::Document::GenerationType _doc_type,
         const LibFred::InfoContactData& _data,
         const std::string& _pin3,
         bool _validated_contact,
@@ -829,7 +828,7 @@ struct generate_message<CommChannel::letter, Fred::Backend::MojeId::PublicReques
                                     "os.state_id=(SELECT id FROM enum_object_states WHERE name=$3::TEXT) AND "
                                     "os.valid_from<=pr.create_time AND (pr.create_time<os.valid_to OR "
                                                                        "os.valid_to IS NULL)"
-                             ") AS is_validated,"
+                             ") AS is_validated, "
                        "(SELECT mtfsm.service_handle "
                         "FROM message_type mt "
                         "JOIN message_type_forwarding_service_map mtfsm ON mtfsm.message_type_id=mt.id "
@@ -861,12 +860,6 @@ struct generate_message<CommChannel::letter, Fred::Backend::MojeId::PublicReques
             throw std::runtime_error("unexpected service handle: " + message_service_handle);
         }
 
-        const LibFred::Document::GenerationType doc_type =
-                send_via_optys
-                        ? LibFred::Document::
-                                  GT_CONTACT_IDENTIFICATION_LETTER_PIN3_OPTYS // TODO OPTYS
-                        : LibFred::Document::
-                                  GT_CONTACT_IDENTIFICATION_LETTER_PIN3;
         const bool use_historic_data = _contact_history_id.isset();
         const LibFred::InfoContactData contact_data = use_historic_data
                                                       ? LibFred::InfoContactHistoryByHistoryid(
@@ -882,7 +875,6 @@ struct generate_message<CommChannel::letter, Fred::Backend::MojeId::PublicReques
         send_auth_owner_letter(
                 _ctx,
                 _messenger_configuration,
-                doc_type,
                 contact_data,
                 pin3,
                 validated_contact,
@@ -933,8 +925,6 @@ struct generate_message<CommChannel::letter, Fred::Backend::MojeId::PublicReques
         const std::string pin3 = static_cast<std::string>(dbres[0][1]);
         const bool validated_contact = static_cast<bool>(dbres[0][2]);
 
-        const LibFred::Document::GenerationType doc_type =
-            LibFred::Document::GT_CONTACT_REIDENTIFICATION_LETTER_PIN3;
         const bool use_historic_data = _contact_history_id.isset();
         const LibFred::InfoContactData contact_data =
                 use_historic_data
@@ -950,7 +940,6 @@ struct generate_message<CommChannel::letter, Fred::Backend::MojeId::PublicReques
         send_auth_owner_letter(
                 _ctx,
                 _messenger_configuration,
-                doc_type,
                 contact_data,
                 pin3,
                 validated_contact,
