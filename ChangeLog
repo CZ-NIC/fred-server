@@ -2,6 +2,10 @@ UNRELEASED
 
   * Remove duplicate `libfred` tests
 
+2022-10-12 (2.55.0)
+
+  * fred-mifd now uses messenger to send emails/letters/sms
+
 2022-09-22 (2.54.1)
 
   * Fix registrar epp auth operations in libfred (bump deps)
