@@ -1,6 +1,6 @@
 # <repository> <commitish> <clone-path>
 fred/libfred 5.3.1 external/lib/libfred
-fred/libhermes 5.0.0 external/lib/libhermes
+fred/libhermes 5.1.0 external/lib/libhermes
 fred/idl 2.39.0 external/idl
 fred/libtypist 1.0.1 external/lib/libtypist
 fred/libfiled 1.1.0 external/lib/libfiled

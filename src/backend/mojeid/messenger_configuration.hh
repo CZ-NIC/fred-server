@@ -16,17 +16,25 @@
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <https://www.gnu.org/licenses/>.
  */
-#ifndef MESSENGER_PARAMS_HH_779C1D436F8041EB986E1D778638557B
-#define MESSENGER_PARAMS_HH_779C1D436F8041EB986E1D778638557B
+
+#ifndef CONFIGURATION_HH_BC14892D4954478BB0A0F021DA9D7FA0
+#define CONFIGURATION_HH_BC14892D4954478BB0A0F021DA9D7FA0
 
 #include <string>
 
-struct MessengerArgs
+namespace Fred {
+namespace Backend {
+namespace MojeId {
+
+struct MessengerConfiguration
 {
     std::string endpoint;
     bool archive;
     bool archive_rendered;
 };
 
-#endif
+} // namespace Fred::Backend::MojeId
+} // namespace Fred::Backend
+} // namespace Fred
 
+#endif

@@ -1241,7 +1241,8 @@ target_link_libraries(fred-mifd
     Boost::regex
     Boost::thread
     Boost::date_time
-    Boost::program_options)
+    Boost::program_options
+    LibHermes::library)
 
 # fred-mojeid-msggen
 add_common_executable_target(fred-mojeid-msggen

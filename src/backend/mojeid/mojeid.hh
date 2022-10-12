@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2020  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2015-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -28,13 +28,14 @@
 #include "src/backend/mojeid/mojeid_checkers.hh"
 #include "src/backend/mojeid/mojeid_impl_data_conversion.hh"
 #include "src/deprecated/libfred/messages/messages_impl.hh"
-#include "libfred/object/object_state.hh"
 
-#include <stdexcept>
-#include <vector>
+#include "libfred/object/object_state.hh"
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+
+#include <stdexcept>
+#include <vector>
 
 namespace Fred {
 namespace Backend {
