@@ -26,6 +26,7 @@
 #include "src/util/cfg/handle_database_args.hh"
 #include "src/util/cfg/handle_general_args.hh"
 #include "src/util/cfg/handle_logging_args.hh"
+#include "src/util/cfg/handle_messenger_args.hh"
 #include "src/util/cfg/handle_mojeid_args.hh"
 #include "src/util/cfg/handle_registry_args.hh"
 #include "src/util/cfg/handle_server_args.hh"
@@ -58,7 +59,8 @@ const HandlerPtrVector global_hpv =
                 (HandleArgsPtr(new HandleCorbaNameServiceArgs))
                 (HandleArgsPtr(new HandleRegistryArgs))
                 (HandleArgsPtr(new HandleMojeIdArgs))
-                (HandleArgsPtr(new HandleContactVerificationArgs));
+                (HandleArgsPtr(new HandleContactVerificationArgs))
+                (HandleArgsPtr(new HandleMessengerArgs));
                 // clang-format on
 
 int main(int argc, char* argv[])
