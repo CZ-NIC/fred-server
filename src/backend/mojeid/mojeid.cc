@@ -3312,9 +3312,9 @@ void MojeIdImpl::generate_sms_messages() const
     try
     {
         Fred::Backend::MojeId::MessengerConfiguration messenger_configuration{
-                CfgArgGroups::instance()->get_handler_ptr_by_type<HandleMessengerArgsGrp>()->get_args().endpoint,
-                CfgArgGroups::instance()->get_handler_ptr_by_type<HandleMessengerArgsGrp>()->get_args().archive,
-                CfgArgGroups::instance()->get_handler_ptr_by_type<HandleMessengerArgsGrp>()->get_args().archive_rendered};
+                CfgArgs::instance()->get_handler_ptr_by_type<HandleMessengerArgs>()->messenger_args.endpoint,
+                CfgArgs::instance()->get_handler_ptr_by_type<HandleMessengerArgs>()->messenger_args.archive,
+                CfgArgs::instance()->get_handler_ptr_by_type<HandleMessengerArgs>()->messenger_args.archive_rendered};
 
         LibFred::OperationContextCreator ctx;
         typedef Messages::CommChannel CommChannel;
@@ -3364,9 +3364,9 @@ void MojeIdImpl::generate_letter_messages() const
     try
     {
         Fred::Backend::MojeId::MessengerConfiguration messenger_configuration{
-                CfgArgGroups::instance()->get_handler_ptr_by_type<HandleMessengerArgsGrp>()->get_args().endpoint,
-                CfgArgGroups::instance()->get_handler_ptr_by_type<HandleMessengerArgsGrp>()->get_args().archive,
-                CfgArgGroups::instance()->get_handler_ptr_by_type<HandleMessengerArgsGrp>()->get_args().archive_rendered};
+                CfgArgs::instance()->get_handler_ptr_by_type<HandleMessengerArgs>()->messenger_args.endpoint,
+                CfgArgs::instance()->get_handler_ptr_by_type<HandleMessengerArgs>()->messenger_args.archive,
+                CfgArgs::instance()->get_handler_ptr_by_type<HandleMessengerArgs>()->messenger_args.archive_rendered};
 
         LibFred::OperationContextCreator ctx;
         typedef Messages::CommChannel CommChannel;
@@ -3417,9 +3417,9 @@ void MojeIdImpl::generate_email_messages() const
     try
     {
         Fred::Backend::MojeId::MessengerConfiguration messenger_configuration{
-                CfgArgGroups::instance()->get_handler_ptr_by_type<HandleMessengerArgsGrp>()->get_args().endpoint,
-                CfgArgGroups::instance()->get_handler_ptr_by_type<HandleMessengerArgsGrp>()->get_args().archive,
-                CfgArgGroups::instance()->get_handler_ptr_by_type<HandleMessengerArgsGrp>()->get_args().archive_rendered};
+                CfgArgs::instance()->get_handler_ptr_by_type<HandleMessengerArgs>()->messenger_args.endpoint,
+                CfgArgs::instance()->get_handler_ptr_by_type<HandleMessengerArgs>()->messenger_args.archive,
+                CfgArgs::instance()->get_handler_ptr_by_type<HandleMessengerArgs>()->messenger_args.archive_rendered};
 
         LibFred::OperationContextCreator ctx;
         typedef Messages::CommChannel CommChannel;

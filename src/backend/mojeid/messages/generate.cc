@@ -104,7 +104,7 @@ struct PossibleRequestTypes<CommChannel::sms>
                     _link_hostname_part,
                     _contact_history_id);
         }
-        if (PubReqPUCT().get_public_request_type() == _public_request_type)
+        else if (PubReqPUCT().get_public_request_type() == _public_request_type)
         {
             Generate::Into<CommChannel::sms>::for_given_request<PubReqPUCT>(
                     _ctx,
@@ -115,7 +115,10 @@ struct PossibleRequestTypes<CommChannel::sms>
                     _link_hostname_part,
                     _contact_history_id);
         }
-        throw std::runtime_error("unexpected public request type: " + _public_request_type);
+        else
+        {
+            throw std::runtime_error("unexpected public request type: " + _public_request_type);
+        }
     }
 
 };
@@ -160,7 +163,7 @@ struct PossibleRequestTypes<CommChannel::letter>
                     _link_hostname_part,
                     _contact_history_id);
         }
-        if (PubReqCR().get_public_request_type() == _public_request_type)
+        else if (PubReqCR().get_public_request_type() == _public_request_type)
         {
             Generate::Into<channel_letter>::for_given_request<PubReqCR>(
                     _ctx,
@@ -171,7 +174,10 @@ struct PossibleRequestTypes<CommChannel::letter>
                     _link_hostname_part,
                     _contact_history_id);
         }
-        throw std::runtime_error("unexpected public request type: " + _public_request_type);
+        else
+        {
+            throw std::runtime_error("unexpected public request type: " + _public_request_type);
+        }
     }
 
 };
@@ -225,7 +231,7 @@ struct PossibleRequestTypes<CommChannel::email>
                     _link_hostname_part,
                     _contact_history_id);
         }
-        if (PubReqCICT().get_public_request_type() == _public_request_type)
+        else if (PubReqCICT().get_public_request_type() == _public_request_type)
         {
             Generate::Into<channel_email>::for_given_request<PubReqCICT>(
                     _ctx,
@@ -236,7 +242,7 @@ struct PossibleRequestTypes<CommChannel::email>
                     _link_hostname_part,
                     _contact_history_id);
         }
-        if (PubReqICT().get_public_request_type() == _public_request_type)
+        else if (PubReqICT().get_public_request_type() == _public_request_type)
         {
             Generate::Into<channel_email>::for_given_request<PubReqICT>(
                     _ctx,
@@ -247,7 +253,7 @@ struct PossibleRequestTypes<CommChannel::email>
                     _link_hostname_part,
                     _contact_history_id);
         }
-        if (PubReqPCT().get_public_request_type() == _public_request_type)
+        else if (PubReqPCT().get_public_request_type() == _public_request_type)
         {
             Generate::Into<channel_email>::for_given_request<PubReqPCT>(
                     _ctx,
@@ -258,7 +264,7 @@ struct PossibleRequestTypes<CommChannel::email>
                     _link_hostname_part,
                     _contact_history_id);
         }
-        if (PubReqPUCT().get_public_request_type() == _public_request_type)
+        else if (PubReqPUCT().get_public_request_type() == _public_request_type)
         {
             Generate::Into<channel_email>::for_given_request<PubReqPUCT>(
                     _ctx,
@@ -269,7 +275,10 @@ struct PossibleRequestTypes<CommChannel::email>
                     _link_hostname_part,
                     _contact_history_id);
         }
-        throw std::runtime_error("unexpected public request type: " + _public_request_type);
+        else
+        {
+            throw std::runtime_error("unexpected public request type: " + _public_request_type);
+        }
     }
 
 };
