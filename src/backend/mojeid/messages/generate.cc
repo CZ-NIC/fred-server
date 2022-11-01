@@ -22,6 +22,7 @@
 #include "src/deprecated/libfred/common_object.hh"
 #include "libfred/object/object_state.hh"
 #include "libfred/public_request/public_request_status.hh"
+#include "libfred/public_request/update_public_request.hh"
 #include "libfred/registrable_object/contact/info_contact.hh"
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/handle_corbanameservice_args.hh"
@@ -151,10 +152,9 @@ struct PossibleRequestTypes<CommChannel::letter>
             const std::string& _link_hostname_part,
             GeneralId _contact_history_id)
     {
-        static const CommChannel::Enum channel_letter = CommChannel::letter;
         if (PubReqCI().get_public_request_type() == _public_request_type)
         {
-            Generate::Into<channel_letter>::for_given_request<PubReqCI>(
+            Generate::Into<CommChannel::letter>::for_given_request<PubReqCI>(
                     _ctx,
                     _messenger_configuration,
                     _locked_request,
@@ -165,7 +165,7 @@ struct PossibleRequestTypes<CommChannel::letter>
         }
         else if (PubReqCR().get_public_request_type() == _public_request_type)
         {
-            Generate::Into<channel_letter>::for_given_request<PubReqCR>(
+            Generate::Into<CommChannel::letter>::for_given_request<PubReqCR>(
                     _ctx,
                     _messenger_configuration,
                     _locked_request,
@@ -317,41 +317,6 @@ struct ChannelType<CommChannel::email>
 };
 
 template <CommChannel::Enum COMM_CHANNEL>
-struct Exists
-{
-    static std::string messages_associated_with(const std::string& _request_id)
-    {
-        return
-                // clang-format off
-                "EXISTS(SELECT * FROM public_request_messages_map prmm "
-                      "WHERE prmm.public_request_id=" + _request_id + " AND "
-                            "EXISTS(SELECT * FROM message_archive ma "
-                                   "WHERE ma.id=prmm.message_archive_id AND "
-                                         "ma.comm_type_id=(SELECT id FROM channel_type)"
-                                  ")"
-                     ")";
-                // clang-format on
-    }
-
-};
-
-template <>
-struct Exists<CommChannel::email>
-{
-    static std::string messages_associated_with(const std::string& _request_id)
-    {
-        return
-                // clang-format off
-                "EXISTS(SELECT * FROM public_request_messages_map prmm "
-                      "WHERE prmm.public_request_id=" + _request_id + " AND "
-                            "EXISTS(SELECT * FROM mail_archive ma WHERE ma.id=prmm.mail_archive_id)"
-                     ")";
-                // clang-format on
-    }
-
-};
-
-template <CommChannel::Enum COMM_CHANNEL>
 struct Parameter;
 
 template <>
@@ -429,9 +394,9 @@ struct collect_query_for
                           "generation "
                      "WHERE generation.enabled AND "
                            "status=(SELECT id FROM required_status) AND "
+                           "on_status_action='scheduled'::ENUM_ON_STATUS_ACTION_TYPE AND "
                            "(NOW()::DATE-'1DAY'::INTERVAL)<create_time AND "
-                           "request_type IN (SELECT id FROM possible_types) AND "
-                           "NOT " + Exists< COMM_CHANNEL >::messages_associated_with("pr.id") +
+                           "request_type IN (SELECT id FROM possible_types) "
                  ") "
             "SELECT public_request_id,"
                    "(SELECT name FROM enum_public_request_type "
@@ -458,55 +423,10 @@ struct collect_query_for
 template <CommChannel::Enum COMM_CHANNEL>
 const DbCommand collect_query_for<COMM_CHANNEL>::sql = collect_query_for<COMM_CHANNEL>::init();
 
-template <CommChannel::Enum COMM_CHANNEL>
-struct JoinMessage
-{
-    static void with_public_request(
-            LibFred::OperationContext& _ctx,
-            const LibFred::LockedPublicRequest& _locked_request,
-            GeneralId _message_id)
-    {
-        _ctx.get_conn().exec_params(
-                // clang-format off
-                "INSERT INTO public_request_messages_map (public_request_id,"
-                                                         "message_archive_id,"
-                                                         "mail_archive_id) "
-                "VALUES ($1::BIGINT,"//public_request_id
-                        "$2::BIGINT,"//message_archive_id
-                        "NULL)",     //mail_archive_id
-                // clang-format on
-                Database::query_param_list(_locked_request.get_id())(_message_id));
-    }
-
-};
-
-template <>
-struct JoinMessage<CommChannel::email>
-{
-    static void with_public_request(
-            LibFred::OperationContext& _ctx,
-            const LibFred::LockedPublicRequest& _locked_request,
-            GeneralId _message_id)
-    {
-        _ctx.get_conn().exec_params(
-                // clang-format off
-                "INSERT INTO public_request_messages_map (public_request_id,"
-                                                         "message_archive_id,"
-                                                         "mail_archive_id) "
-                "VALUES ($1::BIGINT," //public_request_id
-                        "NULL,"       //message_archive_id
-                        "$2::BIGINT)",//mail_archive_id
-                // clang-format on
-                Database::query_param_list(_locked_request.get_id())(_message_id));
-    }
-
-};
-
 class PublicRequestLocked
     : public LibFred::LockedPublicRequest
 {
 public:
-
 
     PublicRequestLocked(LibFred::PublicRequestId _locked_request_id)
         : public_request_id_(_locked_request_id)
@@ -1205,7 +1125,7 @@ struct generate_message<CommChannel::email,
     {
         // db table mail_type: 21,'mojeid_identification','[mojeID] Založení účtu - PIN1 pro aktivaci mojeID'
         const std::string mail_type = "mojeid_identification";
-        return send_email(
+        send_email(
                 mail_type,
                 _ctx,
                 _messenger_configuration,
@@ -1260,7 +1180,7 @@ struct generate_message<CommChannel::email, Fred::Backend::MojeId::PublicRequest
     {
         // db table mail_type: 27,'mojeid_verified_contact_transfer','Založení účtu mojeID'
         const std::string mail_type = "mojeid_verified_contact_transfer";
-        return send_email(
+        send_email(
                 mail_type,
                 _ctx,
                 _messenger_configuration,
@@ -1288,7 +1208,7 @@ struct generate_message<CommChannel::email,
     {
         // db table mail_type: 21,'mojeid_identification','[mojeID] Založení účtu - PIN1 pro aktivaci mojeID'
         const std::string mail_type = "mojeid_identification";
-        return send_email(
+        send_email(
                 mail_type,
                 _ctx,
                 _messenger_configuration,
@@ -1315,7 +1235,7 @@ struct generate_message<CommChannel::email, Fred::Backend::MojeId::PublicRequest
     {
         // db table mail_type: 27,'mojeid_verified_contact_transfer','Založení účtu mojeID'
         const std::string mail_type = "mojeid_verified_contact_transfer";
-        return send_email(
+        send_email(
                 mail_type,
                 _ctx,
                 _messenger_configuration,
@@ -1359,6 +1279,9 @@ void Generate::Into<COMM_CHANNEL>::for_new_requests(
                     _check_message_limits,
                     _link_hostname_part,
                     contact_history_id);
+            LibFred::UpdatePublicRequest()
+                    .set_on_status_action(LibFred::PublicRequest::OnStatusAction::processed)
+                    .exec(locked_reqest, Type::get_iface_of<Type::PersonalInfoAuto>(), log_request_id); // FIXME TODO
             ctx.commit_transaction();
         }
         catch (const std::exception& e)
