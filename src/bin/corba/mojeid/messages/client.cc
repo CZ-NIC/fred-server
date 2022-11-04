@@ -32,20 +32,9 @@
 #include <boost/assign/list_of.hpp>
 #include <utility>
 
-struct CommChannel
-{
-    enum Value
-    {
-        SMS,
-        EMAIL,
-        LETTER,
-    };
-};
-
-//config args processing
 const HandlerPtrVector global_hpv =
 boost::assign::list_of
-    (HandleArgsPtr(new HandleHelpArg("\nUsage: fred-mojeid-msggen <switches>\n")))
+    (HandleArgsPtr(new HandleHelpArg("\nUsage: fred-mojeid-msggen\n")))
     (HandleArgsPtr(new HandleConfigFileArgs(CONFIG_FILE) ))
     (HandleArgsPtr(new HandleCorbaNameServiceArgs));
 
@@ -54,41 +43,11 @@ CORBA::Object_ptr get_object_reference(CORBA::ORB_ptr orb,
                                        ::in_port_t nameservice_port,
                                        const std::string &nameservice_context);
 
-//////////////////////////////////////////////////////////////////////
 int main (int argc, char **argv)
 {
     try {
         CORBA::ORB_var orb = CORBA::ORB_init(argc, argv);
         CfgArgs::init< HandleHelpArg >(global_hpv)->handle(argc, argv);
-        typedef std::set< CommChannel::Value > SetOfChannels;
-        SetOfChannels channels;
-        for (char **arg_ptr = argv + 1; *arg_ptr != NULL; ++arg_ptr) {
-            static const std::string opt[] = { "-c", "--channel" };
-            if ((*arg_ptr == opt[0]) ||
-                (*arg_ptr == opt[1]))
-            {
-                ++arg_ptr;
-                if (*arg_ptr == NULL) {
-                    break;
-                }
-                const std::string channel = *arg_ptr;
-                if (channel == "sms") {
-                    channels.insert(CommChannel::SMS);
-                }
-                else if (channel == "email") {
-                    channels.insert(CommChannel::EMAIL);
-                }
-                else if (channel == "letter") {
-                    channels.insert(CommChannel::LETTER);
-                }
-                else {
-                    throw std::invalid_argument("unknown channel '" + channel + "'");
-                }
-            }
-        }
-        if (channels.empty()) {
-            throw std::invalid_argument("no channel specified");
-        }
         const HandleCorbaNameServiceArgs *const nameservice_conf_ptr = CfgArgs::instance()->
             get_handler_ptr_by_type< HandleCorbaNameServiceArgs >();
         CORBA::Object_var obj = get_object_reference(orb,
@@ -96,19 +55,7 @@ int main (int argc, char **argv)
             nameservice_conf_ptr->nameservice_port,
             nameservice_conf_ptr->nameservice_context);
         Registry::MojeID::Server_var server = Registry::MojeID::Server::_narrow(obj);
-        for (SetOfChannels::const_iterator channel_ptr = channels.begin(); channel_ptr != channels.end(); ++channel_ptr) {
-            switch (*channel_ptr) {
-            case CommChannel::SMS:
-                server->generate_sms_messages();
-                break;
-            case CommChannel::EMAIL:
-                server->generate_email_messages();
-                break;
-            case CommChannel::LETTER:
-                server->generate_letter_messages();
-                break;
-            }
-        }
+        server->generate_email_messages();
         orb->destroy();
     }
     catch (const CORBA::TRANSIENT&) {
@@ -138,7 +85,6 @@ int main (int argc, char **argv)
     }
     return EXIT_SUCCESS;
 }
-//////////////////////////////////////////////////////////////////////
 
 CORBA::Object_ptr get_object_reference(CORBA::ORB_ptr orb,
                                        const std::string &nameservice_host,

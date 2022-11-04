@@ -81,7 +81,7 @@ protected:
     {
         void operator()(
                 LibFred::OperationContext&,
-                LibFred::ObjectId) const
+                LibFred::ObjectId) const override
         {
         }
 
@@ -91,35 +91,23 @@ protected:
 
     };
 
+    static void for_new_requests(
+            LibFred::OperationContext& _ctx,
+            const MojeId::MessengerConfiguration& _messenger_configuration,
+            const std::string& _link_hostname_part = "");
+
     template <CommChannel::Enum COMM_CHANNEL>
     struct Into
     {
-        static void for_new_requests(
-                LibFred::OperationContext& _ctx,
-                const MojeId::MessengerConfiguration& _messenger_configuration,
-                const message_checker& _check_message_limits = message_checker_always_success(),
-                const std::string& _link_hostname_part = "");
-
-
         template <typename PUBLIC_REQUEST_TYPE>
         static void for_given_request(
                 LibFred::OperationContext& _ctx,
                 const MojeId::MessengerConfiguration& _messenger_configuration,
                 const LibFred::LockedPublicRequest& _locked_request,
                 const LibFred::LockedPublicRequestsOfObject& _locked_contact,
-                const message_checker& _check_message_limits = message_checker_always_success(),
                 const std::string& _link_hostname_part = "",
                 const Optional<GeneralId>& _contact_history_id = Optional<GeneralId>());
-
-
     };
-
-    template <CommChannel::Enum COMM_CHANNEL>
-    static void enable(
-            LibFred::OperationContext& _ctx,
-            bool flag);
-
-
 };
 
 } // namespace Fred::Backend::MojeId::Messages

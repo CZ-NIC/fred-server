@@ -62,8 +62,8 @@
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/handle_corbanameservice_args.hh"
 #include "src/util/cfg/handle_messenger_args.hh"
-#include "src/util/cfg/handle_registry_args.hh"
 #include "src/util/cfg/handle_mojeid_args.hh"
+#include "src/util/cfg/handle_registry_args.hh"
 #include "src/util/types/birthdate.hh"
 #include "src/util/xmlgen.hh"
 
@@ -328,36 +328,6 @@ void check_sent_letters_limit(LibFred::OperationContext& _ctx,
         throw e;
     }
 }
-
-namespace check_limits {
-
-class sent_letters : public Messages::Generate::message_checker
-{
-public:
-    sent_letters(unsigned _max_sent_letters,
-            unsigned _watched_period_in_days)
-        : max_sent_letters_(_max_sent_letters),
-          watched_period_in_days_(_watched_period_in_days)
-    {
-    }
-    sent_letters(const HandleMojeIdArgs* _server_conf_ptr = CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIdArgs>())
-        : max_sent_letters_(_server_conf_ptr->letter_limit_count),
-          watched_period_in_days_(_server_conf_ptr->letter_limit_interval)
-    {
-    }
-    void operator()(LibFred::OperationContext& _ctx, LibFred::ObjectId _object_id) const
-    {
-        check_sent_letters_limit(_ctx,
-                _object_id,
-                max_sent_letters_,
-                watched_period_in_days_);
-    }
-private:
-    const unsigned max_sent_letters_;
-    const unsigned watched_period_in_days_;
-};
-
-} // namespace Fred::Backend::MojeId::{anonymous}::check_limits
 
 template <typename T>
 auto missing_value_differs_from_existing(T&&);
@@ -1634,7 +1604,6 @@ MojeIdImplData::InfoContact MojeIdImpl::update_transfer_contact_prepare(
                 MojeIdImplInternal::raise(check_result);
             }
         }
-        check_limits::sent_letters()(ctx, current_data.id);
         const LibFred::PublicRequestsOfObjectLockGuardByObjectId locked_contact(ctx, new_data.id);
         bool drop_identification = false;
         bool drop_cond_identification = false;
@@ -2441,28 +2410,9 @@ void MojeIdImpl::commit_prepared_transaction(const std::string& _trans_id) const
     try
     {
         const HandleMojeIdArgs* const server_conf_ptr = CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIdArgs>();
-        if (server_conf_ptr->auto_sms_generation)
+        if (server_conf_ptr->auto_messages_generation)
         {
-            this->generate_sms_messages();
-        }
-    }
-    catch (const std::exception& e)
-    {
-        LOGGER.error(boost::format("request failed (%1%)") % e.what());
-        throw;
-    }
-    catch (...)
-    {
-        LOGGER.error("request failed (unknown error)");
-        throw;
-    }
-
-    try
-    {
-        const HandleMojeIdArgs* const server_conf_ptr = CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIdArgs>();
-        if (server_conf_ptr->auto_email_generation)
-        {
-            this->generate_email_messages();
+            this->generate_public_request_messages();
         }
     }
     catch (const std::exception& e)
@@ -3305,7 +3255,7 @@ void MojeIdImpl::send_mojeid_card(
     }
 }
 
-void MojeIdImpl::generate_sms_messages() const
+void MojeIdImpl::generate_public_request_messages() const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
@@ -3317,141 +3267,11 @@ void MojeIdImpl::generate_sms_messages() const
                 CfgArgs::instance()->get_handler_ptr_by_type<HandleMessengerArgs>()->messenger_args.archive_rendered};
 
         LibFred::OperationContextCreator ctx;
-        typedef Messages::CommChannel CommChannel;
-        Messages::Generate::Into<CommChannel::sms>::for_new_requests(ctx, messenger_configuration);
-        ctx.commit_transaction();
-        return;
-    }
-    catch (const std::exception& e)
-    {
-        LOGGER.error(e.what());
-        throw;
-    }
-    catch (...)
-    {
-        LOGGER.error("unknown exception");
-        throw;
-    }
-}
-
-void MojeIdImpl::enable_sms_messages_generation(bool enable) const
-{
-    LOGGING_CONTEXT(log_ctx, *this);
-
-    try
-    {
-        LibFred::OperationContextCreator ctx;
-        Messages::Generate::enable<Messages::CommChannel::sms>(ctx, enable);
-        ctx.commit_transaction();
-        return;
-    }
-    catch (const std::exception& e)
-    {
-        LOGGER.error(e.what());
-        throw;
-    }
-    catch (...)
-    {
-        LOGGER.error("unknown exception");
-        throw;
-    }
-}
-
-void MojeIdImpl::generate_letter_messages() const
-{
-    LOGGING_CONTEXT(log_ctx, *this);
-
-    try
-    {
-        Fred::Backend::MojeId::MessengerConfiguration messenger_configuration{
-                CfgArgs::instance()->get_handler_ptr_by_type<HandleMessengerArgs>()->messenger_args.endpoint,
-                CfgArgs::instance()->get_handler_ptr_by_type<HandleMessengerArgs>()->messenger_args.archive,
-                CfgArgs::instance()->get_handler_ptr_by_type<HandleMessengerArgs>()->messenger_args.archive_rendered};
-
-        LibFred::OperationContextCreator ctx;
-        typedef Messages::CommChannel CommChannel;
-        Messages::Generate::Into<CommChannel::letter>::for_new_requests(
-                ctx, messenger_configuration, check_limits::sent_letters());
-        ctx.commit_transaction();
-        return;
-    }
-    catch (const std::exception& e)
-    {
-        LOGGER.error(e.what());
-        throw;
-    }
-    catch (...)
-    {
-        LOGGER.error("unknown exception");
-        throw;
-    }
-}
-
-void MojeIdImpl::enable_letter_messages_generation(bool enable) const
-{
-    LOGGING_CONTEXT(log_ctx, *this);
-
-    try
-    {
-        LibFred::OperationContextCreator ctx;
-        Messages::Generate::enable<Messages::CommChannel::letter>(ctx, enable);
-        ctx.commit_transaction();
-        return;
-    }
-    catch (const std::exception& e)
-    {
-        LOGGER.error(e.what());
-        throw;
-    }
-    catch (...)
-    {
-        LOGGER.error("unknown exception");
-        throw;
-    }
-}
-
-void MojeIdImpl::generate_email_messages() const
-{
-    LOGGING_CONTEXT(log_ctx, *this);
-
-    try
-    {
-        Fred::Backend::MojeId::MessengerConfiguration messenger_configuration{
-                CfgArgs::instance()->get_handler_ptr_by_type<HandleMessengerArgs>()->messenger_args.endpoint,
-                CfgArgs::instance()->get_handler_ptr_by_type<HandleMessengerArgs>()->messenger_args.archive,
-                CfgArgs::instance()->get_handler_ptr_by_type<HandleMessengerArgs>()->messenger_args.archive_rendered};
-
-        LibFred::OperationContextCreator ctx;
-        typedef Messages::CommChannel CommChannel;
         const std::string link_hostname_part = CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIdArgs>()->hostname;
-        Messages::Generate::Into<CommChannel::email>::for_new_requests(
+        Messages::Generate::for_new_requests(
                 ctx,
                 messenger_configuration,
-                Messages::Generate::message_checker_always_success(),
                 link_hostname_part);
-        ctx.commit_transaction();
-        return;
-    }
-    catch (const std::exception& e)
-    {
-        LOGGER.error(e.what());
-        throw;
-    }
-    catch (...)
-    {
-        LOGGER.error("unknown exception");
-        throw;
-    }
-}
-
-void MojeIdImpl::enable_email_messages_generation(bool enable) const
-{
-    LOGGING_CONTEXT(log_ctx, *this);
-
-    try
-    {
-        LibFred::OperationContextCreator ctx;
-        Messages::Generate::enable<Messages::CommChannel::email>(ctx, enable);
         ctx.commit_transaction();
         return;
     }
