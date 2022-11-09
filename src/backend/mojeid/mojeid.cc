@@ -3264,7 +3264,8 @@ void MojeIdImpl::generate_public_request_messages() const
         Fred::Backend::MojeId::MessengerConfiguration messenger_configuration{
                 CfgArgs::instance()->get_handler_ptr_by_type<HandleMessengerArgs>()->messenger_args.endpoint,
                 CfgArgs::instance()->get_handler_ptr_by_type<HandleMessengerArgs>()->messenger_args.archive,
-                CfgArgs::instance()->get_handler_ptr_by_type<HandleMessengerArgs>()->messenger_args.archive_rendered};
+                CfgArgs::instance()->get_handler_ptr_by_type<HandleMessengerArgs>()->messenger_args.archive_rendered,
+                CfgArgs::instance()->get_handler_ptr_by_type<HandleMessengerArgs>()->messenger_args.timeout};
 
         LibFred::OperationContextCreator ctx;
         const std::string link_hostname_part = CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIdArgs>()->hostname;

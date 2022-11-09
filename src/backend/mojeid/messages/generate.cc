@@ -183,7 +183,7 @@ struct generate_message<CommChannel::sms,
         LibHermes::Connection<LibHermes::Service::SmsMessenger> connection{
                 LibHermes::Connection<LibHermes::Service::SmsMessenger>::ConnectionString{
                         _messenger_configuration.endpoint}};
-        connection.set_timeout(std::chrono::seconds{10});
+        connection.set_timeout(_messenger_configuration.timeout);
 
         try
         {
@@ -326,7 +326,7 @@ void send_auth_owner_letter(
     LibHermes::Connection<LibHermes::Service::LetterMessenger> connection{
             LibHermes::Connection<LibHermes::Service::LetterMessenger>::ConnectionString{
                     _messenger_configuration.endpoint}};
-    connection.set_timeout(std::chrono::seconds{10});
+    connection.set_timeout(_messenger_configuration.timeout);
 
     try
     {
@@ -697,7 +697,7 @@ void send_email(
     LibHermes::Connection<LibHermes::Service::EmailMessenger> connection{
             LibHermes::Connection<LibHermes::Service::EmailMessenger>::ConnectionString{
                     _messenger_configuration.endpoint}};
-    connection.set_timeout(std::chrono::seconds{10});
+    connection.set_timeout(_messenger_configuration.timeout);
 
     try
     {
@@ -1020,7 +1020,7 @@ void Generate::for_new_requests(
                         "'mojeid_conditionally_identified_contact_transfer', "
                         "'mojeid_identified_contact_transfer', "
                         "'mojeid_prevalidated_unidentified_contact_transfer', "
-                        "'mojeid_prevalidated_contact_transfer'"
+                        "'mojeid_prevalidated_contact_transfer')"
              "), "
              "to_generate AS ("
                  "SELECT id AS public_request_id, "
