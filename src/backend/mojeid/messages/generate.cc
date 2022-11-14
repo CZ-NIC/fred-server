@@ -33,7 +33,9 @@
 #include "src/util/types/birthdate.hh"
 #include "src/util/xmlgen.hh"
 
+#include "libfiled/libfiled.hh"
 #include "libhermes/libhermes.hh"
+#include "libtypist/libtypist.hh"
 
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/algorithm/string/trim.hpp>
@@ -300,36 +302,65 @@ void send_auth_owner_letter(
     const auto contact_uuid = get_raw_value_from(_data.uuid);
     const auto public_request_uuid = get_public_request_uuid(_ctx, _public_request_id);
 
-    LibHermes::Struct template_parameters{
-            {LibHermes::StructKey{"date"}, LibHermes::StructValue{boost::gregorian::to_iso_extended_string(letter_date)}},
-            {LibHermes::StructKey{"address"},
-                    LibHermes::StructValue{LibHermes::Struct{
-                            {LibHermes::StructKey{"name"}, LibHermes::StructValue{*recipient_address.name}},
-                            {LibHermes::StructKey{"organization"}, LibHermes::StructValue{*recipient_address.organization}},
-                            {LibHermes::StructKey{"streets"}, {LibHermes::StructValue{*(recipient_address.street_field[0])}}},
-                            {LibHermes::StructKey{"postal_code"}, LibHermes::StructValue{*recipient_address.postal_code}},
-                            {LibHermes::StructKey{"city"}, LibHermes::StructValue{*recipient_address.city}},
-                            {LibHermes::StructKey{"country_code"}, LibHermes::StructValue{country_name_fallback_code}},
-                            {LibHermes::StructKey{"state_or_province"}, LibHermes::StructValue{*recipient_address.state_or_province}}}}},
-            {LibHermes::StructKey{"username"}, LibHermes::StructValue{boost::algorithm::to_lower_copy(contact_handle)}},
-            {LibHermes::StructKey{"pin"}, LibHermes::StructValue{_pin3}}};
+    LibTypist::Struct context{
+            {LibTypist::StructKey{"date"}, LibTypist::StructValue{boost::gregorian::to_iso_extended_string(letter_date)}},
+            {LibTypist::StructKey{"address"},
+                    LibTypist::StructValue{LibTypist::Struct{
+                            {LibTypist::StructKey{"name"}, LibTypist::StructValue{*recipient_address.name}},
+                            {LibTypist::StructKey{"organization"}, LibTypist::StructValue{*recipient_address.organization}},
+                            {LibTypist::StructKey{"streets"}, LibTypist::StructValue{std::vector<LibTypist::StructValue>{{LibTypist::StructValue{*(recipient_address.street_field[0])}}}}},
+                            {LibTypist::StructKey{"postal_code"}, LibTypist::StructValue{*recipient_address.postal_code}},
+                            {LibTypist::StructKey{"city"}, LibTypist::StructValue{*recipient_address.city}},
+                            {LibTypist::StructKey{"country_code"}, LibTypist::StructValue{country_name_fallback_code}},
+                            {LibTypist::StructKey{"state_or_province"}, LibTypist::StructValue{*recipient_address.state_or_province}}}}},
+            {LibTypist::StructKey{"username"}, LibTypist::StructValue{boost::algorithm::to_lower_copy(contact_handle)}},
+            {LibTypist::StructKey{"pin"}, LibTypist::StructValue{_pin3}}};
+    LibTypist::Struct template_parameters{{LibTypist::StructKey{"context"}, LibTypist::StructValue{context}}};
 
-    auto message_data =
-            LibHermes::Letter::make_minimal_message(
-                    recipient_address,
-                    LibHermes::Letter::BodyTemplate{"mojeid-pin3.html"});
-
-    message_data.recipient_uuids = std::vector<LibHermes::Letter::RecipientUuid>{LibHermes::Letter::RecipientUuid(contact_uuid)};
-    message_data.type = LibHermes::Letter::Type{std::string{"mojeid_pin3"}};
-    message_data.context = template_parameters;
-
-    LibHermes::Connection<LibHermes::Service::LetterMessenger> connection{
-            LibHermes::Connection<LibHermes::Service::LetterMessenger>::ConnectionString{
-                    _messenger_configuration.endpoint}};
-    connection.set_timeout(_messenger_configuration.timeout);
+    LibTypist::Connection secretary_connection{
+            LibTypist::Connection::ConnectionString{_messenger_configuration.secretary_endpoint}};
 
     try
     {
+        std::stringstream file_pdf_rawdata;
+        const std::string template_name{"mojeid-pin3.html"};
+        _ctx.get_log().debug(boost::str(boost::format("send_auth_owner_letter: render pdf using template %1%") % template_name));
+        LibTypist::render(
+                secretary_connection,
+                LibTypist::TemplateName{template_name},
+                LibTypist::ContentType{"application/pdf"},
+                template_parameters,
+                file_pdf_rawdata);
+
+        _ctx.get_log().debug(boost::str(boost::format("send_auth_owner_letter: connecting to fileman at %1%") % _messenger_configuration.secretary_endpoint));
+        LibFiled::Connection<LibFiled::Service::File> fileman_connection{
+                LibFiled::Connection<LibFiled::Service::File>::ConnectionString{
+                        _messenger_configuration.fileman_endpoint}};
+
+        _ctx.get_log().debug("send_auth_owner_letter: archiving pdf file to fileman");
+        const auto file_pdf_uuid =
+                LibFiled::File::create(
+                        fileman_connection,
+                        LibFiled::File::FileName{"mojeid_pin3"},
+                        file_pdf_rawdata,
+                        LibFiled::File::FileMimeType{"application/pdf"});
+
+        _ctx.get_log().debug(boost::str(boost::format("send_auth_owner_letter: pdf file uuid: %1%") % boost::uuids::to_string(*file_pdf_uuid)));
+
+        auto message_data =
+                LibHermes::Letter::make_minimal_message(
+                        recipient_address,
+                        LibHermes::Letter::BodyTemplate{template_name});
+        message_data.file_uuid = LibHermes::Letter::FileUuid{*file_pdf_uuid};
+
+        message_data.recipient_uuids = std::vector<LibHermes::Letter::RecipientUuid>{LibHermes::Letter::RecipientUuid(contact_uuid)};
+        message_data.type = LibHermes::Letter::Type{std::string{"mojeid_pin3"}};
+
+        LibHermes::Connection<LibHermes::Service::LetterMessenger> connection{
+                LibHermes::Connection<LibHermes::Service::LetterMessenger>::ConnectionString{
+                        _messenger_configuration.endpoint}};
+        connection.set_timeout(_messenger_configuration.timeout);
+
         LibHermes::Letter::send(
                 connection,
                 message_data,
@@ -338,6 +369,15 @@ void send_auth_owner_letter(
                 {LibHermes::Reference{
                         LibHermes::Reference::Type{"public-request"},
                         LibHermes::Reference::Value{boost::uuids::to_string(public_request_uuid)}}});
+    }
+    catch (const LibTypist::HttpResponseResult& e)
+    {
+        if (e.result() == 502)
+        {
+            _ctx.get_log().debug("send_auth_owner_letter: got network exception - Bad Gateway.");
+            return;
+        }
+        throw;
     }
     catch (const LibHermes::Letter::SendFailed& e)
     {
@@ -1073,7 +1113,7 @@ void Generate::for_new_requests(
                     contact_history_id);
             LibFred::UpdatePublicRequest()
                     .set_on_status_action(LibFred::PublicRequest::OnStatusAction::processed)
-                    .exec(locked_request_for_update, get_public_request_type_iface(public_request_type), Optional<MojeIdImpl::LogRequestId>()); // TODO log_request_id
+                    .exec(locked_request_for_update, get_public_request_type_iface(public_request_type), Optional<MojeIdImpl::LogRequestId>());
         }
         catch (const std::exception& e)
         {

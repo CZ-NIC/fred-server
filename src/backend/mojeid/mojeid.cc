@@ -61,9 +61,11 @@
 
 #include "src/util/cfg/config_handler_decl.hh"
 #include "src/util/cfg/handle_corbanameservice_args.hh"
+#include "src/util/cfg/handle_fileman_args.hh"
 #include "src/util/cfg/handle_messenger_args.hh"
 #include "src/util/cfg/handle_mojeid_args.hh"
 #include "src/util/cfg/handle_registry_args.hh"
+#include "src/util/cfg/handle_secretary_args.hh"
 #include "src/util/types/birthdate.hh"
 #include "src/util/xmlgen.hh"
 
@@ -3265,7 +3267,9 @@ void MojeIdImpl::generate_public_request_messages() const
                 CfgArgs::instance()->get_handler_ptr_by_type<HandleMessengerArgs>()->messenger_args.endpoint,
                 CfgArgs::instance()->get_handler_ptr_by_type<HandleMessengerArgs>()->messenger_args.archive,
                 CfgArgs::instance()->get_handler_ptr_by_type<HandleMessengerArgs>()->messenger_args.archive_rendered,
-                CfgArgs::instance()->get_handler_ptr_by_type<HandleMessengerArgs>()->messenger_args.timeout};
+                CfgArgs::instance()->get_handler_ptr_by_type<HandleMessengerArgs>()->messenger_args.timeout,
+                CfgArgs::instance()->get_handler_ptr_by_type<HandleSecretaryArgs>()->secretary_args.endpoint,
+                CfgArgs::instance()->get_handler_ptr_by_type<HandleFilemanArgs>()->fileman_args.endpoint};
 
         LibFred::OperationContextCreator ctx;
         const std::string link_hostname_part = CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIdArgs>()->hostname;

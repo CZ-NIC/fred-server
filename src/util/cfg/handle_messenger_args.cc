@@ -19,7 +19,12 @@
 
 #include "src/util/cfg/handle_messenger_args.hh"
 
+#include "libhermes/connection.hh"
+
+#include <boost/numeric/conversion/cast.hpp>
+
 #include <chrono>
+#include <ostream>
 #include <string>
 
 std::shared_ptr<boost::program_options::options_description>
@@ -36,7 +41,7 @@ HandleMessengerArgs::get_options_description()
              "archive the message")
          ("messenger.archive_rendered", boost::program_options::value<bool>()->required(),
              "archive the rendered message")
-         ("messenger.timeout", boost::program_options::value<int>()->default_value(0),
+         ("messenger.timeout", boost::program_options::value<std::chrono::seconds::rep>()->default_value(LibHermes::no_explicit_connection_timeout.count()),
              "timeout for sending message in seconds");
     return opts_descs;
 }
@@ -49,7 +54,7 @@ void HandleMessengerArgs::handle(int argc, char* argv[], FakedArgs& fa)
     messenger_args.endpoint = vm["messenger.endpoint"].as<std::string>();
     messenger_args.archive = vm["messenger.archive"].as<bool>();
     messenger_args.archive_rendered = vm["messenger.archive_rendered"].as<bool>();
-    messenger_args.timeout = std::chrono::seconds(vm["messenger.timeout"].as<int>());
+    messenger_args.timeout = std::chrono::seconds{vm["messenger.timeout"].as<std::chrono::seconds::rep>()};
 }
 
 std::shared_ptr<boost::program_options::options_description>

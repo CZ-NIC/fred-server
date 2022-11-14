@@ -33,6 +33,8 @@ struct MessengerConfiguration
     bool archive;
     bool archive_rendered;
     std::chrono::seconds timeout;
+    std::string secretary_endpoint;
+    std::string fileman_endpoint;
 };
 
 } // namespace Fred::Backend::MojeId
