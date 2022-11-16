@@ -356,11 +356,13 @@ void send_auth_owner_letter(
         message_data.recipient_uuids = std::vector<LibHermes::Letter::RecipientUuid>{LibHermes::Letter::RecipientUuid(contact_uuid)};
         message_data.type = LibHermes::Letter::Type{std::string{"mojeid_pin3"}};
 
+        _ctx.get_log().debug(boost::str(boost::format("send_auth_owner_letter: connecting to messenger at %1%") % _messenger_configuration.endpoint));
         LibHermes::Connection<LibHermes::Service::LetterMessenger> connection{
                 LibHermes::Connection<LibHermes::Service::LetterMessenger>::ConnectionString{
                         _messenger_configuration.endpoint}};
         connection.set_timeout(_messenger_configuration.timeout);
 
+        _ctx.get_log().debug("send_auth_owner_letter: sending pdf as an email");
         LibHermes::Letter::send(
                 connection,
                 message_data,
@@ -1040,22 +1042,27 @@ void generate_messages_for_given_request(
     }
 }
 
-} // namespace Fred::Backend::MojeId::Messages::{anonymous}
-
-void Generate::for_new_requests(
+void for_new_requests(
         LibFred::OperationContext& _ctx,
         const MojeId::MessengerConfiguration& _messenger_configuration,
-        const std::string& _link_hostname_part)
+        const std::string& _link_hostname_part,
+        bool _include_letters)
 {
     DbCommand cmd;
     cmd.query =
         // clang-format off
         "WITH possible_types AS ("
                  "SELECT id FROM enum_public_request_type "
-                 "WHERE name IN ("
-                        "'mojeid_contact_conditional_identification', "
+                 "WHERE name IN (";
+    if (_include_letters)
+    {
+        cmd.query +=
+
                         "'mojeid_contact_identification', "
-                        "'mojeid_contact_reidentification', "
+                        "'mojeid_contact_reidentification', ";
+    }
+    cmd.query +=
+                        "'mojeid_contact_conditional_identification', "
                         //"'mojeid_contact_validation', "
                         "'mojeid_conditionally_identified_contact_transfer', "
                         "'mojeid_identified_contact_transfer', "
@@ -1124,6 +1131,27 @@ void Generate::for_new_requests(
             _ctx.get_log().error("unexpected error");
         }
     }
+}
+
+} // namespace Fred::Backend::MojeId::Messages::{anonymous}
+
+void Generate::for_all_new_requests(
+        LibFred::OperationContext& _ctx,
+        const MojeId::MessengerConfiguration& _messenger_configuration,
+        const std::string& _link_hostname_part)
+{
+    const auto include_letters = true;
+    for_new_requests(_ctx, _messenger_configuration, _link_hostname_part, include_letters);
+
+}
+
+void Generate::for_sms_and_email_new_requests(
+        LibFred::OperationContext& _ctx,
+        const MojeId::MessengerConfiguration& _messenger_configuration,
+        const std::string& _link_hostname_part)
+{
+    const auto include_letters = false;
+    for_new_requests(_ctx, _messenger_configuration, _link_hostname_part, include_letters);
 }
 
 template <CommChannel::Enum COMM_CHANNEL>

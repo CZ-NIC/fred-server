@@ -152,7 +152,9 @@ public:
             ContactId _contact_id,
             LogRequestId _log_request_id) const;
 
-    void generate_public_request_messages() const;
+    void generate_sms_and_email_public_request_messages() const;
+
+    void generate_all_public_request_messages() const;
 
     static MessageId send_mojeid_card(
             LibFred::OperationContext& _ctx,

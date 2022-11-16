@@ -91,7 +91,12 @@ protected:
 
     };
 
-    static void for_new_requests(
+    static void for_all_new_requests(
+            LibFred::OperationContext& _ctx,
+            const MojeId::MessengerConfiguration& _messenger_configuration,
+            const std::string& _link_hostname_part = "");
+
+    static void for_sms_and_email_new_requests(
             LibFred::OperationContext& _ctx,
             const MojeId::MessengerConfiguration& _messenger_configuration,
             const std::string& _link_hostname_part = "");

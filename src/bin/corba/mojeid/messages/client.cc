@@ -55,7 +55,7 @@ int main (int argc, char **argv)
             nameservice_conf_ptr->nameservice_port,
             nameservice_conf_ptr->nameservice_context);
         Registry::MojeID::Server_var server = Registry::MojeID::Server::_narrow(obj);
-        server->generate_email_messages();
+        server->generate_letter_messages();
         orb->destroy();
     }
     catch (const CORBA::TRANSIENT&) {

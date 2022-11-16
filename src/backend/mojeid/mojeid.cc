@@ -2414,7 +2414,7 @@ void MojeIdImpl::commit_prepared_transaction(const std::string& _trans_id) const
         const HandleMojeIdArgs* const server_conf_ptr = CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIdArgs>();
         if (server_conf_ptr->auto_messages_generation)
         {
-            this->generate_public_request_messages();
+            this->generate_sms_and_email_public_request_messages();
         }
     }
     catch (const std::exception& e)
@@ -3257,7 +3257,7 @@ void MojeIdImpl::send_mojeid_card(
     }
 }
 
-void MojeIdImpl::generate_public_request_messages() const
+void MojeIdImpl::generate_sms_and_email_public_request_messages() const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
@@ -3273,7 +3273,42 @@ void MojeIdImpl::generate_public_request_messages() const
 
         LibFred::OperationContextCreator ctx;
         const std::string link_hostname_part = CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIdArgs>()->hostname;
-        Messages::Generate::for_new_requests(
+        Messages::Generate::for_sms_and_email_new_requests(
+                ctx,
+                messenger_configuration,
+                link_hostname_part);
+        ctx.commit_transaction();
+        return;
+    }
+    catch (const std::exception& e)
+    {
+        LOGGER.error(e.what());
+        throw;
+    }
+    catch (...)
+    {
+        LOGGER.error("unknown exception");
+        throw;
+    }
+}
+
+void MojeIdImpl::generate_all_public_request_messages() const
+{
+    LOGGING_CONTEXT(log_ctx, *this);
+
+    try
+    {
+        Fred::Backend::MojeId::MessengerConfiguration messenger_configuration{
+                CfgArgs::instance()->get_handler_ptr_by_type<HandleMessengerArgs>()->messenger_args.endpoint,
+                CfgArgs::instance()->get_handler_ptr_by_type<HandleMessengerArgs>()->messenger_args.archive,
+                CfgArgs::instance()->get_handler_ptr_by_type<HandleMessengerArgs>()->messenger_args.archive_rendered,
+                CfgArgs::instance()->get_handler_ptr_by_type<HandleMessengerArgs>()->messenger_args.timeout,
+                CfgArgs::instance()->get_handler_ptr_by_type<HandleSecretaryArgs>()->secretary_args.endpoint,
+                CfgArgs::instance()->get_handler_ptr_by_type<HandleFilemanArgs>()->fileman_args.endpoint};
+
+        LibFred::OperationContextCreator ctx;
+        const std::string link_hostname_part = CfgArgs::instance()->get_handler_ptr_by_type<HandleMojeIdArgs>()->hostname;
+        Messages::Generate::for_all_new_requests(
                 ctx,
                 messenger_configuration,
                 link_hostname_part);

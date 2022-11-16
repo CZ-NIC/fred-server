@@ -580,7 +580,7 @@ void Server_i::generate_sms_messages()
 {
     try
     {
-        impl_ptr_->generate_public_request_messages();
+        impl_ptr_->generate_sms_and_email_public_request_messages();
     }
     catch (...)
     {
@@ -597,7 +597,7 @@ void Server_i::generate_email_messages()
 {
     try
     {
-        impl_ptr_->generate_public_request_messages();
+        impl_ptr_->generate_sms_and_email_public_request_messages();
     }
     catch (...)
     {
@@ -614,7 +614,7 @@ void Server_i::generate_letter_messages()
 {
     try
     {
-        impl_ptr_->generate_public_request_messages();
+        impl_ptr_->generate_all_public_request_messages();
     }
     catch (...)
     {
