@@ -580,7 +580,7 @@ void Server_i::generate_sms_messages()
 {
     try
     {
-        impl_ptr_->generate_sms_messages();
+        impl_ptr_->generate_sms_and_email_public_request_messages();
     }
     catch (...)
     {
@@ -588,23 +588,16 @@ void Server_i::generate_sms_messages()
     }
 }
 
-void Server_i::enable_sms_messages_generation(::CORBA::Boolean enable)
+void Server_i::enable_sms_messages_generation(::CORBA::Boolean)
 {
-    try
-    {
-        impl_ptr_->enable_sms_messages_generation(enable);
-    }
-    catch (...)
-    {
-        throw IDL::INTERNAL_SERVER_ERROR();
-    }
+    throw IDL::INTERNAL_SERVER_ERROR();
 }
 
 void Server_i::generate_email_messages()
 {
     try
     {
-        impl_ptr_->generate_email_messages();
+        impl_ptr_->generate_sms_and_email_public_request_messages();
     }
     catch (...)
     {
@@ -612,23 +605,16 @@ void Server_i::generate_email_messages()
     }
 }
 
-void Server_i::enable_email_messages_generation(::CORBA::Boolean enable)
+void Server_i::enable_email_messages_generation(::CORBA::Boolean)
 {
-    try
-    {
-        impl_ptr_->enable_email_messages_generation(enable);
-    }
-    catch (...)
-    {
-        throw IDL::INTERNAL_SERVER_ERROR();
-    }
+    throw IDL::INTERNAL_SERVER_ERROR();
 }
 
 void Server_i::generate_letter_messages()
 {
     try
     {
-        impl_ptr_->generate_letter_messages();
+        impl_ptr_->generate_all_public_request_messages();
     }
     catch (...)
     {
@@ -636,16 +622,9 @@ void Server_i::generate_letter_messages()
     }
 }
 
-void Server_i::enable_letter_messages_generation(::CORBA::Boolean enable)
+void Server_i::enable_letter_messages_generation(::CORBA::Boolean)
 {
-    try
-    {
-        impl_ptr_->enable_letter_messages_generation(enable);
-    }
-    catch (...)
-    {
-        throw IDL::INTERNAL_SERVER_ERROR();
-    }
+    throw IDL::INTERNAL_SERVER_ERROR();
 }
 
 } // namespace Registry::MojeID

@@ -20,6 +20,7 @@
 #ifndef CONFIGURATION_HH_BC14892D4954478BB0A0F021DA9D7FA0
 #define CONFIGURATION_HH_BC14892D4954478BB0A0F021DA9D7FA0
 
+#include <chrono>
 #include <string>
 
 namespace Fred {
@@ -31,6 +32,9 @@ struct MessengerConfiguration
     std::string endpoint;
     bool archive;
     bool archive_rendered;
+    std::chrono::seconds timeout;
+    std::string secretary_endpoint;
+    std::string fileman_endpoint;
 };
 
 } // namespace Fred::Backend::MojeId

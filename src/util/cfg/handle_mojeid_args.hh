@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2021  CZ.NIC, z. s. p. o.
+ * Copyright (C) 2010-2022  CZ.NIC, z. s. p. o.
  *
  * This file is part of FRED.
  *
@@ -50,8 +50,7 @@ public:
     bool notify_commands;
     unsigned letter_limit_count;
     unsigned letter_limit_interval;
-    bool auto_sms_generation;
-    bool auto_email_generation;
+    bool auto_messages_generation;
     bool auto_pin3_sending;
 
     std::shared_ptr<boost::program_options::options_description>
@@ -80,12 +79,9 @@ public:
                 ("mojeid.letter_limit_interval",
                  po::value<unsigned>()->default_value(30),
                  "interval for checking number of sent letters")
-                ("mojeid.auto_sms_generation",
+                ("mojeid.auto_messages_generation",
                  po::value< bool >()->default_value(true),
-                 "turn on/off sms generation after two phase commit")
-                ("mojeid.auto_email_generation",
-                 po::value< bool >()->default_value(true),
-                 "turn on/off email generation after two phase commit")
+                 "turn on/off sms/email/letter generation after two phase commit")
                 ("mojeid.auto_pin3_sending",
                  po::value<bool>()->default_value(true),
                  "control automatic PIN3 sending");
@@ -104,8 +100,7 @@ public:
         notify_commands = vm["mojeid.notify_commands"].as<bool>();
         letter_limit_count    = vm["mojeid.letter_limit_count"   ].as<unsigned>();
         letter_limit_interval = vm["mojeid.letter_limit_interval"].as<unsigned>();
-        auto_sms_generation   = vm["mojeid.auto_sms_generation"].as< bool >();
-        auto_email_generation = vm["mojeid.auto_email_generation"].as< bool >();
+        auto_messages_generation   = vm["mojeid.auto_messages_generation"].as< bool >();
         auto_pin3_sending = vm["mojeid.auto_pin3_sending"].as<bool>();
     }//handle
 };

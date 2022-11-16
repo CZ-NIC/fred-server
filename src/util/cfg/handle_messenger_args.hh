@@ -26,6 +26,7 @@
 
 #include <boost/program_options.hpp>
 
+#include <chrono>
 #include <cstddef>
 #include <string>
 
@@ -49,6 +50,7 @@ public:
     const std::string& get_endpoint() const;
     bool get_archive() const;
     bool get_archive_rendered() const;
+    std::chrono::seconds get_timeout() const;
 };
 
 #endif

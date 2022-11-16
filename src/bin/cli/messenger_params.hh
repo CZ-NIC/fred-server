@@ -19,6 +19,7 @@
 #ifndef MESSENGER_PARAMS_HH_779C1D436F8041EB986E1D778638557B
 #define MESSENGER_PARAMS_HH_779C1D436F8041EB986E1D778638557B
 
+#include <chrono>
 #include <string>
 
 struct MessengerArgs
@@ -26,6 +27,7 @@ struct MessengerArgs
     std::string endpoint;
     bool archive;
     bool archive_rendered;
+    std::chrono::seconds timeout;
 };
 
 #endif

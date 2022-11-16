@@ -756,7 +756,9 @@ add_common_library_target(handle_database_args
     src/util/cfg/handle_fileman_args.cc
     src/util/cfg/handle_secretary_args.cc
     src/util/cfg/validate_args.cc)
-target_link_libraries(handle_database_args PRIVATE Fred::library)
+target_link_libraries(handle_database_args PRIVATE
+    LibHermes::library
+    Fred::library)
 
 add_common_library_target(handle_rifd_args
     src/util/cfg/handle_rifd_args.cc
@@ -1242,7 +1244,9 @@ target_link_libraries(fred-mifd
     Boost::thread
     Boost::date_time
     Boost::program_options
-    LibHermes::library)
+    LibFiled::library
+    LibHermes::library
+    LibTypist::library)
 
 # fred-mojeid-msggen
 add_common_executable_target(fred-mojeid-msggen
