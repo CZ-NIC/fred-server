@@ -376,8 +376,7 @@ void send_auth_owner_letter(
     {
         if (e.result() == 502)
         {
-            _ctx.get_log().debug("send_auth_owner_letter: got network exception - Bad Gateway.");
-            return;
+            _ctx.get_log().warning("send_auth_owner_letter: got network exception - Bad Gateway.");
         }
         throw;
     }
