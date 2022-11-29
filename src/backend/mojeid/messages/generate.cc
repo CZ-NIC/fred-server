@@ -46,6 +46,7 @@
 #include <boost/uuid/uuid_io.hpp>
 
 #include <chrono>
+#include <stdexcept>
 #include <utility>
 
 namespace Fred {
@@ -54,6 +55,16 @@ namespace MojeId {
 namespace Messages {
 
 namespace {
+
+constexpr auto grpc_error_code_invalid_argument = 3;
+
+struct PublicRequestMessageNotSentInvalidArgument : std::exception
+{
+    const char* what() const noexcept override
+    {
+        return "some public request message(s) not send because of invalid argument";
+    }
+};
 
 struct DbCommand
 {
@@ -200,6 +211,10 @@ struct generate_message<CommChannel::sms,
         catch (const LibHermes::Sms::SendFailed& e)
         {
             _ctx.get_log().warning(boost::str(boost::format("gRPC exception caught while sending sms about public request with uuid %1%: gRPC error code: %2%, error message: %3%, grpc_message_json: %4%") % boost::uuids::to_string(public_request_uuid) % e.error_code() % e.error_message() % e.grpc_message_json()));
+            if (e.error_code() == grpc_error_code_invalid_argument)
+            {
+                throw PublicRequestMessageNotSentInvalidArgument{};
+            }
             throw;
         }
         catch (const std::exception& e)
@@ -383,6 +398,10 @@ void send_auth_owner_letter(
     catch (const LibHermes::Letter::SendFailed& e)
     {
         _ctx.get_log().warning(boost::str(boost::format("gRPC exception caught while sending letter about public request with uuid %1%: gRPC error code: %2%, error message: %3%, grpc_message_json: %4%") % boost::uuids::to_string(public_request_uuid) % e.error_code() % e.error_message() % e.grpc_message_json()));
+        if (e.error_code() == grpc_error_code_invalid_argument)
+        {
+            throw PublicRequestMessageNotSentInvalidArgument{};
+        }
         throw;
     }
     catch (const std::exception& e)
@@ -753,6 +772,10 @@ void send_email(
     catch (const LibHermes::Email::SendFailed& e)
     {
         _ctx.get_log().warning(boost::str(boost::format("gRPC exception caught while sending email about public request with uuid %1%: gRPC error code: %2%, error message: %3%, grpc_message_json: %4%") % boost::uuids::to_string(public_request_uuid) % e.error_code() % e.error_message() % e.grpc_message_json()));
+        if (e.error_code() == grpc_error_code_invalid_argument)
+        {
+            throw PublicRequestMessageNotSentInvalidArgument{};
+        }
         throw;
     }
     catch (const std::exception& e)
@@ -1121,6 +1144,10 @@ void for_new_requests(
                     .set_on_status_action(LibFred::PublicRequest::OnStatusAction::processed)
                     .exec(locked_request_for_update, get_public_request_type_iface(public_request_type), Optional<MojeIdImpl::LogRequestId>());
         }
+        catch (const PublicRequestMessageNotSentInvalidArgument& e)
+        {
+            _ctx.get_log().warning(e.what());
+        }
         catch (const std::exception& e)
         {
             _ctx.get_log().error(e.what());
@@ -1141,7 +1168,6 @@ void Generate::for_all_new_requests(
 {
     const auto include_letters = true;
     for_new_requests(_ctx, _messenger_configuration, _link_hostname_part, include_letters);
-
 }
 
 void Generate::for_sms_and_email_new_requests(
