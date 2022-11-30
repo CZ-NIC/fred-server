@@ -1085,7 +1085,7 @@ void for_new_requests(
     }
     cmd.query +=
                         "'mojeid_contact_conditional_identification', "
-                        //"'mojeid_contact_validation', "
+                        "'mojeid_contact_validation', "
                         "'mojeid_conditionally_identified_contact_transfer', "
                         "'mojeid_identified_contact_transfer', "
                         "'mojeid_prevalidated_unidentified_contact_transfer', "
